@@ -1,1 +1,20 @@
 @import "tailwindcss";
+.mood-empty {
+  fill: #e5e7eb;
+}
+
+.mood-1 {
+  fill: #fcd34d; /* Happy */
+}
+.mood-2 {
+  fill: #a1a1aa; /* Neutral */
+}
+.mood-3 {
+  fill: #60a5fa; /* Sad */
+}
+.mood-4 {
+  fill: #f87171; /* Angry */
+}
+.mood-5 {
+  fill: #fbbf24; /* Anxious */
+}

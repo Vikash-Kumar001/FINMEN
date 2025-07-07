@@ -1,4 +1,3 @@
-// Middleware to check if educator is approved
 export const checkEducatorApproved = (req, res, next) => {
   const user = req.user;
 

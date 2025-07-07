@@ -28,7 +28,8 @@ import reportRoutes from "./routes/reportRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
 import adminRedemptionRoutes from "./routes/adminRedemptionRoutes.js";
 import journalRoutes from "./routes/journalRoutes.js";
-import walletRoutes from './routes/walletRoutes.js';
+import walletRoutes from "./routes/walletRoutes.js";
+import statsRoutes from "./routes/statsRoutes.js"; // ✅ New
 
 // Import middleware
 import { errorHandler } from "./middlewares/errorMiddleware.js";
@@ -104,6 +105,7 @@ app.use("/api/transactions", transactionRoutes);
 app.use("/api/admin/redemptions", adminRedemptionRoutes);
 app.use("/api/journal", journalRoutes);
 app.use("/api/wallet", walletRoutes);
+app.use("/api/stats", statsRoutes); // ✅ Add stats route here
 
 // Health check
 app.get("/", (_, res) => {

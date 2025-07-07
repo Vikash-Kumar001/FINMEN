@@ -11,7 +11,10 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
-    picture: {
+    password: {
+      type: String,
+    },
+    avatar: {
       type: String,
     },
     dob: {
@@ -42,6 +45,20 @@ const userSchema = new mongoose.Schema(
     },
     subjects: {
       type: String,
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    otp: {
+      type: String,
+    },
+    otpExpiry: {
+      type: Date,
+    },
+    fromGoogle: {
+      type: Boolean,
+      default: false,
     },
   },
   { timestamps: true }

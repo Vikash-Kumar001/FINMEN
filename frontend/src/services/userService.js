@@ -1,73 +1,121 @@
 import api from "../utils/api";
 
-// ==========================
-// 🌟 Self Profile (All roles)
-// ==========================
-
+// Self Profile (All roles)
 export const getMyProfile = async () => {
-  const res = await api.get("/profile/me");
-  return res.data;
+  try {
+    const res = await api.get("/profile/me");
+    return res.data;
+  } catch (err) {
+    console.error("❌ Failed to fetch profile:", err);
+    throw err;
+  }
 };
 
 export const updateMyProfile = async (data) => {
-  const res = await api.put("/profile/me", data);
-  return res.data;
+  try {
+    const res = await api.put("/profile/me", data);
+    return res.data;
+  } catch (err) {
+    console.error("❌ Failed to update profile:", err);
+    throw err;
+  }
 };
 
 export const updateMyAvatar = async (formData) => {
-  const res = await api.put("/profile/avatar", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
-  return res.data;
+  try {
+    const res = await api.put("/profile/avatar", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("❌ Failed to update avatar:", err);
+    throw err;
+  }
 };
 
 export const updateMyPassword = async ({ current, newPass }) => {
-  const res = await api.put("/profile/password", {
-    currentPassword: current,
-    newPassword: newPass,
-  });
-  return res.data;
+  try {
+    const res = await api.put("/profile/password", {
+      currentPassword: current,
+      newPassword: newPass,
+    });
+    return res.data;
+  } catch (err) {
+    console.error("❌ Failed to update password:", err);
+    throw err;
+  }
 };
 
-// ==========================
-// 📊 Stats by Role
-// ==========================
 
+// Stats by Role
 export const fetchStudentStats = async () => {
-  const res = await api.get("/stats/student");
-  return res.data;
+  try {
+    const res = await api.get("/stats/student");
+    return res.data;
+  } catch (err) {
+    console.error("❌ Failed to fetch student stats:", err);
+    throw err;
+  }
 };
 
 export const fetchEducatorStats = async () => {
-  const res = await api.get("/stats/educator");
-  return res.data;
+  try {
+    const res = await api.get("/stats/educator");
+    return res.data;
+  } catch (err) {
+    console.error("❌ Failed to fetch educator stats:", err);
+    throw err;
+  }
 };
 
 export const fetchAdminStats = async () => {
-  const res = await api.get("/stats/admin");
-  return res.data;
+  try {
+    const res = await api.get("/stats/admin");
+    return res.data;
+  } catch (err) {
+    console.error("❌ Failed to fetch admin stats:", err);
+    throw err;
+  }
 };
 
-// ==========================
-// 👑 Admin - User Management
-// ==========================
 
+// Admin - User Management
 export const getAllUsers = async () => {
-  const res = await api.get("/admin/users");
-  return res.data;
+  try {
+    const res = await api.get("/admin/users");
+    return res.data;
+  } catch (err) {
+    console.error("❌ Failed to get all users:", err);
+    throw err;
+  }
 };
 
 export const getUserById = async (userId) => {
-  const res = await api.get(`/admin/users/${userId}`);
-  return res.data;
+  try {
+    const res = await api.get(`/admin/users/${userId}`);
+    return res.data;
+  } catch (err) {
+    console.error(`❌ Failed to get user ${userId}:`, err);
+    throw err;
+  }
 };
 
 export const updateUserByAdmin = async (userId, data) => {
-  const res = await api.put(`/admin/users/${userId}`, data);
-  return res.data;
+  try {
+    const res = await api.put(`/admin/users/${userId}`, data);
+    return res.data;
+  } catch (err) {
+    console.error(`❌ Failed to update user ${userId}:`, err);
+    throw err;
+  }
 };
 
 export const deleteUser = async (userId) => {
-  const res = await api.delete(`/admin/users/${userId}`);
-  return res.data;
+  try {
+    const res = await api.delete(`/admin/users/${userId}`);
+    return res.data;
+  } catch (err) {
+    console.error(`❌ Failed to delete user ${userId}:`, err);
+    throw err;
+  }
 };

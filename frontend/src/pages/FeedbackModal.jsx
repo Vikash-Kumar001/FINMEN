@@ -1,31 +1,26 @@
-import React from "react";
-import { useState } from "react";
-import axios from "axios";
+import React, { useState } from "react";
+import { useSocket } from "../context/SocketContext";
+import { useAuth } from "../hooks/useAuth";
 import { X } from "lucide-react";
 
 export default function FeedbackModal({ studentId, onClose }) {
     const [feedback, setFeedback] = useState("");
     const [success, setSuccess] = useState(false);
     const [loading, setLoading] = useState(false);
+    const socket = useSocket();
+    const { user } = useAuth();
 
-    const submitFeedback = async () => {
+    const submitFeedback = () => {
         if (!feedback.trim()) return alert("Please write feedback before submitting.");
-
-        try {
-            setLoading(true);
-            await axios.post(
-                `/api/educators/feedback/${studentId}`,
-                { feedback },
-                { withCredentials: true }
-            );
-            setSuccess(true);
-            setFeedback("");
-        } catch (err) {
-            console.error("Failed to send feedback:", err);
-            alert("❌ Failed to submit feedback. Try again.");
-        } finally {
-            setLoading(false);
-        }
+        setLoading(true);
+        socket.emit('student:feedback:submit', {
+            studentId,
+            feedback,
+            from: user?._id
+        });
+        setSuccess(true);
+        setFeedback("");
+        setLoading(false);
     };
 
     return (

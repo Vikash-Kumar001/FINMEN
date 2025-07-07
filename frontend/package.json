@@ -13,6 +13,7 @@
     "@headlessui/react": "^2.2.4",
     "@react-oauth/google": "^0.12.2",
     "@tailwindcss/vite": "^4.1.10",
+    "@uidotdev/usehooks": "^2.4.1",
     "animejs": "^4.0.2",
     "axios": "^1.10.0",
     "date-fns": "^4.1.0",

@@ -1,23 +1,44 @@
+// src/components/ProtectedRoute.jsx
 import React from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const ProtectedRoute = ({ children, roles, requireApproved = false }) => {
-  const { user, loading } = useAuth();
+const ProtectedRoute = ({ children, roles, requireApproved = false, otpOnly = false }) => {
+    const { user, loading } = useAuth();
+    const location = useLocation();
 
-  if (loading) return null; // or a loading spinner
+    if (loading) {
+        return (
+            <div className="flex justify-center items-center h-screen text-lg bg-gray-900 text-white">
+                Loading...
+            </div>
+        );
+    }
 
-  if (!user) return <Navigate to="/login" replace />;
+    // 🔐 OTP-only routes (e.g., Reset password page)
+    if (otpOnly) {
+        const verifiedEmail = localStorage.getItem("verified_reset_email");
+        if (!verifiedEmail) {
+            return <Navigate to="/login" state={{ from: location }} replace />;
+        }
+    }
 
-  if (roles && !roles.includes(user.role)) {
-    return <Navigate to="/" replace />;
-  }
+    // 🔒 Not logged in
+    if (!user) {
+        return <Navigate to="/login" state={{ from: location }} replace />;
+    }
 
-  if (requireApproved && user.role === "educator" && !user.isApproved) {
-    return <Navigate to="/pending-approval" replace />;
-  }
+    // 🔐 Role-based access
+    if (roles && !roles.includes(user.role)) {
+        return <Navigate to="/" replace />;
+    }
 
-  return children;
+    // ⛔ Educator not approved
+    if (requireApproved && user.role === "educator" && !user.isApproved) {
+        return <Navigate to="/pending-approval" replace />;
+    }
+
+    return children;
 };
 
 export default ProtectedRoute;

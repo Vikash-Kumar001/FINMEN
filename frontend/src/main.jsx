@@ -1,16 +1,29 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.jsx';
-import './index.css';
-import { AuthProvider } from './context/AuthContext.jsx';
-import { SocketProvider } from './context/SocketContext.jsx';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+import { BrowserRouter } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import { WalletProvider } from "./context/WalletContext";
+import { NotificationProvider } from "./context/NotificationContext";
+import { SocketProvider } from "./context/SocketContext";
+
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <AuthProvider>
-      <SocketProvider>
-        <App />
-      </SocketProvider>
-    </AuthProvider>
+    <BrowserRouter>
+      <AuthProvider>
+        <WalletProvider>
+          <NotificationProvider>
+            <SocketProvider>
+              <App />
+            </SocketProvider>
+          </NotificationProvider>
+        </WalletProvider>
+      </AuthProvider>
+    </BrowserRouter>
   </React.StrictMode>
 );
+
+
+

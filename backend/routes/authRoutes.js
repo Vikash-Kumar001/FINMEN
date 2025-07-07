@@ -1,64 +1,84 @@
 import express from "express";
-import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
-import { googleLogin } from "../controllers/authController.js";
-import { requireAuth } from "../middlewares/requireAuth.js";
+import {
+  googleLogin,
+  registerByAdmin,
+  sendOTP,
+  verifyOTP,
+  forgotPassword,
+  resetPasswordWithOTP
+} from "../controllers/authController.js";
+import { requireAuth, requireAdmin } from "../middlewares/requireAuth.js";
+import { generateToken } from "../utils/generateToken.js";
 
 const router = express.Router();
 
-// @route   POST /api/auth/register
+// ✅ Student Self-Registration
 router.post("/register", async (req, res) => {
   try {
     const { email, password, name } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
 
-    const existingUser = await User.findOne({ email });
+    const normalizedEmail = email.toLowerCase();
+    const existingUser = await User.findOne({ email: normalizedEmail });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
+
     const newUser = await User.create({
-      name: name || email,
-      email,
+      name: name || normalizedEmail,
+      email: normalizedEmail,
       password: hashedPassword,
       role: "student",
+      isVerified: false,
     });
 
-    const token = jwt.sign({ id: newUser._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    // Send OTP
+    await sendOTP(newUser.email, "verify");
 
-    res
-      .cookie("finmen_token", token, {
-        httpOnly: true,
-        sameSite: "Lax",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      })
-      .json({ message: "Registration successful", user: newUser });
+    res.status(200).json({
+      message: "OTP sent to email for verification",
+      userId: newUser._id,
+    });
   } catch (err) {
     console.error("Registration error:", err);
     res.status(500).json({ message: "Registration failed" });
   }
 });
 
-// @route   POST /api/auth/login
+// ✅ Verify OTP (for registration)
+router.post("/verify-otp", verifyOTP);
+
+// ✅ Login (for student/educator/admin)
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Email and password are required" });
     }
 
-    const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
+    const normalizedEmail = email.toLowerCase();
+    const user = await User.findOne({ email: normalizedEmail });
+
+    if (!user || !user.password) {
+      return res.status(400).json({
+        message: "Invalid credentials or use Google login.",
+      });
+    }
+
+    if (!user.isVerified) {
+      return res.status(401).json({ message: "Please verify your email." });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -66,9 +86,7 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = generateToken(user._id);
 
     res
       .cookie("finmen_token", token, {
@@ -77,22 +95,39 @@ router.post("/login", async (req, res) => {
         secure: process.env.NODE_ENV === "production",
         maxAge: 7 * 24 * 60 * 60 * 1000,
       })
-      .json({ message: "Login successful", user });
+      .json({
+        message: "Login successful",
+        user: {
+          id: user._id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+      });
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ message: "Login failed" });
   }
 });
 
-// @route   POST /api/auth/google
+// ✅ Forgot Password - Send OTP
+router.post("/forgot-password", forgotPassword);
+
+// ✅ Reset Password with OTP
+router.post("/reset-password", resetPasswordWithOTP);
+
+// ✅ Google Login
 router.post("/google", googleLogin);
 
-// @route   GET /api/auth/me
+// ✅ Admin-only: Register another admin or educator
+router.post("/admin-register", requireAuth, requireAdmin, registerByAdmin);
+
+// ✅ Get Current Logged-in User
 router.get("/me", requireAuth, (req, res) => {
   res.json(req.user);
 });
 
-// ✅ @route   POST /api/auth/logout
+// ✅ Logout
 router.post("/logout", (req, res) => {
   res.clearCookie("finmen_token", {
     httpOnly: true,

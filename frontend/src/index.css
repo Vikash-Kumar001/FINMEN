@@ -18,3 +18,11 @@
 .mood-5 {
   fill: #fbbf24; /* Anxious */
 }
+
+.btn-tab {
+  @apply flex items-center bg-white shadow px-4 py-2 rounded hover:bg-indigo-50 text-sm font-semibold text-indigo-600 transition-all;
+}
+
+.btn-tab {
+  @apply flex items-center bg-white px-4 py-2 rounded shadow hover:bg-indigo-50 text-sm font-semibold text-indigo-600 transition-all;
+}

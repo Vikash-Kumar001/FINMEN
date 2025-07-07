@@ -1,6 +1,12 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
-import axios from "axios";
+import React, {
+    createContext,
+    useContext,
+    useEffect,
+    useState,
+    useCallback,
+} from "react";
 import { toast } from "react-hot-toast";
+import axiosInstance from "../utils/axiosInstance";
 
 const WalletContext = createContext();
 
@@ -12,13 +18,11 @@ export const WalletProvider = ({ children }) => {
     const fetchWallet = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await axios.get(`${import.meta.env.VITE_API}/wallet`, {
-                withCredentials: true,
-            });
+            const res = await axiosInstance.get("/wallet");
             setWallet(res.data);
         } catch (err) {
             console.error("❌ Failed to fetch wallet:", err?.response?.data || err.message);
-            toast.error("Could not load wallet");
+            toast.error(err?.response?.data?.error || "Could not load wallet");
             setWallet(null);
         } finally {
             setLoading(false);
@@ -29,7 +33,7 @@ export const WalletProvider = ({ children }) => {
         fetchWallet();
     }, [fetchWallet, triggerRefresh]);
 
-    const refreshWallet = () => setTriggerRefresh((prev) => !prev);
+    const refreshWallet = () => setTriggerRefresh(prev => !prev);
 
     return (
         <WalletContext.Provider
@@ -39,10 +43,7 @@ export const WalletProvider = ({ children }) => {
                 fetchWallet,
                 refreshWallet,
                 loading,
-                addCoins,
-                spendCoins,
-                redeemCoins,
-                fetchTransactions,
+                balance: wallet?.balance || 0,
             }}
         >
             {children}
@@ -55,11 +56,7 @@ export const useWallet = () => useContext(WalletContext);
 // 💰 Add coins to wallet
 export const addCoins = async (amount, description = "HealCoins added") => {
     try {
-        const res = await axios.post(
-            `${import.meta.env.VITE_API}/wallet/add`,
-            { amount, description },
-            { withCredentials: true }
-        );
+        const res = await axiosInstance.post("/wallet/add", { amount, description });
         toast.success("Coins added successfully!");
         return res.data;
     } catch (err) {
@@ -72,11 +69,7 @@ export const addCoins = async (amount, description = "HealCoins added") => {
 // 💸 Spend coins from wallet
 export const spendCoins = async (amount, description = "HealCoins spent") => {
     try {
-        const res = await axios.post(
-            `${import.meta.env.VITE_API}/wallet/spend`,
-            { amount, description },
-            { withCredentials: true }
-        );
+        const res = await axiosInstance.post("/wallet/spend", { amount, description });
         toast.success("Coins spent successfully!");
         return res.data;
     } catch (err) {
@@ -89,11 +82,7 @@ export const spendCoins = async (amount, description = "HealCoins spent") => {
 // 🏦 Redeem coins
 export const redeemCoins = async ({ amount, upiId }) => {
     try {
-        const res = await axios.post(
-            `${import.meta.env.VITE_API}/wallet/redeem`,
-            { amount, upiId },
-            { withCredentials: true }
-        );
+        const res = await axiosInstance.post("/wallet/redeem", { amount, upiId });
         toast.success("Redemption request submitted!");
         return res.data;
     } catch (err) {
@@ -106,9 +95,7 @@ export const redeemCoins = async ({ amount, upiId }) => {
 // 📜 Fetch transaction history
 export const fetchTransactions = async () => {
     try {
-        const res = await axios.get(`${import.meta.env.VITE_API}/wallet/transactions`, {
-            withCredentials: true,
-        });
+        const res = await axiosInstance.get("/wallet/transactions");
         return res.data;
     } catch (err) {
         console.error("❌ Fetch transactions failed:", err?.response?.data || err.message);

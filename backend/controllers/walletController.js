@@ -2,11 +2,17 @@ import Wallet from "../models/Wallet.js";
 import Transaction from "../models/Transaction.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 
-// 🔍 GET /api/wallet
+// 🔍 GET /api/wallet → Returns wallet info, creates one if not exists
 export const getWallet = async (req, res, next) => {
   try {
-    const wallet = await Wallet.findOne({ userId: req.user._id });
-    if (!wallet) return res.status(404).json({ error: "Wallet not found" });
+    let wallet = await Wallet.findOne({ userId: req.user._id });
+
+    if (!wallet) {
+      wallet = await Wallet.create({
+        userId: req.user._id,
+        balance: 0,
+      });
+    }
 
     res.status(200).json(wallet);
   } catch (err) {
@@ -14,7 +20,7 @@ export const getWallet = async (req, res, next) => {
   }
 };
 
-// ➕ POST /api/wallet/add
+// ➕ POST /api/wallet/add → Add coins to wallet
 export const addCoins = async (req, res, next) => {
   const { amount, description } = req.body;
 
@@ -46,7 +52,7 @@ export const addCoins = async (req, res, next) => {
   }
 };
 
-// ➖ POST /api/wallet/spend
+// ➖ POST /api/wallet/spend → Spend coins
 export const spendCoins = async (req, res, next) => {
   const { amount, description } = req.body;
 
@@ -56,6 +62,7 @@ export const spendCoins = async (req, res, next) => {
 
   try {
     const wallet = await Wallet.findOne({ userId: req.user._id });
+
     if (!wallet || wallet.balance < amount) {
       return res.status(400).json({ error: "Insufficient balance" });
     }
@@ -77,7 +84,7 @@ export const spendCoins = async (req, res, next) => {
   }
 };
 
-// 📜 GET /api/wallet/transactions
+// 📜 GET /api/wallet/transactions → List all user transactions
 export const getTransactions = async (req, res, next) => {
   try {
     const transactions = await Transaction.find({ userId: req.user._id }).sort({ createdAt: -1 });
@@ -87,7 +94,7 @@ export const getTransactions = async (req, res, next) => {
   }
 };
 
-// 💸 POST /api/wallet/redeem
+// 💸 POST /api/wallet/redeem → Request redemption to UPI
 export const postRedemptionRequest = async (req, res, next) => {
   try {
     const { amount, upiId } = req.body;

@@ -1,38 +1,27 @@
+# Gemini.py
+import flask
+from flask import Flask, request, jsonify
 import os
 import json
-import time
+
 import logging
+import time
 import google.generativeai as genai
 from dotenv import load_dotenv
+from uuid import uuid4
 from math_solver import parse_and_solve
 from finance_calculator import parse_and_calculate
 
-# === Logging for Fallbacks ===
+# === Setup Logging ===
 logging.basicConfig(filename="fallback_logs.txt", level=logging.INFO, format="%(asctime)s - %(message)s")
 
-def safe_send(chat, prompt, retries=1):
-    try:
-        response = chat.send_message(prompt)
-        if response and response.text and response.text.strip():
-            return response.text.strip()
-        else:
-            print("[Notice] Gemini didn't respond. Retrying once...")
-            if retries > 0:
-                return safe_send(chat, prompt, retries - 1)
-            else:
-                logging.info(f"Gemini empty fallback for prompt: {prompt}")
-                return "I'm having trouble understanding right now. Please rephrase your question or try again later."
-    except Exception as e:
-        logging.info(f"Gemini exception fallback for prompt: {prompt} | Error: {e}")
-        return "Oops, something went wrong while processing your request. Try again in a moment."
-
-# === Load API Key ===
+# === Environment Setup ===
 load_dotenv()
 API_KEY = os.getenv("GEMINI_API_KEY")
 MODEL_NAME = "models/gemini-2.5-flash"
 PROMPT_FILE = "chatbot_system_prompts.json"
 
-# === Load System Prompts ===
+# === Prompt Loading ===
 def load_prompts():
     if not os.path.exists(PROMPT_FILE):
         print("[ERROR] Missing system prompt file.")
@@ -40,7 +29,13 @@ def load_prompts():
     with open(PROMPT_FILE, "r") as f:
         return json.load(f)
 
-# === Load Dataset Entries ===
+prompts = load_prompts()
+
+# === Gemini Setup ===
+genai.configure(api_key=API_KEY)
+model_instances = {}
+
+# === Dataset Loading (Optional for fallback logic) ===
 def load_dataset(name):
     try:
         with open(f"datasets/{name}.json", "r") as f:
@@ -79,113 +74,82 @@ def detect_context(user_input: str):
     else:
         return None
 
-# === Validate Key ===
-def validate_key(api_key: str, model: str) -> bool:
+# === Fallback Wrapper ===
+def safe_send(chat, prompt, retries=1):
     try:
-        genai.configure(api_key=api_key)
-        models = genai.list_models()
-        return any(model.endswith(m.name) for m in models if 'generateContent' in m.supported_generation_methods)
+        response = chat.send_message(prompt)
+        if response and response.text and response.text.strip():
+            return response.text.strip()
+        else:
+            print("[Notice] Gemini didn't respond. Retrying...")
+            if retries > 0:
+                return safe_send(chat, prompt, retries - 1)
+            else:
+                logging.info(f"Gemini empty fallback for prompt: {prompt}")
+                return "I'm having trouble understanding right now. Please rephrase your question or try again later."
     except Exception as e:
-        print("[ERROR] API validation failed:", e)
-        return False
+        logging.info(f"Gemini exception fallback for prompt: {prompt} | Error: {e}")
+        return "Oops, something went wrong while processing your request. Try again in a moment."
 
-# === Initialization ===
-if not API_KEY or not validate_key(API_KEY, MODEL_NAME):
-    print("[ERROR] Invalid or missing API key.")
-    exit(1)
+# === Flask-Callable Entry Function ===
+def chat_with_gemini(session_id, user_input):
+    command_mode_map = {
+        "/rcbt": "rcbt",
+        "/finance": "finance",
+        "/math": "math",
+        "/calc": "calc",
+        "/health": "health",
+        "/career": "career",
+        "/general": "general"
+    }
 
-prompts = load_prompts()
+    # === Handle Mode Switching Commands ===
+    if user_input.strip().lower() in command_mode_map:
+        context = command_mode_map[user_input.strip().lower()]
+        system_prompt = prompts.get(context, {}).get("system", "You are a helpful assistant.")
+        model = genai.GenerativeModel(MODEL_NAME, system_instruction=system_prompt)
+        chat = model.start_chat(history=[])
+        model_instances[session_id] = (model, chat, context, True)  # mode_locked=True
+        return f"Switched to {context.upper()} mode. You can now ask related questions."
 
-model = genai.GenerativeModel(MODEL_NAME)
-chat = model.start_chat(history=[])
-print(f"\n[INFO] Gemini {MODEL_NAME} chatbot is ready.")
+    # === Retrieve Session State ===
+    session_data = model_instances.get(session_id)
 
-valid_modes = ["/rcbt", "/finance", "/health", "/career", "/math", "/calc"]
-active_mode = None
-active_system_prompt = None
+    if session_data:
+        model, chat, context, mode_locked = session_data
+    else:
+        model, chat, context, mode_locked = None, None, None, False
 
-print("\nCommands: /rcbt | /finance | /health | /career | /math | /calc | /clear | /simulate [mode] | Ctrl+C to exit")
+    # === Context Selection ===
+    if not mode_locked:
+        context = detect_context(user_input)
 
-# === Main Loop ===
-while True:
-    try:
-        user_input = input("You: ").strip()
-        if not user_input:
-            continue
+        if context == "ambiguous":
+            return "Your query could relate to multiple topics. Please be more specific."
 
-        if user_input.lower() == "/clear":
-            model = genai.GenerativeModel(MODEL_NAME, system_instruction=active_system_prompt or "You are a helpful assistant.")
+        if not context:
+            context = "general"
+
+        system_prompt = prompts.get(context, {}).get("system", "You are a helpful assistant.")
+        model = genai.GenerativeModel(MODEL_NAME, system_instruction=system_prompt)
+
+        # Start new chat with or without prior history (optional)
+        if chat:
+            chat = model.start_chat(history=chat.history)
+        else:
             chat = model.start_chat(history=[])
-            print("[INFO] Chat history cleared.")
-            continue
 
-        if user_input.lower().startswith("/simulate"):
-            parts = user_input.split(" ")
-            if len(parts) != 2 or parts[1] not in ["math", "finance", "rcbt", "health"]:
-                print("[ERROR] Usage: /simulate math|finance|rcbt|health")
-                continue
-            mode = parts[1]
-            dataset = {
-                "math": math_problems,
-                "finance": finance_cases,
-                "rcbt": rcbt_moods,
-                "health": health_entries
-            }.get(mode, [])
-            print(f"[SIMULATION] Testing {mode} dataset\n")
-            for sample in dataset:
-                prompt = sample.get("question") or sample.get("mood") or sample.get("entry") or sample.get("scenario")
-                if not prompt:
-                    continue
-                print(f"User: {prompt}")
-                print("Gemini:", safe_send(chat, prompt))
-                print("-" * 60)
-            continue
+        model_instances[session_id] = (model, chat, context, False)
 
-        elif user_input.lower() in valid_modes:
-            mode = user_input[1:]
-            active_mode = mode
-            active_system_prompt = prompts[mode]["system"]
-            model = genai.GenerativeModel(MODEL_NAME, system_instruction=active_system_prompt)
-            chat = model.start_chat(history=[])
-            print(f"[INFO] Switched to {mode.upper()} mode.")
-            continue
+    # === Special Delegates ===
+    if context == "math":
+        return parse_and_solve(user_input, fallback_fn=lambda p: safe_send(chat, p))
 
-        if not active_system_prompt:
-            context = detect_context(user_input)
-            if context == "ambiguous":
-                print("[INFO] Your message could relate to multiple topics.")
-                print("[INFO] Please type a specific mode like /rcbt, /finance, /math, or /calc to continue.")
-                continue
-            elif context:
-                active_mode = context
-                active_system_prompt = prompts[context]["system"]
-                model = genai.GenerativeModel(MODEL_NAME, system_instruction=active_system_prompt)
-                chat = model.start_chat(history=[])
-                print(f"[Auto] Context detected: {context.upper()} mode engaged.")
+    if context == "calc":
+        return parse_and_calculate(user_input, fallback_fn=lambda p: safe_send(chat, p))
 
-        if active_mode == "math":
-            def gemini_math_fallback(prompt):
-                return f"[Gemini Math]: {safe_send(chat, prompt)}"
-            print(parse_and_solve(user_input, fallback_fn=gemini_math_fallback))
-            continue
+    return safe_send(chat, user_input)
 
-        elif active_mode == "calc":
-            def gemini_finance_fallback(prompt):
-                return f"[Gemini Finance]: {safe_send(chat, prompt)}"
-            print("[CalcBot]:", parse_and_calculate(user_input, fallback_fn=gemini_finance_fallback))
-            continue
-
-        # === Default Gemini Response ===
-        start = time.time()
-        response_text = safe_send(chat, user_input)
-        end = time.time()
-
-        print("\nGemini:", response_text)
-        print(f"[Response Time: {round(end - start, 2)}s]\n")
-
-    except KeyboardInterrupt:
-        print("\n[Session Ended]")
-        break
-    except Exception as e:
-        print("[ERROR]", e)
-        continue
+# === Session ID Generator ===
+def generate_session_id():
+    return str(uuid4())

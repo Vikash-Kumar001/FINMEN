@@ -5,6 +5,7 @@ import { useAuth } from "./context/AuthContext";
 
 // Global UI
 import Navbar from "./components/Navbar";
+import Chatbot from "./components/Chatbot"; // ✅ Floating Chatbot
 
 // Auth Pages
 import Login from "./pages/Auth/Login";
@@ -19,7 +20,6 @@ import StudentDashboard from "./pages/Student/StudentDashboard";
 import MoodTracker from "./pages/Student/MoodTracker";
 import Journal from "./pages/Student/Journal";
 import Games from "./pages/Student/Games";
-import Chatbot from "./pages/Student/Chatbot";
 import RewardsPage from "./pages/Student/RewardsPage";
 import RedeemPage from "./pages/Student/RedeemPage";
 import WalletPage from "./pages/Student/WalletPage";
@@ -27,7 +27,7 @@ import Leaderboard from "./pages/Student/Leaderboard";
 import StudentGame from "./pages/Student/StudentGame";
 import Notifications from "./pages/Student/Notifications";
 import Profile from "./pages/Student/Profile";
-import Setting from "./pages/Student/Setting";
+import Setting from "./pages/Student/Settings";
 import BreathingExercise from "./pages/Student/BreathingExercise";
 
 // Educator Pages
@@ -62,7 +62,7 @@ const App = () => {
     "/register",
     "/forgot-password",
     "/reset-password",
-    "/verify-otp"
+    "/verify-otp",
   ].includes(location.pathname);
 
   const RootRedirect = () => {
@@ -83,6 +83,7 @@ const App = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
       {!isAuthPage && <Navbar />}
+      {!isAuthPage && user && <Chatbot />} {/* ✅ Floating Chatbot */}
 
       <Routes>
         <Route path="/" element={<RootRedirect />} />
@@ -100,7 +101,6 @@ const App = () => {
         <Route path="/student/mood-tracker" element={<ProtectedRoute roles={['student']}><MoodTracker /></ProtectedRoute>} />
         <Route path="/student/journal" element={<ProtectedRoute roles={['student']}><Journal /></ProtectedRoute>} />
         <Route path="/student/games" element={<ProtectedRoute roles={['student']}><Games /></ProtectedRoute>} />
-        <Route path="/student/chatbot" element={<ProtectedRoute roles={['student']}><Chatbot /></ProtectedRoute>} />
         <Route path="/student/rewards" element={<ProtectedRoute roles={['student']}><RewardsPage /></ProtectedRoute>} />
         <Route path="/student/redeem" element={<ProtectedRoute roles={['student']}><RedeemPage /></ProtectedRoute>} />
         <Route path="/student/wallet" element={<ProtectedRoute roles={['student']}><WalletPage /></ProtectedRoute>} />
@@ -108,7 +108,7 @@ const App = () => {
         <Route path="/student/game" element={<ProtectedRoute roles={['student']}><StudentGame /></ProtectedRoute>} />
         <Route path="/student/notifications" element={<ProtectedRoute roles={['student']}><Notifications /></ProtectedRoute>} />
         <Route path="/student/profile" element={<ProtectedRoute roles={['student']}><Profile /></ProtectedRoute>} />
-        <Route path="/student/setting" element={<ProtectedRoute roles={['student']}><Setting /></ProtectedRoute>} />
+        <Route path="/student/settings" element={<ProtectedRoute roles={['student']}><Setting /></ProtectedRoute>} />
         <Route path="/student/breathing" element={<ProtectedRoute roles={['student']}><BreathingExercise /></ProtectedRoute>} />
 
         {/* Educator Routes */}

@@ -8,4 +8,4 @@ const GoogleLogin = () => {
     );
 };
 
-export default GoogleLogin;r̥
+export default GoogleLogin;

@@ -2,12 +2,13 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { Download, Eye, MessageCircle } from "lucide-react";
 import { CSVLink } from "react-csv";
-import StudentProgressModal from "../Student/StudentProgressModal"
+import StudentProgressModal from "../Student/StudentProgressModal";
 
 export default function StudentManagement() {
     const [students, setStudents] = useState([]);
     const [search, setSearch] = useState("");
     const [filtered, setFiltered] = useState([]);
+    const [selectedStudentId, setSelectedStudentId] = useState(null);
 
     useEffect(() => {
         const fetchStudents = async () => {
@@ -29,13 +30,13 @@ export default function StudentManagement() {
         );
     }, [search, students]);
 
-    const handleViewProgress = (id) => setSelectedStudentId(id); {
-        // You could redirect to /educator/student/:id or open a modal
-        alert("Redirect to view progress for ID: " + studentId);
+    const handleViewProgress = (id) => {
+        setSelectedStudentId(id);
+        // Optional: open modal or navigate to detail page
+        alert("Redirect to view progress for ID: " + id);
     };
 
     const handleFeedback = (studentId) => {
-        // Open feedback modal or custom component
         alert("Open feedback for student ID: " + studentId);
     };
 
@@ -45,7 +46,7 @@ export default function StudentManagement() {
         { label: "XP", key: "xp" },
         { label: "HealCoins", key: "healCoins" },
     ];
-    const [selectedStudentId, setSelectedStudentId] = useState(null);
+
     return (
         <div className="p-6">
             <div className="flex justify-between items-center mb-6">

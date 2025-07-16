@@ -4,6 +4,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import http from "http";
+import jwt from "jsonwebtoken";
 import { Server as SocketIOServer } from "socket.io";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
@@ -11,11 +12,11 @@ import { fileURLToPath } from "url";
 // Load env variables
 dotenv.config();
 
-// File path helpers
+// Helpers
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Import routes
+// Routes
 import authRoutes from "./routes/authRoutes.js";
 import moodRoutes from "./routes/moodRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
@@ -29,19 +30,22 @@ import transactionRoutes from "./routes/transactionRoutes.js";
 import adminRedemptionRoutes from "./routes/adminRedemptionRoutes.js";
 import journalRoutes from "./routes/journalRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
-import statsRoutes from "./routes/statsRoutes.js"; // ✅ New
+import statsRoutes from "./routes/statsRoutes.js";
 
-// Import middleware
+// Middleware
 import { errorHandler } from "./middlewares/errorMiddleware.js";
 
-// Import cron job
+// Cron
 import { scheduleWeeklyReports } from "./cronJobs/reportScheduler.js";
 
-// Initialize app and server
+// Models
+import User from "./models/User.js";
+
+// Express & server setup
 const app = express();
 const server = http.createServer(app);
 
-// Setup Socket.IO
+// Socket.IO setup
 const io = new SocketIOServer(server, {
   cors: {
     origin: process.env.CLIENT_URL,
@@ -50,23 +54,15 @@ const io = new SocketIOServer(server, {
 });
 app.set("io", io);
 
-// Middleware setup
+// Middlewares
 app.use(express.json());
 app.use(cookieParser());
+app.use(cors({
+  origin: ["http://localhost:5173", "http://localhost:3000"],
+  credentials: true,
+}));
 
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000"
-];
-
-app.use(
-  cors({
-    origin: allowedOrigins,
-    credentials: true,
-  })
-);
-
-// MongoDB connection with logging
+// MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
@@ -75,23 +71,48 @@ mongoose
     process.exit(1);
   });
 
-// Socket.IO logic
-io.on("connection", (socket) => {
+// Socket.IO auth and events
+io.on("connection", async (socket) => {
   console.log("🟢 New socket connected:", socket.id);
 
-  socket.on("join", (userId) => {
-    if (userId) {
-      socket.join(userId);
-      console.log(`👤 User ${userId} joined their room`);
+  try {
+    const token = socket.handshake.auth?.token;
+
+    if (!token) throw new Error("No token provided in socket auth");
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await User.findById(decoded.id);
+
+    if (!user) throw new Error("User not found");
+
+    // Check educator approval
+    if (user.role === "educator" && user.approvalStatus !== "approved") {
+      console.log("🔒 Access denied: User not approved or not an educator");
+      socket.disconnect();
+      return;
     }
-  });
+
+    // Join personal and role-specific rooms
+    socket.join(user._id.toString());
+    if (user.role === "admin") socket.join("admins");
+    if (user.role === "educator") socket.join("educators");
+
+    console.log(`👤 User ${user._id} (${user.role}) joined their room`);
+
+    // Add socket event listeners if needed here...
+    // Example: socket.on("custom:event", handler);
+
+  } catch (err) {
+    console.error("❌ Socket auth error:", err.message);
+    socket.disconnect();
+  }
 
   socket.on("disconnect", () => {
     console.log("🔴 Socket disconnected:", socket.id);
   });
 });
 
-// API routes
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/mood", moodRoutes);
 app.use("/api/game", gameRoutes);
@@ -105,7 +126,7 @@ app.use("/api/transactions", transactionRoutes);
 app.use("/api/admin/redemptions", adminRedemptionRoutes);
 app.use("/api/journal", journalRoutes);
 app.use("/api/wallet", walletRoutes);
-app.use("/api/stats", statsRoutes); // ✅ Add stats route here
+app.use("/api/stats", statsRoutes);
 
 // Health check
 app.get("/", (_, res) => {
@@ -116,15 +137,15 @@ app.get("/", (_, res) => {
 if (process.env.NODE_ENV === "production") {
   const clientPath = path.resolve(__dirname, "../frontend/dist");
   app.use(express.static(clientPath));
-  app.get("*", (req, res) => {
+  app.get("*", (_, res) => {
     res.sendFile(path.join(clientPath, "index.html"));
   });
 }
 
-// Global error handler
+// Error handler
 app.use(errorHandler);
 
-// Start server
+// Server start
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

@@ -1,8 +1,8 @@
 import nodemailer from "nodemailer";
 
-export const sendMail = async ({ to, subject, text }) => {
+export const sendEmail = async ({ to, subject, text, html }) => {
   try {
-    const transporter = nodemailer.createTransport({
+    const transporter = nodemailer.createTransporter({
       service: "gmail",
       auth: {
         user: process.env.MAIL_USER,
@@ -15,6 +15,7 @@ export const sendMail = async ({ to, subject, text }) => {
       to,
       subject,
       text,
+      html, // Added HTML support for better email formatting
     };
 
     await transporter.sendMail(mailOptions);
@@ -24,3 +25,6 @@ export const sendMail = async ({ to, subject, text }) => {
     throw new Error("Failed to send email");
   }
 };
+
+// Keep the old function name for backward compatibility
+export const sendMail = sendEmail;

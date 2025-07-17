@@ -2,10 +2,16 @@ import api from "../utils/api";
 
 // 📬 Fetch all notifications for the logged-in user
 export const fetchMyNotifications = async () => {
-  const res = await api.get("/notifications", {
-    withCredentials: true, // Ensures cookies like finmen_token are sent
-  });
-  return res.data;
+  try {
+    const res = await api.get("/notifications", {
+      withCredentials: true, // Ensures cookies like finmen_token are sent
+    });
+    return res.data;
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    // Return empty array instead of throwing error
+    return [];
+  }
 };
 
 // ✅ Mark all notifications as read

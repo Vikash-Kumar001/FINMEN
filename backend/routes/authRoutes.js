@@ -11,6 +11,7 @@ import {
   checkVerificationStatus,
 } from "../controllers/authController.js";
 import { requireAuth, requireAdmin } from "../middlewares/requireAuth.js";
+import { trackEducatorLogin } from "../utils/educatorActivityTracker.js";
 import { generateToken } from "../utils/generateToken.js";
 
 const router = express.Router();
@@ -115,7 +116,7 @@ router.post("/verify-otp", verifyOTP);
 router.post("/check-verification", checkVerificationStatus);
 
 // ✅ Login with role-based checks
-router.post("/login", async (req, res) => {
+router.post("/login", trackEducatorLogin, async (req, res) => {
   try {
     const { email, password } = req.body;
 

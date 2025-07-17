@@ -63,8 +63,24 @@ const Navbar = () => {
     ];
 
     const profileMenuItems = [
-        { icon: <User className="w-4 h-4" />, label: "Profile", onClick: () => navigate("/student/profile") },
-        { icon: <Settings className="w-4 h-4" />, label: "Settings", onClick: () => navigate("/student/settings") },
+        { 
+            icon: <User className="w-4 h-4" />, 
+            label: "Profile", 
+            onClick: () => {
+                if (user?.role === "admin") navigate("/admin/profile");
+                else if (user?.role === "educator") navigate("/educator/profile");
+                else navigate("/student/profile");
+            } 
+        },
+        { 
+            icon: <Settings className="w-4 h-4" />, 
+            label: "Settings", 
+            onClick: () => {
+                if (user?.role === "admin") navigate("/admin/settings");
+                else if (user?.role === "educator") navigate("/educator/settings");
+                else navigate("/student/settings");
+            } 
+        },
         { icon: <LogOut className="w-4 h-4" />, label: "Sign Out", onClick: logoutUser, danger: true }
     ];
 
@@ -196,7 +212,11 @@ const Navbar = () => {
                                                 className="relative p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
                                                 whileHover={{ scale: 1.1 }}
                                                 whileTap={{ scale: 0.9 }}
-                                                onClick={() => navigate("/student/notifications")}
+                                                onClick={() => {
+                                                    if (user?.role === "admin") navigate("/admin/notifications");
+                                                    else if (user?.role === "educator") navigate("/educator/notifications");
+                                                    else navigate("/student/notifications");
+                                                }}
                                             >
                                                 <Bell className="w-5 h-5" />
                                                 {unreadCount > 0 && (

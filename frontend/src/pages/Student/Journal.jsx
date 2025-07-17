@@ -7,6 +7,8 @@ import { format } from "date-fns";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import ReactMarkdown from "react-markdown";
+import { logActivity } from "../../services/activityService";
+import { toast } from "react-toastify";
 import {
     BookOpen,
     Search,
@@ -29,20 +31,8 @@ import {
     TrendingUp,
 } from "lucide-react";
 
-const journalPrompts = [
-    "What are three things you're grateful for today?",
-    "Describe a moment that made you smile recently.",
-    "What's one thing you learned about yourself this week?",
-    "How did you overcome a challenge today?",
-    "What's your biggest goal right now and why?",
-    "Write about someone who inspires you.",
-    "What would you tell your younger self?",
-    "Describe your perfect day.",
-    "What's something you're looking forward to?",
-    "How do you want to grow in the next month?",
-];
-
 export default function Journal() {
+    const [journalPrompts, setJournalPrompts] = useState([]);
     const [entries, setEntries] = useState([]);
     const [search, setSearch] = useState("");
     const [filterDate, setFilterDate] = useState(null);
@@ -60,6 +50,29 @@ export default function Journal() {
         totalWords: 0,
         favoriteTag: "",
     });
+    
+    useEffect(() => {
+        // Fetch journal prompts from API
+        const fetchJournalPrompts = async () => {
+            try {
+                const response = await fetch('/api/journal/prompts');
+                const data = await response.json();
+                setJournalPrompts(data);
+            } catch (error) {
+                console.error('Error fetching journal prompts:', error);
+                // Set default prompts if fetch fails
+                setJournalPrompts([
+                    "What are three things you're grateful for today?",
+                    "Describe a moment that made you smile recently.",
+                    "What's one thing you learned about yourself this week?",
+                    "How did you overcome a challenge today?",
+                    "What's your biggest goal right now and why?"
+                ]);
+            }
+        };
+        
+        fetchJournalPrompts();
+    }, []);
 
     const socket = useSocket();
     const { user } = useAuth();
@@ -75,6 +88,12 @@ export default function Journal() {
     // Socket setup
     useEffect(() => {
         if (socket && user) {
+            // Log page view when component mounts
+            logActivity({
+                activityType: "page_view",
+                description: "Viewed journal page"
+            });
+            
             socket.emit("student:journal:subscribe", { studentId: user._id });
 
             socket.on("student:journal:data", (data) => {
@@ -179,11 +198,44 @@ export default function Journal() {
                 entryId: editingEntry._id,
                 payload,
             });
+            
+            // Log journal entry update activity
+            logActivity({
+                activityType: "learning_activity",
+                description: `Updated journal entry: ${payload.title}`,
+                metadata: {
+                    action: "update_journal_entry",
+                    entryId: editingEntry._id,
+                    title: payload.title,
+                    wordCount: payload.content.split(" ").length,
+                    characterCount: payload.content.length,
+                    tagCount: payload.tags.length,
+                    tags: payload.tags
+                }
+            });
+            
+            toast.success("Journal entry updated successfully!");
         } else {
             socket.emit("student:journal:create", {
                 studentId: user._id,
                 payload,
             });
+            
+            // Log journal entry creation activity
+            logActivity({
+                activityType: "learning_activity",
+                description: `Created new journal entry: ${payload.title}`,
+                metadata: {
+                    action: "create_journal_entry",
+                    title: payload.title,
+                    wordCount: payload.content.split(" ").length,
+                    characterCount: payload.content.length,
+                    tagCount: payload.tags.length,
+                    tags: payload.tags
+                }
+            });
+            
+            toast.success("Journal entry created successfully!");
         }
 
         // Reset form
@@ -205,16 +257,45 @@ export default function Journal() {
 
     const handleDelete = (id) => {
         if (window.confirm("Are you sure you want to delete this entry?")) {
+            // Find the entry to be deleted for logging purposes
+            const entryToDelete = entries.find(entry => entry._id === id);
+            
             socket.emit("student:journal:delete", {
                 studentId: user._id,
                 entryId: id,
             });
+            
+            // Log journal entry deletion activity
+            if (entryToDelete) {
+                logActivity({
+                    activityType: "learning_activity",
+                    description: `Deleted journal entry: ${entryToDelete.title}`,
+                    metadata: {
+                        action: "delete_journal_entry",
+                        entryId: id,
+                        title: entryToDelete.title,
+                        createdAt: entryToDelete.createdAt
+                    }
+                });
+            }
+            
+            toast.success("Journal entry deleted successfully!");
         }
     };
 
     const handlePromptSelect = (prompt) => {
         setDraft((prev) => prev + (prev ? "\n\n" : "") + prompt + "\n\n");
         setShowEditor(true);
+        
+        // Log prompt selection activity
+        logActivity({
+            activityType: "learning_activity",
+            description: "Used journal prompt",
+            metadata: {
+                action: "use_journal_prompt",
+                prompt: prompt
+            }
+        });
     };
 
     const filteredEntries = entries.filter((entry) => {
@@ -245,8 +326,25 @@ export default function Journal() {
             .map((row) => row.map((value) => `"${value}"`).join(","))
             .join("\n");
 
+        const fileName = "journal_entries.csv";
         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        saveAs(blob, "journal_entries.csv");
+        saveAs(blob, fileName);
+        
+        // Log download activity
+        logActivity({
+            activityType: "learning_activity",
+            description: "Downloaded journal entries",
+            metadata: {
+                action: "download_journal_entries",
+                fileName: fileName,
+                entryCount: filteredEntries.length,
+                searchFilter: search || null,
+                dateFilter: filterDate ? format(filterDate, "yyyy-MM-dd") : null,
+                tagFilter: selectedTags.length > 0 ? selectedTags : null
+            }
+        });
+        
+        toast.success("Journal entries downloaded successfully!");
     };
 
     const uniqueTags = [...new Set(entries.flatMap((entry) => entry.tags || []))];

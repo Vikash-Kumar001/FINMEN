@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import axios from "axios";
+import { Link } from "react-router-dom";
 import {
     Download,
     Eye,
@@ -30,6 +31,7 @@ import {
     Shield,
     Database,
     Wifi,
+    LineChart,
 } from "lucide-react";
 import { CSVLink } from "react-csv";
 import StudentProgressModal from "../Student/StudentProgressModal";
@@ -621,7 +623,7 @@ export default function StudentManagement() {
                                             {level.level}
                                         </div>
 
-                                        <div className="flex gap-2">
+                                        <div className="flex gap-2 flex-wrap">
                                             <motion.button
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
@@ -640,6 +642,19 @@ export default function StudentManagement() {
                                                 <MessageCircle size={16} className="mr-1" />
                                                 Feedback
                                             </motion.button>
+                                            <Link 
+                                                to={`/educator/student/${student._id}/activity`}
+                                                className="mt-2 w-full"
+                                            >
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="w-full flex items-center justify-center bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-2 rounded-xl font-semibold text-sm shadow-lg hover:shadow-xl transition-all duration-300"
+                                                >
+                                                    <LineChart size={16} className="mr-1" />
+                                                    Activity Tracker
+                                                </motion.button>
+                                            </Link>
                                         </div>
                                     </div>
                                 ) : (
@@ -709,6 +724,16 @@ export default function StudentManagement() {
                                                 <MessageCircle size={16} className="mr-1" />
                                                 Feedback
                                             </motion.button>
+                                            <Link to={`/educator/student/${student._id}/activity`}>
+                                                <motion.button
+                                                    whileHover={{ scale: 1.05 }}
+                                                    whileTap={{ scale: 0.95 }}
+                                                    className="flex items-center justify-center bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-3 py-1 rounded-lg font-semibold text-sm shadow-md hover:shadow-lg transition-all duration-300"
+                                                >
+                                                    <LineChart size={16} className="mr-1" />
+                                                    Activity
+                                                </motion.button>
+                                            </Link>
                                         </div>
                                     </div>
                                 )}

@@ -34,145 +34,17 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { useWallet } from "../../context/WalletContext";
 import { fetchStudentStats } from "../../services/userService";
-
-const featureCards = [
-    {
-        title: "Mood Tracker",
-        icon: <Smile className="w-8 h-8" />,
-        path: "/student/mood-tracker",
-        gradient: "from-pink-400 via-rose-400 to-red-400",
-        description: "Track emotions daily",
-        xpReward: 25,
-        category: "wellness",
-    },
-    {
-        title: "Mini Games",
-        icon: <Gamepad2 className="w-8 h-8" />,
-        path: "/student/games",
-        gradient: "from-purple-400 via-violet-400 to-indigo-400",
-        description: "Play & earn rewards",
-        xpReward: 50,
-        category: "entertainment",
-    },
-    {
-        title: "Journal",
-        icon: <Book className="w-8 h-8" />,
-        path: "/student/journal",
-        gradient: "from-amber-400 via-orange-400 to-red-400",
-        description: "Write your thoughts",
-        xpReward: 30,
-        category: "creativity",
-    },
-    {
-        title: "Wallet",
-        icon: <Wallet className="w-8 h-8" />,
-        path: "/student/wallet",
-        gradient: "from-green-400 via-emerald-400 to-teal-400",
-        description: "Manage HealCoins",
-        xpReward: 10,
-        category: "finance",
-    },
-    {
-        title: "Rewards",
-        icon: <Gift className="w-8 h-8" />,
-        path: "/student/rewards",
-        gradient: "from-red-400 via-pink-400 to-rose-400",
-        description: "Claim achievements",
-        xpReward: 20,
-        category: "rewards",
-    },
-    {
-        title: "Marketplace",
-        icon: <Diamond className="w-8 h-8" />,
-        path: "/student/redeem",
-        gradient: "from-blue-400 via-cyan-400 to-teal-400",
-        description: "Redeem cool items",
-        xpReward: 15,
-        category: "shopping",
-    },
-    {
-        title: "Leaderboard",
-        icon: <Trophy className="w-8 h-8" />,
-        path: "/student/leaderboard",
-        gradient: "from-yellow-400 via-orange-400 to-red-400",
-        description: "Global rankings",
-        xpReward: 35,
-        category: "competition",
-    },
-    {
-        title: "Notifications",
-        icon: <Bell className="w-8 h-8" />,
-        path: "/student/notifications",
-        gradient: "from-teal-400 via-cyan-400 to-blue-400",
-        description: "Stay connected",
-        xpReward: 10,
-        category: "social",
-    },
-    {
-        title: "Profile",
-        icon: <User className="w-8 h-8" />,
-        path: "/student/profile",
-        gradient: "from-violet-400 via-purple-400 to-indigo-400",
-        description: "Customize avatar",
-        xpReward: 20,
-        category: "personal",
-    },
-    {
-        title: "Settings",
-        icon: <Settings className="w-8 h-8" />,
-        path: "/student/settings",
-        gradient: "from-gray-400 via-slate-400 to-zinc-400",
-        description: "Game preferences",
-        xpReward: 5,
-        category: "system",
-    },
-    {
-        title: "Breathing",
-        icon: <Heart className="w-8 h-8" />,
-        path: "/student/breathing",
-        gradient: "from-sky-400 via-blue-400 to-indigo-400",
-        description: "Mindful moments",
-        xpReward: 40,
-        category: "wellness",
-    },
-    {
-        title: "Challenges",
-        icon: <Target className="w-8 h-8" />,
-        path: "/student/challenges",
-        gradient: "from-orange-400 via-red-400 to-pink-400",
-        description: "Weekly quests",
-        xpReward: 100,
-        category: "challenges",
-    },
-];
-
-const achievements = [
-    {
-        icon: <Flame className="w-6 h-6" />,
-        title: "Hot Streak",
-        description: "12 days in a row!",
-    },
-    {
-        icon: <Crown className="w-6 h-6" />,
-        title: "Top Performer",
-        description: "Rank #23 globally",
-    },
-    {
-        icon: <Shield className="w-6 h-6" />,
-        title: "Wellness Guardian",
-        description: "100 mood checks",
-    },
-    {
-        icon: <Rocket className="w-6 h-6" />,
-        title: "Level Up!",
-        description: "Reached Level 7",
-    },
-];
+import { fetchStudentFeatures, fetchStudentAchievements } from "../../services/studentService";
+import { logActivity } from "../../services/activityService";
+import { toast } from "react-hot-toast";
+import { mockFeatures } from "../../data/mockFeatures";
 
 export default function StudentDashboard() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { wallet } = useWallet();
+    const [featureCards, setFeatureCards] = useState([]);
+    const [achievements, setAchievements] = useState([]);
     const [stats, setStats] = useState({
         xp: 0,
         level: 1,
@@ -184,11 +56,69 @@ export default function StudentDashboard() {
     });
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [loading, setLoading] = useState(true);
+    
+    // Track dashboard page view
+    useEffect(() => {
+        // Log dashboard view activity
+        logActivity({
+            activityType: "page_view",
+            description: "Viewed student dashboard",
+            metadata: {
+                page: "/student/dashboard",
+                timestamp: new Date().toISOString()
+            },
+            pageUrl: window.location.pathname
+        });
+        
+        // Welcome toast for returning users
+        if (user?.name) {
+            toast.success(`Welcome back, ${user.name}! 🎮`, {
+                duration: 3000,
+                position: "top-center",
+                icon: "👋"
+            });
+        }
+    }, [user]);
+    
+    useEffect(() => {
+        // Directly use mockFeatures data to ensure all financial literacy pages are linked
+        setFeatureCards(mockFeatures);
+        setLoading(false);
+    }, []);
+    
+    useEffect(() => {
+        // Fetch achievements using service
+        const getAchievements = async () => {
+            try {
+                const data = await fetchStudentAchievements();
+                setAchievements(data);
+            } catch (error) {
+                console.error('Error fetching achievements:', error);
+                setAchievements([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        getAchievements();
+    }, []);
 
     // Load student stats with error handling and real data
     const loadStats = React.useCallback(async () => {
         try {
             setLoading(true);
+            
+            // Log stats loading activity
+            logActivity({
+                activityType: "data_fetch",
+                description: "Loaded student dashboard stats",
+                metadata: {
+                    action: "load_stats",
+                    timestamp: new Date().toISOString()
+                },
+                pageUrl: window.location.pathname
+            });
+            
             const res = await fetchStudentStats();
             if (res && (res.xp !== undefined || res.data)) {
                 // Support both direct and nested data
@@ -204,18 +134,51 @@ export default function StudentDashboard() {
                 });
             }
         } catch (err) {
-            // Optionally handle error UI here
+            // Log error activity
+            logActivity({
+                activityType: "error",
+                description: "Failed to load student stats",
+                metadata: {
+                    errorMessage: err.message || "Unknown error",
+                    timestamp: new Date().toISOString()
+                },
+                pageUrl: window.location.pathname
+            });
+            
+            // Show error toast
+            toast.error("Could not load your stats. Please try again later.", {
+                duration: 3000,
+                position: "top-center",
+                icon: "❌"
+            });
+            
             console.error("❌ Failed to load student stats", err);
         } finally {
             setLoading(false);
         }
     }, []);
 
-    const handleNavigate = (path) => {
+    const handleNavigate = (path, featureTitle) => {
         if (path && typeof path === "string") {
+            console.log("Navigating to:", path);
+            
+            // Log feature usage activity
+            logActivity({
+                activityType: "navigation",
+                description: `Navigated to: ${featureTitle || path}`,
+                metadata: {
+                    featurePath: path,
+                    featureTitle: featureTitle,
+                    fromPage: "dashboard",
+                    timestamp: new Date().toISOString()
+                },
+                pageUrl: window.location.pathname
+            });
+            
             navigate(path);
         } else {
-            navigate("/student");
+            console.log("Invalid path, navigating to default");
+            navigate("/student/dashboard");
         }
     };
 
@@ -229,6 +192,7 @@ export default function StudentDashboard() {
         "entertainment",
         "creativity",
         "finance",
+        "education",
         "rewards",
         "shopping",
         "competition",
@@ -241,6 +205,10 @@ export default function StudentDashboard() {
         selectedCategory === "all"
             ? featureCards
             : featureCards.filter((card) => card.category === selectedCategory);
+    
+    console.log("Selected Category:", selectedCategory);
+    console.log("Filtered Cards:", filteredCards);
+    console.log("All Feature Cards:", featureCards);
 
     const progressPercentage = (stats.xp / stats.nextLevelXp) * 100;
 
@@ -393,6 +361,44 @@ export default function StudentDashboard() {
                             </motion.div>
                         </motion.div>
                     )}
+                    
+                    {/* Quick Access Links */}
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1.0 }}
+                        className="mt-4 flex flex-wrap gap-3 justify-center"
+                    >
+                        <motion.button
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleNavigate('/student/quick-start', 'Quick Start')}
+                            className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-5 py-2 rounded-full font-medium shadow-md inline-flex items-center"
+                        >
+                            <Rocket className="w-4 h-4 mr-2" />
+                            Quick Start
+                        </motion.button>
+                        
+                        <motion.button
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleNavigate('/student/this-week', 'This Week')}
+                            className="bg-gradient-to-r from-purple-500 to-violet-600 text-white px-5 py-2 rounded-full font-medium shadow-md inline-flex items-center"
+                        >
+                            <Calendar className="w-4 h-4 mr-2" />
+                            This Week
+                        </motion.button>
+                        
+                        <motion.button
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleNavigate('/student/daily-goal', 'Daily Goal')}
+                            className="bg-gradient-to-r from-orange-500 to-red-600 text-white px-5 py-2 rounded-full font-medium shadow-md inline-flex items-center"
+                        >
+                            <Flame className="w-4 h-4 mr-2" />
+                            Daily Goal
+                        </motion.button>
+                    </motion.div>
                 </motion.div>
 
                 {/* Player Stats Bar */}
@@ -523,6 +529,27 @@ export default function StudentDashboard() {
                                         whileHover={{ scale: 1.1, y: -2 }}
                                         whileTap={{ scale: 0.95 }}
                                         className="bg-gradient-to-r from-yellow-400 to-orange-400 p-3 rounded-xl shadow-lg cursor-pointer group relative border border-yellow-300"
+                                        onClick={() => {
+                                            // Log achievement badge interaction
+                            logActivity({
+                                activityType: "ui_interaction",
+                                description: `Viewed achievement: ${achievement.title}`,
+                                metadata: {
+                                    achievementTitle: achievement.title,
+                                    achievementDescription: achievement.description,
+                                    section: "achievement_badges",
+                                    timestamp: new Date().toISOString()
+                                },
+                                pageUrl: window.location.pathname
+                            });
+                            
+                            // Show toast for achievement view
+                            toast.success(`${achievement.title} - ${achievement.description}`, {
+                                duration: 3000,
+                                position: "bottom-center",
+                                icon: "🏆"
+                            });
+                                        }}
                                     >
                                         <div className="text-white">{achievement.icon}</div>
                                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap z-50 shadow-xl">
@@ -582,20 +609,43 @@ export default function StudentDashboard() {
                             }}
                             whileTap={{ scale: 0.95 }}
                             className="group cursor-pointer relative"
-                            onClick={() => handleNavigate(card.path)}
+                            onClick={() => {
+                                // Log feature card click with detailed metadata
+                                logActivity({
+                                    activityType: "ui_interaction",
+                                    description: `Selected feature: ${card.title}`,
+                                    metadata: {
+                                        featureTitle: card.title,
+                                        featureCategory: card.category,
+                                        featurePath: card.path,
+                                        xpReward: card.xpReward,
+                                        section: "feature_cards",
+                                        timestamp: new Date().toISOString()
+                                    },
+                                    pageUrl: window.location.pathname
+                                });
+                                
+                                // Show toast for feature selection
+                                toast.success(`Loading ${card.title}...`, {
+                                    duration: 2000,
+                                    position: "bottom-center",
+                                    icon: "🚀"
+                                });
+                                handleNavigate(card.path, card.title);
+                            }}
                         >
                             <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40 hover:shadow-2xl transition-all duration-300 relative overflow-hidden h-full">
                                 <div
-                                    className={`absolute inset-0 bg-gradient-to-r ${card.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
+                                    className={`absolute inset-0 bg-gradient-to-r from-${card.color.replace('bg-', '')} to-${card.color.replace('bg-', '')}/70 opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
                                 />
 
                                 <div className="relative z-10 flex flex-col items-center text-center h-full">
                                     <motion.div
-                                        className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${card.gradient} flex items-center justify-center text-white mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300`}
+                                        className={`w-16 h-16 rounded-2xl ${card.color} flex items-center justify-center text-white mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300`}
                                         whileHover={{ rotate: 360 }}
                                         transition={{ duration: 0.6 }}
                                     >
-                                        {card.icon}
+                                        <span className="text-2xl">{card.icon}</span>
                                     </motion.div>
 
                                     <h3 className="text-lg font-bold text-gray-800 mb-2">
@@ -624,7 +674,7 @@ export default function StudentDashboard() {
                     initial={{ opacity: 0, y: 30 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.8 }}
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8"
                 >
                     <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 rounded-3xl text-white shadow-xl">
                         <div className="flex items-center gap-3 mb-3">
@@ -638,12 +688,57 @@ export default function StudentDashboard() {
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/30 transition-all"
+                            onClick={() => {
+                                // Log quick action button click
+                            logActivity({
+                                activityType: "ui_interaction",
+                                description: "Clicked Quick Start button",
+                                metadata: {
+                                    action: "quick_start_button",
+                                    section: "quick_actions",
+                                    timestamp: new Date().toISOString()
+                                },
+                                pageUrl: window.location.pathname
+                            });
+                            
+                            // Show toast for quick start
+                            toast.success("Starting your journey!", {
+                                duration: 2000,
+                                position: "bottom-center",
+                                icon: "🚀"
+                            });
+                                handleNavigate('/student/quick-start', 'Quick Start');
+                            }}
                         >
                             Start Now
                         </motion.button>
                     </div>
 
-                    <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 rounded-3xl text-white shadow-xl">
+                    <div 
+                        className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 rounded-3xl text-white shadow-xl cursor-pointer"
+                        onClick={() => {
+                            // Log this week card click
+                            logActivity({
+                                activityType: "ui_interaction",
+                                description: "Clicked This Week card",
+                                metadata: {
+                                    action: "this_week_card",
+                                    section: "quick_actions",
+                                    weeklyXP: stats.weeklyXP,
+                                    timestamp: new Date().toISOString()
+                                },
+                                pageUrl: window.location.pathname
+                            });
+                            
+                            // Show toast for this week view
+                            toast.success(`You earned +${stats.weeklyXP} XP this week!`, {
+                                duration: 2000,
+                                position: "bottom-center",
+                                icon: "📊"
+                            });
+                            handleNavigate('/student/this-week', 'This Week');
+                        }}
+                    >
                         <div className="flex items-center gap-3 mb-3">
                             <BarChart3 className="w-8 h-8" />
                             <h3 className="text-xl font-bold">This Week</h3>
@@ -654,7 +749,30 @@ export default function StudentDashboard() {
                         <div className="text-2xl font-bold">🔥 Great job!</div>
                     </div>
 
-                    <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6 rounded-3xl text-white shadow-xl">
+                    <div 
+                        className="bg-gradient-to-r from-orange-500 to-red-500 p-6 rounded-3xl text-white shadow-xl cursor-pointer"
+                        onClick={() => {
+                            // Log daily goal card click
+                            logActivity({
+                                activityType: "ui_interaction",
+                                description: "Clicked Daily Goal card",
+                                metadata: {
+                                    action: "daily_goal_card",
+                                    section: "quick_actions",
+                                    timestamp: new Date().toISOString()
+                                },
+                                pageUrl: window.location.pathname
+                            });
+                            
+                            // Show toast for daily goal
+                            toast.success("Let's achieve your daily goal!", {
+                                duration: 2000,
+                                position: "bottom-center",
+                                icon: "🎯"
+                            });
+                            handleNavigate('/student/daily-goal', 'Daily Goal');
+                        }}
+                    >
                         <div className="flex items-center gap-3 mb-3">
                             <Target className="w-8 h-8" />
                             <h3 className="text-xl font-bold">Daily Goal</h3>
@@ -668,16 +786,71 @@ export default function StudentDashboard() {
                         <div className="text-sm">2/3 Done</div>
                     </div>
 
-                    <div className="bg-gradient-to-r from-pink-500 to-rose-500 p-6 rounded-3xl text-white shadow-xl">
+                    <div 
+                        className="bg-gradient-to-r from-blue-500 to-cyan-500 p-6 rounded-3xl text-white shadow-xl cursor-pointer"
+                        onClick={() => {
+                            // Log challenges card click
+                            logActivity({
+                                activityType: "ui_interaction",
+                                description: "Clicked Challenges card",
+                                metadata: {
+                                    action: "challenges_card",
+                                    section: "quick_actions",
+                                    timestamp: new Date().toISOString()
+                                },
+                                pageUrl: window.location.pathname
+                            });
+                            
+                            // Show toast for challenges
+                            toast.success("Ready for a challenge?", {
+                                duration: 2000,
+                                position: "bottom-center",
+                                icon: "🏆"
+                            });
+                            handleNavigate('/student/challenge', 'Challenges');
+                        }}
+                    >
+                        <div className="flex items-center gap-3 mb-3">
+                            <Trophy className="w-8 h-8" />
+                            <h3 className="text-xl font-bold">Challenges</h3>
+                        </div>
+                        <p className="text-blue-100 text-sm mb-4">
+                            Complete daily challenges
+                        </p>
+                        <div className="text-2xl font-bold">🏆 Win rewards!</div>
+                    </div>
+
+                    <div 
+                        className="bg-gradient-to-r from-pink-500 to-rose-500 p-6 rounded-3xl text-white shadow-xl cursor-pointer"
+                        onClick={() => {
+                            // Log mood tracker card click
+                            logActivity({
+                                activityType: "ui_interaction",
+                                description: "Clicked Today's Mood card",
+                                metadata: {
+                                    action: "mood_tracker_card",
+                                    section: "quick_actions",
+                                    currentMood: stats.todayMood,
+                                    timestamp: new Date().toISOString()
+                                },
+                                pageUrl: window.location.pathname
+                            });
+                            
+                            // Show toast for mood tracking
+                            toast.success(`Current mood: ${stats.mood}. Let's update it!`, {
+                                duration: 2000,
+                                position: "bottom-center",
+                                icon: "😊"
+                            });
+                            handleNavigate("/student/mood-tracker", "Today's Mood");
+                        }}
+                    >
                         <div className="flex items-center gap-3 mb-3">
                             <Clock className="w-8 h-8" />
                             <h3 className="text-xl font-bold">Today's Mood</h3>
                         </div>
                         <p className="text-pink-100 text-sm mb-4">How are you feeling?</p>
-                        <div
-                            className="text-4xl cursor-pointer hover:scale-110 transition-transform"
-                            onClick={() => handleNavigate("/student/mood-tracker")}
-                        >
+                        <div className="text-4xl hover:scale-110 transition-transform">
                             {stats.todayMood}
                         </div>
                     </div>

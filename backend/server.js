@@ -9,6 +9,9 @@ import { Server as SocketIOServer } from "socket.io";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 
+// Socket handlers
+import { setupAdminEducatorSocket } from "./socketHandlers/adminEducatorSocket.js";
+
 // Load env variables
 dotenv.config();
 
@@ -22,6 +25,7 @@ import moodRoutes from "./routes/moodRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
 import rewardsRoutes from "./routes/rewardsRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import adminEducatorRoutes from "./routes/adminEducatorRoutes.js";
 import educatorRoutes from "./routes/educatorRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
@@ -31,6 +35,9 @@ import adminRedemptionRoutes from "./routes/adminRedemptionRoutes.js";
 import journalRoutes from "./routes/journalRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
+import studentRoutes from "./routes/studentRoutes.js";
+import challengeRoutes from "./routes/challengeRoutes.js";
+import activityRoutes from "./routes/activityRoutes.js";
 
 // Middleware
 import { errorHandler } from "./middlewares/errorMiddleware.js";
@@ -94,13 +101,29 @@ io.on("connection", async (socket) => {
 
     // Join personal and role-specific rooms
     socket.join(user._id.toString());
-    if (user.role === "admin") socket.join("admins");
-    if (user.role === "educator") socket.join("educators");
+    if (user.role === "admin") {
+      socket.join("admins");
+      socket.join("admin-room"); // For activity tracking
+    }
+    if (user.role === "educator") {
+      socket.join("educators");
+      socket.join(`educator-${user._id}`); // For tracking assigned students' activities
+    }
 
     console.log(`👤 User ${user._id} (${user.role}) joined their room`);
 
     // Add socket event listeners if needed here...
     // Example: socket.on("custom:event", handler);
+    
+    // Setup admin-educator socket handlers
+    if (user.role === "admin") {
+      setupAdminEducatorSocket(io, socket, user);
+    }
+    
+    // Update lastActive timestamp for educators
+    if (user.role === "educator") {
+      await User.findByIdAndUpdate(user._id, { lastActive: new Date() });
+    }
 
   } catch (err) {
     console.error("❌ Socket auth error:", err.message);
@@ -118,6 +141,7 @@ app.use("/api/mood", moodRoutes);
 app.use("/api/game", gameRoutes);
 app.use("/api/rewards", rewardsRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/admin/educators", adminEducatorRoutes);
 app.use("/api/educators", educatorRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/notifications", notificationRoutes);
@@ -127,6 +151,9 @@ app.use("/api/admin/redemptions", adminRedemptionRoutes);
 app.use("/api/journal", journalRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/stats", statsRoutes);
+app.use("/api/student", studentRoutes);
+app.use("/api/challenges", challengeRoutes);
+app.use("/api/activities", activityRoutes);
 
 // Health check
 app.get("/", (_, res) => {

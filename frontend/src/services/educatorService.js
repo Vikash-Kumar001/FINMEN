@@ -39,7 +39,24 @@ export const fetchAllStudents = () =>
   axios.get("/api/admin/students", { withCredentials: true });
 
 export const fetchStudentProgress = async (studentId) => {
-  const res = await axios.get(`/api/educators/student-progress/${studentId}`, {
+  const res = await axios.get(`/api/educators/student/${studentId}/overview`, {
+    withCredentials: true,
+  });
+  return res.data;
+};
+
+// 📊 Get detailed student activity data
+export const fetchStudentActivity = async (studentId, period = 'week') => {
+  const res = await axios.get(`/api/educators/student/${studentId}/activity`, {
+    params: { period },
+    withCredentials: true,
+  });
+  return res.data;
+};
+
+// 📝 Get student feedback history
+export const fetchStudentFeedback = async (studentId) => {
+  const res = await axios.get(`/api/educators/feedback/${studentId}`, {
     withCredentials: true,
   });
   return res.data;

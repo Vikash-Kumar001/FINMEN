@@ -7,24 +7,33 @@ const NotificationContext = createContext();
 export const NotificationProvider = ({ children }) => {
     const socket = useSocket();
     const [notifications, setNotifications] = useState([]);
+    const [unreadCount, setUnreadCount] = useState(0);
 
     useEffect(() => {
         if (!socket) return;
 
         socket.on("newNotification", (notification) => {
             setNotifications((prev) => [notification, ...prev]);
+            if (!notification.read) {
+                setUnreadCount(prev => prev + 1);
+            }
         });
 
         return () => socket.off("newNotification");
     }, [socket]);
 
     useEffect(() => {
+        // Try to fetch notifications, but don't error if it fails
         fetchMyNotifications()
-            .then((data) => setNotifications(data))
-            .catch((err) => console.error(err));
+            .then((data) => {
+                setNotifications(data || []);
+                setUnreadCount((data || []).filter(n => !n.read).length);
+            })
+            .catch((err) => {
+                console.error("Failed to fetch notifications:", err);
+                setNotifications([]);
+            });
     }, []);
-
-    const unreadCount = notifications.filter((n) => !n.read).length;
 
     return (
         <NotificationContext.Provider value={{ notifications, unreadCount, setNotifications }}>
@@ -33,4 +42,6 @@ export const NotificationProvider = ({ children }) => {
     );
 };
 
-export const useNotification = () => useContext(NotificationContext);
+export function useNotification() {
+    return useContext(NotificationContext);
+}

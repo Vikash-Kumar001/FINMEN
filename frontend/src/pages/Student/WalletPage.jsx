@@ -25,68 +25,36 @@ import {
     Send
 } from "lucide-react";
 
-// Mock data - replace with real API calls
-const mockWalletData = {
-    balance: 2450,
-    totalEarned: 5670,
-    lastUpdated: new Date().toISOString(),
-    rank: 23,
-    nextMilestone: 3000,
-    achievements: [
-        { icon: "🏆", title: "First Earner", description: "Earned your first HealCoin!" },
-        { icon: "💎", title: "Gem Collector", description: "Accumulated 1000+ coins" },
-        { icon: "⭐", title: "Star Performer", description: "Top 10% this month" },
-        { icon: "🔥", title: "Streak Master", description: "Daily earnings for 7 days" }
-    ]
-};
-
-const mockTransactions = [
-    {
-        _id: "1",
-        type: "credit",
-        amount: 50,
-        description: "Mood tracking completion bonus",
-        createdAt: new Date(Date.now() - 1000 * 60 * 30).toISOString(),
-        status: "completed"
-    },
-    {
-        _id: "2",
-        type: "credit",
-        amount: 100,
-        description: "Daily challenge completed",
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(),
-        status: "completed"
-    },
-    {
-        _id: "3",
-        type: "debit",
-        amount: 75,
-        description: "Premium avatar unlock",
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString(),
-        status: "completed"
-    },
-    {
-        _id: "4",
-        type: "redeem",
-        amount: 200,
-        description: "UPI redemption to user@paytm",
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
-        status: "pending",
-        upiId: "user@paytm"
-    },
-    {
-        _id: "5",
-        type: "credit",
-        amount: 25,
-        description: "Journal entry reward",
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-        status: "completed"
-    }
-];
-
 const WalletPage = () => {
-    const [wallet, setWallet] = useState(mockWalletData);
-    const [transactions, setTransactions] = useState(mockTransactions);
+    const [wallet, setWallet] = useState({
+        balance: 0,
+        totalEarned: 0,
+        lastUpdated: new Date().toISOString(),
+        rank: 0,
+        nextMilestone: 100,
+        achievements: []
+    });
+    const [transactions, setTransactions] = useState([]);
+    
+    useEffect(() => {
+        // Fetch wallet data from API
+        const fetchWalletData = async () => {
+            try {
+                const walletResponse = await fetch('/api/wallet');
+                const walletData = await walletResponse.json();
+                setWallet(walletData);
+                
+                const transactionsResponse = await fetch('/api/wallet/transactions');
+                const transactionsData = await transactionsResponse.json();
+                setTransactions(transactionsData);
+            } catch (error) {
+                console.error('Error fetching wallet data:', error);
+                // Keep default values if fetch fails
+            }
+        };
+        
+        fetchWalletData();
+    }, []);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
     const [search, setSearch] = useState("");

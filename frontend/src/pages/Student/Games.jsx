@@ -25,95 +25,6 @@ import {
     Wind
 } from "lucide-react";
 
-const gamesList = [
-    {
-        title: "Focus Game",
-        description: "Tap the moving target. Train attention span under pressure.",
-        route: "/games/focus",
-        icon: <Focus className="w-8 h-8" />,
-        difficulty: "Medium",
-        reward: 10,
-        tag: "Cognitive",
-        gradient: "from-indigo-500 via-purple-500 to-pink-500",
-        estimatedTime: "5-10 min",
-        category: "cognitive",
-        benefits: ["Improved focus", "Better concentration", "Enhanced attention span"]
-    },
-    {
-        title: "Breathing Exercise",
-        description: "Relax and reduce anxiety with guided breathing visuals.",
-        route: "/games/breathe",
-        icon: <Wind className="w-8 h-8" />,
-        difficulty: "Easy",
-        reward: 5,
-        tag: "Mindfulness",
-        gradient: "from-blue-500 via-cyan-500 to-teal-500",
-        estimatedTime: "3-5 min",
-        category: "mindfulness",
-        benefits: ["Reduced anxiety", "Better sleep", "Stress relief"]
-    },
-    {
-        title: "Memory Match",
-        description: "Flip and match cards to improve short-term memory.",
-        route: "/games/memory",
-        icon: <Brain className="w-8 h-8" />,
-        difficulty: "Medium",
-        reward: 15,
-        tag: "Brain Training",
-        gradient: "from-pink-500 via-rose-500 to-red-500",
-        estimatedTime: "8-12 min",
-        category: "cognitive",
-        benefits: ["Enhanced memory", "Better recall", "Cognitive flexibility"]
-    },
-    {
-        title: "Gratitude Game",
-        description: "Reflect on your day with 3 positive thoughts.",
-        route: "/games/gratitude",
-        icon: <HandHeart className="w-8 h-8" />,
-        difficulty: "Easy",
-        reward: 5,
-        tag: "Emotional Wellness",
-        gradient: "from-green-500 via-emerald-500 to-teal-500",
-        estimatedTime: "5-8 min",
-        category: "emotional",
-        benefits: ["Positive mindset", "Better mood", "Emotional balance"]
-    },
-    {
-        title: "Mood Booster",
-        description: "Interactive activities to lift your spirits and energy.",
-        route: "/games/mood-boost",
-        icon: <Smile className="w-8 h-8" />,
-        difficulty: "Easy",
-        reward: 8,
-        tag: "Mood Enhancement",
-        gradient: "from-yellow-500 via-orange-500 to-red-500",
-        estimatedTime: "3-7 min",
-        category: "emotional",
-        benefits: ["Increased happiness", "Energy boost", "Positive vibes"]
-    },
-    {
-        title: "Mindful Moments",
-        description: "Quick meditation exercises for busy schedules.",
-        route: "/games/mindful",
-        icon: <Heart className="w-8 h-8" />,
-        difficulty: "Easy",
-        reward: 12,
-        tag: "Meditation",
-        gradient: "from-purple-500 via-violet-500 to-indigo-500",
-        estimatedTime: "5-10 min",
-        category: "mindfulness",
-        benefits: ["Inner peace", "Clarity", "Emotional stability"]
-    }
-];
-
-const categories = ["all", "cognitive", "mindfulness", "emotional"];
-
-const difficultyColors = {
-    "Easy": "from-green-400 to-emerald-400",
-    "Medium": "from-yellow-400 to-orange-400",
-    "Hard": "from-red-400 to-pink-400"
-};
-
 const containerVariants = {
     hidden: { opacity: 0 },
     visible: {
@@ -140,8 +51,54 @@ const itemVariants = {
 
 export default function Games() {
     const navigate = useNavigate();
+    const [gamesList, setGamesList] = useState([]);
+    const [categories, setCategories] = useState(["all"]);
+    const [difficultyColors, setDifficultyColors] = useState({});
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [hoveredGame, setHoveredGame] = useState(null);
+    
+    useEffect(() => {
+        // Fetch games data from API
+        const fetchGames = async () => {
+            try {
+                const response = await fetch('/api/games');
+                const data = await response.json();
+                setGamesList(data);
+            } catch (error) {
+                console.error('Error fetching games:', error);
+                // Set empty array if fetch fails
+                setGamesList([]);
+            }
+        };
+        
+        fetchGames();
+    }, []);
+    
+    useEffect(() => {
+        // Fetch categories and difficulty colors from API
+        const fetchCategoriesAndDifficulties = async () => {
+            try {
+                const categoriesResponse = await fetch('/api/games/categories');
+                const categoriesData = await categoriesResponse.json();
+                setCategories(["all", ...categoriesData]);
+                
+                const difficultiesResponse = await fetch('/api/games/difficulties');
+                const difficultiesData = await difficultiesResponse.json();
+                setDifficultyColors(difficultiesData);
+            } catch (error) {
+                console.error('Error fetching categories and difficulties:', error);
+                // Set default values if fetch fails
+                setCategories(["all", "cognitive", "mindfulness", "emotional"]);
+                setDifficultyColors({
+                    "Easy": "from-green-400 to-emerald-400",
+                    "Medium": "from-yellow-400 to-orange-400",
+                    "Hard": "from-red-400 to-pink-400"
+                });
+            }
+        };
+        
+        fetchCategoriesAndDifficulties();
+    }, []);
 
     const filteredGames = selectedCategory === "all" 
         ? gamesList 

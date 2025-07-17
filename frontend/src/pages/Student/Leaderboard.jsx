@@ -64,11 +64,11 @@ const Leaderboard = () => {
         }
     };
 
-    const getPositionChange = () => {
-        // Mock position change data - replace with real data
-        const changes = [1, -1, 0, 2, -3, 1, 0, -1, 2, -2];
-        const change = changes[Math.floor(Math.random() * changes.length)];
-
+    const getPositionChange = (user) => {
+        // This will be calculated based on previous leaderboard data
+        // which will be included in the API response
+        const change = user.positionChange || 0;
+        
         if (change > 0) {
             return { icon: <ArrowUp className="w-4 h-4 text-green-500" />, text: `+${change}`, color: "text-green-500" };
         } else if (change < 0) {

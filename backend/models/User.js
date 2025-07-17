@@ -208,6 +208,10 @@ const userSchema = new mongoose.Schema(
     rejectionReason: {
       type: String,
     },
+    lastActive: {
+      type: Date,
+      default: Date.now
+    },
   },
   { timestamps: true }
 );

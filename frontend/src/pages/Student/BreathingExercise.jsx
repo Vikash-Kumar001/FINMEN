@@ -15,6 +15,8 @@ import {
     Zap,
     Target
 } from "lucide-react";
+import { logActivity } from "../../services/activityService";
+import { toast } from "react-toastify";
 
 const breathingPhases = [
     { 
@@ -49,6 +51,14 @@ export default function BreathingExercise() {
     const [running, setRunning] = useState(false);
     const [totalTime, setTotalTime] = useState(0);
     const [showCompletionMessage, setShowCompletionMessage] = useState(false);
+    
+    // Log page view when component mounts
+    useEffect(() => {
+        logActivity({
+            activityType: "page_view",
+            description: "Viewed breathing exercise page"
+        });
+    }, []);
 
     useEffect(() => {
         if (!running) return;
@@ -58,14 +68,28 @@ export default function BreathingExercise() {
             setPhaseIndex((prev) => {
                 const nextIndex = (prev + 1) % breathingPhases.length;
                 if (nextIndex === 0) {
-                    setCycleCount((prevCount) => prevCount + 1);
+                    const newCycleCount = cycleCount + 1;
+                    setCycleCount(newCycleCount);
+                    
+                    // Log completion of a breathing cycle
+                    logActivity({
+                        activityType: "wellness_activity",
+                        description: "Completed breathing cycle",
+                        metadata: {
+                            action: "complete_breathing_cycle",
+                            cycleNumber: newCycleCount - 1, // Log the cycle that was just completed
+                            totalCycles: newCycleCount,
+                            timeSpent: totalTime,
+                            xpEarned: 8 // XP earned per cycle
+                        }
+                    });
                 }
                 return nextIndex;
             });
         }, duration);
 
         return () => clearTimeout(timer);
-    }, [phaseIndex, running]);
+    }, [phaseIndex, running, cycleCount, totalTime]);
 
     // Timer for total session time
     useEffect(() => {
@@ -82,25 +106,76 @@ export default function BreathingExercise() {
     useEffect(() => {
         if (cycleCount >= 5 && !showCompletionMessage) {
             setShowCompletionMessage(true);
+            
+            // Log achievement when user completes 5 cycles
+            logActivity({
+                activityType: "wellness_activity",
+                description: "Completed 5 breathing cycles",
+                metadata: {
+                    action: "complete_breathing_milestone",
+                    cyclesCompleted: cycleCount,
+                    timeSpent: totalTime,
+                    xpEarned: cycleCount * 8
+                }
+            });
+            
+            toast.success("🎉 Achievement unlocked: 5 breathing cycles completed!");
         }
-    }, [cycleCount, showCompletionMessage]);
+    }, [cycleCount, showCompletionMessage, totalTime]);
 
     const currentPhase = breathingPhases[phaseIndex];
 
     const handleStart = () => {
         setRunning(true);
+        
+        // Log start of breathing exercise
+        logActivity({
+            activityType: "wellness_activity",
+            description: "Started breathing exercise",
+            metadata: {
+                action: "start_breathing_exercise",
+                currentCycleCount: cycleCount,
+                currentPhase: breathingPhases[phaseIndex].label
+            }
+        });
     };
 
     const handlePause = () => {
         setRunning(false);
+        
+        // Log pause of breathing exercise
+        logActivity({
+            activityType: "wellness_activity",
+            description: "Paused breathing exercise",
+            metadata: {
+                action: "pause_breathing_exercise",
+                cyclesCompleted: cycleCount,
+                timeSpent: totalTime,
+                currentPhase: breathingPhases[phaseIndex].label
+            }
+        });
     };
 
     const handleReset = () => {
+        // Log reset of breathing exercise with previous stats
+        logActivity({
+            activityType: "wellness_activity",
+            description: "Reset breathing exercise",
+            metadata: {
+                action: "reset_breathing_exercise",
+                previousCyclesCompleted: cycleCount,
+                previousTimeSpent: totalTime,
+                xpEarned: cycleCount * 8
+            }
+        });
+        
         setRunning(false);
         setPhaseIndex(0);
         setCycleCount(1);
         setTotalTime(0);
         setShowCompletionMessage(false);
+        
+        toast.info("Breathing exercise reset");
     };
 
     const formatTime = (seconds) => {
@@ -407,7 +482,21 @@ export default function BreathingExercise() {
                     <motion.button
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
-                        onClick={() => window.history.back()}
+                        onClick={() => {
+                            // Log navigation back to dashboard
+                            logActivity({
+                                activityType: "navigation",
+                                description: "Navigated from breathing exercise to previous page",
+                                metadata: {
+                                    action: "exit_breathing_exercise",
+                                    from: "breathing_exercise",
+                                    cyclesCompleted: cycleCount,
+                                    timeSpent: totalTime,
+                                    xpEarned: cycleCount * 8
+                                }
+                            });
+                            window.history.back();
+                        }}
                         className="inline-flex items-center gap-2 bg-gradient-to-r from-gray-500 to-gray-600 text-white px-6 py-3 rounded-2xl shadow-lg font-semibold hover:shadow-xl transition-all"
                     >
                         <ArrowLeft className="w-5 h-5" />

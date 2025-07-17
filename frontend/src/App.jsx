@@ -25,14 +25,25 @@ import RedeemPage from "./pages/Student/RedeemPage";
 import WalletPage from "./pages/Student/WalletPage";
 import Leaderboard from "./pages/Student/Leaderboard";
 import StudentGame from "./pages/Student/StudentGame";
-import Notifications from "./pages/Student/Notifications";
-import Profile from "./pages/Student/Profile";
-import Setting from "./pages/Student/Settings";
+import Notifications from "./components/Notifications";
+import Profile from "./components/Profile";
+import Setting from "./components/Settings";
 import BreathingExercise from "./pages/Student/BreathingExercise";
+import QuickStart from "./pages/Student/QuickStart";
+import ThisWeek from "./pages/Student/ThisWeek";
+import DailyGoal from "./pages/Student/DailyGoal";
+import Challenge from "./pages/Student/Challenge";
+import FinancialLiteracy from "./pages/Student/FinancialLiteracy";
+import BudgetPlanner from "./pages/Student/BudgetPlanner";
+import InvestmentSimulator from "./pages/Student/InvestmentSimulator";
+import SavingsGoals from "./pages/Student/SavingsGoals";
+import FinancialQuiz from "./pages/Student/FinancialQuiz";
+import ExpenseTracker from "./pages/Student/ExpenseTracker";
 
 // Educator Pages
 import EducatorDashboard from "./pages/Educator/EducatorDashboard";
 import StudentManagement from "./pages/Educator/StudentManagement";
+import StudentActivityTracker from "./pages/Educator/StudentActivityTracker";
 import EducatorTools from "./pages/Educator/EducatorTools";
 import RedemptionRequests from "./pages/Educator/RedemptionRequests";
 import PendingApproval from "./pages/Educator/PendingApproval";
@@ -60,6 +71,7 @@ import FeedbackHistoryModal from "./pages/Admin/FeedbackHistoryModal";
 import AllRedemptions from "./pages/Admin/AllRedemptions";
 import AdminStatsPanel from "./pages/Admin/AdminStatsPanel";
 import AdminUsersPanel from "./pages/Admin/AdminUsersPanel";
+import AdminSettings from "./pages/Admin/AdminSettings";
 
 // 404 Page
 import NotFound from "./pages/NotFound";
@@ -121,14 +133,27 @@ const App = () => {
         <Route path="/student/profile" element={<ProtectedRoute roles={['student']}><Profile /></ProtectedRoute>} />
         <Route path="/student/settings" element={<ProtectedRoute roles={['student']}><Setting /></ProtectedRoute>} />
         <Route path="/student/breathing" element={<ProtectedRoute roles={['student']}><BreathingExercise /></ProtectedRoute>} />
+        <Route path="/student/quick-start" element={<ProtectedRoute roles={['student']}><QuickStart /></ProtectedRoute>} />
+        <Route path="/student/this-week" element={<ProtectedRoute roles={['student']}><ThisWeek /></ProtectedRoute>} />
+        <Route path="/student/daily-goal" element={<ProtectedRoute roles={['student']}><DailyGoal /></ProtectedRoute>} />
+        <Route path="/student/challenge" element={<ProtectedRoute roles={['student']}><Challenge /></ProtectedRoute>} />
+        <Route path="/learn/financial-literacy" element={<ProtectedRoute roles={['student']}><FinancialLiteracy /></ProtectedRoute>} />
+        <Route path="/tools/budget-planner" element={<ProtectedRoute roles={['student']}><BudgetPlanner /></ProtectedRoute>} />
+        <Route path="/games/investment-simulator" element={<ProtectedRoute roles={['student']}><InvestmentSimulator /></ProtectedRoute>} />
+        <Route path="/tools/savings-goals" element={<ProtectedRoute roles={['student']}><SavingsGoals /></ProtectedRoute>} />
+        <Route path="/learn/financial-quiz" element={<ProtectedRoute roles={['student']}><FinancialQuiz /></ProtectedRoute>} />
+        <Route path="/tools/expense-tracker" element={<ProtectedRoute roles={['student']}><ExpenseTracker /></ProtectedRoute>} />
 
         {/* Educator Routes */}
         <Route path="/educator/dashboard" element={<ProtectedRoute roles={['educator']} requireApproved={true}><EducatorDashboard /></ProtectedRoute>} />
         <Route path="/educator/students" element={<ProtectedRoute roles={['educator']}><StudentManagement /></ProtectedRoute>} />
+        <Route path="/educator/student/:studentId/activity" element={<ProtectedRoute roles={['educator']}><StudentActivityTracker /></ProtectedRoute>} />
         <Route path="/educator/tools" element={<ProtectedRoute roles={['educator']}><EducatorTools /></ProtectedRoute>} />
         <Route path="/educator/redemptions" element={<ProtectedRoute roles={['educator']}><RedemptionRequests /></ProtectedRoute>} />
         <Route path="/pending-approval" element={<ProtectedRoute roles={['educator']}><PendingApproval /></ProtectedRoute>} />
-        <Route path="/educator/settings" element={<ProtectedRoute roles={['educator']}><SystemSettings /></ProtectedRoute>} />
+        <Route path="/educator/settings" element={<ProtectedRoute roles={['educator']}><Setting /></ProtectedRoute>} />
+        <Route path="/educator/profile" element={<ProtectedRoute roles={['educator']}><Profile /></ProtectedRoute>} />
+        <Route path="/educator/notifications" element={<ProtectedRoute roles={['educator']}><Notifications /></ProtectedRoute>} />
         <Route path="/educator/ai-support" element={<ProtectedRoute roles={['educator']}><AISupport /></ProtectedRoute>} />
         <Route path="/educator/quick-actions" element={<ProtectedRoute roles={['educator']}><QuickActions /></ProtectedRoute>} />
         <Route path="/educator/resources" element={<ProtectedRoute roles={['educator']}><ResourceLibrary /></ProtectedRoute>} />
@@ -152,6 +177,9 @@ const App = () => {
         <Route path="/admin/all-redemptions" element={<ProtectedRoute roles={['admin']}><AllRedemptions /></ProtectedRoute>} />
         <Route path="/admin/stats" element={<ProtectedRoute roles={['admin']}><AdminStatsPanel /></ProtectedRoute>} />
         <Route path="/admin/users" element={<ProtectedRoute roles={['admin']}><AdminUsersPanel /></ProtectedRoute>} />
+        <Route path="/admin/profile" element={<ProtectedRoute roles={['admin']}><Profile /></ProtectedRoute>} />
+        <Route path="/admin/settings" element={<ProtectedRoute roles={['admin']}><AdminSettings /></ProtectedRoute>} />
+        <Route path="/admin/notifications" element={<ProtectedRoute roles={['admin']}><Notifications /></ProtectedRoute>} />
 
         {/* 404 */}
         <Route path="*" element={<NotFound />} />

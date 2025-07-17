@@ -36,6 +36,17 @@ import StudentManagement from "./pages/Educator/StudentManagement";
 import EducatorTools from "./pages/Educator/EducatorTools";
 import RedemptionRequests from "./pages/Educator/RedemptionRequests";
 import PendingApproval from "./pages/Educator/PendingApproval";
+import SystemSettings from "./pages/Educator/SystemSettings";
+import AISupport from "./pages/Educator/AISupport";
+import QuickActions from "./pages/Educator/QuickActions";
+import ResourceLibrary from "./pages/Educator/ResourceLibrary";
+import SmartAlerts from "./pages/Educator/SmartAlerts";
+import SmartRewardsSystem from "./pages/Educator/SmartRewardsSystem";
+import ProgressAnalytics from "./pages/Educator/ProgressAnalytics";
+import RealTimeAnalytics from "./pages/Educator/RealTimeAnalytics";
+import CommunicationCenter from "./pages/Educator/CommunicationCenter";
+import CurriculumBuilder from "./pages/Educator/CurriculumBuilder";
+import WellnessMonitor from "./pages/Educator/WellnessMonitor";
 
 // Admin Pages
 import AdminPanel from "./pages/Admin/AdminPanel";
@@ -117,6 +128,17 @@ const App = () => {
         <Route path="/educator/tools" element={<ProtectedRoute roles={['educator']}><EducatorTools /></ProtectedRoute>} />
         <Route path="/educator/redemptions" element={<ProtectedRoute roles={['educator']}><RedemptionRequests /></ProtectedRoute>} />
         <Route path="/pending-approval" element={<ProtectedRoute roles={['educator']}><PendingApproval /></ProtectedRoute>} />
+        <Route path="/educator/settings" element={<ProtectedRoute roles={['educator']}><SystemSettings /></ProtectedRoute>} />
+        <Route path="/educator/ai-support" element={<ProtectedRoute roles={['educator']}><AISupport /></ProtectedRoute>} />
+        <Route path="/educator/quick-actions" element={<ProtectedRoute roles={['educator']}><QuickActions /></ProtectedRoute>} />
+        <Route path="/educator/resources" element={<ProtectedRoute roles={['educator']}><ResourceLibrary /></ProtectedRoute>} />
+        <Route path="/educator/alerts" element={<ProtectedRoute roles={['educator']}><SmartAlerts /></ProtectedRoute>} />
+        <Route path="/educator/rewards" element={<ProtectedRoute roles={['educator']}><SmartRewardsSystem /></ProtectedRoute>} />
+        <Route path="/educator/progress" element={<ProtectedRoute roles={['educator']}><ProgressAnalytics /></ProtectedRoute>} />
+        <Route path="/educator/analytics" element={<ProtectedRoute roles={['educator']}><RealTimeAnalytics /></ProtectedRoute>} />
+        <Route path="/educator/communication" element={<ProtectedRoute roles={['educator']}><CommunicationCenter /></ProtectedRoute>} />
+        <Route path="/educator/curriculum" element={<ProtectedRoute roles={['educator']}><CurriculumBuilder /></ProtectedRoute>} />
+        <Route path="/educator/wellness" element={<ProtectedRoute roles={['educator']}><WellnessMonitor /></ProtectedRoute>} />
 
         {/* Admin Routes */}
         <Route path="/admin/panel" element={<ProtectedRoute roles={['admin']}><AdminPanel /></ProtectedRoute>} />

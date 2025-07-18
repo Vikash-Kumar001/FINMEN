@@ -11,7 +11,7 @@ import {
     ResponsiveContainer,
     Cell,
 } from "recharts";
-import axios from "axios";
+import api from "../utils/api";
 
 // 🎨 Mood config
 const getMoodMeta = (score) => {
@@ -33,7 +33,7 @@ const MoodChart = () => {
 
     const fetchMoodStats = async () => {
         try {
-            const res = await axios.get("/api/mood/week", { withCredentials: true });
+            const res = await api.get("/api/mood/week");
 
             if (!Array.isArray(res.data)) {
                 console.error("❌ Unexpected mood data format:", res.data);

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import api from "../../utils/api";
 import { motion, AnimatePresence } from "framer-motion";
 import {
     Wallet,
@@ -40,13 +41,11 @@ const WalletPage = () => {
         // Fetch wallet data from API
         const fetchWalletData = async () => {
             try {
-                const walletResponse = await fetch('/api/wallet');
-                const walletData = await walletResponse.json();
-                setWallet(walletData);
+                const walletResponse = await api.get('/api/wallet');
+                setWallet(walletResponse.data);
                 
-                const transactionsResponse = await fetch('/api/wallet/transactions');
-                const transactionsData = await transactionsResponse.json();
-                setTransactions(transactionsData);
+                const transactionsResponse = await api.get('/api/wallet/transactions');
+                setTransactions(transactionsResponse.data);
             } catch (error) {
                 console.error('Error fetching wallet data:', error);
                 // Keep default values if fetch fails

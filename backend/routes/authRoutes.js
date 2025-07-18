@@ -1,6 +1,4 @@
 import express from "express";
-import bcrypt from "bcryptjs";
-import User from "../models/User.js";
 import {
   googleLogin,
   registerByAdmin,
@@ -9,6 +7,7 @@ import {
   forgotPassword,
   resetPasswordWithOTP,
   checkVerificationStatus,
+  login
 } from "../controllers/authController.js";
 import { requireAuth, requireAdmin } from "../middlewares/requireAuth.js";
 import { trackEducatorLogin } from "../utils/educatorActivityTracker.js";
@@ -116,81 +115,7 @@ router.post("/verify-otp", verifyOTP);
 router.post("/check-verification", checkVerificationStatus);
 
 // ✅ Login with role-based checks
-router.post("/login", trackEducatorLogin, async (req, res) => {
-  try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
-    }
-
-    const normalizedEmail = email.toLowerCase();
-    const user = await User.findOne({ email: normalizedEmail });
-
-    if (!user) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    if (!user.password) {
-      return res.status(400).json({
-        message: "This account uses Google login. Please use Google to sign in.",
-      });
-    }
-
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    // Email verification check for students
-    if (user.role === "student" && !user.isVerified) {
-      return res.status(401).json({
-        message: "Please verify your email before logging in.",
-        needsVerification: true,
-      });
-    }
-
-    // Educator approval status checks
-    if (user.role === "educator") {
-      if (user.approvalStatus === "pending") {
-        return res.status(403).json({
-          message: "Your educator account is currently under review. You will be notified once approved.",
-          approvalStatus: "pending",
-        });
-      }
-
-      if (user.approvalStatus === "rejected") {
-        return res.status(403).json({
-          message: "Your educator account has been rejected. Please contact administration.",
-          approvalStatus: "rejected",
-        });
-      }
-    }
-
-    const token = generateToken(user._id);
-
-    res
-      .cookie("finmen_token", token, {
-        httpOnly: true,
-        sameSite: "Lax",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      })
-      .json({
-        message: "Login successful",
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          approvalStatus: user.approvalStatus,
-        },
-      });
-  } catch (err) {
-    console.error("Login error:", err);
-    res.status(500).json({ message: "Login failed" });
-  }
-});
+router.post("/login", trackEducatorLogin, login);
 
 // ✅ Forgot Password
 router.post("/forgot-password", forgotPassword);

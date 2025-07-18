@@ -14,6 +14,7 @@ import {
     ChevronRight
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import api from "../../utils/api";
 
 const ThisWeek = () => {
     const navigate = useNavigate();
@@ -31,13 +32,12 @@ const ThisWeek = () => {
         const fetchData = async () => {
             try {
                 // Fetch weekly activities
-                const activitiesResponse = await fetch('/api/student/weekly-activities');
-                const activitiesData = await activitiesResponse.json();
-                setWeeklyActivities(activitiesData);
+                const activitiesResponse = await api.get('/api/student/weekly-activities');
+                setWeeklyActivities(activitiesResponse.data);
                 
                 // Fetch weekly goals
-                const goalsResponse = await fetch('/api/student/weekly-goals');
-                const goalsData = await goalsResponse.json();
+                const goalsResponse = await api.get('/api/student/weekly-goals');
+                const goalsData = goalsResponse.data;
                 
                 // Map the icons based on goal type
                 const goalsWithIcons = goalsData.map(goal => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../utils/api';
 import { motion } from 'framer-motion';
 import { Mail, Send, Loader2 } from 'lucide-react';
 
@@ -23,10 +23,9 @@ const ForgotPassword = () => {
 
         try {
             setIsLoading(true);
-            const res = await axios.post(
-                `${import.meta.env.VITE_API}/auth/forgot-password`,
-                { email },
-                { withCredentials: true }
+            const res = await api.post(
+                '/api/auth/forgot-password',
+                { email }
             );
 
             setMessage(res.data.message || 'OTP sent successfully!');

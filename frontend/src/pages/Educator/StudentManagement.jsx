@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import axios from "axios";
+import api from "../../utils/api";
 import { Link } from "react-router-dom";
 import {
     Download,
@@ -66,9 +66,7 @@ export default function StudentManagement() {
         const fetchStudents = async () => {
             setLoading(true);
             try {
-                const res = await axios.get("/api/educators/students", {
-                    withCredentials: true,
-                });
+                const res = await api.get("/api/educators/students");
                 setStudents(res.data);
                 setFiltered(res.data);
             } catch (error) {

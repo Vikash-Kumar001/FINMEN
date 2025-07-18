@@ -30,18 +30,38 @@ const Leaderboard = () => {
     const socket = useSocket();
 
     useEffect(() => {
-        if (socket) {
+        if (socket && socket.socket) {
             setLoading(true);
             // Subscribe to leaderboard updates
-            socket.emit('student:leaderboard:subscribe', { period: selectedPeriod });
+            try {
+                socket.socket.emit('student:leaderboard:subscribe', { period: selectedPeriod });
+            } catch (err) {
+                console.error("❌ Error subscribing to leaderboard:", err.message);
+                setLoading(false);
+                return;
+            }
+            
             const handleData = (data) => {
                 setLeaders(Array.isArray(data) ? data : []);
                 setLoading(false);
             };
-            socket.on('student:leaderboard:data', handleData);
+            
+            try {
+                socket.socket.on('student:leaderboard:data', handleData);
+            } catch (err) {
+                console.error("❌ Error setting up leaderboard data listener:", err.message);
+                setLoading(false);
+            }
+            
             // Cleanup on unmount or period change
             return () => {
-                socket.off('student:leaderboard:data', handleData);
+                try {
+                    if (socket && socket.socket) {
+                        socket.socket.off('student:leaderboard:data', handleData);
+                    }
+                } catch (err) {
+                    console.error("❌ Error removing leaderboard data listener:", err.message);
+                }
             };
         }
     }, [socket, selectedPeriod]);

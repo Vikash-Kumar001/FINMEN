@@ -56,11 +56,23 @@ const RedeemPage = () => {
     };
 
     useEffect(() => {
-        if (socket && user) {
-            socket.emit('student:wallet:subscribe', { studentId: user._id });
-            socket.on('student:wallet:data', data => setWallet(data.wallet));
+        if (socket && socket.socket && user) {
+            try {
+                socket.socket.emit('student:wallet:subscribe', { studentId: user._id });
+            } catch (err) {
+                console.error("❌ Error subscribing to wallet:", err.message);
+            }
+            
+            socket.socket.on('student:wallet:data', data => setWallet(data.wallet));
+            
             return () => {
-                socket.off('student:wallet:data');
+                try {
+                    if (socket && socket.socket) {
+                        socket.socket.off('student:wallet:data');
+                    }
+                } catch (err) {
+                    console.error("❌ Error cleaning up wallet socket listeners:", err.message);
+                }
             };
         }
     }, [socket, user]);
@@ -88,13 +100,20 @@ const RedeemPage = () => {
         }
 
         setLoading(true);
-        socket.emit('student:wallet:redeem', { studentId: user._id, amount, upiId });
-        setMessage("🎉 Redemption request submitted successfully!");
-        setMessageType("success");
-        setAmount("");
-        setUpiId("");
-        setSelectedQuickAmount(null);
-        setLoading(false);
+        try {
+            socket.socket.emit('student:wallet:redeem', { studentId: user._id, amount, upiId });
+            setMessage("🎉 Redemption request submitted successfully!");
+            setMessageType("success");
+            setAmount("");
+            setUpiId("");
+            setSelectedQuickAmount(null);
+        } catch (err) {
+            console.error("❌ Error submitting redemption request:", err.message);
+            setMessage("Failed to submit redemption request. Please try again.");
+            setMessageType("error");
+        } finally {
+            setLoading(false);
+        }
     };
 
     const currentTier = getCurrentTier(wallet?.balance || 0);

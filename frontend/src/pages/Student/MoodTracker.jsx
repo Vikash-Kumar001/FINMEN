@@ -16,6 +16,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { logActivity } from "../../services/activityService";
 import { toast } from "react-toastify";
+import api from "../../utils/api";
 
 const MoodTracker = () => {
     const navigate = useNavigate();
@@ -77,9 +78,8 @@ const MoodTracker = () => {
         // Fetch mood options from API
         const fetchMoodOptions = async () => {
             try {
-                const response = await fetch('/api/moods/options');
-                const data = await response.json();
-                setMoodOptions(data);
+                const response = await api.get('/api/moods/options');
+                setMoodOptions(response.data);
             } catch (error) {
                 console.error('Error fetching mood options:', error);
                 // Default options are already set in the state
@@ -92,15 +92,8 @@ const MoodTracker = () => {
     const fetchMoodLogs = useCallback(async () => {
         try {
             setLoading(true);
-            const response = await fetch("/api/mood/logs", {
-                headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-            });
-            const data = await response.json();
-            if (response.ok) {
-                setMoodLogs(data);
-            } else {
-                console.error("Failed to fetch mood logs:", data.error);
-            }
+            const response = await api.get("/api/mood/logs");
+            setMoodLogs(response.data);
         } catch (error) {
             console.error("❌ Failed to fetch mood logs:", error);
         } finally {
@@ -122,19 +115,12 @@ const MoodTracker = () => {
         if (!selectedMood) return;
         setSubmitLoading(true);
         try {
-            const response = await fetch("/api/mood/log", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${localStorage.getItem("token")}`,
-                },
-                body: JSON.stringify({
-                    emoji: selectedMood,
-                    journal: journal || undefined,
-                }),
+            const response = await api.post("/api/mood/log", {
+                emoji: selectedMood,
+                journal: journal || undefined,
             });
-            const data = await response.json();
-            if (response.ok) {
+            
+            if (response.status === 200 || response.status === 201) {
                 // Find the mood option details for the selected mood
                 const selectedMoodDetails = moodOptions.find(option => option.value === selectedMood);
                 
@@ -159,7 +145,7 @@ const MoodTracker = () => {
                 setShowJournal(false);
                 fetchMoodLogs();
             } else {
-                toast.error(data.error || "Failed to log mood");
+                toast.error(response.data?.error || "Failed to log mood");
             }
         } catch (error) {
             console.error("❌ Error logging mood:", error);

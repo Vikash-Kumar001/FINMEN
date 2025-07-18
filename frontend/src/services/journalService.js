@@ -1,22 +1,17 @@
-import axios from "axios";
 import api from "../utils/api";
 
-const API = import.meta.env.VITE_API;
-
 export const getMyJournals = async () => {
-  return await axios.get(`${API}/journal/me`, { withCredentials: true });
+  return await api.get("/api/journal/me");
 };
 
 export const createJournalEntry = async (entry) => {
-  return await axios.post(`${API}/journal`, entry, { withCredentials: true });
+  return await api.post("/api/journal", entry);
 };
 
 export const updateJournalEntry = async (id, updatedEntry) => {
-  return await axios.put(`${API}/journal/${id}`, updatedEntry, {
-    withCredentials: true,
-  });
+  return await api.put(`/api/journal/${id}`, updatedEntry);
 };
 
 export const deleteJournalEntry = async (id) => {
-  return await axios.delete(`${API}/journal/${id}`, { withCredentials: true });
+  return await api.delete(`/api/journal/${id}`);
 };

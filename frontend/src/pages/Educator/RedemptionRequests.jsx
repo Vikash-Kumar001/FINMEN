@@ -52,32 +52,43 @@ const RedemptionRequests = () => {
   const user = { _id: "user123" }; // Replace with actual user context
 
   useEffect(() => {
-    if (socket && user) {
-      socket.emit("student:redemption:subscribe", { studentId: user._id });
+    if (socket && socket.socket && user) {
+      try {
+        socket.socket.emit("student:redemption:subscribe", { studentId: user._id });
 
-      socket.on("student:redemption:data", (data) => {
-        setRequests(data || []);
+        socket.socket.on("student:redemption:data", (data) => {
+          setRequests(data || []);
+          setLoading(false);
+        });
+
+        socket.socket.on("student:redemption:update", (data) => {
+          setRequests(data || []);
+        });
+
+        socket.socket.on("student:redemption:approved", (data) => {
+          showToast(`Redemption approved for ₹${data.amount}`, "success");
+        });
+
+        socket.socket.on("student:redemption:rejected", (data) => {
+          showToast(`Redemption rejected for ₹${data.amount}`, "error");
+        });
+
+        return () => {
+          try {
+            if (socket && socket.socket) {
+              socket.socket.off("student:redemption:data");
+              socket.socket.off("student:redemption:update");
+              socket.socket.off("student:redemption:approved");
+              socket.socket.off("student:redemption:rejected");
+            }
+          } catch (err) {
+            console.error("❌ Error removing redemption listeners:", err.message);
+          }
+        };
+      } catch (err) {
+        console.error("❌ Error setting up redemption listeners:", err.message);
         setLoading(false);
-      });
-
-      socket.on("student:redemption:update", (data) => {
-        setRequests(data || []);
-      });
-
-      socket.on("student:redemption:approved", (data) => {
-        showToast(`Redemption approved for ₹${data.amount}`, "success");
-      });
-
-      socket.on("student:redemption:rejected", (data) => {
-        showToast(`Redemption rejected for ₹${data.amount}`, "error");
-      });
-
-      return () => {
-        socket.off("student:redemption:data");
-        socket.off("student:redemption:update");
-        socket.off("student:redemption:approved");
-        socket.off("student:redemption:rejected");
-      };
+      }
     }
   }, [socket, user]);
 
@@ -87,7 +98,7 @@ const RedemptionRequests = () => {
   };
 
   const handleApprove = (id) => {
-    socket.emit("student:redemption:approve", {
+    socket.socket.emit("student:redemption:approve", {
       studentId: user._id,
       requestId: id,
     });
@@ -95,7 +106,7 @@ const RedemptionRequests = () => {
   };
 
   const handleReject = (id) => {
-    socket.emit("student:redemption:reject", {
+    socket.socket.emit("student:redemption:reject", {
       studentId: user._id,
       requestId: id,
     });
@@ -116,7 +127,15 @@ const RedemptionRequests = () => {
 
   const handleRefresh = () => {
     setRefreshing(true);
-    socket.emit("student:redemption:subscribe", { studentId: user._id });
+    if (socket && socket.socket) {
+      try {
+        socket.socket.emit("student:redemption:subscribe", { studentId: user._id });
+      } catch (err) {
+        console.error("❌ Error refreshing redemption requests:", err.message);
+      }
+    } else {
+      console.error("❌ Socket not available for refreshing redemption requests");
+    }
     setTimeout(() => setRefreshing(false), 1000);
   };
 

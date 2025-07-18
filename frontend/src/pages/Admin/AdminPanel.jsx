@@ -11,38 +11,72 @@ export default function AdminPanel() {
     const { user } = useAuth();
 
     useEffect(() => {
-        if (socket && user) {
-            socket.emit('admin:panel:subscribe', { adminId: user._id });
-            socket.on('admin:panel:pendingEducators', setPending);
-            socket.on('admin:panel:users', setUsers);
-            socket.on('admin:panel:update', (update) => {
+        if (socket && socket.socket && user) {
+            socket.socket.emit('admin:panel:subscribe', { adminId: user._id });
+            socket.socket.on('admin:panel:pendingEducators', setPending);
+            socket.socket.on('admin:panel:users', setUsers);
+            socket.socket.on('admin:panel:update', (update) => {
                 if (update.users) setUsers(update.users);
                 if (update.pending) setPending(update.pending);
             });
 
             return () => {
-                socket.off('admin:panel:pendingEducators');
-                socket.off('admin:panel:users');
-                socket.off('admin:panel:update');
+                socket.socket.off('admin:panel:pendingEducators');
+                socket.socket.off('admin:panel:users');
+                socket.socket.off('admin:panel:update');
             };
         }
     }, [socket, user]);
 
     const approveEducator = (id) => {
-        socket.emit('admin:panel:approveEducator', { adminId: user._id, educatorId: id });
-        toast.success("Educator approved");
-        // UI will auto-update from server push
+        if (!socket || !socket.socket) {
+            console.error("❌ Socket not available for approving educator");
+            toast.error("Connection error. Please try again.");
+            return;
+        }
+        
+        try {
+            socket.socket.emit('admin:panel:approveEducator', { adminId: user._id, educatorId: id });
+            toast.success("Educator approved");
+            // UI will auto-update from server push
+        } catch (err) {
+            console.error("❌ Error approving educator:", err.message);
+            toast.error("Failed to approve educator");
+        }
     };
 
     const handleRoleChange = (id, newRole) => {
-        socket.emit('admin:panel:updateRole', { adminId: user._id, userId: id, newRole });
-        toast.success("Role updated");
+        if (!socket || !socket.socket) {
+            console.error("❌ Socket not available for updating role");
+            toast.error("Connection error. Please try again.");
+            return;
+        }
+        
+        try {
+            socket.socket.emit('admin:panel:updateRole', { adminId: user._id, userId: id, newRole });
+            toast.success("Role updated");
+        } catch (err) {
+            console.error("❌ Error updating role:", err.message);
+            toast.error("Failed to update role");
+        }
     };
 
     const handleDelete = (id) => {
         if (!confirm("Are you sure you want to delete this user?")) return;
-        socket.emit('admin:panel:deleteUser', { adminId: user._id, userId: id });
-        toast.success("User deleted");
+        
+        if (!socket || !socket.socket) {
+            console.error("❌ Socket not available for deleting user");
+            toast.error("Connection error. Please try again.");
+            return;
+        }
+        
+        try {
+            socket.socket.emit('admin:panel:deleteUser', { adminId: user._id, userId: id });
+            toast.success("User deleted");
+        } catch (err) {
+            console.error("❌ Error deleting user:", err.message);
+            toast.error("Failed to delete user");
+        }
     };
 
     return (

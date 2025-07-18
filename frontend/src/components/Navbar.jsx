@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { useWallet } from "../context/WalletContext";
 import { useSocket } from "../context/SocketContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import api from "../utils/api";
 import { 
     Bell, 
     Wallet, 
@@ -17,7 +18,16 @@ import {
     Home,
     BookOpen,
     Award,
-    BarChart3
+    BarChart3,
+    HelpCircle,
+    TrendingUp,
+    Gift,
+    Calendar,
+    FileText,
+    Briefcase,
+    MessageSquare,
+    AlertCircle,
+    Zap
 } from "lucide-react";
 import StudentProgressModal from "../pages/Student/StudentProgressModal";
 
@@ -30,24 +40,50 @@ const Navbar = () => {
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [showProgressModal, setShowProgressModal] = useState(false);
+    const [showSearchResults, setShowSearchResults] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [searchResults, setSearchResults] = useState([]);
+    const [showHelpMenu, setShowHelpMenu] = useState(false);
+    const searchInputRef = useRef(null);
+    const profileMenuRef = useRef(null);
+    const helpMenuRef = useRef(null);
 
     const getDashboardLabel = () => {
         switch (user?.role) {
-            case "admin":
-                return "Admin Dashboard";
-            case "educator":
-                return "Educator Dashboard";
+            case "admin": return "Admin Dashboard";
+            case "educator": return "Educator Dashboard";
             case "student":
-            default:
-                return "Dashboard";
+            default: return "Student Dashboard";
+        }
+    };
+
+    const handleSearch = (e) => {
+        const query = e.target.value;
+        setSearchQuery(query);
+        
+        if (query.length > 2) {
+            const mockResults = [
+                { id: 1, title: "Financial Literacy", path: "/learn/financial-literacy", type: "Course" },
+                { id: 2, title: "Budget Planner", path: "/tools/budget-planner", type: "Tool" },
+                { id: 3, title: "Investment Simulator", path: "/games/investment-simulator", type: "Game" },
+                { id: 4, title: "Savings Goals", path: "/tools/savings-goals", type: "Tool" },
+            ].filter(item => item.title.toLowerCase().includes(query.toLowerCase()));
+            
+            setSearchResults(mockResults);
+            setShowSearchResults(true);
+        } else {
+            setShowSearchResults(false);
         }
     };
 
     const handleDashboardRedirect = () => {
         if (!user) return;
-        if (user.role === "admin") navigate("/admin/dashboard");
-        else if (user.role === "educator") navigate("/educator/dashboard");
-        else navigate("/student/dashboard");
+        const paths = {
+            admin: "/admin/dashboard",
+            educator: "/educator/dashboard",
+            student: "/student/dashboard"
+        };
+        navigate(paths[user.role] || paths.student);
     };
 
     const handleProgressClick = () => {
@@ -55,207 +91,249 @@ const Navbar = () => {
         else navigate("/student/progress");
     };
 
-    const navigationItems = [
-        { icon: <Home className="w-4 h-4" />, label: "Dashboard", onClick: handleDashboardRedirect },
-        { icon: <BookOpen className="w-4 h-4" />, label: "Learning", onClick: () => navigate("/student/learning") },
-        { icon: <Award className="w-4 h-4" />, label: "Achievements", onClick: () => navigate("/student/achievements") },
-        { icon: <BarChart3 className="w-4 h-4" />, label: "Progress", onClick: handleProgressClick }
+    const navigationItems = user?.role === "student" ? [
+        { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
+        { icon: <TrendingUp className="w-5 h-5" />, label: "Challenges", onClick: () => navigate("/student/challenge") },
+        { icon: <Calendar className="w-5 h-5" />, label: "This Week", onClick: () => navigate("/student/this-week") },
+        { icon: <BarChart3 className="w-5 h-5" />, label: "Progress", onClick: handleProgressClick }
+    ] : user?.role === "educator" ? [
+        { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
+        { icon: <User className="w-5 h-5" />, label: "Students", onClick: () => navigate("/educator/students") },
+        { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => navigate("/educator/analytics") },
+        { icon: <Gift className="w-5 h-5" />, label: "Rewards", onClick: () => navigate("/educator/rewards") },
+        { icon: <MessageSquare className="w-5 h-5" />, label: "Communication", onClick: () => navigate("/educator/communication") }
+    ] : [
+        { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
+        { icon: <User className="w-5 h-5" />, label: "Users", onClick: () => navigate("/admin/users") },
+        { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => navigate("/admin/analytics") },
+        { icon: <AlertCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/admin/pending-educators") }
     ];
 
     const profileMenuItems = [
-        { 
-            icon: <User className="w-4 h-4" />, 
-            label: "Profile", 
-            onClick: () => {
-                if (user?.role === "admin") navigate("/admin/profile");
-                else if (user?.role === "educator") navigate("/educator/profile");
-                else navigate("/student/profile");
-            } 
-        },
-        { 
-            icon: <Settings className="w-4 h-4" />, 
-            label: "Settings", 
-            onClick: () => {
-                if (user?.role === "admin") navigate("/admin/settings");
-                else if (user?.role === "educator") navigate("/educator/settings");
-                else navigate("/student/settings");
-            } 
-        },
-        { icon: <LogOut className="w-4 h-4" />, label: "Sign Out", onClick: logoutUser, danger: true }
+        { icon: <User className="w-5 h-5" />, label: "Profile", onClick: () => navigate(`/${user?.role}/profile`) },
+        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate(`/${user?.role}/settings`) },
+        { icon: <LogOut className="w-5 h-5" />, label: "Sign Out", onClick: logoutUser, danger: true }
+    ];
+
+    const helpMenuItems = [
+        { icon: <FileText className="w-5 h-5" />, label: "Documentation", onClick: () => window.open("#", "_blank") },
+        { icon: <MessageSquare className="w-5 h-5" />, label: "Support Chat", onClick: () => navigate("/student/support") },
+        { icon: <Briefcase className="w-5 h-5" />, label: "Financial Resources", onClick: () => navigate("/learn/financial-literacy") },
     ];
 
     const profileMenuVariants = {
-        hidden: { 
-            opacity: 0, 
-            scale: 0.95, 
-            y: -10,
-            transition: { duration: 0.15 }
-        },
-        visible: { 
-            opacity: 1, 
-            scale: 1, 
-            y: 0,
-            transition: { duration: 0.15 }
-        }
+        hidden: { opacity: 0, scale: 0.95, y: -10 },
+        visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.2, ease: "easeOut" } }
     };
 
-    // Close menus when clicking outside
     useEffect(() => {
-        const handleClickOutside = () => {
-            if (showProfileMenu || showMobileMenu) {
-                setShowProfileMenu(false);
-                setShowMobileMenu(false);
-            }
+        const handleClickOutside = (event) => {
+            if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) setShowProfileMenu(false);
+            if (searchInputRef.current && !searchInputRef.current.contains(event.target)) setShowSearchResults(false);
+            if (helpMenuRef.current && !helpMenuRef.current.contains(event.target)) setShowHelpMenu(false);
+            if (showMobileMenu && !event.target.closest('.mobile-menu-button')) setShowMobileMenu(false);
         };
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
-    }, [showProfileMenu, showMobileMenu]);
+    }, [showProfileMenu, showMobileMenu, showSearchResults]);
 
-    // Fetch notifications count (unread) on mount and via socket
     useEffect(() => {
         const fetchUnreadCount = async () => {
             try {
-                const response = await fetch(`${import.meta.env.VITE_API}/notifications/unread-count`, {
-                    credentials: 'include'
-                });
-                if (response.ok) {
-                    const data = await response.json();
-                    setUnreadCount(data.count || 0);
-                }
+                const response = await api.get('/api/notifications/unread-count');
+                if (response.status === 200) setUnreadCount(response.data.count || 0);
             } catch {
                 setUnreadCount(0);
             }
         };
         fetchUnreadCount();
-        // Listen for real-time notification updates
-        if (socket) {
-            socket.on('student:notifications:update', fetchUnreadCount);
-            return () => socket.off('student:notifications:update', fetchUnreadCount);
+        if (socket?.socket) {
+            socket.socket.on('student:notifications:update', fetchUnreadCount);
+            return () => socket.socket.off('student:notifications:update', fetchUnreadCount);
         }
     }, [socket]);
 
     return (
         <>
-            <header className="w-full bg-white border-b border-gray-200 shadow-sm sticky top-0 z-50">
+            <header className="w-full bg-gray-100 border-b border-gray-200 shadow-sm sticky top-0 z-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16">
                         {/* Logo/Brand */}
-                        <div className="flex items-center">
-                            <motion.div
-                                className="flex-shrink-0 flex items-center cursor-pointer"
-                                onClick={handleDashboardRedirect}
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                            >
-                                <div className="w-8 h-8 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center text-white font-bold text-sm mr-3">
-                                    FM
-                                </div>
-                                <div className="hidden md:block">
-                                    <h1 className="text-xl font-semibold text-gray-900">FinMen</h1>
-                                    <p className="text-xs text-gray-500 -mt-1">{getDashboardLabel()}</p>
-                                </div>
-                            </motion.div>
-                        </div>
+                        <motion.div
+                            className="flex-shrink-0 flex items-center cursor-pointer"
+                            onClick={handleDashboardRedirect}
+                            whileHover={{ scale: 1.03 }}
+                            whileTap={{ scale: 0.97 }}
+                        >
+                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                <Zap className="w-6 h-6" />
+                            </div>
+                            <div className="ml-3">
+                                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">FinMen</h1>
+                                <p className="text-sm text-gray-600">{getDashboardLabel()}</p>
+                            </div>
+                        </motion.div>
 
                         {/* Desktop Navigation */}
-                        <div className="hidden md:block">
-                            <div className="ml-10 flex items-baseline space-x-4">
-                                {navigationItems.map((item, index) => (
-                                    <motion.button
-                                        key={index}
-                                        onClick={item.onClick}
-                                        className="flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50 transition-colors"
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                    >
-                                        {item.icon}
-                                        <span>{item.label}</span>
-                                    </motion.button>
-                                ))}
-                            </div>
-                        </div>
+                        <nav className="hidden md:flex items-center space-x-4">
+                            {navigationItems.map((item, index) => (
+                                <motion.button
+                                    key={index}
+                                    onClick={item.onClick}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-indigo-100 hover:text-indigo-600 transition-all duration-200"
+                                    whileHover={{ scale: 1.03 }}
+                                    whileTap={{ scale: 0.97 }}
+                                >
+                                    {item.icon}
+                                    <span>{item.label}</span>
+                                </motion.button>
+                            ))}
+                        </nav>
 
                         {/* Right Side */}
                         <div className="flex items-center space-x-4">
-                            {/* Search - Hidden on mobile */}
-                            <div className="hidden lg:block">
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Search..."
-                                        className="w-64 pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
-                                    />
-                                </div>
+                            {/* Search */}
+                            <div className="relative" ref={searchInputRef}>
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    placeholder="Search..."
+                                    value={searchQuery}
+                                    onChange={handleSearch}
+                                    className="w-64 pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-200"
+                                />
+                                <AnimatePresence>
+                                    {showSearchResults && searchResults.length > 0 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: -10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            exit={{ opacity: 0, y: -10 }}
+                                            className="absolute w-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50"
+                                        >
+                                            <div className="px-4 py-2 border-b border-gray-100 bg-gray-50">
+                                                <p className="text-xs font-medium text-gray-500">Search Results</p>
+                                            </div>
+                                            {searchResults.map((result) => (
+                                                <Link
+                                                    key={result.id}
+                                                    to={result.path}
+                                                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-all duration-200"
+                                                    onClick={() => {
+                                                        setShowSearchResults(false);
+                                                        setSearchQuery("");
+                                                    }}
+                                                >
+                                                    <div>
+                                                        <p className="text-sm font-medium text-gray-800">{result.title}</p>
+                                                        <p className="text-xs text-gray-500">{result.type}</p>
+                                                    </div>
+                                                    <span className="text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full">{result.type}</span>
+                                                </Link>
+                                            ))}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* Help Menu */}
+                            <div className="relative" ref={helpMenuRef}>
+                                <motion.button
+                                    className="p-2.5 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-all duration-200"
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowHelpMenu(!showHelpMenu);
+                                    }}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                >
+                                    <HelpCircle className="w-6 h-6" />
+                                </motion.button>
+                                <AnimatePresence>
+                                    {showHelpMenu && (
+                                        <motion.div
+                                            variants={profileMenuVariants}
+                                            initial="hidden"
+                                            animate="visible"
+                                            exit="hidden"
+                                            className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
+                                        >
+                                            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
+                                                <p className="text-sm font-medium text-gray-900">Help & Resources</p>
+                                            </div>
+                                            {helpMenuItems.map((item, index) => (
+                                                <motion.button
+                                                    key={index}
+                                                    onClick={() => {
+                                                        item.onClick();
+                                                        setShowHelpMenu(false);
+                                                    }}
+                                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-all duration-200"
+                                                    whileHover={{ x: 3 }}
+                                                >
+                                                    {item.icon}
+                                                    <span>{item.label}</span>
+                                                </motion.button>
+                                            ))}
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
 
                             {user && (
                                 <>
-                                    {/* Student-specific elements */}
                                     {user.role === "student" && (
-                                        <div className="flex items-center space-x-3">
-                                            {/* Wallet Balance */}
-                                            <motion.button
-                                                className="flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-200 rounded-lg text-green-700 font-medium text-sm hover:bg-green-100 transition-colors"
-                                                whileHover={{ scale: 1.05 }}
-                                                whileTap={{ scale: 0.95 }}
-                                                onClick={() => navigate("/student/wallet")}
-                                            >
-                                                <Wallet className="w-4 h-4" />
-                                                <span className="hidden sm:block">
-                                                    ₹{wallet?.balance || 0}
-                                                </span>
-                                            </motion.button>
+                                        <motion.button
+                                            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg font-medium text-sm shadow-md hover:bg-green-600 transition-all duration-200"
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.97 }}
+                                            onClick={() => navigate("/student/wallet")}
+                                        >
+                                            <Wallet className="w-5 h-5" />
+                                            <span className="hidden sm:block">₹{wallet?.balance || 0}</span>
+                                        </motion.button>
+                                    )}
 
-                                            {/* Notifications */}
-                                            <motion.button
-                                                className="relative p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
-                                                whileHover={{ scale: 1.1 }}
-                                                whileTap={{ scale: 0.9 }}
-                                                onClick={() => {
-                                                    if (user?.role === "admin") navigate("/admin/notifications");
-                                                    else if (user?.role === "educator") navigate("/educator/notifications");
-                                                    else navigate("/student/notifications");
-                                                }}
-                                            >
-                                                <Bell className="w-5 h-5" />
-                                                {unreadCount > 0 && (
-                                                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium animate-pulse">
-                                                        {unreadCount}
-                                                    </span>
-                                                )}
-                                            </motion.button>
-                                        </div>
+                                    {(user.role === "student" || user.role === "educator" || user.role === "admin") && (
+                                        <motion.button
+                                            className="relative p-2.5 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-all duration-200"
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => navigate(`/${user.role}/notifications`)}
+                                        >
+                                            <Bell className="w-6 h-6" />
+                                            {unreadCount > 0 && (
+                                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                                                    {unreadCount}
+                                                </span>
+                                            )}
+                                        </motion.button>
                                     )}
 
                                     {/* Profile Menu */}
-                                    <div className="relative">
+                                    <div className="relative" ref={profileMenuRef}>
                                         <motion.button
-                                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-50 transition-colors"
+                                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-indigo-100 transition-all duration-200"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setShowProfileMenu(!showProfileMenu);
                                             }}
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
+                                            whileHover={{ scale: 1.03 }}
+                                            whileTap={{ scale: 0.97 }}
                                         >
-                                            <img
-                                                src={user.avatar || "/default-avatar.png"}
-                                                alt="Profile"
-                                                className="w-8 h-8 rounded-full object-cover border border-gray-200"
-                                            />
-                                            <div className="hidden md:block text-left">
-                                                <div className="text-sm font-medium text-gray-900">
-                                                    {user.name || "User"}
-                                                </div>
-                                                <div className="text-xs text-gray-500 capitalize">
-                                                    {user.role}
-                                                </div>
+                                            <div className="relative">
+                                                <img
+                                                    src={user.avatar || "/default-avatar.png"}
+                                                    alt="Profile"
+                                                    className="w-10 h-10 rounded-full object-cover border-2 border-indigo-100 shadow-md"
+                                                />
+                                                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
                                             </div>
-                                            <ChevronDown className="w-4 h-4 text-gray-400" />
+                                            <div className="hidden md:block text-left">
+                                                <p className="text-sm font-medium text-gray-900">{user.name || "User"}</p>
+                                                <p className="text-xs text-gray-600 capitalize">{user.role}</p>
+                                            </div>
+                                            <ChevronDown className="w-5 h-5 text-gray-400" />
                                         </motion.button>
-
-                                        {/* Profile Dropdown */}
                                         <AnimatePresence>
                                             {showProfileMenu && (
                                                 <motion.div
@@ -263,18 +341,24 @@ const Navbar = () => {
                                                     initial="hidden"
                                                     animate="visible"
                                                     exit="hidden"
-                                                    className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50"
-                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
                                                 >
-                                                    <div className="px-4 py-2 border-b border-gray-100">
-                                                        <div className="text-sm font-medium text-gray-900">
-                                                            {user.name}
+                                                    <div className="px-4 py-4 border-b border-gray-100 bg-gray-50">
+                                                        <div className="flex items-center gap-3 mb-2">
+                                                            <img
+                                                                src={user.avatar || "/default-avatar.png"}
+                                                                alt="Profile"
+                                                                className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
+                                                            />
+                                                            <div>
+                                                                <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                                                                <p className="text-xs text-gray-600 truncate">{user.email}</p>
+                                                            </div>
                                                         </div>
-                                                        <div className="text-xs text-gray-500">
-                                                            {user.email}
-                                                        </div>
+                                                        <span className="inline-block text-xs px-2.5 py-1 bg-indigo-100 text-indigo-800 rounded-full">
+                                                            {user.role === "student" ? "Student Account" : user.role === "educator" ? "Educator Account" : "Admin Account"}
+                                                        </span>
                                                     </div>
-                                                    
                                                     {profileMenuItems.map((item, index) => (
                                                         <motion.button
                                                             key={index}
@@ -282,12 +366,12 @@ const Navbar = () => {
                                                                 item.onClick();
                                                                 setShowProfileMenu(false);
                                                             }}
-                                                            className={`w-full flex items-center gap-3 px-4 py-2 text-left text-sm transition-colors ${
-                                                                item.danger 
-                                                                    ? 'text-red-600 hover:bg-red-50' 
+                                                            className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ${
+                                                                item.danger
+                                                                    ? 'text-red-600 hover:bg-red-50'
                                                                     : 'text-gray-700 hover:bg-gray-50'
                                                             }`}
-                                                            whileHover={{ x: 2 }}
+                                                            whileHover={{ x: 3 }}
                                                         >
                                                             {item.icon}
                                                             <span>{item.label}</span>
@@ -302,15 +386,15 @@ const Navbar = () => {
 
                             {/* Mobile Menu Button */}
                             <motion.button
-                                className="md:hidden p-2 text-gray-400 hover:text-gray-500 hover:bg-gray-100 rounded-lg"
+                                className="md:hidden p-2.5 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-all duration-200 mobile-menu-button"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setShowMobileMenu(!showMobileMenu);
                                 }}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
+                                whileHover={{ scale: 1.05 }}
+                                whileTap={{ scale: 0.95 }}
                             >
-                                {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                                {showMobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
                             </motion.button>
                         </div>
                     </div>
@@ -323,10 +407,9 @@ const Navbar = () => {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
-                            className="md:hidden border-t border-gray-200 bg-white"
-                            onClick={(e) => e.stopPropagation()}
+                            className="md:hidden border-t border-gray-200 bg-white shadow-lg"
                         >
-                            <div className="px-2 pt-2 pb-3 space-y-1">
+                            <div className="px-4 py-4 space-y-2">
                                 {navigationItems.map((item, index) => (
                                     <motion.button
                                         key={index}
@@ -334,7 +417,7 @@ const Navbar = () => {
                                             item.onClick();
                                             setShowMobileMenu(false);
                                         }}
-                                        className="flex items-center gap-3 w-full px-3 py-2 text-left text-base font-medium text-gray-700 hover:text-indigo-600 hover:bg-gray-50 rounded-md transition-colors"
+                                        className="flex items-center gap-3 w-full px-4 py-3 text-base font-medium text-gray-700 hover:bg-indigo-100 rounded-lg transition-all duration-200"
                                         whileHover={{ x: 4 }}
                                     >
                                         {item.icon}
@@ -342,22 +425,42 @@ const Navbar = () => {
                                     </motion.button>
                                 ))}
                             </div>
-                            
-                            {/* Mobile Search */}
-                            <div className="px-4 py-2 border-t border-gray-200">
+
+                            <div className="px-4 py-4 border-t border-gray-200">
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
                                     <input
                                         type="text"
                                         placeholder="Search..."
-                                        className="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                                        value={searchQuery}
+                                        onChange={handleSearch}
+                                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-200"
                                     />
                                 </div>
+                            </div>
+
+                            <div className="px-4 py-4 border-t border-gray-200">
+                                <p className="text-sm font-medium text-gray-500 mb-3">Help & Resources</p>
+                                {helpMenuItems.map((item, index) => (
+                                    <motion.button
+                                        key={index}
+                                        onClick={() => {
+                                            item.onClick();
+                                            setShowMobileMenu(false);
+                                        }}
+                                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200"
+                                        whileHover={{ x: 4 }}
+                                    >
+                                        {item.icon}
+                                        <span>{item.label}</span>
+                                    </motion.button>
+                                ))}
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </header>
+
             {showProgressModal && user?.role === "student" && (
                 <StudentProgressModal
                     studentId={user._id}

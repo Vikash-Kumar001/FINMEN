@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 
 const FilterableMoodHistory = () => {
     const [logs, setLogs] = useState([]);
@@ -11,7 +11,7 @@ const FilterableMoodHistory = () => {
 
     const fetchLogs = async () => {
         try {
-            const res = await axios.get(`/api/mood/history?filter=${filter}`);
+            const res = await api.get(`/api/mood/history?filter=${filter}`);
             setLogs(res.data);
         } catch (err) {
             console.error("Failed to fetch mood history:", err);

@@ -10,16 +10,28 @@ export const NotificationProvider = ({ children }) => {
     const [unreadCount, setUnreadCount] = useState(0);
 
     useEffect(() => {
-        if (!socket) return;
+        if (!socket || !socket.socket) return;
 
-        socket.on("newNotification", (notification) => {
-            setNotifications((prev) => [notification, ...prev]);
-            if (!notification.read) {
-                setUnreadCount(prev => prev + 1);
+        try {
+            socket.socket.on("newNotification", (notification) => {
+                setNotifications((prev) => [notification, ...prev]);
+                if (!notification.read) {
+                    setUnreadCount(prev => prev + 1);
+                }
+            });
+        } catch (err) {
+            console.error("❌ Error setting up notification listener:", err.message);
+        }
+
+        return () => {
+            try {
+                if (socket && socket.socket) {
+                    socket.socket.off("newNotification");
+                }
+            } catch (err) {
+                console.error("❌ Error cleaning up notification listener:", err.message);
             }
-        });
-
-        return () => socket.off("newNotification");
+        };
     }, [socket]);
 
     useEffect(() => {

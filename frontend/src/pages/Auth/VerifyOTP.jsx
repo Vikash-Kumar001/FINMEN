@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios";
+import api from "../../utils/api";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MailCheck, RefreshCw, ShieldCheck } from "lucide-react";
@@ -45,7 +45,7 @@ const VerifyOTP = () => {
         setSuccess("");
 
         try {
-            const res = await axios.post(`${import.meta.env.VITE_API}/auth/verify-otp`, {
+            const res = await api.post('/api/auth/verify-otp', {
                 email,
                 otp,
             });
@@ -74,7 +74,7 @@ const VerifyOTP = () => {
         setSuccess("");
 
         try {
-            await axios.post(`${import.meta.env.VITE_API}/auth/resend-otp`, { email });
+            await api.post('/api/auth/resend-otp', { email });
             setResendTimer(60);
             setResendDisabled(true);
             setSuccess("OTP resent successfully");

@@ -1,16 +1,21 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const missionProgressSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: "User",
     required: true,
   },
   completedMissions: [
     {
       missionId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'FinancialMission',
+        ref: "FinancialMission",
+        required: true,
+      },
+      level: {
+        type: String, // Added to store mission level for analytics
+        required: true,
       },
       completedAt: {
         type: Date,
@@ -23,5 +28,4 @@ const missionProgressSchema = new mongoose.Schema({
   badges: [String],
 }, { timestamps: true });
 
-const MissionProgress = mongoose.model('MissionProgress', missionProgressSchema);
-export default MissionProgress;
+export default mongoose.model("MissionProgress", missionProgressSchema);

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import api from "../utils/api";
 import {
   Bell,
   Info,
@@ -46,29 +47,29 @@ const notificationTypes = {
   info: {
     icon: Info,
     color: "text-blue-500",
-    bgColor: "bg-blue-50 dark:bg-blue-900/20",
-    borderColor: "border-blue-200 dark:border-blue-800",
+    bgColor: "bg-blue-50",
+    borderColor: "border-blue-200",
     gradient: "from-blue-500 to-indigo-500",
   },
   success: {
     icon: CheckCircle,
     color: "text-green-500",
-    bgColor: "bg-green-50 dark:bg-green-900/20",
-    borderColor: "border-green-200 dark:border-green-800",
+    bgColor: "bg-green-50",
+    borderColor: "border-green-200",
     gradient: "from-green-500 to-emerald-500",
   },
   warning: {
     icon: AlertCircle,
     color: "text-yellow-500",
-    bgColor: "bg-yellow-50 dark:bg-yellow-900/20",
-    borderColor: "border-yellow-200 dark:border-yellow-800",
+    bgColor: "bg-yellow-50",
+    borderColor: "border-yellow-200",
     gradient: "from-yellow-500 to-amber-500",
   },
   alert: {
     icon: XCircle,
     color: "text-red-500",
-    bgColor: "bg-red-50 dark:bg-red-900/20",
-    borderColor: "border-red-200 dark:border-red-800",
+    bgColor: "bg-red-50",
+    borderColor: "border-red-200",
     gradient: "from-red-500 to-pink-500",
   },
 };
@@ -147,18 +148,13 @@ const Notifications = () => {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/notifications`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
+      const response = await api.get('/api/notifications');
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Failed to fetch notifications");
       }
 
-      const data = await response.json();
-      setNotifications(data);
+      setNotifications(response.data);
     } catch (err) {
       console.error("Error fetching notifications:", err);
       setError("Failed to load notifications. Please try again later.");
@@ -221,14 +217,9 @@ const Notifications = () => {
 
   const markAsRead = async (id) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/notifications/${id}/read`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
+      const response = await api.put(`/api/notifications/${id}/read`);
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Failed to mark notification as read");
       }
 
@@ -243,14 +234,9 @@ const Notifications = () => {
 
   const markAllAsRead = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/notifications/read-all`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
+      const response = await api.put('/api/notifications/read-all');
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Failed to mark all notifications as read");
       }
 
@@ -264,14 +250,9 @@ const Notifications = () => {
 
   const deleteNotification = async (id) => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/notifications/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        }
-      });
+      const response = await api.delete(`/api/notifications/${id}`);
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Failed to delete notification");
       }
 
@@ -286,16 +267,11 @@ const Notifications = () => {
 
   const deleteSelectedNotifications = async () => {
     try {
-      const response = await fetch(`${import.meta.env.VITE_API_URL || ''}/api/notifications/batch`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`
-        },
-        body: JSON.stringify({ ids: selectedNotifications })
+      const response = await api.delete('/api/notifications/batch', {
+        data: { ids: selectedNotifications }
       });
 
-      if (!response.ok) {
+      if (response.status !== 200) {
         throw new Error("Failed to delete selected notifications");
       }
 
@@ -384,11 +360,11 @@ const Notifications = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
       {/* Animated Background Elements */}
       <div className="fixed inset-0 overflow-hidden -z-10">
         <motion.div
-          className="absolute -top-40 -left-40 w-80 h-80 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-70 dark:opacity-30"
+          className="absolute -top-40 -left-40 w-80 h-80 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70"
           animate={{
             x: [0, 30, 0],
             y: [0, 40, 0],
@@ -400,7 +376,7 @@ const Notifications = () => {
           }}
         />
         <motion.div
-          className="absolute top-20 -right-40 w-80 h-80 bg-indigo-300 dark:bg-indigo-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-70 dark:opacity-30"
+          className="absolute top-20 -right-40 w-80 h-80 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-70"
           animate={{
             x: [0, -30, 0],
             y: [0, 30, 0],
@@ -445,7 +421,7 @@ const Notifications = () => {
                 )}
               </h1>
 
-              <p className="text-gray-600 dark:text-gray-300 text-lg font-medium">
+              <p className="text-gray-600 text-lg font-medium">
                 Stay updated with your latest activities
               </p>
             </div>
@@ -457,30 +433,30 @@ const Notifications = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
-          className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 dark:border-gray-700/50 p-4 mb-6"
+          className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg border border-white/50 p-4 mb-6"
         >
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <button
                 onClick={selectAll}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                 aria-label="Select all"
               >
                 {selectedNotifications.length === filteredNotifications.length && filteredNotifications.length > 0 ? (
                   <CheckSquare className="w-5 h-5 text-indigo-500" />
                 ) : (
-                  <Square className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                  <Square className="w-5 h-5 text-gray-500" />
                 )}
               </button>
 
               <div className="relative">
                 <button
                   onClick={() => setShowActions(!showActions)}
-                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                  className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                   aria-label="More actions"
                   disabled={selectedNotifications.length === 0}
                 >
-                  <MoreVertical className={`w-5 h-5 ${selectedNotifications.length === 0 ? 'text-gray-400 dark:text-gray-600' : 'text-gray-600 dark:text-gray-300'}`} />
+                  <MoreVertical className={`w-5 h-5 ${selectedNotifications.length === 0 ? 'text-gray-400' : 'text-gray-600'}`} />
                 </button>
 
                 <AnimatePresence>
@@ -489,18 +465,18 @@ const Notifications = () => {
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 z-10"
+                      className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-10"
                     >
                       <button
                         onClick={markAllAsRead}
-                        className="w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors rounded-t-xl"
+                        className="w-full text-left px-4 py-3 flex items-center gap-2 hover:bg-gray-100 transition-colors rounded-t-xl"
                       >
                         <Eye className="w-4 h-4 text-indigo-500" />
                         <span>Mark as read</span>
                       </button>
                       <button
                         onClick={deleteSelectedNotifications}
-                        className="w-full text-left px-4 py-3 flex items-center gap-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors rounded-b-xl"
+                        className="w-full text-left px-4 py-3 flex items-center gap-2 text-red-500 hover:bg-red-50 transition-colors rounded-b-xl"
                       >
                         <Trash2 className="w-4 h-4" />
                         <span>Delete selected</span>
@@ -512,22 +488,22 @@ const Notifications = () => {
 
               <button
                 onClick={fetchNotifications}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                 aria-label="Refresh"
               >
-                <RefreshCw className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <RefreshCw className="w-5 h-5 text-gray-500" />
               </button>
 
               <button
                 onClick={toggleSortOrder}
-                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors flex items-center gap-1"
+                className="p-2 rounded-lg hover:bg-gray-100 transition-colors flex items-center gap-1"
                 aria-label="Sort order"
               >
-                <Clock className="w-5 h-5 text-gray-500 dark:text-gray-400" />
+                <Clock className="w-5 h-5 text-gray-500" />
                 {sortOrder === "newest" ? (
-                  <ArrowDown className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                  <ArrowDown className="w-3 h-3 text-gray-500" />
                 ) : (
-                  <ArrowUp className="w-3 h-3 text-gray-500 dark:text-gray-400" />
+                  <ArrowUp className="w-3 h-3 text-gray-500" />
                 )}
               </button>
             </div>
@@ -541,7 +517,7 @@ const Notifications = () => {
                   onChange={(e) => setSearchQuery(e.target.value)}
                   onFocus={() => setIsSearching(true)}
                   onBlur={() => setIsSearching(false)}
-                  className="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm transition-all dark:text-white"
+                  className="w-full sm:w-64 pl-10 pr-4 py-2 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 bg-white/50 backdrop-blur-sm transition-all"
                 />
                 <Search className={`absolute left-3 top-2.5 w-4 h-4 ${isSearching ? 'text-indigo-500' : 'text-gray-400'}`} />
               </div>
@@ -549,10 +525,10 @@ const Notifications = () => {
               <div className="relative">
                 <button
                   onClick={() => setFilter(prev => prev === "all" ? "unread" : prev === "unread" ? "read" : "all")}
-                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm"
+                  className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors bg-white/50 backdrop-blur-sm"
                 >
                   <Filter className="w-4 h-4 text-indigo-500" />
-                  <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <span className="text-sm font-medium text-gray-700">
                     {filter === "all" ? "All" : filter === "unread" ? "Unread" : "Read"}
                   </span>
                   <ChevronDown className="w-4 h-4 text-gray-400" />
@@ -567,12 +543,12 @@ const Notifications = () => {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.3 }}
-          className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 dark:border-gray-700/50 overflow-hidden"
+          className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 overflow-hidden"
         >
           {loading ? (
             <div className="flex flex-col items-center justify-center py-12">
               <Loader className="w-8 h-8 text-indigo-500 animate-spin mb-4" />
-              <p className="text-gray-500 dark:text-gray-400">Loading notifications...</p>
+              <p className="text-gray-500">Loading notifications...</p>
             </div>
           ) : error ? (
             <div className="flex flex-col items-center justify-center py-12">
@@ -588,8 +564,8 @@ const Notifications = () => {
             </div>
           ) : filteredNotifications.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-12">
-              <Bell className="w-12 h-12 text-gray-300 dark:text-gray-600 mb-4" />
-              <p className="text-gray-500 dark:text-gray-400 text-lg mb-2">
+              <Bell className="w-12 h-12 text-gray-300 mb-4" />
+              <p className="text-gray-500 text-lg mb-2">
                 {searchQuery
                   ? "No notifications match your search"
                   : filter === "unread"
@@ -608,7 +584,7 @@ const Notifications = () => {
               )}
             </div>
           ) : (
-            <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+            <ul className="divide-y divide-gray-100">
               {filteredNotifications.map((notification) => {
                 const { icon: IconComponent, type } = getNotificationIcon(notification);
                 const typeConfig = notificationTypes[type];
@@ -639,17 +615,17 @@ const Notifications = () => {
 
                       <div className="flex-1 cursor-pointer" onClick={() => handleNotificationClick(notification)}>
                         <div className="flex items-center justify-between">
-                          <h3 className={`text-base font-semibold ${notification.read ? 'text-gray-700 dark:text-gray-300' : 'text-gray-900 dark:text-white'}`}>
+                          <h3 className={`text-base font-semibold ${notification.read ? 'text-gray-700' : 'text-gray-900'}`}>
                             {notification.title}
                           </h3>
                           <div className="flex items-center">
-                            <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center">
+                            <span className="text-xs text-gray-500 flex items-center">
                               <Clock className="w-3 h-3 mr-1" />
                               {formatTimestamp(notification.timestamp)}
                             </span>
                           </div>
                         </div>
-                        <p className={`mt-1 text-sm ${notification.read ? 'text-gray-500 dark:text-gray-400' : 'text-gray-600 dark:text-gray-300'}`}>
+                        <p className={`mt-1 text-sm ${notification.read ? 'text-gray-500' : 'text-gray-600'}`}>
                           {notification.content}
                         </p>
                       </div>
@@ -658,7 +634,7 @@ const Notifications = () => {
                         {!notification.read && (
                           <button
                             onClick={() => markAsRead(notification.id)}
-                            className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                            className="p-1 rounded-full hover:bg-gray-100 transition-colors"
                             aria-label="Mark as read"
                           >
                             <Eye className="w-5 h-5 text-gray-400 hover:text-indigo-500" />
@@ -666,7 +642,7 @@ const Notifications = () => {
                         )}
                         <button
                           onClick={() => deleteNotification(notification.id)}
-                          className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                          className="p-1 rounded-full hover:bg-gray-100 transition-colors"
                           aria-label="Delete"
                         >
                           <Trash2 className="w-5 h-5 text-gray-400 hover:text-red-500" />

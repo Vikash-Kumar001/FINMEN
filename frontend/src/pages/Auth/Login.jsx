@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../context/AuthContext';
-import axios from 'axios';
+import api from '../../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, Sparkles, ArrowRight, User } from 'lucide-react';
 
@@ -28,10 +28,9 @@ const Login = () => {
         }
 
         try {
-            const response = await axios.post(
-                `${import.meta.env.VITE_API}/auth/login`,
-                { email, password },
-                { withCredentials: true }
+            const response = await api.post(
+                `/api/auth/login`,
+                { email, password }
             );
 
             const { token, user } = response.data;
@@ -78,10 +77,9 @@ const Login = () => {
         setIsLoading(true);
         try {
             const token = credentialResponse.credential;
-            const res = await axios.post(
-                `${import.meta.env.VITE_API}/auth/google`,
-                { token },
-                { withCredentials: true }
+            const res = await api.post(
+                `/api/auth/google`,
+                { token }
             );
 
             localStorage.setItem('finmen_token', res.data.token);
@@ -237,7 +235,9 @@ const Login = () => {
                                         onError={() => setError('Google login failed.')}
                                         theme="filled_black"
                                         size="large"
-                                        width="100%"
+                                        width="300"
+                                        text="signin_with"
+                                        shape="rectangular"
                                     />
                                 </div>
                             </div>

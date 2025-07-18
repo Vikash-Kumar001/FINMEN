@@ -12,20 +12,39 @@ const StudentGame = () => {
     const { user } = useAuth();
 
     useEffect(() => {
-        if (socket && user) {
-            socket.emit('student:missions:subscribe', { studentId: user._id, level });
-            socket.on('student:missions:data', data => setMissions(data));
-            socket.on('student:progress:data', data => setProgress(data));
-            return () => {
-                socket.off('student:missions:data');
-                socket.off('student:progress:data');
-            };
+        if (socket && socket.socket && user) {
+            try {
+                socket.socket.emit('student:missions:subscribe', { studentId: user._id, level });
+                socket.socket.on('student:missions:data', data => setMissions(data));
+                socket.socket.on('student:progress:data', data => setProgress(data));
+                
+                return () => {
+                    try {
+                        if (socket && socket.socket) {
+                            socket.socket.off('student:missions:data');
+                            socket.socket.off('student:progress:data');
+                        }
+                    } catch (err) {
+                        console.error("❌ Error removing mission listeners:", err.message);
+                    }
+                };
+            } catch (err) {
+                console.error("❌ Error setting up mission listeners:", err.message);
+            }
         }
     }, [socket, user, level]);
 
     const handleComplete = async (missionId) => {
         setLoading(true);
-        socket.emit('student:missions:complete', { studentId: user._id, missionId });
+        if (socket && socket.socket) {
+            try {
+                socket.socket.emit('student:missions:complete', { studentId: user._id, missionId });
+            } catch (err) {
+                console.error("❌ Error completing mission:", err.message);
+            }
+        } else {
+            console.error("❌ Socket not available for completing mission");
+        }
         setLoading(false); // Real-time update should come via socket automatically
     };
 

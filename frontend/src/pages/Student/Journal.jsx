@@ -9,6 +9,7 @@ import "react-calendar/dist/Calendar.css";
 import ReactMarkdown from "react-markdown";
 import { logActivity } from "../../services/activityService";
 import { toast } from "react-toastify";
+import api from "../../utils/api";
 import {
     BookOpen,
     Search,
@@ -55,9 +56,8 @@ export default function Journal() {
         // Fetch journal prompts from API
         const fetchJournalPrompts = async () => {
             try {
-                const response = await fetch('/api/journal/prompts');
-                const data = await response.json();
-                setJournalPrompts(data);
+                const response = await api.get('/api/journal/prompts');
+                setJournalPrompts(response.data);
             } catch (error) {
                 console.error('Error fetching journal prompts:', error);
                 // Set default prompts if fetch fails
@@ -87,41 +87,55 @@ export default function Journal() {
 
     // Socket setup
     useEffect(() => {
-        if (socket && user) {
+        if (socket && socket.socket && user) {
             // Log page view when component mounts
             logActivity({
                 activityType: "page_view",
                 description: "Viewed journal page"
             });
             
-            socket.emit("student:journal:subscribe", { studentId: user._id });
+            try {
+                socket.socket.emit("student:journal:subscribe", { studentId: user._id });
+            } catch (err) {
+                console.error("❌ Error subscribing to journal:", err.message);
+            }
 
-            socket.on("student:journal:data", (data) => {
-                setEntries(data || []);
-                setLoading(false);
-                updateStats(data || []);
-            });
-
-            socket.on("student:journal:update", (update) => {
-                setEntries((prev) => {
-                    const updated = [
-                        update,
-                        ...prev.filter((entry) => entry._id !== update._id),
-                    ];
-                    updateStats(updated);
-                    return updated;
+            try {
+                socket.socket.on("student:journal:data", (data) => {
+                    setEntries(data || []);
+                    setLoading(false);
+                    updateStats(data || []);
                 });
-            });
 
-            socket.on("student:journal:refresh", (data) => {
-                setEntries(data || []);
-                updateStats(data || []);
-            });
+                socket.socket.on("student:journal:update", (update) => {
+                    setEntries((prev) => {
+                        const updated = [
+                            update,
+                            ...prev.filter((entry) => entry._id !== update._id),
+                        ];
+                        updateStats(updated);
+                        return updated;
+                    });
+                });
+
+                socket.socket.on("student:journal:refresh", (data) => {
+                    setEntries(data || []);
+                    updateStats(data || []);
+                });
+            } catch (err) {
+                console.error("❌ Error setting up journal event listeners:", err.message);
+            }
 
             return () => {
-                socket.off("student:journal:data");
-                socket.off("student:journal:update");
-                socket.off("student:journal:refresh");
+                try {
+                    if (socket && socket.socket) {
+                        socket.socket.off("student:journal:data");
+                        socket.socket.off("student:journal:update");
+                        socket.socket.off("student:journal:refresh");
+                    }
+                } catch (err) {
+                    console.error("❌ Error removing journal event listeners:", err.message);
+                }
             };
         }
     }, [socket, user]);
@@ -193,11 +207,19 @@ export default function Journal() {
         };
 
         if (editingEntry) {
-            socket.emit("student:journal:update", {
-                studentId: user._id,
-                entryId: editingEntry._id,
-                payload,
-            });
+            try {
+                if (socket && socket.socket) {
+                    socket.socket.emit("student:journal:update", {
+                        studentId: user._id,
+                        entryId: editingEntry._id,
+                        payload,
+                    });
+                }
+            } catch (err) {
+                console.error("❌ Error updating journal entry:", err.message);
+                toast.error("Failed to update journal entry. Please try again.");
+                return;
+            }
             
             // Log journal entry update activity
             logActivity({
@@ -216,10 +238,18 @@ export default function Journal() {
             
             toast.success("Journal entry updated successfully!");
         } else {
-            socket.emit("student:journal:create", {
-                studentId: user._id,
-                payload,
-            });
+            try {
+                if (socket && socket.socket) {
+                    socket.socket.emit("student:journal:create", {
+                        studentId: user._id,
+                        payload,
+                    });
+                }
+            } catch (err) {
+                console.error("❌ Error creating journal entry:", err.message);
+                toast.error("Failed to create journal entry. Please try again.");
+                return;
+            }
             
             // Log journal entry creation activity
             logActivity({
@@ -260,10 +290,18 @@ export default function Journal() {
             // Find the entry to be deleted for logging purposes
             const entryToDelete = entries.find(entry => entry._id === id);
             
-            socket.emit("student:journal:delete", {
-                studentId: user._id,
-                entryId: id,
-            });
+            try {
+                if (socket && socket.socket) {
+                    socket.socket.emit("student:journal:delete", {
+                        studentId: user._id,
+                        entryId: id,
+                    });
+                }
+            } catch (err) {
+                console.error("❌ Error deleting journal entry:", err.message);
+                toast.error("Failed to delete journal entry. Please try again.");
+                return;
+            }
             
             // Log journal entry deletion activity
             if (entryToDelete) {

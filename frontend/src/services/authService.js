@@ -2,8 +2,8 @@ import api from "../utils/api";
 
 // Fetch current authenticated user
 export const getCurrentUser = () => 
-  api.get("/auth/me");
+  api.get("/api/auth/me");
 
 // Logout the current user
 export const logout = () => 
-  api.post("/auth/logout");
+  api.post("/api/auth/logout");

@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { useSocket } from "../../context/SocketContext";
+import api from "../../utils/api";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -101,13 +102,8 @@ const Challenge = () => {
         const fetchChallenges = async () => {
             try {
                 setLoading(true);
-                const response = await fetch('/api/challenges/active');
-                
-                if (!response.ok) {
-                    throw new Error(`API error: ${response.status}`);
-                }
-                
-                const data = await response.json();
+                const response = await api.get('/api/challenges/active');
+                const data = response.data;
                 
                 // Process the challenges to add the icon component
                 const processedChallenges = data.map(challenge => ({
@@ -134,13 +130,8 @@ const Challenge = () => {
             if (!user) return;
             
             try {
-                const response = await fetch('/api/challenges/progress');
-                
-                if (!response.ok) {
-                    throw new Error(`API error: ${response.status}`);
-                }
-                
-                const data = await response.json();
+                const response = await api.get('/api/challenges/progress');
+                const data = response.data;
                 setUserProgress(data.progress || {});
                 setCompletedToday(data.completedToday || 0);
                 setDayStreak(data.streak || 0);
@@ -152,17 +143,31 @@ const Challenge = () => {
         fetchUserProgress();
         
         // Connect to socket for real-time updates
-        if (socket && user) {
-            socket.emit('student:challenges:subscribe', { studentId: user._id });
+        if (socket && socket.socket && user) {
+            try {
+                socket.socket.emit('student:challenges:subscribe', { studentId: user._id });
+            } catch (err) {
+                console.error("❌ Error subscribing to challenges:", err.message);
+            }
             
-            socket.on('student:challenges:progress', data => {
-                setUserProgress(prev => ({ ...prev, ...data.progress }));
-                if (data.completedToday !== undefined) setCompletedToday(data.completedToday);
-                if (data.streak !== undefined) setDayStreak(data.streak);
-            });
+            try {
+                socket.socket.on('student:challenges:progress', data => {
+                    setUserProgress(prev => ({ ...prev, ...data.progress }));
+                    if (data.completedToday !== undefined) setCompletedToday(data.completedToday);
+                    if (data.streak !== undefined) setDayStreak(data.streak);
+                });
+            } catch (err) {
+                console.error("❌ Error setting up challenge progress listener:", err.message);
+            }
             
             return () => {
-                socket.off('student:challenges:progress');
+                try {
+                    if (socket && socket.socket) {
+                        socket.socket.off('student:challenges:progress');
+                    }
+                } catch (err) {
+                    console.error("❌ Error removing challenge progress listener:", err.message);
+                }
             };
         }
     }, [socket, user]);
@@ -173,18 +178,8 @@ const Challenge = () => {
     
     const handleChallengeStart = async (challengeId) => {
         try {
-            const response = await fetch(`/api/challenges/start/${challengeId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`API error: ${response.status}`);
-            }
-            
-            const data = await response.json();
+            const response = await api.post(`/api/challenges/start/${challengeId}`);
+            const data = response.data;
             
             // Update local state with the new progress
             setUserProgress(prev => ({

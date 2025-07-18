@@ -9,14 +9,26 @@ const SubmitFeedbackModal = ({ student, onClose }) => {
     const { user } = useAuth();
 
     const handleSubmit = () => {
+        if (!socket || !socket.socket) {
+            console.error("❌ Socket not available for submitting feedback");
+            alert("Connection error. Please try again.");
+            return;
+        }
+        
         setSubmitting(true);
-        socket.emit('student:feedback:submit', {
-            studentId: student._id,
-            feedback,
-            from: user?._id
-        });
-        onClose();
-        setSubmitting(false);
+        try {
+            socket.socket.emit('student:feedback:submit', {
+                studentId: student._id,
+                feedback,
+                from: user?._id
+            });
+            onClose();
+        } catch (err) {
+            console.error("❌ Error submitting feedback:", err.message);
+            alert("Failed to submit feedback. Please try again.");
+        } finally {
+            setSubmitting(false);
+        }
     };
 
     return (

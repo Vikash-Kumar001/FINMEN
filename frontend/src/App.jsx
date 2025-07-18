@@ -97,14 +97,14 @@ const App = () => {
 
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center text-lg text-gray-600 dark:text-white bg-white dark:bg-gray-900">
+      <div className="h-screen flex items-center justify-center text-lg text-gray-600 bg-white">
         Loading...
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
+    <div className="min-h-screen bg-gray-100">
       {!isAuthPage && <Navbar />}
       {!isAuthPage && user && <Chatbot />} {/* ✅ Floating Chatbot */}
 

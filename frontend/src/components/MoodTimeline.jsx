@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 
 const MoodTimeline = () => {
     const [moods, setMoods] = useState([]);
@@ -7,7 +7,7 @@ const MoodTimeline = () => {
     useEffect(() => {
         const fetchLogs = async () => {
             try {
-                const res = await axios.get("/api/mood/my-logs");
+                const res = await api.get("/api/mood/my-logs");
                 setMoods(res.data);
             } catch (err) {
                 console.error("Failed to load mood logs", err);

@@ -14,15 +14,31 @@ export default function AdminStatsPanel() {
     const { user } = useAuth();
 
     useEffect(() => {
-        if (socket && user) {
-            socket.emit('admin:stats:subscribe', { adminId: user._id });
-            socket.on('admin:stats:data', setStats);
-            socket.on('admin:stats:update', update =>
-                setStats(prev => ({ ...prev, ...update }))
-            );
+        if (socket && socket.socket && user) {
+            try {
+                try {
+                    socket.socket.emit('admin:stats:subscribe', { adminId: user._id });
+                } catch (err) {
+                    console.error("❌ Error subscribing to admin stats:", err.message);
+                }
+                
+                socket.socket.on('admin:stats:data', setStats);
+                socket.socket.on('admin:stats:update', update =>
+                    setStats(prev => ({ ...prev, ...update }))
+                );
+            } catch (err) {
+                console.error("❌ Error setting up admin stats socket listeners:", err.message);
+            }
+            
             return () => {
-                socket.off('admin:stats:data');
-                socket.off('admin:stats:update');
+                try {
+                    if (socket && socket.socket) {
+                        socket.socket.off('admin:stats:data');
+                        socket.socket.off('admin:stats:update');
+                    }
+                } catch (err) {
+                    console.error("❌ Error cleaning up admin stats socket listeners:", err.message);
+                }
             };
         }
     }, [socket, user]);

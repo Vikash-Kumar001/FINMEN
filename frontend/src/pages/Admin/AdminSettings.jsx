@@ -114,8 +114,8 @@ const AdminSettings = () => {
         setLoading(true);
         
         // Emit socket event to save admin settings
-        if (socket && user) {
-            socket.emit('admin:settings:save', { 
+        if (socket && socket.socket && user) {
+            socket.socket.emit('admin:settings:save', { 
                 adminId: user._id,
                 systemSettings,
                 notificationSettings,

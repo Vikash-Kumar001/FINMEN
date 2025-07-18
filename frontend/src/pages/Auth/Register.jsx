@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import api from '../../utils/api';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, UserPlus, ArrowRight, Shield, Zap } from 'lucide-react';
@@ -59,16 +59,16 @@ const Register = () => {
 
         try {
             // Register the user
-            await axios.post(`${import.meta.env.VITE_API}/auth/register`, {
+            await api.post(`/api/auth/register`, {
                 email,
                 password
-            }, { withCredentials: true });
+            });
             
             // Now log in the user
-            const res = await axios.post(`${import.meta.env.VITE_API}/auth/login`, {
+            const res = await api.post(`/api/auth/login`, {
                 email,
                 password
-            }, { withCredentials: true });
+            });
             
             localStorage.setItem('finmen_token', res.data.token);
             const user = await fetchUser();

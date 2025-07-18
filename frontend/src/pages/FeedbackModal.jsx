@@ -12,15 +12,28 @@ export default function FeedbackModal({ studentId, onClose }) {
 
     const submitFeedback = () => {
         if (!feedback.trim()) return alert("Please write feedback before submitting.");
+        
+        if (!socket || !socket.socket) {
+            console.error("❌ Socket not available for submitting feedback");
+            alert("Connection error. Please try again.");
+            return;
+        }
+        
         setLoading(true);
-        socket.emit('student:feedback:submit', {
-            studentId,
-            feedback,
-            from: user?._id
-        });
-        setSuccess(true);
-        setFeedback("");
-        setLoading(false);
+        try {
+            socket.socket.emit('student:feedback:submit', {
+                studentId,
+                feedback,
+                from: user?._id
+            });
+            setSuccess(true);
+            setFeedback("");
+        } catch (err) {
+            console.error("❌ Error submitting feedback:", err.message);
+            alert("Failed to submit feedback. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (

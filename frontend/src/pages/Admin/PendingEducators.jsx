@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useSocket } from "../../context/SocketContext";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-hot-toast";
-import axios from "axios";
+import api from "../../utils/api";
 
 const ITEMS_PER_PAGE = 5;
 
@@ -22,7 +22,7 @@ const PendingEducators = () => {
     const fetchPendingEducators = async () => {
         try {
             setLoading(true);
-            const response = await axios.get("/api/admin/educators/pending");
+            const response = await api.get("/api/admin/educators/pending");
             setPending(response.data.educators || []);
         } catch (error) {
             console.error("Error fetching pending educators:", error);
@@ -38,43 +38,57 @@ const PendingEducators = () => {
 
     // Socket real-time updates
     useEffect(() => {
-        if (socket && user) {
-            socket.emit("admin:join", { adminId: user._id });
+        if (socket && socket.socket && user) {
+            try {
+                socket.socket.emit("admin:join", { adminId: user._id });
 
-            socket.on("educator:registered", (data) => {
-                setPending((prev) => [data.educator, ...prev]);
-                toast.info(`New educator registration: ${data.educator.name}`);
-            });
+                socket.socket.on("educator:registered", (data) => {
+                    setPending((prev) => [data.educator, ...prev]);
+                    toast.info(`New educator registration: ${data.educator.name}`);
+                });
 
-            socket.on("educator:approved", (data) => {
-                setPending((prev) => prev.filter((edu) => edu._id !== data.educator._id));
-                toast.success(`Educator ${data.educator.name} approved`);
-            });
+                socket.socket.on("educator:approved", (data) => {
+                    setPending((prev) => prev.filter((edu) => edu._id !== data.educator._id));
+                    toast.success(`Educator ${data.educator.name} approved`);
+                });
 
-            socket.on("educator:rejected", (data) => {
-                setPending((prev) => prev.filter((edu) => edu._id !== data.educator._id));
-                toast.info(`Educator ${data.educator.name} rejected`);
-            });
+                socket.socket.on("educator:rejected", (data) => {
+                    setPending((prev) => prev.filter((edu) => edu._id !== data.educator._id));
+                    toast.info(`Educator ${data.educator.name} rejected`);
+                });
 
-            return () => {
-                socket.off("educator:registered");
-                socket.off("educator:approved");
-                socket.off("educator:rejected");
-            };
+                return () => {
+                    try {
+                        if (socket && socket.socket) {
+                            socket.socket.off("educator:registered");
+                            socket.socket.off("educator:approved");
+                            socket.socket.off("educator:rejected");
+                        }
+                    } catch (err) {
+                        console.error("❌ Error removing educator listeners:", err.message);
+                    }
+                };
+            } catch (err) {
+                console.error("❌ Error setting up educator listeners:", err.message);
+            }
         }
     }, [socket, user]);
 
     const handleApprove = async (id) => {
         try {
-            const response = await axios.put(`/api/admin/educators/approve/${id}`);
+            const response = await api.put(`/api/admin/educators/approve/${id}`);
             if (response.data.message) {
                 toast.success(response.data.message);
                 setPending((prev) => prev.filter((edu) => edu._id !== id));
-                if (socket) {
-                    socket.emit("admin:educator:approved", {
-                        educatorId: id,
-                        adminId: user._id,
-                    });
+                if (socket && socket.socket) {
+                    try {
+                        socket.socket.emit("admin:educator:approved", {
+                            educatorId: id,
+                            adminId: user._id,
+                        });
+                    } catch (err) {
+                        console.error("❌ Error emitting educator approval:", err.message);
+                    }
                 }
             }
         } catch (error) {
@@ -86,19 +100,23 @@ const PendingEducators = () => {
 
     const handleReject = async (id, reason) => {
         try {
-            const response = await axios.put(`/api/admin/educators/reject/${id}`, {
+            const response = await api.put(`/api/admin/educators/reject/${id}`, {
                 reason: reason || "No reason provided",
             });
 
             if (response.data.message) {
                 toast.success(response.data.message);
                 setPending((prev) => prev.filter((edu) => edu._id !== id));
-                if (socket) {
-                    socket.emit("admin:educator:rejected", {
-                        educatorId: id,
-                        adminId: user._id,
-                        reason: reason,
-                    });
+                if (socket && socket.socket) {
+                    try {
+                        socket.socket.emit("admin:educator:rejected", {
+                            educatorId: id,
+                            adminId: user._id,
+                            reason: reason,
+                        });
+                    } catch (err) {
+                        console.error("❌ Error emitting educator rejection:", err.message);
+                    }
                 }
             }
         } catch (error) {

@@ -15,6 +15,7 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { logActivity } from "../../services/activityService";
 import { toast } from "react-toastify";
+import api from "../../utils/api";
 
 const DailyGoal = () => {
     const navigate = useNavigate();
@@ -33,12 +34,11 @@ const DailyGoal = () => {
         const fetchData = async () => {
             try {
                 // In a real app, replace with actual API call
-                const response = await fetch('/api/student/daily-activities');
-                const data = await response.json();
-                setDailyActivities(data);
+                const response = await api.get('/api/student/daily-activities');
+                setDailyActivities(response.data);
                 
                 // Count completed activities
-                const completed = data.filter(activity => activity.completed).length;
+                const completed = response.data.filter(activity => activity.completed).length;
                 setActivitiesCompleted(completed);
             } catch (error) {
                 console.error('Error fetching daily activities:', error);

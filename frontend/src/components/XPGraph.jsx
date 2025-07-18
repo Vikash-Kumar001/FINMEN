@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
-import axios from "axios";
+import api from "../utils/api";
 
 const XPGraph = () => {
     const [data, setData] = useState([]);
@@ -11,7 +11,7 @@ const XPGraph = () => {
 
     const fetchXPLogs = async () => {
         try {
-            const res = await axios.get("/api/stats/xp-logs");
+            const res = await api.get("/api/stats/xp-logs");
             const formatted = res.data.map((entry) => ({
                 date: new Date(entry.date).toLocaleDateString(),
                 xp: entry.xp,

@@ -9,26 +9,55 @@ const AdminRedemptionsPanel = () => {
     const { user } = useAuth();
 
     useEffect(() => {
-        if (socket && user) {
-            socket.emit('admin:redemptions:subscribe', { adminId: user._id });
-            socket.on('admin:redemptions:data', (data) => {
-                setRequests(data);
+        if (socket && socket.socket && user) {
+            try {
+                socket.socket.emit('admin:redemptions:subscribe', { adminId: user._id });
+            } catch (err) {
+                console.error("❌ Error subscribing to redemptions:", err.message);
+            }
+            
+            try {
+                socket.socket.on('admin:redemptions:data', (data) => {
+                    setRequests(data);
+                    setLoading(false);
+                });
+                socket.socket.on('admin:redemptions:update', setRequests);
+            } catch (err) {
+                console.error("❌ Error setting up redemptions listeners:", err.message);
                 setLoading(false);
-            });
-            socket.on('admin:redemptions:update', setRequests);
+            }
+            
             return () => {
-                socket.off('admin:redemptions:data');
-                socket.off('admin:redemptions:update');
+                try {
+                    if (socket && socket.socket) {
+                        socket.socket.off('admin:redemptions:data');
+                        socket.socket.off('admin:redemptions:update');
+                    }
+                } catch (err) {
+                    console.error("❌ Error removing redemptions listeners:", err.message);
+                }
             };
         }
     }, [socket, user]);
 
     const handleApprove = (id) => {
-        socket.emit('admin:redemptions:approve', { adminId: user._id, redemptionId: id });
+        try {
+            if (socket && socket.socket) {
+                socket.socket.emit('admin:redemptions:approve', { adminId: user._id, redemptionId: id });
+            }
+        } catch (err) {
+            console.error("❌ Error approving redemption:", err.message);
+        }
     };
 
     const handleReject = (id) => {
-        socket.emit('admin:redemptions:reject', { adminId: user._id, redemptionId: id });
+        try {
+            if (socket && socket.socket) {
+                socket.socket.emit('admin:redemptions:reject', { adminId: user._id, redemptionId: id });
+            }
+        } catch (err) {
+            console.error("❌ Error rejecting redemption:", err.message);
+        }
     };
 
     return (

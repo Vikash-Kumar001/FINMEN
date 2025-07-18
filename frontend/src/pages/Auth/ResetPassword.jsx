@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import api from "../../utils/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Lock, ShieldCheck, Eye, EyeOff } from "lucide-react";
 
@@ -66,7 +66,7 @@ const ResetPassword = () => {
         }
 
         try {
-            const res = await axios.post(`${import.meta.env.VITE_API}/auth/reset-password`, {
+            const res = await api.post('/api/auth/reset-password', {
                 email,
                 password,
             });

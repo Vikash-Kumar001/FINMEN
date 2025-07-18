@@ -11,6 +11,16 @@ import { fileURLToPath } from "url";
 
 // Socket handlers
 import { setupAdminEducatorSocket } from "./socketHandlers/adminEducatorSocket.js";
+import { setupWalletSocket } from "./socketHandlers/walletSocket.js";
+import { setupStudentSocket } from "./socketHandlers/studentSocket.js";
+import { setupStatsSocket } from "./socketHandlers/statsSocket.js";
+import { setupFeedbackSocket } from "./socketHandlers/feedbackSocket.js";
+import { setupGameSocket } from "./socketHandlers/gameSocket.js";
+import { setupAdminPanelSocket } from "./socketHandlers/adminPanelSocket.js";
+import { setupJournalSocket } from "./socketHandlers/journalSocket.js";
+import { setupChatSocket } from "./socketHandlers/chatSocket.js";
+import { setupEducatorSocket } from "./socketHandlers/educatorSocket.js";
+import { setupStudentRedemptionSocket } from "./socketHandlers/studentRedemptionSocket.js";
 
 // Load env variables
 dotenv.config();
@@ -55,7 +65,7 @@ const server = http.createServer(app);
 // Socket.IO setup
 const io = new SocketIOServer(server, {
   cors: {
-    origin: process.env.CLIENT_URL,
+    origin: process.env.CLIENT_URL || ["http://localhost:5173", "http://localhost:3000"],
     credentials: true,
   },
 });
@@ -85,16 +95,43 @@ io.on("connection", async (socket) => {
   try {
     const token = socket.handshake.auth?.token;
 
-    if (!token) throw new Error("No token provided in socket auth");
+    if (!token) {
+      console.error("❌ No token provided in socket auth");
+      socket.emit("error", { message: "Authentication required" });
+      socket.disconnect();
+      return;
+    }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    // Validate token format before verification
+    if (typeof token !== 'string' || !token.includes('.') || token.split('.').length !== 3) {
+      console.error("❌ Socket auth error: Invalid token format");
+      socket.emit("error", { message: "Invalid token format" });
+      socket.disconnect();
+      return;
+    }
+
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      console.error("❌ Socket auth error:", err.message);
+      socket.emit("error", { message: "Invalid or expired token" });
+      socket.disconnect();
+      return;
+    }
     const user = await User.findById(decoded.id);
 
-    if (!user) throw new Error("User not found");
+    if (!user) {
+      console.error("❌ User not found for socket auth");
+      socket.emit("error", { message: "User not found" });
+      socket.disconnect();
+      return;
+    }
 
     // Check educator approval
     if (user.role === "educator" && user.approvalStatus !== "approved") {
-      console.log("🔒 Access denied: User not approved or not an educator");
+      console.error("🔒 Access denied: User not approved or not an educator");
+      socket.emit("error", { message: "Access denied: Not approved" });
       socket.disconnect();
       return;
     }
@@ -103,23 +140,32 @@ io.on("connection", async (socket) => {
     socket.join(user._id.toString());
     if (user.role === "admin") {
       socket.join("admins");
-      socket.join("admin-room"); // For activity tracking
+      socket.join("admin-room");
     }
     if (user.role === "educator") {
       socket.join("educators");
-      socket.join(`educator-${user._id}`); // For tracking assigned students' activities
+      socket.join(`educator-${user._id}`);
     }
 
     console.log(`👤 User ${user._id} (${user.role}) joined their room`);
 
-    // Add socket event listeners if needed here...
-    // Example: socket.on("custom:event", handler);
-    
-    // Setup admin-educator socket handlers
+    // Setup socket handlers based on user role
     if (user.role === "admin") {
       setupAdminEducatorSocket(io, socket, user);
+      setupStudentSocket(io, socket, user);
+      setupStatsSocket(io, socket, user);
+      setupAdminPanelSocket(io, socket, user);
+      setupEducatorSocket(io, socket, user);
     }
     
+    // Setup socket handlers for all users
+    setupWalletSocket(io, socket, user);
+    setupFeedbackSocket(io, socket, user);
+    setupGameSocket(io, socket, user);
+    setupJournalSocket(io, socket, user);
+    setupChatSocket(io, socket, user);
+    setupStudentRedemptionSocket(io, socket, user);
+
     // Update lastActive timestamp for educators
     if (user.role === "educator") {
       await User.findByIdAndUpdate(user._id, { lastActive: new Date() });
@@ -127,6 +173,7 @@ io.on("connection", async (socket) => {
 
   } catch (err) {
     console.error("❌ Socket auth error:", err.message);
+    socket.emit("error", { message: "Authentication error" });
     socket.disconnect();
   }
 

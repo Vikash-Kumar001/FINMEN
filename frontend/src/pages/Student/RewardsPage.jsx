@@ -37,8 +37,8 @@ const RewardsPage = () => {
             try {
                 setLoading(true);
                 const [rewardRes, redeemRes] = await Promise.all([
-                    api.get("/rewards"),
-                    api.get("/rewards/redeemed"),
+                    api.get("/api/rewards"),
+                    api.get("/api/rewards/redeemed"),
                 ]);
 
                 setRewards(rewardRes.data || []);
@@ -69,7 +69,7 @@ const RewardsPage = () => {
 
         setRedeeming(rewardId);
         try {
-            await api.post(`/rewards/redeem/${rewardId}`);
+            await api.post(`/api/rewards/redeem/${rewardId}`);
             showNotification(`🎉 Successfully redeemed ${rewardName}!`, "success");
 
             // Refresh wallet to update balance
@@ -78,7 +78,7 @@ const RewardsPage = () => {
             }
 
             // Refresh redeemed rewards
-            const redeemRes = await api.get("/rewards/redeemed");
+            const redeemRes = await api.get("/api/rewards/redeemed");
             setRedeemed(redeemRes.data || []);
         } catch (err) {
             console.error("Redeem failed:", err);

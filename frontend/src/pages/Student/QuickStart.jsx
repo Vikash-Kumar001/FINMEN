@@ -12,6 +12,7 @@ import {
     Calendar
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import api from "../../utils/api";
 
 const QuickStart = () => {
     const navigate = useNavigate();
@@ -26,14 +27,13 @@ const QuickStart = () => {
         const fetchData = async () => {
             try {
                 // Fetch user stats
-                const statsResponse = await fetch('/api/student/stats');
-                const statsData = await statsResponse.json();
-                setXpEarned(statsData.weeklyXp || 0);
-                setActivitiesCompleted(statsData.dailyActivitiesCompleted || 0);
+                const statsResponse = await api.get('/api/student/stats');
+                setXpEarned(statsResponse.data.weeklyXp || 0);
+                setActivitiesCompleted(statsResponse.data.dailyActivitiesCompleted || 0);
                 
                 // Fetch favorite activities
-                const activitiesResponse = await fetch('/api/student/favorite-activities');
-                const activitiesData = await activitiesResponse.json();
+                const activitiesResponse = await api.get('/api/student/favorite-activities');
+                const activitiesData = activitiesResponse.data;
                 
                 // Map the icons based on activity type
                 const activitiesWithIcons = activitiesData.map(activity => {

@@ -11,13 +11,25 @@ export default function AllRedemptions() {
     const { user } = useAuth();
 
     useEffect(() => {
-        if (socket && user) {
-            socket.emit('admin:redemptions:subscribe', { adminId: user._id });
-            socket.on('admin:redemptions:data', setRedemptions);
-            socket.on('admin:redemptions:update', setRedemptions);
+        if (socket && socket.socket && user) {
+            try {
+                socket.socket.emit('admin:redemptions:subscribe', { adminId: user._id });
+            } catch (err) {
+                console.error("❌ Error subscribing to redemptions:", err.message);
+            }
+            
+            socket.socket.on('admin:redemptions:data', setRedemptions);
+            socket.socket.on('admin:redemptions:update', setRedemptions);
+            
             return () => {
-                socket.off('admin:redemptions:data');
-                socket.off('admin:redemptions:update');
+                try {
+                    if (socket && socket.socket) {
+                        socket.socket.off('admin:redemptions:data');
+                        socket.socket.off('admin:redemptions:update');
+                    }
+                } catch (err) {
+                    console.error("❌ Error cleaning up redemptions socket listeners:", err.message);
+                }
             };
         }
     }, [socket, user]);

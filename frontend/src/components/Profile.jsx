@@ -4,7 +4,7 @@ import {
     User, Key, Shield, Settings, Eye, EyeOff, BookOpen, Lock, Briefcase, Calendar, Users, Building, GraduationCap, Clock, Star, Camera, Phone, MapPin, Globe, Edit, Save, X, Mail, UserCheck, Crown, Trophy, Flame, Zap, Sparkles, Diamond, Award, Target, Heart, Bell, Palette, Volume2, Smartphone, Shield as ShieldIcon, ChevronRight, Upload, Check, AlertCircle
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
-import axios from "axios";
+import api from "../utils/api";
 import { toast } from "react-toastify";
 
 function AnimatedFormField({ icon: Icon, label, error, className = "", ...props }) {
@@ -15,20 +15,20 @@ function AnimatedFormField({ icon: Icon, label, error, className = "", ...props 
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
         >
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                 {Icon && <Icon className="w-4 h-4 text-indigo-500" />}
                 {label}
             </label>
             <div className="relative">
                 <motion.input
                     {...props}
-                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm ${error ? 'border-red-300 dark:border-red-500' : 'border-gray-300 dark:border-gray-700'} ${props.disabled ? 'bg-gray-50 dark:bg-gray-900 cursor-not-allowed' : 'hover:border-indigo-300 dark:hover:border-indigo-700'} ${className} dark:text-white`}
+                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white/70 ${error ? 'border-red-300' : 'border-gray-300'} ${props.disabled ? 'bg-gray-50 cursor-not-allowed' : 'hover:border-indigo-300'} ${className}`}
                     whileFocus={{ scale: 1.01 }}
                     transition={{ duration: 0.2 }}
                 />
                 {error && (
                     <motion.p
-                        className="text-sm text-red-600 dark:text-red-400 flex items-center gap-1 mt-1"
+                        className="text-sm text-red-600 flex items-center gap-1 mt-1"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                     >
@@ -49,7 +49,7 @@ function AnimatedTabButton({ active, onClick, children, icon: Icon, badge = null
             whileTap={{ scale: 0.95 }}
             className={`flex items-center gap-2 px-4 py-3 rounded-xl font-semibold transition-all border-2 relative ${active
                 ? 'text-white bg-gradient-to-r from-indigo-500 to-purple-500 border-indigo-500 shadow-lg'
-                : 'text-gray-600 dark:text-gray-300 border-transparent hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:border-indigo-200 dark:hover:border-indigo-800'
+                : 'text-gray-600 border-transparent hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200'
                 }`}
         >
             {Icon && <Icon className="w-4 h-4" />}
@@ -70,7 +70,7 @@ function AnimatedTabButton({ active, onClick, children, icon: Icon, badge = null
 function GlassCard({ title, children, className = "", gradient = "" }) {
     return (
         <motion.div
-            className={`bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/40 dark:border-gray-700/40 overflow-hidden relative ${className}`}
+            className={`bg-white/80 backdrop-blur-xl rounded-3xl shadow-xl border border-white/40 overflow-hidden relative ${className}`}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
@@ -79,8 +79,8 @@ function GlassCard({ title, children, className = "", gradient = "" }) {
                 <div className={`absolute inset-0 bg-gradient-to-r ${gradient} opacity-5`} />
             )}
             {title && (
-                <div className="px-6 py-4 border-b border-white/20 dark:border-gray-700/20 bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm">
-                    <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                <div className="px-6 py-4 border-b border-white/20 bg-white/40">
+                    <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-indigo-500" />
                         {title}
                     </h3>
@@ -135,7 +135,6 @@ const Profile = () => {
 
     useEffect(() => {
         if (user) {
-            // Fetch user profile data
             fetchUserProfile();
         }
     }, [user]);
@@ -143,10 +142,9 @@ const Profile = () => {
     const fetchUserProfile = async () => {
         try {
             setLoading(true);
-            const response = await axios.get('/api/user/profile');
+            const response = await api.get('/api/user/profile');
             const profileData = response.data;
             
-            // Update state with fetched data
             setPersonalInfo({
                 name: profileData.name || user?.name || "",
                 email: profileData.email || user?.email || "",
@@ -196,7 +194,6 @@ const Profile = () => {
         setErrors({});
         
         try {
-            // Validate data
             let validationErrors = {};
             
             if (tabName === 'personal' && !tabData.name.trim()) {
@@ -208,21 +205,18 @@ const Profile = () => {
                 return;
             }
             
-            // Prepare form data for avatar upload
             let formData = null;
             if (tabName === 'personal' && avatarFile) {
                 formData = new FormData();
                 formData.append('avatar', avatarFile);
                 
-                // Upload avatar first
-                await axios.post('/api/user/avatar', formData);
+                await api.post('/api/user/avatar', formData);
             }
             
-            // Update profile data
             const updateData = {};
             updateData[tabName] = tabData;
             
-            await axios.put('/api/user/profile', updateData);
+            await api.put('/api/user/profile', updateData);
             
             setSaveSuccess(true);
             toast.success(`${tabName.charAt(0).toUpperCase() + tabName.slice(1)} information updated successfully`);
@@ -305,7 +299,7 @@ const Profile = () => {
             />
 
             <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                     <User className="w-4 h-4 text-indigo-500" />
                     Bio
                 </label>
@@ -315,20 +309,20 @@ const Profile = () => {
                     onChange={handleChange(setPersonalInfo)}
                     placeholder="Tell us about yourself"
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white/70 dark:bg-gray-800/70 backdrop-blur-sm hover:border-indigo-300 dark:hover:border-indigo-700 dark:text-white"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-all bg-white/70 hover:border-indigo-300"
                     whileFocus={{ scale: 1.01 }}
                     transition={{ duration: 0.2 }}
                 />
             </div>
 
             <div className="space-y-2">
-                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-300">
+                <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
                     <Camera className="w-4 h-4 text-indigo-500" />
                     Profile Picture
                 </label>
                 <div className="flex items-center gap-4">
                     <motion.div
-                        className="w-24 h-24 rounded-full overflow-hidden border-2 border-indigo-300 dark:border-indigo-700 flex-shrink-0"
+                        className="w-24 h-24 rounded-full overflow-hidden border-2 border-indigo-300 flex-shrink-0"
                         whileHover={{ scale: 1.05 }}
                     >
                         <img
@@ -338,7 +332,7 @@ const Profile = () => {
                         />
                     </motion.div>
                     <div className="flex-1">
-                        <label className="flex items-center justify-center w-full p-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-xl cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-700 transition-all">
+                        <label className="flex items-center justify-center w-full p-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-300 transition-all">
                             <input
                                 type="file"
                                 accept="image/*"
@@ -346,9 +340,9 @@ const Profile = () => {
                                 className="hidden"
                             />
                             <Upload className="w-5 h-5 text-indigo-500 mr-2" />
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Upload new picture</span>
+                            <span className="text-sm font-medium text-gray-600">Upload new picture</span>
                         </label>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">JPG, PNG or GIF. Max size 2MB.</p>
+                        <p className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. Max size 2MB.</p>
                     </div>
                 </div>
             </div>
@@ -493,7 +487,6 @@ const Profile = () => {
     );
 
     const renderAchievementsTab = () => {
-        // This would typically fetch achievements from the API
         const achievements = user?.role === "student" ? [
             { icon: <Flame className="w-5 h-5" />, title: "Hot Streak", description: "12 days in a row!", color: "from-orange-400 to-red-400" },
             { icon: <Crown className="w-5 h-5" />, title: "Top Performer", description: "Rank #23 globally", color: "from-yellow-400 to-orange-400" },
@@ -513,7 +506,7 @@ const Profile = () => {
                     {achievements.map((achievement, index) => (
                         <motion.div
                             key={index}
-                            className={`p-4 rounded-2xl bg-gradient-to-r ${achievement.color} bg-opacity-10 border border-white/20 dark:border-gray-700/20 shadow-md`}
+                            className={`p-4 rounded-2xl bg-gradient-to-r ${achievement.color} bg-opacity-10 border border-white/20 shadow-md`}
                             whileHover={{ scale: 1.03 }}
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -524,8 +517,8 @@ const Profile = () => {
                                     {achievement.icon}
                                 </div>
                                 <div>
-                                    <h3 className="font-bold text-gray-800 dark:text-white">{achievement.title}</h3>
-                                    <p className="text-sm text-gray-600 dark:text-gray-300">{achievement.description}</p>
+                                    <h3 className="font-bold text-gray-800">{achievement.title}</h3>
+                                    <p className="text-sm text-gray-600">{achievement.description}</p>
                                 </div>
                             </div>
                         </motion.div>
@@ -536,21 +529,21 @@ const Profile = () => {
                     <div className="mt-6">
                         <GlassCard title="Progress Stats" gradient="from-indigo-500 to-purple-500">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="text-center p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl">
-                                    <div className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">7</div>
-                                    <div className="text-sm text-gray-600 dark:text-gray-300">Current Level</div>
+                                <div className="text-center p-3 bg-indigo-50 rounded-xl">
+                                    <div className="text-3xl font-bold text-indigo-600">7</div>
+                                    <div className="text-sm text-gray-600">Current Level</div>
                                 </div>
-                                <div className="text-center p-3 bg-purple-50 dark:bg-purple-900/30 rounded-xl">
-                                    <div className="text-3xl font-bold text-purple-600 dark:text-purple-400">2340</div>
-                                    <div className="text-sm text-gray-600 dark:text-gray-300">XP Points</div>
+                                <div className="text-center p-3 bg-purple-50 rounded-xl">
+                                    <div className="text-3xl font-bold text-purple-600">2340</div>
+                                    <div className="text-sm text-gray-600">XP Points</div>
                                 </div>
-                                <div className="text-center p-3 bg-orange-50 dark:bg-orange-900/30 rounded-xl">
-                                    <div className="text-3xl font-bold text-orange-600 dark:text-orange-400">12</div>
-                                    <div className="text-sm text-gray-600 dark:text-gray-300">Day Streak</div>
+                                <div className="text-center p-3 bg-orange-50 rounded-xl">
+                                    <div className="text-3xl font-bold text-orange-600">12</div>
+                                    <div className="text-sm text-gray-600">Day Streak</div>
                                 </div>
-                                <div className="text-center p-3 bg-green-50 dark:bg-green-900/30 rounded-xl">
-                                    <div className="text-3xl font-bold text-green-600 dark:text-green-400">23</div>
-                                    <div className="text-sm text-gray-600 dark:text-gray-300">Global Rank</div>
+                                <div className="text-center p-3 bg-green-50 rounded-xl">
+                                    <div className="text-3xl font-bold text-green-600">23</div>
+                                    <div className="text-sm text-gray-600">Global Rank</div>
                                 </div>
                             </div>
                         </GlassCard>
@@ -563,7 +556,7 @@ const Profile = () => {
     const renderSecurityTab = () => (
         <div className="space-y-6">
             <div className="space-y-4">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Change Password</h3>
+                <h3 className="text-lg font-semibold text-gray-800">Change Password</h3>
 
                 <AnimatedFormField
                     label="Current Password"
@@ -604,7 +597,7 @@ const Profile = () => {
                         onChange={() => setShowPassword(!showPassword)}
                         className="mr-2 h-4 w-4 text-indigo-500 focus:ring-indigo-400 border-gray-300 rounded"
                     />
-                    <label htmlFor="show-password" className="text-sm text-gray-600 dark:text-gray-400 cursor-pointer select-none">
+                    <label htmlFor="show-password" className="text-sm text-gray-600 cursor-pointer select-none">
                         Show password
                     </label>
                 </div>
@@ -613,7 +606,6 @@ const Profile = () => {
             <div className="flex justify-end">
                 <motion.button
                     onClick={() => {
-                        // Handle password change
                         if (passwords.newPass !== passwords.confirmPass) {
                             toast.error("Passwords don't match");
                             return;
@@ -639,14 +631,14 @@ const Profile = () => {
                 </motion.button>
             </div>
 
-            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
-                <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Security Settings</h3>
+            <div className="mt-8 pt-6 border-t border-gray-200">
+                <h3 className="text-lg font-semibold text-gray-800 mb-4">Security Settings</h3>
 
                 <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl">
+                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-xl">
                         <div>
-                            <h4 className="font-medium text-gray-800 dark:text-white">Two-Factor Authentication</h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Add an extra layer of security to your account</p>
+                            <h4 className="font-medium text-gray-800">Two-Factor Authentication</h4>
+                            <p className="text-sm text-gray-500">Add an extra layer of security to your account</p>
                         </div>
                         <div className="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full cursor-pointer">
                             <input
@@ -656,7 +648,7 @@ const Profile = () => {
                             />
                             <label
                                 htmlFor="2fa-toggle"
-                                className="absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 bg-gray-300 dark:bg-gray-600"
+                                className="absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 bg-gray-300"
                             >
                                 <span
                                     className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300"
@@ -665,10 +657,10 @@ const Profile = () => {
                         </div>
                     </div>
 
-                    <div className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl">
+                    <div className="flex items-center justify-between p-4 border border-gray-200 rounded-xl">
                         <div>
-                            <h4 className="font-medium text-gray-800 dark:text-white">Login Notifications</h4>
-                            <p className="text-sm text-gray-500 dark:text-gray-400">Get notified when someone logs into your account</p>
+                            <h4 className="font-medium text-gray-800">Login Notifications</h4>
+                            <p className="text-sm text-gray-500">Get notified when someone logs into your account</p>
                         </div>
                         <div className="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full cursor-pointer">
                             <input
@@ -696,14 +688,14 @@ const Profile = () => {
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                         <Palette className="w-5 h-5 text-indigo-500" />
                         Theme
                     </h3>
 
                     <div className="space-y-3">
-                        <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-indigo-200 dark:hover:border-indigo-800 transition-all">
-                            <span className="font-medium text-gray-700 dark:text-gray-200">Light Mode</span>
+                        <label className="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-indigo-200 transition-all">
+                            <span className="font-medium text-gray-700">Light Mode</span>
                             <input
                                 type="radio"
                                 name="theme"
@@ -712,40 +704,18 @@ const Profile = () => {
                                 className="form-radio h-5 w-5 text-indigo-500 focus:ring-indigo-500"
                             />
                         </label>
-
-                        <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-indigo-200 dark:hover:border-indigo-800 transition-all">
-                            <span className="font-medium text-gray-700 dark:text-gray-200">Dark Mode</span>
-                            <input
-                                type="radio"
-                                name="theme"
-                                checked={preferences.theme === "dark"}
-                                onChange={() => handlePreferenceChange("theme", null, "dark")}
-                                className="form-radio h-5 w-5 text-indigo-500 focus:ring-indigo-500"
-                            />
-                        </label>
-
-                        <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-indigo-200 dark:hover:border-indigo-800 transition-all">
-                            <span className="font-medium text-gray-700 dark:text-gray-200">System Default</span>
-                            <input
-                                type="radio"
-                                name="theme"
-                                checked={preferences.theme === "system"}
-                                onChange={() => handlePreferenceChange("theme", null, "system")}
-                                className="form-radio h-5 w-5 text-indigo-500 focus:ring-indigo-500"
-                            />
-                        </label>
                     </div>
                 </div>
 
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                         <Bell className="w-5 h-5 text-indigo-500" />
                         Notifications
                     </h3>
 
                     <div className="space-y-3">
-                        <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-indigo-200 dark:hover:border-indigo-800 transition-all">
-                            <span className="font-medium text-gray-700 dark:text-gray-200">Email Notifications</span>
+                        <label className="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-indigo-200 transition-all">
+                            <span className="font-medium text-gray-700">Email Notifications</span>
                             <div className="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full cursor-pointer">
                                 <input
                                     type="checkbox"
@@ -756,7 +726,7 @@ const Profile = () => {
                                 />
                                 <label
                                     htmlFor="email-toggle"
-                                    className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${preferences.notifications?.email ? "bg-indigo-500" : "bg-gray-300 dark:bg-gray-600"}`}
+                                    className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${preferences.notifications?.email ? "bg-indigo-500" : "bg-gray-300"}`}
                                 >
                                     <span
                                         className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${preferences.notifications?.email ? "transform translate-x-6" : ""}`}
@@ -765,8 +735,8 @@ const Profile = () => {
                             </div>
                         </label>
 
-                        <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-indigo-200 dark:hover:border-indigo-800 transition-all">
-                            <span className="font-medium text-gray-700 dark:text-gray-200">Push Notifications</span>
+                        <label className="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-indigo-200 transition-all">
+                            <span className="font-medium text-gray-700">Push Notifications</span>
                             <div className="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full cursor-pointer">
                                 <input
                                     type="checkbox"
@@ -777,7 +747,7 @@ const Profile = () => {
                                 />
                                 <label
                                     htmlFor="push-toggle"
-                                    className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${preferences.notifications?.push ? "bg-indigo-500" : "bg-gray-300 dark:bg-gray-600"}`}
+                                    className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${preferences.notifications?.push ? "bg-indigo-500" : "bg-gray-300"}`}
                                 >
                                     <span
                                         className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${preferences.notifications?.push ? "transform translate-x-6" : ""}`}
@@ -786,8 +756,8 @@ const Profile = () => {
                             </div>
                         </label>
 
-                        <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-indigo-200 dark:hover:border-indigo-800 transition-all">
-                            <span className="font-medium text-gray-700 dark:text-gray-200">SMS Notifications</span>
+                        <label className="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-indigo-200 transition-all">
+                            <span className="font-medium text-gray-700">SMS Notifications</span>
                             <div className="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full cursor-pointer">
                                 <input
                                     type="checkbox"
@@ -798,7 +768,7 @@ const Profile = () => {
                                 />
                                 <label
                                     htmlFor="sms-toggle"
-                                    className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${preferences.notifications?.sms ? "bg-indigo-500" : "bg-gray-300 dark:bg-gray-600"}`}
+                                    className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${preferences.notifications?.sms ? "bg-indigo-500" : "bg-gray-300"}`}
                                 >
                                     <span
                                         className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${preferences.notifications?.sms ? "transform translate-x-6" : ""}`}
@@ -812,14 +782,14 @@ const Profile = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                         <Volume2 className="w-5 h-5 text-indigo-500" />
                         Sound
                     </h3>
 
                     <div className="space-y-3">
-                        <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-indigo-200 dark:hover:border-indigo-800 transition-all">
-                            <span className="font-medium text-gray-700 dark:text-gray-200">Sound Effects</span>
+                        <label className="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-indigo-200 transition-all">
+                            <span className="font-medium text-gray-700">Sound Effects</span>
                             <div className="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full cursor-pointer">
                                 <input
                                     type="checkbox"
@@ -830,7 +800,7 @@ const Profile = () => {
                                 />
                                 <label
                                     htmlFor="effects-toggle"
-                                    className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${preferences.sound?.effects ? "bg-indigo-500" : "bg-gray-300 dark:bg-gray-600"}`}
+                                    className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${preferences.sound?.effects ? "bg-indigo-500" : "bg-gray-300"}`}
                                 >
                                     <span
                                         className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${preferences.sound?.effects ? "transform translate-x-6" : ""}`}
@@ -839,8 +809,8 @@ const Profile = () => {
                             </div>
                         </label>
 
-                        <label className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-xl cursor-pointer hover:border-indigo-200 dark:hover:border-indigo-800 transition-all">
-                            <span className="font-medium text-gray-700 dark:text-gray-200">Background Music</span>
+                        <label className="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-indigo-200 transition-all">
+                            <span className="font-medium text-gray-700">Background Music</span>
                             <div className="relative inline-block w-12 h-6 transition duration-200 ease-in-out rounded-full cursor-pointer">
                                 <input
                                     type="checkbox"
@@ -851,7 +821,7 @@ const Profile = () => {
                                 />
                                 <label
                                     htmlFor="music-toggle"
-                                    className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${preferences.sound?.music ? "bg-indigo-500" : "bg-gray-300 dark:bg-gray-600"}`}
+                                    className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${preferences.sound?.music ? "bg-indigo-500" : "bg-gray-300"}`}
                                 >
                                     <span
                                         className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${preferences.sound?.music ? "transform translate-x-6" : ""}`}
@@ -860,10 +830,10 @@ const Profile = () => {
                             </div>
                         </label>
 
-                        <div className="p-4 border border-gray-200 dark:border-gray-700 rounded-xl">
+                        <div className="p-4 border border-gray-200 rounded-xl">
                             <div className="flex items-center justify-between mb-2">
-                                <span className="font-medium text-gray-700 dark:text-gray-200">Volume</span>
-                                <span className="text-sm text-gray-500 dark:text-gray-400">{preferences.sound?.volume}%</span>
+                                <span className="font-medium text-gray-700">Volume</span>
+                                <span className="text-sm text-gray-500">{preferences.sound?.volume}%</span>
                             </div>
                             <input
                                 type="range"
@@ -871,27 +841,27 @@ const Profile = () => {
                                 max="100"
                                 value={preferences.sound?.volume}
                                 onChange={(e) => handlePreferenceChange("sound", "volume", parseInt(e.target.value))}
-                                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
                             />
                         </div>
                     </div>
                 </div>
 
                 <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800 dark:text-white flex items-center gap-2">
+                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                         <ShieldIcon className="w-5 h-5 text-indigo-500" />
                         Privacy
                     </h3>
 
                     <div className="space-y-3">
                         <div className="space-y-2">
-                            <label className="block font-medium text-gray-700 dark:text-gray-200">
+                            <label className="block font-medium text-gray-700">
                                 Profile Visibility
                             </label>
                             <select
                                 value={preferences.privacy?.profileVisibility}
                                 onChange={(e) => handlePreferenceChange("privacy", "profileVisibility", e.target.value)}
-                                className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none transition-all bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm dark:text-white"
+                                className="w-full p-3 border border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-all bg-white/50"
                             >
                                 <option value="public">Public</option>
                                 <option value="friends">Friends Only</option>
@@ -900,13 +870,13 @@ const Profile = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block font-medium text-gray-700 dark:text-gray-200">
+                            <label className="block font-medium text-gray-700">
                                 Contact Information Visibility
                             </label>
                             <select
                                 value={preferences.privacy?.contactInfo}
                                 onChange={(e) => handlePreferenceChange("privacy", "contactInfo", e.target.value)}
-                                className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none transition-all bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm dark:text-white"
+                                className="w-full p-3 border border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-all bg-white/50"
                             >
                                 <option value="public">Public</option>
                                 <option value="friends">Friends Only</option>
@@ -915,13 +885,13 @@ const Profile = () => {
                         </div>
 
                         <div className="space-y-2">
-                            <label className="block font-medium text-gray-700 dark:text-gray-200">
+                            <label className="block font-medium text-gray-700">
                                 Academic Information Visibility
                             </label>
                             <select
                                 value={preferences.privacy?.academicInfo}
                                 onChange={(e) => handlePreferenceChange("privacy", "academicInfo", e.target.value)}
-                                className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-xl focus:border-indigo-500 focus:outline-none transition-all bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm dark:text-white"
+                                className="w-full p-3 border border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-all bg-white/50"
                             >
                                 <option value="public">Public</option>
                                 <option value="friends">Friends Only</option>
@@ -948,37 +918,8 @@ const Profile = () => {
     );
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-50 dark:from-gray-900 dark:to-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-            {/* Animated Background Elements */}
-            <div className="fixed inset-0 overflow-hidden -z-10">
-                <motion.div
-                    className="absolute -top-40 -left-40 w-80 h-80 bg-purple-300 dark:bg-purple-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-70 dark:opacity-30"
-                    animate={{
-                        x: [0, 30, 0],
-                        y: [0, 40, 0],
-                    }}
-                    transition={{
-                        duration: 10,
-                        repeat: Infinity,
-                        repeatType: "reverse"
-                    }}
-                />
-                <motion.div
-                    className="absolute top-20 -right-40 w-80 h-80 bg-indigo-300 dark:bg-indigo-900 rounded-full mix-blend-multiply dark:mix-blend-soft-light filter blur-3xl opacity-70 dark:opacity-30"
-                    animate={{
-                        x: [0, -30, 0],
-                        y: [0, 30, 0],
-                    }}
-                    transition={{
-                        duration: 8,
-                        repeat: Infinity,
-                        repeatType: "reverse"
-                    }}
-                />
-            </div>
-
+        <div className="min-h-screen bg-gradient-to-b from-indigo-50 to-purple-50 py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-4xl mx-auto">
-                {/* Header */}
                 <motion.div
                     initial={{ opacity: 0, y: -30 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -998,26 +939,23 @@ const Profile = () => {
                                 <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                                     Profile
                                 </span>
-                                <span className="text-black dark:text-white">👤</span>
+                                <span>👤</span>
                             </h1>
-
-                            <p className="text-gray-600 dark:text-gray-300 text-lg font-medium">
+                            <p className="text-gray-600 text-lg font-medium">
                                 Manage your personal information
                             </p>
                         </div>
                     </div>
 
-                    {/* User Level Badge - Only for students */}
                     {user?.role === "student" && (
-                        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/30 dark:to-orange-900/30 text-yellow-800 dark:text-yellow-200 px-6 py-3 rounded-full shadow-lg border border-yellow-200 dark:border-yellow-800/30">
-                            <Crown className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+                        <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-100 to-orange-100 text-yellow-800 px-6 py-3 rounded-full shadow-lg border border-yellow-200">
+                            <Crown className="w-5 h-5 text-yellow-600" />
                             <span className="font-bold">Level {user?.level || 1} Player</span>
-                            <Sparkles className="w-4 h-4 text-yellow-600 dark:text-yellow-400" />
+                            <Sparkles className="w-4 h-4 text-yellow-600" />
                         </div>
                     )}
                 </motion.div>
 
-                {/* Tab Navigation */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1037,12 +975,11 @@ const Profile = () => {
                     ))}
                 </motion.div>
 
-                {/* Main Content */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 dark:border-gray-700/50 overflow-hidden"
+                    className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/50 overflow-hidden"
                 >
                     <div className="p-8">
                         {activeTab === "personal" && renderPersonalTab()}
@@ -1054,7 +991,6 @@ const Profile = () => {
                     </div>
                 </motion.div>
 
-                {/* Success Message */}
                 <AnimatePresence>
                     {saveSuccess && (
                         <motion.div

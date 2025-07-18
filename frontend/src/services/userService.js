@@ -3,7 +3,7 @@ import api from "../utils/api";
 // Self Profile (All roles)
 export const getMyProfile = async () => {
   try {
-    const res = await api.get("/profile/me");
+    const res = await api.get("/api/profile/me");
     return res.data;
   } catch (err) {
     console.error("❌ Failed to fetch profile:", err);
@@ -13,7 +13,7 @@ export const getMyProfile = async () => {
 
 export const updateMyProfile = async (data) => {
   try {
-    const res = await api.put("/profile/me", data);
+    const res = await api.put("/api/profile/me", data);
     return res.data;
   } catch (err) {
     console.error("❌ Failed to update profile:", err);
@@ -23,7 +23,7 @@ export const updateMyProfile = async (data) => {
 
 export const updateMyAvatar = async (formData) => {
   try {
-    const res = await api.put("/profile/avatar", formData, {
+    const res = await api.put("/api/profile/avatar", formData, {
       headers: { "Content-Type": "multipart/form-data" },
     });
     return res.data;
@@ -35,7 +35,7 @@ export const updateMyAvatar = async (formData) => {
 
 export const updateMyPassword = async ({ current, newPass }) => {
   try {
-    const res = await api.put("/profile/password", {
+    const res = await api.put("/api/profile/password", {
       currentPassword: current,
       newPassword: newPass,
     });
@@ -50,7 +50,7 @@ export const updateMyPassword = async ({ current, newPass }) => {
 // Stats by Role
 export const fetchStudentStats = async () => {
   try {
-    const res = await api.get("/stats/student");
+    const res = await api.get("/api/stats/student");
     return res.data;
   } catch (err) {
     console.error("❌ Failed to fetch student stats:", err);
@@ -82,7 +82,7 @@ export const fetchAdminStats = async () => {
 // Admin - User Management
 export const getAllUsers = async () => {
   try {
-    const res = await api.get("/admin/users");
+    const res = await api.get("/api/admin/users");
     return res.data;
   } catch (err) {
     console.error("❌ Failed to get all users:", err);
@@ -92,7 +92,7 @@ export const getAllUsers = async () => {
 
 export const getUserById = async (userId) => {
   try {
-    const res = await api.get(`/admin/users/${userId}`);
+    const res = await api.get(`/api/admin/users/${userId}`);
     return res.data;
   } catch (err) {
     console.error(`❌ Failed to get user ${userId}:`, err);
@@ -102,7 +102,7 @@ export const getUserById = async (userId) => {
 
 export const updateUserByAdmin = async (userId, data) => {
   try {
-    const res = await api.put(`/admin/users/${userId}`, data);
+    const res = await api.put(`/api/admin/users/${userId}`, data);
     return res.data;
   } catch (err) {
     console.error(`❌ Failed to update user ${userId}:`, err);
@@ -112,7 +112,7 @@ export const updateUserByAdmin = async (userId, data) => {
 
 export const deleteUser = async (userId) => {
   try {
-    const res = await api.delete(`/admin/users/${userId}`);
+    const res = await api.delete(`/api/admin/users/${userId}`);
     return res.data;
   } catch (err) {
     console.error(`❌ Failed to delete user ${userId}:`, err);

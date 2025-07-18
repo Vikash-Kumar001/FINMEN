@@ -51,6 +51,27 @@ export const markAllAsRead = async (req, res, next) => {
   }
 };
 
+// ✅ Mark a specific notification as read
+export const markAsRead = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const notification = await Notification.findOneAndUpdate(
+      { _id: id, userId: req.user._id },
+      { isRead: true },
+      { new: true }
+    );
+
+    if (!notification) {
+      throw new ErrorResponse("Notification not found", 404);
+    }
+
+    res.status(200).json({ message: "Notification marked as read", notification });
+  } catch (err) {
+    next(err);
+  }
+};
+
 // ❌ Delete a specific notification
 export const deleteNotification = async (req, res, next) => {
   try {
@@ -66,6 +87,20 @@ export const deleteNotification = async (req, res, next) => {
     }
 
     res.status(200).json({ message: "Notification deleted" });
+  } catch (err) {
+    next(err);
+  }
+};
+
+// 🔢 Get unread notification count
+export const getUnreadCount = async (req, res, next) => {
+  try {
+    const count = await Notification.countDocuments({
+      userId: req.user._id,
+      isRead: false
+    });
+
+    res.status(200).json({ count });
   } catch (err) {
     next(err);
   }

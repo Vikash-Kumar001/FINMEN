@@ -76,9 +76,9 @@ const Chatbot = () => {
     };
 
     useEffect(() => {
-        if (socket && user) {
-            socket.emit("student:chat:subscribe", { studentId: user._id });
-            socket.on("student:chat:history", (history) => {
+        if (socket && socket.socket && user) {
+            socket.socket.emit("student:chat:subscribe", { studentId: user._id });
+            socket.socket.on("student:chat:history", (history) => {
                 setMessages(history);
                 setChatStreak(
                     history.filter(msg => msg.sender === "user").length
@@ -90,7 +90,7 @@ const Chatbot = () => {
                     setAverageMood(history[0]._session.averageMood || "neutral");
                 }
             });
-            socket.on("student:chat:message", (msg) => {
+            socket.socket.on("student:chat:message", (msg) => {
                 setMessages((prev) => [...prev, msg]);
                 setIsTyping(false);
                 // XP, Streak, Achievements auto-calc after, optional bonus here for optimistic UX
@@ -103,8 +103,8 @@ const Chatbot = () => {
                 }
             });
             return () => {
-                socket.off("student:chat:history");
-                socket.off("student:chat:message");
+                socket.socket.off("student:chat:history");
+                socket.socket.off("student:chat:message");
             };
         }
     }, [socket, user, isOpen]);
@@ -131,15 +131,29 @@ const Chatbot = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (!input.trim()) return;
+        
+        if (!socket || !socket.socket) {
+            console.error("❌ Socket not available for sending chat message");
+            alert("Connection error. Please try again.");
+            return;
+        }
+        
         setLoading(true);
         setIsTyping(true);
-        socket.emit("student:chat:send", {
-            studentId: user._id,
-            text: input
-        });
-        setInput("");
-        setLoading(false);
-        setShowQuickActions(false);
+        
+        try {
+            socket.socket.emit("student:chat:send", {
+                studentId: user._id,
+                text: input
+            });
+            setInput("");
+            setShowQuickActions(false);
+        } catch (err) {
+            console.error("❌ Error sending chat message:", err.message);
+            alert("Failed to send message. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Emit quick action category to backend, which should send a response accordingly
@@ -147,13 +161,19 @@ const Chatbot = () => {
         // Option 1: Send API call. Option 2: emit as chat.
         setLoading(true);
         setIsTyping(true);
-        socket.emit("student:chat:send", {
-            studentId: user._id,
-            text: action.text // Backend will recognize and process accordingly based on quick action
-        });
-        setInput("");
-        setShowQuickActions(false);
-        setLoading(false);
+        try {
+            socket.socket.emit("student:chat:send", {
+                studentId: user._id,
+                text: action.text // Backend will recognize and process accordingly based on quick action
+            });
+            setInput("");
+            setShowQuickActions(false);
+        } catch (err) {
+            console.error("❌ Error sending quick action:", err.message);
+            alert("Failed to send message. Please try again.");
+        } finally {
+            setLoading(false);
+        }
     };
 
     // Visual enhancements for moods/categories

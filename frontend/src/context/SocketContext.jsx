@@ -1,12 +1,4 @@
-// src/context/SocketContext.jsx
-
-import React, {
-    createContext,
-    useContext,
-    useEffect,
-    useRef,
-    useState
-} from "react";
+import React, { createContext, useContext, useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "../hooks/useAuth";
 
@@ -18,7 +10,6 @@ export const SocketProvider = ({ children }) => {
     const [socketReady, setSocketReady] = useState(false);
 
     useEffect(() => {
-        // Only connect if user exists and socket not already connected
         if (user && !socketRef.current) {
             const token = localStorage.getItem("finmen_token");
 
@@ -27,22 +18,50 @@ export const SocketProvider = ({ children }) => {
                 return;
             }
 
-            const socket = io(import.meta.env.VITE_API_URL, {
+            // Validate token format before using it
+            try {
+                // Simple check to see if token has three parts (header.payload.signature)
+                if (!token.includes('.') || token.split('.').length !== 3) {
+                    console.error("❌ Invalid token format");
+                    return;
+                }
+            } catch (err) {
+                console.error("❌ Token validation error:", err.message);
+                return;
+            }
+
+            const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
                 transports: ["websocket"],
                 withCredentials: true,
-                auth: {
-                    token
-                }
+                auth: { token },
+                reconnection: true,
+                reconnectionAttempts: 5,
+                reconnectionDelay: 1000,
             });
 
             socket.on("connect", () => {
                 console.log("🟢 Socket connected:", socket.id);
-                socket.emit("join", user._id); // optional but good for room-based updates
+                try {
+                    socket.emit("join", user._id);
+                } catch (err) {
+                    console.error("❌ Error joining socket room:", err.message);
+                }
                 setSocketReady(true);
             });
 
             socket.on("connect_error", (err) => {
                 console.error("❌ Socket connection error:", err.message);
+                setSocketReady(false);
+            });
+
+            socket.on("error", (data) => {
+                console.error("❌ Socket error:", data.message);
+                setSocketReady(false);
+            });
+
+            socket.on("disconnect", (reason) => {
+                console.log("🔴 Socket disconnected:", reason);
+                setSocketReady(false);
             });
 
             socketRef.current = socket;
@@ -50,16 +69,21 @@ export const SocketProvider = ({ children }) => {
 
         return () => {
             if (socketRef.current) {
-                socketRef.current.disconnect();
-                console.log("🔴 Socket disconnected");
-                socketRef.current = null;
-                setSocketReady(false);
+                try {
+                    socketRef.current.disconnect();
+                    console.log("🔴 Socket disconnected");
+                } catch (err) {
+                    console.error("❌ Error disconnecting socket:", err.message);
+                } finally {
+                    socketRef.current = null;
+                    setSocketReady(false);
+                }
             }
         };
     }, [user]);
 
     return (
-        <SocketContext.Provider value={socketRef.current}>
+        <SocketContext.Provider value={{ socket: socketRef.current, socketReady }}>
             {children}
         </SocketContext.Provider>
     );

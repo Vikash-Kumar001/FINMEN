@@ -47,29 +47,29 @@ const EducatorTracker = () => {
   useEffect(() => {
     if (socket && user) {
       // Subscribe to educator activity tracking
-      socket.emit("admin:educator:activity:subscribe", { adminId: user._id });
+      socket.socket.emit("admin:educator:activity:subscribe", { adminId: user._id });
 
       // Listen for educator data
-      socket.on("admin:educator:activity:data", (data) => {
+      socket.socket.on("admin:educator:activity:data", (data) => {
         setEducators(data);
         setFiltered(data);
         setLoading(false);
       });
 
       // Listen for educator tracking data
-      socket.on("admin:educator:track:data", (data) => {
+      socket.socket.on("admin:educator:track:data", (data) => {
         setSelectedEducator(data.educator);
         setEducatorActivities(data.activities);
       });
 
       // Listen for errors
-      socket.on("admin:educator:activity:error", (error) => {
+      socket.socket.on("admin:educator:activity:error", (error) => {
         notify(error.message || "Error tracking educators", "error");
         setLoading(false);
       });
 
       // Listen for educator creation success
-      socket.on("admin:educator:create:success", (data) => {
+      socket.socket.on("admin:educator:create:success", (data) => {
         notify(data.message || "Educator created successfully", "success");
         setShowCreateForm(false);
         setNewEducator({
@@ -82,21 +82,21 @@ const EducatorTracker = () => {
       });
 
       // Listen for educator creation errors
-      socket.on("admin:educator:create:error", (error) => {
+      socket.socket.on("admin:educator:create:error", (error) => {
         notify(error.message || "Error creating educator", "error");
         setFormErrors({ general: error.message });
       });
 
       return () => {
-        socket.off("admin:educator:activity:data");
-        socket.off("admin:educator:track:data");
-        socket.off("admin:educator:activity:error");
-        socket.off("admin:educator:create:success");
-        socket.off("admin:educator:create:error");
+        socket.socket.off("admin:educator:activity:data");
+        socket.socket.off("admin:educator:track:data");
+        socket.socket.off("admin:educator:activity:error");
+        socket.socket.off("admin:educator:create:success");
+        socket.socket.off("admin:educator:create:error");
         
         // Untrack educator if one is selected
         if (selectedEducator) {
-          socket.emit("admin:educator:untrack", { 
+          socket.socket.emit("admin:educator:untrack", { 
             adminId: user._id, 
             educatorId: selectedEducator._id 
           });
@@ -117,29 +117,51 @@ const EducatorTracker = () => {
   }, [search, educators]);
 
   const handleTrackEducator = (educatorId) => {
-    // Untrack current educator if one is selected
-    if (selectedEducator) {
-      socket.emit("admin:educator:untrack", { 
-        adminId: user._id, 
-        educatorId: selectedEducator._id 
-      });
+    if (!socket || !socket.socket) {
+      console.error("❌ Socket not available for tracking educator");
+      notify("Connection error. Please try again.", "error");
+      return;
     }
     
-    // Track new educator
-    socket.emit("admin:educator:track", { 
-      adminId: user._id, 
-      educatorId 
-    });
+    try {
+      // Untrack current educator if one is selected
+      if (selectedEducator) {
+        socket.socket.emit("admin:educator:untrack", { 
+          adminId: user._id, 
+          educatorId: selectedEducator._id 
+        });
+      }
+      
+      // Track new educator
+      socket.socket.emit("admin:educator:track", { 
+        adminId: user._id, 
+        educatorId 
+      });
+    } catch (err) {
+      console.error("❌ Error tracking educator:", err.message);
+      notify("Failed to track educator", "error");
+    }
   };
 
   const handleUntrackEducator = () => {
+    if (!socket || !socket.socket) {
+      console.error("❌ Socket not available for untracking educator");
+      notify("Connection error. Please try again.", "error");
+      return;
+    }
+    
     if (selectedEducator) {
-      socket.emit("admin:educator:untrack", { 
-        adminId: user._id, 
-        educatorId: selectedEducator._id 
-      });
-      setSelectedEducator(null);
-      setEducatorActivities([]);
+      try {
+        socket.socket.emit("admin:educator:untrack", { 
+          adminId: user._id, 
+          educatorId: selectedEducator._id 
+        });
+        setSelectedEducator(null);
+        setEducatorActivities([]);
+      } catch (err) {
+        console.error("❌ Error untracking educator:", err.message);
+        notify("Failed to untrack educator", "error");
+      }
     }
   };
 
@@ -186,10 +208,23 @@ const EducatorTracker = () => {
     
     if (!validateForm()) return;
     
-    socket.emit("admin:educator:create", {
-      adminId: user._id,
-      educatorData: newEducator
-    });
+    if (!socket || !socket.socket) {
+      console.error("❌ Socket not available for creating educator");
+      notify("Connection error. Please try again.", "error");
+      setFormErrors({ general: "Connection error. Please try again." });
+      return;
+    }
+    
+    try {
+      socket.socket.emit("admin:educator:create", {
+        adminId: user._id,
+        educatorData: newEducator
+      });
+    } catch (err) {
+      console.error("❌ Error creating educator:", err.message);
+      notify("Failed to create educator", "error");
+      setFormErrors({ general: err.message || "Failed to create educator" });
+    }
   };
 
   const getActivityIcon = (type) => {

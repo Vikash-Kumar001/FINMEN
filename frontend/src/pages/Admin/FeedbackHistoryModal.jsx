@@ -8,18 +8,30 @@ const FeedbackHistoryModal = ({ studentId, onClose }) => {
     const { user } = useAuth();
 
     useEffect(() => {
-        if (socket && studentId) {
-            socket.emit('admin:feedback:history:subscribe', { adminId: user?._id, studentId });
-            socket.on('admin:feedback:history:data', (data) => {
+        if (socket && socket.socket && studentId) {
+            try {
+                socket.socket.emit('admin:feedback:history:subscribe', { adminId: user?._id, studentId });
+            } catch (err) {
+                console.error("❌ Error subscribing to feedback history:", err.message);
+            }
+            
+            socket.socket.on('admin:feedback:history:data', (data) => {
                 setFeedbackList(data);
                 setLoading(false);
             });
             // Update feedback in real time if backend supports
-            socket.on('admin:feedback:history:update', setFeedbackList);
+            socket.socket.on('admin:feedback:history:update', setFeedbackList);
+            
             // Cleanup
             return () => {
-                socket.off('admin:feedback:history:data');
-                socket.off('admin:feedback:history:update');
+                try {
+                    if (socket && socket.socket) {
+                        socket.socket.off('admin:feedback:history:data');
+                        socket.socket.off('admin:feedback:history:update');
+                    }
+                } catch (err) {
+                    console.error("❌ Error cleaning up feedback history socket listeners:", err.message);
+                }
             };
         }
     }, [socket, user, studentId]);

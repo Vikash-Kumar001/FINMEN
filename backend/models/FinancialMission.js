@@ -1,17 +1,37 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const financialMissionSchema = new mongoose.Schema({
-  title: { type: String, required: true },
-  description: String,
-  level: {
+  title: {
     type: String,
-    enum: ['junior', 'pro'],
     required: true,
   },
-  xp: { type: Number, required: true },
-  rewardCoins: { type: Number, required: true },
-  badge: String, // optional
+  description: {
+    type: String,
+  },
+  level: {
+    type: String,
+    enum: ["junior", "pro"],
+    required: true,
+  },
+  xp: {
+    type: Number,
+    required: true,
+  },
+  rewardCoins: {
+    type: Number,
+    required: true,
+  },
+  badge: {
+    type: String,
+  },
+  userRole: {
+    type: String,
+    enum: ["student", "educator", "admin"],
+    required: true,
+  },
+  department: {
+    type: String,
+  },
 }, { timestamps: true });
 
-const FinancialMission = mongoose.model('FinancialMission', financialMissionSchema);
-export default FinancialMission;
+export default mongoose.model("FinancialMission", financialMissionSchema);

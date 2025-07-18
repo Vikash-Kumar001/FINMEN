@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../utils/api";
 import { X } from "lucide-react";
 
 const FeedbackListModal = ({ studentId, onClose }) => {
@@ -9,9 +9,7 @@ const FeedbackListModal = ({ studentId, onClose }) => {
 
   const fetchFeedbacks = async () => {
     try {
-      const res = await axios.get(`/api/educators/feedback/${studentId}`, {
-        withCredentials: true,
-      });
+      const res = await api.get(`/api/educators/feedback/${studentId}`);
       setFeedbacks(res.data || []);
     } catch (err) {
       console.error("Failed to fetch feedback history:", err);

@@ -1,7 +1,7 @@
 // src/context/AuthContext.jsx
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "../utils/axiosInstance";
+import api from "../utils/api";
 
 const AuthContext = createContext();
 
@@ -13,7 +13,7 @@ export const AuthProvider = ({ children }) => {
     // 🔄 Fetch authenticated user from backend
     const fetchUser = async () => {
         try {
-            const res = await axiosInstance.get("/auth/me");
+            const res = await api.get("/api/auth/me");
             const fetchedUser = res.data;
 
             const enhancedUser = {
@@ -35,11 +35,16 @@ export const AuthProvider = ({ children }) => {
     // 🔐 Login function
     const loginUser = async (credentials) => {
         try {
-            const res = await axiosInstance.post("/auth/login", credentials);
+            const res = await api.post("/api/auth/login", credentials);
             const token = res.data?.token;
             const userData = res.data?.user;
 
             if (!token || !userData) throw new Error("Invalid login response");
+            
+            // Validate token format before storing
+            if (!token.includes('.') || token.split('.').length !== 3) {
+                throw new Error("Invalid token format received from server");
+            }
 
             localStorage.setItem("finmen_token", token);
 
@@ -71,11 +76,25 @@ export const AuthProvider = ({ children }) => {
     // 🚪 Logout and clean state
     const logoutUser = async () => {
         try {
-            await axiosInstance.post("/auth/logout");
+            await api.post("/api/auth/logout");
         } catch (err) {
             console.error("❌ Logout failed:", err?.response?.data || err.message);
         } finally {
+            // Clear all auth-related storage
             localStorage.removeItem("finmen_token");
+            
+            // Clear any other auth-related items
+            try {
+                // Clear any session cookies if present
+                document.cookie.split(";").forEach(c => {
+                    document.cookie = c
+                        .replace(/^ +/, "")
+                        .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+            } catch (e) {
+                console.error("Error clearing cookies:", e);
+            }
+            
             setUser(null);
             setTimeout(() => navigate("/login", { replace: true }), 50);
         }

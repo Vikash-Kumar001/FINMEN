@@ -24,6 +24,7 @@ import {
     Lightbulb,
     Wind
 } from "lucide-react";
+import api from "../../utils/api";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -61,9 +62,8 @@ export default function Games() {
         // Fetch games data from API
         const fetchGames = async () => {
             try {
-                const response = await fetch('/api/games');
-                const data = await response.json();
-                setGamesList(data);
+                const response = await api.get('/api/games');
+                setGamesList(response.data);
             } catch (error) {
                 console.error('Error fetching games:', error);
                 // Set empty array if fetch fails
@@ -78,13 +78,11 @@ export default function Games() {
         // Fetch categories and difficulty colors from API
         const fetchCategoriesAndDifficulties = async () => {
             try {
-                const categoriesResponse = await fetch('/api/games/categories');
-                const categoriesData = await categoriesResponse.json();
-                setCategories(["all", ...categoriesData]);
+                const categoriesResponse = await api.get('/api/games/categories');
+                setCategories(["all", ...categoriesResponse.data]);
                 
-                const difficultiesResponse = await fetch('/api/games/difficulties');
-                const difficultiesData = await difficultiesResponse.json();
-                setDifficultyColors(difficultiesData);
+                const difficultiesResponse = await api.get('/api/games/difficulties');
+                setDifficultyColors(difficultiesResponse.data);
             } catch (error) {
                 console.error('Error fetching categories and difficulties:', error);
                 // Set default values if fetch fails

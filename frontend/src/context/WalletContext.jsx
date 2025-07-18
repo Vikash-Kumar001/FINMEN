@@ -6,7 +6,7 @@ import React, {
     useCallback,
 } from "react";
 import { toast } from "react-hot-toast";
-import axiosInstance from "../utils/axiosInstance";
+import api from "../utils/api";
 
 const WalletContext = createContext();
 
@@ -18,7 +18,7 @@ export const WalletProvider = ({ children }) => {
     const fetchWallet = useCallback(async () => {
         setLoading(true);
         try {
-            const res = await axiosInstance.get("/wallet");
+            const res = await api.get("/api/wallet");
             setWallet(res.data);
         } catch (err) {
             console.error("❌ Failed to fetch wallet:", err?.response?.data || err.message);
@@ -56,7 +56,7 @@ export const useWallet = () => useContext(WalletContext);
 // 💰 Add coins to wallet
 export const addCoins = async (amount, description = "HealCoins added") => {
     try {
-        const res = await axiosInstance.post("/wallet/add", { amount, description });
+        const res = await api.post("/api/wallet/add", { amount, description });
         toast.success("Coins added successfully!");
         return res.data;
     } catch (err) {
@@ -69,7 +69,7 @@ export const addCoins = async (amount, description = "HealCoins added") => {
 // 💸 Spend coins from wallet
 export const spendCoins = async (amount, description = "HealCoins spent") => {
     try {
-        const res = await axiosInstance.post("/wallet/spend", { amount, description });
+        const res = await api.post("/api/wallet/spend", { amount, description });
         toast.success("Coins spent successfully!");
         return res.data;
     } catch (err) {
@@ -82,7 +82,7 @@ export const spendCoins = async (amount, description = "HealCoins spent") => {
 // 🏦 Redeem coins
 export const redeemCoins = async ({ amount, upiId }) => {
     try {
-        const res = await axiosInstance.post("/wallet/redeem", { amount, upiId });
+        const res = await api.post("/api/wallet/redeem", { amount, upiId });
         toast.success("Redemption request submitted!");
         return res.data;
     } catch (err) {
@@ -95,7 +95,7 @@ export const redeemCoins = async ({ amount, upiId }) => {
 // 📜 Fetch transaction history
 export const fetchTransactions = async () => {
     try {
-        const res = await axiosInstance.get("/wallet/transactions");
+        const res = await api.get("/api/wallet/transactions");
         return res.data;
     } catch (err) {
         console.error("❌ Fetch transactions failed:", err?.response?.data || err.message);

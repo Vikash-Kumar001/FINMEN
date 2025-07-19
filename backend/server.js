@@ -1,3 +1,5 @@
+// Import patch for Express path-to-regexp compatibility
+import './express-patch.js';
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";

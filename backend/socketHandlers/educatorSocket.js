@@ -1,4 +1,3 @@
-// socketHandlers/educatorSocket.js
 import User from '../models/User.js';
 import ActivityLog from '../models/ActivityLog.js';
 import EducatorActivity from '../models/EducatorActivity.js';

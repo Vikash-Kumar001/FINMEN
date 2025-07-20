@@ -1,4 +1,3 @@
-// socketHandlers/feedbackSocket.js
 import User from '../models/User.js';
 import Feedback from '../models/Feedback.js';
 import ActivityLog from '../models/ActivityLog.js';

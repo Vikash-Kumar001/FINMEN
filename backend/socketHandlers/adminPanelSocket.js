@@ -1,4 +1,3 @@
-// socketHandlers/adminPanelSocket.js
 import User from '../models/User.js';
 import ActivityLog from '../models/ActivityLog.js';
 

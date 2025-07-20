@@ -1,4 +1,3 @@
-// middlewares/educatorActivityTracker.js
 import ActivityLog from '../models/ActivityLog.js';
 
 /**

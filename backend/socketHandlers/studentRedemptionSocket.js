@@ -1,4 +1,3 @@
-// socketHandlers/studentRedemptionSocket.js
 import User from '../models/User.js';
 import Transaction from '../models/Transaction.js';
 import ActivityLog from '../models/ActivityLog.js';

@@ -1,4 +1,3 @@
-// socketHandlers/journalSocket.js
 import Journal from '../models/Journal.js';
 import User from '../models/User.js';
 import ActivityLog from '../models/ActivityLog.js';

@@ -1,4 +1,3 @@
-// socketHandlers/walletSocket.js
 import Wallet from '../models/Wallet.js';
 import Transaction from '../models/Transaction.js';
 import User from '../models/User.js';

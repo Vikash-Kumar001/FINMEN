@@ -1,4 +1,3 @@
-// socketHandlers/gameSocket.js
 import User from '../models/User.js';
 import FinancialMission from '../models/FinancialMission.js';
 import Challenge from '../models/Challenge.js';

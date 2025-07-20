@@ -1,5 +1,5 @@
 # === Node.js ===
-node_modules/
+**/node_modules/
 .env
 .env.local
 .env.*.local
@@ -12,6 +12,7 @@ logs
 *.log
 debug.log
 
+# === Environment Files ===
 .env.test
 .env.staging
 .env.production
@@ -20,6 +21,7 @@ debug.log
 .env.test.local
 .env.staging.local
 .env.production.local
+
 # === Runtime Data ===
 pids
 *.pid
@@ -56,7 +58,6 @@ test-output/
 storybook-static/
 
 # === Misc ===
-*.log
 *.bak
 *.swp
 *.tmp

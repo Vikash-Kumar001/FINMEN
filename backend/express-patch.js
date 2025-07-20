@@ -1,5 +1,5 @@
 // Express patch to fix path-to-regexp compatibility issue
-import pathToRegexp from 'path-to-regexp';
+import { pathToRegexp } from 'path-to-regexp';
 
 // Override Express's internal path-to-regexp with the newer version
 try {

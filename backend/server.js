@@ -1,8 +1,3 @@
-// Apply router compatibility patch before importing Express
-import "./middlewares/routerCompatibility.js";
-// Apply Express patch before importing Express
-import "./express-patch.js";
-
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";

@@ -51,7 +51,7 @@ function setup(env) {
   return createDebug;
 }
 
-module.exports = setup;
+export default setup;
 `;
       
       fs.writeFileSync(debugPath, debugContent, 'utf8');

@@ -1,3 +1,6 @@
+// Apply Express patch before importing Express
+import "./express-patch.js";
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -51,6 +54,7 @@ import activityRoutes from "./routes/activityRoutes.js";
 
 // Middleware
 import { errorHandler } from "./middlewares/errorMiddleware.js";
+import createDebugCompatibility from "./middlewares/debugCompatibility.js";
 
 // Cron
 import { scheduleWeeklyReports } from "./cronJobs/reportScheduler.js";
@@ -78,6 +82,9 @@ app.use(cors({
   origin: ["http://localhost:5173", "http://localhost:3000"],
   credentials: true,
 }));
+
+// Apply debug compatibility middleware
+app.use(createDebugCompatibility());
 
 // MongoDB connection
 mongoose

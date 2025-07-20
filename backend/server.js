@@ -1,5 +1,3 @@
-// Import patch for Express path-to-regexp compatibility
-import './express-patch.js';
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -104,7 +102,6 @@ io.on("connection", async (socket) => {
       return;
     }
 
-    // Validate token format before verification
     if (typeof token !== 'string' || !token.includes('.') || token.split('.').length !== 3) {
       console.error("❌ Socket auth error: Invalid token format");
       socket.emit("error", { message: "Invalid token format" });
@@ -121,6 +118,7 @@ io.on("connection", async (socket) => {
       socket.disconnect();
       return;
     }
+
     const user = await User.findById(decoded.id);
 
     if (!user) {
@@ -130,7 +128,6 @@ io.on("connection", async (socket) => {
       return;
     }
 
-    // Check educator approval
     if (user.role === "educator" && user.approvalStatus !== "approved") {
       console.error("🔒 Access denied: User not approved or not an educator");
       socket.emit("error", { message: "Access denied: Not approved" });
@@ -138,7 +135,6 @@ io.on("connection", async (socket) => {
       return;
     }
 
-    // Join personal and role-specific rooms
     socket.join(user._id.toString());
     if (user.role === "admin") {
       socket.join("admins");
@@ -151,7 +147,6 @@ io.on("connection", async (socket) => {
 
     console.log(`👤 User ${user._id} (${user.role}) joined their room`);
 
-    // Setup socket handlers based on user role
     if (user.role === "admin") {
       setupAdminEducatorSocket(io, socket, user);
       setupStudentSocket(io, socket, user);
@@ -159,8 +154,7 @@ io.on("connection", async (socket) => {
       setupAdminPanelSocket(io, socket, user);
       setupEducatorSocket(io, socket, user);
     }
-    
-    // Setup socket handlers for all users
+
     setupWalletSocket(io, socket, user);
     setupFeedbackSocket(io, socket, user);
     setupGameSocket(io, socket, user);
@@ -168,7 +162,6 @@ io.on("connection", async (socket) => {
     setupChatSocket(io, socket, user);
     setupStudentRedemptionSocket(io, socket, user);
 
-    // Update lastActive timestamp for educators
     if (user.role === "educator") {
       await User.findByIdAndUpdate(user._id, { lastActive: new Date() });
     }

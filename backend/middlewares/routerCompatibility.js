@@ -1,11 +1,8 @@
 // Middleware to ensure compatibility with Express router
 import { Router } from 'express';
-import pathToRegexp from 'path-to-regexp';
+import { pathToRegexp } from 'path-to-regexp'
 
-/**
- * Creates a compatibility layer for Express Router to work with ES modules
- * This helps prevent the "Cannot find module './router'" error
- */
+// Create a compatible router that can handle both old and new path formats
 export const createCompatibleRouter = () => {
   const router = Router();
   

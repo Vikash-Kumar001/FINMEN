@@ -2,7 +2,7 @@ import axios from "axios";
 
 // ✅ Axios instance for all API calls
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000/api', // Use VITE_API_URL
+  baseURL: import.meta.env.VITE_API_URL || 'https://finmen-1.onrender.com/', // Use VITE_API_URL
   withCredentials: true, // Ensures cookies like JWT token are sent
 });
 

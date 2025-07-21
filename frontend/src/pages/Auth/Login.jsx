@@ -29,7 +29,7 @@ const Login = () => {
 
         try {
             const response = await api.post(
-                `/auth/login`,
+                `/api/auth/login`,
                 { email, password }
             );
 
@@ -78,7 +78,7 @@ const Login = () => {
         try {
             const token = credentialResponse.credential;
             const res = await api.post(
-                `/auth/google`,
+                `/api/auth/google`,
                 { token }
             );
 

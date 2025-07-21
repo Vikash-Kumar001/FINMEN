@@ -16,10 +16,14 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Parse allowed origins (comma-separated string)
+// ✅ Allowed origins for CORS
 const allowedOrigins = process.env.CLIENT_URL
   ? process.env.CLIENT_URL.split(",").map(origin => origin.trim())
-  : ["http://localhost:5173", "http://localhost:3000"];
+  : [
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "https://finmen.vercel.app"
+    ];
 
 // Initialize app and server
 const app = express();
@@ -40,7 +44,6 @@ app.use(cookieParser());
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (e.g., mobile apps, curl)
       if (!origin) return callback(null, true);
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
@@ -219,5 +222,3 @@ server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   scheduleWeeklyReports();
 });
-
-

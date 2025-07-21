@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 import { useAuth } from '../../context/AuthContext';
 import api from '../../utils/api';
-import { AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, Sparkles, ArrowRight, User } from 'lucide-react';
 
 const Login = () => {

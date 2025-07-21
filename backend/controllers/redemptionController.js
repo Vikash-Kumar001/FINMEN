@@ -1,7 +1,6 @@
 import Redemption from '../models/Redemption.js';
 import Wallet from '../models/Wallet.js';
-import Reward from '../models/Reward.js'; // ✅ Assuming reward items are stored in this model
-
+import Reward from '../models/Reward.js'; 
 // 🎁 POST /api/rewards/redeem
 export const redeemReward = async (req, res) => {
   const userId = req.user._id;

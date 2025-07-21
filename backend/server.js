@@ -180,7 +180,7 @@ io.on("connection", async (socket) => {
 });
 
 // Routes
-app.use("/auth", authRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/mood", moodRoutes);
 app.use("/api/game", gameRoutes);
 app.use("/api/rewards", rewardsRoutes);

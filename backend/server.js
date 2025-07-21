@@ -9,27 +9,59 @@ import { Server as SocketIOServer } from "socket.io";
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 
-// Socket handlers
-import { setupAdminEducatorSocket } from "./socketHandlers/adminEducatorSocket.js";
-import { setupWalletSocket } from "./socketHandlers/walletSocket.js";
-import { setupStudentSocket } from "./socketHandlers/studentSocket.js";
-import { setupStatsSocket } from "./socketHandlers/statsSocket.js";
-import { setupFeedbackSocket } from "./socketHandlers/feedbackSocket.js";
-import { setupGameSocket } from "./socketHandlers/gameSocket.js";
-import { setupAdminPanelSocket } from "./socketHandlers/adminPanelSocket.js";
-import { setupJournalSocket } from "./socketHandlers/journalSocket.js";
-import { setupChatSocket } from "./socketHandlers/chatSocket.js";
-import { setupEducatorSocket } from "./socketHandlers/educatorSocket.js";
-import { setupStudentRedemptionSocket } from "./socketHandlers/studentRedemptionSocket.js";
-
-// Load env variables
+// Load environment variables
 dotenv.config();
 
-// Helpers
+// Get current file details (for ESM)
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-// Routes
+// Parse allowed origins (comma-separated string)
+const allowedOrigins = process.env.CLIENT_URL
+  ? process.env.CLIENT_URL.split(",").map(origin => origin.trim())
+  : ["http://localhost:5173", "http://localhost:3000"];
+
+// Initialize app and server
+const app = express();
+const server = http.createServer(app);
+
+// Set up Socket.IO with CORS
+const io = new SocketIOServer(server, {
+  cors: {
+    origin: allowedOrigins,
+    credentials: true,
+  },
+});
+app.set("io", io);
+
+// Middleware
+app.use(express.json());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (e.g., mobile apps, curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        return callback(new Error("Not allowed by CORS: " + origin), false);
+      }
+    },
+    credentials: true,
+  })
+);
+
+// MongoDB Connection
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => console.log("✅ MongoDB connected"))
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err.message);
+    process.exit(1);
+  });
+
+// Import all routes
 import authRoutes from "./routes/authRoutes.js";
 import moodRoutes from "./routes/moodRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
@@ -49,46 +81,25 @@ import studentRoutes from "./routes/studentRoutes.js";
 import challengeRoutes from "./routes/challengeRoutes.js";
 import activityRoutes from "./routes/activityRoutes.js";
 
-// Middleware
+// Import models and other logic
+import User from "./models/User.js";
 import { errorHandler } from "./middlewares/errorMiddleware.js";
-
-// Cron
 import { scheduleWeeklyReports } from "./cronJobs/reportScheduler.js";
 
-// Models
-import User from "./models/User.js";
+// Socket Handlers
+import { setupAdminEducatorSocket } from "./socketHandlers/adminEducatorSocket.js";
+import { setupWalletSocket } from "./socketHandlers/walletSocket.js";
+import { setupStudentSocket } from "./socketHandlers/studentSocket.js";
+import { setupStatsSocket } from "./socketHandlers/statsSocket.js";
+import { setupFeedbackSocket } from "./socketHandlers/feedbackSocket.js";
+import { setupGameSocket } from "./socketHandlers/gameSocket.js";
+import { setupAdminPanelSocket } from "./socketHandlers/adminPanelSocket.js";
+import { setupJournalSocket } from "./socketHandlers/journalSocket.js";
+import { setupChatSocket } from "./socketHandlers/chatSocket.js";
+import { setupEducatorSocket } from "./socketHandlers/educatorSocket.js";
+import { setupStudentRedemptionSocket } from "./socketHandlers/studentRedemptionSocket.js";
 
-// Express & server setup
-const app = express();
-const server = http.createServer(app);
-
-// Socket.IO setup
-const io = new SocketIOServer(server, {
-  cors: {
-    origin: process.env.CLIENT_URL || ["http://localhost:5173", "http://localhost:3000"],
-    credentials: true,
-  },
-});
-app.set("io", io);
-
-// Middlewares
-app.use(express.json());
-app.use(cookieParser());
-app.use(cors({
-  origin: ["http://localhost:5173", "http://localhost:3000"],
-  credentials: true,
-}));
-
-// MongoDB connection
-mongoose
-  .connect(process.env.MONGO_URI)
-  .then(() => console.log("✅ MongoDB connected"))
-  .catch((err) => {
-    console.error("❌ MongoDB connection error:", err.message);
-    process.exit(1);
-  });
-
-// Socket.IO auth and events
+// Socket.IO Authentication and Events
 io.on("connection", async (socket) => {
   console.log("🟢 New socket connected:", socket.id);
 
@@ -97,14 +108,12 @@ io.on("connection", async (socket) => {
 
     if (!token) {
       socket.emit("error", { message: "Authentication required" });
-      socket.disconnect();
-      return;
+      return socket.disconnect();
     }
 
-    if (typeof token !== 'string' || !token.includes('.') || token.split('.').length !== 3) {
+    if (typeof token !== "string" || !token.includes(".") || token.split(".").length !== 3) {
       socket.emit("error", { message: "Invalid token format" });
-      socket.disconnect();
-      return;
+      return socket.disconnect();
     }
 
     let decoded;
@@ -112,31 +121,25 @@ io.on("connection", async (socket) => {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
       socket.emit("error", { message: "Invalid or expired token" });
-      socket.disconnect();
-      return;
+      return socket.disconnect();
     }
 
     const user = await User.findById(decoded.id);
-
     if (!user) {
       socket.emit("error", { message: "User not found" });
-      socket.disconnect();
-      return;
+      return socket.disconnect();
     }
 
     if (user.role === "educator" && user.approvalStatus !== "approved") {
       socket.emit("error", { message: "Access denied: Not approved" });
-      socket.disconnect();
-      return;
+      return socket.disconnect();
     }
 
     socket.join(user._id.toString());
-
     if (user.role === "admin") {
       socket.join("admins");
       socket.join("admin-room");
     }
-
     if (user.role === "educator") {
       socket.join("educators");
       socket.join(`educator-${user._id}`);
@@ -162,7 +165,6 @@ io.on("connection", async (socket) => {
     if (user.role === "educator") {
       await User.findByIdAndUpdate(user._id, { lastActive: new Date() });
     }
-
   } catch (err) {
     console.error("❌ Socket auth error:", err.message);
     socket.emit("error", { message: "Authentication error" });
@@ -194,7 +196,7 @@ app.use("/api/student", studentRoutes);
 app.use("/api/challenges", challengeRoutes);
 app.use("/api/activities", activityRoutes);
 
-// Health check
+// Health Check
 app.get("/", (_, res) => {
   res.send("🌱 FINMEN API is running...");
 });
@@ -208,10 +210,10 @@ if (process.env.NODE_ENV === "production") {
   });
 }
 
-// Error handler
+// Global error handler
 app.use(errorHandler);
 
-// Server start
+// Start Server
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

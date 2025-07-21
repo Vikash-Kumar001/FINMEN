@@ -51,7 +51,6 @@ import activityRoutes from "./routes/activityRoutes.js";
 
 // Middleware
 import { errorHandler } from "./middlewares/errorMiddleware.js";
-import createDebugCompatibility from "./middlewares/debugCompatibility.js";
 
 // Cron
 import { scheduleWeeklyReports } from "./cronJobs/reportScheduler.js";
@@ -80,9 +79,6 @@ app.use(cors({
   credentials: true,
 }));
 
-// Apply debug compatibility middleware
-app.use(createDebugCompatibility());
-
 // MongoDB connection
 mongoose
   .connect(process.env.MONGO_URI)
@@ -100,14 +96,12 @@ io.on("connection", async (socket) => {
     const token = socket.handshake.auth?.token;
 
     if (!token) {
-      console.error("❌ No token provided in socket auth");
       socket.emit("error", { message: "Authentication required" });
       socket.disconnect();
       return;
     }
 
     if (typeof token !== 'string' || !token.includes('.') || token.split('.').length !== 3) {
-      console.error("❌ Socket auth error: Invalid token format");
       socket.emit("error", { message: "Invalid token format" });
       socket.disconnect();
       return;
@@ -117,7 +111,6 @@ io.on("connection", async (socket) => {
     try {
       decoded = jwt.verify(token, process.env.JWT_SECRET);
     } catch (err) {
-      console.error("❌ Socket auth error:", err.message);
       socket.emit("error", { message: "Invalid or expired token" });
       socket.disconnect();
       return;
@@ -126,24 +119,24 @@ io.on("connection", async (socket) => {
     const user = await User.findById(decoded.id);
 
     if (!user) {
-      console.error("❌ User not found for socket auth");
       socket.emit("error", { message: "User not found" });
       socket.disconnect();
       return;
     }
 
     if (user.role === "educator" && user.approvalStatus !== "approved") {
-      console.error("🔒 Access denied: User not approved or not an educator");
       socket.emit("error", { message: "Access denied: Not approved" });
       socket.disconnect();
       return;
     }
 
     socket.join(user._id.toString());
+
     if (user.role === "admin") {
       socket.join("admins");
       socket.join("admin-room");
     }
+
     if (user.role === "educator") {
       socket.join("educators");
       socket.join(`educator-${user._id}`);

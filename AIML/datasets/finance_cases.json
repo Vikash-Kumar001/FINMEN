@@ -1,0 +1,27 @@
+[
+  {
+    "scenario": "I earn \u20b96000 a month. How do I save and still manage food and transport?",
+    "income": 6000,
+    "goal": "budgeting"
+  },
+  {
+    "scenario": "What\u2019s the smart way to manage my Diwali expenses?",
+    "income": 8000,
+    "goal": "festival budgeting"
+  },
+  {
+    "scenario": "I was offered a loan through an app. Is it a scam?",
+    "income": 0,
+    "goal": "fraud detection"
+  },
+  {
+    "scenario": "How do I start saving if I run out of money by mid-month?",
+    "income": 10000,
+    "goal": "habit change"
+  },
+  {
+    "scenario": "What is compound interest and how does it help?",
+    "income": 0,
+    "goal": "financial education"
+  }
+]

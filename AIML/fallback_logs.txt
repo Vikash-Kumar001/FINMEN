@@ -1,0 +1,181 @@
+2025-07-12 18:52:07,565 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-12 18:52:07,566 - [33mPress CTRL+C to quit[0m
+2025-07-12 18:52:07,582 -  * Restarting with watchdog (windowsapi)
+2025-07-12 18:52:11,289 -  * Debugger is active!
+2025-07-12 18:52:11,296 -  * Debugger PIN: 531-737-977
+2025-07-12 18:53:11,485 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 18:53:13,195 -  * Restarting with watchdog (windowsapi)
+2025-07-12 18:53:58,639 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-12 18:53:58,639 - [33mPress CTRL+C to quit[0m
+2025-07-12 18:53:58,655 -  * Restarting with watchdog (windowsapi)
+2025-07-12 18:54:01,135 -  * Debugger is active!
+2025-07-12 18:54:01,142 -  * Debugger PIN: 531-737-977
+2025-07-12 18:55:26,223 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 18:55:26,223 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 18:55:26,224 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 18:55:33,630 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8080
+2025-07-12 18:55:33,630 - [33mPress CTRL+C to quit[0m
+2025-07-12 18:55:33,644 -  * Restarting with watchdog (windowsapi)
+2025-07-12 18:55:35,913 -  * Debugger is active!
+2025-07-12 18:55:35,920 -  * Debugger PIN: 531-737-977
+2025-07-12 18:58:36,731 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 18:58:36,732 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 18:58:36,732 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 18:58:47,508 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8080
+2025-07-12 18:58:47,508 - [33mPress CTRL+C to quit[0m
+2025-07-12 18:58:47,521 -  * Restarting with watchdog (windowsapi)
+2025-07-12 18:58:50,250 -  * Debugger is active!
+2025-07-12 18:58:50,257 -  * Debugger PIN: 531-737-977
+2025-07-12 18:59:47,198 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\os.py', reloading
+2025-07-12 18:59:48,176 -  * Restarting with watchdog (windowsapi)
+2025-07-12 18:59:51,634 -  * Debugger is active!
+2025-07-12 18:59:51,642 -  * Debugger PIN: 531-737-977
+2025-07-12 19:00:09,247 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 19:00:09,248 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 19:00:09,249 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 19:00:10,436 -  * Restarting with watchdog (windowsapi)
+2025-07-12 19:00:13,691 -  * Debugger is active!
+2025-07-12 19:00:13,699 -  * Debugger PIN: 531-737-977
+2025-07-12 19:00:35,163 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 19:00:35,178 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 19:00:35,179 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 19:00:36,501 -  * Restarting with watchdog (windowsapi)
+2025-07-12 19:00:38,739 -  * Debugger is active!
+2025-07-12 19:00:38,748 -  * Debugger PIN: 531-737-977
+2025-07-12 19:01:11,328 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8080
+2025-07-12 19:01:11,328 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:01:11,342 -  * Restarting with watchdog (windowsapi)
+2025-07-12 19:01:13,258 -  * Debugger is active!
+2025-07-12 19:01:13,266 -  * Debugger PIN: 531-737-977
+2025-07-12 19:02:00,495 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\Gemini.py', reloading
+2025-07-12 19:02:00,495 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\Gemini.py', reloading
+2025-07-12 19:02:00,495 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\Gemini.py', reloading
+2025-07-12 19:02:01,682 -  * Restarting with watchdog (windowsapi)
+2025-07-12 19:02:03,853 -  * Debugger is active!
+2025-07-12 19:02:03,860 -  * Debugger PIN: 531-737-977
+2025-07-12 19:02:03,913 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\Gemini.py', reloading
+2025-07-12 19:02:03,931 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\Gemini.py', reloading
+2025-07-12 19:02:03,931 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\Gemini.py', reloading
+2025-07-12 19:02:05,112 -  * Restarting with watchdog (windowsapi)
+2025-07-12 19:02:07,217 -  * Debugger is active!
+2025-07-12 19:02:07,224 -  * Debugger PIN: 531-737-977
+2025-07-12 19:02:23,791 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 19:02:23,806 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 19:02:23,808 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 19:02:24,561 -  * Restarting with watchdog (windowsapi)
+2025-07-12 19:02:29,323 -  * Debugger is active!
+2025-07-12 19:02:29,331 -  * Debugger PIN: 531-737-977
+2025-07-12 19:03:00,905 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\site-packages\\_pytest\\cacheprovider.py', reloading
+2025-07-12 19:03:00,939 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\site-packages\\_pytest\\fixtures.py', reloading
+2025-07-12 19:03:00,990 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\site-packages\\_pytest\\config\\__init__.py', reloading
+2025-07-12 19:03:01,026 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\site-packages\\_pytest\\capture.py', reloading
+2025-07-12 19:03:01,066 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\site-packages\\_pytest\\doctest.py', reloading
+2025-07-12 19:03:01,107 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\site-packages\\_pytest\\junitxml.py', reloading
+2025-07-12 19:03:01,126 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\site-packages\\_pytest\\legacypath.py', reloading
+2025-07-12 19:03:01,154 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\site-packages\\_pytest\\logging.py', reloading
+2025-07-12 19:03:01,180 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\site-packages\\_pytest\\monkeypatch.py', reloading
+2025-07-12 19:03:01,201 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\site-packages\\_pytest\\recwarn.py', reloading
+2025-07-12 19:03:01,228 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\site-packages\\_pytest\\tmpdir.py', reloading
+2025-07-12 19:03:02,165 -  * Restarting with watchdog (windowsapi)
+2025-07-12 19:03:05,927 -  * Debugger is active!
+2025-07-12 19:03:05,935 -  * Debugger PIN: 531-737-977
+2025-07-12 19:03:07,090 -  * Detected change in 'C:\\Users\\Tilak Devi\\anaconda3\\Lib\\logging\\__init__.py', reloading
+2025-07-12 19:03:08,838 -  * Restarting with watchdog (windowsapi)
+2025-07-12 19:04:58,497 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8080
+2025-07-12 19:04:58,497 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:04:58,509 -  * Restarting with watchdog (windowsapi)
+2025-07-12 19:05:01,211 -  * Debugger is active!
+2025-07-12 19:05:01,219 -  * Debugger PIN: 531-737-977
+2025-07-12 19:05:44,159 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 19:05:44,159 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 19:05:44,159 -  * Detected change in 'C:\\Users\\Tilak Devi\\Downloads\\FINMEN\\Code\\app.py', reloading
+2025-07-12 19:05:45,246 -  * Restarting with watchdog (windowsapi)
+2025-07-12 19:05:47,971 -  * Debugger is active!
+2025-07-12 19:05:47,988 -  * Debugger PIN: 531-737-977
+2025-07-12 19:06:22,259 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8080
+2025-07-12 19:06:22,259 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:07:19,979 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8080
+2025-07-12 19:07:19,980 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:08:35,846 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8080
+2025-07-12 19:08:35,846 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:09:36,393 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8080
+2025-07-12 19:09:36,393 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:11:10,821 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8080
+2025-07-12 19:11:10,821 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:11:42,673 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:8080
+2025-07-12 19:11:42,673 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:12:02,412 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-12 19:12:02,412 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:28:39,405 - 127.0.0.1 - - [12/Jul/2025 19:28:39] "[31m[1mGET /chat HTTP/1.1[0m" 405 -
+2025-07-12 19:28:39,556 - 127.0.0.1 - - [12/Jul/2025 19:28:39] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-07-12 19:29:58,656 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-12 19:29:58,658 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:30:06,657 - 127.0.0.1 - - [12/Jul/2025 19:30:06] "GET / HTTP/1.1" 200 -
+2025-07-12 19:30:06,920 - 127.0.0.1 - - [12/Jul/2025 19:30:06] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-07-12 19:36:11,053 - 127.0.0.1 - - [12/Jul/2025 19:36:11] "[31m[1mGET /chat HTTP/1.1[0m" 405 -
+2025-07-12 19:38:02,383 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-12 19:38:02,385 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:38:43,848 - 127.0.0.1 - - [12/Jul/2025 19:38:43] "GET / HTTP/1.1" 200 -
+2025-07-12 19:38:44,171 - 127.0.0.1 - - [12/Jul/2025 19:38:44] "GET / HTTP/1.1" 200 -
+2025-07-12 19:39:16,125 - 127.0.0.1 - - [12/Jul/2025 19:39:16] "[31m[1mGET /chat HTTP/1.1[0m" 405 -
+2025-07-12 19:39:46,143 - 127.0.0.1 - - [12/Jul/2025 19:39:46] "GET / HTTP/1.1" 200 -
+2025-07-12 19:41:30,638 - 127.0.0.1 - - [12/Jul/2025 19:41:30] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:41:30,645 - 127.0.0.1 - - [12/Jul/2025 19:41:30] "POST /chat HTTP/1.1" 200 -
+2025-07-12 19:41:44,933 - 127.0.0.1 - - [12/Jul/2025 19:41:44] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:41:44,938 - 127.0.0.1 - - [12/Jul/2025 19:41:44] "POST /chat HTTP/1.1" 200 -
+2025-07-12 19:43:19,141 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-12 19:43:19,142 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:43:20,815 - 127.0.0.1 - - [12/Jul/2025 19:43:20] "GET / HTTP/1.1" 200 -
+2025-07-12 19:44:27,192 - 127.0.0.1 - - [12/Jul/2025 19:44:27] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:44:27,197 - 127.0.0.1 - - [12/Jul/2025 19:44:27] "POST /chat HTTP/1.1" 200 -
+2025-07-12 19:46:33,319 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-12 19:46:33,319 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:46:58,909 - 127.0.0.1 - - [12/Jul/2025 19:46:58] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:46:59,859 - 127.0.0.1 - - [12/Jul/2025 19:46:59] "POST /chat HTTP/1.1" 200 -
+2025-07-12 19:47:08,874 - 127.0.0.1 - - [12/Jul/2025 19:47:08] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:47:10,785 - 127.0.0.1 - - [12/Jul/2025 19:47:10] "POST /chat HTTP/1.1" 200 -
+2025-07-12 19:47:23,042 - 127.0.0.1 - - [12/Jul/2025 19:47:23] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:47:26,985 - 127.0.0.1 - - [12/Jul/2025 19:47:26] "POST /chat HTTP/1.1" 200 -
+2025-07-12 19:47:47,403 - 127.0.0.1 - - [12/Jul/2025 19:47:47] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:47:52,295 - 127.0.0.1 - - [12/Jul/2025 19:47:52] "POST /chat HTTP/1.1" 200 -
+2025-07-12 19:51:05,187 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-12 19:51:05,187 - [33mPress CTRL+C to quit[0m
+2025-07-12 19:51:30,818 - 127.0.0.1 - - [12/Jul/2025 19:51:30] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:51:31,715 - 127.0.0.1 - - [12/Jul/2025 19:51:31] "POST /chat HTTP/1.1" 200 -
+2025-07-12 19:51:42,591 - 127.0.0.1 - - [12/Jul/2025 19:51:42] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:51:45,479 - 127.0.0.1 - - [12/Jul/2025 19:51:45] "POST /chat HTTP/1.1" 200 -
+2025-07-12 19:52:15,955 - 127.0.0.1 - - [12/Jul/2025 19:52:15] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:52:18,267 - 127.0.0.1 - - [12/Jul/2025 19:52:18] "POST /chat HTTP/1.1" 200 -
+2025-07-12 19:52:59,133 - 127.0.0.1 - - [12/Jul/2025 19:52:59] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:53:04,426 - 127.0.0.1 - - [12/Jul/2025 19:53:04] "POST /chat HTTP/1.1" 200 -
+2025-07-12 19:53:21,951 - 127.0.0.1 - - [12/Jul/2025 19:53:21] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:53:23,137 - 127.0.0.1 - - [12/Jul/2025 19:53:23] "POST /chat HTTP/1.1" 200 -
+2025-07-12 19:53:44,553 - 127.0.0.1 - - [12/Jul/2025 19:53:44] "OPTIONS /chat HTTP/1.1" 200 -
+2025-07-12 19:53:47,181 - 127.0.0.1 - - [12/Jul/2025 19:53:47] "POST /chat HTTP/1.1" 200 -
+2025-07-23 22:53:12,072 - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2025-07-23 22:53:12,077 - [33mPress CTRL+C to quit[0m
+2025-07-23 22:53:23,437 - 127.0.0.1 - - [23/Jul/2025 22:53:23] "[31m[1mGET / HTTP/1.1[0m" 405 -
+2025-07-23 22:53:23,672 - 127.0.0.1 - - [23/Jul/2025 22:53:23] "[33mGET /favicon.ico HTTP/1.1[0m" 404 -
+2025-07-23 22:53:39,239 - 127.0.0.1 - - [23/Jul/2025 22:53:39] "[31m[1mGET / HTTP/1.1[0m" 405 -
+2025-07-23 22:53:39,932 - 127.0.0.1 - - [23/Jul/2025 22:53:39] "[31m[1mGET / HTTP/1.1[0m" 405 -
+2025-07-23 22:53:40,174 - 127.0.0.1 - - [23/Jul/2025 22:53:40] "[31m[1mGET / HTTP/1.1[0m" 405 -
+2025-07-23 22:53:40,577 - 127.0.0.1 - - [23/Jul/2025 22:53:40] "[31m[1mGET / HTTP/1.1[0m" 405 -

@@ -1,0 +1,63 @@
+# === Node.js ===
+**/node_modules/
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# === Logs ===
+logs
+*.log
+debug.log
+
+# === Environment Files ===
+.env.test
+.env.staging
+.env.production
+.env.development
+.env.development.local
+.env.test.local
+.env.staging.local
+.env.production.local
+
+# === Runtime Data ===
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# === Build Output ===
+dist/
+build/
+.next/
+out/
+
+# === OS Files ===
+.DS_Store
+Thumbs.db
+
+# === IDEs and Editors ===
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+
+# === Coverage Reports ===
+coverage/
+
+# === Test Output ===
+test-output/
+
+# === Firebase Cache (if used) ===
+.firebase/
+.firebaserc
+
+# === Storybook (optional if using) ===
+storybook-static/
+
+# === Misc ===
+*.bak
+*.swp
+*.tmp

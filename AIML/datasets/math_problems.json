@@ -1,0 +1,27 @@
+[
+  {
+    "question": "A train travels 120 km in 2 hours. What is its average speed?",
+    "topic": "speed",
+    "class": "8"
+  },
+  {
+    "question": "Solve: 2x + 3 = 7",
+    "topic": "linear equations",
+    "class": "9"
+  },
+  {
+    "question": "Factor: x^2 - 9",
+    "topic": "factorization",
+    "class": "9"
+  },
+  {
+    "question": "Find the area of a triangle with base 6 cm and height 10 cm.",
+    "topic": "area",
+    "class": "7"
+  },
+  {
+    "question": "Express 90 as a product of its prime factors.",
+    "topic": "prime factorization",
+    "class": "6"
+  }
+]

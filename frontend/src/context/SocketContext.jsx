@@ -30,7 +30,7 @@ export const SocketProvider = ({ children }) => {
                 return;
             }
 
-            const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
+            const socket = io(import.meta.env.VITE_API_URL, {
                 transports: ["websocket"],
                 withCredentials: true,
                 auth: { token },

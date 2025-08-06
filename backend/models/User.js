@@ -94,6 +94,15 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: Date.now
     },
+    // Add these fields to your userSchema
+    completedChallengeIds: {
+      type: [String],
+      default: []
+    },
+    dailyChallengeHistory: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
+    },
   },
   { timestamps: true }
 );

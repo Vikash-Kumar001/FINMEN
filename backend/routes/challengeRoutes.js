@@ -15,12 +15,14 @@ const router = express.Router();
 // Public routes
 router.get('/', getAllChallenges);
 router.get('/active', getActiveChallenges);
-router.get('/:id', getChallengeById);
 
 // Protected routes - require authentication
 router.post('/start/:challengeId', requireAuth, startChallenge);
 router.post('/progress/:challengeId', requireAuth, updateChallengeProgress);
 router.get('/progress', requireAuth, getUserChallengeProgress);
 router.get('/progress/:challengeId', requireAuth, getUserChallengeProgressById);
+
+// This route must be defined after all other specific routes to avoid conflicts
+router.get('/:id', getChallengeById);
 
 export default router;

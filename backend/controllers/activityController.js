@@ -8,14 +8,14 @@ export const logActivity = async (req, res, next) => {
     const { activityType, description, metadata, pageUrl } = req.body;
     const userId = req.user._id;
 
-    if (!activityType || !description) {
-      throw new ErrorResponse('Activity type and description are required', 400);
+    if (!activityType) {
+      throw new ErrorResponse('Activity type is required', 400);
     }
 
     const activityLog = await ActivityLog.create({
       userId,
       activityType,
-      description,
+      description: description || '', // Provide default empty string if description is not provided
       metadata: metadata || {},
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],

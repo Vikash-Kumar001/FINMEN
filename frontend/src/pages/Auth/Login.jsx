@@ -1,16 +1,24 @@
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
-import { useAuth } from '../../context/AuthContext';
-import api from '../../utils/api';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, Sparkles, ArrowRight, User } from 'lucide-react';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { useAuth } from "../../context/AuthContext";
+import api from "../../utils/api";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+    Eye,
+    EyeOff,
+    Mail,
+    Lock,
+    Sparkles,
+    ArrowRight,
+    User,
+} from "lucide-react";
 
 const Login = () => {
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState('');
+    const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
 
     const navigate = useNavigate();
@@ -18,55 +26,52 @@ const Login = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
+        setError("");
         setIsLoading(true);
 
         if (!email || !password) {
-            setError('Please enter both email and password.');
+            setError("Please enter both email and password.");
             setIsLoading(false);
             return;
         }
 
         try {
-            const response = await api.post(
-                `/api/auth/login`,
-                { email, password }
-            );
+            const response = await api.post(`/api/auth/login`, { email, password });
 
             const { token, user } = response.data;
-            localStorage.setItem('finmen_token', token);
+            localStorage.setItem("finmen_token", token);
 
             await fetchUser();
 
-            if (user.role === 'educator' && user.approvalStatus === 'pending') {
-                navigate('/pending-approval', {
+            if (user.role === "educator" && user.approvalStatus === "pending") {
+                navigate("/pending-approval", {
                     state: {
-                        message: 'Your educator account is still under review.',
+                        message: "Your educator account is still under review.",
                         user: { email: user.email },
                     },
                 });
                 return;
             }
 
-            if (user.role === 'admin') navigate('/admin/dashboard');
-            else if (user.role === 'educator') navigate('/educator/dashboard');
-            else if (user.role === 'student') navigate('/student/dashboard');
+            if (user.role === "admin") navigate("/admin/dashboard");
+            else if (user.role === "educator") navigate("/educator/dashboard");
+            else if (user.role === "student") navigate("/student/dashboard");
         } catch (err) {
             if (
                 err.response?.status === 400 &&
-                err.response?.data?.message?.includes('verify')
+                err.response?.data?.message?.includes("verify")
             ) {
-                localStorage.setItem('verificationEmail', email);
-                navigate('/verify-email');
-            } else if (err.response?.data?.approvalStatus === 'pending') {
-                navigate('/pending-approval', {
+                localStorage.setItem("verificationEmail", email);
+                navigate("/verify-email");
+            } else if (err.response?.data?.approvalStatus === "pending") {
+                navigate("/pending-approval", {
                     state: {
                         message: err.response.data.message,
                         user: { email },
                     },
                 });
             } else {
-                setError(err.response?.data?.message || 'Something went wrong.');
+                setError(err.response?.data?.message || "Something went wrong.");
             }
         } finally {
             setIsLoading(false);
@@ -75,24 +80,35 @@ const Login = () => {
 
     const handleGoogleLogin = async (credentialResponse) => {
         setIsLoading(true);
-        try {
-            const token = credentialResponse.credential;
-            const res = await api.post(
-                `/api/auth/google`,
-                { token }
-            );
+        setError("");
 
-            localStorage.setItem('finmen_token', res.data.token);
+        try {
+            const token = credentialResponse?.credential;
+
+            if (!token) {
+                setError("No Google credential received.");
+                return;
+            }
+
+            const res = await api.post(`/api/auth/google`, { token });
+
+            localStorage.setItem("finmen_token", res.data.token);
+
             const user = await fetchUser();
 
-            if (user?.role === 'student') {
-                navigate('/student/dashboard');
+            if (user?.role === "student") {
+                navigate("/student/dashboard");
             } else {
-                setError('Google login is only available for students.');
-                localStorage.removeItem('finmen_token');
+                setError("Google login is only available for students.");
+                localStorage.removeItem("finmen_token");
             }
         } catch (err) {
-            setError(err.response?.data?.message || 'Google login failed.');
+            console.error("🔴 Google login error:", err);
+            if (err.response) {
+                console.error("🔴 Response:", err.response);
+            }
+
+            setError(err.response?.data?.message || "Google login failed.");
         } finally {
             setIsLoading(false);
         }
@@ -110,12 +126,12 @@ const Login = () => {
                     <motion.div
                         className="absolute -top-20 -left-20 w-96 h-96 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl"
                         animate={{ scale: [1, 1.2, 1], rotate: [0, 180, 360] }}
-                        transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                     />
                     <motion.div
                         className="absolute -bottom-20 -right-20 w-96 h-96 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl"
                         animate={{ scale: [1.2, 1, 1.2], rotate: [360, 180, 0] }}
-                        transition={{ duration: 25, repeat: Infinity, ease: 'linear' }}
+                        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
                     />
                 </motion.div>
 
@@ -129,20 +145,29 @@ const Login = () => {
                             visible: {
                                 opacity: 1,
                                 y: 0,
-                                transition: { duration: 0.8, ease: 'easeOut' },
+                                transition: { duration: 0.8, ease: "easeOut" },
                             },
                         }}
                     >
                         <motion.div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 sm:p-10 shadow-2xl">
                             <motion.div className="text-center mb-8">
-                                <motion.div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mb-4"
+                                <motion.div
+                                    className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mb-4"
                                     animate={{ y: [0, -10, 0] }}
-                                    transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+                                    transition={{
+                                        duration: 3,
+                                        repeat: Infinity,
+                                        ease: "easeInOut",
+                                    }}
                                 >
                                     <Sparkles className="w-8 h-8 text-white" />
                                 </motion.div>
-                                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">Welcome Back</h1>
-                                <p className="text-gray-300 text-sm sm:text-base">Sign in to continue your journey</p>
+                                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                                    Welcome Back
+                                </h1>
+                                <p className="text-gray-300 text-sm sm:text-base">
+                                    Sign in to continue your journey
+                                </p>
                             </motion.div>
 
                             <AnimatePresence>
@@ -179,7 +204,7 @@ const Login = () => {
                                         <Lock className="h-5 w-5 text-gray-400" />
                                     </div>
                                     <input
-                                        type={showPassword ? 'text' : 'password'}
+                                        type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="Password"
@@ -191,7 +216,11 @@ const Login = () => {
                                         onClick={() => setShowPassword(!showPassword)}
                                         className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white"
                                     >
-                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        {showPassword ? (
+                                            <EyeOff className="h-5 w-5" />
+                                        ) : (
+                                            <Eye className="h-5 w-5" />
+                                        )}
                                     </button>
                                 </div>
 
@@ -205,7 +234,11 @@ const Login = () => {
                                             <motion.div
                                                 className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
                                                 animate={{ rotate: 360 }}
-                                                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                                                transition={{
+                                                    duration: 1,
+                                                    repeat: Infinity,
+                                                    ease: "linear",
+                                                }}
                                             />
                                         ) : (
                                             <>
@@ -217,14 +250,19 @@ const Login = () => {
                             </form>
 
                             <div className="text-center mt-4">
-                                <button onClick={() => navigate('/forgot-password')} className="text-purple-400 hover:underline text-sm">
+                                <button
+                                    onClick={() => navigate("/forgot-password")}
+                                    className="text-purple-400 hover:underline text-sm"
+                                >
                                     Forgot your password?
                                 </button>
                             </div>
 
                             <div className="flex items-center my-8">
                                 <div className="flex-1 h-px bg-white/20" />
-                                <span className="px-4 text-gray-400 text-sm">or continue with</span>
+                                <span className="px-4 text-gray-400 text-sm">
+                                    or continue with
+                                </span>
                                 <div className="flex-1 h-px bg-white/20" />
                             </div>
 
@@ -232,7 +270,7 @@ const Login = () => {
                                 <div className="w-full bg-white/5 border border-white/10 rounded-xl p-2">
                                     <GoogleLogin
                                         onSuccess={handleGoogleLogin}
-                                        onError={() => setError('Google login failed.')}
+                                        onError={() => setError("Google login failed.")}
                                         theme="filled_black"
                                         size="large"
                                         width="300"

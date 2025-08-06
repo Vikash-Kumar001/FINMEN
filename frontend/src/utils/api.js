@@ -1,42 +1,47 @@
 import axios from "axios";
 
-// ✅ Axios instance for all API calls
+// 🌐 Set the base URL from .env or fallback to localhost
+const baseURL = import.meta.env.VITE_API_URL?.trim() || "http://localhost:5000";
+
+// ✅ Create an Axios instance
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL ,
-  withCredentials: true, // Ensures cookies like JWT token are sent
+  baseURL,
+  withCredentials: true, // Enables cookies for cross-origin requests
 });
 
-// 🔄 Response interceptor for error logging
+// 🔄 Response interceptor for centralized error logging
 api.interceptors.response.use(
-  response => response,
-  error => {
-    console.error("🔴 API Error:", error.response?.data || error.message);
+  (response) => response,
+  (error) => {
+    const msg = error.response?.data?.message || error.message || "Unknown error";
+    console.error("🔴 API Error:", msg);
     return Promise.reject(error);
   }
 );
 
-// 🔄 Request interceptor for token handling
+// 🔐 Request interceptor to attach JWT token
 api.interceptors.request.use(
-  config => {
-    const token = localStorage.getItem('finmen_token');
+  (config) => {
+    const token = localStorage.getItem("finmen_token");
 
     if (token) {
       try {
-        // Validate JWT format (header.payload.signature)
-        if (typeof token === 'string' && token.includes('.') && token.split('.').length === 3) {
+        const parts = token.split(".");
+        if (parts.length === 3) {
           config.headers.Authorization = `Bearer ${token}`;
         } else {
-          console.warn("⚠️ Invalid token format in localStorage");
-          localStorage.removeItem('finmen_token');
+          console.warn("⚠️ Malformed token found. Removing...");
+          localStorage.removeItem("finmen_token");
         }
       } catch (err) {
-        console.error("❌ Error processing token:", err.message);
+        console.error("❌ Token parsing error:", err.message);
+        localStorage.removeItem("finmen_token");
       }
     }
 
     return config;
   },
-  error => Promise.reject(error)
+  (error) => Promise.reject(error)
 );
 
 export default api;

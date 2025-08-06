@@ -5,8 +5,7 @@ import { useAuth } from "./context/AuthContext";
 
 // Global UI
 import Navbar from "./components/Navbar";
-import Chatbot from "./components/Chatbot"; // ✅ Floating Chatbot
-
+import Chatbot from "./components/Chatbot"; 
 // Auth Pages
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
@@ -32,6 +31,7 @@ import BreathingExercise from "./pages/Student/BreathingExercise";
 import QuickStart from "./pages/Student/QuickStart";
 import ThisWeek from "./pages/Student/ThisWeek";
 import DailyGoal from "./pages/Student/DailyGoal";
+import DailyChallenges from "./pages/Student/DailyChallenges";
 import Challenge from "./pages/Student/Challenge";
 import FinancialLiteracy from "./pages/Student/FinancialLiteracy";
 import BudgetPlanner from "./pages/Student/BudgetPlanner";
@@ -39,6 +39,14 @@ import InvestmentSimulator from "./pages/Student/InvestmentSimulator";
 import SavingsGoals from "./pages/Student/SavingsGoals";
 import FinancialQuiz from "./pages/Student/FinancialQuiz";
 import ExpenseTracker from "./pages/Student/ExpenseTracker";
+
+// Game Components
+import MindMaze from "./pages/Games/MindMaze";
+import BreatheBalance from "./pages/Games/BreatheBalance";
+import PiggyBankBuilder from "./pages/Games/PiggyBankBuilder";
+import ShopSmart from "./pages/Games/ShopSmart";
+import InvestQuest from "./pages/Games/InvestQuest";
+import BudgetHero from "./pages/Games/BudgetHero";
 
 // Educator Pages
 import EducatorDashboard from "./pages/Educator/EducatorDashboard";
@@ -136,6 +144,7 @@ const App = () => {
         <Route path="/student/quick-start" element={<ProtectedRoute roles={['student']}><QuickStart /></ProtectedRoute>} />
         <Route path="/student/this-week" element={<ProtectedRoute roles={['student']}><ThisWeek /></ProtectedRoute>} />
         <Route path="/student/daily-goal" element={<ProtectedRoute roles={['student']}><DailyGoal /></ProtectedRoute>} />
+        <Route path="/student/daily-challenges" element={<ProtectedRoute roles={['student']}><DailyChallenges /></ProtectedRoute>} />
         <Route path="/student/challenge" element={<ProtectedRoute roles={['student']}><Challenge /></ProtectedRoute>} />
         <Route path="/learn/financial-literacy" element={<ProtectedRoute roles={['student']}><FinancialLiteracy /></ProtectedRoute>} />
         <Route path="/tools/budget-planner" element={<ProtectedRoute roles={['student']}><BudgetPlanner /></ProtectedRoute>} />
@@ -143,6 +152,14 @@ const App = () => {
         <Route path="/tools/savings-goals" element={<ProtectedRoute roles={['student']}><SavingsGoals /></ProtectedRoute>} />
         <Route path="/learn/financial-quiz" element={<ProtectedRoute roles={['student']}><FinancialQuiz /></ProtectedRoute>} />
         <Route path="/tools/expense-tracker" element={<ProtectedRoute roles={['student']}><ExpenseTracker /></ProtectedRoute>} />
+        
+        {/* Game Routes */}
+        <Route path="/games/mind-maze" element={<ProtectedRoute roles={['student']}><MindMaze /></ProtectedRoute>} />
+        <Route path="/games/breathe-balance" element={<ProtectedRoute roles={['student']}><BreatheBalance /></ProtectedRoute>} />
+        <Route path="/games/piggy-bank-builder" element={<ProtectedRoute roles={['student']}><PiggyBankBuilder /></ProtectedRoute>} />
+        <Route path="/games/shop-smart" element={<ProtectedRoute roles={['student']}><ShopSmart /></ProtectedRoute>} />
+        <Route path="/games/invest-quest" element={<ProtectedRoute roles={['student']}><InvestQuest /></ProtectedRoute>} />
+        <Route path="/games/budget-hero" element={<ProtectedRoute roles={['student']}><BudgetHero /></ProtectedRoute>} />
 
         {/* Educator Routes */}
         <Route path="/educator/dashboard" element={<ProtectedRoute roles={['educator']} requireApproved={true}><EducatorDashboard /></ProtectedRoute>} />

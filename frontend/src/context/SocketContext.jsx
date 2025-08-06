@@ -1,13 +1,25 @@
-import React, { createContext, useContext, useEffect, useRef, useState } from "react";
+import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "../hooks/useAuth";
 
 const SocketContext = createContext(null);
 
+export const useSocket = () => useContext(SocketContext);
+
 export const SocketProvider = ({ children }) => {
     const { user } = useAuth();
     const socketRef = useRef(null);
     const [socketReady, setSocketReady] = useState(false);
+    const [profileUpdate, setProfileUpdate] = useState(null);
+    const profileListeners = useRef([]);
+
+    // Subscribe/unsubscribe API for components
+    const subscribeProfileUpdate = useCallback((cb) => {
+        profileListeners.current.push(cb);
+        return () => {
+            profileListeners.current = profileListeners.current.filter(fn => fn !== cb);
+        };
+    }, []);
 
     useEffect(() => {
         if (user && !socketRef.current) {
@@ -62,6 +74,25 @@ export const SocketProvider = ({ children }) => {
             socket.on("disconnect", (reason) => {
                 console.log("🔴 Socket disconnected:", reason);
                 setSocketReady(false);
+                
+                // Only attempt to reconnect for certain disconnect reasons
+                if (reason === "io server disconnect" || reason === "io client disconnect") {
+                    // These are intentional disconnects, don't reconnect automatically
+                    console.log("Intentional disconnect, not attempting reconnection");
+                } else {
+                    // For transport close, ping timeout, etc.
+                    console.log("Unintentional disconnect, socket will attempt reconnection automatically");
+                }
+            });
+
+            // Listen for real-time profile updates
+            socket.on("user:profile:updated", (payload) => {
+                setProfileUpdate(payload);
+                profileListeners.current.forEach(cb => cb(payload));
+            });
+            socket.on("student:profile:updated", (payload) => {
+                setProfileUpdate(payload);
+                profileListeners.current.forEach(cb => cb(payload));
             });
 
             socketRef.current = socket;
@@ -83,10 +114,8 @@ export const SocketProvider = ({ children }) => {
     }, [user]);
 
     return (
-        <SocketContext.Provider value={{ socket: socketRef.current, socketReady }}>
+        <SocketContext.Provider value={{ socket: socketRef.current, socketReady, profileUpdate, subscribeProfileUpdate }}>
             {children}
         </SocketContext.Provider>
     );
 };
-
-export const useSocket = () => useContext(SocketContext);

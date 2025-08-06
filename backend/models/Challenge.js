@@ -14,7 +14,7 @@ const ChallengeSchema = new mongoose.Schema(
     category: {
       type: String,
       required: true,
-      enum: ['financial', 'education', 'planning', 'other'],
+      enum: ['financial', 'education', 'planning', 'other', 'daily', 'weekly'],
       default: 'financial',
     },
     difficulty: {

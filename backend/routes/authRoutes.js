@@ -12,6 +12,8 @@ import {
 import { requireAuth, requireAdmin } from "../middlewares/requireAuth.js";
 import { trackEducatorLogin } from "../utils/educatorActivityTracker.js";
 import { generateToken } from "../utils/generateToken.js";
+import User from "../models/User.js";
+import bcrypt from "bcrypt";
 
 const router = express.Router();
 

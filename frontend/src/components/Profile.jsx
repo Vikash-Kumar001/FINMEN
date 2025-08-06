@@ -6,6 +6,7 @@ import {
 import { useAuth } from "../context/AuthContext";
 import api from "../utils/api";
 import { toast } from "react-toastify";
+import { useSocket } from '../context/SocketContext';
 
 function AnimatedFormField({ icon: Icon, label, error, className = "", ...props }) {
     return (
@@ -95,6 +96,7 @@ function GlassCard({ title, children, className = "", gradient = "" }) {
 
 const Profile = () => {
     const { user } = useAuth();
+    const { subscribeProfileUpdate } = useSocket();
     const [personalInfo, setPersonalInfo] = useState({
         name: "",
         email: "",
@@ -132,6 +134,40 @@ const Profile = () => {
     });
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [errors, setErrors] = useState({});
+    const presetAvatars = [
+        '/avatars/avatar1.png',
+        '/avatars/avatar2.png',
+        '/avatars/avatar3.png',
+        '/avatars/avatar4.png',
+        '/avatars/avatar5.png',
+        '/avatars/avatar6.png',
+    ];
+    const [selectedPreset, setSelectedPreset] = useState(null);
+
+    useEffect(() => {
+        if (user && subscribeProfileUpdate) {
+            const unsubscribe = subscribeProfileUpdate((payload) => {
+                if (payload.userId === user._id) {
+                    // Update personal info and avatar in real-time
+                    setPersonalInfo((prev) => ({
+                        ...prev,
+                        name: payload.name || prev.name,
+                        email: payload.email || prev.email,
+                        phone: payload.phone || prev.phone,
+                        location: payload.city || prev.location,
+                        bio: payload.bio || prev.bio,
+                        website: payload.website || prev.website,
+                    }));
+                    if (payload.avatar) {
+                        setAvatarPreview(payload.avatar);
+                        setSelectedPreset(payload.avatar);
+                    }
+                    toast.info('Your profile was updated in real-time!');
+                }
+            });
+            return () => unsubscribe();
+        }
+    }, [user, subscribeProfileUpdate]);
 
     useEffect(() => {
         if (user) {
@@ -156,6 +192,7 @@ const Profile = () => {
             
             if (profileData.avatar) {
                 setAvatarPreview(profileData.avatar);
+                setSelectedPreset(profileData.avatar);
             }
             
             if (profileData.academic) {
@@ -181,11 +218,18 @@ const Profile = () => {
         setter((prev) => ({ ...prev, [e.target.name]: e.target.value }));
     };
 
+    const handlePresetAvatarSelect = (avatarUrl) => {
+        setAvatarPreview(avatarUrl);
+        setSelectedPreset(avatarUrl);
+        setAvatarFile(null);
+    };
+
     const handleAvatarChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setAvatarFile(file);
             setAvatarPreview(URL.createObjectURL(file));
+            setSelectedPreset(null);
         }
     };
 
@@ -206,11 +250,14 @@ const Profile = () => {
             }
             
             let formData = null;
-            if (tabName === 'personal' && avatarFile) {
-                formData = new FormData();
-                formData.append('avatar', avatarFile);
-                
-                await api.post('/api/user/avatar', formData);
+            if (tabName === 'personal') {
+                if (avatarFile) {
+                    formData = new FormData();
+                    formData.append('avatar', avatarFile);
+                    await api.post('/api/user/avatar', formData);
+                } else if (selectedPreset) {
+                    await api.put('/api/user/profile', { avatar: selectedPreset });
+                }
             }
             
             const updateData = {};
@@ -344,6 +391,18 @@ const Profile = () => {
                         </label>
                         <p className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. Max size 2MB.</p>
                     </div>
+                </div>
+                <div className="flex flex-wrap gap-2 mt-4">
+                    {presetAvatars.map((avatar, idx) => (
+                        <motion.img
+                            key={avatar}
+                            src={avatar}
+                            alt={`Preset avatar ${idx + 1}`}
+                            className={`w-14 h-14 rounded-full border-2 cursor-pointer object-cover ${selectedPreset === avatar ? 'border-indigo-500 ring-2 ring-indigo-400' : 'border-gray-200'}`}
+                            whileHover={{ scale: 1.1 }}
+                            onClick={() => handlePresetAvatarSelect(avatar)}
+                        />
+                    ))}
                 </div>
             </div>
 

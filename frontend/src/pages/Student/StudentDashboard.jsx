@@ -34,10 +34,11 @@ import {
 import { useAuth } from "../../context/AuthContext";
 import { useWallet } from "../../context/WalletContext";
 import { fetchStudentStats } from "../../services/userService";
-import { fetchStudentFeatures, fetchStudentAchievements } from "../../services/studentService";
+import { fetchStudentAchievements } from "../../services/studentService";
 import { logActivity } from "../../services/activityService";
 import { toast } from "react-hot-toast";
 import { mockFeatures } from "../../data/mockFeatures";
+import { useSocket } from '../../context/SocketContext';
 
 export default function StudentDashboard() {
     const navigate = useNavigate();
@@ -56,6 +57,7 @@ export default function StudentDashboard() {
     });
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [loading, setLoading] = useState(true);
+    const { socket } = useSocket();
     
     // Track dashboard page view
     useEffect(() => {
@@ -104,6 +106,7 @@ export default function StudentDashboard() {
     }, []);
 
     // Load student stats with error handling and real data
+    
     const loadStats = React.useCallback(async () => {
         try {
             setLoading(true);
@@ -185,6 +188,24 @@ export default function StudentDashboard() {
     useEffect(() => {
         loadStats();
     }, [loadStats]);
+
+    useEffect(() => {
+        if (!socket) return;
+        const handleGameCompleted = (data) => {
+            setStats((prev) => ({ ...prev, streak: data.streak }));
+            toast.success(`🎮 Game completed! +${data.coinsEarned} HealCoins`);
+        };
+        const handleChallengeCompleted = (data) => {
+            setStats((prev) => ({ ...prev, streak: prev.streak + 1 }));
+            toast.success(`🏆 Challenge completed! +${data.rewards?.coins || 0} HealCoins, +${data.rewards?.xp || 0} XP`);
+        };
+        socket.on('game-completed', handleGameCompleted);
+        socket.on('challenge-completed', handleChallengeCompleted);
+        return () => {
+            socket.off('game-completed', handleGameCompleted);
+            socket.off('challenge-completed', handleChallengeCompleted);
+        };
+    }, [socket]);
 
     const categories = [
         "all",

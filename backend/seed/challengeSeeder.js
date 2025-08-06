@@ -14,111 +14,51 @@ mongoose
     process.exit(1);
   });
 
-// Sample challenges data
-const challenges = [
-  {
-    title: 'Budget Master',
-    description: 'Create a monthly budget and track your expenses for a week',
-    category: 'financial',
-    difficulty: 'Easy',
-    xpReward: 50,
-    coinReward: 20,
-    estimatedTime: '5-7 days',
-    completionSteps: 3,
-    benefits: [
-      'Learn budgeting basics',
-      'Track spending habits',
-      'Develop financial discipline'
-    ],
-    iconName: 'Target',
-    gradientColors: 'from-green-400 to-emerald-400'
-  },
-  {
-    title: 'Savings Challenge',
-    description: 'Save a small amount each day for 30 days',
-    category: 'financial',
-    difficulty: 'Medium',
-    xpReward: 100,
-    coinReward: 50,
-    estimatedTime: '30 days',
-    completionSteps: 30,
-    benefits: [
-      'Build saving habit',
-      'Learn delayed gratification',
-      'Achieve financial goals'
-    ],
-    iconName: 'Coins',
-    gradientColors: 'from-yellow-400 to-orange-400'
-  },
-  {
-    title: 'Investment Simulator',
-    description: 'Practice investing with virtual money',
-    category: 'financial',
-    difficulty: 'Hard',
-    xpReward: 150,
-    coinReward: 75,
-    estimatedTime: '2 weeks',
-    completionSteps: 5,
-    benefits: [
-      'Understand investment basics',
-      'Learn risk management',
-      'Practice market analysis'
-    ],
-    iconName: 'TrendingUp',
-    gradientColors: 'from-red-400 to-pink-400'
-  },
-  {
-    title: 'Financial Quiz Marathon',
-    description: 'Complete a series of financial literacy quizzes',
-    category: 'education',
-    difficulty: 'Medium',
-    xpReward: 120,
-    coinReward: 60,
-    estimatedTime: '3-5 days',
-    completionSteps: 10,
-    benefits: [
-      'Test financial knowledge',
-      'Learn new concepts',
-      'Improve decision making'
-    ],
-    iconName: 'Zap',
-    gradientColors: 'from-blue-400 to-indigo-400'
-  },
-  {
-    title: 'Expense Tracking',
-    description: 'Track all your expenses for two weeks',
-    category: 'financial',
-    difficulty: 'Easy',
-    xpReward: 80,
-    coinReward: 40,
-    estimatedTime: '14 days',
-    completionSteps: 14,
-    benefits: [
-      'Identify spending patterns',
-      'Find saving opportunities',
-      'Build financial awareness'
-    ],
-    iconName: 'Calendar',
-    gradientColors: 'from-purple-400 to-violet-400'
-  },
-  {
-    title: 'Financial Goal Setting',
-    description: 'Set and work towards a specific financial goal',
-    category: 'planning',
-    difficulty: 'Medium',
-    xpReward: 100,
-    coinReward: 50,
-    estimatedTime: '1 month',
-    completionSteps: 4,
-    benefits: [
-      'Learn goal setting',
-      'Develop action plans',
-      'Track progress effectively'
-    ],
-    iconName: 'Target',
-    gradientColors: 'from-cyan-400 to-teal-400'
-  }
+// Generate 1000 unique challenges
+const categories = ['financial', 'education', 'planning', 'other', 'daily', 'weekly'];
+const difficulties = ['Easy', 'Medium', 'Hard'];
+const icons = ['Target', 'Coins', 'TrendingUp', 'Zap', 'Calendar', 'Award', 'Star', 'Crown', 'Gift', 'BookOpen'];
+const gradients = [
+  'from-green-400 to-emerald-400',
+  'from-yellow-400 to-orange-400',
+  'from-red-400 to-pink-400',
+  'from-blue-400 to-indigo-400',
+  'from-purple-400 to-violet-400',
+  'from-cyan-400 to-teal-400',
+  'from-orange-400 to-amber-400',
+  'from-pink-400 to-rose-400',
+  'from-indigo-400 to-blue-400',
+  'from-emerald-400 to-green-400'
 ];
+
+function randomFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+const challenges = Array.from({ length: 1000 }, (_, i) => {
+  const cat = randomFrom(categories);
+  const diff = randomFrom(difficulties);
+  const icon = randomFrom(icons);
+  const grad = randomFrom(gradients);
+  const xp = 50 + (i % 10) * 10 + (diff === 'Hard' ? 40 : diff === 'Medium' ? 20 : 0);
+  const coins = 20 + (i % 5) * 5 + (diff === 'Hard' ? 20 : diff === 'Medium' ? 10 : 0);
+  const steps = 3 + (i % 7);
+  return {
+    title: `Challenge #${i + 1}: ${cat.charAt(0).toUpperCase() + cat.slice(1)} Quest`,
+    description: `Complete the ${cat} challenge number ${i + 1} with ${steps} steps. Difficulty: ${diff}.`,
+    category: cat,
+    difficulty: diff,
+    xpReward: xp,
+    coinReward: coins,
+    estimatedTime: `${steps * (diff === 'Hard' ? 2 : 1)} days`,
+    completionSteps: steps,
+    benefits: [
+      `Benefit 1 for challenge ${i + 1}`,
+      `Benefit 2 for challenge ${i + 1}`,
+      `Benefit 3 for challenge ${i + 1}`
+    ],
+    iconName: icon,
+    gradientColors: grad
+  };
+});
 
 // Seed function
 const seedChallenges = async () => {

@@ -35,6 +35,7 @@ import {
 } from "lucide-react";
 import { CSVLink } from "react-csv";
 import StudentProgressModal from "../Student/StudentProgressModal";
+import { useSocket } from '../../context/SocketContext';
 
 export default function StudentManagement() {
     const [students, setStudents] = useState([]);
@@ -53,6 +54,8 @@ export default function StudentManagement() {
     const [lastUpdated, setLastUpdated] = useState(
         new Date().toLocaleTimeString()
     );
+
+    const { subscribeProfileUpdate } = useSocket();
 
     // Real-time data updates
     useEffect(() => {
@@ -77,6 +80,22 @@ export default function StudentManagement() {
         };
         fetchStudents();
     }, []);
+
+    useEffect(() => {
+        if (subscribeProfileUpdate) {
+            const unsubscribe = subscribeProfileUpdate((payload) => {
+                setStudents((prev) => prev.map(s =>
+                    s._id === payload.userId ? { ...s, ...payload } : s
+                ));
+                setFiltered((prev) => prev.map(s =>
+                    s._id === payload.userId ? { ...s, ...payload } : s
+                ));
+                // Optionally show a toast
+                // toast.success('Student profile updated in real-time!');
+            });
+            return () => unsubscribe();
+        }
+    }, [subscribeProfileUpdate]);
 
     useEffect(() => {
         let result = students;

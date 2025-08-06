@@ -146,10 +146,42 @@ export const getUserChallengeProgress = async (req, res) => {
   const userId = req.user?._id;
   
   try {
-    const progress = await ChallengeProgress.find({ userId })
+    // Find all progress records for this user
+    const progressRecords = await ChallengeProgress.find({ userId })
       .populate('challengeId');
-
-    res.status(200).json(progress || []);
+    
+    // Format the progress as an object with challengeId as keys
+    const progressMap = {};
+    
+    progressRecords.forEach(record => {
+      if (record.challengeId && record.challengeId._id) {
+        progressMap[record.challengeId._id.toString()] = {
+          currentStep: record.currentStep,
+          completedSteps: record.completedSteps,
+          isCompleted: record.isCompleted,
+          startedAt: record.startedAt,
+          completedAt: record.completedAt
+        };
+      }
+    });
+    
+    // Calculate completed today count
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const completedToday = progressRecords.filter(record => {
+      return record.isCompleted && record.completedAt && new Date(record.completedAt) >= today;
+    }).length;
+    
+    // Calculate streak (simplified version)
+    // In a real app, you'd have more complex streak logic
+    const streak = 1; // Placeholder for actual streak calculation
+    
+    res.status(200).json({
+      progress: progressMap,
+      completedToday,
+      streak
+    });
   } catch (err) {
     console.error('❌ Challenge progress fetch error:', err);
     res.status(500).json({ error: 'Failed to fetch challenge progress' });

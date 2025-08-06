@@ -178,6 +178,12 @@ const Challenge = () => {
     
     const handleChallengeStart = async (challengeId) => {
         try {
+            // Check if challenge is already started
+            if (userProgress && userProgress[challengeId]) {
+                console.log(`Challenge ${challengeId} already started`);
+                return;
+            }
+            
             const response = await api.post(`/api/challenges/start/${challengeId}`);
             const data = response.data;
             
@@ -187,11 +193,24 @@ const Challenge = () => {
                 [challengeId]: data.progress
             }));
             
-            // Show a success message or navigate to a detail page
-            // For now, we'll just log the success
+            // Show a success message
             console.log(`Started challenge ${challengeId} successfully`);
         } catch (error) {
-            console.error('Error starting challenge:', error);
+            if (error.response && error.response.status === 400 && 
+                error.response.data.error === 'Challenge already started') {
+                // If challenge is already started, update our local state
+                console.log(`Challenge ${challengeId} was already started`);
+                
+                // Fetch updated progress
+                try {
+                    const progressResponse = await api.get('/api/challenges/progress');
+                    setUserProgress(progressResponse.data.progress || {});
+                } catch (progressError) {
+                    console.error('Error fetching updated progress:', progressError);
+                }
+            } else {
+                console.error('Error starting challenge:', error);
+            }
         }
     };
     

@@ -22,6 +22,7 @@ const allowedOrigins = process.env.CLIENT_URL
   : [
       "http://localhost:5173",
       "http://localhost:3000",
+      "http://localhost:3001",
       "https://finmen.vercel.app"
     ];
 
@@ -82,7 +83,9 @@ import walletRoutes from "./routes/walletRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
 import challengeRoutes from "./routes/challengeRoutes.js";
-import activityRoutes from "./routes/activityRoutes.js";
+import activityRoutes from './routes/activityRoutes.js';
+import userProgressRoutes from './routes/userProgressRoutes.js';
+import dailyChallengeRoutes from './routes/dailyChallengeRoutes.js';
 
 // Import models and other logic
 import User from "./models/User.js";
@@ -197,7 +200,9 @@ app.use("/api/wallet", walletRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/student", studentRoutes);
 app.use("/api/challenges", challengeRoutes);
-app.use("/api/activities", activityRoutes);
+app.use('/api/activity', activityRoutes);
+app.use('/api/progress', userProgressRoutes);
+app.use('/api/daily-challenges', dailyChallengeRoutes);
 
 // Health Check
 app.get("/", (_, res) => {
@@ -217,7 +222,7 @@ if (process.env.NODE_ENV === "production") {
 app.use(errorHandler);
 
 // Start Server
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 5001;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   scheduleWeeklyReports();

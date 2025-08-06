@@ -202,6 +202,56 @@ export const googleLogin = async (req, res) => {
     }
 
     const authToken = generateToken(user._id);
+    
+    // Daily login reward logic
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const lastActive = user.lastActive ? new Date(user.lastActive) : null;
+    let lastActiveDay = null;
+    if (lastActive) {
+      lastActiveDay = new Date(lastActive);
+      lastActiveDay.setHours(0, 0, 0, 0);
+    }
+    
+    // Check if this is a new day login
+    let loginReward = null;
+    if (!lastActiveDay || today.getTime() > lastActiveDay.getTime()) {
+      // Award HealCoins for daily login
+      loginReward = {
+        received: true,
+        amount: 10 // 10 HealCoins for daily login
+      };
+      
+      // Update user's last active timestamp
+      user.lastActive = new Date();
+      await user.save();
+      
+      // Add coins to wallet
+      let wallet = await Wallet.findOne({ userId: user._id });
+      
+      if (!wallet) {
+        wallet = await Wallet.create({
+          userId: user._id,
+          balance: loginReward.amount
+        });
+      } else {
+        wallet.balance += loginReward.amount;
+        await wallet.save();
+      }
+      
+      // Create transaction record
+      await Transaction.create({
+        userId: user._id,
+        type: "credit",
+        amount: loginReward.amount,
+        description: "Daily login reward"
+      });
+    } else {
+      loginReward = {
+        received: false
+      };
+    }
 
     res
       .cookie("finmen_token", authToken, {
@@ -221,6 +271,7 @@ export const googleLogin = async (req, res) => {
           avatar: user.avatar,
           role: user.role,
         },
+        loginReward
       });
   } catch (err) {
     console.error("Google login error:", err.message);
@@ -310,6 +361,7 @@ export const checkVerificationStatus = async (req, res) => {
   }
 };
 
+// Add this function to the existing login function
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -363,24 +415,116 @@ export const login = async (req, res) => {
 
     const token = generateToken(user._id);
 
-    res
-      .cookie("finmen_token", token, {
-        httpOnly: true,
-        sameSite: "Lax",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      })
-      .json({
-        message: "Login successful",
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          approvalStatus: user.approvalStatus,
-        },
-        token // Include token in response for frontend storage
-      });
+    // Daily login reward for students
+    if (user.role === "student") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const lastActive = user.lastActive ? new Date(user.lastActive) : null;
+      let lastActiveDay = null;
+      if (lastActive) {
+        lastActiveDay = new Date(lastActive);
+        lastActiveDay.setHours(0, 0, 0, 0);
+      }
+      
+      // Check if this is a new day login
+      if (!lastActiveDay || today.getTime() > lastActiveDay.getTime()) {
+        // Award HealCoins for daily login
+        const loginReward = 10; // 10 HealCoins for daily login
+        
+        // Update user's last active timestamp
+        user.lastActive = new Date();
+        await user.save();
+        
+        // Add coins to wallet
+        let wallet = await Wallet.findOne({ userId: user._id });
+        
+        if (!wallet) {
+          wallet = await Wallet.create({
+            userId: user._id,
+            balance: loginReward
+          });
+        } else {
+          wallet.balance += loginReward;
+          await wallet.save();
+        }
+        
+        // Create transaction record
+        await Transaction.create({
+          userId: user._id,
+          type: "credit",
+          amount: loginReward,
+          description: "Daily login reward"
+        });
+        
+        // Return login reward info with response
+        res
+          .cookie("finmen_token", token, {
+            httpOnly: true,
+            sameSite: "Lax",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+          })
+          .json({
+            message: "Login successful",
+            user: {
+              id: user._id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              approvalStatus: user.approvalStatus,
+            },
+            token, // Include token in response for frontend storage
+            loginReward: {
+              received: true,
+              amount: loginReward
+            }
+          });
+      } else {
+        // Regular login without reward
+        res
+          .cookie("finmen_token", token, {
+            httpOnly: true,
+            sameSite: "Lax",
+            secure: process.env.NODE_ENV === "production",
+            maxAge: 7 * 24 * 60 * 60 * 1000,
+          })
+          .json({
+            message: "Login successful",
+            user: {
+              id: user._id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              approvalStatus: user.approvalStatus,
+            },
+            token, // Include token in response for frontend storage
+            loginReward: {
+              received: false
+            }
+          });
+      }
+    } else {
+      // Non-student login (no rewards)
+      res
+        .cookie("finmen_token", token, {
+          httpOnly: true,
+          sameSite: "Lax",
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        })
+        .json({
+          message: "Login successful",
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            approvalStatus: user.approvalStatus,
+          },
+          token // Include token in response for frontend storage
+        });
+    }
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ message: "Login failed" });

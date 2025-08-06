@@ -112,6 +112,7 @@ export default function AllStudents() {
 
     const socket = useSocket();
     const { user } = useAuth();
+    const { subscribeProfileUpdate } = useSocket();
 
     // Real-time socket connection
     useEffect(() => {
@@ -160,6 +161,22 @@ export default function AllStudents() {
             };
         }
     }, [socket, user]);
+
+    // Listen for real-time profile updates
+    useEffect(() => {
+        if (subscribeProfileUpdate) {
+            const unsubscribe = subscribeProfileUpdate((payload) => {
+                setStudents((prev) => prev.map(s =>
+                    s._id === payload.userId ? { ...s, ...payload } : s
+                ));
+                setFilteredStudents((prev) => prev.map(s =>
+                    s._id === payload.userId ? { ...s, ...payload } : s
+                ));
+                toast.success('Student profile updated in real-time!');
+            });
+            return () => unsubscribe();
+        }
+    }, [subscribeProfileUpdate]);
 
     // Log page view
     useEffect(() => {

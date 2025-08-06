@@ -42,13 +42,18 @@ const activityLogSchema = new mongoose.Schema(
         "admin_action",
         "educator_created",
         "educator_approved",
-        "educator_rejected"
+        "educator_rejected",
+        // New activity types from StudentDashboard
+        "data_fetch",
+        "navigation",
+        "ui_interaction",
+        "error",
       ],
       required: true,
     },
     description: {
       type: String,
-      required: false, // Make optional since we'll use details for structured data
+      required: false,
     },
     details: {
       type: mongoose.Schema.Types.Mixed,

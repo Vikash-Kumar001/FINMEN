@@ -94,6 +94,7 @@ const Navbar = () => {
     const navigationItems = user?.role === "student" ? [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
         { icon: <TrendingUp className="w-5 h-5" />, label: "Challenges", onClick: () => navigate("/student/challenge") },
+        { icon: <Zap className="w-5 h-5" />, label: "Daily Challenges", onClick: () => navigate("/student/daily-challenges") },
         { icon: <Calendar className="w-5 h-5" />, label: "This Week", onClick: () => navigate("/student/this-week") },
         { icon: <BarChart3 className="w-5 h-5" />, label: "Progress", onClick: handleProgressClick }
     ] : user?.role === "educator" ? [
@@ -156,8 +157,8 @@ const Navbar = () => {
     return (
         <>
             <header className="w-full bg-gray-100 border-b border-gray-200 shadow-sm sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="flex items-center justify-between h-16">
+                <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
+                    <div className="flex items-center justify-between h-14 sm:h-16">
                         {/* Logo/Brand */}
                         <motion.div
                             className="flex-shrink-0 flex items-center cursor-pointer"
@@ -165,22 +166,22 @@ const Navbar = () => {
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
                         >
-                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-                                <Zap className="w-6 h-6" />
+                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                                <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
                             </div>
-                            <div className="ml-3">
-                                <h1 className="text-2xl font-bold text-gray-900 tracking-tight">FinMen</h1>
-                                <p className="text-sm text-gray-600">{getDashboardLabel()}</p>
+                            <div className="ml-2 sm:ml-3">
+                                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">FinMen</h1>
+                                <p className="hidden sm:block text-xs sm:text-sm text-gray-600">{getDashboardLabel()}</p>
                             </div>
                         </motion.div>
 
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center space-x-4">
+                        <nav className="hidden md:flex items-center space-x-2 lg:space-x-4">
                             {navigationItems.map((item, index) => (
                                 <motion.button
                                     key={index}
                                     onClick={item.onClick}
-                                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:bg-indigo-100 hover:text-indigo-600 transition-all duration-200"
+                                    className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-700 hover:bg-indigo-100 hover:text-indigo-600 transition-all duration-200"
                                     whileHover={{ scale: 1.03 }}
                                     whileTap={{ scale: 0.97 }}
                                 >
@@ -191,16 +192,16 @@ const Navbar = () => {
                         </nav>
 
                         {/* Right Side */}
-                        <div className="flex items-center space-x-4">
+                        <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
                             {/* Search */}
-                            <div className="relative" ref={searchInputRef}>
-                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                            <div className="relative hidden sm:block" ref={searchInputRef}>
+                                <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 text-gray-400" />
                                 <input
                                     type="text"
                                     placeholder="Search..."
                                     value={searchQuery}
                                     onChange={handleSearch}
-                                    className="w-64 pl-10 pr-4 py-2 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-200"
+                                    className="w-40 sm:w-48 lg:w-64 pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 bg-white border border-gray-200 rounded-lg text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-200"
                                 />
                                 <AnimatePresence>
                                     {showSearchResults && searchResults.length > 0 && (
@@ -208,26 +209,26 @@ const Navbar = () => {
                                             initial={{ opacity: 0, y: -10 }}
                                             animate={{ opacity: 1, y: 0 }}
                                             exit={{ opacity: 0, y: -10 }}
-                                            className="absolute w-full mt-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50"
+                                            className="absolute w-full sm:w-56 lg:w-64 mt-1.5 sm:mt-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50"
                                         >
-                                            <div className="px-4 py-2 border-b border-gray-100 bg-gray-50">
+                                            <div className="px-3 sm:px-4 py-1.5 sm:py-2 border-b border-gray-100 bg-gray-50">
                                                 <p className="text-xs font-medium text-gray-500">Search Results</p>
                                             </div>
                                             {searchResults.map((result) => (
                                                 <Link
                                                     key={result.id}
                                                     to={result.path}
-                                                    className="flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-all duration-200"
+                                                    className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 hover:bg-gray-50 transition-all duration-200"
                                                     onClick={() => {
                                                         setShowSearchResults(false);
                                                         setSearchQuery("");
                                                     }}
                                                 >
                                                     <div>
-                                                        <p className="text-sm font-medium text-gray-800">{result.title}</p>
+                                                        <p className="text-xs sm:text-sm font-medium text-gray-800">{result.title}</p>
                                                         <p className="text-xs text-gray-500">{result.type}</p>
                                                     </div>
-                                                    <span className="text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full">{result.type}</span>
+                                                    <span className="text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-indigo-100 text-indigo-700 rounded-full">{result.type}</span>
                                                 </Link>
                                             ))}
                                         </motion.div>
@@ -238,7 +239,7 @@ const Navbar = () => {
                             {/* Help Menu */}
                             <div className="relative" ref={helpMenuRef}>
                                 <motion.button
-                                    className="p-2.5 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-all duration-200"
+                                    className="p-2 sm:p-2.5 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-all duration-200"
                                     onClick={(e) => {
                                         e.stopPropagation();
                                         setShowHelpMenu(!showHelpMenu);
@@ -246,7 +247,7 @@ const Navbar = () => {
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
                                 >
-                                    <HelpCircle className="w-6 h-6" />
+                                    <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6" />
                                 </motion.button>
                                 <AnimatePresence>
                                     {showHelpMenu && (
@@ -255,10 +256,10 @@ const Navbar = () => {
                                             initial="hidden"
                                             animate="visible"
                                             exit="hidden"
-                                            className="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
+                                            className="absolute right-0 mt-1.5 sm:mt-2 w-52 sm:w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
                                         >
-                                            <div className="px-4 py-3 border-b border-gray-100 bg-gray-50">
-                                                <p className="text-sm font-medium text-gray-900">Help & Resources</p>
+                                            <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-gray-100 bg-gray-50">
+                                                <p className="text-xs sm:text-sm font-medium text-gray-900">Help & Resources</p>
                                             </div>
                                             {helpMenuItems.map((item, index) => (
                                                 <motion.button
@@ -267,7 +268,7 @@ const Navbar = () => {
                                                         item.onClick();
                                                         setShowHelpMenu(false);
                                                     }}
-                                                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-gray-700 hover:bg-gray-50 transition-all duration-200"
+                                                    className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 transition-all duration-200"
                                                     whileHover={{ x: 3 }}
                                                 >
                                                     {item.icon}
@@ -283,26 +284,26 @@ const Navbar = () => {
                                 <>
                                     {user.role === "student" && (
                                         <motion.button
-                                            className="flex items-center gap-2 px-4 py-2 bg-green-500 text-white rounded-lg font-medium text-sm shadow-md hover:bg-green-600 transition-all duration-200"
+                                            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-500 text-white rounded-lg font-medium text-xs sm:text-sm shadow-md hover:bg-green-600 transition-all duration-200"
                                             whileHover={{ scale: 1.03 }}
                                             whileTap={{ scale: 0.97 }}
                                             onClick={() => navigate("/student/wallet")}
                                         >
-                                            <Wallet className="w-5 h-5" />
+                                            <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
                                             <span className="hidden sm:block">₹{wallet?.balance || 0}</span>
                                         </motion.button>
                                     )}
 
                                     {(user.role === "student" || user.role === "educator" || user.role === "admin") && (
                                         <motion.button
-                                            className="relative p-2.5 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-all duration-200"
+                                            className="relative p-2 sm:p-2.5 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-all duration-200"
                                             whileHover={{ scale: 1.05 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={() => navigate(`/${user.role}/notifications`)}
                                         >
-                                            <Bell className="w-6 h-6" />
+                                            <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
                                             {unreadCount > 0 && (
-                                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-medium">
+                                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
                                                     {unreadCount}
                                                 </span>
                                             )}
@@ -312,7 +313,7 @@ const Navbar = () => {
                                     {/* Profile Menu */}
                                     <div className="relative" ref={profileMenuRef}>
                                         <motion.button
-                                            className="flex items-center gap-2 p-2 rounded-lg hover:bg-indigo-100 transition-all duration-200"
+                                            className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-lg hover:bg-indigo-100 transition-all duration-200"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setShowProfileMenu(!showProfileMenu);
@@ -324,15 +325,15 @@ const Navbar = () => {
                                                 <img
                                                     src={user.avatar || "/default-avatar.png"}
                                                     alt="Profile"
-                                                    className="w-10 h-10 rounded-full object-cover border-2 border-indigo-100 shadow-md"
+                                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-indigo-100 shadow-md"
                                                 />
-                                                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+                                                <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
                                             </div>
                                             <div className="hidden md:block text-left">
-                                                <p className="text-sm font-medium text-gray-900">{user.name || "User"}</p>
+                                                <p className="text-xs sm:text-sm font-medium text-gray-900">{user.name || "User"}</p>
                                                 <p className="text-xs text-gray-600 capitalize">{user.role}</p>
                                             </div>
-                                            <ChevronDown className="w-5 h-5 text-gray-400" />
+                                            <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                                         </motion.button>
                                         <AnimatePresence>
                                             {showProfileMenu && (
@@ -341,21 +342,21 @@ const Navbar = () => {
                                                     initial="hidden"
                                                     animate="visible"
                                                     exit="hidden"
-                                                    className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
+                                                    className="absolute right-0 mt-1.5 sm:mt-2 w-56 sm:w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
                                                 >
-                                                    <div className="px-4 py-4 border-b border-gray-100 bg-gray-50">
-                                                        <div className="flex items-center gap-3 mb-2">
+                                                    <div className="px-3 sm:px-4 py-3 sm:py-4 border-b border-gray-100 bg-gray-50">
+                                                        <div className="flex items-center gap-2 sm:gap-3 mb-2">
                                                             <img
                                                                 src={user.avatar || "/default-avatar.png"}
                                                                 alt="Profile"
-                                                                className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
+                                                                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white shadow-md"
                                                             />
                                                             <div>
-                                                                <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                                                                <p className="text-xs sm:text-sm font-semibold text-gray-900">{user.name}</p>
                                                                 <p className="text-xs text-gray-600 truncate">{user.email}</p>
                                                             </div>
                                                         </div>
-                                                        <span className="inline-block text-xs px-2.5 py-1 bg-indigo-100 text-indigo-800 rounded-full">
+                                                        <span className="inline-block text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 bg-indigo-100 text-indigo-800 rounded-full">
                                                             {user.role === "student" ? "Student Account" : user.role === "educator" ? "Educator Account" : "Admin Account"}
                                                         </span>
                                                     </div>
@@ -366,7 +367,7 @@ const Navbar = () => {
                                                                 item.onClick();
                                                                 setShowProfileMenu(false);
                                                             }}
-                                                            className={`w-full flex items-center gap-3 px-4 py-3 text-sm transition-all duration-200 ${
+                                                            className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm transition-all duration-200 ${
                                                                 item.danger
                                                                     ? 'text-red-600 hover:bg-red-50'
                                                                     : 'text-gray-700 hover:bg-gray-50'
@@ -386,7 +387,7 @@ const Navbar = () => {
 
                             {/* Mobile Menu Button */}
                             <motion.button
-                                className="md:hidden p-2.5 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-all duration-200 mobile-menu-button"
+                                className="md:hidden p-2 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-all duration-200 mobile-menu-button"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setShowMobileMenu(!showMobileMenu);
@@ -394,7 +395,7 @@ const Navbar = () => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                             >
-                                {showMobileMenu ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                                {showMobileMenu ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
                             </motion.button>
                         </div>
                     </div>
@@ -407,9 +408,10 @@ const Navbar = () => {
                             initial={{ opacity: 0, height: 0 }}
                             animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
                             className="md:hidden border-t border-gray-200 bg-white shadow-lg"
                         >
-                            <div className="px-4 py-4 space-y-2">
+                            <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-1.5 sm:space-y-2">
                                 {navigationItems.map((item, index) => (
                                     <motion.button
                                         key={index}
@@ -417,7 +419,7 @@ const Navbar = () => {
                                             item.onClick();
                                             setShowMobileMenu(false);
                                         }}
-                                        className="flex items-center gap-3 w-full px-4 py-3 text-base font-medium text-gray-700 hover:bg-indigo-100 rounded-lg transition-all duration-200"
+                                        className="flex items-center gap-2 sm:gap-3 w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base font-medium text-gray-700 hover:bg-indigo-100 rounded-lg transition-all duration-200"
                                         whileHover={{ x: 4 }}
                                     >
                                         {item.icon}
@@ -426,21 +428,52 @@ const Navbar = () => {
                                 ))}
                             </div>
 
-                            <div className="px-4 py-4 border-t border-gray-200">
+                            <div className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-200">
                                 <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                                    <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 text-gray-400" />
                                     <input
                                         type="text"
                                         placeholder="Search..."
                                         value={searchQuery}
                                         onChange={handleSearch}
-                                        className="w-full pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-lg text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-200"
+                                        className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 bg-white border border-gray-200 rounded-lg text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-200"
                                     />
+                                    <AnimatePresence>
+                                        {showSearchResults && searchResults.length > 0 && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: -10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: -10 }}
+                                                className="absolute w-full mt-1.5 sm:mt-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50"
+                                            >
+                                                <div className="px-3 sm:px-4 py-1.5 sm:py-2 border-b border-gray-100 bg-gray-50">
+                                                    <p className="text-xs font-medium text-gray-500">Search Results</p>
+                                                </div>
+                                                {searchResults.map((result) => (
+                                                    <Link
+                                                        key={result.id}
+                                                        to={result.path}
+                                                        className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 hover:bg-gray-50 transition-all duration-200"
+                                                        onClick={() => {
+                                                            setShowSearchResults(false);
+                                                            setSearchQuery("");
+                                                        }}
+                                                    >
+                                                        <div>
+                                                            <p className="text-xs sm:text-sm font-medium text-gray-800">{result.title}</p>
+                                                            <p className="text-xs text-gray-500">{result.type}</p>
+                                                        </div>
+                                                        <span className="text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-indigo-100 text-indigo-700 rounded-full">{result.type}</span>
+                                                    </Link>
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
                                 </div>
                             </div>
 
-                            <div className="px-4 py-4 border-t border-gray-200">
-                                <p className="text-sm font-medium text-gray-500 mb-3">Help & Resources</p>
+                            <div className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-200">
+                                <p className="text-xs sm:text-sm font-medium text-gray-500 mb-2 sm:mb-3">Help & Resources</p>
                                 {helpMenuItems.map((item, index) => (
                                     <motion.button
                                         key={index}
@@ -448,7 +481,7 @@ const Navbar = () => {
                                             item.onClick();
                                             setShowMobileMenu(false);
                                         }}
-                                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200"
+                                        className="flex items-center gap-2 sm:gap-3 w-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200"
                                         whileHover={{ x: 4 }}
                                     >
                                         {item.icon}

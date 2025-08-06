@@ -31,12 +31,10 @@ import {
     approveEducator, 
     blockEducator, 
     deleteEducator,
-    exportEducatorData,
-    fetchEducatorStats,
     sendBulkEducatorMessage,
     createEducatorAccount
 } from "../../services/adminService";
-import { useAuth } from "../../hooks/useAuth";
+import { useSocket } from '../../context/SocketContext';
 
 export default function AllEducators() {
     const [educators, setEducators] = useState([]);
@@ -80,10 +78,12 @@ export default function AllEducators() {
     const [expandedCard, setExpandedCard] = useState(null);
     const [actionLoading, setActionLoading] = useState({});
 
-    const { user } = useAuth();
+    // Defensive utility
+    const safeArray = (data) => Array.isArray(data) ? data : [];
 
     // Calculate comprehensive stats
     const calculateStats = useCallback((educatorData) => {
+        educatorData = safeArray(educatorData);
         const totalEducators = educatorData.length;
         const activeEducators = educatorData.filter(e => e.status === 'active').length;
         const pendingEducators = educatorData.filter(e => e.status === 'pending').length;
@@ -117,7 +117,8 @@ export default function AllEducators() {
             setLoading(true);
             setError(null);
             const response = await fetchAllEducators();
-            const data = response.data || response;
+            let data = response.data || response;
+            data = safeArray(data);
             setEducators(data);
             setFilteredEducators(data);
             calculateStats(data);
@@ -154,7 +155,7 @@ export default function AllEducators() {
 
     // Filter and sort educators
     const processedEducators = useMemo(() => {
-        let filtered = [...educators];
+        let filtered = safeArray(educators).slice();
 
         // Apply search filter
         if (search) {
@@ -222,7 +223,7 @@ export default function AllEducators() {
 
     // Update filtered educators
     useEffect(() => {
-        setFilteredEducators(processedEducators);
+        setFilteredEducators(safeArray(processedEducators));
     }, [processedEducators]);
 
     // Handle educator actions
@@ -402,121 +403,123 @@ export default function AllEducators() {
 
             <div className="relative z-10 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto">
                 {/* Header Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: -30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
-                    className="mb-8"
-                >
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-                        <div>
-                            <h1 className="text-4xl sm:text-5xl font-black mb-2 flex items-center gap-3">
-                                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                    All Educators
-                                </span>
-                                <Users className="text-indigo-600 w-10 h-10" />
-                            </h1>
-                            <p className="text-gray-600 text-lg font-medium">
-                                Manage and monitor all registered educators
-                            </p>
-                        </div>
-                        
-                        <div className="flex flex-wrap gap-3">
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={refreshData}
-                                disabled={refreshing}
-                                className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-                            >
-                                <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-                                {refreshing ? 'Refreshing...' : 'Refresh'}
-                            </motion.button>
-                            
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setShowAddEducator(true)}
-                                className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-                            >
-                                <UserPlus className="w-4 h-4" />
-                                Add Educator
-                            </motion.button>
-                            
-                            {filteredEducators.length > 0 && (
-                                <CSVLink
-                                    data={filteredEducators}
-                                    headers={csvHeaders}
-                                    filename={`educators_${new Date().toISOString().split('T')[0]}.csv`}
-                                    className="bg-gradient-to-r from-purple-500 to-violet-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
-                                >
-                                    <Download className="w-4 h-4" />
-                                    Export CSV
-                                </CSVLink>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Stats Overview */}
+                <AnimatePresence>
                     <motion.div
-                        variants={containerVariants}
-                        initial="hidden"
-                        animate="visible"
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
+                        initial={{ opacity: 0, y: -30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="mb-8"
                     >
-                        <motion.div
-                            variants={itemVariants}
-                            className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium">Total Educators</p>
-                                    <p className="text-3xl font-black text-indigo-600">{stats.total}</p>
-                                </div>
-                                <Users className="w-8 h-8 text-indigo-500" />
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                            <div>
+                                <h1 className="text-4xl sm:text-5xl font-black mb-2 flex items-center gap-3">
+                                    <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                        All Educators
+                                    </span>
+                                    <Users className="text-indigo-600 w-10 h-10" />
+                                </h1>
+                                <p className="text-gray-600 text-lg font-medium">
+                                    Manage and monitor all registered educators
+                                </p>
                             </div>
-                        </motion.div>
+                            
+                            <div className="flex flex-wrap gap-3">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={refreshData}
+                                    disabled={refreshing}
+                                    className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                                >
+                                    <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
+                                    {refreshing ? 'Refreshing...' : 'Refresh'}
+                                </motion.button>
+                                
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setShowAddEducator(true)}
+                                    className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                                >
+                                    <UserPlus className="w-4 h-4" />
+                                    Add Educator
+                                </motion.button>
+                                
+                                {filteredEducators && Array.isArray(filteredEducators) && filteredEducators.length > 0 && (
+                                    <CSVLink
+                                        data={filteredEducators}
+                                        headers={csvHeaders}
+                                        filename={`educators_${new Date().toISOString().split('T')[0]}.csv`}
+                                        className="bg-gradient-to-r from-purple-500 to-violet-600 text-white px-6 py-3 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all flex items-center gap-2"
+                                    >
+                                        <Download className="w-4 h-4" />
+                                        Export CSV
+                                    </CSVLink>
+                                )}
+                            </div>
+                        </div>
 
+                        {/* Stats Overview */}
                         <motion.div
-                            variants={itemVariants}
-                            className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50"
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="visible"
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8"
                         >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium">Active</p>
-                                    <p className="text-3xl font-black text-green-600">{stats.active}</p>
+                            <motion.div
+                                variants={itemVariants}
+                                className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Total Educators</p>
+                                        <p className="text-3xl font-black text-indigo-600">{stats.total}</p>
+                                    </div>
+                                    <Users className="w-8 h-8 text-indigo-500" />
                                 </div>
-                                <CheckCircle className="w-8 h-8 text-green-500" />
-                            </div>
-                        </motion.div>
+                            </motion.div>
 
-                        <motion.div
-                            variants={itemVariants}
-                            className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium">Pending</p>
-                                    <p className="text-3xl font-black text-orange-600">{stats.pending}</p>
+                            <motion.div
+                                variants={itemVariants}
+                                className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Active</p>
+                                        <p className="text-3xl font-black text-green-600">{stats.active}</p>
+                                    </div>
+                                    <CheckCircle className="w-8 h-8 text-green-500" />
                                 </div>
-                                <CheckCircle className="w-8 h-8 text-orange-500" />
-                            </div>
-                        </motion.div>
+                            </motion.div>
 
-                        <motion.div
-                            variants={itemVariants}
-                            className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50"
-                        >
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <p className="text-gray-600 text-sm font-medium">Blocked</p>
-                                    <p className="text-3xl font-black text-red-600">{stats.blocked}</p>
+                            <motion.div
+                                variants={itemVariants}
+                                className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Pending</p>
+                                        <p className="text-3xl font-black text-orange-600">{stats.pending}</p>
+                                    </div>
+                                    <CheckCircle className="w-8 h-8 text-orange-500" />
                                 </div>
-                                <XCircle className="w-8 h-8 text-red-500" />
-                            </div>
+                            </motion.div>
+
+                            <motion.div
+                                variants={itemVariants}
+                                className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50"
+                            >
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="text-gray-600 text-sm font-medium">Blocked</p>
+                                        <p className="text-3xl font-black text-red-600">{stats.blocked}</p>
+                                    </div>
+                                    <XCircle className="w-8 h-8 text-red-500" />
+                                </div>
+                            </motion.div>
                         </motion.div>
                     </motion.div>
-                </motion.div>
+                </AnimatePresence>
 
                 {/* Error Display */}
                 {error && (
@@ -531,67 +534,67 @@ export default function AllEducators() {
                 )}
 
                 {/* Controls Section */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50 mb-8"
-                >
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
-                        {/* Search Bar */}
-                        <div className="relative flex-1 max-w-md">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
-                            <input
-                                type="text"
-                                placeholder="Search educators..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                                className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
-                            />
-                        </div>
+                <AnimatePresence>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                        className="bg-white/95 backdrop-blur-xl rounded-2xl p-6 shadow-xl border border-white/50 mb-8"
+                    >
+                        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                            {/* Search Bar */}
+                            <div className="relative flex-1 max-w-md">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                                <input
+                                    type="text"
+                                    placeholder="Search educators..."
+                                    value={search}
+                                    onChange={(e) => setSearch(e.target.value)}
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all"
+                                />
+                            </div>
 
-                        {/* Action Buttons */}
-                        <div className="flex flex-wrap gap-3">
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setShowFilters(!showFilters)}
-                                className={`px-4 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
-                                    showFilters 
-                                        ? 'bg-indigo-600 text-white' 
-                                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                                }`}
-                            >
-                                <Filter className="w-4 h-4" />
-                                Filters
-                            </motion.button>
-
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
-                                className="px-4 py-3 rounded-xl font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all flex items-center gap-2"
-                            >
-                                {viewMode === 'grid' ? <Users className="w-4 h-4" /> : <Users className="w-4 h-4" />}
-                                {viewMode === 'grid' ? 'Table' : 'Grid'}
-                            </motion.button>
-
-                            {selectedEducators.length > 0 && (
+                            {/* Action Buttons */}
+                            <div className="flex flex-wrap gap-3">
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => setShowBulkActions(!showBulkActions)}
-                                    className="px-4 py-3 rounded-xl font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-all flex items-center gap-2"
+                                    onClick={() => setShowFilters(!showFilters)}
+                                    className={`px-4 py-3 rounded-xl font-semibold transition-all flex items-center gap-2 ${
+                                        showFilters 
+                                            ? 'bg-indigo-600 text-white' 
+                                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    }`}
                                 >
-                                    <Settings className="w-4 h-4" />
-                                    Bulk Actions ({selectedEducators.length})
+                                    <Filter className="w-4 h-4" />
+                                    Filters
                                 </motion.button>
-                            )}
-                        </div>
-                    </div>
 
-                    {/* Filters Panel */}
-                    <AnimatePresence>
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setViewMode(viewMode === 'grid' ? 'table' : 'grid')}
+                                    className="px-4 py-3 rounded-xl font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all flex items-center gap-2"
+                                >
+                                    {viewMode === 'grid' ? <Users className="w-4 h-4" /> : <Users className="w-4 h-4" />}
+                                    {viewMode === 'grid' ? 'Table' : 'Grid'}
+                                </motion.button>
+
+                                {selectedEducators.length > 0 && (
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => setShowBulkActions(!showBulkActions)}
+                                        className="px-4 py-3 rounded-xl font-semibold bg-purple-600 text-white hover:bg-purple-700 transition-all flex items-center gap-2"
+                                    >
+                                        <Settings className="w-4 h-4" />
+                                        Bulk Actions ({selectedEducators.length})
+                                    </motion.button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Filters Panel */}
                         {showFilters && (
                             <motion.div
                                 initial={{ opacity: 0, height: 0 }}
@@ -644,59 +647,57 @@ export default function AllEducators() {
                                 </div>
                             </motion.div>
                         )}
-                    </AnimatePresence>
+                    </motion.div>
 
                     {/* Bulk Actions Panel */}
-                    <AnimatePresence>
-                        {showBulkActions && (
-                            <motion.div
-                                initial={{ opacity: 0, height: 0 }}
-                                animate={{ opacity: 1, height: 'auto' }}
-                                exit={{ opacity: 0, height: 0 }}
-                                className="border-t border-gray-200 pt-6 mt-6"
-                            >
-                                <div className="flex flex-wrap gap-3">
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => handleBulkAction('message')}
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-lg flex items-center gap-2"
-                                    >
-                                        <Mail className="w-4 h-4" />
-                                        Send Message
-                                    </motion.button>
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => handleBulkAction('approve')}
-                                        className="px-4 py-2 bg-green-500 text-white rounded-lg flex items-center gap-2"
-                                    >
-                                        <UserCheck className="w-4 h-4" />
-                                        Approve
-                                    </motion.button>
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => handleBulkAction('block')}
-                                        className="px-4 py-2 bg-orange-500 text-white rounded-lg flex items-center gap-2"
-                                    >
-                                        <UserX className="w-4 h-4" />
-                                        Block
-                                    </motion.button>
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => handleBulkAction('delete')}
-                                        className="px-4 py-2 bg-red-500 text-white rounded-lg flex items-center gap-2"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                        Delete
-                                    </motion.button>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </motion.div>
+                    {showBulkActions && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: 'auto' }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="border-t border-gray-200 pt-6 mt-6"
+                        >
+                            <div className="flex flex-wrap gap-3">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleBulkAction('message')}
+                                    className="px-4 py-2 bg-blue-500 text-white rounded-lg flex items-center gap-2"
+                                >
+                                    <Mail className="w-4 h-4" />
+                                    Send Message
+                                </motion.button>
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleBulkAction('approve')}
+                                    className="px-4 py-2 bg-green-500 text-white rounded-lg flex items-center gap-2"
+                                >
+                                    <UserCheck className="w-4 h-4" />
+                                    Approve
+                                </motion.button>
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleBulkAction('block')}
+                                    className="px-4 py-2 bg-orange-500 text-white rounded-lg flex items-center gap-2"
+                                >
+                                    <UserX className="w-4 h-4" />
+                                    Block
+                                </motion.button>
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => handleBulkAction('delete')}
+                                    className="px-4 py-2 bg-red-500 text-white rounded-lg flex items-center gap-2"
+                                >
+                                    <Trash2 className="w-4 h-4" />
+                                    Delete
+                                </motion.button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Add Educator Modal */}
                 <AnimatePresence>
@@ -850,7 +851,7 @@ export default function AllEducators() {
                     <div className="flex justify-center items-center h-64">
                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500" />
                     </div>
-                ) : filteredEducators.length === 0 ? (
+                ) : !filteredEducators || !Array.isArray(filteredEducators) || filteredEducators.length === 0 ? (
                     <div className="text-center py-12">
                         <p className="text-gray-500 text-lg">No educators found matching your criteria.</p>
                     </div>
@@ -861,7 +862,7 @@ export default function AllEducators() {
                         animate="visible"
                         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
                     >
-                        {filteredEducators.map(educator => (
+                        {safeArray(filteredEducators).map(educator => (
                             <motion.div
                                 key={educator._id}
                                 variants={cardVariants}
@@ -1005,7 +1006,7 @@ export default function AllEducators() {
                                 </tr>
                             </thead>
                             <tbody>
-                                {filteredEducators.map(educator => (
+                                {safeArray(filteredEducators).map(educator => (
                                     <tr key={educator._id} className="border-b border-gray-100 hover:bg-gray-50">
                                         <td className="p-4">
                                             <input

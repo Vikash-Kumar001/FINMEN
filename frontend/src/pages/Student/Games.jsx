@@ -22,9 +22,19 @@ import {
     Gamepad2,
     Focus,
     Lightbulb,
-    Wind
+    Wind,
+    Wallet,
+    TrendingUp,
+    Bookmark,
+    PiggyBank,
+    ShoppingCart,
+    BarChart4,
+    DollarSign,
+    Hourglass
 } from "lucide-react";
 import api from "../../utils/api";
+import { useAuth } from "../../context/AuthContext";
+import { toast } from "react-toastify";
 
 const containerVariants = {
     hidden: { opacity: 0 },
@@ -52,55 +62,96 @@ const itemVariants = {
 
 export default function Games() {
     const navigate = useNavigate();
+    const { user } = useAuth();
     const [gamesList, setGamesList] = useState([]);
     const [categories, setCategories] = useState(["all"]);
     const [difficultyColors, setDifficultyColors] = useState({});
     const [selectedCategory, setSelectedCategory] = useState("all");
+    const [selectedType, setSelectedType] = useState("all");
+    const [selectedAgeGroup, setSelectedAgeGroup] = useState("all");
     const [hoveredGame, setHoveredGame] = useState(null);
+    const [userStats, setUserStats] = useState({
+        gamesPlayed: 0,
+        coinsEarned: 0,
+        achievements: [],
+        currentStreak: 0,
+        walletBalance: 0
+    });
+    const [loading, setLoading] = useState(true);
+    
+    // Map game icons to Lucide components
+    const getGameIcon = (category) => {
+        const iconMap = {
+            'mind-maze': <Brain className="w-8 h-8" />,
+            'breathe-balance': <Wind className="w-8 h-8" />,
+            'piggy-bank-builder': <PiggyBank className="w-8 h-8" />,
+            'shop-smart': <ShoppingCart className="w-8 h-8" />,
+            'invest-quest': <TrendingUp className="w-8 h-8" />,
+            'budget-hero': <DollarSign className="w-8 h-8" />
+        };
+        return iconMap[category] || <Gamepad2 className="w-8 h-8" />;
+    };
     
     useEffect(() => {
         // Fetch games data from API
         const fetchGames = async () => {
+            setLoading(true);
             try {
-                const response = await api.get('/api/games');
+                const response = await api.get('/api/game/games');
+                console.log('Games fetched:', response.data);
                 setGamesList(response.data);
             } catch (error) {
                 console.error('Error fetching games:', error);
-                // Set empty array if fetch fails
+                toast.error('Failed to load games');
                 setGamesList([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        
+        // Fetch user game stats
+        const fetchUserStats = async () => {
+            try {
+                const response = await api.get('/api/game/user-stats');
+                // Ensure achievements is always an array even if not provided by API
+                setUserStats({
+                    gamesPlayed: response.data.totalGamesPlayed || 0,
+                    coinsEarned: response.data.totalCoinsEarned || 0,
+                    achievements: response.data.achievements || [],
+                    currentStreak: response.data.highestStreak || 0,
+                    walletBalance: response.data.currentBalance || 0
+                });
+            } catch (error) {
+                console.error('Error fetching user stats:', error);
+                // Keep default values if fetch fails
             }
         };
         
         fetchGames();
+        fetchUserStats();
     }, []);
     
     useEffect(() => {
-        // Fetch categories and difficulty colors from API
-        const fetchCategoriesAndDifficulties = async () => {
-            try {
-                const categoriesResponse = await api.get('/api/games/categories');
-                setCategories(["all", ...categoriesResponse.data]);
-                
-                const difficultiesResponse = await api.get('/api/games/difficulties');
-                setDifficultyColors(difficultiesResponse.data);
-            } catch (error) {
-                console.error('Error fetching categories and difficulties:', error);
-                // Set default values if fetch fails
-                setCategories(["all", "cognitive", "mindfulness", "emotional"]);
-                setDifficultyColors({
-                    "Easy": "from-green-400 to-emerald-400",
-                    "Medium": "from-yellow-400 to-orange-400",
-                    "Hard": "from-red-400 to-pink-400"
-                });
-            }
-        };
-        
-        fetchCategoriesAndDifficulties();
-    }, []);
+        // Extract categories from games
+        if (gamesList.length > 0) {
+            const gameCategories = [...new Set(gamesList.map(game => game.type))]; 
+            setCategories(["all", ...gameCategories]);
+            
+            // Set difficulty colors
+            setDifficultyColors({
+                "easy": "from-green-400 to-emerald-400",
+                "medium": "from-yellow-400 to-orange-400",
+                "hard": "from-red-400 to-pink-400"
+            });
+        }
+    }, [gamesList]);
 
-    const filteredGames = selectedCategory === "all" 
-        ? gamesList 
-        : gamesList.filter(game => game.category === selectedCategory);
+    // Filter games based on selected category, type and age group
+    const filteredGames = gamesList.filter(game => {
+        const categoryMatch = selectedCategory === "all" || game.type === selectedCategory;
+        const ageGroupMatch = selectedAgeGroup === "all" || game.ageGroup === selectedAgeGroup || game.ageGroup === "all";
+        return categoryMatch && ageGroupMatch;
+    });
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 relative overflow-hidden">
@@ -194,51 +245,81 @@ export default function Games() {
                         </div>
                         <div className="text-center">
                             <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                                <Coins className="w-8 h-8" />
+                                <Wallet className="w-8 h-8" />
                             </div>
-                            <div className="text-2xl font-bold text-gray-800">{gamesList.reduce((sum, game) => sum + game.reward, 0)}</div>
-                            <div className="text-sm text-gray-600">Total Coins</div>
+                            <div className="text-2xl font-bold text-gray-800">{userStats.walletBalance}</div>
+                            <div className="text-sm text-gray-600">HealCoins Balance</div>
                         </div>
                         <div className="text-center">
                             <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                                <Clock className="w-8 h-8" />
+                                <Gamepad2 className="w-8 h-8" />
                             </div>
-                            <div className="text-2xl font-bold text-gray-800">5-12</div>
-                            <div className="text-sm text-gray-600">Minutes Each</div>
+                            <div className="text-2xl font-bold text-gray-800">{userStats.gamesPlayed}</div>
+                            <div className="text-sm text-gray-600">Games Played</div>
                         </div>
                         <div className="text-center">
                             <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-r from-pink-500 to-rose-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                                <Star className="w-8 h-8" />
+                                <Award className="w-8 h-8" />
                             </div>
-                            <div className="text-2xl font-bold text-gray-800">100%</div>
-                            <div className="text-sm text-gray-600">Fun Guaranteed</div>
+                            <div className="text-2xl font-bold text-gray-800">{userStats.achievements.length}</div>
+                            <div className="text-sm text-gray-600">Achievements</div>
                         </div>
                     </div>
                 </motion.div>
 
-                {/* Category Filter */}
+                {/* Filters */}
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
-                    className="mb-8"
+                    className="mb-8 space-y-4"
                 >
-                    <div className="flex flex-wrap gap-2 justify-center">
-                        {categories.map((category) => (
-                            <motion.button
-                                key={category}
-                                onClick={() => setSelectedCategory(category)}
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className={`px-6 py-3 rounded-full font-semibold transition-all ${
-                                    selectedCategory === category
-                                        ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg'
-                                        : 'bg-white/80 text-gray-700 hover:bg-white shadow-md'
-                                }`}
-                            >
-                                {category.charAt(0).toUpperCase() + category.slice(1)}
-                            </motion.button>
-                        ))}
+                    {/* Type Filter */}
+                    <div className="mb-2">
+                        <h3 className="text-lg font-semibold text-gray-700 mb-2 text-center">Game Type</h3>
+                        <div className="flex flex-wrap gap-2 justify-center">
+                            {["all", "financial", "mental"].map((type) => (
+                                <motion.button
+                                    key={type}
+                                    onClick={() => setSelectedCategory(type)}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className={`px-6 py-3 rounded-full font-semibold transition-all ${
+                                        selectedCategory === type
+                                            ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg'
+                                            : 'bg-white/80 text-gray-700 hover:bg-white shadow-md'
+                                    }`}
+                                >
+                                    {type === "all" ? "All Types" : 
+                                     type === "financial" ? "Financial Literacy" : 
+                                     "Mental Wellness"}
+                                </motion.button>
+                            ))}
+                        </div>
+                    </div>
+                    
+                    {/* Age Group Filter */}
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-700 mb-2 text-center">Age Group</h3>
+                        <div className="flex flex-wrap gap-2 justify-center">
+                            {["all", "junior", "pro"].map((ageGroup) => (
+                                <motion.button
+                                    key={ageGroup}
+                                    onClick={() => setSelectedAgeGroup(ageGroup)}
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className={`px-6 py-3 rounded-full font-semibold transition-all ${
+                                        selectedAgeGroup === ageGroup
+                                            ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg'
+                                            : 'bg-white/80 text-gray-700 hover:bg-white shadow-md'
+                                    }`}
+                                >
+                                    {ageGroup === "all" ? "All Ages" : 
+                                     ageGroup === "junior" ? "Ages 8-14" : 
+                                     "Ages 15-25"}
+                                </motion.button>
+                            ))}
+                        </div>
                     </div>
                 </motion.div>
 
@@ -260,9 +341,22 @@ export default function Games() {
                             }}
                             whileTap={{ scale: 0.95 }}
                             className="group cursor-pointer relative"
-                            onClick={() => navigate(game.route)}
-                            onMouseEnter={() => setHoveredGame(i)}
-                            onMouseLeave={() => setHoveredGame(null)}
+                            onClick={() => {
+                                                // Navigate to the game route
+                                                navigate(game.route);
+                                                // Log activity
+                                                try {
+                                                    api.post(`/api/activity/log`, {
+                                                        activity: `Started playing ${game.title}`,
+                                                        category: 'game',
+                                                        metadata: { gameId: game._id }
+                                                    });
+                                                } catch (error) {
+                                                    console.error('Error logging activity:', error);
+                                                }
+                                            }}
+                                            onMouseEnter={() => setHoveredGame(i)}
+                                            onMouseLeave={() => setHoveredGame(null)}
                         >
                             <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40 hover:shadow-2xl transition-all duration-300 relative overflow-hidden h-full">
                                 <div className={`absolute inset-0 bg-gradient-to-r ${game.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
@@ -279,7 +373,7 @@ export default function Games() {
                                         whileHover={{ rotate: 360 }}
                                         transition={{ duration: 0.6 }}
                                     >
-                                        {game.icon}
+                                        {getGameIcon(game.category)}
                                     </motion.div>
 
                                     {/* Game Info */}
@@ -292,12 +386,17 @@ export default function Games() {
                                         </p>
                                         <div className="flex items-center gap-2 mb-2">
                                             <div className="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full text-xs font-semibold">
-                                                {game.tag}
+                                                {game.type.charAt(0).toUpperCase() + game.type.slice(1)}
                                             </div>
                                             <div className="flex items-center gap-1 text-xs text-gray-500">
                                                 <Timer className="w-3 h-3" />
                                                 {game.estimatedTime}
                                             </div>
+                                            {game.ageGroup !== "all" && (
+                                                <div className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-xs font-semibold">
+                                                    {game.ageGroup === "junior" ? "8-14" : "15-25"}
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
 
@@ -328,7 +427,7 @@ export default function Games() {
                                         <div className="flex items-center gap-2">
                                             <div className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
                                                 <Coins className="w-4 h-4" />
-                                                +{game.reward}
+                                                +{game.rewardCoins}
                                             </div>
                                         </div>
                                         <motion.div 
@@ -361,9 +460,9 @@ export default function Games() {
                         <p className="text-purple-100 text-sm mb-4">Complete 3 games today for bonus rewards!</p>
                         <div className="flex items-center gap-2">
                             <div className="w-full bg-white/20 rounded-full h-2">
-                                <div className="bg-white h-2 rounded-full w-1/3" />
+                                <div className="bg-white h-2 rounded-full w-1/3" style={{ width: `${Math.min((userStats.gamesPlayed % 3) / 3 * 100, 100)}%` }} />
                             </div>
-                            <span className="text-sm">1/3</span>
+                            <span className="text-sm">{userStats.gamesPlayed % 3}/3</span>
                         </div>
                     </div>
 
@@ -372,11 +471,12 @@ export default function Games() {
                             <Award className="w-8 h-8" />
                             <h3 className="text-xl font-bold">Achievements</h3>
                         </div>
-                        <p className="text-green-100 text-sm mb-4">Unlock special badges and rewards</p>
+                        <p className="text-green-100 text-sm mb-4">You've earned {userStats.achievements.length} badges so far!</p>
                         <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/30 transition-all"
+                            onClick={() => navigate('/student/achievements')}
                         >
                             View All
                         </motion.button>
@@ -384,15 +484,19 @@ export default function Games() {
 
                     <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6 rounded-3xl text-white shadow-xl">
                         <div className="flex items-center gap-3 mb-3">
-                            <Target className="w-8 h-8" />
-                            <h3 className="text-xl font-bold">Weekly Goal</h3>
+                            <Hourglass className="w-8 h-8" />
+                            <h3 className="text-xl font-bold">Current Streak</h3>
                         </div>
-                        <p className="text-orange-100 text-sm mb-4">Play 15 games this week</p>
-                        <div className="flex items-center gap-2">
-                            <div className="w-full bg-white/20 rounded-full h-2">
-                                <div className="bg-white h-2 rounded-full w-3/5" />
-                            </div>
-                            <span className="text-sm">9/15</span>
+                        <p className="text-orange-100 text-sm mb-4">You're on a {userStats.currentStreak} day streak!</p>
+                        <div className="flex items-center justify-center gap-1">
+                            {[...Array(7)].map((_, i) => (
+                                <div 
+                                    key={i} 
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center ${i < userStats.currentStreak ? 'bg-white text-orange-500' : 'bg-white/20 text-white/50'}`}
+                                >
+                                    {i + 1}
+                                </div>
+                            ))}
                         </div>
                     </div>
                 </motion.div>

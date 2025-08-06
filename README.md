@@ -607,23 +607,6 @@ jobs:
 <sub>Backend Developer</sub>
 </td>
 <td align="center">
-<img src="https://github.com/yatharth-mishra.png" width="100px;" alt="Yatharth Mishra"/><br />
-<sub><b>Yatharth Mishra</b></sub><br />
-<sub>Frontend Lead</sub>
-</td>
-</tr>
-<tr>
-<td align="center">
-<img src="https://github.com/suhani-verma.png" width="100px;" alt="Suhani Verma"/><br />
-<sub><b>Suhani Verma</b></sub><br />
-<sub>AI/ML Engineer</sub>
-</td>
-<td align="center">
-<img src="https://github.com/vaishnavi-hengane.png" width="100px;" alt="Vaishnavi Hengane"/><br />
-<sub><b>Vaishnavi Hengane</b></sub><br />
-<sub>AI/ML Engineer</sub>
-</td>
-<td align="center">
 <img src="https://github.com/shobhit-dwivedi.png" width="100px;" alt="Shobhit Dwivedi"/><br />
 <sub><b>Shobhit Dwivedi</b></sub><br />
 <sub>Frontend Developer</sub>

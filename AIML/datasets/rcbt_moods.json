@@ -1,0 +1,22 @@
+[
+  {
+    "mood": "I failed my board exam, I\u2019m a complete failure.",
+    "category": "self-blame"
+  },
+  {
+    "mood": "My parents always compare me with others.",
+    "category": "low self-worth"
+  },
+  {
+    "mood": "I didn\u2019t get into any college. I\u2019ll never succeed.",
+    "category": "hopelessness"
+  },
+  {
+    "mood": "No one understands me. I feel alone.",
+    "category": "isolation"
+  },
+  {
+    "mood": "I made a mistake. Everyone must hate me now.",
+    "category": "shame"
+  }
+]

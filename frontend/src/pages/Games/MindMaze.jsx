@@ -123,6 +123,9 @@ export default function MindMaze() {
     }, 2000);
   };
   
+  // Add a state to store the earned coins
+  const [earnedCoins, setEarnedCoins] = useState(0);
+  
   const handleGameComplete = async () => {
     if (gameCompleted) return;
     
@@ -138,6 +141,9 @@ export default function MindMaze() {
         score,
         timePlayed
       });
+      
+      // Store the actual earned coins from the response
+      setEarnedCoins(response.data.coinsEarned);
       
       toast.success(response.data.message || 'Game completed successfully!');
     } catch (error) {
@@ -270,7 +276,7 @@ export default function MindMaze() {
                 <div className="bg-yellow-50 rounded-xl p-4 text-center">
                   <Coins size={24} className="mx-auto text-yellow-500 mb-2" />
                   <p className="text-gray-700 font-semibold">Earned</p>
-                  <p className="text-2xl font-bold text-yellow-600">+25 HC</p>
+                  <p className="text-2xl font-bold text-yellow-600">+{earnedCoins} HC</p>
                 </div>
               </div>
               

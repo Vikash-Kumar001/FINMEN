@@ -147,16 +147,17 @@ export const completeGame = async (req, res) => {
   const { score, timePlayed, achievements } = req.body;
 
   try {
-    const game = await Game.findById(gameId);
+    // Change from findById to findOne with category filter
+    const game = await Game.findOne({ category: gameId });
     if (!game) return res.status(404).json({ error: 'Game not found' });
 
     // Find or create game progress
-    let gameProgress = await GameProgress.findOne({ userId, gameId });
+    let gameProgress = await GameProgress.findOne({ userId, gameId: game._id });
     
     if (!gameProgress) {
       gameProgress = new GameProgress({
         userId,
-        gameId,
+        gameId: game._id,
         score: score || 0,
         timePlayed: timePlayed || 0,
         achievements: [],
@@ -241,16 +242,14 @@ export const completeGame = async (req, res) => {
     // After saving game progress and wallet
     // Emit socket event for real-time updates
     const io = req.app.get('io');
-    if (io) {
-      io.to(userId.toString()).emit('game-completed', {
-        gameId,
-        coinsEarned,
-        newBalance: wallet.balance,
-        streak: gameProgress.streak,
-        achievements: gameProgress.achievements,
-        message: 'Game completed and rewards granted!'
-      });
-    }
+    io.to(userId.toString()).emit('game-completed', {
+      gameId,
+      coinsEarned,
+      newBalance: wallet.balance,
+      streak: gameProgress.streak,
+      achievements: gameProgress.achievements,
+      message: 'Game completed and rewards granted!'
+    });
     
     res.status(200).json({
       message: '🎉 Game completed successfully!',

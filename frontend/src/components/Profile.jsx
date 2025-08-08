@@ -127,7 +127,6 @@ const Profile = () => {
     });
     const [preferences, setPreferences] = useState({
         language: "en",
-        theme: "light",
         notifications: { email: true, push: true, sms: false },
         privacy: { profileVisibility: "friends", contactInfo: "friends", academicInfo: "private" },
         sound: { effects: true, music: true, volume: 75 }
@@ -171,48 +170,47 @@ const Profile = () => {
 
     useEffect(() => {
         if (user) {
+            const fetchUserProfile = async () => {
+                try {
+                    setLoading(true);
+                    const response = await api.get('/api/user/profile');
+                    const profileData = response.data;
+                    
+                    setPersonalInfo({
+                        name: profileData.name || user?.name || "",
+                        email: profileData.email || user?.email || "",
+                        phone: profileData.phone || "",
+                        location: profileData.location || "",
+                        website: profileData.website || "",
+                        bio: profileData.bio || ""
+                    });
+                    
+                    if (profileData.avatar) {
+                        setAvatarPreview(profileData.avatar);
+                        setSelectedPreset(profileData.avatar);
+                    }
+                    
+                    if (profileData.academic) {
+                        setAcademicInfo(profileData.academic);
+                    }
+                    
+                    if (profileData.professional) {
+                        setProfessionalInfo(profileData.professional);
+                    }
+                    
+                    if (profileData.preferences) {
+                        setPreferences(profileData.preferences);
+                    }
+                } catch (error) {
+                    console.error("Error fetching profile:", error);
+                    toast.error("Failed to load profile data");
+                } finally {
+                    setLoading(false);
+                }
+            };
             fetchUserProfile();
         }
     }, [user]);
-
-    const fetchUserProfile = async () => {
-        try {
-            setLoading(true);
-            const response = await api.get('/api/user/profile');
-            const profileData = response.data;
-            
-            setPersonalInfo({
-                name: profileData.name || user?.name || "",
-                email: profileData.email || user?.email || "",
-                phone: profileData.phone || "",
-                location: profileData.location || "",
-                website: profileData.website || "",
-                bio: profileData.bio || ""
-            });
-            
-            if (profileData.avatar) {
-                setAvatarPreview(profileData.avatar);
-                setSelectedPreset(profileData.avatar);
-            }
-            
-            if (profileData.academic) {
-                setAcademicInfo(profileData.academic);
-            }
-            
-            if (profileData.professional) {
-                setProfessionalInfo(profileData.professional);
-            }
-            
-            if (profileData.preferences) {
-                setPreferences(profileData.preferences);
-            }
-        } catch (error) {
-            console.error("Error fetching profile:", error);
-            toast.error("Failed to load profile data");
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleChange = (setter) => (e) => {
         setter((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -746,25 +744,7 @@ const Profile = () => {
     const renderPreferencesTab = () => (
         <div className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                        <Palette className="w-5 h-5 text-indigo-500" />
-                        Theme
-                    </h3>
 
-                    <div className="space-y-3">
-                        <label className="flex items-center justify-between p-4 border border-gray-200 rounded-xl cursor-pointer hover:border-indigo-200 transition-all">
-                            <span className="font-medium text-gray-700">Light Mode</span>
-                            <input
-                                type="radio"
-                                name="theme"
-                                checked={preferences.theme === "light"}
-                                onChange={() => handlePreferenceChange("theme", null, "light")}
-                                className="form-radio h-5 w-5 text-indigo-500 focus:ring-indigo-500"
-                            />
-                        </label>
-                    </div>
-                </div>
 
                 <div className="space-y-4">
                     <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2">

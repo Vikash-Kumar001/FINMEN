@@ -18,8 +18,8 @@ const MoodTimeline = () => {
     }, []);
 
     return (
-        <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow mt-8">
-            <h3 className="text-lg font-semibold text-gray-700 dark:text-white mb-4">
+        <div className="bg-white p-5 rounded-xl shadow mt-8">
+            <h3 className="text-lg font-semibold text-gray-700 mb-4">
                 Mood History Timeline
             </h3>
             <div className="space-y-4 max-h-72 overflow-y-auto">
@@ -27,10 +27,10 @@ const MoodTimeline = () => {
                     <div key={log._id} className="flex items-start space-x-4">
                         <div className="text-2xl">{log.emoji}</div>
                         <div>
-                            <div className="text-sm font-medium text-gray-700 dark:text-white">
+                            <div className="text-sm font-medium text-gray-700">
                                 {new Date(log.date).toLocaleDateString()}
                             </div>
-                            <div className="text-xs text-gray-500 dark:text-gray-300">
+                            <div className="text-xs text-gray-500">
                                 {log.journal || "No journal entry"}
                             </div>
                         </div>

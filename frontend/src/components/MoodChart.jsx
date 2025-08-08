@@ -89,7 +89,7 @@ const MoodChart = () => {
                 <select
                     value={chartType}
                     onChange={(e) => setChartType(e.target.value)}
-                    className="text-sm p-2 rounded border bg-white dark:bg-gray-800 dark:text-white"
+                    className="text-sm p-2 rounded border bg-white"
                 >
                     <option value="bar">📊 Bar Chart</option>
                     <option value="line">📈 Line Chart</option>
@@ -150,7 +150,7 @@ const MoodChart = () => {
                 </ResponsiveContainer>
             </div>
 
-            <div className="mt-4 text-center text-sm text-gray-700 dark:text-gray-300">
+            <div className="mt-4 text-center text-sm text-gray-700">
                 📊 Weekly Average Mood Score: <span className="font-bold">{average}</span>
             </div>
         </div>

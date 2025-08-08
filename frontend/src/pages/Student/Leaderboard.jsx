@@ -23,11 +23,9 @@ import {
     Minus,
     Play,
     GamepadIcon,
-    CheckCircle,
-    Calendar
+    CheckCircle
 } from "lucide-react";
 import { useSocket } from "../../context/SocketContext";
-import { toast } from 'react-hot-toast';
 import api from "../../utils/api";
 
 const Leaderboard = () => {
@@ -39,7 +37,7 @@ const Leaderboard = () => {
     const [games, setGames] = useState([]);
     const [dailyChallenges, setDailyChallenges] = useState([]);
     const [showPlayOptions, setShowPlayOptions] = useState(null);
-    const { socket } = useSocket();
+    const socket = useSocket();
 
     // Fetch challenges and games data
     useEffect(() => {
@@ -101,34 +99,12 @@ const Leaderboard = () => {
         }
     }, [socket, selectedPeriod]);
 
-    useEffect(() => {
-        if (!socket) return;
-        const refreshLeaderboard = () => {
-            // Re-emit the leaderboard subscription event to get fresh data
-            socket.emit('student:leaderboard:subscribe', { period: selectedPeriod });
-        };
-        const handleGameCompleted = () => {
-            toast.success('🎮 Game completed! Leaderboard updated.');
-            refreshLeaderboard();
-        };
-        const handleChallengeCompleted = () => {
-            toast.success('🏆 Challenge completed! Leaderboard updated.');
-            refreshLeaderboard();
-        };
-        socket.on('game-completed', handleGameCompleted);
-        socket.on('challenge-completed', handleChallengeCompleted);
-        return () => {
-            socket.off('game-completed', handleGameCompleted);
-            socket.off('challenge-completed', handleChallengeCompleted);
-        };
-    }, [socket, selectedPeriod]);
-
     const getRankIcon = (rank) => {
         switch (rank) {
-            case 1: return <Crown className="w-4 h-4 sm:w-6 sm:h-6 text-yellow-500" />;
-            case 2: return <Medal className="w-4 h-4 sm:w-6 sm:h-6 text-gray-400" />;
-            case 3: return <Award className="w-4 h-4 sm:w-6 sm:h-6 text-amber-600" />;
-            default: return <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />;
+            case 1: return <Crown className="w-6 h-6 text-yellow-500" />;
+            case 2: return <Medal className="w-6 h-6 text-gray-400" />;
+            case 3: return <Award className="w-6 h-6 text-amber-600" />;
+            default: return <Trophy className="w-5 h-5 text-gray-500" />;
         }
     };
 

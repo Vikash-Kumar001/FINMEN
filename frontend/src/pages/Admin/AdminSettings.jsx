@@ -139,11 +139,11 @@ const AdminSettings = () => {
             initial="hidden"
             animate="visible"
             variants={containerVariants}
-            className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 p-6"
+            className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50 p-6"
         >
             <div className="max-w-6xl mx-auto">
                 <div className="flex items-center justify-between mb-8">
-                    <h1 className="text-4xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
+                    <h1 className="text-4xl font-bold text-gray-800 flex items-center gap-3">
                         <Settings className="w-8 h-8 text-indigo-600" />
                         Admin System Settings
                     </h1>
@@ -176,7 +176,7 @@ const AdminSettings = () => {
                             onClick={() => setActiveTab(tab.id)}
                             className={`px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2 ${activeTab === tab.id
                                 ? 'bg-indigo-600 text-white shadow-md'
-                                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700'
+                                : 'bg-white text-gray-600 hover:bg-gray-50'
                                 }`}
                         >
                             <tab.icon className="w-5 h-5" />
@@ -186,26 +186,26 @@ const AdminSettings = () => {
                 </div>
 
                 {/* Settings Content */}
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+                <div className="bg-white rounded-xl shadow-lg p-6">
                     {/* System Settings */}
                     {activeTab === 'system' && (
                         <div className="space-y-6">
-                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-800 dark:text-white">
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-800">
                                 <Server className="w-6 h-6 text-indigo-600" />
                                 System Configuration
                             </h2>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200">General Settings</h3>
+                                    <h3 className="text-lg font-medium text-gray-700">General Settings</h3>
                                     
-                                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                         <div>
-                                            <h4 className="font-medium text-gray-800 dark:text-white flex items-center gap-2">
+                                            <h4 className="font-medium text-gray-800 flex items-center gap-2">
                                                 <AlertTriangle className="w-4 h-4 text-amber-500" />
                                                 Maintenance Mode
                                             </h4>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                            <p className="text-sm text-gray-600">
                                                 Put the entire platform in maintenance mode
                                             </p>
                                         </div>
@@ -216,17 +216,17 @@ const AdminSettings = () => {
                                                 onChange={() => handleSystemSettingChange('maintenanceMode', !systemSettings.maintenanceMode)}
                                                 className="sr-only peer"
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                         </label>
                                     </div>
                                     
-                                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                         <div>
-                                            <h4 className="font-medium text-gray-800 dark:text-white flex items-center gap-2">
+                                            <h4 className="font-medium text-gray-800 flex items-center gap-2">
                                                 <Database className="w-4 h-4 text-indigo-500" />
                                                 Debug Mode
                                             </h4>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                            <p className="text-sm text-gray-600">
                                                 Enable detailed error logging and debugging
                                             </p>
                                         </div>
@@ -237,17 +237,17 @@ const AdminSettings = () => {
                                                 onChange={() => handleSystemSettingChange('debugMode', !systemSettings.debugMode)}
                                                 className="sr-only peer"
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                         </label>
                                     </div>
                                     
-                                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                         <div>
-                                            <h4 className="font-medium text-gray-800 dark:text-white flex items-center gap-2">
+                                            <h4 className="font-medium text-gray-800 flex items-center gap-2">
                                                 <BarChart className="w-4 h-4 text-green-500" />
                                                 Analytics Tracking
                                             </h4>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                            <p className="text-sm text-gray-600">
                                                 Enable platform usage analytics
                                             </p>
                                         </div>
@@ -258,21 +258,21 @@ const AdminSettings = () => {
                                                 onChange={() => handleSystemSettingChange('analyticsEnabled', !systemSettings.analyticsEnabled)}
                                                 className="sr-only peer"
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                         </label>
                                     </div>
                                 </div>
                                 
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200">Performance & Storage</h3>
+                                    <h3 className="text-lg font-medium text-gray-700">Performance & Storage</h3>
                                     
-                                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                         <div>
-                                            <h4 className="font-medium text-gray-800 dark:text-white flex items-center gap-2">
+                                            <h4 className="font-medium text-gray-800 flex items-center gap-2">
                                                 <Cloud className="w-4 h-4 text-blue-500" />
                                                 Automatic Backups
                                             </h4>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                            <p className="text-sm text-gray-600">
                                                 Schedule automatic system backups
                                             </p>
                                         </div>
@@ -283,19 +283,19 @@ const AdminSettings = () => {
                                                 onChange={() => handleSystemSettingChange('autoBackup', !systemSettings.autoBackup)}
                                                 className="sr-only peer"
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                         </label>
                                     </div>
                                     
                                     {systemSettings.autoBackup && (
-                                        <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                        <div className="p-4 bg-gray-50 rounded-lg">
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
                                                 Backup Frequency
                                             </label>
                                             <select
                                                 value={systemSettings.backupFrequency}
                                                 onChange={(e) => handleSystemSettingChange('backupFrequency', e.target.value)}
-                                                className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                             >
                                                 <option value="hourly">Hourly</option>
                                                 <option value="daily">Daily</option>
@@ -305,29 +305,29 @@ const AdminSettings = () => {
                                         </div>
                                     )}
                                     
-                                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                    <div className="p-4 bg-gray-50 rounded-lg">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Max Upload Size (MB)
                                         </label>
                                         <input
                                             type="number"
                                             value={systemSettings.maxUploadSize}
                                             onChange={(e) => handleSystemSettingChange('maxUploadSize', e.target.value)}
-                                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                             min="1"
                                             max="100"
                                         />
                                     </div>
                                     
-                                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                    <div className="p-4 bg-gray-50 rounded-lg">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Session Timeout (minutes)
                                         </label>
                                         <input
                                             type="number"
                                             value={systemSettings.sessionTimeout}
                                             onChange={(e) => handleSystemSettingChange('sessionTimeout', e.target.value)}
-                                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                             min="5"
                                             max="240"
                                         />
@@ -340,20 +340,20 @@ const AdminSettings = () => {
                     {/* Security Settings */}
                     {activeTab === 'security' && (
                         <div className="space-y-6">
-                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-800 dark:text-white">
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-800">
                                 <Shield className="w-6 h-6 text-indigo-600" />
                                 Security Configuration
                             </h2>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
-                                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                         <div>
-                                            <h4 className="font-medium text-gray-800 dark:text-white flex items-center gap-2">
+                                            <h4 className="font-medium text-gray-800 flex items-center gap-2">
                                                 <Key className="w-4 h-4 text-amber-500" />
                                                 Two-Factor Authentication
                                             </h4>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                            <p className="text-sm text-gray-600">
                                                 Require 2FA for all admin accounts
                                             </p>
                                         </div>
@@ -364,18 +364,18 @@ const AdminSettings = () => {
                                                 onChange={() => handleSecuritySettingChange('twoFactorAuth', !securitySettings.twoFactorAuth)}
                                                 className="sr-only peer"
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                         </label>
                                     </div>
                                     
-                                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                    <div className="p-4 bg-gray-50 rounded-lg">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Password Policy
                                         </label>
                                         <select
                                             value={securitySettings.passwordPolicy}
                                             onChange={(e) => handleSecuritySettingChange('passwordPolicy', e.target.value)}
-                                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                         >
                                             <option value="basic">Basic (8+ characters)</option>
                                             <option value="medium">Medium (8+ chars, mixed case)</option>
@@ -386,41 +386,41 @@ const AdminSettings = () => {
                                 </div>
                                 
                                 <div className="space-y-4">
-                                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                    <div className="p-4 bg-gray-50 rounded-lg">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Max Login Attempts
                                         </label>
                                         <input
                                             type="number"
                                             value={securitySettings.loginAttempts}
                                             onChange={(e) => handleSecuritySettingChange('loginAttempts', e.target.value)}
-                                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                             min="1"
                                             max="10"
                                         />
                                     </div>
                                     
-                                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
+                                    <div className="p-4 bg-gray-50 rounded-lg">
+                                        <label className="block text-sm font-medium text-gray-700 mb-2">
                                             Session Length (hours)
                                         </label>
                                         <input
                                             type="number"
                                             value={securitySettings.sessionLength}
                                             onChange={(e) => handleSecuritySettingChange('sessionLength', e.target.value)}
-                                            className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                            className="w-full p-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                             min="1"
                                             max="72"
                                         />
                                     </div>
                                     
-                                    <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                         <div>
-                                            <h4 className="font-medium text-gray-800 dark:text-white flex items-center gap-2">
+                                            <h4 className="font-medium text-gray-800 flex items-center gap-2">
                                                 <Globe className="w-4 h-4 text-blue-500" />
                                                 IP Restriction
                                             </h4>
-                                            <p className="text-sm text-gray-600 dark:text-gray-300">
+                                            <p className="text-sm text-gray-600">
                                                 Limit admin access to specific IP addresses
                                             </p>
                                         </div>
@@ -431,7 +431,7 @@ const AdminSettings = () => {
                                                 onChange={() => handleSecuritySettingChange('ipRestriction', !securitySettings.ipRestriction)}
                                                 className="sr-only peer"
                                             />
-                                            <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                         </label>
                                     </div>
                                 </div>
@@ -442,14 +442,14 @@ const AdminSettings = () => {
                     {/* Notification Settings */}
                     {activeTab === 'notifications' && (
                         <div className="space-y-6">
-                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-800 dark:text-white">
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-800">
                                 <Bell className="w-6 h-6 text-indigo-600" />
                                 Notification Configuration
                             </h2>
                             
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200">System Notifications</h3>
+                                    <h3 className="text-lg font-medium text-gray-700">System Notifications</h3>
                                     
                                     {Object.entries({
                                         adminAlerts: 'Admin Alerts',
@@ -457,10 +457,10 @@ const AdminSettings = () => {
                                         errorReports: 'Error Reports',
                                         securityAlerts: 'Security Alerts'
                                     }).map(([key, label]) => (
-                                        <div key={key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                        <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                             <div>
-                                                <h4 className="font-medium text-gray-800 dark:text-white">{label}</h4>
-                                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                                <h4 className="font-medium text-gray-800">{label}</h4>
+                                                <p className="text-sm text-gray-600">
                                                     Receive notifications about {label.toLowerCase()}
                                                 </p>
                                             </div>
@@ -471,23 +471,23 @@ const AdminSettings = () => {
                                                     onChange={() => handleNotificationSettingChange(key, !notificationSettings[key])}
                                                     className="sr-only peer"
                                                 />
-                                                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                             </label>
                                         </div>
                                     ))}
                                 </div>
                                 
                                 <div className="space-y-4">
-                                    <h3 className="text-lg font-medium text-gray-700 dark:text-gray-200">User Activity Notifications</h3>
+                                    <h3 className="text-lg font-medium text-gray-700">User Activity Notifications</h3>
                                     
                                     {Object.entries({
                                         userRegistrations: 'New User Registrations',
                                         educatorApprovals: 'Educator Approval Requests'
                                     }).map(([key, label]) => (
-                                        <div key={key} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                                        <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                             <div>
-                                                <h4 className="font-medium text-gray-800 dark:text-white">{label}</h4>
-                                                <p className="text-sm text-gray-600 dark:text-gray-300">
+                                                <h4 className="font-medium text-gray-800">{label}</h4>
+                                                <p className="text-sm text-gray-600">
                                                     Receive notifications about {label.toLowerCase()}
                                                 </p>
                                             </div>
@@ -498,32 +498,32 @@ const AdminSettings = () => {
                                                     onChange={() => handleNotificationSettingChange(key, !notificationSettings[key])}
                                                     className="sr-only peer"
                                                 />
-                                                <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 dark:peer-focus:ring-indigo-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                                                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
                                             </label>
                                         </div>
                                     ))}
                                     
-                                    <div className="p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <h4 className="font-medium text-gray-800 dark:text-white mb-4">Notification Delivery Methods</h4>
+                                    <div className="p-4 bg-gray-50 rounded-lg">
+                                        <h4 className="font-medium text-gray-800 mb-4">Notification Delivery Methods</h4>
                                         
                                         <div className="space-y-3">
                                             <label className="flex items-center space-x-3">
                                                 <input type="checkbox" checked className="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500" />
-                                                <span className="text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                                                <span className="text-gray-700 flex items-center gap-2">
                                                     <Mail className="w-4 h-4 text-indigo-500" /> Email
                                                 </span>
                                             </label>
                                             
                                             <label className="flex items-center space-x-3">
                                                 <input type="checkbox" checked className="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500" />
-                                                <span className="text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                                                <span className="text-gray-700 flex items-center gap-2">
                                                     <Bell className="w-4 h-4 text-indigo-500" /> In-App
                                                 </span>
                                             </label>
                                             
                                             <label className="flex items-center space-x-3">
                                                 <input type="checkbox" className="form-checkbox h-5 w-5 text-indigo-600 rounded focus:ring-indigo-500" />
-                                                <span className="text-gray-700 dark:text-gray-200 flex items-center gap-2">
+                                                <span className="text-gray-700 flex items-center gap-2">
                                                     <Smartphone className="w-4 h-4 text-indigo-500" /> SMS
                                                 </span>
                                             </label>
@@ -537,7 +537,7 @@ const AdminSettings = () => {
                     {/* Integrations */}
                     {activeTab === 'integrations' && (
                         <div className="space-y-6">
-                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-800 dark:text-white">
+                            <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2 text-gray-800">
                                 <Link className="w-6 h-6 text-indigo-600" />
                                 External Integrations
                             </h2>
@@ -545,9 +545,9 @@ const AdminSettings = () => {
                             <div className="space-y-6">
                                 <div className="grid grid-cols-1 gap-4">
                                     {integrations.map(integration => (
-                                        <div key={integration.id} className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-indigo-500">
+                                        <div key={integration.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg border-l-4 border-indigo-500">
                                             <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-indigo-100 dark:bg-indigo-900 rounded-lg">
+                                                <div className="p-2 bg-indigo-100 rounded-lg">
                                                     {integration.type === 'analytics' && <BarChart className="w-5 h-5 text-indigo-600" />}
                                                     {integration.type === 'communication' && <Mail className="w-5 h-5 text-indigo-600" />}
                                                     {integration.type === 'storage' && <Database className="w-5 h-5 text-indigo-600" />}
@@ -555,23 +555,23 @@ const AdminSettings = () => {
                                                     {integration.type === 'payment' && <FileText className="w-5 h-5 text-indigo-600" />}
                                                 </div>
                                                 <div>
-                                                    <h4 className="font-medium text-gray-800 dark:text-white">
+                                                    <h4 className="font-medium text-gray-800">
                                                         {integration.name}
                                                     </h4>
-                                                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                                                    <p className="text-sm text-gray-600">
                                                         {integration.type.charAt(0).toUpperCase() + integration.type.slice(1)} integration
                                                     </p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-3">
-                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${integration.connected ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200'}`}>
+                                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${integration.connected ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
                                                     {integration.connected ? 'Connected' : 'Disconnected'}
                                                 </span>
                                                 <button
                                                     onClick={() => handleIntegrationToggle(integration.id)}
                                                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${integration.connected
-                                                        ? 'bg-red-50 text-red-700 hover:bg-red-100 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50'
-                                                        : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50'
+                                                        ? 'bg-red-50 text-red-700 hover:bg-red-100'
+                                                        : 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100'
                                                         }`}
                                                 >
                                                     {integration.connected ? 'Disconnect' : 'Connect'}
@@ -582,7 +582,7 @@ const AdminSettings = () => {
                                 </div>
                                 
                                 <div className="flex justify-center">
-                                    <button className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 dark:bg-indigo-900/30 dark:text-indigo-400 dark:hover:bg-indigo-900/50 rounded-lg transition-colors">
+                                    <button className="flex items-center gap-2 px-4 py-2 bg-indigo-50 text-indigo-700 hover:bg-indigo-100 rounded-lg transition-colors">
                                         <Zap className="w-4 h-4" />
                                         Add New Integration
                                     </button>
@@ -592,8 +592,8 @@ const AdminSettings = () => {
                     )}
                 </div>
                 
-                <div className="mt-8 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg border border-indigo-100 dark:border-indigo-800">
-                    <div className="flex items-center gap-2 text-indigo-700 dark:text-indigo-400">
+                <div className="mt-8 p-4 bg-indigo-50 rounded-lg border border-indigo-100">
+                    <div className="flex items-center gap-2 text-indigo-700">
                         <Clock className="w-5 h-5" />
                         <span className="text-sm font-medium">Last updated: Today at 10:45 AM</span>
                     </div>

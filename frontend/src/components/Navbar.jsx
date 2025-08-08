@@ -29,7 +29,7 @@ import {
     AlertCircle,
     Zap
 } from "lucide-react";
-import StudentProgressModal from "../pages/Student/StudentProgressModal";
+
 
 const Navbar = () => {
     const { user, logoutUser } = useAuth();
@@ -39,12 +39,7 @@ const Navbar = () => {
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [showProgressModal, setShowProgressModal] = useState(false);
-    const [showSearchResults, setShowSearchResults] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchResults, setSearchResults] = useState([]);
     const [showHelpMenu, setShowHelpMenu] = useState(false);
-    const searchInputRef = useRef(null);
     const profileMenuRef = useRef(null);
     const helpMenuRef = useRef(null);
 
@@ -54,25 +49,6 @@ const Navbar = () => {
             case "educator": return "Educator Dashboard";
             case "student":
             default: return "Student Dashboard";
-        }
-    };
-
-    const handleSearch = (e) => {
-        const query = e.target.value;
-        setSearchQuery(query);
-        
-        if (query.length > 2) {
-            const mockResults = [
-                { id: 1, title: "Financial Literacy", path: "/learn/financial-literacy", type: "Course" },
-                { id: 2, title: "Budget Planner", path: "/tools/budget-planner", type: "Tool" },
-                { id: 3, title: "Investment Simulator", path: "/games/investment-simulator", type: "Game" },
-                { id: 4, title: "Savings Goals", path: "/tools/savings-goals", type: "Tool" },
-            ].filter(item => item.title.toLowerCase().includes(query.toLowerCase()));
-            
-            setSearchResults(mockResults);
-            setShowSearchResults(true);
-        } else {
-            setShowSearchResults(false);
         }
     };
 
@@ -86,17 +62,11 @@ const Navbar = () => {
         navigate(paths[user.role] || paths.student);
     };
 
-    const handleProgressClick = () => {
-        if (user?.role === "student") setShowProgressModal(true);
-        else navigate("/student/progress");
-    };
-
     const navigationItems = user?.role === "student" ? [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
         { icon: <TrendingUp className="w-5 h-5" />, label: "Challenges", onClick: () => navigate("/student/challenge") },
         { icon: <Zap className="w-5 h-5" />, label: "Daily Challenges", onClick: () => navigate("/student/daily-challenges") },
-        { icon: <Calendar className="w-5 h-5" />, label: "This Week", onClick: () => navigate("/student/this-week") },
-        { icon: <BarChart3 className="w-5 h-5" />, label: "Progress", onClick: handleProgressClick }
+        { icon: <Calendar className="w-5 h-5" />, label: "This Week", onClick: () => navigate("/student/this-week") }
     ] : user?.role === "educator" ? [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
         { icon: <User className="w-5 h-5" />, label: "Students", onClick: () => navigate("/educator/students") },
@@ -130,13 +100,12 @@ const Navbar = () => {
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) setShowProfileMenu(false);
-            if (searchInputRef.current && !searchInputRef.current.contains(event.target)) setShowSearchResults(false);
             if (helpMenuRef.current && !helpMenuRef.current.contains(event.target)) setShowHelpMenu(false);
             if (showMobileMenu && !event.target.closest('.mobile-menu-button')) setShowMobileMenu(false);
         };
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
-    }, [showProfileMenu, showMobileMenu, showSearchResults]);
+    }, [showProfileMenu, showMobileMenu]);
 
     useEffect(() => {
         const fetchUnreadCount = async () => {
@@ -193,48 +162,6 @@ const Navbar = () => {
 
                         {/* Right Side */}
                         <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
-                            {/* Search */}
-                            <div className="relative hidden sm:block" ref={searchInputRef}>
-                                <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 text-gray-400" />
-                                <input
-                                    type="text"
-                                    placeholder="Search..."
-                                    value={searchQuery}
-                                    onChange={handleSearch}
-                                    className="w-40 sm:w-48 lg:w-64 pl-8 sm:pl-10 pr-3 sm:pr-4 py-1.5 sm:py-2 bg-white border border-gray-200 rounded-lg text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-200"
-                                />
-                                <AnimatePresence>
-                                    {showSearchResults && searchResults.length > 0 && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: -10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: -10 }}
-                                            className="absolute w-full sm:w-56 lg:w-64 mt-1.5 sm:mt-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50"
-                                        >
-                                            <div className="px-3 sm:px-4 py-1.5 sm:py-2 border-b border-gray-100 bg-gray-50">
-                                                <p className="text-xs font-medium text-gray-500">Search Results</p>
-                                            </div>
-                                            {searchResults.map((result) => (
-                                                <Link
-                                                    key={result.id}
-                                                    to={result.path}
-                                                    className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 hover:bg-gray-50 transition-all duration-200"
-                                                    onClick={() => {
-                                                        setShowSearchResults(false);
-                                                        setSearchQuery("");
-                                                    }}
-                                                >
-                                                    <div>
-                                                        <p className="text-xs sm:text-sm font-medium text-gray-800">{result.title}</p>
-                                                        <p className="text-xs text-gray-500">{result.type}</p>
-                                                    </div>
-                                                    <span className="text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-indigo-100 text-indigo-700 rounded-full">{result.type}</span>
-                                                </Link>
-                                            ))}
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
 
                             {/* Help Menu */}
                             <div className="relative" ref={helpMenuRef}>
@@ -428,49 +355,7 @@ const Navbar = () => {
                                 ))}
                             </div>
 
-                            <div className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-200">
-                                <div className="relative">
-                                    <Search className="absolute left-2.5 sm:left-3 top-1/2 transform -translate-y-1/2 w-4 sm:w-5 h-4 sm:h-5 text-gray-400" />
-                                    <input
-                                        type="text"
-                                        placeholder="Search..."
-                                        value={searchQuery}
-                                        onChange={handleSearch}
-                                        className="w-full pl-8 sm:pl-10 pr-3 sm:pr-4 py-2 sm:py-2.5 bg-white border border-gray-200 rounded-lg text-xs sm:text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition-all duration-200"
-                                    />
-                                    <AnimatePresence>
-                                        {showSearchResults && searchResults.length > 0 && (
-                                            <motion.div
-                                                initial={{ opacity: 0, y: -10 }}
-                                                animate={{ opacity: 1, y: 0 }}
-                                                exit={{ opacity: 0, y: -10 }}
-                                                className="absolute w-full mt-1.5 sm:mt-2 bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden z-50"
-                                            >
-                                                <div className="px-3 sm:px-4 py-1.5 sm:py-2 border-b border-gray-100 bg-gray-50">
-                                                    <p className="text-xs font-medium text-gray-500">Search Results</p>
-                                                </div>
-                                                {searchResults.map((result) => (
-                                                    <Link
-                                                        key={result.id}
-                                                        to={result.path}
-                                                        className="flex items-center justify-between px-3 sm:px-4 py-2 sm:py-3 hover:bg-gray-50 transition-all duration-200"
-                                                        onClick={() => {
-                                                            setShowSearchResults(false);
-                                                            setSearchQuery("");
-                                                        }}
-                                                    >
-                                                        <div>
-                                                            <p className="text-xs sm:text-sm font-medium text-gray-800">{result.title}</p>
-                                                            <p className="text-xs text-gray-500">{result.type}</p>
-                                                        </div>
-                                                        <span className="text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 bg-indigo-100 text-indigo-700 rounded-full">{result.type}</span>
-                                                    </Link>
-                                                ))}
-                                            </motion.div>
-                                        )}
-                                    </AnimatePresence>
-                                </div>
-                            </div>
+
 
                             <div className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-200">
                                 <p className="text-xs sm:text-sm font-medium text-gray-500 mb-2 sm:mb-3">Help & Resources</p>
@@ -494,12 +379,7 @@ const Navbar = () => {
                 </AnimatePresence>
             </header>
 
-            {showProgressModal && user?.role === "student" && (
-                <StudentProgressModal
-                    studentId={user._id}
-                    onClose={() => setShowProgressModal(false)}
-                />
-            )}
+
         </>
     );
 };

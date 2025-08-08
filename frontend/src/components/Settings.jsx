@@ -432,18 +432,7 @@ const Settings = () => {
                                                 Appearance
                                             </h3>
 
-                                            <div className="space-y-3">
-                                                <label className="flex items-center justify-between p-4 border-2 border-gray-200 rounded-2xl cursor-pointer hover:border-indigo-200 transition-all">
-                                                    <span className="font-medium text-gray-700">Light Theme</span>
-                                                    <input
-                                                        type="radio"
-                                                        name="theme"
-                                                        checked={preferences.theme === "light"}
-                                                        onChange={() => handlePreferenceChange("theme", "light")}
-                                                        className="form-radio h-5 w-5 text-indigo-500 focus:ring-indigo-500"
-                                                    />
-                                                </label>
-                                            </div>
+
                                         </div>
 
                                         <div className="space-y-4">

@@ -23,8 +23,8 @@ const XPGraph = () => {
     };
 
     return (
-        <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow">
-            <h2 className="text-lg font-semibold text-gray-800 dark:text-white mb-2">XP Progression</h2>
+        <div className="bg-white p-4 rounded-xl shadow">
+            <h2 className="text-lg font-semibold text-gray-800 mb-2">XP Progression</h2>
             <ResponsiveContainer width="100%" height={200}>
                 <LineChart data={data}>
                     <CartesianGrid strokeDasharray="3 3" />

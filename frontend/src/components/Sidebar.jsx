@@ -26,7 +26,7 @@ const Sidebar = () => {
     const linkClass = ({ isActive }) =>
         `flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition ${isActive
             ? "bg-indigo-500 text-white"
-            : "text-gray-600 hover:bg-gray-200 dark:text-gray-300 dark:hover:bg-gray-700"
+            : "text-gray-600 hover:bg-gray-200"
         }`;
 
     const studentLinks = [
@@ -67,8 +67,8 @@ const Sidebar = () => {
     };
 
     return (
-        <aside className="w-full md:w-64 h-full bg-white dark:bg-gray-900 shadow-md p-4 sticky top-0 z-40">
-            <h2 className="text-xl font-bold text-indigo-600 dark:text-white mb-4">
+        <aside className="w-full md:w-64 h-full bg-white shadow-md p-4 sticky top-0 z-40">
+            <h2 className="text-xl font-bold text-indigo-600 mb-4">
                 🎓 FinMen
             </h2>
 

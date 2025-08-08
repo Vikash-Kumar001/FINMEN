@@ -8,11 +8,11 @@
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com/)
+[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
 **Empowering India's Youth Through AI-Driven Mental Wellness & Financial Education**
 
-[🚀 Live Demo](#-live-demo) • [📖 Documentation](#-documentation) • [🤝 Contributing](#-contributing) • [💬 Community](#-community)
+[🚀 Features](#-core-feature-matrix) • [📖 Documentation](#-documentation) • [🤝 Contributing](#-contributing) • [💬 Community](#-community)
 
 </div>
 
@@ -81,12 +81,12 @@
 <div align="center">
 
 | Layer | Technologies | Purpose |
-|-------|-------------|---------|
-| **Frontend** | ![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white&style=flat) ![Vite](https://img.shields.io/badge/-Vite-646CFF?logo=vite&logoColor=white&style=flat) ![Tailwind](https://img.shields.io/badge/-Tailwind-38B2AC?logo=tailwind-css&logoColor=white&style=flat) | Ultra-fast, responsive UI |
-| **Backend** | ![Node.js](https://img.shields.io/badge/-Node.js-339933?logo=node.js&logoColor=white&style=flat) ![Express](https://img.shields.io/badge/-Express-000000?logo=express&logoColor=white&style=flat) ![TypeScript](https://img.shields.io/badge/-TypeScript-3178C6?logo=typescript&logoColor=white&style=flat) | Scalable server architecture |
-| **Database** | ![MongoDB](https://img.shields.io/badge/-MongoDB-47A248?logo=mongodb&logoColor=white&style=flat) ![Redis](https://img.shields.io/badge/-Redis-DC382D?logo=redis&logoColor=white&style=flat) | High-performance data layer |
-| **AI/ML** | ![OpenAI](https://img.shields.io/badge/-OpenAI-412991?logo=openai&logoColor=white&style=flat) ![TensorFlow](https://img.shields.io/badge/-TensorFlow-FF6F00?logo=tensorflow&logoColor=white&style=flat) | Intelligent user interactions |
-| **DevOps** | ![Docker](https://img.shields.io/badge/-Docker-2496ED?logo=docker&logoColor=white&style=flat) ![AWS](https://img.shields.io/badge/-AWS-232F3E?logo=amazon-aws&logoColor=white&style=flat) ![GitHub Actions](https://img.shields.io/badge/-GitHub%20Actions-2088FF?logo=github-actions&logoColor=white&style=flat) | Automated deployment pipeline |
+|-------|-------------|----------|
+| **Frontend** | ![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white&style=flat) ![Vite](https://img.shields.io/badge/-Vite-646CFF?logo=vite&logoColor=white&style=flat) ![Tailwind CSS](https://img.shields.io/badge/-Tailwind-38B2AC?logo=tailwind-css&logoColor=white&style=flat) | Modern, responsive UI with component-based architecture |
+| **Backend** | ![Node.js](https://img.shields.io/badge/-Node.js-339933?logo=node.js&logoColor=white&style=flat) ![Express](https://img.shields.io/badge/-Express-000000?logo=express&logoColor=white&style=flat) ![Socket.IO](https://img.shields.io/badge/-Socket.IO-010101?logo=socket.io&logoColor=white&style=flat) | RESTful API with real-time communication |
+| **Database** | ![MongoDB](https://img.shields.io/badge/-MongoDB-47A248?logo=mongodb&logoColor=white&style=flat) | NoSQL database for flexible data storage |
+| **AI/ML** | ![Google Gemini](https://img.shields.io/badge/-Google%20Gemini-4285F4?logo=google&logoColor=white&style=flat) ![Flask](https://img.shields.io/badge/-Flask-000000?logo=flask&logoColor=white&style=flat) ![Python](https://img.shields.io/badge/-Python-3776AB?logo=python&logoColor=white&style=flat) | AI-powered chatbot and analytics |
+| **Authentication** | ![JWT](https://img.shields.io/badge/-JWT-000000?logo=json-web-tokens&logoColor=white&style=flat) ![Google OAuth](https://img.shields.io/badge/-Google%20OAuth-4285F4?logo=google&logoColor=white&style=flat) | Secure user authentication and authorization |
 
 </div>
 
@@ -94,18 +94,17 @@
 
 ```mermaid
 graph TB
-    A[Client Apps] --> B[Load Balancer]
-    B --> C[API Gateway]
-    C --> D[Authentication Service]
-    C --> E[Core Application Services]
-    E --> F[AI/ML Engine]
-    E --> G[Gamification Engine]
-    E --> H[Analytics Engine]
-    D --> I[(User Database)]
-    E --> J[(Content Database)]
-    F --> K[(ML Models)]
-    G --> L[(Game State)]
-    H --> M[(Analytics DB)]
+    A[Client Apps] --> B[Express Backend]
+    B --> C[Authentication Service]
+    B --> D[Core Application Services]
+    D --> E[AI/ML Service]
+    D --> F[Gamification Engine]
+    D --> G[Analytics Engine]
+    C --> H[(MongoDB)]
+    D --> H
+    E --> I[Google Gemini API]
+    F --> H
+    G --> H
 ```
 
 ---
@@ -117,22 +116,11 @@ graph TB
 <details>
 <summary><strong>🎭 Advanced Mood Tracking System</strong></summary>
 
-- **Multi-Modal Input**: Emoji, text, voice, and behavioral pattern analysis
-- **Predictive Analytics**: AI-powered mood forecasting and intervention alerts
+- **Multi-Modal Input**: Emoji, text, and behavioral pattern analysis
+- **Mood Trends**: Track mood patterns over time with visual analytics
 - **Cultural Sensitivity**: Indian emotional expression patterns recognition
-- **Privacy-First**: On-device processing with optional cloud sync
+- **Privacy-First**: Secure storage of sensitive emotional data
 - **Integration**: Seamless connection with CBT and wellness modules
-
-**Technical Implementation:**
-```javascript
-// Mood Analysis Engine
-const moodAnalysis = {
-  inputs: ['emoji', 'journal', 'activity', 'biometric'],
-  processing: 'edge-ai-model',
-  privacy: 'differential-privacy',
-  insights: 'personalized-recommendations'
-};
-```
 
 </details>
 
@@ -145,17 +133,7 @@ const moodAnalysis = {
 - **Cultural Integration**: Indian mindfulness and wellness practices
 - **Crisis Detection**: Real-time risk assessment and emergency protocols
 - **Progress Tracking**: Quantified mental wellness metrics
-- **Professional Integration**: Seamless referral to licensed therapists
-
-**CBT Flow Architecture:**
-```mermaid
-flowchart LR
-    A[User Input] --> B[Sentiment Analysis]
-    B --> C[CBT Protocol Selection]
-    C --> D[Therapeutic Response]
-    D --> E[Progress Tracking]
-    E --> F[Adaptive Learning]
-```
+- **Google Gemini Integration**: Advanced AI-powered therapeutic conversations
 
 </details>
 
@@ -167,21 +145,13 @@ flowchart LR
 #### **Learning Modules:**
 - **🏫 Junior Track (Ages 8-15)**: Basic money concepts, saving habits, family finances
 - **🎓 Pro Track (Ages 16-25)**: Investment strategies, career planning, entrepreneurship
-- **🏆 Master Track (25+)**: Advanced financial planning, tax optimization, wealth building
 
-#### **Interactive Simulations:**
-- Virtual stock market trading
+#### **Interactive Features:**
 - Budget planning challenges
-- Entrepreneurship simulations
-- Real estate investment games
-- Cryptocurrency education modules
-
-#### **Indian Financial Instruments:**
-- SIP calculators and planners
-- PPF and EPF optimization
-- Tax-saving investment guides
-- Digital payment literacy
-- Government scheme awareness
+- Expense tracking tools
+- Savings goal setting
+- Investment simulations
+- Financial quizzes
 
 </details>
 
@@ -190,30 +160,18 @@ flowchart LR
 <details>
 <summary><strong>🎮 Multi-Layered Engagement Framework</strong></summary>
 
-#### **HealCoin Economy:**
-```
-🪙 Earning Mechanisms:
-├── Daily wellness check-ins (+10 coins)
-├── CBT session completion (+25 coins)
-├── Financial quiz mastery (+15 coins)
-├── Community contributions (+20 coins)
-├── Streak maintenance (bonus multipliers)
-└── Peer mentoring (+30 coins)
-
-💎 Redemption Options:
-├── Educational course vouchers
-├── Mental health app subscriptions
-├── Charitable donations
-├── Exclusive platform features
-└── Real-world financial instruments
-```
+#### **Reward Economy:**
+- Daily wellness check-ins
+- CBT session completion
+- Financial quiz mastery
+- Community contributions
+- Streak maintenance
 
 #### **Achievement System:**
-- **🥉 Bronze**: Foundation level accomplishments
-- **🥈 Silver**: Consistent engagement rewards  
-- **🥇 Gold**: Excellence in specific domains
-- **💎 Platinum**: Community leadership recognition
-- **🏆 Diamond**: Platform mastery achievements
+- Bronze, Silver, Gold tier achievements
+- Leaderboards and rankings
+- Redemption marketplace
+- Digital badges and certificates
 
 </details>
 
@@ -224,20 +182,20 @@ flowchart LR
 ### 👨‍🎓 **Student Dashboard**
 - **Wellness Metrics**: Mood trends, CBT progress, stress indicators
 - **Financial Profile**: Learning progress, investment simulations, goal tracking
-- **Social Features**: Peer rankings, study groups, mentorship connections
+- **Social Features**: Peer rankings, leaderboards, achievements
 - **Personalization**: AI-driven content recommendations and learning paths
 
 ### 👨‍🏫 **Educator Portal**
 - **Class Analytics**: Aggregated wellness and learning insights
-- **Curriculum Integration**: Lesson plan suggestions and resource library
-- **Student Support**: Early intervention alerts and progress monitoring
-- **Reporting Tools**: Comprehensive academic and wellness reports
+- **Student Management**: Student progress monitoring and support
+- **Resource Library**: Educational materials and curriculum tools
+- **Redemption Management**: Approve and manage student reward redemptions
 
 ### 👨‍💼 **Administrator Console**
 - **Platform Analytics**: User engagement, feature utilization, system health
-- **Content Management**: Dynamic content creation and moderation tools
 - **User Management**: Advanced user lifecycle and support features
-- **Integration Hub**: Third-party service connections and API management
+- **Educator Approval**: Manage educator registration and verification
+- **System Settings**: Platform configuration and customization
 
 ---
 
@@ -249,47 +207,22 @@ flowchart LR
 # System Requirements
 Node.js >= 18.0.0
 MongoDB >= 5.0
-Redis >= 6.0
-Docker >= 20.10 (optional)
+Python >= 3.9
 ```
 
 ### 🚀 **Quick Start Guide**
 
 <details>
-<summary><strong>🐳 Docker Development Setup (Recommended)</strong></summary>
-
-```bash
-# Clone the repository
-git clone https://github.com/finmen-platform/finmen.git
-cd finmen
-
-# Start the complete development environment
-docker-compose up -d
-
-# Access the application
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:5000
-# MongoDB: localhost:27017
-# Redis: localhost:6379
-```
-
-</details>
-
-<details>
-<summary><strong>⚡ Manual Development Setup</strong></summary>
+<summary><strong>⚡ Development Setup</strong></summary>
 
 #### **Backend Configuration**
 ```bash
-cd finmen-server
+cd backend
 npm install
 
 # Configure environment variables
 cp .env.example .env
 # Edit .env with your configuration
-
-# Database setup
-npm run db:migrate
-npm run db:seed
 
 # Start development server
 npm run dev
@@ -297,7 +230,7 @@ npm run dev
 
 #### **Frontend Configuration**
 ```bash
-cd finmen-client
+cd frontend
 npm install
 
 # Configure environment variables
@@ -306,6 +239,19 @@ cp .env.example .env
 
 # Start development server
 npm run dev
+```
+
+#### **AI/ML Service Configuration**
+```bash
+cd AIML
+pip install -r requirements.txt
+
+# Configure environment variables
+cp .env.example .env
+# Edit .env with your configuration
+
+# Start development server
+python app.py
 ```
 
 </details>
@@ -319,25 +265,18 @@ npm run dev
 # Server Configuration
 NODE_ENV=development
 PORT=5000
-API_VERSION=v1
 
 # Database Configuration
 MONGO_URI=mongodb://localhost:27017/finmen
-REDIS_URL=redis://localhost:6379
 
 # Authentication
 JWT_SECRET=your_ultra_secure_jwt_secret
 JWT_EXPIRE=30d
-REFRESH_TOKEN_SECRET=your_refresh_token_secret
 
 # OAuth Configuration
 GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
-
-# AI Services
-OPENAI_API_KEY=your_openai_api_key
-OPENAI_MODEL=gpt-4
 
 # Email Services
 SMTP_HOST=smtp.gmail.com
@@ -345,19 +284,8 @@ SMTP_PORT=587
 SMTP_USER=your_email@gmail.com
 SMTP_PASS=your_app_password
 
-# File Storage
-AWS_ACCESS_KEY_ID=your_aws_access_key
-AWS_SECRET_ACCESS_KEY=your_aws_secret_key
-AWS_BUCKET_NAME=finmen-storage
-
-# Analytics
-GOOGLE_ANALYTICS_ID=your_ga_id
-MIXPANEL_TOKEN=your_mixpanel_token
-
-# Security
-RATE_LIMIT_WINDOW=15
-RATE_LIMIT_MAX_REQUESTS=100
-CORS_ORIGIN=http://localhost:3000
+# CORS Configuration
+CLIENT_URL=http://localhost:3000,http://localhost:5173
 ```
 
 </details>
@@ -368,97 +296,78 @@ CORS_ORIGIN=http://localhost:3000
 ```env
 # API Configuration
 VITE_API_BASE_URL=http://localhost:5000/api
-VITE_API_VERSION=v1
 
 # Authentication
 VITE_GOOGLE_CLIENT_ID=your_google_client_id
 
 # Features Flags
 VITE_ENABLE_CBT_CHATBOT=true
-VITE_ENABLE_VOICE_NOTES=true
 VITE_ENABLE_DARK_MODE=true
+```
 
-# Analytics
-VITE_GOOGLE_ANALYTICS_ID=your_ga_id
-VITE_HOTJAR_ID=your_hotjar_id
+</details>
 
-# External Services
-VITE_RAZORPAY_KEY=your_razorpay_key
-VITE_GOOGLE_MAPS_API_KEY=your_maps_key
+<details>
+<summary><strong>🤖 AI/ML Environment Variables</strong></summary>
+
+```env
+# Google Gemini API
+GEMINI_API_KEY=your_gemini_api_key
+
+# Flask Configuration
+FLASK_ENV=development
+PORT=5000
 ```
 
 </details>
 
 ---
 
-## 📁 Advanced Project Structure
+## 📁 Project Structure
 
 <details>
-<summary><strong>🗂️ Detailed Directory Architecture</strong></summary>
+<summary><strong>🗂️ Directory Architecture</strong></summary>
 
 ```
-finmen-frontend/
-├── 📁 finmen-client/                 # Frontend React Application
-│   ├── 📁 src/
-│   │   ├── 📁 components/           # Reusable UI components
-│   │   │   ├── 📁 common/          # Shared components
-│   │   │   ├── 📁 forms/           # Form components
-│   │   │   ├── 📁 charts/          # Data visualization
-│   │   │   └── 📁 layout/          # Layout components
-│   │   ├── 📁 pages/               # Route-based page components
-│   │   │   ├── 📁 auth/            # Authentication pages
-│   │   │   ├── 📁 dashboard/       # Dashboard pages
-│   │   │   ├── 📁 wellness/        # Wellness module pages
-│   │   │   └── 📁 finance/         # Finance module pages
-│   │   ├── 📁 hooks/               # Custom React hooks
-│   │   ├── 📁 context/             # React context providers
-│   │   ├── 📁 services/            # API service layers
-│   │   ├── 📁 utils/               # Utility functions
-│   │   ├── 📁 styles/              # Global styles and themes
-│   │   └── 📁 assets/              # Static assets
-│   ├── 📁 public/                   # Public static files
-│   └── 📄 package.json
+finmen/
+├── backend/                      # Node.js Express Backend
+│   ├── config/                   # Configuration files
+│   ├── controllers/              # Route controllers
+│   ├── middlewares/              # Express middlewares
+│   ├── models/                   # MongoDB models
+│   ├── routes/                   # API routes
+│   ├── services/                 # Business logic services
+│   ├── socketHandlers/           # Socket.IO handlers
+│   ├── utils/                    # Utility functions
+│   ├── server.js                 # Main server file
+│   └── package.json              # Backend dependencies
 │
-├── 📁 finmen-backend/                # Backend Node.js API
-│   ├── 📁 src/
-│   │   ├── 📁 controllers/         # Route controllers
-│   │   │   ├── 📄 authController.js
-│   │   │   ├── 📄 userController.js
-│   │   │   ├── 📄 moodController.js
-│   │   │   ├── 📄 cbtController.js
-│   │   │   └── 📄 gameController.js
-│   │   ├── 📁 models/              # Database models
-│   │   │   ├── 📄 User.js
-│   │   │   ├── 📄 MoodEntry.js
-│   │   │   ├── 📄 CBTSession.js
-│   │   │   └── 📄 GameProgress.js
-│   │   ├── 📁 routes/              # API route definitions
-│   │   ├── 📁 middleware/          # Express middleware
-│   │   ├── 📁 services/            # Business logic services
-│   │   │   ├── 📄 aiService.js
-│   │   │   ├── 📄 emailService.js
-│   │   │   └── 📄 analyticsService.js
-│   │   ├── 📁 utils/               # Utility functions
-│   │   ├── 📁 config/              # Configuration files
-│   │   └── 📁 validators/          # Input validation schemas
-│   ├── 📁 tests/                   # Test suites
-│   └── 📄 package.json
+├── frontend/                     # React Vite Frontend
+│   ├── public/                   # Static assets
+│   ├── src/                      # Source code
+│   │   ├── assets/               # Images, fonts, etc.
+│   │   ├── components/           # Reusable UI components
+│   │   ├── context/              # React context providers
+│   │   ├── data/                 # Static data files
+│   │   ├── hooks/                # Custom React hooks
+│   │   ├── pages/                # Page components
+│   │   │   ├── Admin/            # Admin pages
+│   │   │   ├── Auth/             # Authentication pages
+│   │   │   ├── Educator/         # Educator pages
+│   │   │   ├── Games/            # Game components
+│   │   │   └── Student/          # Student pages
+│   │   ├── services/             # API service layers
+│   │   └── utils/                # Utility functions
+│   ├── index.html                # HTML entry point
+│   └── package.json              # Frontend dependencies
 │
-├── 📁 finmen-ai/                   # AI/ML Microservice
-│   ├── 📁 models/                  # ML model files
-│   ├── 📁 training/                # Training scripts
-│   └── 📁 inference/               # Inference endpoints
-│
-├── 📁 docs/                        # Documentation
-│   ├── 📄 API.md                   # API documentation
-│   ├── 📄 DEPLOYMENT.md            # Deployment guide
-│   └── 📄 CONTRIBUTING.md          # Contribution guidelines
-│
-├── 📁 scripts/                     # Automation scripts
-├── 📁 docker/                      # Docker configurations
-├── 📄 docker-compose.yml           # Development environment
-├── 📄 package.json                 # Root package configuration
-└── 📄 README.md                    # This file
+└── AIML/                         # Python AI/ML Service
+    ├── datasets/                 # Training datasets
+    ├── app.py                    # Flask API server
+    ├── Gemini.py                 # Google Gemini integration
+    ├── finance_calculator.py     # Financial calculations
+    ├── math_solver.py            # Math problem solver
+    └── requirements.txt          # Python dependencies
 ```
 
 </details>
@@ -472,119 +381,13 @@ finmen-frontend/
 <div align="center">
 
 | Security Layer | Implementation | Standards |
-|----------------|----------------|-----------|
-| **Authentication** | JWT + OAuth 2.0 + MFA | OWASP Compliance |
-| **Data Encryption** | AES-256 at rest, TLS 1.3 in transit | Industry Standard |
+|----------------|----------------|----------|
+| **Authentication** | JWT + Google OAuth 2.0 | OWASP Compliance |
+| **Data Protection** | Secure password hashing, Data validation | Industry Standard |
 | **API Security** | Rate limiting, CORS, Input validation | OWASP Top 10 |
-| **Privacy** | Differential privacy, Data anonymization | GDPR & IT Act 2000 |
-| **Infrastructure** | WAF, DDoS protection, Security monitoring | SOC 2 Type II |
+| **Privacy** | Data minimization, User consent | GDPR & IT Act 2000 |
 
 </div>
-
-### 📋 **Compliance Framework**
-
-- **🇮🇳 Indian Data Protection Laws**: Complete compliance with IT Act 2000 and upcoming DPDP Act
-- **🌍 GDPR Compliance**: European data protection standards implementation
-- **🏥 Healthcare Standards**: HIPAA-level privacy for mental health data
-- **🎓 Educational Compliance**: FERPA compliance for student data protection
-- **🔒 Security Certifications**: SOC 2, ISO 27001 preparation
-
----
-
-## 📈 Analytics & Monitoring
-
-### 📊 **Advanced Analytics Stack**
-
-```mermaid
-graph TB
-    A[User Interactions] --> B[Event Tracking]
-    B --> C[Real-time Analytics]
-    B --> D[Batch Processing]
-    C --> E[Live Dashboards]
-    D --> F[ML Model Training]
-    F --> G[Predictive Insights]
-    E --> H[Stakeholder Reports]
-    G --> H
-```
-
-### 🎯 **Key Performance Indicators (KPIs)**
-
-<details>
-<summary><strong>📋 Wellness Metrics</strong></summary>
-
-- **Engagement Metrics**: DAU, MAU, Session duration, Feature adoption
-- **Wellness Outcomes**: Mood improvement trends, CBT completion rates
-- **Learning Progress**: Financial literacy assessment scores, Module completion
-- **Social Impact**: Peer interactions, Community contributions, Mentorship activities
-
-</details>
-
-<details>
-<summary><strong>📋 Business Metrics</strong></summary>
-
-- **User Growth**: Registration rates, Conversion funnels, Retention cohorts
-- **Platform Health**: System uptime, API response times, Error rates
-- **Content Performance**: Most engaging modules, User pathway analysis
-- **ROI Measurement**: Cost per acquisition, Lifetime value, Feature ROI
-
-</details>
-
----
-
-## 🚀 Deployment & DevOps
-
-### ☁️ **Cloud Infrastructure**
-
-<div align="center">
-
-| Service | AWS | Azure | GCP |
-|---------|-----|-------|-----|
-| **Compute** | EC2, ECS, Lambda | App Service, Functions | Compute Engine, Cloud Run |
-| **Database** | RDS, DocumentDB | CosmosDB, PostgreSQL | Cloud SQL, Firestore |
-| **Storage** | S3, EFS | Blob Storage | Cloud Storage |
-| **CDN** | CloudFront | Azure CDN | Cloud CDN |
-| **Monitoring** | CloudWatch | Monitor | Operations Suite |
-
-</div>
-
-### 🔄 **CI/CD Pipeline**
-
-```yaml
-# GitHub Actions Workflow Example
-name: FINMEN CI/CD Pipeline
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-      - name: Install dependencies
-        run: npm ci
-      - name: Run tests
-        run: npm test
-      - name: Run security audit
-        run: npm audit
-
-  deploy:
-    needs: test
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - name: Deploy to production
-        run: |
-          echo "Deploying to production..."
-          # Deployment scripts here
-```
 
 ---
 
@@ -634,31 +437,22 @@ jobs:
 
 3. **💻 Development Standards**
    - Follow ESLint and Prettier configurations
-   - Write comprehensive tests (minimum 80% coverage)
+   - Write comprehensive tests
    - Update documentation for new features
    - Follow conventional commit messages
 
-4. **🧪 Testing Requirements**
-   ```bash
-   npm run test           # Unit tests
-   npm run test:e2e       # End-to-end tests
-   npm run test:coverage  # Coverage reports
-   ```
-
-5. **📝 Pull Request Process**
+4. **📝 Pull Request Process**
    - Ensure all tests pass
-   - Update CHANGELOG.md
-   - Request review from 2+ team members
+   - Request review from team members
    - Address all feedback promptly
 
 </details>
 
 ### 🏷️ **Code Standards**
 
-- **JavaScript/TypeScript**: ESLint + Prettier
+- **JavaScript**: ESLint + Prettier
 - **React**: Functional components + Hooks
-- **CSS**: Tailwind CSS + CSS Modules
-- **Testing**: Jest + React Testing Library
+- **CSS**: Tailwind CSS
 - **Documentation**: JSDoc + Markdown
 
 ---
@@ -689,53 +483,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 ---
 
-## 📞 Support & Community
-
-### 💬 **Get Help**
-
 <div align="center">
-
-[![Discord](https://img.shields.io/badge/Discord-7289DA?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/finmen)
-[![Slack](https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white)](https://finmen.slack.com)
-[![GitHub Discussions](https://img.shields.io/badge/GitHub-Discussions-181717?style=for-the-badge&logo=github&logoColor=white)](https://github.com/finmen-platform/finmen/discussions)
-
-**📧 Email**: support@finmen.in | **🌐 Website**: https://finmen.in
-
-</div>
-
-### 🗺️ **Roadmap**
-
-<details>
-<summary><strong>🎯 2024 Q3-Q4 Goals</strong></summary>
-
-- [ ] **🚀 Beta Launch**: Limited user beta with 1000+ students
-- [ ] **🤖 Advanced AI**: GPT-4 integration for enhanced CBT sessions
-- [ ] **📱 Mobile Apps**: Native iOS and Android applications
-- [ ] **🌐 Multi-language**: Hindi, Tamil, Bengali language support
-- [ ] **🏫 School Partnerships**: Integration with 50+ educational institutions
-
-</details>
-
-<details>
-<summary><strong>🔮 2025 Vision</strong></summary>
-
-- [ ] **🌟 1M+ Users**: Scale to serve one million active users
-- [ ] **🏆 Advanced Gamification**: VR/AR integration for immersive learning
-- [ ] **🤝 Professional Network**: Licensed therapist and financial advisor integration
-- [ ] **📊 Research Platform**: Academic research collaboration features
-- [ ] **🌍 Global Expansion**: Adaptation for other developing markets
-
-</details>
-
----
-
-<div align="center">
-
-### 🌟 **Star us on GitHub** if you find FINMEN helpful!
-
-[![GitHub stars](https://img.shields.io/github/stars/finmen-platform/finmen?style=social)](https://github.com/finmen-platform/finmen/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/finmen-platform/finmen?style=social)](https://github.com/finmen-platform/finmen/network/members)
-[![GitHub watchers](https://img.shields.io/github/watchers/finmen-platform/finmen?style=social)](https://github.com/finmen-platform/finmen/watchers)
 
 **Made with ❤️ for India's Digital Future**
 

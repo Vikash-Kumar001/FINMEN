@@ -26,11 +26,35 @@ const userSchema = new mongoose.Schema(
     username: {
       type: String,
     },
+    phone: {
+      type: String,
+    },
+    location: {
+      type: String,
+    },
+    website: {
+      type: String,
+    },
+    bio: {
+      type: String,
+    },
     city: {
       type: String,
     },
     language: {
       type: String,
+    },
+    academic: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    professional: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
+    preferences: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
     },
     guardianEmail: {
       type: String,

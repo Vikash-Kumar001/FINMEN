@@ -86,6 +86,7 @@ import challengeRoutes from "./routes/challengeRoutes.js";
 import activityRoutes from './routes/activityRoutes.js';
 import userProgressRoutes from './routes/userProgressRoutes.js';
 import dailyChallengeRoutes from './routes/dailyChallengeRoutes.js';
+import userRoutes from "./routes/userRoutes.js";
 
 // Import models and other logic
 import User from "./models/User.js";
@@ -182,6 +183,9 @@ io.on("connection", async (socket) => {
   });
 });
 
+// Serve uploads statically
+app.use('/uploads', express.static(path.resolve(__dirname, './uploads')));
+
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/mood", moodRoutes);
@@ -203,6 +207,7 @@ app.use("/api/challenges", challengeRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/progress', userProgressRoutes);
 app.use('/api/daily-challenges', dailyChallengeRoutes);
+app.use('/api/user', userRoutes);
 
 // Health Check
 app.get("/", (_, res) => {
@@ -222,8 +227,10 @@ if (process.env.NODE_ENV === "production") {
 app.use(errorHandler);
 
 // Start Server
-const PORT = process.env.PORT || 5001;
+const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   scheduleWeeklyReports();
 });
+
+export default app;

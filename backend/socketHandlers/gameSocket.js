@@ -4,6 +4,7 @@ import Challenge from '../models/Challenge.js';
 import ActivityLog from '../models/ActivityLog.js';
 import Wallet from '../models/Wallet.js';
 import Transaction from '../models/Transaction.js';
+import UserProgress from '../models/UserProgress.js';
 
 /**
  * Socket handler for game-related real-time interactions
@@ -240,61 +241,28 @@ export const setupGameSocket = (io, socket, user) => {
       }
 
       console.log(`🏆 User ${user._id} subscribed to ${period} leaderboard`);
-      
-      // Join leaderboard room
       socket.join(`leaderboard-${period}`);
-      
-      // Calculate date range based on period
-      const now = new Date();
-      let startDate;
-      
-      switch(period) {
-        case 'daily':
-          startDate = new Date(now.setHours(0, 0, 0, 0));
-          break;
-        case 'weekly':
-          startDate = new Date(now);
-          startDate.setDate(now.getDate() - now.getDay());
-          startDate.setHours(0, 0, 0, 0);
-          break;
-        case 'monthly':
-          startDate = new Date(now.getFullYear(), now.getMonth(), 1);
-          break;
-        case 'allTime':
-          startDate = new Date(0); // Beginning of time
-          break;
-      }
-      
-      // Get top students by XP
-      let leaderboardQuery = { role: 'student' };
-      
-      // For time-based leaderboards, use activity logs to calculate XP gained in the period
-      if (period !== 'allTime') {
-        // This is a simplified approach. In a real implementation, you would track XP changes over time
-        // and calculate the leaderboard based on XP gained during the specific period.
-        // For now, we'll just use the total XP as a placeholder.
-      }
-      
-      const topStudents = await User.find(leaderboardQuery)
-        .select('_id name xp class')
+
+      // Note: For simplicity, use total XP from UserProgress as the unified source
+      // Period-specific deltas would require tracking XP over time; omitted here
+      const top = await UserProgress.find()
         .sort({ xp: -1 })
-        .limit(20);
-      
-      // Format leaderboard data
-      const leaderboard = topStudents.map((student, index) => ({
+        .limit(20)
+        .populate('userId', 'name');
+
+      const leaderboard = top.map((entry, index) => ({
         rank: index + 1,
-        _id: student._id,
-        name: student.name,
-        xp: student.xp,
-        class: student.class,
-        isCurrentUser: student._id.toString() === user._id.toString()
+        _id: entry.userId?._id,
+        name: entry.userId?.name,
+        xp: entry.xp || 0,
+        isCurrentUser: entry.userId?._id?.toString() === user._id.toString()
       }));
-      
+
       socket.emit('student:leaderboard:data', {
         period,
         leaderboard
       });
-      
+
     } catch (err) {
       console.error('Error in student:leaderboard:subscribe:', err);
       socket.emit('student:leaderboard:error', { message: err.message });

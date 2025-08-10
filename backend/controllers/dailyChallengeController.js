@@ -296,6 +296,16 @@ export const updateChallengeProgress = async (req, res) => {
         status: 'completed'
       });
       await transaction.save();
+
+      // Mark challenge as completed for this user to avoid repeats
+      const user = await User.findById(userId);
+      if (user) {
+        if (!user.completedChallengeIds) user.completedChallengeIds = [];
+        if (!user.completedChallengeIds.includes(challengeId.toString())) {
+          user.completedChallengeIds.push(challengeId.toString());
+          await user.save();
+        }
+      }
       
       // Emit socket event for real-time updates
       const io = req.app.get('io');

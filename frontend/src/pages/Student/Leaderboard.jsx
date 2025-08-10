@@ -16,14 +16,14 @@ import {
     Rocket,
     ChevronUp,
     ChevronDown,
-    Coins,
     User,
     ArrowUp,
     ArrowDown,
     Minus,
     Play,
     GamepadIcon,
-    CheckCircle
+    CheckCircle,
+    Calendar
 } from "lucide-react";
 import { useSocket } from "../../context/SocketContext";
 import api from "../../utils/api";
@@ -37,7 +37,7 @@ const Leaderboard = () => {
     const [games, setGames] = useState([]);
     const [dailyChallenges, setDailyChallenges] = useState([]);
     const [showPlayOptions, setShowPlayOptions] = useState(null);
-    const socket = useSocket();
+    const { socket } = useSocket();
 
     // Fetch challenges and games data
     useEffect(() => {
@@ -63,40 +63,27 @@ const Leaderboard = () => {
     }, []);
 
     useEffect(() => {
-        if (socket && socket.socket) {
-            setLoading(true);
-            // Subscribe to leaderboard updates
-            try {
-                socket.socket.emit('student:leaderboard:subscribe', { period: selectedPeriod });
-            } catch (err) {
-                console.error("❌ Error subscribing to leaderboard:", err.message);
-                setLoading(false);
-                return;
-            }
-            
-            const handleData = (data) => {
-                setLeaders(Array.isArray(data) ? data : []);
-                setLoading(false);
-            };
-            
-            try {
-                socket.socket.on('student:leaderboard:data', handleData);
-            } catch (err) {
-                console.error("❌ Error setting up leaderboard data listener:", err.message);
-                setLoading(false);
-            }
-            
-            // Cleanup on unmount or period change
-            return () => {
-                try {
-                    if (socket && socket.socket) {
-                        socket.socket.off('student:leaderboard:data', handleData);
-                    }
-                } catch (err) {
-                    console.error("❌ Error removing leaderboard data listener:", err.message);
-                }
-            };
+        if (!socket) return;
+        setLoading(true);
+        try {
+            socket.emit('student:leaderboard:subscribe', { period: selectedPeriod });
+        } catch (err) {
+            console.error("❌ Error subscribing to leaderboard:", err.message);
+            setLoading(false);
+            return;
         }
+
+        const handleData = (payload) => {
+            // Accept both legacy array and new { period, leaderboard }
+            const list = Array.isArray(payload) ? payload : Array.isArray(payload?.leaderboard) ? payload.leaderboard : [];
+            setLeaders(list);
+            setLoading(false);
+        };
+
+        socket.on('student:leaderboard:data', handleData);
+        return () => {
+            try { socket.off('student:leaderboard:data', handleData); } catch {}
+        };
     }, [socket, selectedPeriod]);
 
     const getRankIcon = (rank) => {
@@ -202,7 +189,7 @@ const Leaderboard = () => {
     }
 
     // Only show top 3 podium if there are at least 3 valid leaders
-    const hasTopThree = Array.isArray(leaders) && leaders.filter(l => l && l.name && l.balance !== undefined).length >= 3;
+    const hasTopThree = Array.isArray(leaders) && leaders.filter(l => l && l.name && l.xp !== undefined).length >= 3;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 relative overflow-hidden">
@@ -345,8 +332,8 @@ const Leaderboard = () => {
                                 <div className="mt-2 sm:mt-3">
                                     <h3 className="text-sm sm:text-base font-bold text-gray-800">{leaders[1]?.name || '-'}</h3>
                                     <p className="text-xs sm:text-sm text-gray-600 flex items-center justify-center gap-1">
-                                        <Coins className="w-3 h-3 sm:w-4 sm:h-4" />
-                                        ₹{leaders[1]?.balance ?? 0}
+                                        <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
+                                        {leaders[1]?.xp ?? 0} XP
                                     </p>
                                 </div>
                             </motion.div>
@@ -374,8 +361,8 @@ const Leaderboard = () => {
                                 <div className="mt-2 sm:mt-3">
                                     <h3 className="font-bold text-gray-800 text-base sm:text-lg">{leaders[0]?.name || '-'}</h3>
                                     <p className="text-xs sm:text-sm text-gray-600 flex items-center justify-center gap-1">
-                                        <Coins className="w-3 h-3 sm:w-4 sm:h-4" />
-                                        ₹{leaders[0]?.balance ?? 0}
+                                        <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
+                                        {leaders[0]?.xp ?? 0} XP
                                     </p>
                                 </div>
                             </motion.div>
@@ -396,8 +383,8 @@ const Leaderboard = () => {
                                 <div className="mt-2 sm:mt-3">
                                     <h3 className="text-sm sm:text-base font-bold text-gray-800">{leaders[2]?.name || '-'}</h3>
                                     <p className="text-xs sm:text-sm text-gray-600 flex items-center justify-center gap-1">
-                                        <Coins className="w-3 h-3 sm:w-4 sm:h-4" />
-                                        ₹{leaders[2]?.balance ?? 0}
+                                        <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
+                                        {leaders[2]?.xp ?? 0} XP
                                     </p>
                                 </div>
                             </motion.div>
@@ -461,7 +448,7 @@ const Leaderboard = () => {
                                         </p>
                                     </div>
 
-                                    {/* Position Change and Balance */}
+                                    {/* Position Change and XP */}
                                     <div className="flex items-center gap-2 sm:gap-3 mt-2 sm:mt-0 w-full sm:w-auto justify-between sm:justify-end">
                                         <div className="flex items-center gap-1">
                                             {position.icon}
@@ -470,13 +457,13 @@ const Leaderboard = () => {
                                             </span>
                                         </div>
 
-                                        {/* Balance */}
+                                        {/* XP */}
                                         <div className="text-right">
-                                            <div className="flex items-center gap-1 text-green-600 font-bold">
-                                                <Coins className="w-4 h-4 sm:w-5 sm:h-5" />
-                                                <span className="text-base sm:text-lg">₹{user.balance}</span>
+                                            <div className="flex items-center gap-1 text-indigo-600 font-bold">
+                                                <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
+                                                <span className="text-base sm:text-lg">{user.xp} XP</span>
                                             </div>
-                                            <div className="text-xs text-gray-500">HealCoins</div>
+                                            <div className="text-xs text-gray-500">Experience</div>
                                         </div>
                                     </div>
                                 </div>

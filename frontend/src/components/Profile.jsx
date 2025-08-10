@@ -97,6 +97,13 @@ function GlassCard({ title, children, className = "", gradient = "" }) {
 const Profile = () => {
     const { user } = useAuth();
     const { subscribeProfileUpdate } = useSocket();
+    const apiBaseUrl = import.meta.env.VITE_API_URL?.trim() || 'http://localhost:5000';
+    const normalizeAvatarUrl = (src) => {
+        if (!src) return src;
+        if (src.startsWith('http')) return src;
+        if (src.startsWith('/uploads/')) return `${apiBaseUrl}${src}`;
+        return src; // e.g. /avatars/... served by frontend
+    };
     const [personalInfo, setPersonalInfo] = useState({
         name: "",
         email: "",
@@ -105,7 +112,7 @@ const Profile = () => {
         website: "",
         bio: ""
     });
-    const [avatarPreview, setAvatarPreview] = useState("/api/placeholder/128/128");
+    const [avatarPreview, setAvatarPreview] = useState("/avatars/avatar1.png");
     const [avatarFile, setAvatarFile] = useState(null);
     const [passwords, setPasswords] = useState({ current: "", newPass: "", confirmPass: "" });
     const [showPassword, setShowPassword] = useState(false);
@@ -158,7 +165,7 @@ const Profile = () => {
                         website: payload.website || prev.website,
                     }));
                     if (payload.avatar) {
-                        setAvatarPreview(payload.avatar);
+                        setAvatarPreview(normalizeAvatarUrl(payload.avatar));
                         setSelectedPreset(payload.avatar);
                     }
                     toast.info('Your profile was updated in real-time!');
@@ -186,7 +193,7 @@ const Profile = () => {
                     });
                     
                     if (profileData.avatar) {
-                        setAvatarPreview(profileData.avatar);
+                        setAvatarPreview(normalizeAvatarUrl(profileData.avatar));
                         setSelectedPreset(profileData.avatar);
                     }
                     
@@ -250,11 +257,22 @@ const Profile = () => {
             let formData = null;
             if (tabName === 'personal') {
                 if (avatarFile) {
-                    formData = new FormData();
-                    formData.append('avatar', avatarFile);
-                    await api.post('/api/user/avatar', formData);
+                    const fd = new FormData();
+                    fd.append('avatar', avatarFile);
+                    const res = await api.post('/api/user/avatar', fd, {
+                        headers: { 'Content-Type': 'multipart/form-data' }
+                    });
+                    const newAvatar = res.data?.avatar;
+                    if (newAvatar) {
+                        setAvatarPreview(normalizeAvatarUrl(newAvatar));
+                        setSelectedPreset(null);
+                        setAvatarFile(null);
+                        toast.success('Profile picture updated');
+                    }
                 } else if (selectedPreset) {
-                    await api.put('/api/user/profile', { avatar: selectedPreset });
+                    const res = await api.post('/api/user/avatar', { avatar: selectedPreset });
+                    const newAvatar = res.data?.avatar || selectedPreset;
+                    setAvatarPreview(normalizeAvatarUrl(newAvatar));
                 }
             }
             

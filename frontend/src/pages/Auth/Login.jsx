@@ -149,10 +149,10 @@ const Login = () => {
                             },
                         }}
                     >
-                        <motion.div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 sm:p-10 shadow-2xl">
-                            <motion.div className="text-center mb-8">
+                        <motion.div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl">
+                            <motion.div className="text-center mb-6 sm:mb-8">
                                 <motion.div
-                                    className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mb-4"
+                                    className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mb-3 sm:mb-4"
                                     animate={{ y: [0, -10, 0] }}
                                     transition={{
                                         duration: 3,
@@ -160,12 +160,12 @@ const Login = () => {
                                         ease: "easeInOut",
                                     }}
                                 >
-                                    <Sparkles className="w-8 h-8 text-white" />
+                                    <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                                 </motion.div>
-                                <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">
                                     Welcome Back
                                 </h1>
-                                <p className="text-gray-300 text-sm sm:text-base">
+                                <p className="text-gray-300 text-xs sm:text-sm lg:text-base">
                                     Sign in to continue your journey
                                 </p>
                             </motion.div>
@@ -173,21 +173,21 @@ const Login = () => {
                             <AnimatePresence>
                                 {error && (
                                     <motion.div
-                                        className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-6"
+                                        className="bg-red-500/10 border border-red-500/20 rounded-xl p-2 sm:p-3 mb-4 sm:mb-6"
                                         initial={{ opacity: 0, scale: 0.95 }}
                                         animate={{ opacity: 1, scale: 1 }}
                                         exit={{ opacity: 0, scale: 0.95 }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <p className="text-red-300 text-sm text-center">{error}</p>
+                                        <p className="text-red-300 text-xs sm:text-sm text-center">{error}</p>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
 
-                            <form onSubmit={handleSubmit} className="space-y-6">
+                            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <Mail className="h-5 w-5 text-gray-400" />
+                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                        <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                     </div>
                                     <input
                                         type="email"
@@ -195,13 +195,13 @@ const Login = () => {
                                         onChange={(e) => setEmail(e.target.value)}
                                         placeholder="Email address"
                                         required
-                                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400"
+                                        className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 text-xs sm:text-sm"
                                     />
                                 </div>
 
                                 <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <Lock className="h-5 w-5 text-gray-400" />
+                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                     </div>
                                     <input
                                         type={showPassword ? "text" : "password"}
@@ -209,17 +209,17 @@ const Login = () => {
                                         onChange={(e) => setPassword(e.target.value)}
                                         placeholder="Password"
                                         required
-                                        className="w-full pl-12 pr-12 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400"
+                                        className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 text-xs sm:text-sm"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white"
+                                        className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-gray-400 hover:text-white"
                                     >
                                         {showPassword ? (
-                                            <EyeOff className="h-5 w-5" />
+                                            <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
                                         ) : (
-                                            <Eye className="h-5 w-5" />
+                                            <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
                                         )}
                                     </button>
                                 </div>
@@ -227,12 +227,12 @@ const Login = () => {
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl transition-all duration-300"
+                                    className="w-full py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl transition-all duration-300 text-sm sm:text-base"
                                 >
                                     <span className="flex items-center justify-center">
                                         {isLoading ? (
                                             <motion.div
-                                                className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                                                className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full"
                                                 animate={{ rotate: 360 }}
                                                 transition={{
                                                     duration: 1,
@@ -242,38 +242,38 @@ const Login = () => {
                                             />
                                         ) : (
                                             <>
-                                                Sign In <ArrowRight className="ml-2 h-4 w-4" />
+                                                Sign In <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
                                             </>
                                         )}
                                     </span>
                                 </button>
                             </form>
 
-                            <div className="text-center mt-4">
+                            <div className="text-center mt-3 sm:mt-4">
                                 <button
                                     onClick={() => navigate("/forgot-password")}
-                                    className="text-purple-400 hover:underline text-sm"
+                                    className="text-purple-400 hover:underline text-xs sm:text-sm"
                                 >
                                     Forgot your password?
                                 </button>
                             </div>
 
-                            <div className="flex items-center my-8">
+                            <div className="flex items-center my-4 sm:my-6">
                                 <div className="flex-1 h-px bg-white/20" />
-                                <span className="px-4 text-gray-400 text-sm">
+                                <span className="px-2 sm:px-4 text-gray-400 text-xs sm:text-sm">
                                     or continue with
                                 </span>
                                 <div className="flex-1 h-px bg-white/20" />
                             </div>
 
                             <div className="flex justify-center">
-                                <div className="w-full bg-white/5 border border-white/10 rounded-xl p-2">
+                                <div className="w-full max-w-[280px] sm:max-w-[300px] bg-white/5 border border-white/10 rounded-xl p-1 sm:p-2">
                                     <GoogleLogin
                                         onSuccess={handleGoogleLogin}
                                         onError={() => setError("Google login failed.")}
                                         theme="filled_black"
                                         size="large"
-                                        width="300"
+                                        width="100%"
                                         text="signin_with"
                                         shape="rectangular"
                                     />

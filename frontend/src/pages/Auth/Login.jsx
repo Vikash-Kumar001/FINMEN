@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../../context/AuthContext";
@@ -11,7 +11,6 @@ import {
     Lock,
     Sparkles,
     ArrowRight,
-    User,
 } from "lucide-react";
 
 const Login = () => {
@@ -53,9 +52,28 @@ const Login = () => {
                 return;
             }
 
-            if (user.role === "admin") navigate("/admin/dashboard");
-            else if (user.role === "educator") navigate("/educator/dashboard");
-            else if (user.role === "student") navigate("/student/dashboard");
+            // Navigate based on user role
+            switch (user.role) {
+                case "admin":
+                    navigate("/admin/dashboard");
+                    break;
+                case "educator":
+                    navigate("/educator/dashboard");
+                    break;
+                case "parent":
+                    navigate("/parent/dashboard");
+                    break;
+                case "seller":
+                    navigate("/seller/dashboard");
+                    break;
+                case "csr":
+                    navigate("/csr/dashboard");
+                    break;
+                case "student":
+                default:
+                    navigate("/student/dashboard");
+                    break;
+            }
         } catch (err) {
             if (
                 err.response?.status === 400 &&
@@ -249,12 +267,18 @@ const Login = () => {
                                 </button>
                             </form>
 
-                            <div className="text-center mt-3 sm:mt-4">
+                            <div className="text-center mt-3 sm:mt-4 space-y-2">
                                 <button
                                     onClick={() => navigate("/forgot-password")}
-                                    className="text-purple-400 hover:underline text-xs sm:text-sm"
+                                    className="text-purple-400 hover:underline text-xs sm:text-sm block"
                                 >
                                     Forgot your password?
+                                </button>
+                                <button
+                                    onClick={() => navigate("/register-stakeholder")}
+                                    className="text-blue-400 hover:underline text-xs sm:text-sm block"
+                                >
+                                    Register as Parent/Seller/CSR
                                 </button>
                             </div>
 
@@ -273,7 +297,7 @@ const Login = () => {
                                         onError={() => setError("Google login failed.")}
                                         theme="filled_black"
                                         size="large"
-                                        width="100%"
+                                        width={280}
                                         text="signin_with"
                                         shape="rectangular"
                                     />

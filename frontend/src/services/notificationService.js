@@ -3,12 +3,24 @@ import api from "../utils/api";
 // 📬 Fetch all notifications for the logged-in user
 export const fetchMyNotifications = async () => {
   try {
+    // Check if user is authenticated before fetching
+    const token = localStorage.getItem("finmen_token");
+    if (!token) {
+      return [];
+    }
+
     const res = await api.get("/api/notifications", {
       withCredentials: true, // Ensures cookies like finmen_token are sent
     });
     return res.data;
   } catch (error) {
     console.error("Error fetching notifications:", error);
+    
+    // Return empty array for auth errors to prevent UI issues
+    if (error.response?.status === 401) {
+      return [];
+    }
+    
     // Return empty array instead of throwing error
     return [];
   }

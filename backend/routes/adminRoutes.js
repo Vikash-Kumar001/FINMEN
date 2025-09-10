@@ -10,6 +10,9 @@ import {
   approveEducator,
   rejectEducator,
   getAdminStats,
+  getPendingStakeholders,
+  approveStakeholder,
+  rejectStakeholder,
 } from "../controllers/adminController.js";
 import { requireAuth, requireAdmin } from "../middlewares/requireAuth.js";
 import { registerByAdmin } from "../controllers/authController.js";
@@ -39,6 +42,11 @@ router.get("/educators", getAllEducators);
 router.get("/educators/pending", getPendingEducators);
 router.put("/educators/approve/:id", approveEducator);
 router.put("/educators/reject/:id", rejectEducator);
+
+// 👥 All Stakeholder Management (Educators, Parents, Sellers, CSRs)
+router.get("/pending-approvals", getPendingStakeholders);
+router.put("/approve-stakeholder/:id", approveStakeholder);
+router.put("/reject-stakeholder/:id", rejectStakeholder);
 
 // 👨‍🎓 Student Management
 router.get("/students", getAllStudents);

@@ -32,6 +32,7 @@ import AdminRedemptions from "./AdminRedemptions";
 import AdminAnalytics from "./AdminAnalytics";
 import AdminUsersPanel from "./AdminUsersPanel";
 import PendingEducators from "./PendingEducators";
+import PendingApprovals from "./PendingApprovals";
 import AdminSettings from "./AdminSettings";
 import EducatorTracker from "./EducatorTracker";
 import AuditLogs from "./AuditLogs";
@@ -123,9 +124,9 @@ const AdminDashboard = () => {
             title: "Educator Management",
             icon: <Users className="w-8 h-8" />,
             gradient: "from-purple-400 via-violet-400 to-indigo-400",
-            description: "Oversee educator registrations and roles",
+            description: "Manage all educator accounts",
             category: "management",
-            features: ["Role assignment", "Registration review", "Activity logs"],
+            features: ["Educator overview", "Account management", "Activity tracking"],
         },
         {
             id: "educator-tracker",
@@ -141,9 +142,9 @@ const AdminDashboard = () => {
             title: "Approval Queue",
             icon: <Clock className="w-8 h-8" />,
             gradient: "from-orange-400 via-red-400 to-pink-400",
-            description: "Review pending requests and applications",
+            description: "Review all stakeholder registrations",
             category: "management",
-            features: ["Pending approvals", "Request status", "Automated workflows"],
+            features: ["All stakeholder approvals", "Real-time updates", "Bulk actions"],
         },
         {
             id: "redemptions",
@@ -221,10 +222,10 @@ const AdminDashboard = () => {
 
     const quickActions = [
         {
-            title: "Approve Educator",
+            title: "Approve Stakeholders",
             icon: <UserCheck className="w-6 h-6" />,
             color: "from-blue-500 to-indigo-500",
-            action: () => handleQuickAction("approve_educator"),
+            action: () => setActiveTab("pending"),
         },
         {
             title: "Generate Report",
@@ -279,7 +280,7 @@ const AdminDashboard = () => {
             case "educator-tracker":
                 return <EducatorTracker />;
             case "pending":
-                return <PendingEducators />;
+                return <PendingApprovals />;
             case "redemptions":
                 return <AdminRedemptions />;
             case "analytics":
@@ -307,8 +308,8 @@ const AdminDashboard = () => {
         setTimeout(() => {
             setLoading(false);
             switch (action) {
-                case "approve_educator":
-                    alert("Educator approval modal would open");
+                case "approve_stakeholders":
+                    setActiveTab("pending");
                     break;
                 case "generate_report":
                     alert("Report generation would start");

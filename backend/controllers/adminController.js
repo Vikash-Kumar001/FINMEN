@@ -7,6 +7,92 @@ import FinancialMission from "../models/FinancialMission.js";
 import { sendApprovalEmail } from "../utils/mailer.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
 
+// 🔍 Get all pending stakeholders (educators, parents, sellers, CSRs)
+export const getPendingStakeholders = async (_req, res) => {
+  try {
+    const users = await User.find({
+      role: { $in: ["educator", "parent", "seller", "csr"] },
+      approvalStatus: "pending",
+    }).select("-password -otp -otpExpiresAt -otpType")
+      .sort({ createdAt: -1 });
+    
+    res.status(200).json({ message: "Pending stakeholders fetched", users });
+  } catch (err) {
+    console.error("Error fetching pending stakeholders:", err);
+    res.status(500).json({ error: "Server error while fetching pending stakeholders" });
+  }
+};
+
+// ✅ Approve any stakeholder (educator, parent, seller, CSR)
+export const approveStakeholder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const adminId = req.user._id;
+
+    const stakeholder = await User.findById(id);
+    if (!stakeholder || !["educator", "parent", "seller", "csr"].includes(stakeholder.role)) {
+      return res.status(404).json({ error: "Stakeholder not found" });
+    }
+
+    if (stakeholder.approvalStatus === "approved") {
+      return res.status(400).json({ message: `${stakeholder.role} already approved` });
+    }
+
+    stakeholder.approvalStatus = "approved";
+    stakeholder.approvedBy = adminId;
+    stakeholder.approvedAt = new Date();
+    stakeholder.rejectedAt = null;
+    stakeholder.rejectionReason = null;
+
+    await stakeholder.save();
+    
+    // Send approval email
+    try {
+      await sendApprovalEmail(stakeholder.email, stakeholder.name, stakeholder.role);
+    } catch (emailError) {
+      console.error("Error sending approval email:", emailError);
+      // Don't fail the approval if email fails
+    }
+
+    res.status(200).json({ 
+      message: `${stakeholder.role.charAt(0).toUpperCase() + stakeholder.role.slice(1)} approved successfully`, 
+      user: stakeholder 
+    });
+  } catch (err) {
+    console.error("Error approving stakeholder:", err);
+    res.status(500).json({ error: "Failed to approve stakeholder" });
+  }
+};
+
+// ❌ Reject any stakeholder (educator, parent, seller, CSR)
+export const rejectStakeholder = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+
+    const stakeholder = await User.findById(id);
+    if (!stakeholder || !["educator", "parent", "seller", "csr"].includes(stakeholder.role)) {
+      return res.status(404).json({ error: "Stakeholder not found" });
+    }
+
+    stakeholder.approvalStatus = "rejected";
+    stakeholder.rejectedAt = new Date();
+    stakeholder.rejectionReason = reason || "No reason provided";
+    stakeholder.approvedBy = null;
+    stakeholder.approvedAt = null;
+
+    await stakeholder.save();
+
+    res.status(200).json({ 
+      message: `${stakeholder.role.charAt(0).toUpperCase() + stakeholder.role.slice(1)} rejected successfully`, 
+      user: stakeholder 
+    });
+  } catch (err) {
+    console.error("Error rejecting stakeholder:", err);
+    res.status(500).json({ error: "Failed to reject stakeholder" });
+  }
+};
+
 // 👩‍🏫 Fetch all educators (approved + pending + rejected)
 export const getAllEducators = async (_req, res) => {
   try {

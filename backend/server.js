@@ -87,6 +87,9 @@ import activityRoutes from './routes/activityRoutes.js';
 import userProgressRoutes from './routes/userProgressRoutes.js';
 import dailyChallengeRoutes from './routes/dailyChallengeRoutes.js';
 import userRoutes from "./routes/userRoutes.js";
+import parentRoutes from "./routes/parentRoutes.js";
+import sellerRoutes from "./routes/sellerRoutes.js";
+import csrRoutes from "./routes/csrRoutes.js";
 
 // Import models and other logic
 import User from "./models/User.js";
@@ -208,6 +211,9 @@ app.use('/api/activity', activityRoutes);
 app.use('/api/progress', userProgressRoutes);
 app.use('/api/daily-challenges', dailyChallengeRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/parent', parentRoutes);
+app.use('/api/seller', sellerRoutes);
+app.use('/api/csr', csrRoutes);
 
 // Health Check
 app.get("/", (_, res) => {

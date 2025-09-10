@@ -48,3 +48,27 @@ export const requireStudent = (req, res, next) => {
   }
   next();
 };
+
+// ✅ Middleware: Parent-only access
+export const requireParent = (req, res, next) => {
+  if (req.user?.role !== "parent") {
+    return res.status(403).json({ message: "Access denied. Parents only." });
+  }
+  next();
+};
+
+// ✅ Middleware: Seller-only access
+export const requireSeller = (req, res, next) => {
+  if (req.user?.role !== "seller") {
+    return res.status(403).json({ message: "Access denied. Sellers only." });
+  }
+  next();
+};
+
+// ✅ Middleware: CSR-only access
+export const requireCSR = (req, res, next) => {
+  if (req.user?.role !== "csr") {
+    return res.status(403).json({ message: "Access denied. CSR users only." });
+  }
+  next();
+};

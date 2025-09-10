@@ -13,6 +13,8 @@ import GoogleLogin from "./pages/Auth/GoogleLogin";
 import VerifyOTP from "./pages/Auth/VerifyOTP";
 import ForgotPassword from "./pages/Auth/ForgetPassword";
 import ResetPassword from "./pages/Auth/ResetPassword";
+import StakeholderRegister from "./pages/Auth/StakeholderRegister";
+import PendingApprovalPage from "./pages/Auth/PendingApproval";
 
 // Student Pages
 import StudentDashboard from "./pages/Student/StudentDashboard";
@@ -82,6 +84,15 @@ import AdminStatsPanel from "./pages/Admin/AdminStatsPanel";
 import AdminUsersPanel from "./pages/Admin/AdminUsersPanel";
 import AdminSettings from "./pages/Admin/AdminSettings";
 
+// Parent Pages
+import ParentDashboard from "./pages/Parent/ParentDashboard";
+
+// Seller Pages
+import SellerDashboard from "./pages/Seller/SellerDashboard";
+
+// CSR Pages
+import CSRDashboard from "./pages/CSR/CSRDashboard";
+
 // 404 Page
 import NotFound from "./pages/NotFound";
 import AssessmentHub from "./pages/Educator/AssessmentHub";
@@ -103,6 +114,9 @@ const App = () => {
     if (!user) return <Navigate to="/login" replace />;
     if (user.role === "admin") return <Navigate to="/admin/dashboard" replace />;
     if (user.role === "educator") return <Navigate to="/educator/dashboard" replace />;
+    if (user.role === "parent") return <Navigate to="/parent/dashboard" replace />;
+    if (user.role === "seller") return <Navigate to="/seller/dashboard" replace />;
+    if (user.role === "csr") return <Navigate to="/csr/dashboard" replace />;
     return <Navigate to="/student/dashboard" replace />;
   };
 
@@ -131,6 +145,8 @@ const App = () => {
           <Route path="/verify-otp" element={<VerifyOTP />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
+          <Route path="/register-stakeholder" element={<StakeholderRegister />} />
+          <Route path="/pending-approval" element={<PendingApprovalPage />} />
 
           {/* Student Routes */}
           <Route path="/student/dashboard" element={<ProtectedRoute roles={['student']}><StudentDashboard /></ProtectedRoute>} />
@@ -203,6 +219,15 @@ const App = () => {
           <Route path="/admin/profile" element={<ProtectedRoute roles={['admin']}><Profile /></ProtectedRoute>} />
           <Route path="/admin/settings" element={<ProtectedRoute roles={['admin']}><AdminSettings /></ProtectedRoute>} />
           <Route path="/admin/notifications" element={<ProtectedRoute roles={['admin']}><Notifications /></ProtectedRoute>} />
+
+          {/* Parent Routes */}
+          <Route path="/parent/dashboard" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentDashboard /></ProtectedRoute>} />
+
+          {/* Seller Routes */}
+          <Route path="/seller/dashboard" element={<ProtectedRoute roles={['seller']} requireApproved={true}><SellerDashboard /></ProtectedRoute>} />
+
+          {/* CSR Routes */}
+          <Route path="/csr/dashboard" element={<ProtectedRoute roles={['csr']} requireApproved={true}><CSRDashboard /></ProtectedRoute>} />
 
           {/* 404 */}
           <Route path="*" element={<NotFound />} />

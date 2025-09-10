@@ -14,8 +14,8 @@ export const sendOTP = async (email, type = "verify") => {
   try {
     const user = await User.findOne({ email: email.toLowerCase() });
 
-    if (user && (user.role === "admin" || user.role === "educator")) {
-      return { success: true, message: "No OTP required for admin/educator accounts" };
+    if (user && (user.role === "admin" || user.role === "educator" || user.role === "parent" || user.role === "seller" || user.role === "csr")) {
+      return { success: true, message: "No OTP required for admin/educator/parent/seller/csr accounts" };
     }
 
     const otp = generateOTP();
@@ -287,8 +287,8 @@ export const registerByAdmin = async (req, res) => {
       return res.status(400).json({ message: "Email, password, name, and role are required" });
     }
 
-    if (!["admin", "educator"].includes(role)) {
-      return res.status(400).json({ message: "Role must be either 'admin' or 'educator'" });
+    if (!["admin", "educator", "parent", "seller", "csr"].includes(role)) {
+      return res.status(400).json({ message: "Role must be one of: admin, educator, parent, seller, csr" });
     }
 
     if (role === "educator" && (!position || !subjects)) {
@@ -306,16 +306,16 @@ export const registerByAdmin = async (req, res) => {
       email: normalizedEmail,
       password: hashedPassword,
       role,
-      isVerified: true,
+      isVerified: true, // All roles created by admin are pre-verified
       position: role === "educator" ? position : undefined,
       subjects: role === "educator" ? subjects : undefined,
-      approvalStatus: role === "educator" ? "pending" : "approved",
+      approvalStatus: ["educator", "parent", "seller", "csr"].includes(role) ? "pending" : "approved",
     });
 
     res.status(201).json({
-      message: role === "educator"
-        ? "Educator registered successfully. Account is pending approval."
-        : `${role} registered successfully`,
+      message: ["educator", "parent", "seller", "csr"].includes(role)
+        ? `${role.charAt(0).toUpperCase() + role.slice(1)} registered successfully. Account is pending approval.`
+        : `${role.charAt(0).toUpperCase() + role.slice(1)} registered successfully`,
       user: {
         id: newUser._id,
         name: newUser.name,
@@ -388,7 +388,7 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Email verification check for students
+    // Email verification check only for students (not for parent, seller, csr)
     if (user.role === "student" && !user.isVerified) {
       return res.status(401).json({
         message: "Please verify your email before logging in.",
@@ -396,18 +396,18 @@ export const login = async (req, res) => {
       });
     }
 
-    // Educator approval status checks
-    if (user.role === "educator") {
+    // Approval status checks for educator, parent, seller, csr
+    if (["educator", "parent", "seller", "csr"].includes(user.role)) {
       if (user.approvalStatus === "pending") {
         return res.status(403).json({
-          message: "Your educator account is currently under review. You will be notified once approved.",
+          message: `Your ${user.role} account is currently under review. You will be notified once approved.`,
           approvalStatus: "pending",
         });
       }
 
       if (user.approvalStatus === "rejected") {
         return res.status(403).json({
-          message: "Your educator account has been rejected. Please contact administration.",
+          message: `Your ${user.role} account has been rejected. Please contact administration.`,
           approvalStatus: "rejected",
         });
       }

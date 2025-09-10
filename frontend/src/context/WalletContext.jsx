@@ -16,13 +16,26 @@ export const WalletProvider = ({ children }) => {
     const [triggerRefresh, setTriggerRefresh] = useState(false);
 
     const fetchWallet = useCallback(async () => {
+        // Check if user is authenticated before fetching wallet
+        const token = localStorage.getItem("finmen_token");
+        if (!token) {
+            setWallet(null);
+            setLoading(false);
+            return;
+        }
+
         setLoading(true);
         try {
             const res = await api.get("/api/wallet");
             setWallet(res.data);
         } catch (err) {
             console.error("❌ Failed to fetch wallet:", err?.response?.data || err.message);
-            toast.error(err?.response?.data?.error || "Could not load wallet");
+            
+            // Don't show error toast for authentication errors
+            if (err.response?.status !== 401) {
+                toast.error(err?.response?.data?.error || "Could not load wallet");
+            }
+            
             setWallet(null);
         } finally {
             setLoading(false);

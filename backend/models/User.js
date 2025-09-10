@@ -61,7 +61,7 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["student", "educator", "admin"],
+      enum: ["student", "educator", "admin", "parent", "seller", "csr"],
       default: "student",
     },
     position: {
@@ -76,15 +76,51 @@ const userSchema = new mongoose.Schema(
         return this.role === "educator";
       },
     },
+    // Parent-specific fields
+    childEmail: {
+      type: String,
+      required: function () {
+        return this.role === "parent";
+      },
+      validate: {
+        validator: function(email) {
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        },
+        message: 'Please enter a valid child email address'
+      }
+    },
+    // Seller-specific fields
+    businessName: {
+      type: String,
+      required: function () {
+        return this.role === "seller";
+      },
+    },
+    shopType: {
+      type: String,
+      enum: ["Stationery", "Uniforms", "Food", "Books", "Electronics", "Other"],
+      required: function () {
+        return this.role === "seller";
+      },
+    },
+    // CSR-specific fields
+    organization: {
+      type: String,
+      required: function () {
+        return this.role === "csr";
+      },
+    },
     isVerified: {
       type: Boolean,
-      default: false,
+      default: function () {
+        return this.role === "parent" || this.role === "seller" || this.role === "csr" || this.role === "admin" || this.role === "educator";
+      },
     },
     approvalStatus: {
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: function () {
-        return this.role === "educator" ? "pending" : "approved";
+        return ["educator", "parent", "seller", "csr"].includes(this.role) ? "pending" : "approved";
       },
     },
     otp: {

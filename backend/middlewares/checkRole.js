@@ -1,34 +1,36 @@
+export const checkRole = (allowedRoles) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+
+    if (!allowedRoles.includes(req.user.role)) {
+      return res.status(403).json({ 
+        message: `Access denied. Required role: ${allowedRoles.join(' or ')}` 
+      });
+    }
+
+    next();
+  };
+};
+
 export const checkAdmin = (req, res, next) => {
-  if (req.user && req.user.role === "admin") {
-    return next();
+  if (!req.user || req.user.role !== 'admin') {
+    return res.status(403).json({ message: "Admin access required" });
   }
-  return res.status(403).json({ message: "Access denied. Admins only." });
+  next();
 };
 
 export const checkEducator = (req, res, next) => {
-  if (req.user && req.user.role === "educator") {
-    return next();
+  if (!req.user || req.user.role !== 'educator') {
+    return res.status(403).json({ message: "Educator access required" });
   }
-  return res.status(403).json({ message: "Access denied. Educators only." });
+  next();
 };
 
 export const checkStudent = (req, res, next) => {
-  if (req.user && req.user.role === "student") {
-    return next();
+  if (!req.user || req.user.role !== 'student') {
+    return res.status(403).json({ message: "Student access required" });
   }
-  return res.status(403).json({ message: "Access denied. Students only." });
-};
-
-/**
- * Middleware to check if user has one of the allowed roles
- * @param {Array} roles - Array of allowed roles
- * @returns {Function} - Express middleware function
- */
-export const checkRole = (roles) => {
-  return (req, res, next) => {
-    if (req.user && roles.includes(req.user.role)) {
-      return next();
-    }
-    return res.status(403).json({ message: `Access denied. Only ${roles.join(', ')} allowed.` });
-  };
+  next();
 };

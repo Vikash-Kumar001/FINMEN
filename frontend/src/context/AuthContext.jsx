@@ -13,6 +13,16 @@ export const AuthProvider = ({ children }) => {
     // 🔄 Fetch authenticated user from backend
     const fetchUser = async () => {
         try {
+            const token = localStorage.getItem("finmen_token");
+            
+            // Check if token exists and has valid format
+            if (!token || !token.includes('.') || token.split('.').length !== 3) {
+                console.warn("⚠️ Invalid or missing token");
+                setUser(null);
+                localStorage.removeItem("finmen_token");
+                return null;
+            }
+
             const res = await api.get("/api/auth/me");
             const fetchedUser = res.data;
 
@@ -25,6 +35,12 @@ export const AuthProvider = ({ children }) => {
             return enhancedUser;
         } catch (err) {
             console.error("❌ Failed to fetch user:", err?.response?.data || err.message);
+            
+            // If it's an auth error, clear the token
+            if (err.response?.status === 401) {
+                localStorage.removeItem("finmen_token");
+            }
+            
             setUser(null);
             return null;
         } finally {
@@ -56,16 +72,57 @@ export const AuthProvider = ({ children }) => {
             setUser(enhancedUser);
 
             // Redirect after login based on role
-            if (enhancedUser.role === "admin") {
-                navigate("/admin/dashboard");
-            } else if (enhancedUser.role === "educator") {
-                if (!enhancedUser.isApproved) {
-                    navigate("/pending-approval");
-                } else {
-                    navigate("/educator/dashboard");
-                }
-            } else {
-                navigate("/student/dashboard");
+            switch (enhancedUser.role) {
+                case "admin":
+                    navigate("/admin/dashboard");
+                    break;
+                case "educator":
+                    if (!enhancedUser.isApproved) {
+                        navigate("/pending-approval");
+                    } else {
+                        navigate("/educator/dashboard");
+                    }
+                    break;
+                case "parent":
+                    if (!enhancedUser.isApproved) {
+                        navigate("/pending-approval", {
+                            state: {
+                                message: "Your parent account is currently under review. You will be notified once approved.",
+                                user: { email: enhancedUser.email },
+                            },
+                        });
+                    } else {
+                        navigate("/parent/dashboard");
+                    }
+                    break;
+                case "seller":
+                    if (!enhancedUser.isApproved) {
+                        navigate("/pending-approval", {
+                            state: {
+                                message: "Your seller account is currently under review. You will be notified once approved.",
+                                user: { email: enhancedUser.email },
+                            },
+                        });
+                    } else {
+                        navigate("/seller/dashboard");
+                    }
+                    break;
+                case "csr":
+                    if (!enhancedUser.isApproved) {
+                        navigate("/pending-approval", {
+                            state: {
+                                message: "Your CSR account is currently under review. You will be notified once approved.",
+                                user: { email: enhancedUser.email },
+                            },
+                        });
+                    } else {
+                        navigate("/csr/dashboard");
+                    }
+                    break;
+                case "student":
+                default:
+                    navigate("/student/dashboard");
+                    break;
             }
         } catch (err) {
             console.error("Login error:", err?.response?.data || err.message);

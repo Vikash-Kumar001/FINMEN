@@ -128,6 +128,107 @@ router.post("/reset-password", resetPasswordWithOTP);
 // ✅ Google Login (Student only)
 router.post("/google", googleLogin);
 
+// ✅ Parent/Seller/CSR Self-Registration (no verification required)
+router.post("/register-stakeholder", async (req, res) => {
+  try {
+    const { 
+      email, password, name, role,
+      // Parent fields
+      childEmail,
+      // Seller fields  
+      businessName, shopType,
+      // CSR fields
+      organization,
+      // Educator fields
+      position, subjects
+    } = req.body;
+
+    if (!email || !password || !name || !role) {
+      return res.status(400).json({ message: "Email, password, name, and role are required" });
+    }
+
+    if (!["parent", "seller", "csr", "educator"].includes(role)) {
+      return res.status(400).json({ message: "Role must be one of: parent, seller, csr, educator" });
+    }
+
+    // Role-specific validation
+    if (role === "parent" && !childEmail) {
+      return res.status(400).json({ message: "Child email is required for parent role" });
+    }
+    
+    if (role === "seller" && (!businessName || !shopType)) {
+      return res.status(400).json({ message: "Business name and shop type are required for seller role" });
+    }
+    
+    if (role === "csr" && !organization) {
+      return res.status(400).json({ message: "Organization name is required for CSR role" });
+    }
+    
+    if (role === "educator" && (!position || !subjects)) {
+      return res.status(400).json({ message: "Position and subjects are required for educator role" });
+    }
+
+    const normalizedEmail = email.toLowerCase();
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const userData = {
+      name,
+      email: normalizedEmail,
+      password: hashedPassword,
+      role,
+      isVerified: true, // Auto-verified for stakeholders
+      approvalStatus: "pending", // Requires admin approval like educators
+    };
+
+    // Add role-specific fields
+    if (role === "parent") {
+      userData.childEmail = childEmail;
+    } else if (role === "seller") {
+      userData.businessName = businessName;
+      userData.shopType = shopType;
+    } else if (role === "csr") {
+      userData.organization = organization;
+    } else if (role === "educator") {
+      userData.position = position;
+      userData.subjects = subjects;
+    }
+
+    const newUser = await User.create(userData);
+
+    res.status(201).json({
+      message: `${role.charAt(0).toUpperCase() + role.slice(1)} account created successfully. Your account is pending admin approval.`,
+      user: {
+        id: newUser._id,
+        name: newUser.name,
+        email: newUser.email,
+        role: newUser.role,
+        isVerified: newUser.isVerified,
+        approvalStatus: newUser.approvalStatus,
+      },
+    });
+  } catch (err) {
+    console.error("Stakeholder registration error:", err);
+    
+    // Handle Mongoose validation errors
+    if (err.name === 'ValidationError') {
+      const messages = Object.values(err.errors).map(val => val.message);
+      return res.status(400).json({ message: messages.join(', ') });
+    }
+    
+    // Handle duplicate key errors
+    if (err.code === 11000) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+    
+    res.status(500).json({ message: "Registration failed" });
+  }
+});
+
 // ✅ Admin-only: Register admin or educator
 router.post("/admin-register", requireAuth, requireAdmin, registerByAdmin);
 

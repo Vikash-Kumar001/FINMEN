@@ -87,12 +87,20 @@ export const SocketProvider = ({ children }) => {
 
             // Listen for real-time profile updates
             socket.on("user:profile:updated", (payload) => {
-                setProfileUpdate(payload);
-                profileListeners.current.forEach(cb => cb(payload));
+                try {
+                    setProfileUpdate(payload);
+                    profileListeners.current.forEach(cb => cb(payload));
+                } catch (error) {
+                    console.error("Error handling profile update:", error);
+                }
             });
             socket.on("student:profile:updated", (payload) => {
-                setProfileUpdate(payload);
-                profileListeners.current.forEach(cb => cb(payload));
+                try {
+                    setProfileUpdate(payload);
+                    profileListeners.current.forEach(cb => cb(payload));
+                } catch (error) {
+                    console.error("Error handling student profile update:", error);
+                }
             });
 
             socketRef.current = socket;

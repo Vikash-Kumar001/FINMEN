@@ -109,19 +109,37 @@ const Navbar = () => {
 
     useEffect(() => {
         const fetchUnreadCount = async () => {
+            // Only fetch if user is authenticated
+            const token = localStorage.getItem('finmen_token');
+            if (!token) {
+                setUnreadCount(0);
+                return;
+            }
+            
             try {
                 const response = await api.get('/api/notifications/unread-count');
                 if (response.status === 200) setUnreadCount(response.data.count || 0);
-            } catch {
+            } catch (error) {
+                // Don't log auth errors as they're handled by the interceptor
+                if (error.response?.status !== 401) {
+                    console.error("Error fetching unread count:", error);
+                }
                 setUnreadCount(0);
             }
         };
-        fetchUnreadCount();
-        if (socket?.socket) {
+        
+        // Only fetch if user exists
+        if (user) {
+            fetchUnreadCount();
+        } else {
+            setUnreadCount(0);
+        }
+        
+        if (socket?.socket && user) {
             socket.socket.on('student:notifications:update', fetchUnreadCount);
             return () => socket.socket.off('student:notifications:update', fetchUnreadCount);
         }
-    }, [socket]);
+    }, [socket, user]);
 
     return (
         <>

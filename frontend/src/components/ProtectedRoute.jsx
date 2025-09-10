@@ -35,10 +35,13 @@ const ProtectedRoute = ({ children, roles, requireApproved = false, otpOnly = fa
         return <Navigate to="/" replace />;
     }
 
-    // ⛔ Educator not approved
-    if (requireApproved && user.role === "educator" && !user.isApproved) {
-        console.warn("🔒 Educator not approved. Redirecting to pending approval.");
-        return <Navigate to="/pending-approval" replace />;
+    // ⛔ Stakeholder not approved (educator, parent, seller, csr)
+    if (requireApproved && ["educator", "parent", "seller", "csr"].includes(user.role) && !user.isApproved) {
+        console.warn(`🔒 ${user.role} not approved. Redirecting to pending approval.`);
+        return <Navigate to="/pending-approval" state={{
+            message: `Your ${user.role} account is currently under review. You will be notified once approved.`,
+            user: { email: user.email }
+        }} replace />;
     }
 
     return children;

@@ -1,0 +1,90 @@
+import mongoose from "mongoose";
+
+const schoolClassSchema = new mongoose.Schema(
+  {
+    tenantId: {
+      type: String,
+      required: true,
+      // index removed, only keep schema.index()
+    },
+    orgId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+    },
+    classNumber: {
+      type: Number,
+      required: true,
+      min: 1,
+      max: 12,
+    },
+    stream: {
+      type: String,
+      enum: ["Science", "Commerce", "Arts"],
+      required: function() {
+        return this.classNumber >= 11; // Streams only for classes 11-12
+      },
+    },
+    sections: [{
+      name: {
+        type: String,
+        required: true, // A, B, C, etc.
+      },
+      capacity: {
+        type: Number,
+        default: 40,
+      },
+      currentStrength: {
+        type: Number,
+        default: 0,
+      },
+      classTeacher: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+    }],
+    subjects: [{
+      name: {
+        type: String,
+        required: true,
+      },
+      code: String,
+      isOptional: {
+        type: Boolean,
+        default: false,
+      },
+      teachers: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      }],
+    }],
+    academicYear: {
+      type: String,
+      required: true,
+    },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Compound indexes for multi-tenant queries
+schoolClassSchema.index({ tenantId: 1, classNumber: 1, stream: 1 });
+schoolClassSchema.index({ tenantId: 1, academicYear: 1 });
+schoolClassSchema.index({ orgId: 1, isActive: 1 });
+
+// Ensure tenant isolation
+schoolClassSchema.pre(/^find/, function() {
+  if (this.getQuery().tenantId) {
+    // Tenant filter already applied
+    return;
+  }
+  throw new Error("TenantId is required for all queries");
+});
+
+const SchoolClass = mongoose.model("SchoolClass", schoolClassSchema);
+export default SchoolClass;

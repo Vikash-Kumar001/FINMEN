@@ -18,12 +18,12 @@ import {
     Crown,
     Sparkles
 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import api from "../utils/api";
 import { toast } from "react-toastify";
 
 const Settings = () => {
-    const { user, updateUser } = useAuth();
+    const { user, setUser } = useAuth();
     const [form, setForm] = useState({
         name: "",
         currentPassword: "",
@@ -105,7 +105,7 @@ const Settings = () => {
 
             const response = await api.put("/api/auth/settings", data);
 
-            updateUser(response.data.user);
+            setUser(response.data.user);
 
             setForm(prev => ({
                 ...prev,

@@ -17,6 +17,7 @@ router.use(requireAuth);
 // Student routes
 router.post('/log', logActivity);
 router.get('/my-activities', getMyActivities);
+router.get('/recent', getMyActivities); // Alias for recent activities
 
 // Admin and educator routes
 router.get('/user/:userId', checkRole(['admin', 'educator']), getUserActivities);

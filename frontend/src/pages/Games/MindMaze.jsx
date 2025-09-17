@@ -4,7 +4,7 @@ import { Brain, Trophy, Timer, ArrowLeft, Sparkles, Coins, Award, Check, X } fro
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { toast } from 'react-toastify';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 // Puzzle data
 const puzzles = [

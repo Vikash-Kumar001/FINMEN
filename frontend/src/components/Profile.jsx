@@ -1,12 +1,19 @@
 import React, { useState, useEffect } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import {
     User, Key, Shield, Settings, Eye, EyeOff, BookOpen, Lock, Briefcase, Calendar, Users, Building, GraduationCap, Clock, Star, Camera, Phone, MapPin, Globe, Edit, Save, X, Mail, UserCheck, Crown, Trophy, Flame, Zap, Sparkles, Diamond, Award, Target, Heart, Bell, Palette, Volume2, Smartphone, Shield as ShieldIcon, ChevronRight, Upload, Check, AlertCircle
 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../hooks/useAuth";
 import api from "../utils/api";
 import { toast } from "react-toastify";
 import { useSocket } from '../context/SocketContext';
+import { 
+    fetchUserProfile, 
+    updateUserProfile, 
+    uploadUserAvatar, 
+    updateUserPassword 
+} from "../services/dashboardService";
 
 function AnimatedFormField({ icon: Icon, label, error, className = "", ...props }) {
     return (
@@ -177,11 +184,10 @@ const Profile = () => {
 
     useEffect(() => {
         if (user) {
-            const fetchUserProfile = async () => {
+            const fetchUserProfileData = async () => {
                 try {
                     setLoading(true);
-                    const response = await api.get('/api/user/profile');
-                    const profileData = response.data;
+                    const profileData = await fetchUserProfile();
                     
                     setPersonalInfo({
                         name: profileData.name || user?.name || "",
@@ -215,7 +221,7 @@ const Profile = () => {
                     setLoading(false);
                 }
             };
-            fetchUserProfile();
+            fetchUserProfileData();
         }
     }, [user]);
 
@@ -254,15 +260,12 @@ const Profile = () => {
                 return;
             }
             
-            let formData = null;
             if (tabName === 'personal') {
                 if (avatarFile) {
-                    const fd = new FormData();
-                    fd.append('avatar', avatarFile);
-                    const res = await api.post('/api/user/avatar', fd, {
-                        headers: { 'Content-Type': 'multipart/form-data' }
-                    });
-                    const newAvatar = res.data?.avatar;
+                    const avatarFormData = new FormData();
+                    avatarFormData.append('avatar', avatarFile);
+                    const avatarResult = await uploadUserAvatar(avatarFormData);
+                    const newAvatar = avatarResult?.avatar;
                     if (newAvatar) {
                         setAvatarPreview(normalizeAvatarUrl(newAvatar));
                         setSelectedPreset(null);
@@ -276,10 +279,16 @@ const Profile = () => {
                 }
             }
             
-            const updateData = {};
-            updateData[tabName] = tabData;
-            
-            await api.put('/api/user/profile', updateData);
+            if (tabName === 'security') {
+                await updateUserPassword({
+                    currentPassword: tabData.currentPassword,
+                    newPassword: tabData.newPassword
+                });
+            } else {
+                const updateData = {};
+                updateData[tabName] = tabData;
+                await updateUserProfile(updateData);
+            }
             
             setSaveSuccess(true);
             toast.success(`${tabName.charAt(0).toUpperCase() + tabName.slice(1)} information updated successfully`);
@@ -288,6 +297,23 @@ const Profile = () => {
         } catch (error) {
             console.error(`Error updating ${tabName} information:`, error);
             toast.error(error.response?.data?.message || `Failed to update ${tabName} information`);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleRemoveAvatar = async () => {
+        try {
+            setLoading(true);
+            const res = await api.post('/api/user/avatar', { avatar: '/avatars/avatar1.png' });
+            const newAvatar = res.data?.avatar || '/avatars/avatar1.png';
+            setAvatarPreview(normalizeAvatarUrl(newAvatar));
+            setSelectedPreset('/avatars/avatar1.png');
+            setAvatarFile(null);
+            toast.success('Profile picture removed successfully');
+        } catch (error) {
+            console.error('Error removing avatar:', error);
+            toast.error('Failed to remove profile picture');
         } finally {
             setLoading(false);
         }
@@ -385,14 +411,28 @@ const Profile = () => {
                 </label>
                 <div className="flex items-center gap-4">
                     <motion.div
-                        className="w-24 h-24 rounded-full overflow-hidden border-2 border-indigo-300 flex-shrink-0"
+                        className="w-24 h-24 rounded-full overflow-hidden border-2 border-indigo-300 flex-shrink-0 relative"
                         whileHover={{ scale: 1.05 }}
                     >
                         <img
                             src={avatarPreview}
                             alt="Profile"
                             className="w-full h-full object-cover"
+                            onError={(e) => {
+                                e.target.src = '/avatars/avatar1.png';
+                            }}
                         />
+                        {avatarPreview && avatarPreview !== '/avatars/avatar1.png' && (
+                            <motion.button
+                                onClick={handleRemoveAvatar}
+                                className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                title="Remove profile picture"
+                            >
+                                <X className="w-3 h-3" />
+                            </motion.button>
+                        )}
                     </motion.div>
                     <div className="flex-1">
                         <label className="flex items-center justify-center w-full p-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-300 transition-all">
@@ -406,6 +446,20 @@ const Profile = () => {
                             <span className="text-sm font-medium text-gray-600">Upload new picture</span>
                         </label>
                         <p className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. Max size 2MB.</p>
+                        
+                        {/* Remove Picture Button */}
+                        {avatarPreview && avatarPreview !== '/avatars/avatar1.png' && (
+                            <motion.button
+                                onClick={handleRemoveAvatar}
+                                disabled={loading}
+                                className="w-full mt-2 px-3 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
+                            >
+                                <X className="w-4 h-4" />
+                                Remove Picture
+                            </motion.button>
+                        )}
                     </div>
                 </div>
                 <div className="flex flex-wrap gap-2 mt-4">
@@ -561,66 +615,129 @@ const Profile = () => {
         </div>
     );
 
+    // Add state for real achievements and stats data
+    const [realAchievements, setRealAchievements] = useState([]);
+    const [realStats, setRealStats] = useState({
+        level: 1,
+        xp: 0,
+        streak: 0,
+        rank: 0
+    });
+    const [loadingAchievements, setLoadingAchievements] = useState(false);
+
+    // Fetch real achievements and stats
+    const fetchRealAchievementsAndStats = async () => {
+        try {
+            setLoadingAchievements(true);
+            const [achievementsRes, progressRes, statsRes] = await Promise.all([
+                api.get('/api/game/achievements'),
+                api.get('/api/progress'),
+                user?.role === 'student' ? api.get('/api/stats/student') : Promise.resolve({ data: {} })
+            ]);
+            
+            setRealAchievements(achievementsRes.data || []);
+            
+            if (progressRes.data) {
+                setRealStats({
+                    level: progressRes.data.level || 1,
+                    xp: progressRes.data.xp || 0,
+                    streak: progressRes.data.streak || 0,
+                    rank: statsRes.data?.rank || 0
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching achievements and stats:', error);
+            // Keep mock data as fallback
+        } finally {
+            setLoadingAchievements(false);
+        }
+    };
+
+    // Fetch achievements on component mount
+    useEffect(() => {
+        if (user) {
+            fetchRealAchievementsAndStats();
+        }
+    }, [user]);
+
     const renderAchievementsTab = () => {
-        const achievements = user?.role === "student" ? [
-            { icon: <Flame className="w-5 h-5" />, title: "Hot Streak", description: "12 days in a row!", color: "from-orange-400 to-red-400" },
-            { icon: <Crown className="w-5 h-5" />, title: "Top Performer", description: "Rank #23 globally", color: "from-yellow-400 to-orange-400" },
-            { icon: <Shield className="w-5 h-5" />, title: "Wellness Guardian", description: "100 mood checks", color: "from-blue-400 to-cyan-400" },
-            { icon: <Trophy className="w-5 h-5" />, title: "Level Master", description: "Reached Level 7", color: "from-purple-400 to-indigo-400" },
-            { icon: <Star className="w-5 h-5" />, title: "Superstar", description: "5-star rating", color: "from-pink-400 to-rose-400" },
-            { icon: <Target className="w-5 h-5" />, title: "Goal Crusher", description: "50 goals completed", color: "from-green-400 to-emerald-400" }
-        ] : [
-            { icon: <Award className="w-5 h-5" />, title: "Certified Educator", description: "Completed training", color: "from-blue-400 to-indigo-400" },
-            { icon: <Users className="w-5 h-5" />, title: "Mentor", description: "Guided 50+ students", color: "from-green-400 to-teal-400" },
-            { icon: <Star className="w-5 h-5" />, title: "Top Rated", description: "4.9/5 student rating", color: "from-yellow-400 to-amber-400" },
-        ];
+        // Use real achievements if available, otherwise show loading or fallback
+        const achievementsToShow = realAchievements.length > 0 ? 
+            realAchievements.map((achievement, index) => ({
+                icon: <Trophy className="w-5 h-5" />,
+                title: achievement.game || `Achievement ${index + 1}`,
+                description: `${achievement.achievements?.length || 0} achievements unlocked`,
+                color: "from-indigo-400 to-purple-400"
+            })) : 
+            // Fallback achievements based on role
+            (user?.role === "student" ? [
+                { icon: <Flame className="w-5 h-5" />, title: "Getting Started", description: "Welcome to FINMEN!", color: "from-orange-400 to-red-400" },
+                { icon: <Target className="w-5 h-5" />, title: "First Steps", description: "Complete your profile", color: "from-green-400 to-emerald-400" }
+            ] : [
+                { icon: <Award className="w-5 h-5" />, title: "Educator", description: "Welcome to FINMEN!", color: "from-blue-400 to-indigo-400" },
+                { icon: <Users className="w-5 h-5" />, title: "Mentor", description: "Ready to guide students", color: "from-green-400 to-teal-400" }
+            ]);
         
         return (
             <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {achievements.map((achievement, index) => (
-                        <motion.div
-                            key={index}
-                            className={`p-4 rounded-2xl bg-gradient-to-r ${achievement.color} bg-opacity-10 border border-white/20 shadow-md`}
-                            whileHover={{ scale: 1.03 }}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: index * 0.1 }}
-                        >
-                            <div className="flex items-start gap-3">
-                                <div className={`p-2 rounded-xl bg-gradient-to-r ${achievement.color} text-white`}>
-                                    {achievement.icon}
+                {loadingAchievements ? (
+                    <div className="text-center py-8">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto"></div>
+                        <p className="text-gray-600 mt-2">Loading achievements...</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {achievementsToShow.map((achievement, index) => (
+                            <motion.div
+                                key={index}
+                                className={`p-4 rounded-2xl bg-gradient-to-r ${achievement.color} bg-opacity-10 border border-white/20 shadow-md`}
+                                whileHover={{ scale: 1.03 }}
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: index * 0.1 }}
+                            >
+                                <div className="flex items-start gap-3">
+                                    <div className={`p-2 rounded-xl bg-gradient-to-r ${achievement.color} text-white`}>
+                                        {achievement.icon}
+                                    </div>
+                                    <div>
+                                        <h3 className="font-bold text-gray-800">{achievement.title}</h3>
+                                        <p className="text-sm text-gray-600">{achievement.description}</p>
+                                    </div>
                                 </div>
-                                <div>
-                                    <h3 className="font-bold text-gray-800">{achievement.title}</h3>
-                                    <p className="text-sm text-gray-600">{achievement.description}</p>
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                )}
 
                 {user?.role === "student" && (
                     <div className="mt-6">
                         <GlassCard title="Progress Stats" gradient="from-indigo-500 to-purple-500">
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <div className="text-center p-3 bg-indigo-50 rounded-xl">
-                                    <div className="text-3xl font-bold text-indigo-600">7</div>
-                                    <div className="text-sm text-gray-600">Current Level</div>
+                            {loadingAchievements ? (
+                                <div className="text-center py-8">
+                                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500 mx-auto"></div>
+                                    <p className="text-gray-600 mt-2">Loading your progress...</p>
                                 </div>
-                                <div className="text-center p-3 bg-purple-50 rounded-xl">
-                                    <div className="text-3xl font-bold text-purple-600">2340</div>
-                                    <div className="text-sm text-gray-600">XP Points</div>
+                            ) : (
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div className="text-center p-3 bg-indigo-50 rounded-xl">
+                                        <div className="text-3xl font-bold text-indigo-600">{realStats.level}</div>
+                                        <div className="text-sm text-gray-600">Current Level</div>
+                                    </div>
+                                    <div className="text-center p-3 bg-purple-50 rounded-xl">
+                                        <div className="text-3xl font-bold text-purple-600">{realStats.xp}</div>
+                                        <div className="text-sm text-gray-600">XP Points</div>
+                                    </div>
+                                    <div className="text-center p-3 bg-orange-50 rounded-xl">
+                                        <div className="text-3xl font-bold text-orange-600">{realStats.streak}</div>
+                                        <div className="text-sm text-gray-600">Day Streak</div>
+                                    </div>
+                                    <div className="text-center p-3 bg-green-50 rounded-xl">
+                                        <div className="text-3xl font-bold text-green-600">{realStats.rank || 'N/A'}</div>
+                                        <div className="text-sm text-gray-600">Global Rank</div>
+                                    </div>
                                 </div>
-                                <div className="text-center p-3 bg-orange-50 rounded-xl">
-                                    <div className="text-3xl font-bold text-orange-600">12</div>
-                                    <div className="text-sm text-gray-600">Day Streak</div>
-                                </div>
-                                <div className="text-center p-3 bg-green-50 rounded-xl">
-                                    <div className="text-3xl font-bold text-green-600">23</div>
-                                    <div className="text-sm text-gray-600">Global Rank</div>
-                                </div>
-                            </div>
+                            )}
                         </GlassCard>
                     </div>
                 )}

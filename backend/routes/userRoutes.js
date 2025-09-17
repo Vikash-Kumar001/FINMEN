@@ -1,6 +1,6 @@
 import express from 'express';
 import { requireAuth } from '../middlewares/requireAuth.js';
-import { getUserProfile, updateUserProfile, getAllStudents, updateUserAvatar } from '../controllers/userController.js';
+import { getUserProfile, updateUserProfile, getAllStudents, updateUserAvatar, updateUserPassword } from '../controllers/userController.js';
 import multer from 'multer';
 import fs from 'fs';
 import path from 'path';
@@ -41,6 +41,9 @@ router.put('/profile', updateUserProfile);
 
 // 🖼️ POST /api/user/avatar — Update avatar (multipart form or preset URL)
 router.post('/avatar', upload.single('avatar'), updateUserAvatar);
+
+// 🔒 PUT /api/user/password — Update user password
+router.put('/password', updateUserPassword);
 
 // 👥 GET /api/user/students — Get all students (for admin/educator)
 router.get('/students', getAllStudents);

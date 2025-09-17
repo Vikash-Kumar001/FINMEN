@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -31,11 +32,17 @@ import {
     Clock,
     Coins,
 } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { useWallet } from "../../context/WalletContext";
-import { fetchStudentStats } from "../../services/userService";
 import { fetchStudentAchievements } from "../../services/studentService";
 import { logActivity } from "../../services/activityService";
+import { 
+    fetchStudentDashboardData, 
+    fetchNotifications,
+    markNotificationAsRead,
+    refreshDashboardData,
+    cacheDashboardData
+} from "../../services/dashboardService";
 import { toast } from "react-hot-toast";
 import { mockFeatures } from "../../data/mockFeatures";
 import { useSocket } from '../../context/SocketContext';
@@ -46,6 +53,10 @@ export default function StudentDashboard() {
     const { wallet } = useWallet();
     const [featureCards, setFeatureCards] = useState([]);
     const [achievements, setAchievements] = useState([]);
+    const [recentActivities, setRecentActivities] = useState([]);
+    const [challenges, setChallenges] = useState([]);
+    const [notifications, setNotifications] = useState([]);
+    const [dashboardData, setDashboardData] = useState(null);
     const [stats, setStats] = useState({
         xp: 0,
         level: 1,
@@ -106,41 +117,63 @@ export default function StudentDashboard() {
     }, []);
 
     // Load student stats with error handling and real data
-    
-    const loadStats = React.useCallback(async () => {
+    // Load comprehensive dashboard data
+    const loadDashboardData = React.useCallback(async () => {
         try {
             setLoading(true);
-            
-            // Log stats loading activity
+
+            // Log dashboard data loading activity
             logActivity({
                 activityType: "data_fetch",
-                description: "Loaded student dashboard stats",
+                description: "Loading comprehensive dashboard data",
                 metadata: {
-                    action: "load_stats",
+                    action: "load_dashboard_data",
                     timestamp: new Date().toISOString()
                 },
                 pageUrl: window.location.pathname
             });
+
+            // Fetch all dashboard data using the new service
+            const data = await fetchStudentDashboardData();
+            setDashboardData(data);
             
-            const res = await fetchStudentStats();
-            if (res && (res.xp !== undefined || res.data)) {
-                // Support both direct and nested data
-                const data = res.data || res;
+            // Update individual state with fetched data
+            if (data.stats) {
                 setStats({
-                    xp: data.xp || 0,
-                    level: data.level || 1,
-                    nextLevelXp: data.nextLevelXp || 100,
-                    todayMood: data.todayMood || "😊",
-                    streak: data.streak || 0,
-                    rank: data.rank || 0,
-                    weeklyXP: data.weeklyXP || 0,
+                    xp: data.stats.xp || 0,
+                    level: data.stats.level || 1,
+                    nextLevelXp: data.stats.nextLevelXp || 100,
+                    todayMood: data.stats.todayMood || "😊",
+                    streak: data.stats.streak || 0,
+                    rank: data.stats.rank || 0,
+                    weeklyXP: data.stats.weeklyXP || 0,
                 });
             }
+            
+            if (data.achievements) {
+                setAchievements(data.achievements);
+            }
+            
+            if (data.activities) {
+                setRecentActivities(data.activities);
+            }
+            
+            if (data.challenges) {
+                // Handle daily challenges data structure
+                const challengesData = Array.isArray(data.challenges) 
+                    ? data.challenges.map(item => item.challenge || item)
+                    : [];
+                setChallenges(challengesData);
+            }
+
+            // Cache the dashboard data
+            cacheDashboardData('student', data);
+            
         } catch (err) {
             // Log error activity
             logActivity({
                 activityType: "error",
-                description: "Failed to load student stats",
+                description: "Failed to load dashboard data",
                 metadata: {
                     errorMessage: err.message || "Unknown error",
                     timestamp: new Date().toISOString()
@@ -149,17 +182,81 @@ export default function StudentDashboard() {
             });
             
             // Show error toast
-            toast.error("Could not load your stats. Please try again later.", {
+            toast.error("Could not load dashboard data. Please try again later.", {
                 duration: 3000,
                 position: "top-center",
                 icon: "❌"
             });
             
-            console.error("❌ Failed to load student stats", err);
+            console.error("❌ Failed to load dashboard data", err);
         } finally {
             setLoading(false);
         }
     }, []);
+
+    // Load notifications
+    const loadNotifications = React.useCallback(async () => {
+        try {
+            const notificationData = await fetchNotifications('student', true);
+            setNotifications(notificationData);
+        } catch (err) {
+            console.error("❌ Failed to load notifications", err);
+        }
+    }, []);
+
+    // Handle notification click
+    const handleNotificationClick = async (notificationId) => {
+        try {
+            await markNotificationAsRead(notificationId);
+            // Refresh notifications
+            loadNotifications();
+            
+            toast.success("Notification marked as read", {
+                duration: 2000,
+                position: "bottom-center",
+                icon: "✅"
+            });
+        } catch (err) {
+            console.error("❌ Failed to mark notification as read", err);
+        }
+    };
+
+    // Refresh dashboard data
+    const handleRefreshData = async () => {
+        try {
+            setLoading(true);
+            const refreshedData = await refreshDashboardData('student');
+            setDashboardData(refreshedData);
+            
+            // Update stats with refreshed data
+            if (refreshedData.stats) {
+                setStats({
+                    xp: refreshedData.stats.xp || 0,
+                    level: refreshedData.stats.level || 1,
+                    nextLevelXp: refreshedData.stats.nextLevelXp || 100,
+                    todayMood: refreshedData.stats.todayMood || "😊",
+                    streak: refreshedData.stats.streak || 0,
+                    rank: refreshedData.stats.rank || 0,
+                    weeklyXP: refreshedData.stats.weeklyXP || 0,
+                });
+            }
+            
+            toast.success("Dashboard data refreshed!", {
+                duration: 2000,
+                position: "top-center",
+                icon: "🔄"
+            });
+        } catch (err) {
+            console.error("Error refreshing data:", err.message);
+            toast.error("Failed to refresh data", {
+                duration: 3000,
+                position: "top-center",
+                icon: "❌"
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const handleNavigate = (path, featureTitle) => {
         if (path && typeof path === "string") {
@@ -186,24 +283,48 @@ export default function StudentDashboard() {
     };
 
     useEffect(() => {
-        loadStats();
-    }, [loadStats]);
+        loadDashboardData();
+        loadNotifications();
+    }, [loadDashboardData]);
 
     useEffect(() => {
         if (!socket) return;
+        
         const handleGameCompleted = (data) => {
             setStats((prev) => ({ ...prev, streak: data.streak }));
             toast.success(`🎮 Game completed! +${data.coinsEarned} HealCoins`);
         };
+        
         const handleChallengeCompleted = (data) => {
             setStats((prev) => ({ ...prev, streak: prev.streak + 1 }));
             toast.success(`🏆 Challenge completed! +${data.rewards?.coins || 0} HealCoins, +${data.rewards?.xp || 0} XP`);
+            
+            // Trigger leaderboard update
+            socket.emit('xp-updated');
         };
+        
+        const handleLevelUp = (data) => {
+            setStats((prev) => ({ 
+                ...prev, 
+                level: data.newLevel, 
+                xp: data.totalXP 
+            }));
+            toast.success(
+                <div>
+                    <p>🎉 Level Up! You're now Level {data.newLevel}!</p>
+                    <p>+{data.coinsEarned} HealCoins bonus!</p>
+                </div>
+            );
+        };
+        
         socket.on('game-completed', handleGameCompleted);
         socket.on('challenge-completed', handleChallengeCompleted);
+        socket.on('level-up', handleLevelUp);
+        
         return () => {
             socket.off('game-completed', handleGameCompleted);
             socket.off('challenge-completed', handleChallengeCompleted);
+            socket.off('level-up', handleLevelUp);
         };
     }, [socket]);
 
@@ -419,7 +540,37 @@ export default function StudentDashboard() {
                             <Flame className="w-4 h-4 mr-2" />
                             Daily Goal
                         </motion.button>
+                        
+                        <motion.button
+                            whileHover={{ scale: 1.05, y: -2 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={handleRefreshData}
+                            className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-5 py-2 rounded-full font-medium shadow-md inline-flex items-center"
+                        >
+                            <ArrowUp className="w-4 h-4 mr-2" />
+                            Refresh Data
+                        </motion.button>
                     </motion.div>
+                    
+                    {/* Notifications Badge */}
+                    {notifications.length > 0 && (
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            transition={{ delay: 1.2 }}
+                            className="mt-4 inline-flex items-center gap-2 bg-gradient-to-r from-red-100 to-pink-100 text-red-800 px-6 py-3 rounded-full shadow-lg border border-red-200 cursor-pointer"
+                            onClick={() => handleNotificationClick(notifications[0]?.id)}
+                        >
+                            <Bell className="w-4 h-4" />
+                            <span className="font-semibold">{notifications.length} new notification{notifications.length !== 1 ? 's' : ''}</span>
+                            <motion.div
+                                animate={{ scale: [1, 1.2, 1] }}
+                                transition={{ duration: 0.6, repeat: Infinity, delay: 1.5 }}
+                            >
+                                🔔
+                            </motion.div>
+                        </motion.div>
+                    )}
                 </motion.div>
 
                 {/* Player Stats Bar */}
@@ -690,6 +841,130 @@ export default function StudentDashboard() {
                     ))}
                 </motion.div>
 
+                {/* Recent Activities and Challenges Section */}
+                {(recentActivities.length > 0 || challenges.length > 0) && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.6 }}
+                        className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
+                    >
+                        {/* Recent Activities */}
+                        {recentActivities.length > 0 && (
+                            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40">
+                                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <Activity className="w-5 h-5 text-indigo-500" />
+                                    Recent Activities
+                                </h3>
+                                <div className="space-y-3">
+                                    {recentActivities.slice(0, 5).map((activity, i) => (
+                                        <div key={i} className="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl">
+                                            <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-medium text-gray-800">
+                                                    {activity.description || activity.title}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {new Date(activity.timestamp || activity.createdAt).toLocaleString()}
+                                                </p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        
+                        {/* Active Challenges */}
+                        {challenges.length > 0 && (
+                            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40">
+                                <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                    <Trophy className="w-5 h-5 text-yellow-500" />
+                                    Active Challenges
+                                </h3>
+                                <div className="space-y-3">
+                                    {challenges.slice(0, 3).map((challenge, i) => (
+                                        <div 
+                                            key={i} 
+                                            className="flex items-center gap-3 p-3 bg-yellow-50 rounded-xl cursor-pointer hover:bg-yellow-100 transition-colors"
+                                            onClick={() => {
+                                                // Log challenge click
+                                                logActivity({
+                                                    activityType: "ui_interaction",
+                                                    description: `Clicked active challenge: ${challenge.title || challenge.name}`,
+                                                    metadata: {
+                                                        action: "active_challenge_click",
+                                                        challengeId: challenge._id,
+                                                        challengeTitle: challenge.title || challenge.name,
+                                                        timestamp: new Date().toISOString()
+                                                    },
+                                                    pageUrl: window.location.pathname
+                                                });
+                                                
+                                                // Navigate to daily challenges page
+                                                toast.success(`Starting challenge: ${challenge.title || challenge.name}!`, {
+                                                    duration: 2000,
+                                                    position: "bottom-center",
+                                                    icon: "🏆"
+                                                });
+                                                handleNavigate('/student/daily-challenges', 'Daily Challenges');
+                                            }}
+                                        >
+                                            <div className="w-8 h-8 bg-yellow-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                                                {i + 1}
+                                            </div>
+                                            <div className="flex-1">
+                                                <p className="text-sm font-medium text-gray-800">
+                                                    {challenge.title || challenge.name || `Daily Challenge - ${new Date().toISOString().split('T')[0]}`}
+                                                </p>
+                                                <p className="text-xs text-gray-500">
+                                                    {challenge.description || 'Complete this daily challenge to earn rewards!'}
+                                                </p>
+                                                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                                    <div 
+                                                        className="bg-yellow-500 h-2 rounded-full transition-all duration-300" 
+                                                        style={{ width: `${challenge.progress || 0}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                            <div className="text-xs text-green-600 font-semibold">
+                                                +{challenge.coinReward || 15} 🪙
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div className="mt-4 text-center">
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => {
+                                            logActivity({
+                                                activityType: "ui_interaction",
+                                                description: "Clicked View All Challenges button",
+                                                metadata: {
+                                                    action: "view_all_challenges",
+                                                    section: "active_challenges",
+                                                    timestamp: new Date().toISOString()
+                                                },
+                                                pageUrl: window.location.pathname
+                                            });
+                                            
+                                            toast.success("Let's complete some challenges!", {
+                                                duration: 2000,
+                                                position: "bottom-center",
+                                                icon: "🎯"
+                                            });
+                                            handleNavigate('/student/daily-challenges', 'Daily Challenges');
+                                        }}
+                                        className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-4 py-2 rounded-xl text-sm font-semibold hover:shadow-lg transition-all"
+                                    >
+                                        View All Challenges
+                                    </motion.button>
+                                </div>
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+
                 {/* Quick Actions */}
                 <motion.div
                     initial={{ opacity: 0, y: 30 }}
@@ -884,6 +1159,14 @@ export default function StudentDashboard() {
                         <span>Every small step counts! Keep going champion! 🚀</span>
                         <Sparkles className="w-6 h-6" />
                     </div>
+                    
+                    {/* Debug Info - Hidden unless dashboardData exists */}
+                    {dashboardData && import.meta.env.DEV && (
+                        <div className="mt-4 text-xs text-gray-500">
+                            <p>Dashboard data loaded: {new Date().toLocaleTimeString()}</p>
+                            <p>Activities: {dashboardData.activities?.length || 0}, Challenges: {dashboardData.challenges?.length || 0}</p>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

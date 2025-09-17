@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../context/AuthUtils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Eye, EyeOff, Mail, Lock, UserPlus, ArrowRight, Shield, Zap } from 'lucide-react';
 

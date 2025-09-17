@@ -8,11 +8,12 @@
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Socket.IO](https://img.shields.io/badge/Socket.IO-010101?style=for-the-badge&logo=socket.io&logoColor=white)](https://socket.io/)
 [![Google Gemini](https://img.shields.io/badge/Google%20Gemini-4285F4?style=for-the-badge&logo=google&logoColor=white)](https://ai.google.dev/)
 
 **Empowering India's Youth Through AI-Driven Mental Wellness & Financial Education**
 
-[🚀 Features](#-core-feature-matrix) • [📖 Documentation](#-documentation) • [🤝 Contributing](#-contributing) • [💬 Community](#-community)
+[🚀 Features](#-core-features) • [📖 Documentation](#-documentation) • [🤝 Contributing](#-contributing) • [💬 Community](#-community)
 
 </div>
 
@@ -20,7 +21,7 @@
 
 ## 🎯 Overview
 
-**FINMEN** is a revolutionary digital platform designed specifically for India's youth ecosystem, addressing the critical gap in mental wellness and financial literacy education. Combining cutting-edge AI technology with culturally-sensitive design, FINMEN serves students aged **8-25** through an immersive, gamified learning experience.
+**FINMEN** is a comprehensive digital platform designed specifically for India's youth ecosystem, addressing critical gaps in mental wellness and financial literacy education. Combining cutting-edge AI technology with real-time communication and culturally-sensitive design, FINMEN serves students aged **8-25** through an immersive, gamified learning experience.
 
 ### 🌍 Mission Statement
 *"To create a generation of emotionally resilient and financially literate individuals who can navigate life's challenges with confidence and wisdom."*
@@ -38,6 +39,7 @@
 - Cultural context awareness
 - Local financial instruments integration
 - Indian education system alignment
+- Multi-tenant architecture for schools & colleges
 
 </td>
 <td width="50%">
@@ -47,26 +49,29 @@
 - Personalized learning pathways
 - Predictive wellness analytics
 - Smart recommendation engine
+- Google Gemini integration
 
 </td>
 </tr>
 <tr>
 <td width="50%">
 
-### 🎮 **Gamification Excellence**
+### 🎮 **Advanced Gamification**
+- 1000+ unique daily challenges
+- Real-time leaderboards
+- XP and HealCoins reward system
 - Multi-tier progression system
 - Social learning features
-- Achievement-based rewards
-- Peer competition elements
 
 </td>
 <td width="50%">
 
-### 🔒 **Privacy-First Approach**
-- Zero-knowledge architecture
-- GDPR & Indian data laws compliant
-- End-to-end encryption
-- Transparent data usage
+### ⚡ **Real-Time Features**
+- Live profile updates
+- Instant reward notifications
+- Real-time leaderboard updates
+- Socket.IO powered communication
+- Live chat and CBT sessions
 
 </td>
 </tr>
@@ -82,8 +87,8 @@
 
 | Layer | Technologies | Purpose |
 |-------|-------------|----------|
-| **Frontend** | ![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white&style=flat) ![Vite](https://img.shields.io/badge/-Vite-646CFF?logo=vite&logoColor=white&style=flat) ![Tailwind CSS](https://img.shields.io/badge/-Tailwind-38B2AC?logo=tailwind-css&logoColor=white&style=flat) | Modern, responsive UI with component-based architecture |
-| **Backend** | ![Node.js](https://img.shields.io/badge/-Node.js-339933?logo=node.js&logoColor=white&style=flat) ![Express](https://img.shields.io/badge/-Express-000000?logo=express&logoColor=white&style=flat) ![Socket.IO](https://img.shields.io/badge/-Socket.IO-010101?logo=socket.io&logoColor=white&style=flat) | RESTful API with real-time communication |
+| **Frontend** | ![React](https://img.shields.io/badge/-React-61DAFB?logo=react&logoColor=white&style=flat) ![Vite](https://img.shields.io/badge/-Vite-646CFF?logo=vite&logoColor=white&style=flat) ![Tailwind CSS](https://img.shields.io/badge/-Tailwind-38B2AC?logo=tailwind-css&logoColor=white&style=flat) ![Framer Motion](https://img.shields.io/badge/-Framer%20Motion-0055FF?logo=framer&logoColor=white&style=flat) | Modern, responsive UI with component-based architecture |
+| **Backend** | ![Node.js](https://img.shields.io/badge/-Node.js-339933?logo=node.js&logoColor=white&style=flat) ![Express](https://img.shields.io/badge/-Express-000000?logo=express&logoColor=white&style=flat) ![Socket.IO](https://img.shields.io/badge/-Socket.IO-010101?logo=socket.io&logoColor=white&style=flat) ![Mongoose](https://img.shields.io/badge/-Mongoose-47A248?logo=mongodb&logoColor=white&style=flat) | RESTful API with real-time communication |
 | **Database** | ![MongoDB](https://img.shields.io/badge/-MongoDB-47A248?logo=mongodb&logoColor=white&style=flat) | NoSQL database for flexible data storage |
 | **AI/ML** | ![Google Gemini](https://img.shields.io/badge/-Google%20Gemini-4285F4?logo=google&logoColor=white&style=flat) ![Flask](https://img.shields.io/badge/-Flask-000000?logo=flask&logoColor=white&style=flat) ![Python](https://img.shields.io/badge/-Python-3776AB?logo=python&logoColor=white&style=flat) | AI-powered chatbot and analytics |
 | **Authentication** | ![JWT](https://img.shields.io/badge/-JWT-000000?logo=json-web-tokens&logoColor=white&style=flat) ![Google OAuth](https://img.shields.io/badge/-Google%20OAuth-4285F4?logo=google&logoColor=white&style=flat) | Secure user authentication and authorization |
@@ -97,19 +102,23 @@ graph TB
     A[Client Apps] --> B[Express Backend]
     B --> C[Authentication Service]
     B --> D[Core Application Services]
-    D --> E[AI/ML Service]
-    D --> F[Gamification Engine]
-    D --> G[Analytics Engine]
-    C --> H[(MongoDB)]
-    D --> H
-    E --> I[Google Gemini API]
-    F --> H
-    G --> H
+    B --> E[Socket.IO Real-time Engine]
+    D --> F[AI/ML Service]
+    D --> G[Gamification Engine]
+    D --> H[Analytics Engine]
+    C --> I[(MongoDB)]
+    D --> I
+    E --> I
+    F --> J[Google Gemini API]
+    G --> I
+    H --> I
+    E --> K[Real-time Updates]
+    K --> A
 ```
 
 ---
 
-## 🚀 Core Feature Matrix
+## 🚀 Core Features
 
 ### 🧠 **Intelligent Mood Analytics**
 
@@ -121,6 +130,7 @@ graph TB
 - **Cultural Sensitivity**: Indian emotional expression patterns recognition
 - **Privacy-First**: Secure storage of sensitive emotional data
 - **Integration**: Seamless connection with CBT and wellness modules
+- **Real-time Updates**: Live mood tracking and trend analysis
 
 </details>
 
@@ -134,6 +144,7 @@ graph TB
 - **Crisis Detection**: Real-time risk assessment and emergency protocols
 - **Progress Tracking**: Quantified mental wellness metrics
 - **Google Gemini Integration**: Advanced AI-powered therapeutic conversations
+- **Real-time Chat**: Live CBT sessions with instant responses
 
 </details>
 
@@ -152,6 +163,7 @@ graph TB
 - Savings goal setting
 - Investment simulations
 - Financial quizzes
+- Real-time progress tracking
 
 </details>
 
@@ -160,18 +172,45 @@ graph TB
 <details>
 <summary><strong>🎮 Multi-Layered Engagement Framework</strong></summary>
 
-#### **Reward Economy:**
-- Daily wellness check-ins
-- CBT session completion
-- Financial quiz mastery
-- Community contributions
-- Streak maintenance
+#### **1000+ Daily Challenges:**
+- **Unique Challenge Pool**: 1000 distinct challenges covering all aspects
+- **Daily Selection**: 10 different challenges shown each day
+- **No Repetition**: Challenges don't repeat until all 1000 are completed
+- **Auto-Reset**: Cycle restarts after completing all challenges
 
-#### **Achievement System:**
-- Bronze, Silver, Gold tier achievements
-- Leaderboards and rankings
-- Redemption marketplace
-- Digital badges and certificates
+#### **Reward Economy:**
+- **HealCoins**: Virtual currency earned through activities
+- **XP System**: Experience points for level progression
+- **Real-time Rewards**: Instant coin and XP updates
+- **Streak Maintenance**: Daily engagement rewards
+- **Achievement System**: Bronze, Silver, Gold tier achievements
+
+#### **Social Features:**
+- **Live Leaderboards**: Real-time XP-based rankings
+- **Peer Competition**: Compare progress with friends
+- **Redemption Marketplace**: Exchange coins for rewards
+- **Digital Badges**: Recognition for accomplishments
+
+</details>
+
+### ⚡ **Real-Time Communication System**
+
+<details>
+<summary><strong>🔄 Live Updates & Notifications</strong></summary>
+
+#### **Socket.IO Integration:**
+- **Profile Updates**: Real-time profile changes across all dashboards
+- **Game Completion**: Instant reward notifications
+- **Challenge Progress**: Live challenge completion updates
+- **Leaderboard Updates**: Real-time ranking changes
+- **Chat System**: Live messaging and CBT conversations
+- **Wallet Updates**: Instant balance and transaction updates
+
+#### **Real-time Features:**
+- **Live Notifications**: Toast notifications for all activities
+- **Auto-refresh**: Data updates without page reload
+- **Multi-user Sync**: Changes visible to all relevant users
+- **Connection Management**: Automatic reconnection on network issues
 
 </details>
 
@@ -184,18 +223,60 @@ graph TB
 - **Financial Profile**: Learning progress, investment simulations, goal tracking
 - **Social Features**: Peer rankings, leaderboards, achievements
 - **Personalization**: AI-driven content recommendations and learning paths
+- **Real-time Updates**: Live notifications and progress tracking
+- **Profile Management**: Comprehensive profile editing with avatar upload
 
 ### 👨‍🏫 **Educator Portal**
 - **Class Analytics**: Aggregated wellness and learning insights
 - **Student Management**: Student progress monitoring and support
 - **Resource Library**: Educational materials and curriculum tools
 - **Redemption Management**: Approve and manage student reward redemptions
+- **Real-time Monitoring**: Live student activity tracking
+- **Communication Center**: Direct messaging with students
 
 ### 👨‍💼 **Administrator Console**
 - **Platform Analytics**: User engagement, feature utilization, system health
 - **User Management**: Advanced user lifecycle and support features
 - **Educator Approval**: Manage educator registration and verification
 - **System Settings**: Platform configuration and customization
+- **Real-time Monitoring**: Live system health and user activity
+- **Multi-tenant Management**: Organization and role management
+
+### 👨‍👩‍👧‍👦 **Parent Dashboard**
+- **Child Progress**: Digital twin tracking across all pillars
+- **Reward Monitoring**: Track coin usage and redemptions
+- **Subscription Management**: Plan upgrades and billing
+- **Real-time Updates**: Live notifications of child activities
+
+### 🏪 **Seller Dashboard**
+- **Product Management**: Add/edit/delete items with pricing
+- **Voucher Redemption**: QR code validation and approval
+- **Sales Analytics**: Revenue tracking and commission management
+- **Real-time Updates**: Live sales and redemption notifications
+
+### 🏢 **CSR/Sponsor Dashboard**
+- **Impact Metrics**: Students benefitted and value funded
+- **Regional Analysis**: Geographic impact distribution
+- **Report Generation**: Automated PDF/Excel reports
+- **Real-time Tracking**: Live impact measurement
+
+---
+
+## 🎮 Game Ecosystem
+
+### **Educational Games:**
+- **MindMaze**: Mental wellness and problem-solving
+- **BreatheBalance**: Stress management and mindfulness
+- **PiggyBankBuilder**: Savings and financial planning
+- **ShopSmart**: Budgeting and spending decisions
+- **InvestQuest**: Investment strategies and risk management
+- **BudgetHero**: Financial planning and goal setting
+
+### **Game Features:**
+- **Real-time Scoring**: Live XP and coin updates
+- **Progress Tracking**: Detailed completion analytics
+- **Achievement System**: Unlockable rewards and badges
+- **Social Integration**: Share achievements and compete with friends
 
 ---
 
@@ -286,6 +367,9 @@ SMTP_PASS=your_app_password
 
 # CORS Configuration
 CLIENT_URL=http://localhost:3000,http://localhost:5173
+
+# Socket.IO Configuration
+SOCKET_CORS_ORIGIN=http://localhost:3000,http://localhost:5173
 ```
 
 </details>
@@ -295,6 +379,7 @@ CLIENT_URL=http://localhost:3000,http://localhost:5173
 
 ```env
 # API Configuration
+VITE_API_URL=http://localhost:5000
 VITE_API_BASE_URL=http://localhost:5000/api
 
 # Authentication
@@ -303,6 +388,7 @@ VITE_GOOGLE_CLIENT_ID=your_google_client_id
 # Features Flags
 VITE_ENABLE_CBT_CHATBOT=true
 VITE_ENABLE_DARK_MODE=true
+VITE_ENABLE_REAL_TIME=true
 ```
 
 </details>
@@ -316,7 +402,7 @@ GEMINI_API_KEY=your_gemini_api_key
 
 # Flask Configuration
 FLASK_ENV=development
-PORT=5000
+PORT=5001
 ```
 
 </details>
@@ -332,32 +418,111 @@ PORT=5000
 finmen/
 ├── backend/                      # Node.js Express Backend
 │   ├── config/                   # Configuration files
+│   │   ├── db.js                 # Database configuration
+│   │   └── passport.js           # Authentication strategies
 │   ├── controllers/              # Route controllers
+│   │   ├── authController.js     # Authentication logic
+│   │   ├── userController.js     # User management
+│   │   ├── gameController.js     # Game logic
+│   │   ├── challengeController.js # Challenge management
+│   │   ├── dailyChallengeController.js # Daily challenges
+│   │   ├── cbtController.js      # CBT chat system
+│   │   ├── moodController.js     # Mood tracking
+│   │   ├── walletController.js   # Wallet management
+│   │   └── ...                   # Other controllers
 │   ├── middlewares/              # Express middlewares
+│   │   ├── authMiddleware.js     # Authentication middleware
+│   │   ├── requireAuth.js        # Auth requirement
+│   │   ├── checkRole.js          # Role-based access
+│   │   └── errorMiddleware.js    # Error handling
 │   ├── models/                   # MongoDB models
+│   │   ├── User.js               # User schema
+│   │   ├── Wallet.js             # Wallet schema
+│   │   ├── Challenge.js          # Challenge schema
+│   │   ├── Game.js               # Game schema
+│   │   ├── CBTSession.js         # CBT sessions
+│   │   └── ...                   # Other models
 │   ├── routes/                   # API routes
-│   ├── services/                 # Business logic services
+│   │   ├── authRoutes.js         # Authentication routes
+│   │   ├── userRoutes.js         # User routes
+│   │   ├── gameRoutes.js         # Game routes
+│   │   ├── challengeRoutes.js    # Challenge routes
+│   │   └── ...                   # Other routes
 │   ├── socketHandlers/           # Socket.IO handlers
+│   │   ├── chatSocket.js         # Chat functionality
+│   │   ├── gameSocket.js         # Game updates
+│   │   ├── walletSocket.js       # Wallet updates
+│   │   ├── studentSocket.js      # Student features
+│   │   └── ...                   # Other socket handlers
+│   ├── services/                 # Business logic services
+│   │   ├── emailService.js       # Email functionality
+│   │   └── otpService.js         # OTP generation
 │   ├── utils/                    # Utility functions
+│   │   ├── generateToken.js      # JWT generation
+│   │   ├── cbtBotEngine.js       # CBT AI logic
+│   │   └── ...                   # Other utilities
 │   ├── server.js                 # Main server file
 │   └── package.json              # Backend dependencies
 │
 ├── frontend/                     # React Vite Frontend
 │   ├── public/                   # Static assets
+│   │   └── avatars/              # Default avatar images
 │   ├── src/                      # Source code
 │   │   ├── assets/               # Images, fonts, etc.
 │   │   ├── components/           # Reusable UI components
+│   │   │   ├── Profile.jsx       # User profile component
+│   │   │   ├── Navbar.jsx        # Navigation component
+│   │   │   ├── Chatbot.jsx       # CBT chat interface
+│   │   │   └── ...               # Other components
 │   │   ├── context/              # React context providers
+│   │   │   ├── AuthContext.jsx   # Authentication context
+│   │   │   ├── SocketContext.jsx # Socket.IO context
+│   │   │   ├── WalletContext.jsx # Wallet context
+│   │   │   └── NotificationContext.jsx # Notifications
 │   │   ├── data/                 # Static data files
+│   │   │   ├── mockFeatures.js   # Feature data
+│   │   │   └── mockAchievements.js # Achievement data
 │   │   ├── hooks/                # Custom React hooks
+│   │   │   ├── useAuth.js        # Authentication hook
+│   │   │   ├── useSocket.js      # Socket hook
+│   │   │   └── useNotification.js # Notification hook
 │   │   ├── pages/                # Page components
 │   │   │   ├── Admin/            # Admin pages
+│   │   │   │   ├── AdminDashboard.jsx
+│   │   │   │   ├── AllStudents.jsx
+│   │   │   │   ├── AllEducator.jsx
+│   │   │   │   └── ...           # Other admin pages
 │   │   │   ├── Auth/             # Authentication pages
+│   │   │   │   ├── Login.jsx
+│   │   │   │   ├── Register.jsx
+│   │   │   │   └── ...           # Other auth pages
 │   │   │   ├── Educator/         # Educator pages
+│   │   │   │   ├── EducatorDashboard.jsx
+│   │   │   │   ├── StudentManagement.jsx
+│   │   │   │   └── ...           # Other educator pages
 │   │   │   ├── Games/            # Game components
-│   │   │   └── Student/          # Student pages
+│   │   │   │   ├── MindMaze.jsx
+│   │   │   │   ├── BreatheBalance.jsx
+│   │   │   │   └── ...           # Other games
+│   │   │   ├── Student/          # Student pages
+│   │   │   │   ├── StudentDashboard.jsx
+│   │   │   │   ├── DailyChallenges.jsx
+│   │   │   │   ├── Leaderboard.jsx
+│   │   │   │   └── ...           # Other student pages
+│   │   │   └── College/          # College-specific pages
+│   │   │       └── AlumniNetwork.jsx
 │   │   ├── services/             # API service layers
-│   │   └── utils/                # Utility functions
+│   │   │   ├── authService.js    # Authentication API
+│   │   │   ├── gameService.js    # Game API
+│   │   │   ├── walletService.js  # Wallet API
+│   │   │   └── ...               # Other services
+│   │   ├── utils/                # Utility functions
+│   │   │   ├── api.js            # API configuration
+│   │   │   ├── socket.js         # Socket configuration
+│   │   │   └── exportCSV.js      # Data export utilities
+│   │   ├── App.jsx               # Main app component
+│   │   ├── main.jsx              # App entry point
+│   │   └── index.css              # Global styles
 │   ├── index.html                # HTML entry point
 │   └── package.json              # Frontend dependencies
 │
@@ -386,8 +551,131 @@ finmen/
 | **Data Protection** | Secure password hashing, Data validation | Industry Standard |
 | **API Security** | Rate limiting, CORS, Input validation | OWASP Top 10 |
 | **Privacy** | Data minimization, User consent | GDPR & IT Act 2000 |
+| **Real-time Security** | Socket.IO authentication, Room-based access | WebSocket Security |
 
 </div>
+
+### 🔐 **Multi-Tenant Architecture**
+
+- **Organization Isolation**: Complete data separation between organizations
+- **Role-Based Access**: Granular permissions for different user types
+- **Tenant-Specific Configuration**: Customizable settings per organization
+- **Secure Data Flow**: Encrypted communication between services
+
+---
+
+## 🎯 User Roles & Access
+
+### **Core Roles:**
+- **Student**: Learning, games, challenges, profile management
+- **Educator**: Student management, progress tracking, redemption approval
+- **Admin**: Platform management, user approval, system configuration
+- **Parent**: Child progress monitoring, subscription management
+- **Seller**: Product management, voucher redemption, sales analytics
+- **CSR/Sponsor**: Impact tracking, report generation, regional analysis
+
+### **Educational Institution Roles:**
+- **School Admin/Teacher/Student/Parent**: School-specific management
+- **College Admin/HOD/Faculty/Student/Parent**: College-specific features
+- **Placement Officer**: Job placement and career guidance
+- **Alumni**: Network and mentorship features
+
+---
+
+## 🚀 Getting Started
+
+### **1. Clone the Repository**
+```bash
+git clone https://github.com/your-username/finmen.git
+cd finmen
+```
+
+### **2. Install Dependencies**
+```bash
+# Backend
+cd backend
+npm install
+
+# Frontend
+cd ../frontend
+npm install
+
+# AI/ML Service (Optional)
+cd ../AIML
+pip install -r requirements.txt
+```
+
+### **3. Environment Setup**
+```bash
+# Copy environment files
+cp backend/.env.example backend/.env
+cp frontend/.env.example frontend/.env
+cp AIML/.env.example AIML/.env
+
+# Configure your environment variables
+```
+
+### **4. Database Setup**
+```bash
+# Start MongoDB
+mongod
+
+# The application will create necessary collections on first run
+```
+
+### **5. Start Development Servers**
+```bash
+# Terminal 1 - Backend
+cd backend
+npm run dev
+
+# Terminal 2 - Frontend
+cd frontend
+npm run dev
+
+# Terminal 3 - AI/ML Service (Optional)
+cd AIML
+python app.py
+```
+
+### **6. Access the Application**
+- **Frontend**: http://localhost:3000
+- **Backend API**: http://localhost:5000
+- **AI/ML Service**: http://localhost:5001
+
+---
+
+## 🧪 Testing
+
+### **Test Credentials**
+See [LOGIN_CREDENTIALS.md](LOGIN_CREDENTIALS.md) for test user accounts.
+
+### **Running Tests**
+```bash
+# Backend tests
+cd backend
+npm test
+
+# Frontend tests
+cd frontend
+npm test
+```
+
+---
+
+## 📈 Performance & Scalability
+
+### **Real-time Performance**
+- **Socket.IO Optimization**: Efficient room management and event handling
+- **Database Indexing**: Optimized queries for real-time updates
+- **Caching Strategy**: Redis integration for frequently accessed data
+- **Connection Management**: Automatic reconnection and error handling
+
+### **Scalability Features**
+- **Horizontal Scaling**: Stateless backend design
+- **Database Sharding**: Multi-tenant data separation
+- **CDN Integration**: Static asset optimization
+- **Load Balancing**: Multiple server instance support
 
 ---
 
@@ -454,6 +742,8 @@ finmen/
 - **React**: Functional components + Hooks
 - **CSS**: Tailwind CSS
 - **Documentation**: JSDoc + Markdown
+- **Real-time**: Socket.IO best practices
+- **Testing**: Jest + React Testing Library
 
 ---
 
@@ -483,10 +773,30 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 ---
 
+## 📞 Support & Community
+
+### **Documentation**
+- [API Documentation](docs/api.md)
+- [Deployment Guide](backend/DEPLOYMENT.md)
+- [Login Credentials](LOGIN_CREDENTIALS.md)
+- [Dashboard Implementation](DASHBOARD_IMPLEMENTATION.md)
+
+### **Community**
+- **GitHub Issues**: Bug reports and feature requests
+- **Discussions**: Community discussions and Q&A
+- **Discord**: Real-time community chat
+- **Email**: support@finmen.in
+
+---
+
 <div align="center">
 
 **Made with ❤️ for India's Digital Future**
 
 *Building bridges between mental wellness and financial prosperity, one student at a time.*
+
+[![GitHub stars](https://img.shields.io/github/stars/your-username/finmen?style=social)](https://github.com/your-username/finmen)
+[![GitHub forks](https://img.shields.io/github/forks/your-username/finmen?style=social)](https://github.com/your-username/finmen)
+[![GitHub watchers](https://img.shields.io/github/watchers/your-username/finmen?style=social)](https://github.com/your-username/finmen)
 
 </div>

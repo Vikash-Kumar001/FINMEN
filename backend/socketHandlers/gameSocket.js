@@ -243,18 +243,19 @@ export const setupGameSocket = (io, socket, user) => {
       console.log(`🏆 User ${user._id} subscribed to ${period} leaderboard`);
       socket.join(`leaderboard-${period}`);
 
-      // Note: For simplicity, use total XP from UserProgress as the unified source
-      // Period-specific deltas would require tracking XP over time; omitted here
+      // Fetch leaderboard data from UserProgress
       const top = await UserProgress.find()
         .sort({ xp: -1 })
         .limit(20)
-        .populate('userId', 'name');
+        .populate('userId', 'name avatar');
 
       const leaderboard = top.map((entry, index) => ({
         rank: index + 1,
         _id: entry.userId?._id,
-        name: entry.userId?.name,
+        name: entry.userId?.name || 'Unknown',
+        avatar: entry.userId?.avatar,
         xp: entry.xp || 0,
+        level: Math.floor((entry.xp || 0) / 100) + 1,
         isCurrentUser: entry.userId?._id?.toString() === user._id.toString()
       }));
 
@@ -268,6 +269,38 @@ export const setupGameSocket = (io, socket, user) => {
       socket.emit('student:leaderboard:error', { message: err.message });
     }
   });
+
+  // Broadcast leaderboard updates when XP changes
+  const broadcastLeaderboardUpdate = async () => {
+    try {
+      const top = await UserProgress.find()
+        .sort({ xp: -1 })
+        .limit(20)
+        .populate('userId', 'name avatar');
+
+      const leaderboard = top.map((entry, index) => ({
+        rank: index + 1,
+        _id: entry.userId?._id,
+        name: entry.userId?.name || 'Unknown',
+        avatar: entry.userId?.avatar,
+        xp: entry.xp || 0,
+        level: Math.floor((entry.xp || 0) / 100) + 1
+      }));
+
+      // Broadcast to all leaderboard subscribers
+      ['daily', 'weekly', 'monthly', 'allTime'].forEach(period => {
+        io.to(`leaderboard-${period}`).emit('student:leaderboard:data', {
+          period,
+          leaderboard
+        });
+      });
+    } catch (err) {
+      console.error('Error broadcasting leaderboard update:', err);
+    }
+  };
+
+  // Listen for XP updates to refresh leaderboard
+  socket.on('xp-updated', broadcastLeaderboardUpdate);
 
   // Cleanup when socket disconnects
   socket.on('disconnect', () => {

@@ -40,9 +40,20 @@ import {
   Mail,
   Phone,
 } from "lucide-react";
+import { 
+  fetchEducatorDashboardData,
+  fetchEducatorStats,
+  fetchEducatorStudents,
+  fetchEducatorAnalytics,
+  fetchNotifications,
+  refreshDashboardData
+} from "../../services/dashboardService";
+import { toast } from "react-hot-toast";
+import { useSocket } from "../../context/SocketContext";
 
 const EducatorDashboard = () => {
   const navigate = useNavigate();
+  const { socket } = useSocket();
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(false);
@@ -51,8 +62,17 @@ const EducatorDashboard = () => {
   const [notifications, setNotifications] = useState([]);
   const [students, setStudents] = useState([]);
   const [analytics, setAnalytics] = useState({});
+  const [stats, setStats] = useState({
+    totalStudents: 0,
+    activeStudents: 0,
+    completedActivities: 0,
+    averageProgress: 0,
+    pendingAssignments: 0,
+    recentAlerts: []
+  });
   const [alerts, setAlerts] = useState([]);
   const [showNotifications, setShowNotifications] = useState(false);
+  const [dashboardData, setDashboardData] = useState(null);
 
   // Real-time data simulation
   useEffect(() => {
@@ -64,6 +84,148 @@ const EducatorDashboard = () => {
     }, 30000);
     return () => clearInterval(interval);
   }, []);
+  
+  // Load comprehensive dashboard data
+  const loadDashboardData = React.useCallback(async () => {
+    try {
+      setLoading(true);
+      
+      // Fetch all dashboard data using the new service
+      const data = await fetchEducatorDashboardData();
+      setDashboardData(data);
+      
+      // Update individual state with fetched data
+      if (data.stats) {
+        setStats(data.stats);
+      }
+      
+      if (data.students) {
+        setStudents(data.students);
+      }
+      
+      if (data.analytics) {
+        setAnalytics(data.analytics);
+      }
+      
+      if (data.notifications) {
+        setNotifications(data.notifications);
+      }
+      
+      toast.success("Dashboard data loaded successfully!", {
+        duration: 2000,
+        position: "top-center",
+        icon: "✅"
+      });
+      
+    } catch (err) {
+      console.error("❌ Failed to load dashboard data", err);
+      
+      // Load individual components with fallback
+      try {
+        const statsData = await fetchEducatorStats();
+        setStats(statsData);
+      } catch (statsErr) {
+        console.warn("Using default stats due to API error:", statsErr.message);
+      }
+      
+      try {
+        const studentsData = await fetchEducatorStudents();
+        setStudents(studentsData.students || []);
+      } catch (studentsErr) {
+        console.warn("Could not load students data:", studentsErr.message);
+      }
+      
+      try {
+        const analyticsData = await fetchEducatorAnalytics(dateRange);
+        setAnalytics(analyticsData);
+      } catch (analyticsErr) {
+        console.warn("Could not load analytics data:", analyticsErr.message);
+      }
+      
+      try {
+        const notificationData = await fetchNotifications('educator', true);
+        setNotifications(notificationData);
+      } catch (notificationErr) {
+        console.warn("Could not load notifications:", notificationErr.message);
+      }
+      
+      toast.error("Some dashboard features may not be available. Please try refreshing.", {
+        duration: 3000,
+        position: "top-center",
+        icon: "⚠️"
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [dateRange]);
+  
+  // Refresh dashboard data
+  const handleRefreshData = async () => {
+    try {
+      setLoading(true);
+      const refreshedData = await refreshDashboardData('educator');
+      setDashboardData(refreshedData);
+      
+      // Update all data with refreshed information
+      if (refreshedData.stats) setStats(refreshedData.stats);
+      if (refreshedData.students) setStudents(refreshedData.students);
+      if (refreshedData.analytics) setAnalytics(refreshedData.analytics);
+      if (refreshedData.notifications) setNotifications(refreshedData.notifications);
+      
+      toast.success("Dashboard data refreshed!", {
+        duration: 2000,
+        position: "top-center",
+        icon: "🔄"
+      });
+    } catch (err) {
+      console.error("Error refreshing data:", err.message);
+      toast.error("Failed to refresh data", {
+        duration: 3000,
+        position: "top-center",
+        icon: "❌"
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
+  // Real-time socket events
+  useEffect(() => {
+    if (!socket) return;
+    
+    // Listen for real-time educator events
+    const handleStudentUpdate = (data) => {
+      setStudents(prev => {
+        const updated = prev.map(student => 
+          student._id === data.studentId ? { ...student, ...data.updates } : student
+        );
+        return updated;
+      });
+      toast.info(`Student ${data.studentName} updated: ${data.message}`);
+    };
+    
+    const handleNewAlert = (data) => {
+      setAlerts(prev => [data, ...prev.slice(0, 9)]); // Keep last 10 alerts
+      toast.warning(`New alert: ${data.message}`, {
+        duration: 4000,
+        position: "top-right",
+        icon: "🚨"
+      });
+    };
+    
+    socket.on('student-update', handleStudentUpdate);
+    socket.on('educator-alert', handleNewAlert);
+    
+    return () => {
+      socket.off('student-update', handleStudentUpdate);
+      socket.off('educator-alert', handleNewAlert);
+    };
+  }, [socket]);
+  
+  // Initial data load
+  useEffect(() => {
+    loadDashboardData();
+  }, [loadDashboardData]);
 
   const featureCards = [
     {
@@ -274,18 +436,6 @@ const EducatorDashboard = () => {
     }, 800);
   };
 
-  const handleRefreshData = () => {
-    setLoading(true);
-    console.log("Refreshing dashboard data...");
-    setTimeout(() => {
-      setLoading(false);
-      setAnalytics({
-        ...analytics,
-        lastUpdated: new Date().toLocaleTimeString(),
-      });
-    }, 1500);
-  };
-
   // Animation variants
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -377,9 +527,13 @@ const EducatorDashboard = () => {
                   className="bg-white/80 backdrop-blur-sm p-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 relative"
                 >
                   <Bell className="w-6 h-6 text-gray-700" />
-                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
-                    <span className="text-white text-xs font-bold">3</span>
-                  </div>
+                  {notifications.length > 0 && (
+                    <div className="absolute -top-1 -right-1 w-5 h-5 bg-red-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xs font-bold">
+                        {notifications.length}
+                      </span>
+                    </div>
+                  )}
                 </motion.button>
               </div>
             </div>
@@ -441,7 +595,7 @@ const EducatorDashboard = () => {
               </div>
               <div className="flex items-center gap-4">
                 <div className="text-sm text-gray-600">
-                  Last updated: {analytics.lastUpdated || "Now"}
+                  Students: {stats.totalStudents} | Active: {stats.activeStudents}
                 </div>
                 <select
                   value={dateRange}
@@ -457,6 +611,94 @@ const EducatorDashboard = () => {
             </div>
           </div>
         </motion.div>
+        
+        {/* Students Overview */}
+        {students.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="mb-8"
+          >
+            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <Users className="w-5 h-5 text-indigo-500" />
+                My Students ({students.length})
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {students.slice(0, 6).map((student, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl hover:bg-indigo-100 transition-colors">
+                    <div className="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold">
+                      {student.name?.charAt(0) || 'S'}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-800">
+                        {student.name || 'Student'}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        Progress: {student.progress || 0}%
+                      </p>
+                    </div>
+                    <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                      <Activity className="w-4 h-4 text-green-600" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+        
+        {/* Alerts */}
+        {alerts.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="mb-8"
+          >
+            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40">
+              <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                <AlertCircle className="w-5 h-5 text-red-500" />
+                Recent Alerts ({alerts.length})
+              </h3>
+              <div className="space-y-3">
+                {alerts.slice(0, 5).map((alert, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 bg-red-50 rounded-xl">
+                    <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-gray-800">
+                        {alert.message || alert.title}
+                      </p>
+                      <p className="text-xs text-gray-500">
+                        {new Date(alert.timestamp || alert.createdAt).toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+        
+        {/* Debug Data */}
+        {dashboardData && import.meta.env.DEV && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="mb-8"
+          >
+            <div className="bg-gray-50 rounded-xl p-4">
+              <h4 className="text-sm font-bold text-gray-600 mb-2">Debug Info (Dev Mode)</h4>
+              <div className="text-xs text-gray-500">
+                <p>Dashboard data loaded: {new Date().toLocaleTimeString()}</p>
+                <p>Stats: {Object.keys(dashboardData.stats || {}).length} items</p>
+                <p>Active tab: {activeTab}</p>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {/* Quick Actions */}
         <motion.div

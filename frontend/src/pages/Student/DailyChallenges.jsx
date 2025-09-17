@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 import { FiCalendar, FiClock, FiAward, FiCheckCircle, FiTrendingUp } from 'react-icons/fi';
 import { toast } from 'react-hot-toast';
@@ -37,28 +38,49 @@ const DailyChallenges = () => {
     }
   };
 
-  const updateProgress = async (challengeId, step) => {
+  const updateProgress = async (challengeId, step = 1) => {
     try {
+      console.log(`🎯 Updating challenge progress: ${challengeId}, step: ${step}`);
       const response = await api.post(`/api/daily-challenges/progress/${challengeId}`, { step });
+      
+      console.log('✅ Progress update response:', response.data);
+      
+      // Update the specific challenge's progress
       setDailyChallenges(prev => prev.map(dc =>
         dc.challenge._id === challengeId
           ? { ...dc, progress: response.data.progress }
           : dc
       ));
+      
       if (response.data.isCompleted) {
         toast.success(
           <div>
-            <p>Challenge completed! 🎉</p>
-            <p>Rewards: {response.data.rewards.xp} XP, {response.data.rewards.coins} HealCoins</p>
-          </div>
+            <p>🎉 Challenge completed!</p>
+            <p>🏆 Rewards: {response.data.rewards?.xp || 0} XP, {response.data.rewards?.coins || 0} HealCoins</p>
+          </div>,
+          { duration: 4000 }
         );
-        refreshWallet();
+        // Refresh wallet or other data if needed
+        if (refreshWallet) refreshWallet();
       } else {
-        toast.success('Progress updated!');
+        toast.success(
+          <div>
+            <p>✅ Step {step} completed!</p>
+            <p>Keep going to finish the challenge!</p>
+          </div>,
+          { duration: 2000 }
+        );
       }
     } catch (err) {
-      console.error('Error updating progress:', err);
-      toast.error(err.response?.data?.error || 'Failed to update progress');
+      console.error('❌ Error updating progress:', err);
+      const errorMessage = err.response?.data?.error || 'Failed to update progress';
+      toast.error(errorMessage);
+      
+      // If the error is "Challenge already started", try to fetch the latest progress
+      if (errorMessage.includes('already started')) {
+        console.log('🔄 Challenge already started, refreshing challenges...');
+        fetchChallenges();
+      }
     }
   };
 
@@ -116,37 +138,62 @@ const DailyChallenges = () => {
               </div>
             </div>
             <div className="mt-4">
-              <h4 className="text-sm font-medium text-gray-700 mb-2">Steps to complete:</h4>
+              <h4 className="text-sm font-medium text-gray-700 mb-2">Challenge Steps:</h4>
               <div className="space-y-2">
                 {Array.from({ length: totalSteps }, (_, i) => {
                   const stepNumber = i + 1;
                   const isCompleted = progress?.completedSteps?.includes(stepNumber);
+                  const canClick = !isCompleted && !progress?.isCompleted;
                   return (
                     <div key={stepNumber} className="flex items-center">
                       <button
-                        onClick={() => !isCompleted && !progress?.isCompleted && updateProgress(challenge._id, stepNumber)}
-                        disabled={isCompleted || progress?.isCompleted}
-                        className={`p-1 rounded-full mr-2 ${isCompleted 
-                          ? 'bg-green-100 text-green-600' 
-                          : progress?.isCompleted 
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}
+                        onClick={() => canClick && updateProgress(challenge._id, stepNumber)}
+                        disabled={!canClick}
+                        className={`p-2 rounded-full mr-3 transition-all duration-200 ${
+                          isCompleted 
+                            ? 'bg-green-100 text-green-600 shadow-sm' 
+                            : progress?.isCompleted 
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                              : 'bg-blue-50 text-blue-600 hover:bg-blue-100 hover:shadow-md cursor-pointer transform hover:scale-105'
+                        }`}
                       >
                         {isCompleted ? (
                           <FiCheckCircle className="w-5 h-5" />
                         ) : (
-                          <div className="w-5 h-5 flex items-center justify-center text-xs font-medium">
+                          <div className="w-5 h-5 flex items-center justify-center text-xs font-semibold">
                             {stepNumber}
                           </div>
                         )}
                       </button>
-                      <span className={`text-sm ${isCompleted ? 'text-green-600 line-through' : 'text-gray-600'}`}>
-                        Complete step {stepNumber} of the challenge
-                      </span>
+                      <div className="flex-1">
+                        <span className={`text-sm font-medium ${
+                          isCompleted ? 'text-green-600 line-through' : 'text-gray-700'
+                        }`}>
+                          Step {stepNumber}: {challenge.title} - Part {stepNumber}
+                        </span>
+                        {!isCompleted && !progress?.isCompleted && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Click to complete this step and earn progress!
+                          </p>
+                        )}
+                      </div>
+                      {canClick && (
+                        <div className="text-xs text-blue-500 font-medium ml-2">
+                          +{Math.ceil(challenge.xpReward / totalSteps)} XP
+                        </div>
+                      )}
                     </div>
                   );
                 })}
               </div>
+              {progress?.completedSteps?.length === 0 && (
+                <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                  <p className="text-sm text-blue-700 font-medium">🎯 Ready to start?</p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Click on Step 1 above to begin this challenge and start earning rewards!
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -206,18 +253,40 @@ const DailyChallenges = () => {
       <div className="mt-12 bg-blue-50 rounded-xl p-6 border border-blue-100">
         <h3 className="text-lg font-semibold text-blue-800 mb-2">Why Complete Challenges?</h3>
         <ul className="space-y-2">
-          {dailyChallenges.daily?.challenge?.benefits.map((benefit, index) => (
+          {/* Get benefits from the first challenge if available */}
+          {dailyChallenges.length > 0 && dailyChallenges[0].challenge?.benefits?.map((benefit, index) => (
             <li key={index} className="flex items-start">
               <span className="text-blue-500 mr-2">•</span>
               <span className="text-gray-700">{benefit}</span>
             </li>
           ))}
-          {weekly?.challenge?.benefits.map((benefit, index) => (
+          {weekly?.challenge?.benefits?.map((benefit, index) => (
             <li key={`weekly-${index}`} className="flex items-start">
               <span className="text-blue-500 mr-2">•</span>
               <span className="text-gray-700">{benefit}</span>
             </li>
           ))}
+          {/* Default benefits if none available */}
+          {(!dailyChallenges.length || !dailyChallenges[0].challenge?.benefits) && !weekly?.challenge?.benefits && (
+            <>
+              <li className="flex items-start">
+                <span className="text-blue-500 mr-2">•</span>
+                <span className="text-gray-700">Earn XP and HealCoins for completing challenges</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mr-2">•</span>
+                <span className="text-gray-700">Build healthy financial habits</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mr-2">•</span>
+                <span className="text-gray-700">Improve your financial knowledge</span>
+              </li>
+              <li className="flex items-start">
+                <span className="text-blue-500 mr-2">•</span>
+                <span className="text-gray-700">Compete with others on the leaderboard</span>
+              </li>
+            </>
+          )}
         </ul>
       </div>
     </div>

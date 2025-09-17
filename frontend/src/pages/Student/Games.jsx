@@ -1,39 +1,35 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
     Brain, 
     Heart, 
-    Smile, 
-    HandHeart, 
-    Zap, 
-    Trophy, 
-    Target, 
-    Clock, 
-    Star, 
-    Crown, 
     Sparkles,
     Play,
     Award,
     ChevronRight,
     Timer,
     Coins,
-    Medal,
     Gamepad2,
     Focus,
     Lightbulb,
     Wind,
     Wallet,
     TrendingUp,
-    Bookmark,
     PiggyBank,
     ShoppingCart,
     BarChart4,
     DollarSign,
-    Hourglass
+    BookOpen,
+    GraduationCap,
+    Users,
+    Compass,
+    HandHeart,
+    Target,
+    ArrowLeft
 } from "lucide-react";
 import api from "../../utils/api";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-toastify";
 
 const containerVariants = {
@@ -62,14 +58,9 @@ const itemVariants = {
 
 export default function Games() {
     const navigate = useNavigate();
+    const [searchParams, setSearchParams] = useSearchParams();
     const { user } = useAuth();
-    const [gamesList, setGamesList] = useState([]);
-    const [categories, setCategories] = useState(["all"]);
-    const [difficultyColors, setDifficultyColors] = useState({});
-    const [selectedCategory, setSelectedCategory] = useState("all");
-    const [selectedType, setSelectedType] = useState("all");
-    const [selectedAgeGroup, setSelectedAgeGroup] = useState("all");
-    const [hoveredGame, setHoveredGame] = useState(null);
+    const selectedPillar = searchParams.get('pillar');
     const [userStats, setUserStats] = useState({
         gamesPlayed: 0,
         coinsEarned: 0,
@@ -77,43 +68,173 @@ export default function Games() {
         currentStreak: 0,
         walletBalance: 0
     });
-    const [loading, setLoading] = useState(true);
     
-    // Map game icons to Lucide components
-    const getGameIcon = (category) => {
-        const iconMap = {
-            'mind-maze': <Brain className="w-8 h-8" />,
-            'breathe-balance': <Wind className="w-8 h-8" />,
-            'piggy-bank-builder': <PiggyBank className="w-8 h-8" />,
-            'shop-smart': <ShoppingCart className="w-8 h-8" />,
-            'invest-quest': <TrendingUp className="w-8 h-8" />,
-            'budget-hero': <DollarSign className="w-8 h-8" />
-        };
-        return iconMap[category] || <Gamepad2 className="w-8 h-8" />;
-    };
+    // Define the four pillars with their games
+    const gamePillars = [
+        {
+            id: 'ai-education',
+            title: 'AI Education Games',
+            icon: <GraduationCap className="w-8 h-8" />,
+            color: 'from-blue-500 to-indigo-600',
+            description: 'Learn AI concepts through interactive games',
+            totalGames: 3,
+            games: [
+                {
+                    title: 'AI Logic Quest',
+                    description: 'Learn programming logic and AI fundamentals',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '15 min',
+                    coins: 50,
+                    route: '/student/games/ai-logic-quest'
+                },
+                {
+                    title: 'Neural Network Builder',
+                    description: 'Build and train your own neural networks',
+                    icon: <Lightbulb className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '20 min',
+                    coins: 75,
+                    route: '/student/games/neural-network'
+                },
+                {
+                    title: 'Data Pattern Detective',
+                    description: 'Find patterns in data like an AI',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '10 min',
+                    coins: 30,
+                    route: '/student/games/data-patterns'
+                }
+            ]
+        },
+        {
+            id: 'brain-health',
+            title: 'Brain Health Games',
+            icon: <Brain className="w-8 h-8" />,
+            color: 'from-purple-500 to-pink-600',
+            description: 'Improve mental wellness and cognitive abilities',
+            totalGames: 3,
+            games: [
+                {
+                    title: 'MindMaze',
+                    description: 'Navigate through cognitive challenges',
+                    icon: <Focus className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '12 min',
+                    coins: 40,
+                    route: '/student/games/mind-maze'
+                },
+                {
+                    title: 'BreatheBalance',
+                    description: 'Master breathing techniques for calmness',
+                    icon: <Wind className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '8 min',
+                    coins: 25,
+                    route: '/student/games/breathe-balance'
+                },
+                {
+                    title: 'Memory Palace',
+                    description: 'Strengthen your memory with fun exercises',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '18 min',
+                    coins: 60,
+                    route: '/student/games/memory-palace'
+                }
+            ]
+        },
+        {
+            id: 'moral-values',
+            title: 'Moral Values Games',
+            icon: <Heart className="w-8 h-8" />,
+            color: 'from-green-500 to-emerald-600',
+            description: 'Build character and learn ethical decision making',
+            totalGames: 3,
+            games: [
+                {
+                    title: 'Ethics Explorer',
+                    description: 'Navigate moral dilemmas and build character',
+                    icon: <Compass className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '15 min',
+                    coins: 45,
+                    route: '/student/games/ethics-explorer'
+                },
+                {
+                    title: 'Kindness Quest',
+                    description: 'Spread kindness and learn empathy',
+                    icon: <HandHeart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '10 min',
+                    coins: 35,
+                    route: '/student/games/kindness-quest'
+                },
+                {
+                    title: 'Community Builder',
+                    description: 'Learn teamwork and social responsibility',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '20 min',
+                    coins: 55,
+                    route: '/student/games/community-builder'
+                }
+            ]
+        },
+        {
+            id: 'finance',
+            title: 'Finance Games',
+            icon: <DollarSign className="w-8 h-8" />,
+            color: 'from-yellow-500 to-orange-600',
+            description: 'Master financial literacy and money management',
+            totalGames: 4,
+            games: [
+                {
+                    title: 'PiggyBank Builder',
+                    description: 'Learn saving strategies and goal setting',
+                    icon: <PiggyBank className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '12 min',
+                    coins: 40,
+                    route: '/student/games/piggy-bank-builder'
+                },
+                {
+                    title: 'ShopSmart',
+                    description: 'Make smart purchasing decisions',
+                    icon: <ShoppingCart className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '15 min',
+                    coins: 50,
+                    route: '/student/games/shop-smart'
+                },
+                {
+                    title: 'InvestQuest',
+                    description: 'Learn investment basics and portfolio building',
+                    icon: <TrendingUp className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '25 min',
+                    coins: 70,
+                    route: '/student/games/invest-quest'
+                },
+                {
+                    title: 'BudgetHero',
+                    description: 'Master budgeting and expense tracking',
+                    icon: <BarChart4 className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '18 min',
+                    coins: 55,
+                    route: '/student/games/budget-hero'
+                }
+            ]
+        }
+    ];
     
+    // Fetch user stats
     useEffect(() => {
-        // Fetch games data from API
-        const fetchGames = async () => {
-            setLoading(true);
-            try {
-                const response = await api.get('/api/game/games');
-                console.log('Games fetched:', response.data);
-                setGamesList(response.data);
-            } catch (error) {
-                console.error('Error fetching games:', error);
-                toast.error('Failed to load games');
-                setGamesList([]);
-            } finally {
-                setLoading(false);
-            }
-        };
-        
-        // Fetch user game stats
         const fetchUserStats = async () => {
             try {
                 const response = await api.get('/api/game/user-stats');
-                // Ensure achievements is always an array even if not provided by API
                 setUserStats({
                     gamesPlayed: response.data.totalGamesPlayed || 0,
                     coinsEarned: response.data.totalCoinsEarned || 0,
@@ -123,35 +244,49 @@ export default function Games() {
                 });
             } catch (error) {
                 console.error('Error fetching user stats:', error);
-                // Keep default values if fetch fails
             }
         };
         
-        fetchGames();
         fetchUserStats();
     }, []);
     
+    // Debug: Track selectedPillar state changes
     useEffect(() => {
-        // Extract categories from games
-        if (gamesList.length > 0) {
-            const gameCategories = [...new Set(gamesList.map(game => game.type))]; 
-            setCategories(["all", ...gameCategories]);
-            
-            // Set difficulty colors
-            setDifficultyColors({
-                "easy": "from-green-400 to-emerald-400",
-                "medium": "from-yellow-400 to-orange-400",
-                "hard": "from-red-400 to-pink-400"
-            });
+        console.log('🔍 selectedPillar state changed to:', selectedPillar);
+    }, [selectedPillar]);
+    
+    const getDifficultyColor = (difficulty) => {
+        switch(difficulty.toLowerCase()) {
+            case 'easy': return 'from-green-400 to-emerald-400';
+            case 'medium': return 'from-yellow-400 to-orange-400';
+            case 'hard': return 'from-red-400 to-pink-400';
+            default: return 'from-gray-400 to-gray-500';
         }
-    }, [gamesList]);
-
-    // Filter games based on selected category, type and age group
-    const filteredGames = gamesList.filter(game => {
-        const categoryMatch = selectedCategory === "all" || game.type === selectedCategory;
-        const ageGroupMatch = selectedAgeGroup === "all" || game.ageGroup === selectedAgeGroup || game.ageGroup === "all";
-        return categoryMatch && ageGroupMatch;
-    });
+    };
+    
+    const handleGameClick = (game) => {
+        console.log('🎮 Starting game:', game.title);
+        toast.success(`Starting ${game.title}...`);
+        navigate(game.route);
+    };
+    
+    const handlePillarClick = (pillar) => {
+        console.log('🏛️ Pillar clicked:', pillar.title, 'Current selectedPillar:', selectedPillar);
+        const newSelection = selectedPillar === pillar.id ? null : pillar.id;
+        console.log('🔄 Setting selectedPillar to:', newSelection);
+        
+        if (newSelection) {
+            setSearchParams({ pillar: newSelection });
+        } else {
+            setSearchParams({});
+        }
+    };
+    
+    const handleBackToPillars = () => {
+        console.log('⬅️ Back to pillars clicked. Current selectedPillar:', selectedPillar);
+        setSearchParams({});
+        console.log('✅ selectedPillar reset to null');
+    };
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 relative overflow-hidden">
@@ -160,34 +295,6 @@ export default function Games() {
                 <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-r from-blue-200 to-purple-200 rounded-full opacity-20 blur-3xl animate-pulse" />
                 <div className="absolute top-1/3 right-20 w-80 h-80 bg-gradient-to-r from-pink-200 to-rose-200 rounded-full opacity-15 blur-3xl animate-pulse delay-1000" />
                 <div className="absolute bottom-20 left-1/4 w-72 h-72 bg-gradient-to-r from-green-200 to-emerald-200 rounded-full opacity-20 blur-3xl animate-pulse delay-2000" />
-                
-                {/* Floating elements */}
-                <motion.div
-                    className="absolute top-1/4 left-1/3 w-6 h-6 bg-yellow-400 rounded-full opacity-60"
-                    animate={{ 
-                        y: [0, -20, 0], 
-                        x: [0, 10, 0],
-                        scale: [1, 1.2, 1]
-                    }}
-                    transition={{ 
-                        duration: 4, 
-                        repeat: Infinity, 
-                        ease: "easeInOut" 
-                    }}
-                />
-                <motion.div
-                    className="absolute top-2/3 right-1/4 w-4 h-4 bg-pink-400 rotate-45 opacity-50"
-                    animate={{ 
-                        y: [0, -15, 0], 
-                        rotate: [45, 225, 45]
-                    }}
-                    transition={{ 
-                        duration: 3, 
-                        repeat: Infinity, 
-                        ease: "easeInOut",
-                        delay: 1
-                    }}
-                />
             </div>
 
             <div className="relative z-10 max-w-7xl mx-auto p-6 lg:p-8">
@@ -206,15 +313,11 @@ export default function Games() {
                         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black mb-3 flex items-center justify-center gap-2 text-center">
                             <span className="text-black dark:text-white">🎮</span>
                             <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-sm">
-                                Gamified Activities
+                                Games
                             </span>
                         </h1>
-
                         <div className="absolute -top-2 -right-2 text-yellow-400 animate-bounce">
                             <Sparkles className="w-6 h-6" />
-                        </div>
-                        <div className="absolute -bottom-2 -left-2 text-pink-400 animate-bounce delay-300">
-                            <Gamepad2 className="w-5 h-5" />
                         </div>
                     </motion.div>
                     <motion.p 
@@ -223,8 +326,12 @@ export default function Games() {
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.5 }}
                     >
-                        Play mindful games and earn <span className="font-bold text-yellow-500 bg-yellow-100 px-2 py-1 rounded-full">HealCoins</span> to stay motivated! ✨
+                        Play educational games and earn rewards
                     </motion.p>
+                    <div className="inline-flex items-center gap-2 bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-6 py-3 rounded-full shadow-lg font-semibold">
+                        <Coins className="w-5 h-5" />
+                        <span>+40 XP</span>
+                    </div>
                 </motion.div>
 
                 {/* Stats Bar */}
@@ -238,10 +345,10 @@ export default function Games() {
                     <div className="relative z-10 grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div className="text-center">
                             <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                                <Trophy className="w-8 h-8" />
+                                <Gamepad2 className="w-8 h-8" />
                             </div>
-                            <div className="text-2xl font-bold text-gray-800">{gamesList.length}</div>
-                            <div className="text-sm text-gray-600">Games Available</div>
+                            <div className="text-2xl font-bold text-gray-800">13</div>
+                            <div className="text-sm text-gray-600">Total Games</div>
                         </div>
                         <div className="text-center">
                             <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-r from-green-500 to-emerald-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
@@ -252,7 +359,7 @@ export default function Games() {
                         </div>
                         <div className="text-center">
                             <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
-                                <Gamepad2 className="w-8 h-8" />
+                                <Play className="w-8 h-8" />
                             </div>
                             <div className="text-2xl font-bold text-gray-800">{userStats.gamesPlayed}</div>
                             <div className="text-sm text-gray-600">Games Played</div>
@@ -267,263 +374,171 @@ export default function Games() {
                     </div>
                 </motion.div>
 
-                {/* Filters */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="mb-8 space-y-4"
-                >
-                    {/* Type Filter */}
-                    <div className="mb-2">
-                        <h3 className="text-lg font-semibold text-gray-700 mb-2 text-center">Game Type</h3>
-                        <div className="flex flex-wrap gap-2 justify-center">
-                            {["all", "financial", "mental"].map((type) => (
-                                <motion.button
-                                    key={type}
-                                    onClick={() => setSelectedCategory(type)}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className={`px-6 py-3 rounded-full font-semibold transition-all ${
-                                        selectedCategory === type
-                                            ? 'bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg'
-                                            : 'bg-white/80 text-gray-700 hover:bg-white shadow-md'
-                                    }`}
-                                >
-                                    {type === "all" ? "All Types" : 
-                                     type === "financial" ? "Financial Literacy" : 
-                                     "Mental Wellness"}
-                                </motion.button>
-                            ))}
-                        </div>
-                    </div>
-                    
-                    {/* Age Group Filter */}
-                    <div>
-                        <h3 className="text-lg font-semibold text-gray-700 mb-2 text-center">Age Group</h3>
-                        <div className="flex flex-wrap gap-2 justify-center">
-                            {["all", "junior", "pro"].map((ageGroup) => (
-                                <motion.button
-                                    key={ageGroup}
-                                    onClick={() => setSelectedAgeGroup(ageGroup)}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    className={`px-6 py-3 rounded-full font-semibold transition-all ${
-                                        selectedAgeGroup === ageGroup
-                                            ? 'bg-gradient-to-r from-green-500 to-teal-500 text-white shadow-lg'
-                                            : 'bg-white/80 text-gray-700 hover:bg-white shadow-md'
-                                    }`}
-                                >
-                                    {ageGroup === "all" ? "All Ages" : 
-                                     ageGroup === "junior" ? "Ages 8-14" : 
-                                     "Ages 15-25"}
-                                </motion.button>
-                            ))}
-                        </div>
-                    </div>
-                </motion.div>
-
-                {/* Games Grid */}
-                <motion.div
-                    variants={containerVariants}
-                    initial="hidden"
-                    animate="visible"
-                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
-                >
-                    {filteredGames.map((game, i) => (
+                {/* Game Pillars */}
+                <AnimatePresence mode="wait">
+                    {!selectedPillar ? (
                         <motion.div
-                            key={i}
-                            variants={itemVariants}
-                            whileHover={{ 
-                                scale: 1.05, 
-                                y: -8,
-                                transition: { duration: 0.2 }
-                            }}
-                            whileTap={{ scale: 0.95 }}
-                            className="group cursor-pointer relative"
-                            onClick={() => {
-                                                // Navigate to the game route
-                                                navigate(game.route);
-                                                // Log activity
-                                                try {
-                                                    api.post(`/api/activity/log`, {
-                                                        activity: `Started playing ${game.title}`,
-                                                        category: 'game',
-                                                        metadata: { gameId: game._id }
-                                                    });
-                                                } catch (error) {
-                                                    console.error('Error logging activity:', error);
-                                                }
-                                            }}
-                                            onMouseEnter={() => setHoveredGame(i)}
-                                            onMouseLeave={() => setHoveredGame(null)}
+                            key="pillars"
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="hidden"
+                            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
                         >
-                            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40 hover:shadow-2xl transition-all duration-300 relative overflow-hidden h-full">
-                                <div className={`absolute inset-0 bg-gradient-to-r ${game.gradient} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
-                                
-                                {/* Difficulty Badge */}
-                                <div className={`absolute top-4 right-4 bg-gradient-to-r ${difficultyColors[game.difficulty]} text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg`}>
-                                    {game.difficulty}
-                                </div>
-
-                                <div className="relative z-10">
-                                    {/* Game Icon */}
-                                    <motion.div
-                                        className={`w-16 h-16 rounded-2xl bg-gradient-to-r ${game.gradient} flex items-center justify-center text-white mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300`}
-                                        whileHover={{ rotate: 360 }}
-                                        transition={{ duration: 0.6 }}
-                                    >
-                                        {getGameIcon(game.category)}
-                                    </motion.div>
-
-                                    {/* Game Info */}
-                                    <div className="mb-4">
-                                        <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-indigo-600 transition-colors">
-                                            {game.title}
-                                        </h3>
-                                        <p className="text-sm text-gray-600 mb-3 leading-relaxed">
-                                            {game.description}
-                                        </p>
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <div className="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full text-xs font-semibold">
-                                                {game.type.charAt(0).toUpperCase() + game.type.slice(1)}
-                                            </div>
-                                            <div className="flex items-center gap-1 text-xs text-gray-500">
-                                                <Timer className="w-3 h-3" />
-                                                {game.estimatedTime}
-                                            </div>
-                                            {game.ageGroup !== "all" && (
-                                                <div className="bg-purple-100 text-purple-600 px-3 py-1 rounded-full text-xs font-semibold">
-                                                    {game.ageGroup === "junior" ? "8-14" : "15-25"}
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Benefits (shown on hover) */}
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ 
-                                            opacity: hoveredGame === i ? 1 : 0,
-                                            height: hoveredGame === i ? "auto" : 0
-                                        }}
-                                        className="mb-4 overflow-hidden"
-                                    >
-                                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 p-3 rounded-xl">
-                                            <div className="text-xs font-semibold text-indigo-600 mb-1">Benefits:</div>
-                                            <div className="space-y-1">
-                                                {game.benefits.map((benefit, idx) => (
-                                                    <div key={idx} className="flex items-center gap-1 text-xs text-gray-600">
-                                                        <Star className="w-3 h-3 text-yellow-400 fill-current" />
-                                                        {benefit}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </motion.div>
-
-                                    {/* Footer */}
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <div className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-bold flex items-center gap-1">
-                                                <Coins className="w-4 h-4" />
-                                                +{game.rewardCoins}
-                                            </div>
-                                        </div>
-                                        <motion.div 
-                                            className="flex items-center gap-1 text-indigo-600 font-semibold text-sm"
-                                            whileHover={{ x: 5 }}
-                                        >
-                                            <Play className="w-4 h-4" />
-                                            Play Now
-                                            <ChevronRight className="w-4 h-4" />
-                                        </motion.div>
-                                    </div>
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </motion.div>
-
-                {/* Quick Actions */}
-                <motion.div
-                    initial={{ opacity: 0, y: 30 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.8 }}
-                    className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8"
-                >
-                    <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-6 rounded-3xl text-white shadow-xl">
-                        <div className="flex items-center gap-3 mb-3">
-                            <Lightbulb className="w-8 h-8" />
-                            <h3 className="text-xl font-bold">Daily Challenge</h3>
-                        </div>
-                        <p className="text-purple-100 text-sm mb-4">Complete 3 games today for bonus rewards!</p>
-                        <div className="flex items-center gap-2">
-                            <div className="w-full bg-white/20 rounded-full h-2">
-                                <div className="bg-white h-2 rounded-full w-1/3" style={{ width: `${Math.min((userStats.gamesPlayed % 3) / 3 * 100, 100)}%` }} />
-                            </div>
-                            <span className="text-sm">{userStats.gamesPlayed % 3}/3</span>
-                        </div>
-                    </div>
-
-                    <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6 rounded-3xl text-white shadow-xl">
-                        <div className="flex items-center gap-3 mb-3">
-                            <Award className="w-8 h-8" />
-                            <h3 className="text-xl font-bold">Achievements</h3>
-                        </div>
-                        <p className="text-green-100 text-sm mb-4">You've earned {userStats.achievements.length} badges so far!</p>
-                        <motion.button
-                            whileHover={{ scale: 1.05 }}
-                            whileTap={{ scale: 0.95 }}
-                            className="bg-white/20 backdrop-blur-sm px-4 py-2 rounded-xl text-sm font-semibold hover:bg-white/30 transition-all"
-                            onClick={() => navigate('/student/achievements')}
-                        >
-                            View All
-                        </motion.button>
-                    </div>
-
-                    <div className="bg-gradient-to-r from-orange-500 to-red-500 p-6 rounded-3xl text-white shadow-xl">
-                        <div className="flex items-center gap-3 mb-3">
-                            <Hourglass className="w-8 h-8" />
-                            <h3 className="text-xl font-bold">Current Streak</h3>
-                        </div>
-                        <p className="text-orange-100 text-sm mb-4">You're on a {userStats.currentStreak} day streak!</p>
-                        <div className="flex items-center justify-center gap-1">
-                            {[...Array(7)].map((_, i) => (
-                                <div 
-                                    key={i} 
-                                    className={`w-8 h-8 rounded-full flex items-center justify-center ${i < userStats.currentStreak ? 'bg-white text-orange-500' : 'bg-white/20 text-white/50'}`}
+                            {gamePillars.map((pillar) => (
+                                <motion.div
+                                    key={pillar.id}
+                                    variants={itemVariants}
+                                    whileHover={{ 
+                                        scale: 1.05, 
+                                        y: -8,
+                                        transition: { duration: 0.2 }
+                                    }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="group cursor-pointer relative"
+                                    onClick={() => handlePillarClick(pillar)}
                                 >
-                                    {i + 1}
+                                    <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40 hover:shadow-2xl transition-all duration-300 relative overflow-hidden h-full">
+                                        <div className={`absolute inset-0 bg-gradient-to-r ${pillar.color} opacity-0 group-hover:opacity-10 transition-opacity duration-300`} />
+                                        
+                                        <div className="relative z-10 text-center">
+                                            <motion.div
+                                                className={`w-20 h-20 mx-auto rounded-2xl bg-gradient-to-r ${pillar.color} flex items-center justify-center text-white mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300`}
+                                                whileHover={{ rotate: 360 }}
+                                                transition={{ duration: 0.6 }}
+                                            >
+                                                {pillar.icon}
+                                            </motion.div>
+
+                                            <h3 className="text-xl font-bold text-gray-800 mb-2 group-hover:text-indigo-600 transition-colors">
+                                                {pillar.title}
+                                            </h3>
+                                            <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                                                {pillar.description}
+                                            </p>
+                                            
+                                            <div className="flex items-center justify-between mb-4">
+                                                <div className="bg-indigo-100 text-indigo-600 px-3 py-1 rounded-full text-xs font-semibold">
+                                                    {pillar.totalGames} Games
+                                                </div>
+                                                <div className="flex items-center gap-1 text-indigo-600 font-semibold text-sm">
+                                                    <Play className="w-4 h-4" />
+                                                    <span>Play</span>
+                                                    <ChevronRight className="w-4 h-4" />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </motion.div>
+                    ) : (
+                        <motion.div
+                            key="games"
+                            initial={{ opacity: 0, y: 30 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -30 }}
+                            transition={{ duration: 0.5 }}
+                        >
+                            {/* Back Button */}
+                            <motion.button
+                                onClick={handleBackToPillars}
+                                className="mb-6 flex items-center gap-2 bg-white/80 hover:bg-white text-gray-700 px-4 py-2 rounded-full shadow-md transition-all"
+                                whileHover={{ x: -5 }}
+                            >
+                                <ArrowLeft className="w-4 h-4" />
+                                Back to Pillars
+                            </motion.button>
+
+                            {/* Selected Pillar Games */}
+                            {gamePillars.filter(p => p.id === selectedPillar).map(pillar => (
+                                <div key={pillar.id}>
+                                    <div className="text-center mb-8">
+                                        <div className={`inline-flex items-center gap-3 bg-gradient-to-r ${pillar.color} text-white px-6 py-3 rounded-full shadow-lg mb-4`}>
+                                            {pillar.icon}
+                                            <h2 className="text-2xl font-bold">{pillar.title}</h2>
+                                        </div>
+                                        <p className="text-gray-600 text-lg">{pillar.description}</p>
+                                    </div>
+
+                                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        {pillar.games.map((game, index) => (
+                                            <motion.div
+                                                key={index}
+                                                initial={{ opacity: 0, y: 30 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                transition={{ delay: index * 0.1 }}
+                                                whileHover={{ scale: 1.05, y: -5 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/40 hover:shadow-2xl transition-all duration-300 cursor-pointer group"
+                                                onClick={() => handleGameClick(game)}
+                                            >
+                                                <div className="flex items-start gap-4 mb-4">
+                                                    <div className={`w-12 h-12 rounded-xl bg-gradient-to-r ${pillar.color} flex items-center justify-center text-white shadow-lg`}>
+                                                        {game.icon}
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <h3 className="text-lg font-bold text-gray-800 mb-1 group-hover:text-indigo-600 transition-colors">
+                                                            {game.title}
+                                                        </h3>
+                                                        <div className={`inline-block bg-gradient-to-r ${getDifficultyColor(game.difficulty)} text-white px-2 py-1 rounded-full text-xs font-bold`}>
+                                                            {game.difficulty}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <p className="text-sm text-gray-600 mb-4 leading-relaxed">
+                                                    {game.description}
+                                                </p>
+                                                
+                                                <div className="flex items-center justify-between">
+                                                    <div className="flex items-center gap-3 text-sm text-gray-500">
+                                                        <div className="flex items-center gap-1">
+                                                            <Timer className="w-4 h-4" />
+                                                            {game.duration}
+                                                        </div>
+                                                        <div className="flex items-center gap-1 text-yellow-600 font-semibold">
+                                                            <Coins className="w-4 h-4" />
+                                                            +{game.coins}
+                                                        </div>
+                                                    </div>
+                                                    <motion.div 
+                                                        className="flex items-center gap-1 text-indigo-600 font-semibold text-sm"
+                                                        whileHover={{ x: 5 }}
+                                                    >
+                                                        <Play className="w-4 h-4" />
+                                                        Play
+                                                        <ChevronRight className="w-4 h-4" />
+                                                    </motion.div>
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </div>
                                 </div>
                             ))}
-                        </div>
-                    </div>
-                </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
                 {/* Motivational Footer */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 1 }}
-                    className="text-center"
-                >
-                    <div className="inline-flex items-center gap-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-8 py-4 rounded-full shadow-xl font-semibold text-lg">
-                        <motion.div
-                            animate={{ rotate: [0, 360] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                        >
-                            <Sparkles className="w-6 h-6" />
-                        </motion.div>
-                        <span>Ready to level up your wellbeing? Let's play! 🎮</span>
-                        <motion.div
-                            animate={{ rotate: [0, 360] }}
-                            transition={{ duration: 2, repeat: Infinity, ease: "linear", delay: 1 }}
-                        >
-                            <Crown className="w-6 h-6" />
-                        </motion.div>
-                    </div>
-                </motion.div>
+                {!selectedPillar && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 1 }}
+                        className="text-center"
+                    >
+                        <div className="inline-flex items-center gap-3 bg-gradient-to-r from-yellow-400 to-orange-400 text-white px-8 py-4 rounded-full shadow-xl font-semibold text-lg">
+                            <motion.div
+                                animate={{ rotate: [0, 360] }}
+                                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                            >
+                                <Sparkles className="w-6 h-6" />
+                            </motion.div>
+                            <span>Choose a pillar and start your learning journey! 🚀</span>
+                        </div>
+                    </motion.div>
+                )}
             </div>
         </div>
     );

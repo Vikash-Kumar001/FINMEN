@@ -24,45 +24,35 @@ export const getUserProgress = async (req, res, next) => {
   }
 };
 
-// ⬆️ POST /api/progress/add-xp - Add XP to user
-export const addXP = async (req, res, next) => {
-  const { amount, source } = req.body;
-
-  if (!amount || amount <= 0) {
-    return next(new ErrorResponse('Invalid XP amount', 400));
-  }
-
+// ⬆️ Function to add XP programmatically (used by other controllers)
+export const addXP = async (userId, amount, source = 'System') => {
   try {
-    let progress = await UserProgress.findOne({ userId: req.user._id });
+    let progress = await UserProgress.findOne({ userId });
 
     if (!progress) {
       progress = await UserProgress.create({
-        userId: req.user._id,
+        userId,
         xp: amount,
-        level: 1,
+        level: calculateLevel(amount),
         healCoins: 0,
         streak: 0
       });
     } else {
+      const oldLevel = progress.level;
       progress.xp += amount;
+      progress.level = calculateLevel(progress.xp);
       
-      // Check if user should level up
-      const newLevel = calculateLevel(progress.xp);
-      
-      if (newLevel > progress.level) {
-        // User leveled up!
-        const oldLevel = progress.level;
-        progress.level = newLevel;
-        
+      // Check if user leveled up
+      if (progress.level > oldLevel) {
         // Award coins for leveling up
-        const levelUpCoins = (newLevel - oldLevel) * 50; // 50 coins per level
+        const levelUpCoins = (progress.level - oldLevel) * 50; // 50 coins per level
         
         // Update wallet
-        let wallet = await Wallet.findOne({ userId: req.user._id });
+        let wallet = await Wallet.findOne({ userId });
         
         if (!wallet) {
           wallet = await Wallet.create({
-            userId: req.user._id,
+            userId,
             balance: levelUpCoins
           });
         } else {
@@ -73,23 +63,34 @@ export const addXP = async (req, res, next) => {
         
         // Create transaction record
         await Transaction.create({
-          userId: req.user._id,
+          userId,
           type: 'credit',
           amount: levelUpCoins,
-          description: `Level up reward (Level ${newLevel})`
+          description: `Level up reward (Level ${progress.level})`
         });
+        
+        // Emit real-time level up event
+        const io = global.io || require('../server.js').io;
+        if (io) {
+          io.to(userId.toString()).emit('level-up', {
+            oldLevel,
+            newLevel: progress.level,
+            coinsEarned: levelUpCoins,
+            totalXP: progress.xp
+          });
+        }
       }
       
       await progress.save();
     }
 
-    res.status(200).json({
-      message: 'XP added successfully',
+    return {
       progress,
-      levelUp: progress.level > 1 && calculateLevel(progress.xp - amount) < progress.level
-    });
+      levelUp: progress.level > calculateLevel(progress.xp - amount)
+    };
   } catch (err) {
-    next(err);
+    console.error('Error adding XP:', err);
+    throw err;
   }
 };
 
@@ -157,4 +158,25 @@ const calculateLevel = (xp) => {
   // Simple level calculation: level = 1 + floor(xp / 100)
   // This means 100 XP per level
   return Math.floor(xp / 100) + 1;
+};
+
+// ⬆️ POST /api/progress/add-xp - Add XP to user (HTTP endpoint)
+export const addXPEndpoint = async (req, res, next) => {
+  const { amount, source } = req.body;
+
+  if (!amount || amount <= 0) {
+    return next(new ErrorResponse('Invalid XP amount', 400));
+  }
+
+  try {
+    const result = await addXP(req.user._id, amount, source);
+    
+    res.status(200).json({
+      message: 'XP added successfully',
+      progress: result.progress,
+      levelUp: result.levelUp
+    });
+  } catch (err) {
+    next(err);
+  }
 };

@@ -1,13 +1,15 @@
 import User from '../models/User.js';
 import ChatMessage from '../models/ChatMessage.js';
+import ChatSession from '../models/ChatSession.js';
 import ActivityLog from '../models/ActivityLog.js';
+import aimlService from '../services/aimlService.js';
 
 /**
  * Socket handler for chat real-time interactions
  * Enables students to send and receive chat messages
  */
 export const setupChatSocket = (io, socket, user) => {
-  // Student subscribe to chat
+  // Student subscribe to chat - Enhanced with AIML chat history
   socket.on('student:chat:subscribe', async ({ studentId }) => {
     try {
       // Verify student permissions
@@ -16,27 +18,47 @@ export const setupChatSocket = (io, socket, user) => {
         return;
       }
 
-      console.log(`💬 Student ${studentId} subscribed to chat`);
+      console.log(`💬 Student ${studentId} subscribed to AIML chat`);
       
       // Join student-specific room for chat updates
       socket.join(`student-chat-${studentId}`);
       
-      // Get student's chat history (last 50 messages)
-      const chatHistory = await ChatMessage.find({ 
-        $or: [
-          { senderId: studentId },
-          { receiverId: studentId }
-        ]
-      })
-      .sort({ timestamp: -1 })
-      .limit(50)
-      .populate('senderId', 'name profilePicture')
-      .lean();
+      // Get or create student's chat session
+      let chatSession = await ChatSession.findOne({ userId: studentId });
+      if (!chatSession) {
+        const today = new Date().toISOString().split('T')[0];
+        chatSession = new ChatSession({
+          userId: studentId,
+          sessionId: `finmen_${studentId}_${today}`,
+          messages: [],
+          lastUsed: new Date()
+        });
+        await chatSession.save();
+      }
       
-      // Reverse to show oldest first
-      chatHistory.reverse();
+      // Update stats and send chat history with user stats
+      chatSession.updateStats();
+      await chatSession.save();
       
-      socket.emit('student:chat:history', chatHistory);
+      // Send enhanced chat history with session stats
+      const enhancedHistory = {
+        messages: chatSession.messages.slice(-50), // Last 50 messages
+        userXP: chatSession.userXP,
+        chatStreak: chatSession.chatStreak,
+        achievements: chatSession.achievements,
+        averageMood: chatSession.averageMood
+      };
+      
+      socket.emit('student:chat:history', enhancedHistory);
+      
+      // Check AIML service health and notify client
+      const serviceHealth = await aimlService.checkServiceHealth();
+      socket.emit('student:chat:service-status', { 
+        aimlAvailable: serviceHealth,
+        message: serviceHealth ? 
+          'AI chatbot is ready! 🤖✨' : 
+          'AI is in basic mode - still here to help! 🤖'
+      });
       
     } catch (err) {
       console.error('Error in student:chat:subscribe:', err);
@@ -44,8 +66,8 @@ export const setupChatSocket = (io, socket, user) => {
     }
   });
 
-  // Student send chat message
-  socket.on('student:chat:send', async ({ studentId, message, attachments = [] }) => {
+  // Student send chat message - Enhanced with AIML integration
+  socket.on('student:chat:send', async ({ studentId, message, text, attachments = [] }) => {
     try {
       // Verify student permissions
       if (user._id.toString() !== studentId || user.role !== 'student') {
@@ -53,60 +75,50 @@ export const setupChatSocket = (io, socket, user) => {
         return;
       }
 
+      // Use either 'message' or 'text' parameter for backward compatibility
+      const userMessage = message || text;
+      
       // Validate input
-      if (!message && attachments.length === 0) {
+      if (!userMessage && attachments.length === 0) {
         socket.emit('student:chat:error', { message: 'Message or attachment is required' });
         return;
       }
 
-      // Find an admin or educator to receive the message
-      // For simplicity, we'll find the first admin in the system
-      // In a production system, you might want to implement a more sophisticated routing logic
-      const admin = await User.findOne({ role: 'admin' }).select('_id name profilePicture');
+      console.log(`💬 Student ${studentId} sent message: ${userMessage}`);
       
-      if (!admin) {
-        socket.emit('student:chat:error', { message: 'No admin available to receive your message' });
-        return;
+      // Process message through AIML service
+      const chatResponse = await aimlService.processMessage(studentId, userMessage);
+      
+      // Update chat session stats
+      const chatSession = await ChatSession.findOne({ userId: studentId });
+      if (chatSession) {
+        chatSession.updateStats();
+        await chatSession.save();
       }
-
-      // Create chat message
-      const chatMessage = await ChatMessage.create({
-        senderId: studentId,
-        receiverId: admin._id,
-        message,
-        attachments,
-        timestamp: new Date(),
-        isRead: false
-      });
-
-      // Populate sender info
-      const populatedMessage = await ChatMessage.findById(chatMessage._id)
-        .populate('senderId', 'name profilePicture')
-        .lean();
-
+      
+      // Send user message to student
+      socket.emit('student:chat:message', chatResponse.userMessage);
+      
+      // Send bot response with a small delay for natural feel
+      setTimeout(() => {
+        socket.emit('student:chat:message', chatResponse.botMessage);
+      }, 500 + Math.random() * 1500); // Random delay between 0.5-2 seconds
+      
       // Log activity
       await ActivityLog.create({
         userId: studentId,
         activityType: 'chat_message_sent',
         details: {
-          messageId: chatMessage._id,
-          receiverId: admin._id
+          messageLength: userMessage.length,
+          category: chatResponse.botMessage.category,
+          hasAttachments: attachments.length > 0
         },
         timestamp: new Date()
       });
 
-      // Send message to student
-      socket.emit('student:chat:message', populatedMessage);
-      
-      // Send message to all admins
-      io.to('admin-chat').emit('admin:chat:message', {
-        ...populatedMessage,
-        studentId
-      });
-
     } catch (err) {
       console.error('Error in student:chat:send:', err);
-      socket.emit('student:chat:error', { message: err.message });
+      socket.emit('student:chat:error', { message: 'Failed to process your message. Please try again.' });
     }
   });
 

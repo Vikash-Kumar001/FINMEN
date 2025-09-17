@@ -18,7 +18,7 @@ import {
     Sparkles,
     Play
 } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import { useSocket } from "../../context/SocketContext";
 import api from "../../utils/api";
 

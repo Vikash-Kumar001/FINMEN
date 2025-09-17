@@ -1,4 +1,5 @@
 import User from '../models/User.js';
+import bcrypt from 'bcrypt';
 
 export const getUserProfile = async (req, res) => {
   try {
@@ -100,11 +101,47 @@ export const updateUserAvatar = async (req, res) => {
   }
 };
 
+export const updateUserPassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: 'Current password and new password are required' });
+    }
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: 'User not found' });
+
+    // Check if user has a password (not Google login)
+    if (!user.password) {
+      return res.status(400).json({ message: 'Cannot change password for Google login accounts' });
+    }
+
+    // Verify current password
+    const isCurrentPasswordValid = await bcrypt.compare(currentPassword, user.password);
+    if (!isCurrentPasswordValid) {
+      return res.status(400).json({ message: 'Current password is incorrect' });
+    }
+
+    // Hash new password
+    const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+    
+    // Update password
+    user.password = hashedNewPassword;
+    await user.save();
+
+    res.status(200).json({ message: 'Password updated successfully' });
+  } catch (err) {
+    console.error('❌ Password update error:', err);
+    res.status(500).json({ message: 'Failed to update password' });
+  }
+};
+
 // 👥 GET /api/user/students — Get all students (for admin/educator)
 export const getAllStudents = async (req, res) => {
   try {
-    // Check if user is admin or educator
-    if (req.user.role !== 'admin' && req.user.role !== 'educator') {
+    // Check if user is admin, educator, or school_admin
+    if (!['admin', 'educator', 'school_admin'].includes(req.user.role)) {
       return res.status(403).json({ message: 'Not authorized to access student data' });
     }
     

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import { useSocket } from "../../context/SocketContext";
 import { useNotification } from "../../context/NotificationContext";
@@ -25,6 +26,17 @@ import {
     Filter,
     Wifi,
 } from "lucide-react";
+import { 
+    fetchAdminDashboardData,
+    fetchAdminStats,
+    // eslint-disable-next-line no-unused-vars
+    fetchAdminAnalytics, // Reserved for future analytics features
+    fetchSystemHealth,
+    fetchNotifications,
+    refreshDashboardData
+} from "../../services/dashboardService";
+// eslint-disable-next-line no-unused-vars
+import { toast } from "react-hot-toast";
 import AdminStatsPanel from "./AdminStatsPanel";
 import AllStudents from "./AllStudents";
 import AllEducator from "./AllEducator";
@@ -49,6 +61,16 @@ const AdminDashboard = () => {
     const [notifications, setNotifications] = useState([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [showNotifications, setShowNotifications] = useState(false);
+    const [dashboardData, setDashboardData] = useState(null);
+    const [adminStats, setAdminStats] = useState({
+        totalUsers: 0,
+        totalStudents: 0,
+        totalEducators: 0,
+        pendingEducators: 0,
+        redemptions: 0
+    });
+    const [systemHealth, setSystemHealth] = useState({});
+    const [recentActivity, setRecentActivity] = useState([]);
 
     useEffect(() => {
         const timer = setTimeout(() => {
@@ -57,6 +79,108 @@ const AdminDashboard = () => {
 
         return () => clearTimeout(timer);
     }, []);
+    
+    // Load comprehensive admin dashboard data
+    const loadAdminDashboardData = React.useCallback(async () => {
+        try {
+            setLoading(true);
+            
+            // Fetch comprehensive admin data
+            const data = await fetchAdminDashboardData();
+            setDashboardData(data);
+            
+            // Update individual state with fetched data
+            if (data.stats) {
+                setAdminStats(data.stats);
+            }
+            
+            if (data.systemHealth) {
+                setSystemHealth(data.systemHealth);
+                setSystemStatus(data.systemHealth.status || "Operational");
+            }
+            
+            if (data.recentActivity) {
+                setRecentActivity(data.recentActivity);
+            }
+            
+            toast.success("Admin dashboard loaded successfully!", {
+                duration: 2000,
+                position: "top-center",
+                icon: "✅"
+            });
+            
+        } catch (err) {
+            console.error("❌ Failed to load admin dashboard data", err);
+            
+            // Load individual components with fallback
+            try {
+                const statsData = await fetchAdminStats();
+                setAdminStats(statsData);
+            } catch (statsErr) {
+                console.warn("Using default admin stats due to API error:", statsErr.message);
+            }
+            
+            try {
+                const healthData = await fetchSystemHealth();
+                setSystemHealth(healthData);
+                setSystemStatus(healthData.status || "Operational");
+            } catch (healthErr) {
+                console.warn("Could not load system health data:", healthErr.message);
+            }
+            
+            try {
+                const notificationData = await fetchNotifications('admin', true);
+                setNotifications(notificationData);
+            } catch (notificationErr) {
+                console.warn("Could not load admin notifications:", notificationErr.message);
+            }
+            
+            toast.error("Some admin features may not be available. Please try refreshing.", {
+                duration: 3000,
+                position: "top-center",
+                icon: "⚠️"
+            });
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+    
+    // Refresh admin dashboard data
+    const handleRefreshData = async () => {
+        try {
+            setLoading(true);
+            const refreshedData = await refreshDashboardData('admin');
+            setDashboardData(refreshedData);
+            
+            // Update all data with refreshed information
+            if (refreshedData.stats) setAdminStats(refreshedData.stats);
+            if (refreshedData.systemHealth) {
+                setSystemHealth(refreshedData.systemHealth);
+                setSystemStatus(refreshedData.systemHealth.status || "Operational");
+            }
+            if (refreshedData.recentActivity) setRecentActivity(refreshedData.recentActivity);
+            
+            toast.success("Admin dashboard refreshed!", {
+                duration: 2000,
+                position: "top-center",
+                icon: "🔄"
+            });
+        } catch (err) {
+            console.error("Error refreshing admin data:", err.message);
+            toast.error("Failed to refresh admin data", {
+                duration: 3000,
+                position: "top-center",
+                icon: "❌"
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+    
+    // Initial data load
+    useEffect(() => {
+        loadAdminDashboardData();
+    }, [loadAdminDashboardData]);
 
     useEffect(() => {
         if (!socket || !socket.socket) return;
@@ -326,15 +450,6 @@ const AdminDashboard = () => {
         }, 800);
     };
 
-    const handleRefreshData = () => {
-        setLoading(true);
-        console.log("Refreshing dashboard data...");
-        setTimeout(() => {
-            setLoading(false);
-            setSystemStatus("Operational");
-        }, 1500);
-    };
-
     const containerVariants = {
         hidden: { opacity: 0 },
         visible: {
@@ -483,7 +598,7 @@ const AdminDashboard = () => {
                                 <div className="flex items-center gap-2">
                                     <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                                     <span className="text-sm font-semibold text-gray-700">
-                                        System Online
+                                        {systemStatus}
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2">
@@ -497,12 +612,110 @@ const AdminDashboard = () => {
                             </div>
                             <div className="flex items-center gap-4">
                                 <div className="text-sm text-gray-600">
-                                    Last updated: {new Date().toLocaleTimeString()}
+                                    Users: {adminStats.totalUsers} | Health: {systemHealth.status || "OK"}
                                 </div>
                             </div>
                         </div>
                     </div>
                 </motion.div>
+                
+                {/* Admin Stats Overview */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="mb-8"
+                >
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/40">
+                            <div className="flex items-center gap-3">
+                                <Users className="w-8 h-8 text-blue-500" />
+                                <div>
+                                    <p className="text-sm text-gray-600">Total Students</p>
+                                    <p className="text-2xl font-bold text-gray-800">{adminStats.totalStudents}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/40">
+                            <div className="flex items-center gap-3">
+                                <GraduationCap className="w-8 h-8 text-green-500" />
+                                <div>
+                                    <p className="text-sm text-gray-600">Total Educators</p>
+                                    <p className="text-2xl font-bold text-gray-800">{adminStats.totalEducators}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/40">
+                            <div className="flex items-center gap-3">
+                                <Clock className="w-8 h-8 text-orange-500" />
+                                <div>
+                                    <p className="text-sm text-gray-600">Pending Approvals</p>
+                                    <p className="text-2xl font-bold text-gray-800">{adminStats.pendingEducators}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/40">
+                            <div className="flex items-center gap-3">
+                                <Gift className="w-8 h-8 text-purple-500" />
+                                <div>
+                                    <p className="text-sm text-gray-600">Total Redemptions</p>
+                                    <p className="text-2xl font-bold text-gray-800">{adminStats.redemptions}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+                
+                {/* Recent Activity */}
+                {recentActivity.length > 0 && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.4 }}
+                        className="mb-8"
+                    >
+                        <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40">
+                            <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+                                <Activity className="w-5 h-5 text-indigo-500" />
+                                Recent System Activity ({recentActivity.length})
+                            </h3>
+                            <div className="space-y-3">
+                                {recentActivity.slice(0, 5).map((activity, i) => (
+                                    <div key={i} className="flex items-center gap-3 p-3 bg-indigo-50 rounded-xl">
+                                        <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                                        <div className="flex-1">
+                                            <p className="text-sm font-medium text-gray-800">
+                                                {activity.description || activity.title}
+                                            </p>
+                                            <p className="text-xs text-gray-500">
+                                                {new Date(activity.timestamp || activity.createdAt).toLocaleString()}
+                                            </p>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+                
+                {/* Debug Info */}
+                {dashboardData && import.meta.env.DEV && (
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5 }}
+                        className="mb-8"
+                    >
+                        <div className="bg-gray-50 rounded-xl p-4">
+                            <h4 className="text-sm font-bold text-gray-600 mb-2">Admin Debug Info (Dev Mode)</h4>
+                            <div className="text-xs text-gray-500">
+                                <p>Dashboard data loaded: {new Date().toLocaleTimeString()}</p>
+                                <p>System status: {systemStatus}</p>
+                                <p>Analytics available: {dashboardData.analytics ? 'Yes' : 'No'}</p>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
 
                 {/* Quick Actions */}
                 <motion.div

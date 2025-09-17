@@ -128,6 +128,25 @@ router.post("/reset-password", resetPasswordWithOTP);
 // ✅ Google Login (Student only)
 router.post("/google", googleLogin);
 
+// ✅ Google OAuth Callback
+router.get("/google/callback", (req, res) => {
+  // This route handles the callback from Google OAuth
+  // For web applications, redirect to frontend with success/error
+  const { code, error } = req.query;
+  
+  if (error) {
+    return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_failed`);
+  }
+  
+  if (code) {
+    // In production, you might want to exchange the code for tokens here
+    // For now, just redirect to login page
+    return res.redirect(`${process.env.CLIENT_URL}/login?oauth=success`);
+  }
+  
+  res.redirect(`${process.env.CLIENT_URL}/login`);
+});
+
 // ✅ Parent/Seller/CSR Self-Registration (no verification required)
 router.post("/register-stakeholder", async (req, res) => {
   try {

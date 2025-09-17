@@ -1,7 +1,7 @@
 import React from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
-import { useAuth } from "./context/AuthContext";
+import { useAuth } from "./hooks/useAuth";
 
 // Global UI
 import Navbar from "./components/Navbar";
@@ -93,6 +93,30 @@ import SellerDashboard from "./pages/Seller/SellerDashboard";
 // CSR Pages
 import CSRDashboard from "./pages/CSR/CSRDashboard";
 
+// Multi-Tenant Pages
+import CompanySignup from "./pages/MultiTenant/CompanySignup";
+import CreateOrganization from "./pages/MultiTenant/CreateOrganization";
+import SchoolAdminDashboard from "./pages/School/SchoolAdminDashboard";
+import SchoolTeacherDashboard from "./pages/School/SchoolTeacherDashboard";
+import SchoolStudentDashboard from "./pages/School/SchoolStudentDashboard";
+import SchoolParentDashboard from "./pages/School/SchoolParentDashboard";
+import CollegeAdminDashboard from "./pages/College/CollegeAdminDashboard";
+import CollegeFacultyDashboard from "./pages/College/CollegeFacultyDashboard";
+import CollegeStudentDashboard from "./pages/College/CollegeStudentDashboard";
+import CollegeParentDashboard from "./pages/College/CollegeParentDashboard";
+import AlumniNetwork from "./pages/College/AlumniNetwork";
+import PlacementOfficerDashboard from "./pages/College/PlacementOfficerDashboard";
+import FacilityManagement from "./pages/College/FacilityManagement";
+import ReportsDashboard from "./pages/College/ReportsDashboard";
+import LandingPage from "./pages/LandingPage";
+import IndividualAccountSelection from "./pages/IndividualAccountSelection";
+  <Route path="/individual-account" element={<IndividualAccountSelection />} />
+
+// Multi-tenant registration pages
+import InstitutionTypeSelection from "./pages/MultiTenant/InstitutionTypeSelection";
+import SchoolRegistration from "./pages/MultiTenant/SchoolRegistration";
+import CollegeRegistration from "./pages/MultiTenant/CollegeRegistration";
+
 // 404 Page
 import NotFound from "./pages/NotFound";
 import AssessmentHub from "./pages/Educator/AssessmentHub";
@@ -112,11 +136,27 @@ const App = () => {
 
   const RootRedirect = () => {
     if (!user) return <Navigate to="/login" replace />;
+    
+    // Legacy roles
     if (user.role === "admin") return <Navigate to="/admin/dashboard" replace />;
     if (user.role === "educator") return <Navigate to="/educator/dashboard" replace />;
     if (user.role === "parent") return <Navigate to="/parent/dashboard" replace />;
     if (user.role === "seller") return <Navigate to="/seller/dashboard" replace />;
     if (user.role === "csr") return <Navigate to="/csr/dashboard" replace />;
+    
+  // School roles
+  if (user.role === "school_admin") return <Navigate to="/school/admin/dashboard" replace />;
+    if (user.role === "school_teacher") return <Navigate to="/school-teacher/dashboard" replace />;
+    if (user.role === "school_student") return <Navigate to="/school-student/dashboard" replace />;
+    if (user.role === "school_parent") return <Navigate to="/school-parent/dashboard" replace />;
+    
+    // College roles
+    if (user.role === "college_admin") return <Navigate to="/college-admin/dashboard" replace />;
+    if (user.role === "college_faculty") return <Navigate to="/college-faculty/dashboard" replace />;
+    if (user.role === "college_student") return <Navigate to="/college-student/dashboard" replace />;
+    if (user.role === "college_parent") return <Navigate to="/college-parent/dashboard" replace />;
+    
+    // Default fallback
     return <Navigate to="/student/dashboard" replace />;
   };
 
@@ -131,12 +171,13 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {!isAuthPage && <Navbar />}
+  {!isAuthPage && location.pathname !== "/" && location.pathname !== "/college-registration" && location.pathname !== "/school-registration" && location.pathname !== "/institution-type" && location.pathname !== "/individual-account" && <Navbar />}
       {!isAuthPage && user && <Chatbot />} {/* ✅ Floating Chatbot */}
 
       <ErrorBoundary>
         <Routes>
-          <Route path="/" element={<RootRedirect />} />
+          <Route path="/" element={user ? <RootRedirect /> : <LandingPage />} />
+          <Route path="/individual-account" element={<IndividualAccountSelection />} />
 
           {/* Auth Routes */}
           <Route path="/login" element={<Login />} />
@@ -147,6 +188,31 @@ const App = () => {
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/register-stakeholder" element={<StakeholderRegister />} />
           <Route path="/pending-approval" element={<PendingApprovalPage />} />
+          
+          {/* Multi-Tenant Routes */}
+          <Route path="/company-signup" element={<CompanySignup />} />
+          <Route path="/create-organization" element={<CreateOrganization />} />
+          
+          {/* Institution Registration Routes */}
+          <Route path="/institution-type" element={<InstitutionTypeSelection />} />
+          <Route path="/school-registration" element={<SchoolRegistration />} />
+          <Route path="/college-registration" element={<CollegeRegistration />} />
+          
+          {/* School Routes */}
+          <Route path="/school/admin/dashboard" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminDashboard /></ProtectedRoute>} />
+          <Route path="/school-teacher/dashboard" element={<ProtectedRoute roles={['school_teacher']}><SchoolTeacherDashboard /></ProtectedRoute>} />
+          <Route path="/school-student/dashboard" element={<ProtectedRoute roles={['school_student']}><SchoolStudentDashboard /></ProtectedRoute>} />
+          <Route path="/school-parent/dashboard" element={<ProtectedRoute roles={['school_parent']}><SchoolParentDashboard /></ProtectedRoute>} />
+          
+          {/* College Routes */}
+          <Route path="/college-admin/dashboard" element={<ProtectedRoute roles={['college_admin']}><CollegeAdminDashboard /></ProtectedRoute>} />
+          <Route path="/college-faculty/dashboard" element={<ProtectedRoute roles={['college_faculty']}><CollegeFacultyDashboard /></ProtectedRoute>} />
+          <Route path="/college-student/dashboard" element={<ProtectedRoute roles={['college_student']}><CollegeStudentDashboard /></ProtectedRoute>} />
+          <Route path="/college-parent/dashboard" element={<ProtectedRoute roles={['college_parent']}><CollegeParentDashboard /></ProtectedRoute>} />
+          <Route path="/college/alumni" element={<ProtectedRoute roles={['college_admin', 'college_faculty', 'college_student']}><AlumniNetwork /></ProtectedRoute>} />
+          <Route path="/college/placement" element={<ProtectedRoute roles={['college_admin', 'college_placement_officer']}><PlacementOfficerDashboard /></ProtectedRoute>} />
+          <Route path="/college/facilities" element={<ProtectedRoute roles={['college_admin']}><FacilityManagement /></ProtectedRoute>} />
+          <Route path="/college/reports" element={<ProtectedRoute roles={['college_admin', 'college_faculty']}><ReportsDashboard /></ProtectedRoute>} />
 
           {/* Student Routes */}
           <Route path="/student/dashboard" element={<ProtectedRoute roles={['student']}><StudentDashboard /></ProtectedRoute>} />

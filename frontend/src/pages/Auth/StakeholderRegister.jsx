@@ -14,7 +14,7 @@ import {
     ShoppingBag
 } from "lucide-react";
 import api from "../../utils/api";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../context/AuthUtils";
 import { toast } from "react-hot-toast";
 
 const StakeholderRegister = () => {

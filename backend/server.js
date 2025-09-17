@@ -42,6 +42,14 @@ app.set("io", io);
 // Middleware
 app.use(express.json());
 app.use(cookieParser());
+
+// Add security headers to fix Cross-Origin-Opener-Policy issues
+app.use((req, res, next) => {
+  res.header('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
+  res.header('Cross-Origin-Embedder-Policy', 'unsafe-none');
+  next();
+});
+
 app.use(
   cors({
     origin: function (origin, callback) {
@@ -90,6 +98,16 @@ import userRoutes from "./routes/userRoutes.js";
 import parentRoutes from "./routes/parentRoutes.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
 import csrRoutes from "./routes/csrRoutes.js";
+
+// Multi-tenant routes
+import companyRoutes from "./routes/companyRoutes.js";
+import organizationRoutes from "./routes/organizationRoutes.js";
+import schoolRoutes from "./routes/schoolRoutes.js";
+import collegeRoutes from "./routes/collegeRoutes.js";
+import placementRoutes from "./routes/placementRoutes.js";
+import facilityRoutes from "./routes/facilityRoutes.js";
+import alumniRoutes from "./routes/alumniRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 // Import models and other logic
 import User from "./models/User.js";
@@ -189,7 +207,7 @@ io.on("connection", async (socket) => {
 // Serve uploads statically
 app.use('/uploads', express.static(path.resolve(__dirname, './uploads')));
 
-// Routes
+// Legacy Routes (maintain backward compatibility)
 app.use("/api/auth", authRoutes);
 app.use("/api/mood", moodRoutes);
 app.use("/api/game", gameRoutes);
@@ -198,6 +216,16 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/admin/educators", adminEducatorRoutes);
 app.use("/api/educators", educatorRoutes);
 app.use("/api/analytics", analyticsRoutes);
+
+// Multi-tenant Routes
+app.use("/api/company", companyRoutes);
+app.use("/api/organization", organizationRoutes);
+app.use("/api/school", schoolRoutes);
+app.use("/api/college", collegeRoutes);
+app.use("/api/placement", placementRoutes);
+app.use("/api/facilities", facilityRoutes);
+app.use("/api/alumni", alumniRoutes);
+app.use("/api/payment", paymentRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/transactions", transactionRoutes);

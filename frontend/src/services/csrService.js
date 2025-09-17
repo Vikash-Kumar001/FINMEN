@@ -1,11 +1,11 @@
-import axiosInstance from '../utils/axiosInstance';
+import api from '../utils/api';
 
 export const csrService = {
   // Impact Metrics
   getImpactMetrics: async (filters = {}) => {
     try {
       const params = new URLSearchParams(filters);
-      const response = await axiosInstance.get(`/api/csr/impact?${params}`);
+      const response = await api.get(`/api/csr/impact?${params}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -15,7 +15,7 @@ export const csrService = {
   // Regional Data
   getRegionalData: async (period = 'month') => {
     try {
-      const response = await axiosInstance.get(`/api/csr/regional?period=${period}`);
+      const response = await api.get(`/api/csr/regional?period=${period}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -25,7 +25,7 @@ export const csrService = {
   // Trend Analysis
   getTrendData: async (period = 'month', metric = 'students') => {
     try {
-      const response = await axiosInstance.get(`/api/csr/trends?period=${period}&metric=${metric}`);
+      const response = await api.get(`/api/csr/trends?period=${period}&metric=${metric}`);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -35,7 +35,7 @@ export const csrService = {
   // Report Generation
   generateReport: async (reportConfig) => {
     try {
-      const response = await axiosInstance.post('/api/csr/reports/generate', reportConfig);
+      const response = await api.post('/api/csr/reports/generate', reportConfig);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -45,7 +45,7 @@ export const csrService = {
   // Schedule Reports
   scheduleReports: async (scheduleConfig) => {
     try {
-      const response = await axiosInstance.post('/api/csr/reports/schedule', scheduleConfig);
+      const response = await api.post('/api/csr/reports/schedule', scheduleConfig);
       return response.data;
     } catch (error) {
       throw error.response?.data || error;
@@ -55,7 +55,7 @@ export const csrService = {
   // Export Reports
   exportReport: async (format = 'pdf', filters = {}) => {
     try {
-      const response = await axiosInstance.post('/api/csr/reports/generate', {
+      const response = await api.post('/api/csr/reports/generate', {
         format,
         ...filters
       });
@@ -67,13 +67,13 @@ export const csrService = {
 
   // Download Report
   downloadReport: (reportId, format = 'pdf') => {
-    return `${axiosInstance.defaults.baseURL}/api/csr/reports/download?id=${reportId}&format=${format}`;
+    return `${api.defaults.baseURL}/api/csr/reports/download?id=${reportId}&format=${format}`;
   },
 
   // Share Report
   shareReport: async (reportId, recipients) => {
     try {
-      const response = await axiosInstance.post('/api/csr/reports/share', {
+      const response = await api.post('/api/csr/reports/share', {
         reportId,
         recipients
       });

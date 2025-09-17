@@ -1,7 +1,7 @@
 import express from 'express';
 import {
   getUserProgress,
-  addXP,
+  addXPEndpoint,
   updateStreak
 } from '../controllers/userProgressController.js';
 import { requireAuth } from '../middlewares/requireAuth.js';
@@ -13,7 +13,7 @@ router.use(requireAuth);
 
 router.get('/', getUserProgress);
 
-router.post('/add-xp', addXP);
+router.post('/add-xp', addXPEndpoint);
 
 router.post('/update-streak', updateStreak);
 

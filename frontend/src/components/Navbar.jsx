@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/AuthUtils";
 import { useWallet } from "../context/WalletContext";
 import { useSocket } from "../context/SocketContext";
 import { useNavigate, Link } from "react-router-dom";
@@ -42,6 +42,15 @@ const Navbar = () => {
     const [showHelpMenu, setShowHelpMenu] = useState(false);
     const profileMenuRef = useRef(null);
     const helpMenuRef = useRef(null);
+
+    // Function to normalize avatar URL
+    const apiBaseUrl = import.meta.env.VITE_API_URL?.trim() || 'http://localhost:5000';
+    const normalizeAvatarUrl = (src) => {
+        if (!src) return '/default-avatar.png';
+        if (src.startsWith('http')) return src;
+        if (src.startsWith('/uploads/')) return `${apiBaseUrl}${src}`;
+        return src; // e.g. /avatars/... served by frontend
+    };
 
     const getDashboardLabel = () => {
         switch (user?.role) {
@@ -375,7 +384,7 @@ const Navbar = () => {
 
 
 
-                            <div className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-200">
+                            {/* <div className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-200">
                                 <p className="text-xs sm:text-sm font-medium text-gray-500 mb-2 sm:mb-3">Help & Resources</p>
                                 {helpMenuItems.map((item, index) => (
                                     <motion.button
@@ -391,7 +400,7 @@ const Navbar = () => {
                                         <span>{item.label}</span>
                                     </motion.button>
                                 ))}
-                            </div>
+                            </div> */}
                         </motion.div>
                     )}
                 </AnimatePresence>

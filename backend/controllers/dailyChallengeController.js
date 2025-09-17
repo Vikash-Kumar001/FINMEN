@@ -178,7 +178,7 @@ export const getDailyChallenges = async (req, res) => {
     // Fetch the 10 challenges
     const challenges = await Challenge.find({ _id: { $in: todaysChallengeIds } });
 
-    // Get progress for each challenge
+    // Get progress for each challenge and create if missing
     const progresses = await ChallengeProgress.find({
       userId,
       challengeId: { $in: todaysChallengeIds }
@@ -186,10 +186,33 @@ export const getDailyChallenges = async (req, res) => {
     const progressMap = {};
     progresses.forEach(p => { progressMap[p.challengeId.toString()] = p; });
 
+    // Create missing progress records
+    const missingProgressIds = todaysChallengeIds.filter(id => !progressMap[id]);
+    if (missingProgressIds.length > 0) {
+      const newProgresses = missingProgressIds.map(challengeId => ({
+        userId,
+        challengeId,
+        currentStep: 0,
+        completedSteps: [],
+        startedAt: new Date(),
+        isCompleted: false
+      }));
+      
+      const createdProgresses = await ChallengeProgress.insertMany(newProgresses);
+      createdProgresses.forEach(p => { progressMap[p.challengeId.toString()] = p; });
+    }
+
     res.status(200).json({
       challenges: challenges.map(ch => ({
         challenge: ch,
-        progress: progressMap[ch._id.toString()] || null
+        progress: progressMap[ch._id.toString()] || {
+          currentStep: 0,
+          completedSteps: [],
+          isCompleted: false,
+          startedAt: new Date(),
+          userId,
+          challengeId: ch._id
+        }
       }))
     });
   } catch (error) {
@@ -248,11 +271,20 @@ export const updateChallengeProgress = async (req, res) => {
       return res.status(404).json({ error: 'Challenge not found' });
     }
     
-    // Find the user's progress for this challenge
+    // Find or create the user's progress for this challenge
     let progress = await ChallengeProgress.findOne({ userId, challengeId });
     
     if (!progress) {
-      return res.status(404).json({ error: 'Challenge progress not found' });
+      // Create new progress if it doesn't exist
+      progress = new ChallengeProgress({
+        userId,
+        challengeId,
+        currentStep: 0,
+        completedSteps: [],
+        startedAt: new Date(),
+        isCompleted: false
+      });
+      await progress.save();
     }
     
     // Check if the challenge is already completed

@@ -61,8 +61,46 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ["student", "educator", "admin", "parent", "seller", "csr"],
+      enum: [
+        // Legacy roles
+        "student", "educator", "admin", "parent", "seller", "csr",
+        // School roles
+        "school_admin", "school_teacher", "school_student", "school_parent", 
+        "school_accountant", "school_librarian", "school_transport_staff",
+        // College roles
+        "college_admin", "college_hod", "college_faculty", "college_student", 
+        "college_parent", "college_placement_officer", "college_alumni", 
+        "college_accountant", "college_librarian", "college_hostel_staff"
+      ],
       default: "student",
+    },
+    // Multi-tenant fields
+    orgId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+    },
+    tenantId: {
+      type: String,
+      // index removed, only keep as field
+    },
+    // Linked relationships
+    linkedIds: {
+      parentIds: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      }],
+      childIds: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      }],
+      teacherIds: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      }],
+      studentIds: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      }],
     },
     position: {
       type: String,

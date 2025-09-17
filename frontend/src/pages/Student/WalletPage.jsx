@@ -44,7 +44,12 @@ const WalletPage = () => {
         const fetchWalletData = async () => {
             try {
                 const walletResponse = await api.get('/api/wallet');
-                setWallet(walletResponse.data);
+                // Update lastUpdated to current time for real-time display
+                const walletData = {
+                    ...walletResponse.data,
+                    lastUpdated: new Date().toISOString()
+                };
+                setWallet(walletData);
                 
                 const transactionsResponse = await api.get('/api/wallet/transactions');
                 setTransactions(transactionsResponse.data);
@@ -60,11 +65,19 @@ const WalletPage = () => {
     useEffect(() => {
         if (!socket) return;
         const handleGameCompleted = (data) => {
-            setWallet((prev) => ({ ...prev, balance: data.newBalance }));
+            setWallet((prev) => ({ 
+                ...prev, 
+                balance: data.newBalance,
+                lastUpdated: new Date().toISOString()
+            }));
             toast.success(`🎮 Game completed! +${data.coinsEarned} HealCoins`);
         };
         const handleChallengeCompleted = (data) => {
-            setWallet((prev) => ({ ...prev, balance: (prev.balance || 0) + (data.rewards?.coins || 0) }));
+            setWallet((prev) => ({ 
+                ...prev, 
+                balance: (prev.balance || 0) + (data.rewards?.coins || 0),
+                lastUpdated: new Date().toISOString()
+            }));
             toast.success(`🏆 Challenge completed! +${data.rewards?.coins || 0} HealCoins`);
         };
         socket.on('game-completed', handleGameCompleted);
@@ -75,7 +88,6 @@ const WalletPage = () => {
         };
     }, [socket]);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState("");
     const [search, setSearch] = useState("");
     const [typeFilter, setTypeFilter] = useState("all");
     const [sortBy, setSortBy] = useState("newest");
@@ -138,7 +150,11 @@ const WalletPage = () => {
                 upiId: upiId
             };
             setTransactions(prev => [newTransaction, ...prev]);
-            setWallet(prev => ({ ...prev, balance: (prev?.balance || 0) - parseInt(amount) }));
+            setWallet(prev => ({ 
+                ...prev, 
+                balance: (prev?.balance || 0) - parseInt(amount),
+                lastUpdated: new Date().toISOString()
+            }));
             setTimeout(() => setStatusMsg(""), 3000);
         }, 1000);
     };
@@ -209,7 +225,7 @@ const WalletPage = () => {
                         ease: "easeInOut"
                     }}
                 >
-                    ₹
+                    🪙
                 </motion.div>
                 <motion.div
                     className="absolute top-2/3 right-1/4 w-5 sm:w-6 h-5 sm:h-6 bg-green-400 rounded-full opacity-50 flex items-center justify-center text-white text-xs font-bold hidden sm:flex"
@@ -307,7 +323,7 @@ const WalletPage = () => {
                                     <Crown className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
                                 </div>
                                 <div className="text-2xl sm:text-3xl md:text-4xl font-black text-green-600 mb-1 sm:mb-2">
-                                    {showBalance ? `₹${wallet.balance?.toLocaleString() || '0'}` : "••••"}
+                                    {showBalance ? `🪙${wallet.balance?.toLocaleString() || '0'}` : "••••"}
                                 </div>
                                 <div className="text-xs sm:text-sm text-green-600 font-medium">Available Balance</div>
                             </motion.div>
@@ -325,7 +341,7 @@ const WalletPage = () => {
                                     <Trophy className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
                                 </div>
                                 <div className="text-2xl sm:text-3xl md:text-4xl font-black text-blue-600 mb-1 sm:mb-2">
-                                    {showBalance ? `₹${wallet.totalEarned?.toLocaleString() || '0'}` : "••••"}
+                                    {showBalance ? `🪙${wallet.totalEarned?.toLocaleString() || '0'}` : "••••"}
                                 </div>
                                 <div className="text-xs sm:text-sm text-blue-600 font-medium">All Time</div>
                             </motion.div>
@@ -343,7 +359,7 @@ const WalletPage = () => {
                                     <Star className="w-5 h-5 sm:w-6 sm:h-6 text-yellow-500" />
                                 </div>
                                 <div className="text-2xl sm:text-3xl md:text-4xl font-black text-purple-600 mb-1 sm:mb-2">
-                                    ₹{wallet.nextMilestone?.toLocaleString() || '100'}
+                                    🪙{wallet.nextMilestone?.toLocaleString() || '100'}
                                 </div>
                                 <div className="w-full bg-purple-200 rounded-full h-1.5 sm:h-2 mb-1 sm:mb-2">
                                     <motion.div
@@ -426,7 +442,7 @@ const WalletPage = () => {
                                         <Calendar className="w-6 h-6 sm:w-8 sm:h-8" />
                                         <h3 className="text-lg sm:text-xl font-bold">This Month</h3>
                                     </div>
-                                    <div className="text-2xl sm:text-3xl font-black">₹{Math.floor((wallet.totalEarned || 0) * 0.3)}</div>
+                                    <div className="text-2xl sm:text-3xl font-black">🪙{Math.floor((wallet.totalEarned || 0) * 0.3)}</div>
                                     <p className="text-purple-100 text-xs sm:text-sm">Earned in {new Date().toLocaleDateString('en-US', { month: 'long' })}</p>
                                 </div>
                                 <div className="bg-gradient-to-r from-blue-500 to-cyan-500 p-4 sm:p-6 rounded-2xl sm:rounded-3xl text-white shadow-lg sm:shadow-xl">
@@ -521,7 +537,7 @@ const WalletPage = () => {
                                                         <div className={`text-base sm:text-lg md:text-xl font-bold ${txn.type === 'credit' ? 'text-green-600' :
                                                                 txn.type === 'debit' ? 'text-red-600' : 'text-blue-600'
                                                             }`}>
-                                                            {txn.type === 'credit' ? '+' : '-'}₹{txn.amount}
+                                                            {txn.type === 'credit' ? '+' : '-'}🪙{txn.amount}
                                                         </div>
                                                         <span className={`text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full font-medium ${getStatusColor(txn.status)}`}>
                                                             {txn.status}
@@ -566,7 +582,7 @@ const WalletPage = () => {
                                             />
                                         </div>
                                         <div className="mt-1 sm:mt-2 text-xs sm:text-sm text-gray-500">
-                                            Available: ₹{wallet.balance?.toLocaleString() || '0'}
+                                            Available: 🪙{wallet.balance?.toLocaleString() || '0'}
                                         </div>
                                     </div>
                                     <div>

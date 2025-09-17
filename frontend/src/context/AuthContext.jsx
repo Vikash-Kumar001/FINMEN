@@ -1,9 +1,9 @@
 // src/context/AuthContext.jsx
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { AuthContext } from "./AuthContextExport";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 
-const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
@@ -75,6 +75,9 @@ export const AuthProvider = ({ children }) => {
             switch (enhancedUser.role) {
                 case "admin":
                     navigate("/admin/dashboard");
+                    break;
+                case "school_admin":
+                    navigate("/school/admin/dashboard");
                     break;
                 case "educator":
                     if (!enhancedUser.isApproved) {
@@ -183,4 +186,4 @@ export const AuthProvider = ({ children }) => {
     );
 };
 
-export const useAuth = () => useContext(AuthContext);
+// useAuth hook moved to AuthUtils.js for Fast Refresh compatibility

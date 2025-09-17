@@ -32,7 +32,7 @@ const Chatbot = () => {
     const [loading, setLoading] = useState(false);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [isOpen, setIsOpen] = useState(false);
-    const [chatbotMood, setChatbotMood] = useState("happy");
+    const [chatbotMood] = useState("happy");
     const [userXP, setUserXP] = useState(0);
     const [chatStreak, setChatStreak] = useState(0);
     const [isTyping, setIsTyping] = useState(false);
@@ -40,6 +40,8 @@ const Chatbot = () => {
     const [unreadCount, setUnreadCount] = useState(0);
     const [achievements, setAchievements] = useState([]);
     const [averageMood, setAverageMood] = useState("neutral");
+    const [aimlAvailable, setAimlAvailable] = useState(true);
+    const [serviceStatus, setServiceStatus] = useState("");
     const messagesEndRef = useRef(null);
 
     const socket = useSocket();
@@ -78,33 +80,56 @@ const Chatbot = () => {
     useEffect(() => {
         if (socket && socket.socket && user) {
             socket.socket.emit("student:chat:subscribe", { studentId: user._id });
-            socket.socket.on("student:chat:history", (history) => {
-                setMessages(history);
-                setChatStreak(
-                    history.filter(msg => msg.sender === "user").length
-                );
-                // Try to get XP/streak/achievements if backend sends extra info
-                if (Array.isArray(history) && history.length > 0 && history[0]._session) {
-                    setUserXP(history[0]._session.userXP || 0);
-                    setAchievements(history[0]._session.achievements || []);
-                    setAverageMood(history[0]._session.averageMood || "neutral");
+            
+            socket.socket.on("student:chat:history", (data) => {
+                // Handle enhanced history format
+                if (data.messages) {
+                    setMessages(data.messages);
+                    setChatStreak(data.chatStreak || 0);
+                    setUserXP(data.userXP || 0);
+                    setAchievements(data.achievements || []);
+                    setAverageMood(data.averageMood || "neutral");
+                } else {
+                    // Fallback for old format
+                    setMessages(Array.isArray(data) ? data : []);
+                    setChatStreak(
+                        Array.isArray(data) ? data.filter(msg => msg.sender === "user").length : 0
+                    );
                 }
             });
+            
+            socket.socket.on("student:chat:service-status", (status) => {
+                setAimlAvailable(status.aimlAvailable);
+                setServiceStatus(status.message);
+            });
+            
             socket.socket.on("student:chat:message", (msg) => {
                 setMessages((prev) => [...prev, msg]);
                 setIsTyping(false);
-                // XP, Streak, Achievements auto-calc after, optional bonus here for optimistic UX
+                
+                // Update stats optimistically
                 if (msg.sender === "user") {
                     setChatStreak(prev => prev + 1);
+                    setUserXP(prev => prev + 5);
                 }
+                
                 // If chat closed, increment unread
                 if (!isOpen && msg.sender === "bot") {
                     setUnreadCount(prev => prev + 1);
                 }
             });
+            
+            socket.socket.on("student:chat:error", (error) => {
+                console.error("❌ Chat error:", error.message);
+                setIsTyping(false);
+                setLoading(false);
+            });
+            
             return () => {
                 socket.socket.off("student:chat:history");
                 socket.socket.off("student:chat:message");
+                socket.socket.off("student:chat:service-status");
+                socket.socket.off("student:chat:error");
             };
         }
     }, [socket, user, isOpen]);
@@ -142,35 +167,39 @@ const Chatbot = () => {
         setIsTyping(true);
         
         try {
+            // Send message to AIML-powered chat
             socket.socket.emit("student:chat:send", {
                 studentId: user._id,
-                text: input
+                message: input.trim(), // Using 'message' parameter as expected by backend
+                text: input.trim() // Also include 'text' for backward compatibility
             });
             setInput("");
             setShowQuickActions(false);
         } catch (err) {
             console.error("❌ Error sending chat message:", err.message);
             alert("Failed to send message. Please try again.");
+            setIsTyping(false);
         } finally {
             setLoading(false);
         }
     };
 
-    // Emit quick action category to backend, which should send a response accordingly
+    // Emit quick action category to backend with AIML integration
     const handleQuickAction = (action) => {
-        // Option 1: Send API call. Option 2: emit as chat.
         setLoading(true);
         setIsTyping(true);
         try {
             socket.socket.emit("student:chat:send", {
                 studentId: user._id,
-                text: action.text // Backend will recognize and process accordingly based on quick action
+                message: action.text, // Using 'message' parameter as expected by backend
+                text: action.text // Also include 'text' for backward compatibility
             });
             setInput("");
             setShowQuickActions(false);
         } catch (err) {
             console.error("❌ Error sending quick action:", err.message);
             alert("Failed to send message. Please try again.");
+            setIsTyping(false);
         } finally {
             setLoading(false);
         }
@@ -244,14 +273,29 @@ const Chatbot = () => {
                         {/* Header */}
                         <div className="relative z-10 bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-4 flex justify-between items-center">
                             <div className="flex items-center gap-3">
-                                <motion.div className="text-2xl" animate={{ rotate: [0, 10, -10, 0] }} transition={{ duration: 2, repeat: Infinity }}>
-                                    {getChatbotAvatar(averageMood || chatbotMood)}
-                                </motion.div>
+                                    <div className="text-2xl animate-bounce">
+                                        {getChatbotAvatar(averageMood || chatbotMood)}
+                                    </div>
                                 <div>
-                                    <h2 className="font-bold text-lg">AI Companion</h2>
+                                    <h2 className="font-bold text-lg flex items-center gap-2">
+                                        AI Companion 
+                                        {aimlAvailable ? (
+                                            <span className="text-xs bg-green-400/20 text-green-700 px-2 py-1 rounded-full flex items-center gap-1">
+                                                <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+                                                Advanced AI
+                                            </span>
+                                        ) : (
+                                            <span className="text-xs bg-yellow-400/20 text-yellow-700 px-2 py-1 rounded-full">
+                                                Basic Mode
+                                            </span>
+                                        )}
+                                    </h2>
                                     <div className="text-xs text-indigo-200 flex items-center gap-1">
                                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
                                         Online • Level {getLevel()}
+                                        {serviceStatus && (
+                                            <span className="ml-2 text-indigo-100">• {serviceStatus}</span>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -260,6 +304,12 @@ const Chatbot = () => {
                                     <Zap className="w-3 h-3" />
                                     {userXP} XP
                                 </div>
+                                {achievements.length > 0 && (
+                                    <div className="text-xs bg-yellow-400/20 text-yellow-100 px-2 py-1 rounded-full flex items-center gap-1">
+                                        <Trophy className="w-3 h-3" />
+                                        {achievements.length}
+                                    </div>
+                                )}
                                 <motion.button onClick={() => setIsOpen(false)} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} className="p-2 hover:bg-white/20 rounded-full transition-colors">
                                     <FaTimes className="w-4 h-4" />
                                 </motion.button>

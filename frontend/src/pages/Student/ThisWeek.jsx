@@ -13,7 +13,7 @@ import {
     Star,
     ChevronRight
 } from "lucide-react";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../hooks/useAuth";
 import api from "../../utils/api";
 
 const ThisWeek = () => {
@@ -84,10 +84,10 @@ const ThisWeek = () => {
                 transition={{ duration: 0.5 }}
                 className="mb-8"
             >
-                <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
+                <h1 className="text-3xl font-bold text-gray-800 mb-2">
                     This Week
                 </h1>
-                <p className="text-gray-600 dark:text-gray-300">
+                <p className="text-gray-600">
                     Track your weekly progress and achievements
                 </p>
             </motion.div>
@@ -97,11 +97,11 @@ const ThisWeek = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.1 }}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8"
+                className="bg-white rounded-xl shadow-md p-6 mb-8"
             >
                 <div className="flex items-center mb-6">
                     <Calendar className="w-6 h-6 text-indigo-500 mr-2" />
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+                    <h2 className="text-xl font-semibold text-gray-800">
                         Weekly Summary
                     </h2>
                 </div>
@@ -156,11 +156,11 @@ const ThisWeek = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.2 }}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 mb-8"
+                className="bg-white rounded-xl shadow-md p-6 mb-8"
             >
                 <div className="flex items-center mb-6">
                     <BarChart3 className="w-6 h-6 text-indigo-500 mr-2" />
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+                    <h2 className="text-xl font-semibold text-gray-800">
                         Daily Activity
                     </h2>
                 </div>
@@ -169,13 +169,13 @@ const ThisWeek = () => {
                     {weeklyActivities.map((day, index) => (
                         <div 
                             key={index} 
-                            className={`flex flex-col items-center p-3 rounded-lg ${index === currentDayIndex ? 'bg-blue-100 dark:bg-blue-900/30' : 'bg-gray-100 dark:bg-gray-700/30'}`}
+                            className={`flex flex-col items-center p-3 rounded-lg ${index === currentDayIndex ? 'bg-blue-100' : 'bg-gray-100'}`}
                         >
-                            <span className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            <span className="text-sm font-medium text-gray-700 mb-2">
                                 {day.day.substring(0, 3)}
                             </span>
                             <div 
-                                className={`w-10 h-10 rounded-full flex items-center justify-center mb-1 ${day.completed ? 'bg-green-500 text-white' : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400'}`}
+                                className={`w-10 h-10 rounded-full flex items-center justify-center mb-1 ${day.completed ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-500'}`}
                             >
                                 {day.completed ? (
                                     <CheckCircle className="w-5 h-5" />
@@ -183,7 +183,7 @@ const ThisWeek = () => {
                                     <Clock className="w-5 h-5" />
                                 )}
                             </div>
-                            <span className={`text-xs font-medium ${day.completed ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'}`}>
+                            <span className={`text-xs font-medium ${day.completed ? 'text-green-600' : 'text-gray-500'}`}>
                                 {day.completed ? `+${day.xp} XP` : 'Pending'}
                             </span>
                         </div>
@@ -196,32 +196,32 @@ const ThisWeek = () => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: 0.3 }}
-                className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6"
+                className="bg-white rounded-xl shadow-md p-6"
             >
                 <div className="flex items-center mb-6">
                     <Target className="w-6 h-6 text-indigo-500 mr-2" />
-                    <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+                    <h2 className="text-xl font-semibold text-gray-800">
                         Weekly Goals
                     </h2>
                 </div>
 
                 <div className="space-y-5">
                     {weeklyGoals.map((goal, index) => (
-                        <div key={index} className="bg-gray-50 dark:bg-gray-700/30 rounded-lg p-4">
+                        <div key={index} className="bg-gray-50 rounded-lg p-4">
                             <div className="flex items-center justify-between mb-3">
                                 <div className="flex items-center">
                                     <div className="mr-3">
                                         {goal.icon}
                                     </div>
-                                    <span className="font-medium text-gray-800 dark:text-white">
+                                    <span className="font-medium text-gray-800">
                                         {goal.title}
                                     </span>
                                 </div>
-                                <span className="text-sm text-gray-600 dark:text-gray-400">
+                                <span className="text-sm text-gray-600">
                                     {goal.progress}/{goal.total}
                                 </span>
                             </div>
-                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2.5">
+                            <div className="w-full bg-gray-200 rounded-full h-2.5">
                                 <div 
                                     className="bg-gradient-to-r from-blue-400 to-indigo-500 h-2.5 rounded-full" 
                                     style={{ width: `${(goal.progress / goal.total) * 100}%` }}

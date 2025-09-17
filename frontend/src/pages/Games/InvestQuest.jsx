@@ -4,7 +4,7 @@ import { TrendingUp, ArrowLeft, Timer, Trophy, Sparkles, Coins, Award, BarChart4
 import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { toast } from 'react-toastify';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../hooks/useAuth';
 
 // Game data
 const investmentOptions = [

@@ -171,18 +171,33 @@ export const resetPasswordWithOTP = async (req, res) => {
 export const googleLogin = async (req, res) => {
   try {
     const { token } = req.body;
-    if (!token) return res.status(400).json({ message: "No token provided" });
+    if (!token) {
+      console.error("Google login error: No token provided");
+      return res.status(400).json({ message: "No token provided" });
+    }
 
-    const ticket = await client.verifyIdToken({
-      idToken: token,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    let ticket;
+    try {
+      ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
+    } catch (verifyError) {
+      console.error("Google token verification failed:", verifyError.message);
+      return res.status(400).json({ message: "Invalid Google token" });
+    }
 
     const payload = ticket.getPayload();
-    if (!payload) return res.status(400).json({ message: "Invalid Google token payload" });
+    if (!payload) {
+      console.error("Google login error: Invalid token payload");
+      return res.status(400).json({ message: "Invalid Google token payload" });
+    }
 
     const { email, name, picture } = payload;
-    if (!email) return res.status(400).json({ message: "Google account must have a verified email" });
+    if (!email) {
+      console.error("Google login error: No email in payload");
+      return res.status(400).json({ message: "Google account must have a verified email" });
+    }
 
     let user = await User.findOne({ email: email.toLowerCase() });
 
@@ -220,7 +235,7 @@ export const googleLogin = async (req, res) => {
       // Award HealCoins for daily login
       loginReward = {
         received: true,
-        amount: 10 // 10 HealCoins for daily login
+        amount: 5 // 5 HealCoins for daily login
       };
       
       // Update user's last active timestamp
@@ -233,10 +248,10 @@ export const googleLogin = async (req, res) => {
       if (!wallet) {
         wallet = await Wallet.create({
           userId: user._id,
-          balance: loginReward.amount
+          balance: 5
         });
       } else {
-        wallet.balance += loginReward.amount;
+        wallet.balance += 5;
         await wallet.save();
       }
       
@@ -244,7 +259,7 @@ export const googleLogin = async (req, res) => {
       await Transaction.create({
         userId: user._id,
         type: "credit",
-        amount: loginReward.amount,
+        amount: 5,
         description: "Daily login reward"
       });
     } else {
@@ -287,12 +302,33 @@ export const registerByAdmin = async (req, res) => {
       return res.status(400).json({ message: "Email, password, name, and role are required" });
     }
 
-    if (!["admin", "educator", "parent", "seller", "csr"].includes(role)) {
-      return res.status(400).json({ message: "Role must be one of: admin, educator, parent, seller, csr" });
+    // Allow school_admin, school_student, school_teacher, school_parent
+    const allowedRoles = ["admin", "educator", "parent", "seller", "csr", "school_admin", "school_student", "school_teacher", "school_parent"];
+    if (!allowedRoles.includes(role)) {
+      return res.status(400).json({ message: `Role must be one of: ${allowedRoles.join(", ")}` });
     }
 
     if (role === "educator" && (!position || !subjects)) {
       return res.status(400).json({ message: "Position and subjects are required for educator role" });
+    }
+
+    // For school_student, generate permanent random code
+    let studentCode;
+    if (role === "school_student") {
+      studentCode = Math.random().toString(36).substring(2, 10).toUpperCase();
+    }
+
+    // For school_parent, require studentCode and link parent to student
+    let linkedStudent = null;
+    if (role === "school_parent") {
+      const { studentCode: parentStudentCode } = req.body;
+      if (!parentStudentCode) {
+        return res.status(400).json({ message: "Student code is required to register parent account" });
+      }
+      linkedStudent = await User.findOne({ role: "school_student", studentCode: parentStudentCode });
+      if (!linkedStudent) {
+        return res.status(400).json({ message: "Invalid student code. No student found." });
+      }
     }
 
     const normalizedEmail = email.toLowerCase();
@@ -310,6 +346,8 @@ export const registerByAdmin = async (req, res) => {
       position: role === "educator" ? position : undefined,
       subjects: role === "educator" ? subjects : undefined,
       approvalStatus: ["educator", "parent", "seller", "csr"].includes(role) ? "pending" : "approved",
+      studentCode: role === "school_student" ? studentCode : undefined,
+      linkedStudentId: role === "school_parent" && linkedStudent ? linkedStudent._id : undefined,
     });
 
     res.status(201).json({
@@ -428,9 +466,10 @@ export const login = async (req, res) => {
       }
       
       // Check if this is a new day login
+      let loginReward = null;
       if (!lastActiveDay || today.getTime() > lastActiveDay.getTime()) {
-        // Award HealCoins for daily login
-        const loginReward = 10; // 10 HealCoins for daily login
+        // Award 5 HealCoins for daily login
+        const dailyReward = 5; // 5 HealCoins for daily login
         
         // Update user's last active timestamp
         user.lastActive = new Date();
@@ -442,10 +481,10 @@ export const login = async (req, res) => {
         if (!wallet) {
           wallet = await Wallet.create({
             userId: user._id,
-            balance: loginReward
+            balance: dailyReward
           });
         } else {
-          wallet.balance += loginReward;
+          wallet.balance += dailyReward;
           await wallet.save();
         }
         
@@ -453,9 +492,14 @@ export const login = async (req, res) => {
         await Transaction.create({
           userId: user._id,
           type: "credit",
-          amount: loginReward,
+          amount: dailyReward,
           description: "Daily login reward"
         });
+        
+        loginReward = {
+          received: true,
+          amount: dailyReward
+        };
         
         // Return login reward info with response
         res
@@ -475,10 +519,7 @@ export const login = async (req, res) => {
               approvalStatus: user.approvalStatus,
             },
             token, // Include token in response for frontend storage
-            loginReward: {
-              received: true,
-              amount: loginReward
-            }
+            loginReward
           });
       } else {
         // Regular login without reward
@@ -498,10 +539,8 @@ export const login = async (req, res) => {
               role: user.role,
               approvalStatus: user.approvalStatus,
             },
-            token, // Include token in response for frontend storage
-            loginReward: {
-              received: false
-            }
+            token,
+            loginReward: null
           });
       }
     } else {

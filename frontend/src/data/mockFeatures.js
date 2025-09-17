@@ -11,25 +11,27 @@ export const mockFeatures = [
     category: "education",
     xpReward: 50
   },
+  // Swapped positions: place Games where Budget Planner was
   {
-    id: 2,
-    title: "Budget Planner",
-    description: "Create and manage your personal budget",
-    icon: "💰",
-    path: "/tools/budget-planner",
-    color: "bg-green-500",
-    category: "finance",
+    id: 10,
+    title: "Games",
+    description: "Play educational games and earn rewards",
+    icon: "🎮",
+    path: "/student/games",
+    color: "bg-purple-400",
+    category: "entertainment",
     xpReward: 40
   },
+  // Swapped positions: place Leaderboard where Investment Simulator was
   {
-    id: 3,
-    title: "Investment Simulator",
-    description: "Practice investing with virtual money",
-    icon: "📈",
-    path: "/games/investment-simulator",
-    color: "bg-purple-500",
-    category: "finance",
-    xpReward: 60
+    id: 11,
+    title: "Leaderboard",
+    description: "See how you rank among your peers",
+    icon: "🏆",
+    path: "/student/leaderboard",
+    color: "bg-amber-500",
+    category: "competition",
+    xpReward: 15
   },
   {
     id: 4,
@@ -91,24 +93,26 @@ export const mockFeatures = [
     category: "wellness",
     xpReward: 20
   },
+  // Original Budget Planner moved after reorder
   {
-    id: 10,
-    title: "Games",
-    description: "Play educational games and earn rewards",
-    icon: "🎮",
-    path: "/student/games",
-    color: "bg-purple-400",
-    category: "entertainment",
+    id: 2,
+    title: "Budget Planner",
+    description: "Create and manage your personal budget",
+    icon: "💰",
+    path: "/tools/budget-planner",
+    color: "bg-green-500",
+    category: "finance",
     xpReward: 40
   },
+  // Original Investment Simulator moved after reorder
   {
-    id: 11,
-    title: "Leaderboard",
-    description: "See how you rank among your peers",
-    icon: "🏆",
-    path: "/student/leaderboard",
-    color: "bg-amber-500",
-    category: "competition",
-    xpReward: 15
+    id: 3,
+    title: "Investment Simulator",
+    description: "Practice investing with virtual money",
+    icon: "📈",
+    path: "/games/investment-simulator",
+    color: "bg-purple-500",
+    category: "finance",
+    xpReward: 60
   }
 ];

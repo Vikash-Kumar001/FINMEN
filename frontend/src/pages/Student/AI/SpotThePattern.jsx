@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import GameShell from './GameShell';
 
 // --- Inline Star Component ---
 const Star = ({ color = '#FFD700', size = 40 }) => (
@@ -126,8 +127,8 @@ const renderShape = (shapeString) => {
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: type === 'circle' ? '50%' : '16px',
-    background: type !== 'star' && type !== 'heart' && !type.includes('arrow') 
-      ? `linear-gradient(135deg, ${actualColor}, ${actualColor}dd)` 
+    background: type !== 'star' && type !== 'heart' && !type.includes('arrow')
+      ? `linear-gradient(135deg, ${actualColor}, ${actualColor}dd)`
       : 'transparent',
     boxShadow: '0 8px 25px rgba(0,0,0,0.15), inset 0 1px 0 rgba(255,255,255,0.2)',
     border: '2px solid rgba(255,255,255,0.3)',
@@ -146,8 +147,8 @@ const renderShape = (shapeString) => {
     case 'heart':
       return (
         <div className="animate-heartbeat" style={{ ...shapeBaseStyle, background: 'transparent' }}>
-          <span style={{ 
-            fontSize: 'clamp(40px, 8vw, 60px)', 
+          <span style={{
+            fontSize: 'clamp(40px, 8vw, 60px)',
             color: actualColor,
             filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
           }}>❤</span>
@@ -156,8 +157,8 @@ const renderShape = (shapeString) => {
     case 'arrow-up':
       return (
         <div className="animate-bounce-subtle" style={{ ...shapeBaseStyle, background: 'transparent' }}>
-          <span style={{ 
-            fontSize: 'clamp(40px, 8vw, 60px)', 
+          <span style={{
+            fontSize: 'clamp(40px, 8vw, 60px)',
             color: actualColor,
             filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
           }}>⬆</span>
@@ -166,8 +167,8 @@ const renderShape = (shapeString) => {
     case 'arrow-down':
       return (
         <div className="animate-bounce-subtle" style={{ ...shapeBaseStyle, background: 'transparent' }}>
-          <span style={{ 
-            fontSize: 'clamp(40px, 8vw, 60px)', 
+          <span style={{
+            fontSize: 'clamp(40px, 8vw, 60px)',
             color: actualColor,
             filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
           }}>⬇</span>
@@ -176,8 +177,8 @@ const renderShape = (shapeString) => {
     case 'arrow-left':
       return (
         <div className="animate-bounce-subtle" style={{ ...shapeBaseStyle, background: 'transparent' }}>
-          <span style={{ 
-            fontSize: 'clamp(40px, 8vw, 60px)', 
+          <span style={{
+            fontSize: 'clamp(40px, 8vw, 60px)',
             color: actualColor,
             filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))',
           }}>⬅</span>
@@ -240,8 +241,8 @@ const renderOptionShape = (option) => {
     case 'heart':
       return (
         <div style={{ ...shapeStyle, background: 'transparent' }}>
-          <span style={{ 
-            fontSize: 'clamp(30px, 6vw, 40px)', 
+          <span style={{
+            fontSize: 'clamp(30px, 6vw, 40px)',
             color: actualColor,
             filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
           }}>❤</span>
@@ -250,8 +251,8 @@ const renderOptionShape = (option) => {
     case 'arrow-up':
       return (
         <div style={{ ...shapeStyle, background: 'transparent' }}>
-          <span style={{ 
-            fontSize: 'clamp(30px, 6vw, 40px)', 
+          <span style={{
+            fontSize: 'clamp(30px, 6vw, 40px)',
             color: actualColor,
             filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
           }}>⬆</span>
@@ -260,8 +261,8 @@ const renderOptionShape = (option) => {
     case 'arrow-down':
       return (
         <div style={{ ...shapeStyle, background: 'transparent' }}>
-          <span style={{ 
-            fontSize: 'clamp(30px, 6vw, 40px)', 
+          <span style={{
+            fontSize: 'clamp(30px, 6vw, 40px)',
             color: actualColor,
             filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
           }}>⬇</span>
@@ -270,8 +271,8 @@ const renderOptionShape = (option) => {
     case 'arrow-left':
       return (
         <div style={{ ...shapeStyle, background: 'transparent' }}>
-          <span style={{ 
-            fontSize: 'clamp(30px, 6vw, 40px)', 
+          <span style={{
+            fontSize: 'clamp(30px, 6vw, 40px)',
             color: actualColor,
             filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))',
           }}>⬅</span>
@@ -358,25 +359,17 @@ const SpotThePattern = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex flex-col items-center justify-start p-4 relative overflow-hidden">
-      
-      {/* Animated Background */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl animate-blob"></div>
-        <div className="absolute top-40 right-10 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-20 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
-      </div>
-      
+    <GameShell
+      title="Spot The Pattern"
+      subtitle="Find the correct shape in the sequence!"
+      rightSlot={
+        <div className="text-white font-bold bg-white/10 px-4 py-2 rounded-xl">
+          Score: {score}
+        </div>
+      }
+    >
       <FloatingParticles />
       {renderConfetti()}
-
-      {/* Header */}
-      <div className="text-center mb-8 z-10 relative">
-        <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent animate-title-glow">
-          Pattern Quest
-        </h1>
-        <p className="text-white/80 text-lg mt-2 font-medium">Challenge your mind with sequences</p>
-      </div>
 
       {/* Game Stats */}
       <div className="flex gap-6 mb-8 z-10">
@@ -393,7 +386,7 @@ const SpotThePattern = () => {
       {/* Pattern Display */}
       <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-8 mb-8 border border-white/20 shadow-2xl z-10 max-w-4xl w-full">
         <h2 className="text-white text-xl font-semibold mb-6 text-center">Find the next shape in the sequence</h2>
-        
+
         <div className="flex items-center justify-center gap-4 mb-6 flex-wrap">
           {currentPatternData.sequence.map((shapeString, index) => (
             <div key={index} className="animate-slide-in-sequence" style={{ animationDelay: `${index * 0.1}s` }}>
@@ -412,8 +405,8 @@ const SpotThePattern = () => {
           const isSelected = selectedOption && selectedOption.type === option.type && selectedOption.color === option.color;
           const isCorrect = feedback.type === 'correct' && isSelected;
           const isWrong = feedback.type === 'wrong' && isSelected;
-          const isShowingCorrect = feedback.type === 'wrong' && feedback.correctWas && 
-                                  feedback.correctWas.type === option.type && feedback.correctWas.color === option.color;
+          const isShowingCorrect = feedback.type === 'wrong' && feedback.correctWas &&
+            feedback.correctWas.type === option.type && feedback.correctWas.color === option.color;
 
           return (
             <button
@@ -430,9 +423,9 @@ const SpotThePattern = () => {
               `}
               style={{
                 background: isCorrect ? 'linear-gradient(135deg, #10B981, #059669)' :
-                           isWrong ? 'linear-gradient(135deg, #EF4444, #DC2626)' :
-                           isShowingCorrect ? 'linear-gradient(135deg, #F59E0B, #D97706)' :
-                           'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
+                  isWrong ? 'linear-gradient(135deg, #EF4444, #DC2626)' :
+                    isShowingCorrect ? 'linear-gradient(135deg, #F59E0B, #D97706)' :
+                      'linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))',
                 borderRadius: '24px',
                 padding: '20px',
                 border: `3px solid ${isCorrect ? '#10B981' : isWrong ? '#EF4444' : isShowingCorrect ? '#F59E0B' : 'rgba(255,255,255,0.2)'}`,
@@ -454,8 +447,8 @@ const SpotThePattern = () => {
           fixed bottom-32 left-1/2 transform -translate-x-1/2 z-20
           px-8 py-4 rounded-2xl text-white font-bold text-lg
           animate-feedback-appear backdrop-blur-md border
-          ${feedback.type === 'correct' 
-            ? 'bg-green-500/90 border-green-400' 
+          ${feedback.type === 'correct'
+            ? 'bg-green-500/90 border-green-400'
             : 'bg-red-500/90 border-red-400'
           }
         `}>
@@ -568,7 +561,7 @@ const SpotThePattern = () => {
         .animate-next-button { animation: next-button 0.5s ease-out; }
         .animate-confetti { animation: confetti linear infinite; }
       `}</style>
-    </div>
+    </GameShell>
   );
 };
 

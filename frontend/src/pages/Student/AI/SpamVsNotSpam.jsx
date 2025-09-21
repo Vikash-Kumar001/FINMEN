@@ -1,327 +1,103 @@
-import React, { useState } from 'react';
-import GameShell from './GameShell';
+import React, { useState } from "react";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
 
 const SpamVsNotSpam = () => {
-  const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
-  const [score, setScore] = useState(0);
-  const [feedback, setFeedback] = useState({ message: '', type: '' });
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [isOptionDisabled, setIsOptionDisabled] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-
   const emails = [
-    { 
-      id: 1, 
-      subject: 'Your order confirmation', 
-      correctAnswer: 'not spam', 
-      options: ['spam', 'not spam'],
-      rewardPoints: 5 
-    },
-    { 
-      id: 2, 
-      subject: 'WIN $1000 NOW!!!', 
-      correctAnswer: 'spam', 
-      options: ['spam', 'not spam'],
-      rewardPoints: 5 
-    },
-    { 
-      id: 3, 
-      subject: 'Meeting reminder for tomorrow', 
-      correctAnswer: 'not spam', 
-      options: ['spam', 'not spam'],
-      rewardPoints: 5 
-    },
-    { 
-      id: 4, 
-      subject: 'URGENT: Click here to claim prize', 
-      correctAnswer: 'spam', 
-      options: ['spam', 'not spam'],
-      rewardPoints: 5 
-    },
-    { 
-      id: 5, 
-      subject: 'Your monthly newsletter', 
-      correctAnswer: 'not spam', 
-      options: ['spam', 'not spam'],
-      rewardPoints: 5 
-    },
+    { id: 1, subject: "WIN $1000 NOW!!!", correctAnswer: "spam" },
+    { id: 2, subject: "Your order confirmation", correctAnswer: "not spam" },
+    { id: 3, subject: "URGENT: Click here to claim prize", correctAnswer: "spam" },
+    { id: 4, subject: "Homework update from school", correctAnswer: "not spam" },
+    { id: 5, subject: "Free tickets for you!", correctAnswer: "spam" },
+    { id: 6, subject: "Your monthly newsletter", correctAnswer: "not spam" },
+    { id: 7, subject: "Congratulations, you've won!", correctAnswer: "spam" },
   ];
 
-  const currentEmail = emails[currentLevelIndex];
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [score, setScore] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [feedback, setFeedback] = useState({ message: "", type: "" });
+  const [isOptionDisabled, setIsOptionDisabled] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showGameOver, setShowGameOver] = useState(false);
+  const [flashPoints, setFlashPoints] = useState(null); // ✅ Score flash
 
-
-  const titleBoxStyle = {
-    backgroundColor: '#FFEB3B',
-    border: '4px solid #FFC107',
-    borderRadius: '24px',
-    padding: 'clamp(10px, 1.8vw, 18px) clamp(24px, 4vw, 48px)',
-    fontSize: 'clamp(20px, 5vw, 48px)',
-    fontWeight: 'bold',
-    color: '#D32F2F',
-    textShadow: '2px 2px 0 #FFEB3B, -2px -2px 0 #FFEB3B, 4px 4px 0 #FF5722',
-    letterSpacing: '1.5px',
-    marginBottom: 'clamp(16px, 4vh, 40px)',
-    zIndex: 1,
-    boxShadow: '0 8px 15px rgba(0,0,0,0.3)',
-  };
-
-  const gameCardStyle = {
-    backgroundColor: 'white',
-    borderRadius: '20px',
-    border: '6px solid #FF5722',
-    padding: 'clamp(16px, 3vw, 32px)',
-    margin: 'clamp(8px, 2vh, 16px) 0',
-    boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    position: 'relative',
-    zIndex: 2,
-    maxHeight: '45vh',
-    overflow: 'hidden',
-  };
-
-  const emailStyle = {
-    fontSize: 'clamp(16px, 3.5vw, 24px)',
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 'clamp(16px, 3vh, 24px)',
-    lineHeight: '1.4',
-    padding: 'clamp(12px, 2vw, 20px)',
-    backgroundColor: 'rgba(0,0,0,0.05)',
-    borderRadius: '12px',
-    border: '2px solid rgba(0,0,0,0.1)',
-  };
-
-  const optionsContainerStyle = {
-    display: 'flex',
-    gap: 'clamp(16px, 4vw, 32px)',
-    marginTop: 'clamp(16px, 3vh, 24px)',
-    position: 'relative',
-    zIndex: 3,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  };
-
-  const optionButtonStyle = (option) => {
-    const isSelected = selectedOption === option;
-    const isCorrectFeedback = feedback.type === 'correct' && isSelected;
-    const isWrongFeedback = feedback.type === 'wrong' && isSelected;
-
-    return {
-      width: 'clamp(120px, 20vw, 200px)',
-      height: 'clamp(80px, 12vw, 120px)',
-      borderRadius: '20px',
-      backgroundColor: option === 'spam' ? '#F44336' : '#4CAF50',
-      border: `4px solid ${isCorrectFeedback ? '#2E7D32' : isWrongFeedback ? '#C62828' : option === 'spam' ? '#D32F2F' : '#388E3C'}`,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      cursor: isOptionDisabled ? 'not-allowed' : 'pointer',
-      transition: 'all 0.2s ease-in-out',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-      transform: isSelected ? 'scale(1.03)' : 'scale(1)',
-      opacity: isOptionDisabled && !isSelected ? 0.6 : 1,
-      fontSize: 'clamp(18px, 3vw, 24px)',
-      fontWeight: 'bold',
-      color: 'white',
-      textTransform: 'uppercase',
-    };
-  };
-
-  const feedbackBubbleStyle = {
-    backgroundColor: feedback.type === 'correct' ? '#8BC34A' : '#F44336',
-    color: 'white',
-    padding: '8px 14px',
-    borderRadius: '25px',
-    position: 'absolute',
-    bottom: '2px',
-    fontSize: 'clamp(16px, 4vw, 28px)',
-    fontWeight: 'bold',
-    zIndex: 4,
-    boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-    display: feedback.message ? 'block' : 'none',
-    transform: 'translateY(-10px)',
-    animation: feedback.message ? 'pop-in 0.3s ease-out forwards' : 'none',
-    marginTop: '12px',
-  };
-
-  const nextButtonContainerStyle = {
-    position: 'absolute',
-    right: 'clamp(12px, 3vw, 32px)',
-    bottom: 'clamp(12px, 3vh, 24px)',
-    zIndex: 5,
-  };
-
-  const nextButtonStyle = {
-    backgroundColor: '#FF9800',
-    color: 'white',
-    border: 'none',
-    borderRadius: '50%',
-    width: 'clamp(84px, 12vw, 120px)',
-    height: 'clamp(84px, 12vw, 120px)',
-    fontSize: 'clamp(14px, 2.5vw, 18px)',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    boxShadow: '0 8px 15px rgba(0,0,0,0.4)',
-    transition: 'background-color 0.2s ease-in-out, transform 0.2s ease-in-out',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: feedback.message && (feedback.type === 'correct' || (feedback.type === 'wrong' && isOptionDisabled)) ? 1 : 0.5,
-    pointerEvents: feedback.message && (feedback.type === 'correct' || (feedback.type === 'wrong' && isOptionDisabled)) ? 'auto' : 'none',
-  };
-
-  const scoreTrackerStyle = {
-    position: 'absolute',
-    bottom: 'clamp(10px, 2.5vh, 20px)',
-    left: 'clamp(10px, 2.5vw, 20px)',
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    borderRadius: '20px',
-    padding: '8px 12px',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-    fontSize: 'clamp(14px, 2.4vw, 18px)',
-    fontWeight: 'bold',
-    color: '#555',
-    zIndex: 5,
-  };
+  const currentEmail = emails[currentIndex];
 
   const handleOptionClick = (option) => {
     if (isOptionDisabled) return;
-
     setSelectedOption(option);
     setIsOptionDisabled(true);
 
     if (option === currentEmail.correctAnswer) {
-      setFeedback({ message: 'Great! Correct!', type: 'correct' });
-      setScore(prevScore => prevScore + currentEmail.rewardPoints);
+      setScore((prev) => prev + 2); // +2 points per correct answer
+      setFlashPoints(2);             // Trigger flash animation
+      setFeedback({ message: "Great! Correct!", type: "correct" });
       setShowConfetti(true);
     } else {
       setFeedback({
-        message: `Wrong! The correct answer is: ${currentEmail.correctAnswer}`,
-        type: 'wrong'
+        message: `Oops! Correct answer: ${currentEmail.correctAnswer}`,
+        type: "wrong",
       });
       setShowConfetti(false);
     }
+
+    // Remove flash after 1 second
+    setTimeout(() => setFlashPoints(null), 1000);
   };
 
-  const handleNextLevel = () => {
+  const handleNext = () => {
     setShowConfetti(false);
-    if (currentLevelIndex < emails.length - 1) {
-      setCurrentLevelIndex(prevIndex => prevIndex + 1);
-      setFeedback({ message: '', type: '' });
+
+    if (currentIndex < emails.length - 1) {
+      setCurrentIndex((prev) => prev + 1);
       setSelectedOption(null);
+      setFeedback({ message: "", type: "" });
       setIsOptionDisabled(false);
     } else {
-      alert(`Game Over! Your final score is: ${score}`);
-      setCurrentLevelIndex(0);
-      setScore(0);
-      setFeedback({ message: '', type: '' });
-      setSelectedOption(null);
-      setIsOptionDisabled(false);
+      setShowGameOver(true); // 🎉 trigger congratulations modal
     }
   };
 
-  const renderConfetti = () => {
-    if (!showConfetti) return null;
-    return (
-      <div style={{
-        position: 'absolute',
-        top: 0, left: 0, right: 0, bottom: 0,
-        pointerEvents: 'none',
-        overflow: 'hidden',
-        zIndex: 100,
-      }}>
-        {Array.from({ length: 100 }).map((_, i) => (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              backgroundColor: `hsl(${Math.random() * 360}, 100%, 70%)`,
-              width: `${Math.random() * 10 + 5}px`,
-              height: `${Math.random() * 10 + 5}px`,
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              opacity: Math.random(),
-              animation: `confetti-fall ${Math.random() * 2 + 3}s linear infinite`,
-              transform: `rotate(${Math.random() * 360}deg)`,
-            }}
+  return (
+    <GameShell
+      title="Spam vs Not Spam"
+      subtitle="Sort emails correctly"
+      rightSlot={
+        <div className="bg-white/20 px-3 py-2 rounded-xl text-white font-bold shadow-md">
+          Score: {score} ⭐ {currentIndex + 1}/{emails.length}
+        </div>
+      }
+      onNext={handleNext}
+      nextEnabled={!!feedback.message}
+      showGameOver={showGameOver}
+      score={score}
+    >
+      {showConfetti && <Confetti />}
+      {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
+
+      <GameCard>
+        <div style={{ fontSize: "clamp(16px, 3.5vw, 24px)", fontWeight: "bold", marginBottom: "12px", color: "white" }}>
+          📧 {currentEmail.subject}
+        </div>
+        <p style={{ fontWeight: "bold", fontSize: "clamp(16px, 3vw, 24px)", color: "#d6c9ecff" }}>
+          Is this spam or not spam?
+        </p>
+      </GameCard>
+
+      <div className="flex flex-wrap justify-center gap-4 mt-4">
+        {["spam", "not spam"].map((option) => (
+          <OptionButton
+            key={option}
+            option={option}
+            onClick={handleOptionClick}
+            selected={selectedOption}
+            disabled={isOptionDisabled}
+            feedback={feedback}
           />
         ))}
       </div>
-    );
-  };
 
-  return (
-    <GameShell title="Spam vs Not Spam" subtitle="Label the email subject correctly">
-      {showConfetti && renderConfetti()}
-      <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 mb-6 border border-white/20 shadow-2xl z-10 max-w-3xl mx-auto w-full">
-        <div style={emailStyle}>
-          📧 {currentEmail.subject}
-        </div>
-        <p style={{ fontSize: 'clamp(16px, 3vw, 24px)', fontWeight: 'bold', color: '#333' }}>
-          Is this spam or not spam?
-        </p>
-      </div>
-
-      {/* Options */}
-      <div style={optionsContainerStyle}>
-        <button
-          style={optionButtonStyle('spam')}
-          onClick={() => handleOptionClick('spam')}
-          disabled={isOptionDisabled}
-        >
-          SPAM 🚫
-        </button>
-        <button
-          style={optionButtonStyle('not spam')}
-          onClick={() => handleOptionClick('not spam')}
-          disabled={isOptionDisabled}
-        >
-          NOT SPAM ✅
-        </button>
-      </div>
-
-      {/* Feedback Bubble */}
-      {feedback.message && (
-        <div style={feedbackBubbleStyle}>
-          {feedback.message}
-        </div>
-      )}
-
-      {/* Next Level Button */}
-      <div style={nextButtonContainerStyle}>
-        <button
-          style={nextButtonStyle}
-          onClick={handleNextLevel}
-          disabled={!(feedback.message && (feedback.type === 'correct' || (feedback.type === 'wrong' && isOptionDisabled)))}
-        >
-          <span>Next</span>
-          <span>Level</span>
-          <span style={{ fontSize: '20px' }}>😊</span>
-        </button>
-      </div>
-
-      {/* Score Tracker */}
-      <div style={scoreTrackerStyle}>
-        Score: {score}
-        <span style={{ marginLeft: '10px' }}>⭐ {currentLevelIndex + 1}/{emails.length}</span>
-      </div>
-
-      <style>{`
-        @keyframes pop-in {
-          0% { transform: scale(0.5) translateY(-10px); opacity: 0; }
-          80% { transform: scale(1.1) translateY(-10px); opacity: 1; }
-          100% { transform: scale(1) translateY(-10px); opacity: 1; }
-        }
-        @keyframes confetti-fall {
-          0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
-      `}</style>
+      {feedback.message && <FeedbackBubble message={feedback.message} type={feedback.type} />}
     </GameShell>
   );
 };

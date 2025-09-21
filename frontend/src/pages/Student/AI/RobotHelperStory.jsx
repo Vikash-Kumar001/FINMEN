@@ -1,191 +1,25 @@
-import React, { useState } from 'react';
-import GameShell from './GameShell';
+import React, { useState } from "react";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
 
 const RobotHelperStory = () => {
-  const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
+  const [currentIndex, setCurrentIndex] = useState(0);
   const [score, setScore] = useState(0);
-  const [feedback, setFeedback] = useState({ message: '', type: '' });
   const [selectedOption, setSelectedOption] = useState(null);
+  const [feedback, setFeedback] = useState({ message: "", type: "" });
   const [isOptionDisabled, setIsOptionDisabled] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [showGameOver, setShowGameOver] = useState(false);
+  const [flashPoints, setFlashPoints] = useState(null); // ✅ Score flash
 
-  const stories = [
-    { 
-      id: 1, 
-      story: '🤖 Robot sees a lost child. What should it do?', 
-      correctAnswer: 'help', 
-      options: ['help', 'ignore', 'run away', 'laugh'],
-      rewardPoints: 5 
-    },
-    { 
-      id: 2, 
-      story: '🤖 Robot finds money on the ground. What should it do?', 
-      correctAnswer: 'return', 
-      options: ['keep', 'return', 'hide', 'spend'],
-      rewardPoints: 5 
-    },
-    { 
-      id: 3, 
-      story: '🤖 Robot sees someone needs help carrying groceries. What should it do?', 
-      correctAnswer: 'offer help', 
-      options: ['offer help', 'watch', 'laugh', 'run'],
-      rewardPoints: 5 
-    },
-    { 
-      id: 4, 
-      story: '🤖 Robot is asked to keep a secret that could hurt someone. What should it do?', 
-      correctAnswer: 'tell trusted adult', 
-      options: ['keep secret', 'tell everyone', 'tell trusted adult', 'ignore'],
-      rewardPoints: 5 
-    },
-    { 
-      id: 5, 
-      story: '🤖 Robot sees someone being bullied. What should it do?', 
-      correctAnswer: 'stand up for them', 
-      options: ['join in', 'stand up for them', 'watch', 'run away'],
-      rewardPoints: 5 
-    },
+  const scenarios = [
+    { text: "🤖 Robot helps clean the room. What should you do?", correctAnswer: "Thank robot", options: ["Thank robot", "Ignore"], rewardPoints: 5 },
+    { text: "🤖 Robot finds a spilled cup. What should it do?", correctAnswer: "Clean it", options: ["Clean it", "Get angry"], rewardPoints: 5 },
+    { text: "🤖 Robot drops a toy. What should you do?", correctAnswer: "Pick it up", options: ["Throw it", "Pick it up"], rewardPoints: 5 },
+    { text: "🤖 Robot needs charging. What should it do?", correctAnswer: "Go to charger", options: ["Go to charger", "Keep moving randomly"], rewardPoints: 5 },
+    { text: "🤖 Robot sees someone sad. What should it do?", correctAnswer: "Comfort them", options: ["Comfort them", "Ignore"], rewardPoints: 5 },
   ];
 
-  const currentStory = stories[currentLevelIndex];
-
-
-  const titleBoxStyle = {
-    backgroundColor: '#FFEB3B',
-    border: '4px solid #FFC107',
-    borderRadius: '24px',
-    padding: 'clamp(10px, 1.8vw, 18px) clamp(24px, 4vw, 48px)',
-    fontSize: 'clamp(20px, 5vw, 48px)',
-    fontWeight: 'bold',
-    color: '#D32F2F',
-    textShadow: '2px 2px 0 #FFEB3B, -2px -2px 0 #FFEB3B, 4px 4px 0 #FF5722',
-    letterSpacing: '1.5px',
-    marginBottom: 'clamp(16px, 4vh, 40px)',
-    zIndex: 1,
-    boxShadow: '0 8px 15px rgba(0,0,0,0.3)',
-  };
-
-  const gameCardStyle = {
-    backgroundColor: 'white',
-    borderRadius: '20px',
-    border: '6px solid #795548',
-    padding: 'clamp(16px, 3vw, 32px)',
-    margin: 'clamp(8px, 2vh, 16px) 0',
-    boxShadow: '0 10px 20px rgba(0,0,0,0.2)',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    position: 'relative',
-    zIndex: 2,
-    maxHeight: '45vh',
-    overflow: 'hidden',
-  };
-
-  const storyStyle = {
-    fontSize: 'clamp(16px, 3.5vw, 24px)',
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 'clamp(16px, 3vh, 24px)',
-    lineHeight: '1.4',
-  };
-
-  const optionsContainerStyle = {
-    display: 'flex',
-    gap: 'clamp(8px, 2vw, 16px)',
-    marginTop: 'clamp(16px, 3vh, 24px)',
-    position: 'relative',
-    zIndex: 3,
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-  };
-
-  const optionButtonStyle = (option) => {
-    const isSelected = selectedOption === option;
-    const isCorrectFeedback = feedback.type === 'correct' && isSelected;
-    const isWrongFeedback = feedback.type === 'wrong' && isSelected;
-
-    return {
-      width: 'clamp(100px, 18vw, 160px)',
-      height: 'clamp(60px, 10vw, 80px)',
-      borderRadius: '20px',
-      backgroundColor: '#f0f0f0',
-      border: `4px solid ${isCorrectFeedback ? '#4CAF50' : isWrongFeedback ? '#F44336' : '#CCCCCC'}`,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      cursor: isOptionDisabled ? 'not-allowed' : 'pointer',
-      transition: 'all 0.2s ease-in-out',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.2)',
-      transform: isSelected ? 'scale(1.03)' : 'scale(1)',
-      opacity: isOptionDisabled && !isSelected ? 0.6 : 1,
-      fontSize: 'clamp(12px, 2.2vw, 16px)',
-      fontWeight: 'bold',
-      color: '#333',
-      textAlign: 'center',
-    };
-  };
-
-  const feedbackBubbleStyle = {
-    backgroundColor: feedback.type === 'correct' ? '#8BC34A' : '#F44336',
-    color: 'white',
-    padding: '8px 14px',
-    borderRadius: '25px',
-    position: 'absolute',
-    bottom: '2px',
-    fontSize: 'clamp(14px, 3vw, 20px)',
-    fontWeight: 'bold',
-    zIndex: 4,
-    boxShadow: '0 4px 10px rgba(0,0,0,0.3)',
-    display: feedback.message ? 'block' : 'none',
-    transform: 'translateY(-10px)',
-    animation: feedback.message ? 'pop-in 0.3s ease-out forwards' : 'none',
-    marginTop: '12px',
-    maxWidth: '80%',
-    textAlign: 'center',
-  };
-
-  const nextButtonContainerStyle = {
-    position: 'absolute',
-    right: 'clamp(12px, 3vw, 32px)',
-    bottom: 'clamp(12px, 3vh, 24px)',
-    zIndex: 5,
-  };
-
-  const nextButtonStyle = {
-    backgroundColor: '#FF9800',
-    color: 'white',
-    border: 'none',
-    borderRadius: '50%',
-    width: 'clamp(84px, 12vw, 120px)',
-    height: 'clamp(84px, 12vw, 120px)',
-    fontSize: 'clamp(14px, 2.5vw, 18px)',
-    fontWeight: 'bold',
-    cursor: 'pointer',
-    boxShadow: '0 8px 15px rgba(0,0,0,0.4)',
-    transition: 'background-color 0.2s ease-in-out, transform 0.2s ease-in-out',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    opacity: feedback.message && (feedback.type === 'correct' || (feedback.type === 'wrong' && isOptionDisabled)) ? 1 : 0.5,
-    pointerEvents: feedback.message && (feedback.type === 'correct' || (feedback.type === 'wrong' && isOptionDisabled)) ? 'auto' : 'none',
-  };
-
-  const scoreTrackerStyle = {
-    position: 'absolute',
-    bottom: 'clamp(10px, 2.5vh, 20px)',
-    left: 'clamp(10px, 2.5vw, 20px)',
-    display: 'flex',
-    alignItems: 'center',
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    borderRadius: '20px',
-    padding: '8px 12px',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-    fontSize: 'clamp(14px, 2.4vw, 18px)',
-    fontWeight: 'bold',
-    color: '#555',
-    zIndex: 5,
-  };
+  const currentScenario = scenarios[currentIndex];
 
   const handleOptionClick = (option) => {
     if (isOptionDisabled) return;
@@ -193,126 +27,72 @@ const RobotHelperStory = () => {
     setSelectedOption(option);
     setIsOptionDisabled(true);
 
-    if (option === currentStory.correctAnswer) {
-      setFeedback({ message: 'Great! Good choice!', type: 'correct' });
-      setScore(prevScore => prevScore + currentStory.rewardPoints);
+    if (option === currentScenario.correctAnswer) {
+      setScore(prev => prev + currentScenario.rewardPoints);
+      setFlashPoints(currentScenario.rewardPoints); // ✅ trigger score flash
+      setFeedback({ message: "Great! Correct choice!", type: "correct" });
       setShowConfetti(true);
+
+      // remove flash after 1 second
+      setTimeout(() => setFlashPoints(null), 1000);
     } else {
       setFeedback({
-        message: `Wrong! The correct answer is: ${currentStory.correctAnswer}`,
-        type: 'wrong'
+        message: `Oops! The right choice is: ${currentScenario.correctAnswer}`,
+        type: "wrong",
       });
       setShowConfetti(false);
     }
   };
 
-  const handleNextLevel = () => {
+  const handleNext = () => {
     setShowConfetti(false);
-    if (currentLevelIndex < stories.length - 1) {
-      setCurrentLevelIndex(prevIndex => prevIndex + 1);
-      setFeedback({ message: '', type: '' });
+    if (currentIndex < scenarios.length - 1) {
+      setCurrentIndex(prev => prev + 1);
       setSelectedOption(null);
+      setFeedback({ message: "", type: "" });
       setIsOptionDisabled(false);
     } else {
-      alert(`Game Over! Your final score is: ${score}`);
-      setCurrentLevelIndex(0);
-      setScore(0);
-      setFeedback({ message: '', type: '' });
-      setSelectedOption(null);
-      setIsOptionDisabled(false);
+      setShowGameOver(true); // 🎉 trigger congratulations modal
     }
   };
 
-  const renderConfetti = () => {
-    if (!showConfetti) return null;
-    return (
-      <div style={{
-        position: 'absolute',
-        top: 0, left: 0, right: 0, bottom: 0,
-        pointerEvents: 'none',
-        overflow: 'hidden',
-        zIndex: 100,
-      }}>
-        {Array.from({ length: 100 }).map((_, i) => (
-          <div
-            key={i}
-            style={{
-              position: 'absolute',
-              backgroundColor: `hsl(${Math.random() * 360}, 100%, 70%)`,
-              width: `${Math.random() * 10 + 5}px`,
-              height: `${Math.random() * 10 + 5}px`,
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-              opacity: Math.random(),
-              animation: `confetti-fall ${Math.random() * 2 + 3}s linear infinite`,
-              transform: `rotate(${Math.random() * 360}deg)`,
-            }}
+  return (
+    <GameShell
+      title="Robot Helper Story"
+      subtitle="Pick the kind and safe choice"
+      rightSlot={
+        <div className="bg-white/20 px-3 py-2 rounded-xl text-white font-bold shadow-md">
+          Score: {score} ⭐ {currentIndex + 1}/{scenarios.length}
+        </div>
+      }
+      onNext={handleNext}
+      nextEnabled={feedback.message && isOptionDisabled}
+      showGameOver={showGameOver}
+      score={score}
+    >
+      {showConfetti && <Confetti />}
+      {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
+
+      <GameCard>
+        <p style={{ fontWeight: "bold", fontSize: "clamp(18px, 4vw, 28px)", color: "white" }}>
+          {currentScenario.text}
+        </p>
+      </GameCard>
+
+      <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", justifyContent: "center" }}>
+        {currentScenario.options.map((option, index) => (
+          <OptionButton
+            key={index}
+            option={option}
+            onClick={handleOptionClick}
+            selected={selectedOption}
+            disabled={isOptionDisabled}
+            feedback={feedback}
           />
         ))}
       </div>
-    );
-  };
 
-  return (
-    <GameShell title="Robot Helper Story" subtitle="Pick the kind and safe choice">
-      {showConfetti && renderConfetti()}
-      <div className="bg-white/10 backdrop-blur-lg rounded-3xl p-6 mb-6 border border-white/20 shadow-2xl z-10 max-w-3xl mx-auto w-full">
-        <div style={storyStyle}>
-          {currentStory.story}
-        </div>
-      </div>
-
-      {/* Options */}
-      <div style={optionsContainerStyle}>
-        {currentStory.options.map((option, index) => (
-          <button
-            key={index}
-            style={optionButtonStyle(option)}
-            onClick={() => handleOptionClick(option)}
-            disabled={isOptionDisabled}
-          >
-            {option}
-          </button>
-        ))}
-      </div>
-
-      {/* Feedback Bubble */}
-      {feedback.message && (
-        <div style={feedbackBubbleStyle}>
-          {feedback.message}
-        </div>
-      )}
-
-      {/* Next Level Button */}
-      <div style={nextButtonContainerStyle}>
-        <button
-          style={nextButtonStyle}
-          onClick={handleNextLevel}
-          disabled={!(feedback.message && (feedback.type === 'correct' || (feedback.type === 'wrong' && isOptionDisabled)))}
-        >
-          <span>Next</span>
-          <span>Level</span>
-          <span style={{ fontSize: '20px' }}>😊</span>
-        </button>
-      </div>
-
-      {/* Score Tracker */}
-      <div style={scoreTrackerStyle}>
-        Score: {score}
-        <span style={{ marginLeft: '10px' }}>⭐ {currentLevelIndex + 1}/{stories.length}</span>
-      </div>
-
-      <style>{`
-        @keyframes pop-in {
-          0% { transform: scale(0.5) translateY(-10px); opacity: 0; }
-          80% { transform: scale(1.1) translateY(-10px); opacity: 1; }
-          100% { transform: scale(1) translateY(-10px); opacity: 1; }
-        }
-        @keyframes confetti-fall {
-          0% { transform: translateY(-100vh) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
-        }
-      `}</style>
+      {feedback.message && <FeedbackBubble message={feedback.message} type={feedback.type} />}
     </GameShell>
   );
 };

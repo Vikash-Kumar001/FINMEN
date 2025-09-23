@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const RobotEmotionStoryShell = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -53,6 +53,9 @@ const RobotEmotionStoryShell = () => {
 
   return (
     <GameShell
+      gameId="robot-emotion-story"
+      gameType="ai"
+      totalLevels={scenarios.length}
       title="Robot Emotion Story"
       subtitle=""
       rightSlot={
@@ -68,9 +71,11 @@ const RobotEmotionStoryShell = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ score flash */}
 
-      <GameCard>
-        <div className="text-xl font-bold text-white">{currentScenario.scenario}</div>
-      </GameCard>
+      <LevelCompleteHandler gameId="robot-emotion-story" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <div className="text-xl font-bold text-white">{currentScenario.scenario}</div>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap justify-center gap-4 mt-4">
         {currentScenario.options.map((option, index) => (

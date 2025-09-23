@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const WeatherPredictionStory = () => {
     const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -54,6 +54,9 @@ const WeatherPredictionStory = () => {
 
     return (
         <GameShell
+            gameId="weather-prediction-story"
+            gameType="ai"
+            totalLevels={stories.length}
             title="Weather Prediction Story"
             subtitle="See how AI predicts the weather!"
             rightSlot={
@@ -69,9 +72,11 @@ const WeatherPredictionStory = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white">{currentStory.scenario}</p>
-            </GameCard>
+            <LevelCompleteHandler gameId="weather-prediction-story" gameType="ai" levelNumber={currentLevelIndex + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white">{currentStory.scenario}</p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {currentStory.options.map((option, idx) => (

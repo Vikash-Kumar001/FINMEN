@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const TrafficLightAI = () => {
     const [score, setScore] = useState(0);
@@ -61,6 +61,9 @@ const TrafficLightAI = () => {
 
     return (
         <GameShell
+            gameId="traffic-light-ai"
+            gameType="ai"
+            totalLevels={totalRounds}
             title="Traffic Light AI"
             subtitle="Click the right action for the traffic light, just like AI in self-driving cars!"
             rightSlot={
@@ -76,17 +79,19 @@ const TrafficLightAI = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <div className="flex flex-col items-center">
-                    <p className="text-xl font-bold text-white mb-4">🚗 Car is moving...</p>
-                    {/* Traffic Light */}
-                    <div className="w-16 h-40 bg-black rounded-lg flex flex-col justify-around items-center p-2">
-                        <div className={`w-10 h-10 rounded-full ${light === "red" ? "bg-red-500" : "bg-red-800/40"}`}></div>
-                        <div className={`w-10 h-10 rounded-full ${light === "yellow" ? "bg-yellow-500" : "bg-yellow-800/40"}`}></div>
-                        <div className={`w-10 h-10 rounded-full ${light === "green" ? "bg-green-500" : "bg-green-800/40"}`}></div>
+            <LevelCompleteHandler gameId="traffic-light-ai" gameType="ai" levelNumber={round + 1}>
+                <GameCard>
+                    <div className="flex flex-col items-center">
+                        <p className="text-xl font-bold text-white mb-4">🚗 Car is moving...</p>
+                        {/* Traffic Light */}
+                        <div className="w-16 h-40 bg-black rounded-lg flex flex-col justify-around items-center p-2">
+                            <div className={`w-10 h-10 rounded-full ${light === "red" ? "bg-red-500" : "bg-red-800/40"}`}></div>
+                            <div className={`w-10 h-10 rounded-full ${light === "yellow" ? "bg-yellow-500" : "bg-yellow-800/40"}`}></div>
+                            <div className={`w-10 h-10 rounded-full ${light === "green" ? "bg-green-500" : "bg-green-800/40"}`}></div>
+                        </div>
                     </div>
-                </div>
-            </GameCard>
+                </GameCard>
+            </LevelCompleteHandler>
 
             {!feedback.message ? (
                 <div className="flex justify-center gap-4 mt-6">

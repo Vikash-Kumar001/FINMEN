@@ -363,7 +363,7 @@ export default function Games() {
                             <div className="w-16 h-16 mx-auto mb-3 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-2xl flex items-center justify-center text-white shadow-lg">
                                 <Gamepad2 className="w-8 h-8" />
                             </div>
-                            <div className="text-2xl font-bold text-gray-800">13</div>
+                            <div className="text-2xl font-bold text-gray-800">50+</div>
                             <div className="text-sm text-gray-600">Total Games</div>
                         </div>
                         <div className="text-center">

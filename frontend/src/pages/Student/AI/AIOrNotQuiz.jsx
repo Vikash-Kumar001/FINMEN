@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const AIOrNotQuiz = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -58,6 +58,9 @@ const AIOrNotQuiz = () => {
 
   return (
     <GameShell
+      gameId="ai-or-not-quiz"
+      gameType="ai"
+      totalLevels={items.length}
       title="AI or Not Quiz"
       subtitle="Decide what is AI and what is not"
       rightSlot={
@@ -73,12 +76,14 @@ const AIOrNotQuiz = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
 
-      <GameCard>
-        <p className="text-3xl md:text-4xl font-bold mb-4 text-white">{currentItem.item}</p>
-        <p className="text-white/80 text-lg md:text-2xl font-semibold">
-          Is this AI or Not?
-        </p>
-      </GameCard>
+      <LevelCompleteHandler gameId="ai-or-not-quiz" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <p className="text-3xl md:text-4xl font-bold mb-4 text-white">{currentItem.item}</p>
+          <p className="text-white/80 text-lg md:text-2xl font-semibold">
+            Is this AI or Not?
+          </p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex gap-6 justify-center flex-wrap mt-4">
         {["AI", "Not AI"].map((option) => (

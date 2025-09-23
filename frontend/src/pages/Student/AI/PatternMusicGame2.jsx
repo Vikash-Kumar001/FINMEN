@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, LevelCompleteHandler } from "./GameShell";
 
 const PatternMusicGame2 = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -87,6 +87,9 @@ const PatternMusicGame2 = () => {
 
   return (
     <GameShell
+      gameId="pattern-music-game-2"
+      gameType="ai"
+      totalLevels={patterns.length}
       title="Pattern Music Game 2"
       subtitle="Guess the next note in the rhythm!"
       onNext={handleNextLevel}
@@ -94,14 +97,16 @@ const PatternMusicGame2 = () => {
     >
       {showConfetti && <Confetti />}
 
-      <GameCard>
-        <div className="flex flex-wrap justify-center gap-4 mb-4">
-          {currentPattern.sequence.map((note, idx) => (
-            <span key={idx} style={{ fontSize: "2.5rem" }}>{note}</span>
-          ))}
-        </div>
-        <p className="text-white/80 font-bold text-lg">What comes next?</p>
-      </GameCard>
+      <LevelCompleteHandler gameId="pattern-music-game-2" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <div className="flex flex-wrap justify-center gap-4 mb-4">
+            {currentPattern.sequence.map((note, idx) => (
+              <span key={idx} style={{ fontSize: "2.5rem" }}>{note}</span>
+            ))}
+          </div>
+          <p className="text-white/80 font-bold text-lg">What comes next?</p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap justify-center gap-4 mt-4">
         {currentPattern.options.map((option, idx) => (

@@ -5,6 +5,7 @@ import GameShell, {
   FeedbackBubble,
   Confetti,
   ScoreFlash,
+  LevelCompleteHandler,
 } from "./GameShell";
 
 const SelfDrivingCarGame = () => {
@@ -68,6 +69,9 @@ const SelfDrivingCarGame = () => {
 
   return (
     <GameShell
+      gameId="self-driving-car-game"
+      gameType="ai"
+      totalLevels={trafficLights.length}
       title="Self-Driving Car Game"
       subtitle="Car stops for red, slows for yellow, goes for green."
       rightSlot={
@@ -83,17 +87,19 @@ const SelfDrivingCarGame = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
 
-      <GameCard>
-        <div
-          style={{
-            fontSize: "clamp(80px, 15vw, 120px)",
-            marginBottom: "16px",
-          }}
-        >
-          {currentLight?.light}
-        </div>
-        <p className="text-lg font-bold text-white">What should the car do?</p>
-      </GameCard>
+      <LevelCompleteHandler gameId="self-driving-car-game" gameType="ai" levelNumber={currentIndex + 1}>
+        <GameCard>
+          <div
+            style={{
+              fontSize: "clamp(80px, 15vw, 120px)",
+              marginBottom: "16px",
+            }}
+          >
+            {currentLight?.light}
+          </div>
+          <p className="text-lg font-bold text-white">What should the car do?</p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       {/* Normal buttons using OptionButton */}
       <div className="flex justify-center gap-6 flex-wrap">

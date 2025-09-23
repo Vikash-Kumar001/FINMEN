@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const SmartFarmingQuiz = () => {
     const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -84,6 +84,9 @@ const SmartFarmingQuiz = () => {
 
     return (
         <GameShell
+            gameId="smart-farming-quiz"
+            gameType="ai"
+            totalLevels={questions.length}
             title="Smart Farming Quiz"
             subtitle="Learn how AI helps farmers!"
             rightSlot={
@@ -99,9 +102,11 @@ const SmartFarmingQuiz = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white">{currentQuestion.question}</p>
-            </GameCard>
+            <LevelCompleteHandler gameId="smart-farming-quiz" gameType="ai" levelNumber={currentLevelIndex + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white">{currentQuestion.question}</p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {currentQuestion.options.map((option, idx) => (

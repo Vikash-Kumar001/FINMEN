@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const ChatbotFriend = () => {
     const [inputValue, setInputValue] = useState("");
@@ -38,6 +38,9 @@ const ChatbotFriend = () => {
 
     return (
         <GameShell
+            gameId="chatbot-friend"
+            gameType="ai"
+            totalLevels={1}
             title="Chatbot Friend"
             subtitle="Talk to your AI friend!"
             rightSlot={
@@ -53,19 +56,21 @@ const ChatbotFriend = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <div className="flex flex-col gap-2 text-white">
-                    {chatHistory.map((msg, idx) => (
-                        <div
-                            key={idx}
-                            className={`px-4 py-2 rounded-xl max-w-fit ${msg.sender === "kid" ? "bg-blue-500 self-end" : "bg-green-500 self-start"
-                                }`}
-                        >
-                            {msg.text}
-                        </div>
-                    ))}
-                </div>
-            </GameCard>
+            <LevelCompleteHandler gameId="chatbot-friend" gameType="ai" levelNumber={1}>
+                <GameCard>
+                    <div className="flex flex-col gap-2 text-white">
+                        {chatHistory.map((msg, idx) => (
+                            <div
+                                key={idx}
+                                className={`px-4 py-2 rounded-xl max-w-fit ${msg.sender === "kid" ? "bg-blue-500 self-end" : "bg-green-500 self-start"
+                                    }`}
+                            >
+                                {msg.text}
+                            </div>
+                        ))}
+                    </div>
+                </GameCard>
+            </LevelCompleteHandler>
 
             {/* Chat Input */}
             <div className="flex gap-2 mt-4">

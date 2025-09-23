@@ -166,7 +166,7 @@ const Navbar = () => {
                                 <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
                             </div>
                             <div className="ml-2 sm:ml-3">
-                                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">FinMen</h1>
+                                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">WiseStudent</h1>
                                 <p className="hidden sm:block text-xs sm:text-sm text-gray-600">{getDashboardLabel()}</p>
                             </div>
                         </motion.div>

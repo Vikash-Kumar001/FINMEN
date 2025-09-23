@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, LevelCompleteHandler } from "./GameShell";
 
 const PatternMusicGame3 = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -87,6 +87,9 @@ const PatternMusicGame3 = () => {
 
   return (
     <GameShell
+      gameId="pattern-music-game-3"
+      gameType="ai"
+      totalLevels={patterns.length}
       title="Pattern Music Game 3"
       subtitle="What comes next in the rhythm?"
       onNext={handleNextLevel}
@@ -95,32 +98,33 @@ const PatternMusicGame3 = () => {
       {/* Confetti */}
       {showConfetti && <Confetti />}
 
-      {/* Game Card */}
-      <GameCard>
-        <div className="flex flex-wrap justify-center gap-4 mb-4">
-          {currentPattern.sequence.map((note, i) => (
-            <div
-              key={i}
-              className="text-4xl p-4 bg-white/20 rounded-xl border border-white/30 font-bold"
-            >
-              {note}
-            </div>
-          ))}
-        </div>
-        <div className="flex flex-wrap justify-center gap-4">
-          {currentPattern.options.map(option => (
-            <OptionButton
-              key={option}
-              option={option}
-              selected={selectedOption}
-              disabled={isOptionDisabled}
-              feedback={feedback}
-              onClick={handleOptionClick}
-            />
-          ))}
-        </div>
-        {feedback.message && <FeedbackBubble message={feedback.message} type={feedback.type} />}
-      </GameCard>
+      <LevelCompleteHandler gameId="pattern-music-game-3" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <div className="flex flex-wrap justify-center gap-4 mb-4">
+            {currentPattern.sequence.map((note, i) => (
+              <div
+                key={i}
+                className="text-4xl p-4 bg-white/20 rounded-xl border border-white/30 font-bold"
+              >
+                {note}
+              </div>
+            ))}
+          </div>
+          <div className="flex flex-wrap justify-center gap-4">
+            {currentPattern.options.map(option => (
+              <OptionButton
+                key={option}
+                option={option}
+                selected={selectedOption}
+                disabled={isOptionDisabled}
+                feedback={feedback}
+                onClick={handleOptionClick}
+              />
+            ))}
+          </div>
+          {feedback.message && <FeedbackBubble message={feedback.message} type={feedback.type} />}
+        </GameCard>
+      </LevelCompleteHandler>
 
       {/* Score Tracker */}
       <div className="absolute bottom-6 left-6 bg-white/20 backdrop-blur-md rounded-2xl px-4 py-2 font-bold text-white shadow-md">

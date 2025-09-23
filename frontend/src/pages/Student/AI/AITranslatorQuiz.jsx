@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const AITranslatorQuiz = () => {
     const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -54,6 +54,9 @@ const AITranslatorQuiz = () => {
 
     return (
         <GameShell
+            gameId="ai-translator-quiz"
+            gameType="ai"
+            totalLevels={questions.length}
             title="AI Translator Quiz"
             subtitle="Test your knowledge about AI translation!"
             rightSlot={
@@ -69,9 +72,11 @@ const AITranslatorQuiz = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white">{currentQuestion.question}</p>
-            </GameCard>
+            <LevelCompleteHandler gameId="ai-translator-quiz" gameType="ai" levelNumber={currentLevelIndex + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white">{currentQuestion.question}</p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {currentQuestion.options.map((option, idx) => (

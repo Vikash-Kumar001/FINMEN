@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const SmartHomeStory = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -54,6 +54,9 @@ const SmartHomeStory = () => {
 
   return (
     <GameShell
+      gameId="smart-home-story"
+      gameType="ai"
+      totalLevels={scenarios.length}
       title="Smart Home Story"
       subtitle="Who performed the action? AI or Human?"
       rightSlot={
@@ -70,11 +73,13 @@ const SmartHomeStory = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />}
 
-      <GameCard>
-        <div className="text-xl md:text-2xl font-bold text-white mb-4">
-          {currentScenario.scenario}
-        </div>
-      </GameCard>
+      <LevelCompleteHandler gameId="smart-home-story" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <div className="text-xl md:text-2xl font-bold text-white mb-4">
+            {currentScenario.scenario}
+          </div>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap gap-4 justify-center">
         {currentScenario.options.map(option => (

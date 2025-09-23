@@ -291,6 +291,7 @@ const SpotThePattern = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [isOptionDisabled, setIsOptionDisabled] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [gameOver, setGameOver] = useState(false); // ✅ Add gameOver state
 
   const currentPatternData = patterns[currentLevelIndex];
 
@@ -326,12 +327,7 @@ const SpotThePattern = () => {
       setSelectedOption(null);
       setIsOptionDisabled(false);
     } else {
-      alert(`🎉 Congratulations! Final Score: ${score}`);
-      setCurrentLevelIndex(0);
-      setScore(0);
-      setFeedback({ message: '', type: '', correctWas: null });
-      setSelectedOption(null);
-      setIsOptionDisabled(false);
+      setGameOver(true); // ✅ trigger centralized GameOverModal
     }
   };
 
@@ -367,6 +363,13 @@ const SpotThePattern = () => {
           Score: {score}
         </div>
       }
+      onNext={handleNextLevel}
+      nextEnabled={!!feedback.message}
+      showGameOver={gameOver} // ✅ centralized modal
+      score={score} // ✅ pass score
+      gameId="spot-the-pattern" // ✅ Add game ID for heal coins
+      gameType="ai" // ✅ Add game type
+      totalLevels={patterns.length} // ✅ Add total levels
     >
       <FloatingParticles />
       {renderConfetti()}

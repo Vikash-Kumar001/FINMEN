@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import GameShell, { GameCard, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const trafficStates = ["Green", "Yellow", "Red"]; // Traffic light sequence
 
@@ -59,6 +59,9 @@ const SmartCityTrafficGame = () => {
 
     return (
         <GameShell
+            gameId="smart-city-traffic-game"
+            gameType="ai"
+            totalLevels={totalLevels}
             title="Smart City Traffic Game"
             subtitle="Stop at red lights and go on green!"
             rightSlot={
@@ -74,20 +77,22 @@ const SmartCityTrafficGame = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white mb-4">
-                    Traffic Light: <span className={`font-extrabold ${currentLight === "Red" ? "text-red-500" : currentLight === "Yellow" ? "text-yellow-400" : "text-green-400"}`}>
-                        {currentLight}
-                    </span>
-                </p>
-                <button
-                    onClick={handleStopClick}
-                    disabled={isButtonDisabled}
-                    className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 disabled:opacity-50 transition"
-                >
-                    Stop
-                </button>
-            </GameCard>
+            <LevelCompleteHandler gameId="smart-city-traffic-game" gameType="ai" levelNumber={level + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white mb-4">
+                        Traffic Light: <span className={`font-extrabold ${currentLight === "Red" ? "text-red-500" : currentLight === "Yellow" ? "text-yellow-400" : "text-green-400"}`}>
+                            {currentLight}
+                        </span>
+                    </p>
+                    <button
+                        onClick={handleStopClick}
+                        disabled={isButtonDisabled}
+                        className="px-6 py-3 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 disabled:opacity-50 transition"
+                    >
+                        Stop
+                    </button>
+                </GameCard>
+            </LevelCompleteHandler>
 
             {feedback.message && <FeedbackBubble message={feedback.message} type={feedback.type} />}
         </GameShell>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const AIDoctorSimulation = () => {
     const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -84,6 +84,9 @@ const AIDoctorSimulation = () => {
 
     return (
         <GameShell
+            gameId="ai-doctor-simulation"
+            gameType="ai"
+            totalLevels={cases.length}
             title="AI Doctor Simulation"
             subtitle="Help the AI diagnose correctly!"
             rightSlot={
@@ -99,9 +102,11 @@ const AIDoctorSimulation = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white">{currentCase.symptoms}</p>
-            </GameCard>
+            <LevelCompleteHandler gameId="ai-doctor-simulation" gameType="ai" levelNumber={currentLevelIndex + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white">{currentCase.symptoms}</p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {currentCase.options.map((option, idx) => (

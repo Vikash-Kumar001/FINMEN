@@ -4,7 +4,8 @@ import GameShell, {
   OptionButton,
   FeedbackBubble,
   Confetti,
-  ScoreFlash, // ✅ import ScoreFlash
+  ScoreFlash,
+  LevelCompleteHandler, // ✅ import LevelCompleteHandler
 } from "./GameShell";
 
 const CatOrDog = () => {
@@ -124,20 +125,31 @@ const CatOrDog = () => {
       nextEnabled={!!feedback.message}
       showGameOver={gameOver} // centralized modal
       score={score} // pass score
+      gameId="cat-or-dog" // ✅ Add game ID for heal coins
+      gameType="ai" // ✅ Add game type
+      totalLevels={TOTAL_LEVELS} // ✅ Add total levels
     >
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
 
-      <GameCard>
-        <img
-          src={currentLevel.image}
-          alt="animal"
-          className="w-48 h-48 object-cover rounded-xl mx-auto mb-6 shadow-lg"
-        />
-        <p className="text-lg font-bold text-white text-center">
-          Is this a cat or a dog?
-        </p>
-      </GameCard>
+      <LevelCompleteHandler
+        gameId="cat-or-dog"
+        gameType="ai"
+        levelNumber={currentLevelIndex + 1}
+        levelScore={selectedOption === currentLevel.correctAnswer ? currentLevel.rewardPoints : 0}
+        maxLevelScore={currentLevel.rewardPoints}
+      >
+        <GameCard>
+          <img
+            src={currentLevel.image}
+            alt="animal"
+            className="w-48 h-48 object-cover rounded-xl mx-auto mb-6 shadow-lg"
+          />
+          <p className="text-lg font-bold text-white text-center">
+            Is this a cat or a dog?
+          </p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap justify-center gap-6 mt-4">
         <OptionButton

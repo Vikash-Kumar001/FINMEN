@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const SpamVsNotSpam = () => {
   const emails = [
@@ -60,6 +60,9 @@ const SpamVsNotSpam = () => {
 
   return (
     <GameShell
+      gameId="spam-vs-not-spam"
+      gameType="ai"
+      totalLevels={emails.length}
       title="Spam vs Not Spam"
       subtitle="Sort emails correctly"
       rightSlot={
@@ -75,14 +78,16 @@ const SpamVsNotSpam = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
 
-      <GameCard>
-        <div style={{ fontSize: "clamp(16px, 3.5vw, 24px)", fontWeight: "bold", marginBottom: "12px", color: "white" }}>
-          📧 {currentEmail.subject}
-        </div>
-        <p style={{ fontWeight: "bold", fontSize: "clamp(16px, 3vw, 24px)", color: "#d6c9ecff" }}>
-          Is this spam or not spam?
-        </p>
-      </GameCard>
+      <LevelCompleteHandler gameId="spam-vs-not-spam" gameType="ai" levelNumber={currentIndex + 1}>
+        <GameCard>
+          <div style={{ fontSize: "clamp(16px, 3.5vw, 24px)", fontWeight: "bold", marginBottom: "12px", color: "white" }}>
+            📧 {currentEmail.subject}
+          </div>
+          <p style={{ fontWeight: "bold", fontSize: "clamp(16px, 3vw, 24px)", color: "#d6c9ecff" }}>
+            Is this spam or not spam?
+          </p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap justify-center gap-4 mt-4">
         {["spam", "not spam"].map((option) => (

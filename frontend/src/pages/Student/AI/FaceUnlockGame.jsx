@@ -1,21 +1,50 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const FaceUnlockGame = () => {
+    const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
     const [score, setScore] = useState(0);
     const [selectedOption, setSelectedOption] = useState(null);
     const [feedback, setFeedback] = useState({ message: "", type: "" });
     const [isOptionDisabled, setIsOptionDisabled] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
     const [flashPoints, setFlashPoints] = useState(null);
-    const [showModal, setShowModal] = useState(false);
+    const [gameOver, setGameOver] = useState(false);
 
-    const scenario = {
-        question: "📱 Phone is locked. Which face will unlock it?",
-        options: ["Correct Face", "Wrong Face"],
-        correctAnswer: "Correct Face",
-        rewardPoints: 5,
-    };
+    const scenarios = [
+        {
+            question: "📱 Phone is locked. Which face will unlock it?",
+            options: ["Correct Face", "Wrong Face"],
+            correctAnswer: "Correct Face",
+            rewardPoints: 5,
+        },
+        {
+            question: "😎 Can you unlock someone else's phone with your face?",
+            options: ["Yes", "No"],
+            correctAnswer: "No",
+            rewardPoints: 5,
+        },
+        {
+            question: "🌃 Does Face ID work in the dark?",
+            options: ["Yes", "No"],
+            correctAnswer: "Yes",
+            rewardPoints: 5,
+        },
+        {
+            question: "📷 Can a photo of you unlock Face ID?",
+            options: ["Yes", "No"],
+            correctAnswer: "No",
+            rewardPoints: 5,
+        },
+        {
+            question: "👶 Does Face ID work if you get older?",
+            options: ["Yes", "No"],
+            correctAnswer: "Yes",
+            rewardPoints: 5,
+        },
+    ];
+
+    const currentScenario = scenarios[currentLevelIndex];
 
     const handleOptionClick = (option) => {
         if (isOptionDisabled) return;
@@ -23,47 +52,58 @@ const FaceUnlockGame = () => {
         setSelectedOption(option);
         setIsOptionDisabled(true);
 
-        if (option === scenario.correctAnswer) {
-            setScore((prev) => prev + scenario.rewardPoints);
-            setFeedback({ message: "✅ Phone Unlocked!", type: "correct" });
-            setFlashPoints(scenario.rewardPoints);
+        if (option === currentScenario.correctAnswer) {
+            setScore((prev) => prev + currentScenario.rewardPoints);
+            setFeedback({ message: "✅ Correct! Face recognition works!", type: "correct" });
+            setFlashPoints(currentScenario.rewardPoints);
             setShowConfetti(true);
 
             setTimeout(() => setFlashPoints(null), 1000);
-
-            // End game after short delay
-            setTimeout(() => {
-                setShowConfetti(false);
-                setShowModal(true);
-            }, 2000);
         } else {
-            setFeedback({ message: "❌ Access Denied. Try again!", type: "wrong" });
+            setFeedback({ message: `❌ Wrong! The correct answer is ${currentScenario.correctAnswer}.`, type: "wrong" });
+        }
+    };
+
+    const handleNextLevel = () => {
+        setShowConfetti(false);
+        if (currentLevelIndex < scenarios.length - 1) {
+            setCurrentLevelIndex((prev) => prev + 1);
+            setFeedback({ message: "", type: "" });
+            setSelectedOption(null);
+            setIsOptionDisabled(false);
+        } else {
+            setGameOver(true);
         }
     };
 
     return (
         <GameShell
+            gameId="face-unlock-game"
+            gameType="ai"
+            totalLevels={scenarios.length}
             title="Face Unlock Game"
             subtitle="Learn how AI unlocks your phone with facial recognition"
             rightSlot={
                 <div className="bg-white/20 px-3 py-2 rounded-xl text-white font-bold shadow-md">
-                    Score: {score} ⭐
+                    Score: {score} ⭐ {currentLevelIndex + 1}/{scenarios.length}
                 </div>
             }
-            onNext={() => setShowModal(true)}
+            onNext={handleNextLevel}
             nextEnabled={!!feedback.message}
-            showGameOver={showModal}
+            showGameOver={gameOver}
             score={score}
         >
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white">{scenario.question}</p>
-            </GameCard>
+            <LevelCompleteHandler gameId="face-unlock-game" gameType="ai" levelNumber={currentLevelIndex + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white">{currentScenario.question}</p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             <div className="flex flex-wrap justify-center gap-4 mt-4">
-                {scenario.options.map((option, idx) => (
+                {currentScenario.options.map((option, idx) => (
                     <OptionButton
                         key={idx}
                         option={option}

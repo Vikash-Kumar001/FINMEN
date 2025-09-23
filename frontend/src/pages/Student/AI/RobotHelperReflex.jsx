@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const RobotHelperReflex = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -55,6 +55,9 @@ const RobotHelperReflex = () => {
 
   return (
     <GameShell
+      gameId="robot-helper-reflex"
+      gameType="ai"
+      totalLevels={reflexes.length}
       title="Robot Helper Reflex"
       subtitle=""
       rightSlot={
@@ -70,9 +73,11 @@ const RobotHelperReflex = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
 
-      <GameCard>
-        <div className="text-xl md:text-2xl font-bold text-white">{currentReflex.scenario}</div>
-      </GameCard>
+      <LevelCompleteHandler gameId="robot-helper-reflex" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <div className="text-xl md:text-2xl font-bold text-white">{currentReflex.scenario}</div>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap gap-4 justify-center mt-4">
         {currentReflex.options.map(option => (

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const SmartwatchGame = () => {
     const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -54,6 +54,9 @@ const SmartwatchGame = () => {
 
     return (
         <GameShell
+            gameId="smartwatch-game"
+            gameType="ai"
+            totalLevels={scenarios.length}
             title="Smartwatch Game"
             subtitle="Learn how AI in your smartwatch monitors health!"
             rightSlot={
@@ -69,9 +72,11 @@ const SmartwatchGame = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white">{currentScenario.scenario}</p>
-            </GameCard>
+            <LevelCompleteHandler gameId="smartwatch-game" gameType="ai" levelNumber={currentLevelIndex + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white">{currentScenario.scenario}</p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {currentScenario.options.map((option, idx) => (

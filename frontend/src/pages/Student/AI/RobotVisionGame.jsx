@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from './GameShell';
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from './GameShell';
 
 const RobotVisionGame = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -55,6 +55,9 @@ const RobotVisionGame = () => {
 
   return (
     <GameShell
+      gameId="robot-vision-game"
+      gameType="ai"
+      totalLevels={images.length}
       title="Robot Vision Game"
       subtitle="AI robot sees objects. Pick the correct one."
       rightSlot={
@@ -71,14 +74,16 @@ const RobotVisionGame = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />}
 
-      <GameCard>
-        <div style={{ fontSize: 'clamp(80px, 15vw, 120px)', marginBottom: '20px' }}>
-          {currentImage.image}
-        </div>
-        <p style={{ fontSize: 'clamp(16px, 3vw, 24px)', fontWeight: 'bold', color: '#fff' }}>
-          What does the robot see?
-        </p>
-      </GameCard>
+      <LevelCompleteHandler gameId="robot-vision-game" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <div style={{ fontSize: 'clamp(80px, 15vw, 120px)', marginBottom: '20px' }}>
+            {currentImage.image}
+          </div>
+          <p style={{ fontSize: 'clamp(16px, 3vw, 24px)', fontWeight: 'bold', color: '#fff' }}>
+            What does the robot see?
+          </p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap justify-center gap-4">
         {currentImage.options.map((option, idx) => (

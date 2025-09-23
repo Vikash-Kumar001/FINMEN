@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const AINewsStory = () => {
     const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -54,6 +54,9 @@ const AINewsStory = () => {
 
     return (
         <GameShell
+            gameId="ai-news-story"
+            gameType="ai"
+            totalLevels={questions.length}
             title="AI News Story"
             subtitle="Who recommended this article?"
             rightSlot={
@@ -69,9 +72,11 @@ const AINewsStory = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white">{currentQuestion.scenario}</p>
-            </GameCard>
+            <LevelCompleteHandler gameId="ai-news-story" gameType="ai" levelNumber={currentQuestionIndex + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white">{currentQuestion.scenario}</p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {currentQuestion.options.map((option, idx) => (

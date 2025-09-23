@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
@@ -109,22 +109,33 @@ const TrainRobotGame = () => {
         }
         showGameOver={showGameOver}
         score={score}
+        gameId="train-the-robot"
+        gameType="ai"
+        totalLevels={5}
       >
         {showConfetti && <Confetti />}
         {flashPoints && <ScoreFlash points={flashPoints} />}
 
-        <GameCard>
-          <div className="flex flex-wrap justify-center gap-4 mb-6">
-            {remainingItems.map((item, idx) => (
-              <ItemCard key={`${item.name}-${idx}`} item={item} />
-            ))}
-          </div>
+        <LevelCompleteHandler
+          gameId="train-the-robot"
+          gameType="ai"
+          levelNumber={initialItems.length - remainingItems.length + 1}
+          levelScore={feedback.type === 'correct' ? 2 : 0}
+          maxLevelScore={2}
+        >
+          <GameCard>
+            <div className="flex flex-wrap justify-center gap-4 mb-6">
+              {remainingItems.map((item, idx) => (
+                <ItemCard key={`${item.name}-${idx}`} item={item} />
+              ))}
+            </div>
 
-          <div className="grid grid-cols-2 gap-4 w-full max-w-3xl mx-auto">
-            <DropBox label="Food" onDrop={handleDrop} />
-            <DropBox label="Vehicle" onDrop={handleDrop} />
-          </div>
-        </GameCard>
+            <div className="grid grid-cols-2 gap-4 w-full max-w-3xl mx-auto">
+              <DropBox label="Food" onDrop={handleDrop} />
+              <DropBox label="Vehicle" onDrop={handleDrop} />
+            </div>
+          </GameCard>
+        </LevelCompleteHandler>
 
         {feedback.message && (
           <FeedbackBubble message={feedback.message} type={feedback.type} />

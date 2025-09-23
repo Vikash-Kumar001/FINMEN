@@ -1,6 +1,8 @@
 // GameShell.jsx
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import gameCompletionService from "../../../services/gameCompletionService";
+import { toast } from "react-toastify";
 
 /* --------------------- Floating Background Particles --------------------- */
 const FloatingParticles = () => (
@@ -49,6 +51,58 @@ export const ScoreFlash = ({ points }) => (
     </style>
   </div>
 );
+
+/* --------------------- Level Complete Component with Instant Coins --------------------- */
+export const LevelCompleteHandler = ({ 
+  gameId, 
+  gameType = 'ai', 
+  levelNumber, 
+  levelScore, 
+  maxLevelScore = 20,
+  onComplete,
+  children 
+}) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
+
+  const handleLevelComplete = async () => {
+    if (hasSubmitted || !gameId) return;
+    
+    setIsSubmitting(true);
+    setHasSubmitted(true);
+    
+    try {
+      const result = await gameCompletionService.completeLevel(gameId, {
+        levelNumber,
+        levelScore,
+        maxLevelScore,
+        coinsForLevel: 5 // Default coins per level
+      });
+      
+      if (result.success && result.coinsEarned > 0) {
+        // Show coin notification for this level
+        toast.success(`🎯 Level ${levelNumber} complete! +${result.coinsEarned} HealCoins`);
+      }
+      
+      if (onComplete) {
+        onComplete(result);
+      }
+    } catch (error) {
+      console.error('Failed to submit level completion:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Auto-submit when level is completed
+  useEffect(() => {
+    if (levelScore > 0 && !hasSubmitted) {
+      handleLevelComplete();
+    }
+  }, [levelScore, hasSubmitted]);
+
+  return children;
+};
 
 /* --------------------- Game Card --------------------- */
 export const GameCard = ({ children }) => (
@@ -137,37 +191,96 @@ export const Confetti = () => (
   </div>
 );
 
-/* --------------------- Game Over Modal --------------------- */
-export const GameOverModal = ({ score, onClose }) => (
-  <div className="fixed inset-0 z-50 flex items-center justify-center">
-    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+/* --------------------- Game Over Modal with Heal Coins --------------------- */
+export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 5, onClose }) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [coinsEarned, setCoinsEarned] = useState(0);
+  const [submissionComplete, setSubmissionComplete] = useState(false);
 
-    <div className="relative bg-white rounded-3xl shadow-2xl p-8 z-10 text-center max-w-md w-full mx-4 animate-pop">
-      <h2 className="text-3xl font-bold text-gray-800 mb-4">🎉 Congratulations!</h2>
-      <p className="text-gray-600 text-lg mb-6">
-        You finished the game with a score of{" "}
-        <span className="font-bold text-gray-900">{score}</span> ⭐
-      </p>
-      <button
-        onClick={onClose}
-        className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-full font-semibold shadow-md hover:opacity-90 transition cursor-pointer"
-      >
-        OK
-      </button>
+  useEffect(() => {
+    const submitGameCompletion = async () => {
+      if (submissionComplete || !gameId) return;
+      
+      setIsSubmitting(true);
+      try {
+        const result = await gameCompletionService.completeGame({
+          gameId,
+          gameType,
+          score,
+          maxScore: totalLevels * 20, // Assuming 20 points max per level
+          levelsCompleted: totalLevels,
+          totalLevels,
+          timePlayed: 0, // Can be enhanced to track actual time
+          isFullCompletion: true
+        });
+        
+        if (result.success) {
+          setCoinsEarned(result.coinsEarned);
+          setSubmissionComplete(true);
+        }
+      } catch (error) {
+        console.error('Failed to submit game completion:', error);
+        toast.error('Failed to save progress, but you can still replay!');
+      } finally {
+        setIsSubmitting(false);
+      }
+    };
+
+    submitGameCompletion();
+  }, [gameId, gameType, score, totalLevels, submissionComplete]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+      <div className="relative bg-white rounded-3xl shadow-2xl p-8 z-10 text-center max-w-md w-full mx-4 animate-pop">
+        <h2 className="text-3xl font-bold text-gray-800 mb-4">🎉 Congratulations!</h2>
+        <p className="text-gray-600 text-lg mb-4">
+          You finished the game with a score of{" "}
+          <span className="font-bold text-gray-900">{score}</span> ⭐
+        </p>
+        
+        {isSubmitting ? (
+          <div className="mb-6">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
+            <p className="text-gray-600">Saving your progress...</p>
+          </div>
+        ) : (
+          <div className="mb-6">
+            <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-2xl p-4 mb-4">
+              <h3 className="text-xl font-bold text-green-700 mb-2">💰 HealCoins Earned!</h3>
+              <p className="text-3xl font-black text-green-600">+{coinsEarned}</p>
+              {coinsEarned === 0 && (
+                <p className="text-sm text-gray-600 mt-2">
+                  You've already earned coins for this game, but you can replay for fun!
+                </p>
+              )}
+            </div>
+          </div>
+        )}
+        
+        <button
+          onClick={onClose}
+          disabled={isSubmitting}
+          className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-full font-semibold shadow-md hover:opacity-90 transition cursor-pointer disabled:opacity-50"
+        >
+          {isSubmitting ? 'Saving...' : 'Continue'}
+        </button>
+      </div>
+
+      <style jsx>{`
+        .animate-pop {
+          animation: pop-in 0.4s ease-out forwards;
+        }
+        @keyframes pop-in {
+          0% { transform: scale(0); opacity: 0; }
+          70% { transform: scale(1.2); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+      `}</style>
     </div>
-
-    <style jsx>{`
-      .animate-pop {
-        animation: pop-in 0.4s ease-out forwards;
-      }
-      @keyframes pop-in {
-        0% { transform: scale(0); opacity: 0; }
-        70% { transform: scale(1.2); opacity: 1; }
-        100% { transform: scale(1); opacity: 1; }
-      }
-    `}</style>
-  </div>
-);
+  );
+};
 
 /* --------------------- Main GameShell --------------------- */
 const GameShell = ({
@@ -180,6 +293,9 @@ const GameShell = ({
   nextLabel = "Next Level",
   showGameOver = false,
   score,
+  gameId, // New prop for game identification
+  gameType = 'ai', // New prop for game type
+  totalLevels = 5, // New prop for total levels
 }) => {
   const navigate = useNavigate();
 
@@ -250,8 +366,16 @@ const GameShell = ({
         </div>
       )}
 
-      {/* Centralized Game Over Modal */}
-      {showGameOver && <GameOverModal score={score} onClose={handleGameOverClose} />}
+      {/* Centralized Game Over Modal with HealCoins */}
+      {showGameOver && (
+        <GameOverModal 
+          score={score} 
+          gameId={gameId}
+          gameType={gameType}
+          totalLevels={totalLevels}
+          onClose={handleGameOverClose} 
+        />
+      )}
 
       {/* Animations */}
       <style jsx>{`

@@ -5,6 +5,7 @@ import GameShell, {
   FeedbackBubble,
   Confetti,
   ScoreFlash,
+  LevelCompleteHandler,
 } from "./GameShell";
 
 const PatternFindingPuzzle = () => {
@@ -61,6 +62,9 @@ const PatternFindingPuzzle = () => {
 
   return (
     <GameShell
+      gameId="pattern-finding-puzzle"
+      gameType="ai"
+      totalLevels={puzzles.length}
       title="Pattern Finding Puzzle"
       subtitle="Find the next in the sequence"
       rightSlot={
@@ -76,19 +80,21 @@ const PatternFindingPuzzle = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
 
-      <GameCard>
-        <div className="flex flex-wrap justify-center gap-4 mb-4">
-          {currentPuzzle.sequence.map((item, i) => (
-            <div
-              key={i}
-              className="text-xl text-white md:text-3xl font-bold px-4 py-2 bg-white/20 rounded-lg border border-white/30"
-            >
-              {item}
-            </div>
-          ))}
-        </div>
-        <p className="text-white/80 font-semibold">What comes next?</p>
-      </GameCard>
+      <LevelCompleteHandler gameId="pattern-finding-puzzle" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <div className="flex flex-wrap justify-center gap-4 mb-4">
+            {currentPuzzle.sequence.map((item, i) => (
+              <div
+                key={i}
+                className="text-xl text-white md:text-3xl font-bold px-4 py-2 bg-white/20 rounded-lg border border-white/30"
+              >
+                {item}
+              </div>
+            ))}
+          </div>
+          <p className="text-white/80 font-semibold">What comes next?</p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap justify-center gap-4">
         {currentPuzzle.options.map((option, i) => (

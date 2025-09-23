@@ -10,7 +10,11 @@ import {
   completeGame,
   getUserAchievements,
   getUserGameStats,
-  getLeaderboard
+  getLeaderboard,
+  completeUnifiedGame,
+  getUnifiedGameProgress,
+  updateUnifiedGameProgress,
+  getCompletedGames
 } from '../controllers/gameController.js';
 import { requireAuth } from '../middlewares/requireAuth.js';
 
@@ -48,5 +52,17 @@ router.get('/user-stats', requireAuth, getUserGameStats);
 
 // 🏆 GET /api/game/leaderboard — Get leaderboard
 router.get('/leaderboard', requireAuth, getLeaderboard);
+
+// 🎮 POST /api/game/complete-unified/:gameId — Complete any game with unified heal coin system
+router.post('/complete-unified/:gameId', requireAuth, completeUnifiedGame);
+
+// 📊 GET /api/game/progress/:gameId — Get specific game progress
+router.get('/progress/:gameId', requireAuth, getUnifiedGameProgress);
+
+// 📊 PUT /api/game/progress/:gameId — Update specific game progress
+router.put('/progress/:gameId', requireAuth, updateUnifiedGameProgress);
+
+// 📊 GET /api/game/completed-games — Get all completed games for user
+router.get('/completed-games', requireAuth, getCompletedGames);
 
 export default router;

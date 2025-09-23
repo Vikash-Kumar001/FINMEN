@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const playSound = (type) => {
   const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -82,6 +82,9 @@ const PatternMusicGame = () => {
 
   return (
     <GameShell
+      gameId="pattern-music-game"
+      gameType="ai"
+      totalLevels={patterns.length}
       title="Pattern Music Game"
       subtitle="Listen to the rhythm and repeat it"
       rightSlot={
@@ -97,17 +100,19 @@ const PatternMusicGame = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />}
 
-      <GameCard>
-        <p className="text-lg text-white font-semibold">Hear and repeat this rhythm:</p>
-        <button
-          onClick={playPattern}
-          disabled={hasPlayed} // ✅ disable after clicked
-          className={`mt-3 px-4 py-2 rounded-xl font-bold shadow cursor-pointer ${hasPlayed ? "bg-gray-400" : "bg-yellow-400"
-            }`}
-        >
-          🔊 Play Rhythm
-        </button>
-      </GameCard>
+      <LevelCompleteHandler gameId="pattern-music-game" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <p className="text-lg text-white font-semibold">Hear and repeat this rhythm:</p>
+          <button
+            onClick={playPattern}
+            disabled={hasPlayed} // ✅ disable after clicked
+            className={`mt-3 px-4 py-2 rounded-xl font-bold shadow cursor-pointer ${hasPlayed ? "bg-gray-400" : "bg-yellow-400"
+              }`}
+          >
+            🔊 Play Rhythm
+          </button>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex gap-6 justify-center mt-6">
         <button

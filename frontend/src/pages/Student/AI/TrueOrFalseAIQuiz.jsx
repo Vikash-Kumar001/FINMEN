@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from './GameShell';
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from './GameShell';
 
 const TrueOrFalseAIQuiz = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -8,7 +8,8 @@ const TrueOrFalseAIQuiz = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [isOptionDisabled, setIsOptionDisabled] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
-  const [flashPoints, setFlashPoints] = useState(null); // ✅ Score flash
+  const [flashPoints, setFlashPoints] = useState(null);
+  const [gameOver, setGameOver] = useState(false); // ✅ Add gameOver state
 
   const questions = [
     { id: 1, question: 'AI can learn from data', correctAnswer: true, explanation: 'Yes! AI learns patterns from data to make predictions.', rewardPoints: 5 },
@@ -47,12 +48,7 @@ const TrueOrFalseAIQuiz = () => {
       setSelectedOption(null);
       setIsOptionDisabled(false);
     } else {
-      alert(`Game Over! Your final score is: ${score}`);
-      setCurrentLevelIndex(0);
-      setScore(0);
-      setFeedback({ message: '', type: '' });
-      setSelectedOption(null);
-      setIsOptionDisabled(false);
+      setGameOver(true); // ✅ trigger centralized GameOverModal
     }
   };
 
@@ -63,15 +59,28 @@ const TrueOrFalseAIQuiz = () => {
       rightSlot={<div className="bg-white/20 px-3 py-2 rounded-xl text-white font-bold shadow-md">Score: {score} ⭐ {currentLevelIndex + 1}/{questions.length}</div>}
       onNext={handleNextLevel}
       nextEnabled={!!feedback.message}
+      showGameOver={gameOver} // ✅ centralized modal
+      score={score} // ✅ pass score
+      gameId="true-or-false-ai-quiz" // ✅ Add game ID for heal coins
+      gameType="ai" // ✅ Add game type
+      totalLevels={questions.length} // ✅ Add total levels
     >
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
 
-      <GameCard>
-        <div style={{ fontWeight: 'bold', fontSize: 'clamp(16px, 3.5vw, 28px)', color: 'white' }}>
-          {currentQuestion.question}
-        </div>
-      </GameCard>
+      <LevelCompleteHandler
+        gameId="true-or-false-ai-quiz"
+        gameType="ai"
+        levelNumber={currentLevelIndex + 1}
+        levelScore={feedback.type === 'correct' ? currentQuestion.rewardPoints : 0}
+        maxLevelScore={currentQuestion.rewardPoints}
+      >
+        <GameCard>
+          <div style={{ fontWeight: 'bold', fontSize: 'clamp(16px, 3.5vw, 28px)', color: 'white' }}>
+            {currentQuestion.question}
+          </div>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex justify-center gap-6 flex-wrap">
         <OptionButton

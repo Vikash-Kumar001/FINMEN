@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const RobotVacuumGame = () => {
     const [score, setScore] = useState(0);
@@ -51,6 +51,9 @@ const RobotVacuumGame = () => {
 
     return (
         <GameShell
+            gameId="robot-vacuum-game"
+            gameType="ai"
+            totalLevels={10}
             title="Robot Vacuum Reflex Game"
             subtitle="Click 'Turn' when an obstacle appears!"
             rightSlot={
@@ -64,9 +67,11 @@ const RobotVacuumGame = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-4xl">{currentObstacle || "🤖"}</p>
-            </GameCard>
+            <LevelCompleteHandler gameId="robot-vacuum-game" gameType="ai" levelNumber={10 - obstaclesLeft + 1}>
+                <GameCard>
+                    <p className="text-4xl">{currentObstacle || "🤖"}</p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             <div className="flex justify-center mt-4">
                 <OptionButton

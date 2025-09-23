@@ -4,6 +4,7 @@ import GameShell, {
     FeedbackBubble,
     Confetti,
     ScoreFlash,
+    LevelCompleteHandler,
 } from "./GameShell";
 
 const AIDailyLifeBadge = () => {
@@ -46,6 +47,9 @@ const AIDailyLifeBadge = () => {
 
     return (
         <GameShell
+            gameId="ai-daily-life-badge"
+            gameType="ai"
+            totalLevels={totalRequired}
             title="AI Daily Life Badge"
             subtitle="Complete 10 daily AI games to earn your badge!"
             rightSlot={
@@ -61,13 +65,15 @@ const AIDailyLifeBadge = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white">
-                    {badgeUnlocked
-                        ? "🎉 You are now an AI Explorer!"
-                        : "Play AI daily life games to unlock your badge."}
-                </p>
-            </GameCard>
+            <LevelCompleteHandler gameId="ai-daily-life-badge" gameType="ai" levelNumber={completedGames + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white">
+                        {badgeUnlocked
+                            ? "🎉 You are now an AI Explorer!"
+                            : "Play AI daily life games to unlock your badge."}
+                    </p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             {feedback.message && (
                 <div className="mt-4">

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, LevelCompleteHandler } from "./GameShell";
 
 const SortingAnimals = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -53,6 +53,9 @@ const SortingAnimals = () => {
 
   return (
     <GameShell
+      gameId="sorting-animals"
+      gameType="ai"
+      totalLevels={animals.length}
       title="Sorting Animals"
       subtitle="Put each animal in the right group!"
       rightSlot={<div className="bg-white/20 px-3 py-2 rounded-xl text-white font-bold shadow-md">Score: {score} ⭐ {currentLevelIndex + 1}/{animals.length}</div>}
@@ -61,10 +64,12 @@ const SortingAnimals = () => {
     >
       {showConfetti && <Confetti />}
 
-      <GameCard>
-        <div className="text-[clamp(80px,15vw,120px)] mb-6">{currentAnimal.animal}</div>
-        <p className="text-lg font-bold text-white text-center">What type of animal is this?</p>
-      </GameCard>
+      <LevelCompleteHandler gameId="sorting-animals" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <div className="text-[clamp(80px,15vw,120px)] mb-6">{currentAnimal.animal}</div>
+          <p className="text-lg font-bold text-white text-center">What type of animal is this?</p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap justify-center gap-4 mt-4">
         {currentAnimal.options.map(option => (

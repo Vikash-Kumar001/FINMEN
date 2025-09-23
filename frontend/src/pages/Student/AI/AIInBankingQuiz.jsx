@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const AIInBankingQuiz = () => {
     const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -55,6 +55,9 @@ const AIInBankingQuiz = () => {
 
     return (
         <GameShell
+            gameId="ai-in-banking-quiz"
+            gameType="ai"
+            totalLevels={quizzes.length}
             title="AI in Banking Quiz"
             subtitle="Test your finance AI knowledge!"
             rightSlot={
@@ -70,10 +73,12 @@ const AIInBankingQuiz = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white">{currentQuiz.question}</p>
-                <p className="mt-2 text-white/70 text-sm">Choose the correct answer: Yes or No</p>
-            </GameCard>
+            <LevelCompleteHandler gameId="ai-in-banking-quiz" gameType="ai" levelNumber={currentLevelIndex + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white">{currentQuiz.question}</p>
+                    <p className="mt-2 text-white/70 text-sm">Choose the correct answer: Yes or No</p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {currentQuiz.options.map((option, idx) => (

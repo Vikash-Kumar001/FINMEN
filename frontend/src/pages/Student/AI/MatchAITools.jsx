@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
@@ -100,6 +100,9 @@ const MatchAITools = () => {
   return (
     <DndProvider backend={HTML5Backend}>
       <GameShell
+        gameId="match-ai-tools"
+        gameType="ai"
+        totalLevels={initialTools.length}
         title="Match AI Tools"
         subtitle="Drag tools into AI or Not AI bucket"
         rightSlot={
@@ -113,18 +116,20 @@ const MatchAITools = () => {
         {showConfetti && <Confetti />}
         {flashPoints && <ScoreFlash points={flashPoints} />}
 
-        <GameCard>
-          <div className="flex flex-wrap justify-center gap-4 mb-6 text-white">
-            {remainingTools.map((tool, idx) => (
-              <ToolItem key={`${tool.name}-${idx}`} tool={tool} />
-            ))}
-          </div>
+        <LevelCompleteHandler gameId="match-ai-tools" gameType="ai" levelNumber={initialTools.length - remainingTools.length + 1}>
+          <GameCard>
+            <div className="flex flex-wrap justify-center gap-4 mb-6 text-white">
+              {remainingTools.map((tool, idx) => (
+                <ToolItem key={`${tool.name}-${idx}`} tool={tool} />
+              ))}
+            </div>
 
-          <div className="grid grid-cols-2 gap-4 w-full max-w-2xl mx-auto">
-            <DropBox label="AI" onDrop={handleDrop} />
-            <DropBox label="Not AI" onDrop={handleDrop} />
-          </div>
-        </GameCard>
+            <div className="grid grid-cols-2 gap-4 w-full max-w-2xl mx-auto">
+              <DropBox label="AI" onDrop={handleDrop} />
+              <DropBox label="Not AI" onDrop={handleDrop} />
+            </div>
+          </GameCard>
+        </LevelCompleteHandler>
 
         {feedback.message && (
           <FeedbackBubble message={feedback.message} type={feedback.type} />

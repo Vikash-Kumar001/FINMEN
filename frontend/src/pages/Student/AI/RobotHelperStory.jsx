@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const RobotHelperStory = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -58,6 +58,9 @@ const RobotHelperStory = () => {
 
   return (
     <GameShell
+      gameId="robot-helper-story"
+      gameType="ai"
+      totalLevels={scenarios.length}
       title="Robot Helper Story"
       subtitle="Pick the kind and safe choice"
       rightSlot={
@@ -73,11 +76,13 @@ const RobotHelperStory = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
 
-      <GameCard>
-        <p style={{ fontWeight: "bold", fontSize: "clamp(18px, 4vw, 28px)", color: "white" }}>
-          {currentScenario.text}
-        </p>
-      </GameCard>
+      <LevelCompleteHandler gameId="robot-helper-story" gameType="ai" levelNumber={currentIndex + 1}>
+        <GameCard>
+          <p style={{ fontWeight: "bold", fontSize: "clamp(18px, 4vw, 28px)", color: "white" }}>
+            {currentScenario.text}
+          </p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: "16px", justifyContent: "center" }}>
         {currentScenario.options.map((option, index) => (

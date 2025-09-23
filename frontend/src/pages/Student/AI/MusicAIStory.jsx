@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const MusicAIStory = () => {
     const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -55,6 +55,9 @@ const MusicAIStory = () => {
 
     return (
         <GameShell
+            gameId="music-ai-story"
+            gameType="ai"
+            totalLevels={stories.length}
             title="Music AI Story"
             subtitle="Who chose the songs?"
             rightSlot={
@@ -70,10 +73,12 @@ const MusicAIStory = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white">{currentStory.scenario}</p>
-                <p className="mt-2 text-white/70 text-sm">Choose who selected the songs: AI or Kid.</p>
-            </GameCard>
+            <LevelCompleteHandler gameId="music-ai-story" gameType="ai" levelNumber={currentLevelIndex + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white">{currentStory.scenario}</p>
+                    <p className="mt-2 text-white/70 text-sm">Choose who selected the songs: AI or Kid.</p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {currentStory.options.map((option, idx) => (

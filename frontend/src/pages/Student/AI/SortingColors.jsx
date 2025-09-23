@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
@@ -118,26 +118,37 @@ const SortingColors = () => {
         }
         showGameOver={showGameOver}
         score={score}
+        gameId="sorting-colors"
+        gameType="ai"
+        totalLevels={initialColors.length}
       >
         {showConfetti && <Confetti />}
-        {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
+        {flashPoints && <ScoreFlash points={flashPoints} />}
 
-        <GameCard>
-          <div className="flex flex-wrap justify-center gap-4 mb-6">
-            {remainingColors.map((color, idx) => (
-              <ColorItem key={`${color.emoji}-${idx}`} color={color} />
-            ))}
-          </div>
+        <LevelCompleteHandler
+          gameId="sorting-colors"
+          gameType="ai"
+          levelNumber={initialColors.length - remainingColors.length + 1}
+          levelScore={feedback.type === 'correct' ? 2 : 0}
+          maxLevelScore={2}
+        >
+          <GameCard>
+            <div className="flex flex-wrap justify-center gap-4 mb-6">
+              {remainingColors.map((color, idx) => (
+                <ColorItem key={`${color.emoji}-${idx}`} color={color} />
+              ))}
+            </div>
 
-          <div className="grid grid-cols-3 gap-4 w-full max-w-3xl mx-auto">
-            <DropBox label="Red" onDrop={handleDrop} />
-            <DropBox label="Blue" onDrop={handleDrop} />
-            <DropBox label="Yellow" onDrop={handleDrop} />
-            <DropBox label="Green" onDrop={handleDrop} />
-            <DropBox label="Orange" onDrop={handleDrop} />
-            <DropBox label="Purple" onDrop={handleDrop} />
-          </div>
-        </GameCard>
+            <div className="grid grid-cols-3 gap-4 w-full max-w-3xl mx-auto">
+              <DropBox label="Red" onDrop={handleDrop} />
+              <DropBox label="Blue" onDrop={handleDrop} />
+              <DropBox label="Yellow" onDrop={handleDrop} />
+              <DropBox label="Green" onDrop={handleDrop} />
+              <DropBox label="Orange" onDrop={handleDrop} />
+              <DropBox label="Purple" onDrop={handleDrop} />
+            </div>
+          </GameCard>
+        </LevelCompleteHandler>
 
         {feedback.message && (
           <FeedbackBubble message={feedback.message} type={feedback.type} />

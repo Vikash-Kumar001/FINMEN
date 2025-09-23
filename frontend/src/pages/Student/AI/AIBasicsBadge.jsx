@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, Confetti, FeedbackBubble } from "./GameShell";
+import GameShell, { GameCard, OptionButton, Confetti, FeedbackBubble, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const AIBasicsBadge = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -8,6 +8,8 @@ const AIBasicsBadge = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [isOptionDisabled, setIsOptionDisabled] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [flashPoints, setFlashPoints] = useState(null);
+  const [gameOver, setGameOver] = useState(false);
 
   const questions = [
     {
@@ -58,7 +60,11 @@ const AIBasicsBadge = () => {
     if (option === currentQuestion.correctAnswer) {
       setFeedback({ message: "Great! You earned a badge!", type: "correct" });
       setScore((prev) => prev + currentQuestion.rewardPoints);
+      setFlashPoints(currentQuestion.rewardPoints);
       setShowConfetti(true);
+      
+      // Hide flash after 1s
+      setTimeout(() => setFlashPoints(null), 1000);
     } else {
       setFeedback({ message: `Wrong! Correct answer: ${currentQuestion.correctAnswer}`, type: "wrong" });
       setShowConfetti(false);
@@ -73,12 +79,7 @@ const AIBasicsBadge = () => {
       setSelectedOption(null);
       setIsOptionDisabled(false);
     } else {
-      alert(`Game Over! Your final score is: ${score}`);
-      setCurrentLevelIndex(0);
-      setScore(0);
-      setFeedback({ message: "", type: "" });
-      setSelectedOption(null);
-      setIsOptionDisabled(false);
+      setGameOver(true);
     }
   };
 
@@ -93,12 +94,26 @@ const AIBasicsBadge = () => {
       }
       onNext={handleNextLevel}
       nextEnabled={!!feedback.message}
+      showGameOver={gameOver}
+      score={score}
+      gameId="ai-basics-badge"
+      gameType="ai"
+      totalLevels={questions.length}
     >
       {showConfetti && <Confetti />}
+      {flashPoints && <ScoreFlash points={flashPoints} />}
 
-      <GameCard>
-        <p className="text-2xl font-semibold text-white">{currentQuestion.question}</p>
-      </GameCard>
+      <LevelCompleteHandler
+        gameId="ai-basics-badge"
+        gameType="ai"
+        levelNumber={currentLevelIndex + 1}
+        levelScore={feedback.type === 'correct' ? currentQuestion.rewardPoints : 0}
+        maxLevelScore={currentQuestion.rewardPoints}
+      >
+        <GameCard>
+          <p className="text-2xl font-semibold text-white">{currentQuestion.question}</p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       {/* Options */}
       <div className="flex flex-wrap justify-center gap-4">

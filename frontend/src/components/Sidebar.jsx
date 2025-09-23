@@ -69,7 +69,7 @@ const Sidebar = () => {
     return (
         <aside className="w-full md:w-64 h-full bg-white shadow-md p-4 sticky top-0 z-40">
             <h2 className="text-xl font-bold text-indigo-600 mb-4">
-                🎓 FinMen
+                🎓 WiseStudent
             </h2>
 
             <nav className="space-y-1">

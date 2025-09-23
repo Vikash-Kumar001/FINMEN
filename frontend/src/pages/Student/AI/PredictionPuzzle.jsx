@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const PredictionPuzzle = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -85,6 +85,9 @@ const PredictionPuzzle = () => {
 
   return (
     <GameShell
+      gameId="prediction-puzzle"
+      gameType="ai"
+      totalLevels={predictions.length}
       title="Prediction Puzzle"
       subtitle="Try to predict the next item in the sequence!"
       rightSlot={
@@ -100,11 +103,13 @@ const PredictionPuzzle = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />}
 
-      <GameCard>
-        <div className="text-lg md:text-2xl font-bold text-white">
-          {currentPrediction.scenario}
-        </div>
-      </GameCard>
+      <LevelCompleteHandler gameId="prediction-puzzle" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <div className="text-lg md:text-2xl font-bold text-white">
+            {currentPrediction.scenario}
+          </div>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap justify-center gap-4 mt-4">
         {currentPrediction.options.map((option, idx) => (

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const FriendlyAIQuiz = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -64,15 +64,26 @@ const FriendlyAIQuiz = () => {
       }
       onNext={handleNextLevel}
       nextEnabled={!!feedback.message && isOptionDisabled}
-      showGameOver={gameOver} // centralized congratulations modal
-      score={score} // pass final score
+      showGameOver={gameOver}
+      score={score}
+      gameId="friendly-ai-quiz"
+      gameType="ai"
+      totalLevels={questions.length}
     >
       {showConfetti && <Confetti />}
-      {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ score flash */}
+      {flashPoints && <ScoreFlash points={flashPoints} />}
 
-      <GameCard>
-        <div className="text-white font-bold text-xl md:text-2xl">{currentQuestion.question}</div>
-      </GameCard>
+      <LevelCompleteHandler
+        gameId="friendly-ai-quiz"
+        gameType="ai"
+        levelNumber={currentLevelIndex + 1}
+        levelScore={feedback.type === 'correct' ? currentQuestion.rewardPoints : 0}
+        maxLevelScore={currentQuestion.rewardPoints}
+      >
+        <GameCard>
+          <div className="text-white font-bold text-xl md:text-2xl">{currentQuestion.question}</div>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap justify-center gap-4 mt-4">
         {currentQuestion.options.map((option) => (

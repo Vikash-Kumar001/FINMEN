@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const MatchAIUses = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -53,6 +53,9 @@ const MatchAIUses = () => {
 
   return (
     <GameShell
+      gameId="match-ai-uses"
+      gameType="ai"
+      totalLevels={matches.length}
       title="Match AI Uses"
       subtitle=""
       rightSlot={
@@ -68,10 +71,12 @@ const MatchAIUses = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
 
-      <GameCard>
-        <div className="text-3xl font-bold text-white">{currentMatch.use}</div>
-        <p className="font-semibold text-white/80">Which AI tool does this?</p>
-      </GameCard>
+      <LevelCompleteHandler gameId="match-ai-uses" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <div className="text-3xl font-bold text-white">{currentMatch.use}</div>
+          <p className="font-semibold text-white/80">Which AI tool does this?</p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap gap-4 justify-center mt-4">
         {currentMatch.options.map((option) => (

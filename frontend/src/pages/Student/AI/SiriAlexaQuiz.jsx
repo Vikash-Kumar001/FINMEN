@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const SiriAlexaQuiz = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -54,6 +54,9 @@ const SiriAlexaQuiz = () => {
 
   return (
     <GameShell
+      gameId="siri-alexa-quiz"
+      gameType="ai"
+      totalLevels={questions.length}
       title="Siri/Alexa Quiz"
       subtitle="Is this AI? Yes or No!"
       rightSlot={
@@ -69,9 +72,11 @@ const SiriAlexaQuiz = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />}
 
-      <GameCard>
-        <div className="text-2xl md:text-3xl font-bold text-white">{currentQuestion.question}</div>
-      </GameCard>
+      <LevelCompleteHandler gameId="siri-alexa-quiz" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <div className="text-2xl md:text-3xl font-bold text-white">{currentQuestion.question}</div>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex gap-6 justify-center mt-4">
         {currentQuestion.options.map((option) => (

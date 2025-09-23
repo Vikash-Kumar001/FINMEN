@@ -4,6 +4,7 @@ import GameShell, {
   FeedbackBubble,
   Confetti,
   ScoreFlash,
+  LevelCompleteHandler,
 } from "./GameShell";
 
 const EmojiClassifier = () => {
@@ -61,6 +62,9 @@ const EmojiClassifier = () => {
 
   return (
     <GameShell
+      gameId="emoji-classifier"
+      gameType="ai"
+      totalLevels={emojiLevels.length}
       title="Emoji Classifier"
       subtitle="Click the correct bucket for each emoji!"
       rightSlot={
@@ -76,17 +80,19 @@ const EmojiClassifier = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
 
-      <GameCard>
-        <div
-          style={{
-            fontSize: "clamp(80px, 15vw, 120px)",
-            marginBottom: "16px",
-          }}
-        >
-          {currentEmoji?.emoji}
-        </div>
-        <p className="text-lg font-bold text-white">Pick the right bucket!</p>
-      </GameCard>
+      <LevelCompleteHandler gameId="emoji-classifier" gameType="ai" levelNumber={currentIndex + 1}>
+        <GameCard>
+          <div
+            style={{
+              fontSize: "clamp(80px, 15vw, 120px)",
+              marginBottom: "16px",
+            }}
+          >
+            {currentEmoji?.emoji}
+          </div>
+          <p className="text-lg font-bold text-white">Pick the right bucket!</p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       {/* Buckets */}
       <div className="flex justify-center gap-12 mt-6">

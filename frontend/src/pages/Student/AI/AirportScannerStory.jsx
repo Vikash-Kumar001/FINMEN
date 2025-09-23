@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const AirportScannerStory = () => {
     const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -54,6 +54,9 @@ const AirportScannerStory = () => {
 
     return (
         <GameShell
+            gameId="airport-scanner-story"
+            gameType="ai"
+            totalLevels={scenarios.length}
             title="Airport Scanner Story"
             subtitle="See how AI helps keep airports safe!"
             rightSlot={
@@ -69,9 +72,11 @@ const AirportScannerStory = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white">{currentScenario.scenario}</p>
-            </GameCard>
+            <LevelCompleteHandler gameId="airport-scanner-story" gameType="ai" levelNumber={currentLevelIndex + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white">{currentScenario.scenario}</p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {currentScenario.options.map((option, idx) => (

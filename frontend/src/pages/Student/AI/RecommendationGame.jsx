@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const RecommendationGame = () => {
   const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -55,6 +55,9 @@ const RecommendationGame = () => {
 
   return (
     <GameShell
+      gameId="recommendation-game"
+      gameType="ai"
+      totalLevels={recommendations.length}
       title="Recommendation Game"
       subtitle=""
       rightSlot={
@@ -70,9 +73,11 @@ const RecommendationGame = () => {
       {showConfetti && <Confetti />}
       {flashPoints && <ScoreFlash points={flashPoints} />} {/* ✅ Score flash */}
 
-      <GameCard>
-        <p className="text-xl font-bold text-white">{currentRecommendation.scenario}</p>
-      </GameCard>
+      <LevelCompleteHandler gameId="recommendation-game" gameType="ai" levelNumber={currentLevelIndex + 1}>
+        <GameCard>
+          <p className="text-xl font-bold text-white">{currentRecommendation.scenario}</p>
+        </GameCard>
+      </LevelCompleteHandler>
 
       <div className="flex flex-wrap justify-center gap-4 mt-4">
         {currentRecommendation.options.map((option, idx) => (

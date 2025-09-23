@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash } from "./GameShell";
+import GameShell, { GameCard, OptionButton, FeedbackBubble, Confetti, ScoreFlash, LevelCompleteHandler } from "./GameShell";
 
 const AIArtistGame = () => {
     const [currentLevelIndex, setCurrentLevelIndex] = useState(0);
@@ -55,6 +55,9 @@ const AIArtistGame = () => {
 
     return (
         <GameShell
+            gameId="ai-artist-game"
+            gameType="ai"
+            totalLevels={prompts.length}
             title="AI Artist Game"
             subtitle="Type prompts and see AI draw!"
             rightSlot={
@@ -70,12 +73,14 @@ const AIArtistGame = () => {
             {showConfetti && <Confetti />}
             {flashPoints && <ScoreFlash points={flashPoints} />}
 
-            <GameCard>
-                <p className="text-xl font-bold text-white">{currentPrompt.prompt}</p>
-                <p className="mt-2 text-white/70 text-sm">
-                    AI responds by drawing the requested object.
-                </p>
-            </GameCard>
+            <LevelCompleteHandler gameId="ai-artist-game" gameType="ai" levelNumber={currentLevelIndex + 1}>
+                <GameCard>
+                    <p className="text-xl font-bold text-white">{currentPrompt.prompt}</p>
+                    <p className="mt-2 text-white/70 text-sm">
+                        AI responds by drawing the requested object.
+                    </p>
+                </GameCard>
+            </LevelCompleteHandler>
 
             <div className="flex flex-wrap justify-center gap-4 mt-4">
                 {currentPrompt.options.map((option, idx) => (

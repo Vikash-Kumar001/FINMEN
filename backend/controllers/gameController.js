@@ -3,6 +3,7 @@ import MissionProgress from '../models/MissionProgress.js';
 import Game from '../models/Game.js';
 import GameProgress from '../models/GameProgress.js';
 import GameAchievement from '../models/GameAchievement.js';
+import UnifiedGameProgress from '../models/UnifiedGameProgress.js';
 import Wallet from '../models/Wallet.js';
 import Transaction from '../models/Transaction.js';
 import { ErrorResponse } from '../utils/ErrorResponse.js';
@@ -414,5 +415,244 @@ export const getLeaderboard = async (req, res) => {
   } catch (err) {
     console.error('❌ Failed to fetch leaderboard:', err);
     res.status(500).json({ error: 'Server error while fetching leaderboard' });
+  }
+};
+
+// 🎮 POST /api/game/complete-unified/:gameId - Unified game completion with heal coins
+export const completeUnifiedGame = async (req, res) => {
+  const userId = req.user?._id;
+  const { gameId } = req.params;
+  const {
+    gameType = 'ai',
+    score = 0,
+    maxScore = 100,
+    levelsCompleted = 1,
+    totalLevels = 1,
+    newLevelsCompleted = 1,
+    timePlayed = 0,
+    achievements = [],
+    isFullCompletion = true,
+    coinsPerLevel = null,
+    previousProgress = {}
+  } = req.body;
+
+  try {
+    // Find or create unified game progress
+    let gameProgress = await UnifiedGameProgress.findOne({ userId, gameId });
+    
+    if (!gameProgress) {
+      gameProgress = new UnifiedGameProgress({
+        userId,
+        gameId,
+        gameType,
+        totalLevels,
+        maxScore
+      });
+    }
+
+    // Calculate coins to award based on new levels completed
+    let coinsToAward = 0;
+    
+    // Get game definition for default coin values
+    const gameDefinition = await Game.findOne({ category: gameId });
+    const defaultCoinsPerLevel = coinsPerLevel || (gameDefinition?.coinsPerLevel) || 5;
+    const defaultTotalCoins = gameDefinition?.rewardCoins || (defaultCoinsPerLevel * totalLevels);
+
+    if (coinsPerLevel) {
+      // Award coins per level
+      coinsToAward = newLevelsCompleted * coinsPerLevel;
+    } else if (isFullCompletion && !gameProgress.fullyCompleted) {
+      // Award full completion bonus only once
+      coinsToAward = defaultTotalCoins;
+    } else if (newLevelsCompleted > 0) {
+      // Award coins for new levels completed
+      coinsToAward = newLevelsCompleted * defaultCoinsPerLevel;
+    }
+
+    // Update progress
+    gameProgress.levelsCompleted = Math.max(gameProgress.levelsCompleted, levelsCompleted);
+    gameProgress.totalLevels = Math.max(gameProgress.totalLevels, totalLevels);
+    gameProgress.highestScore = Math.max(gameProgress.highestScore, score);
+    gameProgress.maxScore = Math.max(gameProgress.maxScore, maxScore);
+    gameProgress.totalTimePlayed += timePlayed;
+    gameProgress.lastPlayedAt = new Date();
+
+    // Mark as fully completed if applicable
+    if (isFullCompletion && !gameProgress.fullyCompleted) {
+      gameProgress.fullyCompleted = true;
+      gameProgress.firstCompletedAt = new Date();
+    }
+
+    // Update streak
+    const today = new Date();
+    const lastPlayed = new Date(gameProgress.lastStreakDate);
+    const diffDays = Math.floor((today - lastPlayed) / (1000 * 60 * 60 * 24));
+    
+    if (diffDays === 1) {
+      gameProgress.currentStreak += 1;
+    } else if (diffDays > 1) {
+      gameProgress.currentStreak = 1;
+    }
+    gameProgress.lastStreakDate = today;
+
+    // Add achievements
+    if (achievements && achievements.length > 0) {
+      for (const achievement of achievements) {
+        const existingAchievement = gameProgress.achievements.find(
+          a => a.name === achievement.name
+        );
+        
+        if (!existingAchievement) {
+          gameProgress.achievements.push({
+            name: achievement.name,
+            description: achievement.description,
+            badge: achievement.badge || 'bronze'
+          });
+        }
+      }
+    }
+
+    // Award coins if any
+    let newBalance = 0;
+    if (coinsToAward > 0) {
+      // Update wallet
+      let wallet = await Wallet.findOne({ userId });
+      
+      if (!wallet) {
+        wallet = new Wallet({
+          userId,
+          balance: coinsToAward
+        });
+      } else {
+        wallet.balance += coinsToAward;
+      }
+      
+      await wallet.save();
+      newBalance = wallet.balance;
+      
+      // Record transaction
+      await Transaction.create({
+        userId,
+        type: 'credit',
+        amount: coinsToAward,
+        description: `Reward for ${gameId} game (${newLevelsCompleted} new levels)`
+      });
+      
+      // Track coins in game progress
+      gameProgress.totalCoinsEarned += coinsToAward;
+      gameProgress.coinsEarnedHistory.push({
+        amount: coinsToAward,
+        reason: isFullCompletion ? 'full-completion' : 'level-completion'
+      });
+    }
+
+    // Update level progress tracking
+    for (let i = gameProgress.levelProgress.length + 1; i <= levelsCompleted; i++) {
+      gameProgress.levelProgress.push({
+        levelNumber: i,
+        completed: true,
+        score: i === levelsCompleted ? score : 0,
+        coinsEarned: i <= gameProgress.levelProgress.length + newLevelsCompleted ? (coinsPerLevel || defaultCoinsPerLevel) : 0,
+        completedAt: new Date()
+      });
+    }
+
+    await gameProgress.save();
+
+    // Emit socket event for real-time updates
+    const io = req.app.get('io');
+    if (io && coinsToAward > 0) {
+      io.to(userId.toString()).emit('game-completed', {
+        gameId,
+        coinsEarned: coinsToAward,
+        newBalance,
+        streak: gameProgress.currentStreak,
+        achievements: gameProgress.achievements,
+        message: 'Game completed and rewards granted!'
+      });
+    }
+
+    res.status(200).json({
+      message: coinsToAward > 0 ? '🎉 Game completed successfully!' : 'Game completed! Thanks for playing again!',
+      coinsEarned: coinsToAward,
+      totalCoinsEarned: gameProgress.totalCoinsEarned,
+      newLevelsCompleted,
+      totalLevelsCompleted: gameProgress.levelsCompleted,
+      fullyCompleted: gameProgress.fullyCompleted,
+      newBalance,
+      streak: gameProgress.currentStreak,
+      achievements: gameProgress.achievements
+    });
+  } catch (err) {
+    console.error('❌ Unified game completion error:', err);
+    res.status(500).json({ error: 'Failed to complete game' });
+  }
+};
+
+// 📊 GET /api/game/progress/:gameId - Get specific game progress
+export const getUnifiedGameProgress = async (req, res) => {
+  const userId = req.user?._id;
+  const { gameId } = req.params;
+  
+  try {
+    const progress = await UnifiedGameProgress.findOne({ userId, gameId });
+    
+    if (!progress) {
+      return res.status(200).json({
+        levelsCompleted: 0,
+        totalCoinsEarned: 0,
+        fullyCompleted: false,
+        totalLevels: 1,
+        maxScore: 100
+      });
+    }
+    
+    res.status(200).json(progress);
+  } catch (err) {
+    console.error('❌ Failed to fetch game progress:', err);
+    res.status(500).json({ error: 'Failed to fetch game progress' });
+  }
+};
+
+// 📊 PUT /api/game/progress/:gameId - Update game progress
+export const updateUnifiedGameProgress = async (req, res) => {
+  const userId = req.user?._id;
+  const { gameId } = req.params;
+  const updateData = req.body;
+  
+  try {
+    const progress = await UnifiedGameProgress.findOneAndUpdate(
+      { userId, gameId },
+      { 
+        ...updateData,
+        lastPlayedAt: new Date()
+      },
+      { new: true, upsert: true }
+    );
+    
+    res.status(200).json(progress);
+  } catch (err) {
+    console.error('❌ Failed to update game progress:', err);
+    res.status(500).json({ error: 'Failed to update game progress' });
+  }
+};
+
+// 📊 GET /api/game/completed-games - Get all completed games for user
+export const getCompletedGames = async (req, res) => {
+  const userId = req.user?._id;
+  
+  try {
+    const completedGames = await UnifiedGameProgress.find({ 
+      userId,
+      $or: [
+        { fullyCompleted: true },
+        { levelsCompleted: { $gt: 0 } }
+      ]
+    }).select('gameId gameType levelsCompleted totalLevels fullyCompleted totalCoinsEarned firstCompletedAt');
+    
+    res.status(200).json(completedGames);
+  } catch (err) {
+    console.error('❌ Failed to fetch completed games:', err);
+    res.status(500).json({ error: 'Failed to fetch completed games' });
   }
 };

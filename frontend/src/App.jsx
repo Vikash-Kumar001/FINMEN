@@ -49,6 +49,57 @@ import PiggyBankBuilder from "./pages/Games/PiggyBankBuilder";
 import ShopSmart from "./pages/Games/ShopSmart";
 import InvestQuest from "./pages/Games/InvestQuest";
 import BudgetHero from "./pages/Games/BudgetHero";
+import SpotThePattern from "./pages/Student/AI/SpotThePattern";
+import CatOrDog from "./pages/Student/AI/CatOrDog";
+import SortingColors from "./pages/Student/AI/SortingColors";
+import TrueOrFalseAIQuiz from "./pages/Student/AI/TrueOrFalseAIQuiz";
+import EmojiClassifier from "./pages/Student/AI/EmojiClassifier";
+import SelfDrivingCarGame from "./pages/Student/AI/SelfDrivingCarGame";
+import PatternFindingPuzzle from "./pages/Student/AI/PatternFindingPuzzle";
+import RobotHelperStory from "./pages/Student/AI/RobotHelperStory";
+import SpamVsNotSpam from "./pages/Student/AI/SpamVsNotSpam";
+import SiriAlexaQuiz from "./pages/Student/AI/SiriAlexaQuiz";
+import AIInGames from "./pages/Student/AI/AIInGames";
+import MatchAITools from "./pages/Student/AI/MatchAITools";
+import PatternMusicGame from "./pages/Student/AI/PatternMusicGame";
+import RobotVisionGame from "./pages/Student/AI/RobotVisionGame";
+import SmartHomeStory from "./pages/Student/AI/SmartHomeStory";
+import TrainTheRobot from "./pages/Student/AI/TrainTheRobot";
+import PredictionPuzzle from "./pages/Student/AI/PredictionPuzzle";
+import TrafficLightAI from "./pages/Student/AI/TrafficLightAI";
+import AIInMapsStory from "./pages/Student/AI/AIInMapsStory";
+import YoutubeRecommendationGame from "./pages/Student/AI/YoutubeRecommendationGame";
+import SmartFridgeStory from "./pages/Student/AI/SmartFridgeStory";
+import ChatbotFriend from "./pages/Student/AI/ChatbotFriend";
+import FaceUnlockGame from "./pages/Student/AI/FaceUnlockGame";
+import AIOrHumanQuiz from "./pages/Student/AI/AIOrHumanQuiz";
+import SmartSpeakerStory from "./pages/Student/AI/SmartSpeakerStory";
+import AIDoctorSimulation from "./pages/Student/AI/AIDoctorSimulation";
+import RobotVacuumGame from "./pages/Student/AI/RobotVacuumGame";
+import AITranslatorQuiz from "./pages/Student/AI/AITranslatorQuiz";
+import WeatherPredictionStory from "./pages/Student/AI/WeatherPredictionStory";
+import SmartwatchGame from "./pages/Student/AI/SmartwatchGame";
+import OnlineShoppingAI from "./pages/Student/AI/OnlineShoppingAI";
+import AirportScannerStory from "./pages/Student/AI/AirportScannerStory";
+import SmartFarmingQuiz from "./pages/Student/AI/SmartFarmingQuiz";
+import AIArtistGame from "./pages/Student/AI/AIArtistGame";
+import MusicAIStory from "./pages/Student/AI/MusicAIStory";
+import AIInBankingQuiz from "./pages/Student/AI/AIInBankingQuiz";
+import SmartCityTrafficGame from "./pages/Student/AI/SmartCityTrafficGame";
+import AINewsStory from "./pages/Student/AI/AINewsStory";
+import AIDoctorQuiz from "./pages/Student/AI/AIDoctorQuiz";
+import SmartHomeLightsGame from "./pages/Student/AI/SmartHomeLightsGame";
+import AIDailyLifeBadge from "./pages/Student/AI/AIDailyLifeBadge";
+import VoiceAssistantQuiz from "./pages/Student/AI/VoiceAssistantQuiz";
+import FriendlyAIQuiz from "./pages/Student/AI/FriendlyAIQuiz";
+import RobotEmotionStory from "./pages/Student/AI/RobotEmotionStory";
+import RecommendationGame from "./pages/Student/AI/RecommendationGame";
+import AIOrNotQuiz from "./pages/Student/AI/AIOrNotQuiz";
+import RobotHelperReflex from "./pages/Student/AI/RobotHelperReflex";
+import MatchAIUses from "./pages/Student/AI/MatchAIUses";
+import SortingAnimals from "./pages/Student/AI/SortingAnimals";
+import AIBasicsBadge from "./pages/Student/AI/AIBasicsBadge";
+
 
 // Educator Pages
 import AssessmentTools from "./pages/Educator/AssessmentHub";
@@ -169,9 +220,12 @@ const App = () => {
     );
   }
 
+  // Hide navbar on full-screen game routes
+  const isFullScreenGame = location.pathname.startsWith("/student/games/ai/");
+
   return (
     <div className="min-h-screen bg-gray-100">
-  {!isAuthPage && location.pathname !== "/" && location.pathname !== "/college-registration" && location.pathname !== "/school-registration" && location.pathname !== "/institution-type" && location.pathname !== "/individual-account" && <Navbar />}
+  {!isAuthPage && !isFullScreenGame && location.pathname !== "/" && location.pathname !== "/college-registration" && location.pathname !== "/school-registration" && location.pathname !== "/institution-type" && location.pathname !== "/individual-account" && <Navbar />}
       {!isAuthPage && user && <Chatbot />} {/* ✅ Floating Chatbot */}
 
       <ErrorBoundary>
@@ -236,6 +290,58 @@ const App = () => {
           <Route path="/learn/financial-literacy" element={<ProtectedRoute roles={['student']}><FinancialLiteracy /></ProtectedRoute>} />
           <Route path="/tools/budget-planner" element={<ProtectedRoute roles={['student']}><BudgetPlanner /></ProtectedRoute>} />
           <Route path="/games/investment-simulator" element={<ProtectedRoute roles={['student']}><InvestmentSimulator /></ProtectedRoute>} />
+          {/* AI Education Pattern Games */}
+          <Route path="/student/games/ai/spot-the-pattern" element={<ProtectedRoute roles={['student']}><SpotThePattern /></ProtectedRoute>} />
+          <Route path="/student/games/ai/cat-or-dog" element={<ProtectedRoute roles={['student']}><CatOrDog /></ProtectedRoute>} />
+          <Route path="/student/games/ai/sorting-colors" element={<ProtectedRoute roles={['student']}><SortingColors /></ProtectedRoute>} />
+          <Route path="/student/games/ai/true-or-false-ai-quiz" element={<ProtectedRoute roles={['student']}><TrueOrFalseAIQuiz /></ProtectedRoute>} />
+          <Route path="/student/games/ai/emoji-classifier" element={<ProtectedRoute roles={['student']}><EmojiClassifier /></ProtectedRoute>} />
+          <Route path="/student/games/ai/self-driving-car-game" element={<ProtectedRoute roles={['student']}><SelfDrivingCarGame /></ProtectedRoute>} />
+          <Route path="/student/games/ai/pattern-finding-puzzle" element={<ProtectedRoute roles={['student']}><PatternFindingPuzzle /></ProtectedRoute>} />
+          <Route path="/student/games/ai/robot-helper-story" element={<ProtectedRoute roles={['student']}><RobotHelperStory /></ProtectedRoute>} />
+          <Route path="/student/games/ai/spam-vs-not-spam" element={<ProtectedRoute roles={['student']}><SpamVsNotSpam /></ProtectedRoute>} />
+          <Route path="/student/games/ai/siri-alexa-quiz" element={<ProtectedRoute roles={['student']}><SiriAlexaQuiz /></ProtectedRoute>} />
+          <Route path="/student/games/ai/ai-in-games" element={<ProtectedRoute roles={['student']}><AIInGames /></ProtectedRoute>} />
+          <Route path="/student/games/ai/match-ai-tools" element={<ProtectedRoute roles={['student']}><MatchAITools /></ProtectedRoute>} />
+          <Route path="/student/games/ai/pattern-music-game" element={<ProtectedRoute roles={['student']}><PatternMusicGame /></ProtectedRoute>} />
+          <Route path="/student/games/ai/robot-vision-game" element={<ProtectedRoute roles={['student']}><RobotVisionGame /></ProtectedRoute>} />
+          <Route path="/student/games/ai/smart-home-story" element={<ProtectedRoute roles={['student']}><SmartHomeStory /></ProtectedRoute>} />
+          <Route path="/student/games/ai/train-the-robot" element={<ProtectedRoute roles={['student']}><TrainTheRobot /></ProtectedRoute>} />
+          <Route path="/student/games/ai/prediction-puzzle" element={<ProtectedRoute roles={['student']}><PredictionPuzzle /></ProtectedRoute>} />
+          <Route path="/student/games/ai/friendly-ai-quiz" element={<ProtectedRoute roles={['student']}><FriendlyAIQuiz /></ProtectedRoute>} />
+          <Route path="/student/games/ai/robot-emotion-story" element={<ProtectedRoute roles={['student']}><RobotEmotionStory /></ProtectedRoute>} />
+          <Route path="/student/games/ai/recommendation-game" element={<ProtectedRoute roles={['student']}><RecommendationGame /></ProtectedRoute>} />
+          <Route path="/student/games/ai/ai-or-not-quiz" element={<ProtectedRoute roles={['student']}><AIOrNotQuiz /></ProtectedRoute>} />
+          <Route path="/student/games/ai/robot-helper-reflex" element={<ProtectedRoute roles={['student']}><RobotHelperReflex /></ProtectedRoute>} />
+          <Route path="/student/games/ai/match-ai-uses" element={<ProtectedRoute roles={['student']}><MatchAIUses /></ProtectedRoute>} />
+          <Route path="/student/games/ai/sorting-animals" element={<ProtectedRoute roles={['student']}><SortingAnimals /></ProtectedRoute>} />
+          <Route path="/student/games/ai/ai-basics-badge" element={<ProtectedRoute roles={['student']}><AIBasicsBadge /></ProtectedRoute>} />
+
+          <Route path="/student/games/ai/traffic-light-ai" element={<ProtectedRoute roles={['student']}><TrafficLightAI /></ProtectedRoute>} />
+          <Route path="/student/games/ai/ai-in-maps-story" element={<ProtectedRoute roles={['student']}><AIInMapsStory /></ProtectedRoute>} />
+          <Route path="/student/games/ai/voice-assistant-quiz" element={<ProtectedRoute roles={['student']}><VoiceAssistantQuiz /></ProtectedRoute>} />
+          <Route path="/student/games/ai/youtube-recommendation-game" element={<ProtectedRoute roles={['student']}><YoutubeRecommendationGame /></ProtectedRoute>} />
+          <Route path="/student/games/ai/smart-fridge-story" element={<ProtectedRoute roles={['student']}><SmartFridgeStory /></ProtectedRoute>} />
+          <Route path="/student/games/ai/chatbot-friend" element={<ProtectedRoute roles={['student']}><ChatbotFriend /></ProtectedRoute>} />
+          <Route path="/student/games/ai/face-unlock-game" element={<ProtectedRoute roles={['student']}><FaceUnlockGame /></ProtectedRoute>} />
+          <Route path="/student/games/ai/ai-or-human-quiz" element={<ProtectedRoute roles={['student']}><AIOrHumanQuiz /></ProtectedRoute>} />
+          <Route path="/student/games/ai/smart-speaker-story" element={<ProtectedRoute roles={['student']}><SmartSpeakerStory /></ProtectedRoute>} />
+          <Route path="/student/games/ai/ai-doctor-simulation" element={<ProtectedRoute roles={['student']}><AIDoctorSimulation /></ProtectedRoute>} />
+          <Route path="/student/games/ai/robot-vacuum-game" element={<ProtectedRoute roles={['student']}><RobotVacuumGame /></ProtectedRoute>} />
+          <Route path="/student/games/ai/ai-translator-quiz" element={<ProtectedRoute roles={['student']}><AITranslatorQuiz /></ProtectedRoute>} />
+          <Route path="/student/games/ai/weather-prediction-story" element={<ProtectedRoute roles={['student']}><WeatherPredictionStory /></ProtectedRoute>} />
+          <Route path="/student/games/ai/smartwatch-game" element={<ProtectedRoute roles={['student']}><SmartwatchGame /></ProtectedRoute>} />
+          <Route path="/student/games/ai/online-shopping-ai" element={<ProtectedRoute roles={['student']}><OnlineShoppingAI /></ProtectedRoute>} />
+          <Route path="/student/games/ai/airport-scanner-story" element={<ProtectedRoute roles={['student']}><AirportScannerStory /></ProtectedRoute>} />
+          <Route path="/student/games/ai/smart-farming-quiz" element={<ProtectedRoute roles={['student']}><SmartFarmingQuiz /></ProtectedRoute>} />
+          <Route path="/student/games/ai/ai-artist-game" element={<ProtectedRoute roles={['student']}><AIArtistGame /></ProtectedRoute>} />
+          <Route path="/student/games/ai/music-ai-story" element={<ProtectedRoute roles={['student']}><MusicAIStory /></ProtectedRoute>} />
+          <Route path="/student/games/ai/ai-in-banking-quiz" element={<ProtectedRoute roles={['student']}><AIInBankingQuiz /></ProtectedRoute>} />
+          <Route path="/student/games/ai/smart-city-traffic-game" element={<ProtectedRoute roles={['student']}><SmartCityTrafficGame /></ProtectedRoute>} />
+          <Route path="/student/games/ai/ai-news-story" element={<ProtectedRoute roles={['student']}><AINewsStory /></ProtectedRoute>} />
+          <Route path="/student/games/ai/ai-doctor-quiz" element={<ProtectedRoute roles={['student']}><AIDoctorQuiz /></ProtectedRoute>} />
+          <Route path="/student/games/ai/smart-home-lights-game" element={<ProtectedRoute roles={['student']}><SmartHomeLightsGame /></ProtectedRoute>} />
+          <Route path="/student/games/ai/ai-daily-life-badge" element={<ProtectedRoute roles={['student']}><AIDailyLifeBadge /></ProtectedRoute>} />
           <Route path="/tools/savings-goals" element={<ProtectedRoute roles={['student']}><SavingsGoals /></ProtectedRoute>} />
           <Route path="/learn/financial-quiz" element={<ProtectedRoute roles={['student']}><FinancialQuiz /></ProtectedRoute>} />
           <Route path="/tools/expense-tracker" element={<ProtectedRoute roles={['student']}><ExpenseTracker /></ProtectedRoute>} />

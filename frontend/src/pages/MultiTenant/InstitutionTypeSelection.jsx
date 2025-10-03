@@ -66,7 +66,7 @@ const InstitutionTypeSelection = () => {
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
               <span className="text-white font-bold">FM</span>
             </div>
-            <h1 className="ml-3 text-2xl font-semibold text-gray-800">FINMEN</h1>
+            <h1 className="ml-3 text-2xl font-semibold text-gray-800">Wise Student</h1>
           </div>
           <button
             className="text-gray-600 hover:text-gray-800"

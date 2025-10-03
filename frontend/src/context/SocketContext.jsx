@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from "react";
 import { io } from "socket.io-client";
 import { useAuth } from "../hooks/useAuth";
+import { useLocation } from "react-router-dom";
 
 const SocketContext = createContext(null);
 
@@ -12,6 +13,23 @@ export const SocketProvider = ({ children }) => {
     const [socketReady, setSocketReady] = useState(false);
     const [profileUpdate, setProfileUpdate] = useState(null);
     const profileListeners = useRef([]);
+    const location = useLocation();
+
+    // Avoid socket connection on auth-related routes to prevent noise on login/registration
+    const authRoutes = new Set([
+        "/login",
+        "/register",
+        "/verify-otp",
+        "/forgot-password",
+        "/reset-password",
+        "/google-login",
+        "/register-stakeholder",
+        "/pending-approval",
+        "/register-parent",
+        "/register-teacher",
+        "/register-seller",
+    ]);
+    const isAuthRoute = authRoutes.has(location.pathname);
 
     // Subscribe/unsubscribe API for components
     const subscribeProfileUpdate = useCallback((cb) => {
@@ -22,7 +40,8 @@ export const SocketProvider = ({ children }) => {
     }, []);
 
     useEffect(() => {
-        if (user && !socketRef.current) {
+        // Only connect when authenticated user is present and not on auth pages
+        if (user && !isAuthRoute && !socketRef.current) {
             const token = localStorage.getItem("finmen_token");
 
             if (!token) {
@@ -49,6 +68,8 @@ export const SocketProvider = ({ children }) => {
                 reconnection: true,
                 reconnectionAttempts: 5,
                 reconnectionDelay: 1000,
+                forceNew: true,
+                path: "/socket.io",
             });
 
             socket.on("connect", () => {
@@ -119,7 +140,7 @@ export const SocketProvider = ({ children }) => {
                 }
             }
         };
-    }, [user]);
+    }, [user, isAuthRoute]);
 
     return (
         <SocketContext.Provider value={{ socket: socketRef.current, socketReady, profileUpdate, subscribeProfileUpdate }}>

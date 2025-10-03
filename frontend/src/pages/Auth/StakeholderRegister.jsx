@@ -1,18 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
-import {
-    Eye,
-    EyeOff,
-    Mail,
-    Lock,
-    User,
-    UserCheck,
-    ArrowRight,
-    Building,
-    Heart,
-    ShoppingBag
-} from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, User, UserCheck, ArrowRight, Building } from "lucide-react";
 import api from "../../utils/api";
 import { useAuth } from "../../context/AuthUtils";
 import { toast } from "react-hot-toast";
@@ -23,17 +12,8 @@ const StakeholderRegister = () => {
         email: "",
         password: "",
         confirmPassword: "",
-        role: "parent",
-        // Parent fields
-        childEmail: "",
-        // Seller fields
-        businessName: "",
-        shopType: "Stationery",
-        // CSR fields
-        organization: "",
-        // Educator fields
-        position: "",
-        subjects: ""
+        role: "csr",
+        organization: ""
     });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -42,36 +22,7 @@ const StakeholderRegister = () => {
     const navigate = useNavigate();
     const { fetchUser } = useAuth();
 
-    const roleOptions = [
-        {
-            value: "parent",
-            label: "Parent",
-            icon: Heart,
-            description: "Track your child's progress and growth",
-            color: "from-blue-500 to-indigo-500"
-        },
-        {
-            value: "seller",
-            label: "Seller/Vendor",
-            icon: ShoppingBag,
-            description: "Manage products and voucher redemptions",
-            color: "from-green-500 to-emerald-500"
-        },
-        {
-            value: "csr",
-            label: "CSR/Sponsor",
-            icon: Building,
-            description: "Track social impact and measure outcomes",
-            color: "from-purple-500 to-violet-500"
-        },
-        {
-            value: "educator",
-            label: "Educator",
-            icon: User,
-            description: "Manage students and track their progress",
-            color: "from-orange-500 to-red-500"
-        }
-    ];
+    // CSR-only form (role fixed to 'csr')
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -93,43 +44,15 @@ const StakeholderRegister = () => {
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
-                role: formData.role
+                role: "csr",
+                organization: formData.organization
             };
-
-            // Add role-specific fields
-            if (formData.role === "parent") {
-                if (!formData.childEmail) {
-                    toast.error("Child email is required for parent role");
-                    return;
-                }
-                requestData.childEmail = formData.childEmail;
-            } else if (formData.role === "seller") {
-                if (!formData.businessName || !formData.shopType) {
-                    toast.error("Business name and shop type are required for seller role");
-                    return;
-                }
-                requestData.businessName = formData.businessName;
-                requestData.shopType = formData.shopType;
-            } else if (formData.role === "csr") {
-                if (!formData.organization) {
-                    toast.error("Organization name is required for CSR role");
-                    return;
-                }
-                requestData.organization = formData.organization;
-            } else if (formData.role === "educator") {
-                if (!formData.position || !formData.subjects) {
-                    toast.error("Position and subjects are required for educator role");
-                    return;
-                }
-                requestData.position = formData.position;
-                requestData.subjects = formData.subjects;
-            }
 
 
             // Add timestamp to prevent caching
             const response = await api.post(`/api/auth/register-stakeholder?t=${Date.now()}`, requestData);
 
-            toast.success(`${formData.role.charAt(0).toUpperCase() + formData.role.slice(1)} account created successfully! Pending admin approval.`);
+            toast.success("CSR account created successfully! Pending admin approval.");
 
             // Redirect to login since account needs approval
             navigate("/login");
@@ -196,50 +119,15 @@ const StakeholderRegister = () => {
                                 <UserCheck className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                             </motion.div>
                             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">
-                                Join FINMEN
+                                CSR Registration
                             </h1>
                             <p className="text-gray-300 text-xs sm:text-sm lg:text-base">
-                                Create your stakeholder account
+                                Create your CSR sponsor account
                             </p>
                         </motion.div>
 
                         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                            {/* Role Selection */}
-                            <div>
-                                <label className="block text-sm font-medium text-gray-300 mb-3">
-                                    Select Your Role
-                                </label>
-                                <div className="grid grid-cols-1 gap-3">
-                                    {roleOptions.map((option) => (
-                                        <motion.label
-                                            key={option.value}
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                            className={`relative flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                                                formData.role === option.value
-                                                    ? 'border-purple-500 bg-purple-500/10'
-                                                    : 'border-white/10 bg-white/5 hover:border-white/20'
-                                            }`}
-                                        >
-                                            <input
-                                                type="radio"
-                                                name="role"
-                                                value={option.value}
-                                                checked={formData.role === option.value}
-                                                onChange={handleInputChange}
-                                                className="sr-only"
-                                            />
-                                            <div className={`w-10 h-10 rounded-lg bg-gradient-to-r ${option.color} flex items-center justify-center mr-3`}>
-                                                <option.icon className="w-5 h-5 text-white" />
-                                            </div>
-                                            <div>
-                                                <div className="font-semibold text-white">{option.label}</div>
-                                                <div className="text-xs text-gray-400">{option.description}</div>
-                                            </div>
-                                        </motion.label>
-                                    ))}
-                                </div>
-                            </div>
+                            {/* CSR-only: role selection removed */}
 
                             {/* Name Field */}
                             <div className="relative">
@@ -444,7 +332,7 @@ const StakeholderRegister = () => {
                                         />
                                     ) : (
                                         <>
-                                            Create Account <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
+                                            Create CSR Account <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
                                         </>
                                     )}
                                 </span>

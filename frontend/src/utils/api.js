@@ -19,9 +19,10 @@ api.interceptors.response.use(
     // Handle authentication errors
     if (error.response?.status === 401) {
       const currentPath = window.location.pathname;
+      const publicPaths = ['/', '/institution-type', '/individual-account', '/register-stakeholder', '/register-parent', '/register-seller', '/register-teacher', '/school-registration', '/college-registration', '/choose-account-type'];
       
-      // Only redirect if not already on login page
-      if (!currentPath.includes('/login') && !currentPath.includes('/register')) {
+      // Only redirect if not already on login/register page and not on public paths
+      if (!currentPath.includes('/login') && !currentPath.includes('/register') && !publicPaths.includes(currentPath)) {
         console.warn("🔐 Authentication failed. Clearing token and redirecting to login.");
         
         // Clear invalid token
@@ -43,6 +44,9 @@ api.interceptors.response.use(
         setTimeout(() => {
           window.location.href = '/login';
         }, 100);
+      } else {
+        // On public/auth pages, just clear token without redirecting
+        localStorage.removeItem("finmen_token");
       }
     }
     

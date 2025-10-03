@@ -9,7 +9,7 @@ const IndividualAccountSelection = () => {
         if (selected === "student") {
             navigate("/register");
         } else if (selected === "parent") {
-            navigate("/register-stakeholder");
+            navigate("/register-parent");
         }
     };
     return (
@@ -19,12 +19,12 @@ const IndividualAccountSelection = () => {
             <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-pink-200 to-rose-200 rounded-full opacity-15 blur-3xl animate-pulse delay-1000" />
             <div className="max-w-4xl mx-auto px-4 py-8 relative z-10">
                 <div className="flex justify-between items-center mb-4">
-                    <div className="flex items-center">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
-                            <span className="text-white font-bold">FM</span>
-                        </div>
-                        <h1 className="ml-3 text-2xl font-semibold text-gray-800">FINMEN</h1>
-                    </div>
+          <div className="flex items-center">
+            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
+              <span className="text-white font-bold">FM</span>
+            </div>
+            <h1 className="ml-3 text-2xl font-semibold text-gray-800">Wise Student</h1>
+          </div>
                     <button
                         className="text-gray-600 hover:text-gray-800"
                         onClick={() => navigate('/')}

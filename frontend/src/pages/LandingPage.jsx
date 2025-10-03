@@ -72,17 +72,25 @@ const LandingPage = () => {
       description: "Students & Parents wanting to access mental wellness and learning tools",
       icon: <GraduationCap className="w-12 h-12" />,
       color: "from-purple-500 to-pink-500",
-      action: () => navigate("/individual-account"),
+      action: () => navigate("/register"),
       buttonText: "Join as Student"
     },
     {
-      title: "Stakeholders",
-      description: "Sellers & CSRs supporting schools with resources and guidance",
-      icon: <Users className="w-12 h-16" />,
-      color: "from-green-500 to-emerald-500",
-      action: () => navigate("/register-stakeholder"),
-      buttonText: "Register as Stakeholder"
-    }
+      title: "Mentors & Guides",
+      description: "Choose Parent, Teacher, or Seller to create your account",
+      icon: <GraduationCap className="w-12 h-12" />,
+      color: "from-purple-500 to-pink-500",
+      action: () => navigate("/choose-account-type"),
+      buttonText: "Choose Account Type"
+    },
+    // {
+    //   title: "Stakeholders",
+    //   description: "Sellers & CSRs supporting schools with resources and guidance",
+    //   icon: <Users className="w-12 h-16" />,
+    //   color: "from-green-500 to-emerald-500",
+    //   action: () => navigate("/register-stakeholder"),
+    //   buttonText: "Register as Stakeholder"
+    // }
   ];
 
   const handleGetStartedClick = () => {
@@ -110,7 +118,7 @@ const LandingPage = () => {
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
               <span className="text-white font-bold">FM</span>
             </div>
-            <h1 className="ml-3 text-xl font-semibold text-gray-900">FINMEN</h1>
+            <h1 className="ml-3 text-xl font-semibold text-gray-900">Wise Student</h1>
           </div>
           <div className="space-x-4 flex items-center">
             <a href="#features" className="text-gray-600 hover:text-gray-900">Features</a>
@@ -146,7 +154,7 @@ const LandingPage = () => {
             >
               Welcome to{" "}
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                FINMEN
+                Wise Student
               </span>
             </motion.h1>
 
@@ -236,7 +244,7 @@ const LandingPage = () => {
               Everything You Need in One Platform
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              From academic management to mental wellness, FINMEN provides comprehensive
+              From academic management to mental wellness, Wise Student provides comprehensive
               solutions for modern educational institutions.
             </p>
           </motion.div>
@@ -331,7 +339,7 @@ const LandingPage = () => {
               Ready to Transform Education?
             </h2>
             <p className="text-2xl text-blue-100 mb-8">
-              Join thousands of institutions already using FINMEN to create better learning experiences.
+              Join thousands of institutions already using Wise Student to create better learning experiences.
             </p>
             <motion.button
               whileHover={{ scale: 1.05 }}
@@ -355,7 +363,7 @@ const LandingPage = () => {
               <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center mb-3">
                 <span className="text-white font-bold text-2xl">FM</span>
               </div>
-              <h3 className="text-2xl font-semibold mb-2">FINMEN</h3>
+              <h3 className="text-2xl font-semibold mb-2">Wise Student</h3>
               <p className="text-gray-600 text-base">
                 Empowering education with innovative management and wellness solutions.
               </p>
@@ -386,7 +394,7 @@ const LandingPage = () => {
             </div>
           </div>
           <div className="border-t border-gray-300 pt-4 text-center text-gray-600 text-sm">
-            <p>&copy; 2025 FINMEN. All rights reserved.</p>
+            <p>&copy; 2025 Wise Student. All rights reserved.</p>
             <div className="mt-2 space-x-4">
               <a href="/terms" className="hover:underline">Terms of Service</a>
               <a href="/privacy" className="hover:underline">Privacy Policy</a>

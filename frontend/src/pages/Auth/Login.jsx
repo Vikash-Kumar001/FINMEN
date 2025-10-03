@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../../hooks/useAuth";
@@ -14,11 +14,28 @@ import {
 } from "lucide-react";
 
 const Login = () => {
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    const allowedOriginsEnv = import.meta.env.VITE_GOOGLE_ALLOWED_ORIGINS || "";
+    const allowedOrigins = allowedOriginsEnv
+        .split(",")
+        .map((o) => o.trim())
+        .filter(Boolean);
+    const defaultDevOrigins = [
+        "http://localhost:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:3000",
+    ];
+    const effectiveAllowed = allowedOrigins.length ? allowedOrigins : defaultDevOrigins;
+    const originAllowed = effectiveAllowed.includes(window.location.origin);
+    const isGoogleEnabled = Boolean(clientId);
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const emailRef = useRef(null);
+    const passwordRef = useRef(null);
+    const [lastFocused, setLastFocused] = useState(null);
 
     const navigate = useNavigate();
     const { fetchUser } = useAuth();
@@ -132,8 +149,28 @@ const Login = () => {
         }
     };
 
+    useEffect(() => {
+        if (lastFocused === "email" && emailRef.current && document.activeElement !== emailRef.current) {
+            emailRef.current.focus();
+        }
+    }, [email, lastFocused]);
+
+    useEffect(() => {
+        if (lastFocused === "password" && passwordRef.current && document.activeElement !== passwordRef.current) {
+            passwordRef.current.focus();
+        }
+    }, [password, lastFocused]);
+
+    const Wrapper = ({ children }) => (
+        clientId ? (
+            <GoogleOAuthProvider clientId={clientId}>{children}</GoogleOAuthProvider>
+        ) : (
+            <>{children}</>
+        )
+    );
+
     return (
-        <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+        <Wrapper>
             <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
                 <motion.div
                     className="absolute inset-0 overflow-hidden"
@@ -211,6 +248,8 @@ const Login = () => {
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
+                                        onFocus={() => setLastFocused("email")}
+                                        ref={emailRef}
                                         placeholder="Email address"
                                         required
                                         className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 text-xs sm:text-sm"
@@ -225,6 +264,8 @@ const Login = () => {
                                         type={showPassword ? "text" : "password"}
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
+                                        onFocus={() => setLastFocused("password")}
+                                        ref={passwordRef}
                                         placeholder="Password"
                                         required
                                         className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 text-xs sm:text-sm"
@@ -282,32 +323,44 @@ const Login = () => {
                                 </button>
                             </div>
 
-                            <div className="flex items-center my-4 sm:my-6">
-                                <div className="flex-1 h-px bg-white/20" />
-                                <span className="px-2 sm:px-4 text-gray-400 text-xs sm:text-sm">
-                                    or continue with
-                                </span>
-                                <div className="flex-1 h-px bg-white/20" />
-                            </div>
+                            {isGoogleEnabled && (
+                                <>
+                                    <div className="flex items-center my-4 sm:my-6">
+                                        <div className="flex-1 h-px bg-white/20" />
+                                        <span className="px-2 sm:px-4 text-gray-400 text-xs sm:text-sm">
+                                            or continue with
+                                        </span>
+                                        <div className="flex-1 h-px bg-white/20" />
+                                    </div>
 
-                            <div className="flex justify-center">
-                                <div className="w-full max-w-[280px] sm:max-w-[300px] bg-white/5 border border-white/10 rounded-xl p-1 sm:p-2">
-                                    <GoogleLogin
-                                        onSuccess={handleGoogleLogin}
-                                        onError={() => setError("Google login failed.")}
-                                        theme="filled_black"
-                                        size="large"
-                                        width={280}
-                                        text="signin_with"
-                                        shape="rectangular"
-                                    />
+                                    <div className="flex justify-center">
+                                        <div className="w-full max-w-[280px] sm:max-w-[300px] bg-white/5 border border-white/10 rounded-xl p-1 sm:p-2">
+                                            <GoogleLogin
+                                                onSuccess={handleGoogleLogin}
+                                                onError={() => setError("Google login failed.")}
+                                                theme="filled_black"
+                                                size="large"
+                                                width={280}
+                                                text="signin_with"
+                                                shape="rectangular"
+                                                logo_alignment="left"
+                                                locale="en"
+                                                useOneTap={false}
+                                            />
+                                        </div>
+                                    </div>
+                                </>
+                            )}
+                            {!clientId && (
+                                <div className="mt-4 text-center text-gray-300 text-xs sm:text-sm">
+                                    Google Sign-In is unavailable: missing client ID.
                                 </div>
-                            </div>
+                            )}
                         </motion.div>
                     </motion.div>
                 </div>
             </div>
-        </GoogleOAuthProvider>
+        </Wrapper>
     );
 };
 

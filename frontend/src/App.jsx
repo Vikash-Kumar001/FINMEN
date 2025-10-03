@@ -15,6 +15,10 @@ import ForgotPassword from "./pages/Auth/ForgetPassword";
 import ResetPassword from "./pages/Auth/ResetPassword";
 import StakeholderRegister from "./pages/Auth/StakeholderRegister";
 import PendingApprovalPage from "./pages/Auth/PendingApproval";
+import ParentRegister from "./pages/Auth/ParentRegister";
+import SellerRegister from "./pages/Auth/SellerRegister";
+import TeacherRegister from "./pages/Auth/TeacherRegister";
+import AccountTypeSelection from "./pages/Auth/AccountTypeSelection";
 
 // Student Pages
 import StudentDashboard from "./pages/Student/StudentDashboard";
@@ -225,7 +229,19 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-  {!isAuthPage && !isFullScreenGame && location.pathname !== "/" && location.pathname !== "/college-registration" && location.pathname !== "/school-registration" && location.pathname !== "/institution-type" && location.pathname !== "/individual-account" && <Navbar />}
+  {!isAuthPage &&
+    !isFullScreenGame &&
+    location.pathname !== "/" &&
+    location.pathname !== "/college-registration" &&
+    location.pathname !== "/school-registration" &&
+    location.pathname !== "/institution-type" &&
+    location.pathname !== "/individual-account" &&
+    location.pathname !== "/choose-account-type" &&
+    location.pathname !== "/register-parent" &&
+    location.pathname !== "/register-seller" &&
+    location.pathname !== "/register-teacher" &&
+    location.pathname !== "/pending-approval" &&
+    <Navbar />}
       {!isAuthPage && user && <Chatbot />} {/* ✅ Floating Chatbot */}
 
       <ErrorBoundary>
@@ -234,13 +250,18 @@ const App = () => {
           <Route path="/individual-account" element={<IndividualAccountSelection />} />
 
           {/* Auth Routes */}
-          <Route path="/login" element={<Login />} />
+          {/* If authenticated, redirect away from login to role dashboard */}
+          <Route path="/login" element={user ? <RootRedirect /> : <Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/google-login" element={<GoogleLogin />} />
           <Route path="/verify-otp" element={<VerifyOTP />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/register-stakeholder" element={<StakeholderRegister />} />
+          <Route path="/register-parent" element={<ParentRegister />} />
+          <Route path="/register-seller" element={<SellerRegister />} />
+          <Route path="/register-teacher" element={<TeacherRegister />} />
+          <Route path="/choose-account-type" element={<AccountTypeSelection />} />
           <Route path="/pending-approval" element={<PendingApprovalPage />} />
           
           {/* Multi-Tenant Routes */}

@@ -948,7 +948,7 @@ const ResourceLibrary = () => {
 
                 {/* Footer */}
                 <div className="mt-12 text-center text-sm text-gray-500">
-                    <p>Resource Library • Powered by FINMEN Education Platform</p>
+            <p>Resource Library • Powered by Wise Student Education Platform</p>
                 </div>
             </div>
 

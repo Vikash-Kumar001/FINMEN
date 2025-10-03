@@ -211,7 +211,7 @@ const SellerDashboard = () => {
         totalSales: 199, // Number of items sold
         totalDiscounts: 4200, // Total discounts given via HealCoins
         actualPayments: 21550, // Actual money received after discounts
-        commissionToFINMEN: 2575, // 10% commission to FINMEN
+      commissionToFINMEN: 2575, // 10% commission to Wise Student
         netEarnings: 18975, // Seller's net earnings
         monthlyGrowth: 15.2,
         avgOrderValue: 129.4,
@@ -220,7 +220,7 @@ const SellerDashboard = () => {
 
     // Commission tracking data
     const [commissionData] = useState({
-        currentRate: 10, // 10% commission to FINMEN
+      currentRate: 10, // 10% commission to Wise Student
         monthlyCommissions: [
             {
                 month: "January 2025",
@@ -287,7 +287,7 @@ const SellerDashboard = () => {
         labels: commissionData.monthlyCommissions.map((c) => c.month.split(" ")[0]),
         datasets: [
             {
-                label: "Commission to FINMEN (₹)",
+      label: "Commission to Wise Student (₹)",
                 data: commissionData.monthlyCommissions.map((c) => c.commission),
                 backgroundColor: "rgba(59, 130, 246, 0.8)",
                 borderColor: "rgb(59, 130, 246)",
@@ -1082,12 +1082,12 @@ const SellerDashboard = () => {
                                         {commissionData.currentRate}%
                                     </div>
                                     <div className="text-purple-100">
-                                        Commission Rate to FINMEN
+            Commission Rate to Wise Student
                                     </div>
                                 </div>
                                 <div className="text-center">
                                     <div className="text-3xl font-bold mb-2">
-                                        ₹{salesData.commissionToFINMEN.toLocaleString()}
+            ₹{salesData.commissionToFINMEN.toLocaleString()}
                                     </div>
                                     <div className="text-purple-100">This Month Commission</div>
                                 </div>

@@ -10,6 +10,7 @@ import {
   approveEducator,
   rejectEducator,
   getAdminStats,
+  getAnalytics,
   getPendingStakeholders,
   approveStakeholder,
   rejectStakeholder,
@@ -26,16 +27,7 @@ router.use(requireAuth, requireAdmin);
 router.get("/stats", getAdminStats);
 
 // 📊 Analytics Data for AdminAnalytics
-router.get("/analytics", async (req, res) => {
-  try {
-    const { timeRange, userType, department } = req.query;
-    // Assuming getAdminStats can handle filters or replace with a dedicated controller
-    const analyticsData = await getAdminStats(req, res); // Reuse getAdminStats or create new controller
-    res.json(analyticsData);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch analytics data' });
-  }
-});
+router.get("/analytics", getAnalytics);
 
 // 👩‍🏫 Educator Management
 router.get("/educators", getAllEducators);

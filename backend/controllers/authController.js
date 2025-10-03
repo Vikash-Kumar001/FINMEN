@@ -1,10 +1,8 @@
 import bcrypt from "bcryptjs";
-import { OAuth2Client } from "google-auth-library";
 import User from "../models/User.js";
 import { generateToken } from "../utils/generateToken.js";
 import { sendEmail } from "../utils/sendMail.js";
 
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
@@ -38,12 +36,18 @@ export const sendOTP = async (email, type = "verify") => {
       <p>If you didn't request this, please ignore this email.</p>
     `;
 
-    await sendEmail({ to: email, subject, html: message });
-
-    return { success: true, message: "OTP sent successfully" };
+    try {
+      await sendEmail({ to: email, subject, html: message });
+      return { success: true, message: "OTP sent successfully" };
+    } catch (emailErr) {
+      console.error("Send email error:", emailErr);
+      // Do not throw; OTP is already stored. Allow frontend to handle resend.
+      return { success: false, message: "Failed to send OTP email, please try resending." };
+    }
   } catch (error) {
     console.error("Send OTP error:", error);
-    throw new Error("Failed to send OTP");
+    // Non-fatal: return failure to caller instead of throwing
+    return { success: false, message: "Failed to generate or store OTP" };
   }
 };
 
@@ -109,9 +113,7 @@ export const forgotPassword = async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(400).json({ message: "User not found" });
 
-    if (!user.password) {
-      return res.status(400).json({ message: "This account uses Google login. Please use Google to sign in." });
-    }
+    // Allow password reset via OTP even if no password is currently set
 
     if (user.role === "admin" || user.role === "educator") {
       return res.status(400).json({ message: "Admin and educator accounts cannot reset password via OTP. Please contact your administrator." });
@@ -168,131 +170,6 @@ export const resetPasswordWithOTP = async (req, res) => {
   }
 };
 
-export const googleLogin = async (req, res) => {
-  try {
-    const { token } = req.body;
-    if (!token) {
-      console.error("Google login error: No token provided");
-      return res.status(400).json({ message: "No token provided" });
-    }
-
-    let ticket;
-    try {
-      ticket = await client.verifyIdToken({
-        idToken: token,
-        audience: process.env.GOOGLE_CLIENT_ID,
-      });
-    } catch (verifyError) {
-      console.error("Google token verification failed:", verifyError.message);
-      return res.status(400).json({ message: "Invalid Google token" });
-    }
-
-    const payload = ticket.getPayload();
-    if (!payload) {
-      console.error("Google login error: Invalid token payload");
-      return res.status(400).json({ message: "Invalid Google token payload" });
-    }
-
-    const { email, name, picture } = payload;
-    if (!email) {
-      console.error("Google login error: No email in payload");
-      return res.status(400).json({ message: "Google account must have a verified email" });
-    }
-
-    let user = await User.findOne({ email: email.toLowerCase() });
-
-    if (user && user.role !== "student") {
-      return res.status(403).json({ message: "Google login is allowed only for students." });
-    }
-
-    if (!user) {
-      user = await User.create({
-        name: name || email,
-        email: email.toLowerCase(),
-        avatar: picture,
-        role: "student",
-        isVerified: true,
-        fromGoogle: true,
-      });
-    }
-
-    const authToken = generateToken(user._id);
-    
-    // Daily login reward logic
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    const lastActive = user.lastActive ? new Date(user.lastActive) : null;
-    let lastActiveDay = null;
-    if (lastActive) {
-      lastActiveDay = new Date(lastActive);
-      lastActiveDay.setHours(0, 0, 0, 0);
-    }
-    
-    // Check if this is a new day login
-    let loginReward = null;
-    if (!lastActiveDay || today.getTime() > lastActiveDay.getTime()) {
-      // Award HealCoins for daily login
-      loginReward = {
-        received: true,
-        amount: 5 // 5 HealCoins for daily login
-      };
-      
-      // Update user's last active timestamp
-      user.lastActive = new Date();
-      await user.save();
-      
-      // Add coins to wallet
-      let wallet = await Wallet.findOne({ userId: user._id });
-      
-      if (!wallet) {
-        wallet = await Wallet.create({
-          userId: user._id,
-          balance: 5
-        });
-      } else {
-        wallet.balance += 5;
-        await wallet.save();
-      }
-      
-      // Create transaction record
-      await Transaction.create({
-        userId: user._id,
-        type: "credit",
-        amount: 5,
-        description: "Daily login reward"
-      });
-    } else {
-      loginReward = {
-        received: false
-      };
-    }
-
-    res
-      .cookie("finmen_token", authToken, {
-        httpOnly: true,
-        sameSite: "Lax",
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
-      })
-      .status(200)
-      .json({
-        message: "Google login successful",
-        token: authToken,
-        user: {
-          id: user._id,
-          name: user.name,
-          email: user.email,
-          avatar: user.avatar,
-          role: user.role,
-        },
-        loginReward
-      });
-  } catch (err) {
-    console.error("Google login error:", err.message);
-    res.status(400).json({ message: "Google authentication failed" });
-  }
-};
 
 export const registerByAdmin = async (req, res) => {
   try {
@@ -417,7 +294,7 @@ export const login = async (req, res) => {
 
     if (!user.password) {
       return res.status(400).json({
-        message: "This account uses Google login. Please use Google to sign in.",
+        message: "No password set for this account. Please reset your password.",
       });
     }
 
@@ -426,13 +303,8 @@ export const login = async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
-    // Email verification check only for students (not for parent, seller, csr)
-    if (user.role === "student" && !user.isVerified) {
-      return res.status(401).json({
-        message: "Please verify your email before logging in.",
-        needsVerification: true,
-      });
-    }
+    // Email verification is no longer required for student login.
+    // We allow login regardless of verification status.
 
     // Approval status checks for educator, parent, seller, csr
     if (["educator", "parent", "seller", "csr"].includes(user.role)) {

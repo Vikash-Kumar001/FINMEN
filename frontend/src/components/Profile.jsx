@@ -119,6 +119,9 @@ const Profile = () => {
         website: "",
         bio: ""
     });
+    // Derived display fields
+    const [displayName, setDisplayName] = useState("");
+    const [ageYears, setAgeYears] = useState("");
     const [avatarPreview, setAvatarPreview] = useState("/avatars/avatar1.png");
     const [avatarFile, setAvatarFile] = useState(null);
     const [passwords, setPasswords] = useState({ current: "", newPass: "", confirmPass: "" });
@@ -157,6 +160,19 @@ const Profile = () => {
     ];
     const [selectedPreset, setSelectedPreset] = useState(null);
 
+    const calculateAge = (dobValue) => {
+        if (!dobValue) return "";
+        const dobDate = typeof dobValue === 'string' ? new Date(dobValue) : new Date(dobValue);
+        if (isNaN(dobDate.getTime())) return "";
+        const today = new Date();
+        let age = today.getFullYear() - dobDate.getFullYear();
+        const m = today.getMonth() - dobDate.getMonth();
+        if (m < 0 || (m === 0 && today.getDate() < dobDate.getDate())) {
+            age--;
+        }
+        return age >= 0 ? String(age) : "";
+    };
+
     useEffect(() => {
         if (user && subscribeProfileUpdate) {
             const unsubscribe = subscribeProfileUpdate((payload) => {
@@ -164,13 +180,18 @@ const Profile = () => {
                     // Update personal info and avatar in real-time
                     setPersonalInfo((prev) => ({
                         ...prev,
-                        name: payload.name || prev.name,
+                        name: payload.fullName || payload.name || prev.name,
                         email: payload.email || prev.email,
                         phone: payload.phone || prev.phone,
                         location: payload.city || prev.location,
                         bio: payload.bio || prev.bio,
                         website: payload.website || prev.website,
                     }));
+                    const liveDob = payload.dateOfBirth || payload.dob;
+                    const newAge = calculateAge(liveDob);
+                    setAgeYears(newAge);
+                    const dn = (payload.fullName || payload.name || user?.fullName || user?.name || "").trim();
+                    setDisplayName(dn);
                     if (payload.avatar) {
                         setAvatarPreview(normalizeAvatarUrl(payload.avatar));
                         setSelectedPreset(payload.avatar);
@@ -190,13 +211,18 @@ const Profile = () => {
                     const profileData = await fetchUserProfile();
                     
                     setPersonalInfo({
-                        name: profileData.name || user?.name || "",
+                        name: profileData.fullName || profileData.name || user?.fullName || user?.name || "",
                         email: profileData.email || user?.email || "",
                         phone: profileData.phone || "",
                         location: profileData.location || "",
                         website: profileData.website || "",
                         bio: profileData.bio || ""
                     });
+                    // Set derived display fields
+                    const dobValue = profileData.dateOfBirth || profileData.dob || user?.dateOfBirth || user?.dob;
+                    setAgeYears(calculateAge(dobValue));
+                    const dn = (profileData.fullName || profileData.name || user?.fullName || user?.name || "").trim();
+                    setDisplayName(dn);
                     
                     if (profileData.avatar) {
                         setAvatarPreview(normalizeAvatarUrl(profileData.avatar));
@@ -1108,17 +1134,33 @@ const Profile = () => {
                         >
                             <User className="w-8 h-8" />
                         </motion.div>
-                        <div>
-                            <h1 className="text-4xl sm:text-5xl font-black mb-2 flex items-center justify-center gap-2 text-center">
-                                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
-                                    Profile
-                                </span>
-                                <span>👤</span>
-                            </h1>
-                            <p className="text-gray-600 text-lg font-medium">
-                                Manage your personal information
-                            </p>
-                        </div>
+                    <div>
+                        <h1 className="text-4xl sm:text-5xl font-black mb-2 flex items-center justify-center gap-2 text-center">
+                            <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                Profile
+                            </span>
+                            <span>👤</span>
+                        </h1>
+                        <p className="text-gray-600 text-lg font-medium">
+                            Manage your personal information
+                        </p>
+                        { (displayName || ageYears) && (
+                          <div className="mt-4 flex items-center justify-center gap-3 flex-wrap">
+                            {displayName && (
+                              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100 text-indigo-700 border border-indigo-200 text-sm font-semibold">
+                                <User className="w-4 h-4" />
+                                {displayName}
+                              </span>
+                            )}
+                            {ageYears && (
+                              <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-100 text-purple-700 border border-purple-200 text-sm font-semibold">
+                                <Calendar className="w-4 h-4" />
+                                {ageYears} years
+                              </span>
+                            )}
+                          </div>
+                        )}
+                    </div>
                     </div>
 
                     {user?.role === "student" && (

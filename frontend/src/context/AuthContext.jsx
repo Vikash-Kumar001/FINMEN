@@ -87,16 +87,8 @@ export const AuthProvider = ({ children }) => {
                     }
                     break;
                 case "parent":
-                    if (!enhancedUser.isApproved) {
-                        navigate("/pending-approval", {
-                            state: {
-                                message: "Your parent account is currently under review. You will be notified once approved.",
-                                user: { email: enhancedUser.email },
-                            },
-                        });
-                    } else {
-                        navigate("/parent/dashboard");
-                    }
+                    // Parents are auto-approved; route directly to dashboard
+                    navigate("/parent/dashboard");
                     break;
                 case "seller":
                     if (!enhancedUser.isApproved) {

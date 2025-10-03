@@ -3,12 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import api from '../../utils/api';
 import { useAuth } from '../../context/AuthUtils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Eye, EyeOff, Mail, Lock, UserPlus, ArrowRight, Shield, Zap } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, UserPlus, ArrowRight, Shield, Zap, User, Calendar } from 'lucide-react';
 
 const Register = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [fullName, setFullName] = useState('');
+    const [dob, setDob] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
@@ -39,8 +41,32 @@ const Register = () => {
         setError('');
         setIsLoading(true);
 
-        if (!email || !password || !confirmPassword) {
+        if (!fullName.trim() || !dob || !email || !password || !confirmPassword) {
             setError('Please fill in all fields.');
+            setIsLoading(false);
+            return;
+        }
+
+        if (fullName.trim().length === 0) {
+            setError('Full name is required.');
+            setIsLoading(false);
+            return;
+        }
+
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(dob)) {
+            setError('Date of Birth must be in YYYY-MM-DD format.');
+            setIsLoading(false);
+            return;
+        }
+        const dobDate = new Date(dob);
+        if (isNaN(dobDate.getTime())) {
+            setError('Invalid Date of Birth.');
+            setIsLoading(false);
+            return;
+        }
+        const today = new Date();
+        if (dobDate > today) {
+            setError('Date of Birth cannot be in the future.');
             setIsLoading(false);
             return;
         }
@@ -61,7 +87,9 @@ const Register = () => {
             // Register the user
             await api.post(`/api/auth/register`, {
                 email,
-                password
+                password,
+                fullName: fullName.trim(),
+                dateOfBirth: dob
             });
             
             // Now log in the user
@@ -246,6 +274,42 @@ const Register = () => {
                             className="space-y-6"
                             variants={itemVariants}
                         >
+                            {/* Full Name Field */}
+                            <motion.div
+                                className="relative"
+                                whileFocus={{ scale: 1.02 }}
+                            >
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <User className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    type="text"
+                                    placeholder="Full Name"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                    required
+                                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                                />
+                            </motion.div>
+
+                            {/* Date of Birth Field */}
+                            <motion.div
+                                className="relative"
+                                whileFocus={{ scale: 1.02 }}
+                            >
+                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <Calendar className="h-5 w-5 text-gray-400" />
+                                </div>
+                                <input
+                                    type="date"
+                                    placeholder="Date of Birth"
+                                    value={dob}
+                                    onChange={(e) => setDob(e.target.value)}
+                                    required
+                                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                                />
+                            </motion.div>
+
                             {/* Email Field */}
                             <motion.div
                                 className="relative"

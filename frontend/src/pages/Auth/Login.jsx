@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../utils/api";
 import { motion, AnimatePresence } from "framer-motion";
@@ -14,20 +13,7 @@ import {
 } from "lucide-react";
 
 const Login = () => {
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-    const allowedOriginsEnv = import.meta.env.VITE_GOOGLE_ALLOWED_ORIGINS || "";
-    const allowedOrigins = allowedOriginsEnv
-        .split(",")
-        .map((o) => o.trim())
-        .filter(Boolean);
-    const defaultDevOrigins = [
-        "http://localhost:3000",
-        "http://localhost:5173",
-        "http://127.0.0.1:3000",
-    ];
-    const effectiveAllowed = allowedOrigins.length ? allowedOrigins : defaultDevOrigins;
-    const originAllowed = effectiveAllowed.includes(window.location.origin);
-    const isGoogleEnabled = Boolean(clientId);
+    // Google login removed; manual login only
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
@@ -113,41 +99,7 @@ const Login = () => {
         }
     };
 
-    const handleGoogleLogin = async (credentialResponse) => {
-        setIsLoading(true);
-        setError("");
-
-        try {
-            const token = credentialResponse?.credential;
-
-            if (!token) {
-                setError("No Google credential received.");
-                return;
-            }
-
-            const res = await api.post(`/api/auth/google`, { token });
-
-            localStorage.setItem("finmen_token", res.data.token);
-
-            const user = await fetchUser();
-
-            if (user?.role === "student") {
-                navigate("/student/dashboard");
-            } else {
-                setError("Google login is only available for students.");
-                localStorage.removeItem("finmen_token");
-            }
-        } catch (err) {
-            console.error("🔴 Google login error:", err);
-            if (err.response) {
-                console.error("🔴 Response:", err.response);
-            }
-
-            setError(err.response?.data?.message || "Google login failed.");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    // Google login removed
 
     useEffect(() => {
         if (lastFocused === "email" && emailRef.current && document.activeElement !== emailRef.current) {
@@ -161,13 +113,7 @@ const Login = () => {
         }
     }, [password, lastFocused]);
 
-    const Wrapper = ({ children }) => (
-        clientId ? (
-            <GoogleOAuthProvider clientId={clientId}>{children}</GoogleOAuthProvider>
-        ) : (
-            <>{children}</>
-        )
-    );
+    const Wrapper = ({ children }) => <>{children}</>;
 
     return (
         <Wrapper>
@@ -323,39 +269,7 @@ const Login = () => {
                                 </button>
                             </div>
 
-                            {isGoogleEnabled && (
-                                <>
-                                    <div className="flex items-center my-4 sm:my-6">
-                                        <div className="flex-1 h-px bg-white/20" />
-                                        <span className="px-2 sm:px-4 text-gray-400 text-xs sm:text-sm">
-                                            or continue with
-                                        </span>
-                                        <div className="flex-1 h-px bg-white/20" />
-                                    </div>
-
-                                    <div className="flex justify-center">
-                                        <div className="w-full max-w-[280px] sm:max-w-[300px] bg-white/5 border border-white/10 rounded-xl p-1 sm:p-2">
-                                            <GoogleLogin
-                                                onSuccess={handleGoogleLogin}
-                                                onError={() => setError("Google login failed.")}
-                                                theme="filled_black"
-                                                size="large"
-                                                width={280}
-                                                text="signin_with"
-                                                shape="rectangular"
-                                                logo_alignment="left"
-                                                locale="en"
-                                                useOneTap={false}
-                                            />
-                                        </div>
-                                    </div>
-                                </>
-                            )}
-                            {!clientId && (
-                                <div className="mt-4 text-center text-gray-300 text-xs sm:text-sm">
-                                    Google Sign-In is unavailable: missing client ID.
-                                </div>
-                            )}
+                            {/* Google login removed; manual sign-in only */}
                         </motion.div>
                     </motion.div>
                 </div>

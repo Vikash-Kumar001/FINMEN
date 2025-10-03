@@ -22,7 +22,7 @@ export const SocketProvider = ({ children }) => {
         "/verify-otp",
         "/forgot-password",
         "/reset-password",
-        "/google-login",
+        // Google login route removed
         "/register-stakeholder",
         "/pending-approval",
         "/register-parent",

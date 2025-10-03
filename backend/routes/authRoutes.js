@@ -1,6 +1,5 @@
 import express from "express";
 import {
-  googleLogin,
   registerByAdmin,
   sendOTP,
   verifyOTP,
@@ -20,10 +19,20 @@ const router = express.Router();
 // ✅ Student Self-Registration
 router.post("/register", async (req, res) => {
   try {
-    const { email, password, name } = req.body;
+    const { email, password, fullName, dateOfBirth } = req.body;
 
-    if (!email || !password) {
-      return res.status(400).json({ message: "Email and password are required" });
+    if (!email || !password || !fullName || !dateOfBirth) {
+      return res.status(400).json({ message: "Email, password, full name, and date of birth are required" });
+    }
+
+    // Validate dateOfBirth
+    const parsedDob = new Date(dateOfBirth);
+    if (isNaN(parsedDob.getTime())) {
+      return res.status(400).json({ message: "Invalid date of birth format" });
+    }
+    const now = new Date();
+    if (parsedDob > now) {
+      return res.status(400).json({ message: "Date of birth cannot be in the future" });
     }
 
     const normalizedEmail = email.toLowerCase();
@@ -35,17 +44,22 @@ router.post("/register", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await User.create({
-      name: name || normalizedEmail,
+      name: fullName.trim(),
+      fullName: fullName.trim(),
+      dateOfBirth: parsedDob,
+      dob: dateOfBirth,
       email: normalizedEmail,
       password: hashedPassword,
       role: "student",
       isVerified: false,
     });
 
-    await sendOTP(newUser.email, "verify");
+    const otpResult = await sendOTP(newUser.email, "verify");
 
     res.status(200).json({
-      message: "OTP sent to email for verification",
+      message: otpResult?.success
+        ? "OTP sent to email for verification"
+        : "Account created. OTP email failed; please use resend OTP.",
       userId: newUser._id,
     });
   } catch (err) {
@@ -126,26 +140,7 @@ router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPasswordWithOTP);
 
 // ✅ Google Login (Student only)
-router.post("/google", googleLogin);
-
-// ✅ Google OAuth Callback
-router.get("/google/callback", (req, res) => {
-  // This route handles the callback from Google OAuth
-  // For web applications, redirect to frontend with success/error
-  const { code, error } = req.query;
-  
-  if (error) {
-    return res.redirect(`${process.env.CLIENT_URL}/login?error=oauth_failed`);
-  }
-  
-  if (code) {
-    // In production, you might want to exchange the code for tokens here
-    // For now, just redirect to login page
-    return res.redirect(`${process.env.CLIENT_URL}/login?oauth=success`);
-  }
-  
-  res.redirect(`${process.env.CLIENT_URL}/login`);
-});
+// Google authentication endpoints removed
 
 // ✅ Parent/Seller/CSR Self-Registration (no verification required)
 router.post("/register-stakeholder", async (req, res) => {
@@ -201,7 +196,8 @@ router.post("/register-stakeholder", async (req, res) => {
       password: hashedPassword,
       role,
       isVerified: true, // Auto-verified for stakeholders
-      approvalStatus: "pending", // Requires admin approval like educators
+      // Parents are auto-approved; others remain pending for admin review
+      approvalStatus: role === "parent" ? "approved" : "pending",
     };
 
     // Add role-specific fields
@@ -219,8 +215,13 @@ router.post("/register-stakeholder", async (req, res) => {
 
     const newUser = await User.create(userData);
 
+    const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+    const message = role === "parent"
+      ? `${roleLabel} account created successfully. Your account is active.`
+      : `${roleLabel} account created successfully. Your account is pending admin approval.`;
+
     res.status(201).json({
-      message: `${role.charAt(0).toUpperCase() + role.slice(1)} account created successfully. Your account is pending admin approval.`,
+      message,
       user: {
         id: newUser._id,
         name: newUser.name,

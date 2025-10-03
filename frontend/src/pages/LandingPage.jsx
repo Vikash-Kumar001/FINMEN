@@ -23,38 +23,88 @@ import kidsImage from "../assets/kids.png";
 const LandingPage = () => {
   const navigate = useNavigate();
   const userTypesRef = useRef(null);
+  const featuresRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
+
+  const services = [
+    {
+      title: "Curated Solutions",
+      description: "Tools, services, and resources that support real student needs"
+    },
+    {
+      title: "Meaningful Reach",
+      description: "Connect with families, schools, and learners ina purposeful way."
+    },
+    {
+      title: "Trusted Network",
+      description: "Part of a community built around education and growth."
+    },
+    {
+      title: "Aligned with Values",
+      description: "Contribute to student development, not just transactions."
+    }
+  ];
 
   const features = [
     {
-      icon: <School className="w-8 h-8" />,
-      title: "Multi-Tenant Architecture",
-      description: "Complete isolation between organizations with secure data management"
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: "Role-Based Access",
-      description: "Comprehensive role management for schools and colleges"
-    },
-    {
       icon: <Target className="w-8 h-8" />,
-      title: "Academic Management",
-      description: "Classes, courses, attendance, grades, and fee management"
-    },
-    {
-      icon: <Heart className="w-8 h-8" />,
-      title: "Parent Engagement",
-      description: "Mandatory parent linking with real-time progress tracking"
+      title: "Financial Literacy",
+      description: "Smart with money from day one.",
+      color: "from-emerald-500 to-green-500"
     },
     {
       icon: <Brain className="w-8 h-8" />,
-      title: "Mental Wellness",
-      description: "Integrated wellness tracking and support systems"
+      title: "Mental Health",
+      description: "Balanced, resilient, and emotionally strong.",
+      color: "from-purple-500 to-pink-500"
+    },
+    {
+      icon: <Heart className="w-8 h-8" />,
+      title: "Life Skills & Values (UVLS)",
+      description: "Empathy, respect, and problem-solving.",
+      color: "from-orange-500 to-rose-500"
+    },
+    {
+      icon: <Users className="w-8 h-8" />,
+      title: "Digital Citizenship",
+      description: "Safe, ethical, and confident in the online world.",
+      color: "from-cyan-500 to-blue-500"
+    },
+    {
+      icon: <CheckCircle className="w-8 h-8" />,
+      title: "Moral Values",
+      description: "Honesty, kindness, and integrity in action.",
+      color: "from-amber-500 to-yellow-500"
     },
     {
       icon: <Star className="w-8 h-8" />,
-      title: "Gamification",
-      description: "Engaging learning experience with rewards and achievements"
+      title: "AI for All",
+      description: "Early exposure to tomorrow’s technologies.",
+      color: "from-indigo-500 to-purple-500"
+    },
+    {
+      icon: <Users className="w-8 h-8" />,
+      title: "Health – Boys",
+      description: "Hygiene, fitness, and self-awareness.",
+      color: "from-sky-500 to-teal-500"
+    },
+    {
+      icon: <Heart className="w-8 h-8" />,
+      title: "Health – Girls",
+      description: "Menstrual health, nutrition, and self-care.",
+      color: "from-pink-500 to-rose-500"
+    },
+    {
+      icon: <Building className="w-8 h-8" />,
+      title: "Entrepreneurship & Careers",
+      description: "Clarity, creativity, and innovation.",
+      color: "from-red-500 to-orange-500"
+    },
+    {
+      icon: <School className="w-8 h-8" />,
+      title: "Civic Responsibility",
+      description: "Rights, duties, and global citizenship.",
+      color: "from-blue-500 to-indigo-500"
     }
   ];
 
@@ -97,6 +147,10 @@ const LandingPage = () => {
     userTypesRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  const handlePillarsClick = () => {
+    featuresRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const handleBackToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -116,18 +170,13 @@ const LandingPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <div className="flex items-center">
             <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
-              <span className="text-white font-bold">FM</span>
+          <span className="text-white font-bold">WS</span>
             </div>
             <h1 className="ml-3 text-xl font-semibold text-gray-900">Wise Student</h1>
           </div>
           <div className="space-x-4 flex items-center">
-            <a href="#features" className="text-gray-600 hover:text-gray-900">Features</a>
-            <button
-              onClick={handleGetStartedClick}
-              className="text-gray-600 hover:text-gray-900"
-            >
-              Get Started
-            </button>
+        <button onClick={handlePillarsClick} className="text-gray-600 hover:text-gray-900">Pillars</button>
+
             <button
               onClick={() => navigate("/login")}
               className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all"
@@ -139,8 +188,8 @@ const LandingPage = () => {
       </nav>
 
       {/* Hero Section */}
-      <div className="relative overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <div className="relative h-screen flex items-center justify-center">
+    <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -156,18 +205,21 @@ const LandingPage = () => {
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Wise Student
               </span>
+              
+          <p className="font-bold text-sm mt-2">Beyond Subjects. Building Humans. </p>
+              <p className="italic font-light text-sm mb-2">Holistic & Futuristic Education for Every Student </p>
             </motion.h1>
 
             <motion.p
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-xl md:text-2xl text-gray-600 mb-6 max-w-3xl mx-auto"
+          className="text-xl md:text-xl text-gray-600 mb-6 max-w-4xl mx-auto"
             >
-              The comprehensive multi-tenant education management platform that combines academic excellence with mental wellness,
-              financial literacy, and a community-driven approach to holistic student growth.
+              Knowledge alone is no longer enough — today’s learners need balance, resilience, and future-ready skills. 
+Our Platform raises students who are not just exam-ready, but life-ready. 
             </motion.p>
-
+            <p className="text-sm font-bold mb-2">The Firm foundation no textbook can teach — but every Student needs.</p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -177,20 +229,11 @@ const LandingPage = () => {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={handleGetStartedClick}
+            onClick={handleGetStartedClick}
                 className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-2xl font-semibold text-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
               >
                 Get Started
                 <ArrowRight className="w-5 h-5" />
-              </motion.button>
-
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => navigate("/login")}
-                className="bg-white text-gray-800 px-8 py-3 rounded-2xl font-semibold text-lg border-2 border-gray-200 hover:border-gray-300 transition-all"
-              >
-                Sign In
               </motion.button>
             </motion.div>
 
@@ -204,10 +247,7 @@ const LandingPage = () => {
                 src={kidsImage}
                 alt="Kids avatars"
                 className="w-full max-w-3xl mx-auto rounded-full"
-                style={{
-                  display: 'block',
-                  boxShadow: '0 0 15px rgba(59, 130, 246, 0.6)', // Blue glow effect
-                }}
+  
               />
 
               {/* <motion.img
@@ -232,7 +272,7 @@ const LandingPage = () => {
       </div>
 
       {/* Features Section */}
-      <div id="features" className="py-10 bg-white/50">
+      <div id="features" ref={featuresRef} className="py-10 bg-white/50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -243,9 +283,10 @@ const LandingPage = () => {
             <h2 className="text-4xl font-bold text-gray-900 mb-2">
               Everything You Need in One Platform
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              From academic management to mental wellness, Wise Student provides comprehensive
-              solutions for modern educational institutions.
+        <p className="text-lg text-gray-600 max-w-7xl mx-auto py-4">
+              WiseStudent sets a new standard in education: blending holistic growth with futuristic learning experiences, nurturing confidence, 
+values, wellness, and innovation in every Student. 
+Because the leaders of tomorrow deserve more than lessons — they deserve a complete foundation for life. 
             </p>
           </motion.div>
 
@@ -256,19 +297,23 @@ const LandingPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                className="bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-all"
+                transition={{ delay: index * 0.06, type: "spring", stiffness: 260, damping: 18 }}
+                whileHover={{ scale: 1.03, y: -2 }}
+                className="group rounded-2xl relative overflow-hidden"
               >
-                <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center text-white mb-4">
-                  {feature.icon}
+                {/* Soft gradient background appears on hover (no border) */}
+                <div className={`absolute inset-0 bg-gradient-to-r ${feature.color} opacity-0 group-hover:opacity-25 transition-opacity duration-300 rounded-2xl`} />
+                <div className="relative bg-white rounded-2xl p-6 shadow-md group-hover:shadow-xl transition-all">
+                  <div className={`w-16 h-16 bg-gradient-to-r ${feature.color} rounded-2xl flex items-center justify-center text-white mb-4 shadow-md group-hover:shadow-lg`}>
+                    {feature.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">
+                    {feature.title}
+                  </h3>
+                  <p className="text-gray-600">
+                    {feature.description}
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-gray-600">
-                  {feature.description}
-                </p>
               </motion.div>
             ))}
           </div>
@@ -327,29 +372,76 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* CTA Section */}
       <div className="py-16 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
+            className="text-left"
           >
-            <h2 className="text-5xl font-bold text-white mb-6">
-              Ready to Transform Education?
+            <h2 className="text-4xl font-bold text-white mb-10 text-center">
+              Student Services & Resource Partners
             </h2>
-            <p className="text-2xl text-blue-100 mb-8">
-              Join thousands of institutions already using Wise Student to create better learning experiences.
-            </p>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => navigate("/company-signup")}
-              className="bg-white text-blue-600 px-10 py-4 rounded-2xl font-semibold text-xl flex items-center gap-2 mx-auto shadow-lg hover:shadow-xl transition-all"
-            >
-              Get Started Today
-              <ArrowRight className="w-6 h-6" />
-            </motion.button>
+
+            {/* Horizontal Auto-sliding Container */}
+            <div className="relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm p-12">
+              <motion.div
+                animate={{
+                  x: [0, -100, -200, -300, -400, -500, -600, -700, -800, 0]
+                }}
+                transition={{
+                  duration: 20,
+                  repeat: Infinity,
+                  ease: "linear"
+                }}
+                className="flex gap-8 whitespace-nowrap"
+                style={{ width: 'max-content' }}
+              >
+                {/* First set of items */}
+                {services.map((service, index) => (
+                  <div key={`first-${index}`} className="flex items-start gap-3 min-w-80 flex-shrink-0">
+                    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <CheckCircle className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div className="whitespace-normal">
+                      <h3 className="text-xl font-semibold text-white mb-1">{service.title}</h3>
+                      <p className="text-blue-100 text-sm">{service.description}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Duplicate set for seamless loop */}
+                {services.map((service, index) => (
+                  <div key={`second-${index}`} className="flex items-start gap-3 min-w-80 flex-shrink-0">
+                    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <CheckCircle className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div className="whitespace-normal">
+                      <h3 className="text-xl font-semibold text-white mb-1">{service.title}</h3>
+                      <p className="text-blue-100 text-sm">{service.description}</p>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Third set for extra smooth transition */}
+                {services.map((service, index) => (
+                  <div key={`third-${index}`} className="flex items-start gap-3 min-w-80 flex-shrink-0">
+                    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <CheckCircle className="w-4 h-4 text-blue-600" />
+                    </div>
+                    <div className="whitespace-normal">
+                      <h3 className="text-xl font-semibold text-white mb-1">{service.title}</h3>
+                      <p className="text-blue-100 text-sm">{service.description}</p>
+                    </div>
+                  </div>
+                ))}
+              </motion.div>
+
+              {/* Gradient overlays for smooth fade effect */}
+              <div className="absolute top-0 left-0 bottom-0 w-12 bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
+              <div className="absolute top-0 right-0 bottom-0 w-12 bg-gradient-to-l from-white/10 to-transparent pointer-events-none"></div>
+            </div>
           </motion.div>
         </div>
       </div>

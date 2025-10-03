@@ -9,7 +9,6 @@ import Chatbot from "./components/Chatbot";
 // Auth Pages
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
-import GoogleLogin from "./pages/Auth/GoogleLogin";
 import VerifyOTP from "./pages/Auth/VerifyOTP";
 import ForgotPassword from "./pages/Auth/ForgetPassword";
 import ResetPassword from "./pages/Auth/ResetPassword";
@@ -253,7 +252,7 @@ const App = () => {
           {/* If authenticated, redirect away from login to role dashboard */}
           <Route path="/login" element={user ? <RootRedirect /> : <Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/google-login" element={<GoogleLogin />} />
+          {/* Google login route removed */}
           <Route path="/verify-otp" element={<VerifyOTP />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/reset-password" element={<ResetPassword />} />

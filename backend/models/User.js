@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 
 const userSchema = new mongoose.Schema(
   {
+    fullName: {
+      type: String,
+      trim: true,
+    },
     name: {
       type: String,
       required: true,
@@ -17,8 +21,13 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
     },
+    // Legacy field (string). Kept for backward compatibility.
     dob: {
       type: String,
+    },
+    // New normalized date field for date of birth
+    dateOfBirth: {
+      type: Date,
     },
     institution: {
       type: String,
@@ -158,7 +167,9 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "approved", "rejected"],
       default: function () {
-        return ["educator", "parent", "seller", "csr"].includes(this.role) ? "pending" : "approved";
+        // Auto-approve parent accounts; others may require admin approval
+        if (this.role === "parent") return "approved";
+        return ["educator", "seller", "csr"].includes(this.role) ? "pending" : "approved";
       },
     },
     otp: {

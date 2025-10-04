@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
     const fetchUser = async () => {
         try {
             const token = localStorage.getItem("finmen_token");
-            
+
             // Check if token exists and has valid format
             if (!token || !token.includes('.') || token.split('.').length !== 3) {
                 console.warn("⚠️ Invalid or missing token");
@@ -35,12 +35,12 @@ export const AuthProvider = ({ children }) => {
             return enhancedUser;
         } catch (err) {
             console.error("❌ Failed to fetch user:", err?.response?.data || err.message);
-            
+
             // If it's an auth error, clear the token
             if (err.response?.status === 401) {
                 localStorage.removeItem("finmen_token");
             }
-            
+
             setUser(null);
             return null;
         } finally {
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }) => {
             const userData = res.data?.user;
 
             if (!token || !userData) throw new Error("Invalid login response");
-            
+
             // Validate token format before storing
             if (!token.includes('.') || token.split('.').length !== 3) {
                 throw new Error("Invalid token format received from server");
@@ -134,7 +134,7 @@ export const AuthProvider = ({ children }) => {
         } finally {
             // Clear all auth-related storage
             localStorage.removeItem("finmen_token");
-            
+
             // Clear any other auth-related items
             try {
                 // Clear any session cookies if present
@@ -146,9 +146,9 @@ export const AuthProvider = ({ children }) => {
             } catch (e) {
                 console.error("Error clearing cookies:", e);
             }
-            
+
             setUser(null);
-            setTimeout(() => navigate("/login", { replace: true }), 50);
+            setTimeout(() => navigate("/", { replace: true }), 50);
         }
     };
 

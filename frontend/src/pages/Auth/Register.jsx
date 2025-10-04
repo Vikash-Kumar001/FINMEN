@@ -91,21 +91,24 @@ const Register = () => {
                 fullName: fullName.trim(),
                 dateOfBirth: dob
             });
-            
+
             // Now log in the user
             const res = await api.post(`/api/auth/login`, {
                 email,
                 password
             });
-            
+
             localStorage.setItem('finmen_token', res.data.token);
             const user = await fetchUser();
             if (user?.role === "admin") {
-                navigate("/admin");
+                navigate("/admin/dashboard");
             } else if (user?.role === "educator") {
-                navigate("/educator");
+                navigate("/educator/dashboard");
+            } else if (user?.role === "student") {
+                navigate("/student/dashboard");
             } else {
-                navigate("/dashboard");
+                // For any other roles, use the proper routing logic
+                navigate("/student/dashboard");
             }
         } catch (err) {
             setError(err.response?.data?.message || 'Something went wrong.');
@@ -194,7 +197,7 @@ const Register = () => {
                         ease: "linear"
                     }}
                 />
-                
+
                 {/* Floating particles */}
                 {[...Array(25)].map((_, i) => (
                     <motion.div
@@ -219,8 +222,17 @@ const Register = () => {
 
             {/* Main Content */}
             <div className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+                {/* Back to Homepage Button */}
+                <button
+                    onClick={() => navigate("/")}
+                    className="absolute top-6 left-6 bg-white/10 backdrop-blur-xl border border-white/20 text-white px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 text-sm flex items-center gap-2"
+                >
+                    <ArrowRight className="w-4 h-4 rotate-180" />
+                    Back to Homepage
+                </button>
+
                 <motion.div
-                    className="w-full max-w-md"
+                    className="w-full max-w-2xl"
                     variants={containerVariants}
                     initial="hidden"
                     animate="visible"
@@ -244,7 +256,7 @@ const Register = () => {
                             >
                                 <UserPlus className="w-8 h-8 text-white" />
                             </motion.div>
-                            
+
                             <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
                                 Create Account
                             </h1>
@@ -274,41 +286,44 @@ const Register = () => {
                             className="space-y-6"
                             variants={itemVariants}
                         >
-                            {/* Full Name Field */}
-                            <motion.div
-                                className="relative"
-                                whileFocus={{ scale: 1.02 }}
-                            >
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <User className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Full Name"
-                                    value={fullName}
-                                    onChange={(e) => setFullName(e.target.value)}
-                                    required
-                                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
-                                />
-                            </motion.div>
+                            {/* Full Name and Date of Birth Fields - Side by side */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Full Name Field */}
+                                <motion.div
+                                    className="relative"
+                                    whileFocus={{ scale: 1.02 }}
+                                >
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <User className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="Full Name"
+                                        value={fullName}
+                                        onChange={(e) => setFullName(e.target.value)}
+                                        required
+                                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                                    />
+                                </motion.div>
 
-                            {/* Date of Birth Field */}
-                            <motion.div
-                                className="relative"
-                                whileFocus={{ scale: 1.02 }}
-                            >
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <Calendar className="h-5 w-5 text-gray-400" />
-                                </div>
-                                <input
-                                    type="date"
-                                    placeholder="Date of Birth"
-                                    value={dob}
-                                    onChange={(e) => setDob(e.target.value)}
-                                    required
-                                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
-                                />
-                            </motion.div>
+                                {/* Date of Birth Field */}
+                                <motion.div
+                                    className="relative"
+                                    whileFocus={{ scale: 1.02 }}
+                                >
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <Calendar className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        type="date"
+                                        placeholder="Date of Birth"
+                                        value={dob}
+                                        onChange={(e) => setDob(e.target.value)}
+                                        required
+                                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                                    />
+                                </motion.div>
+                            </div>
 
                             {/* Email Field */}
                             <motion.div
@@ -317,41 +332,69 @@ const Register = () => {
                             >
                                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                                     <Mail className="h-5 w-5 text-gray-400" />
-                </div>
-                    <input
+                                </div>
+                                <input
                                     type="email"
                                     placeholder="Email address"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
-                        required
+                                    required
                                     className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
                                 />
                             </motion.div>
 
-                            {/* Password Field */}
-                            <motion.div
-                                className="relative"
-                                whileFocus={{ scale: 1.02 }}
-                            >
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <Lock className="h-5 w-5 text-gray-400" />
-                </div>
-                    <input
-                                    type={showPassword ? 'text' : 'password'}
-                                    placeholder="Password"
-                                    value={password}
-                                    onChange={handlePasswordChange}
-                        required
-                                    className="w-full pl-12 pr-12 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
-                                />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
+                            {/* Password and Confirm Password Fields - Side by side */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {/* Password Field */}
+                                <motion.div
+                                    className="relative"
+                                    whileFocus={{ scale: 1.02 }}
                                 >
-                                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                                </button>
-                            </motion.div>
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <Lock className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        placeholder="Password"
+                                        value={password}
+                                        onChange={handlePasswordChange}
+                                        required
+                                        className="w-full pl-12 pr-12 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </motion.div>
+
+                                {/* Confirm Password Field */}
+                                <motion.div
+                                    className="relative"
+                                    whileFocus={{ scale: 1.02 }}
+                                >
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <Shield className="h-5 w-5 text-gray-400" />
+                                    </div>
+                                    <input
+                                        type={showConfirmPassword ? 'text' : 'password'}
+                                        placeholder="Confirm password"
+                                        value={confirmPassword}
+                                        onChange={(e) => setConfirmPassword(e.target.value)}
+                                        required
+                                        className="w-full pl-12 pr-12 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
+                                    >
+                                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </motion.div>
+                            </div>
 
                             {/* Password Strength Indicator */}
                             <AnimatePresence>
@@ -368,43 +411,18 @@ const Register = () => {
                                             <span className={`text-sm font-medium bg-gradient-to-r ${getPasswordStrengthColor()} bg-clip-text text-transparent`}>
                                                 {getPasswordStrengthText()}
                                             </span>
-                        </div>
+                                        </div>
                                         <div className="w-full bg-white/10 rounded-full h-2">
                                             <motion.div
                                                 className={`h-2 rounded-full bg-gradient-to-r ${getPasswordStrengthColor()}`}
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${(passwordStrength / 5) * 100}%` }}
                                                 transition={{ duration: 0.3 }}
-                            />
-                        </div>
+                                            />
+                                        </div>
                                     </motion.div>
                                 )}
                             </AnimatePresence>
-
-                            {/* Confirm Password Field */}
-                            <motion.div
-                                className="relative"
-                                whileFocus={{ scale: 1.02 }}
-                            >
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <Shield className="h-5 w-5 text-gray-400" />
-                        </div>
-                    <input
-                                    type={showConfirmPassword ? 'text' : 'password'}
-                                    placeholder="Confirm password"
-                                    value={confirmPassword}
-                                    onChange={(e) => setConfirmPassword(e.target.value)}
-                        required
-                                    className="w-full pl-12 pr-12 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
-                    />
-                        <button
-                            type="button"
-                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                    className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
-                        >
-                                    {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
-                        </button>
-                            </motion.div>
 
                             {/* Password Match Indicator */}
                             <AnimatePresence>
@@ -462,7 +480,7 @@ const Register = () => {
                             variants={itemVariants}
                         >
                             <p className="text-gray-300 text-sm">
-                                Already have an account?{' '}
+                                Already have a Student account?{' '}
                                 <motion.button
                                     onClick={() => navigate('/login')}
                                     className="text-cyan-400 hover:text-cyan-300 font-semibold transition-colors relative group"
@@ -488,7 +506,7 @@ const Register = () => {
                         </p>
                     </motion.div>
                 </motion.div>
-                </div>
+            </div>
         </div>
     );
 };

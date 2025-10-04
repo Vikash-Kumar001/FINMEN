@@ -10,7 +10,7 @@ export default function AccountTypeSelection() {
       key: "parent",
       title: "Parent",
       description:
-        "Monitor your child's progress, support wellness, and stay engaged with their learning journey.",
+        "Track your child’s progress, support their well-being, and stay involved in their learning.",
       color: "from-blue-500 to-cyan-500",
       features: [
         "Child Progress Monitoring",
@@ -38,7 +38,7 @@ export default function AccountTypeSelection() {
     },
     {
       key: "teacher",
-      title: "Teacher",
+      title: "Teacher/Mentors",
       description:
         "Access teaching tools, manage classes, and track student progress effectively.",
       color: "from-purple-500 to-pink-500",
@@ -54,23 +54,17 @@ export default function AccountTypeSelection() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
-              <span className="text-white font-bold">FM</span>
-            </div>
-            <h1 className="ml-3 text-2xl font-semibold text-gray-800">Wise Student</h1>
-          </div>
-          <button
-            className="text-gray-600 hover:text-gray-800"
-            onClick={() => navigate('/')}
-          >
-            Back to Home
-          </button>
-        </div>
-        <section className="text-center mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative">
+      {/* Back to Homepage Button */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-6 left-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
+      >
+        ← Back to Homepage
+      </button>
+
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+        <section className="text-center mb-10">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Choose Your Account Type</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Select whether you're registering as a Parent, Seller, or Teacher to get started with the option that fits you best.
@@ -86,7 +80,7 @@ export default function AccountTypeSelection() {
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: 0.05 }}
               whileHover={{ scale: 1.02 }}
-              className="bg-white rounded-2xl p-6 shadow-md hover:shadow-lg transition-all text-center"
+              className="bg-white rounded-2xl p-8 shadow-md hover:shadow-lg transition-all text-center"
             >
               <div className={`w-20 h-20 bg-gradient-to-r ${color} rounded-2xl flex items-center justify-center text-white mx-auto mb-4`}>
                 <Icon className="w-10 h-10" />

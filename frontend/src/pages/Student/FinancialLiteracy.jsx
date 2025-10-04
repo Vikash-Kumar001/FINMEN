@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { ArrowLeft, BookOpen, Award, CheckCircle } from 'lucide-react';
+import { ArrowLeft, BookOpen, Award, CheckCircle, Gamepad2, Star } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 const FinancialLiteracy = () => {
@@ -79,6 +79,94 @@ const FinancialLiteracy = () => {
               <li>Retirement accounts</li>
             </ul>
           </div>
+        </div>
+      )
+    },
+    {
+      title: 'Kids Finance Games',
+      description: 'Play fun games to learn about saving money (Ages 5-14)',
+      icon: <Gamepad2 className="w-6 h-6" />,
+      completed: false,
+      content: (
+        <div className="space-y-6">
+          <h3 className="text-xl font-bold">Save Before You Spend - Levels 1-10</h3>
+          <p>Learn financial literacy through fun, interactive games designed for kids!</p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+            <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl p-5 text-white">
+              <h4 className="font-bold text-lg mb-2">Game Levels</h4>
+              <p>10 engaging levels teaching saving habits</p>
+              <div className="flex mt-3">
+                {[1, 2, 3, 4, 5].map((level) => (
+                  <Star key={level} className="w-5 h-5 fill-yellow-300 text-yellow-300" />
+                ))}
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-r from-cyan-500 to-blue-500 rounded-xl p-5 text-white">
+              <h4 className="font-bold text-lg mb-2">Rewards</h4>
+              <p>Earn coins and badges as you learn</p>
+              <div className="flex items-center mt-3">
+                <span className="text-2xl">💰</span>
+                <span className="ml-2">+ Coins</span>
+                <span className="text-2xl ml-4">🏆</span>
+                <span className="ml-2">+ Badges</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="bg-blue-50 p-5 rounded-lg border border-blue-200 mt-6">
+            <h4 className="font-bold text-blue-800 mb-3">Games Included:</h4>
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
+              <li className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <span>Level 1: Piggy Bank Story</span>
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <span>Level 2: Quiz on Saving</span>
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <span>Level 3: Reflex Savings</span>
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <span>Level 4: Puzzle: Save or Spend</span>
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <span>Level 5: Birthday Money Story</span>
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <span>Level 6: Poster: Saving Habit</span>
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <span>Level 7: Journal of Saving</span>
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <span>Level 8: Shop Story</span>
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <span>Level 9: Reflex Money Choice</span>
+              </li>
+              <li className="flex items-center">
+                <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
+                <span>Level 10: Badge: Saver Kid</span>
+              </li>
+            </ul>
+          </div>
+          
+          <button
+            onClick={() => navigate('/student/finance/kids/level1')}
+            className="w-full mt-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:scale-105"
+          >
+            Start Level 1: Piggy Bank Story
+          </button>
         </div>
       )
     }

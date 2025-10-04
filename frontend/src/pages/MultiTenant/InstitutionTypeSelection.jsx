@@ -54,28 +54,20 @@ const InstitutionTypeSelection = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative overflow-hidden">
+      {/* Back to Homepage Button */}
+      <button
+        onClick={() => navigate('/')}
+        className="absolute top-6 left-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
+      >
+        ← Back to Homepage
+      </button>
+
       {/* Background Elements */}
       <div className="absolute top-20 left-10 w-64 h-64 bg-gradient-to-r from-blue-200 to-purple-200 rounded-full opacity-20 blur-3xl animate-pulse" />
       <div className="absolute bottom-20 right-10 w-80 h-80 bg-gradient-to-r from-pink-200 to-rose-200 rounded-full opacity-15 blur-3xl animate-pulse delay-1000" />
 
-      <div className="max-w-4xl mx-auto px-4 py-8 relative z-10">
-        {/* Header */}
-        <div className="flex justify-between items-center mb-4">
-          <div className="flex items-center">
-            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
-              <span className="text-white font-bold">FM</span>
-            </div>
-            <h1 className="ml-3 text-2xl font-semibold text-gray-800">Wise Student</h1>
-          </div>
-          <button
-            className="text-gray-600 hover:text-gray-800"
-            onClick={() => navigate("/")}
-          >
-            Back to Home
-          </button>
-        </div>
-
+      <div className="max-w-4xl mx-auto px-4 py-8 relative z-10 w-full">
         <h2 className="text-4xl font-bold text-gray-900 text-center mb-2">Choose Your Institution Type</h2>
         <p className="text-center text-gray-600 mb-6">
           Select whether you're registering a School or College to get started with the appropriate management system.
@@ -89,9 +81,8 @@ const InstitutionTypeSelection = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               whileHover={{ scale: 1.02, boxShadow: "0 10px 20px rgba(0, 0, 0, 0.1)" }}
-              className={`bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all text-center cursor-pointer border-2 ${
-                selectedType === type.id ? type.border : "border-transparent"
-              }`}
+              className={`bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all text-center cursor-pointer border-2 ${selectedType === type.id ? type.border : "border-transparent"
+                }`}
               onClick={() => setSelectedType(type.id)}
             >
               <div className={`w-full h-8 bg-gradient-to-r ${type.gradient} rounded-t-xl mb-2`} />
@@ -115,11 +106,10 @@ const InstitutionTypeSelection = () => {
 
         <div className="text-center">
           <button
-            className={`py-2 px-6 rounded-lg font-semibold transition-all ${
-              selectedType
+            className={`py-2 px-6 rounded-lg font-semibold transition-all ${selectedType
                 ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:from-pink-500 hover:to-purple-500"
                 : "bg-gray-200 text-gray-800 cursor-not-allowed"
-            }`}
+              }`}
             onClick={handleContinue}
             disabled={!selectedType}
           >

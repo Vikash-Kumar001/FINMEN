@@ -31,6 +31,7 @@ import {
     BarChart3,
     Clock,
     Coins,
+    Lock,
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useWallet } from "../../context/WalletContext";
@@ -69,6 +70,69 @@ export default function StudentDashboard() {
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [loading, setLoading] = useState(true);
     const { socket } = useSocket();
+    
+    // Calculate user's age from date of birth
+    const calculateUserAge = (dob) => {
+        if (!dob) return null;
+        
+        // Handle both string and Date object formats
+        const dobDate = typeof dob === 'string' ? new Date(dob) : new Date(dob);
+        if (isNaN(dobDate.getTime())) return null;
+        
+        const today = new Date();
+        let age = today.getFullYear() - dobDate.getFullYear();
+        const monthDiff = today.getMonth() - dobDate.getMonth();
+        
+        // Adjust if birthday hasn't occurred this year yet
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) {
+            age--;
+        }
+        
+        return age;
+    };
+    
+    // Check if user can access a specific game based on age and completion
+    const canAccessGame = (gameType, userAge) => {
+        if (userAge === null) return false;
+        
+        switch (gameType) {
+            case 'kids':
+                // Kids games: accessible to all users
+                return true;
+            case 'teens':
+                // Teens games: accessible to all users
+                return true;
+            case 'adults':
+                // Adult games: accessible to users 18 and above
+                return userAge >= 18;
+            default:
+                return true;
+        }
+    };
+    
+    // Check if kids games are completed (in a real app, this would check actual completion)
+    const areKidsGamesCompleted = () => {
+        // For demo purposes, we'll simulate this with a simple check
+        // In a real implementation, this would check the user's game progress
+        return false; // Change to true to simulate completion
+    };
+    
+    // Check if teen games are completed (in a real app, this would check actual completion)
+    const areTeenGamesCompleted = () => {
+        // For demo purposes, we'll simulate this with a simple check
+        // In a real implementation, this would check the user's game progress
+        return false; // Change to true to simulate completion
+    };
+    
+    // Get game access status for the current user
+    const getGameAccessStatus = () => {
+        const userAge = calculateUserAge(user?.dateOfBirth || user?.dob);
+        if (userAge === null) return {};
+        
+        return {
+            userAge,
+        };
+    };
     
     // Track dashboard page view
     useEffect(() => {
@@ -329,24 +393,30 @@ export default function StudentDashboard() {
     }, [socket]);
 
     const categories = [
-        "all",
-        "wellness",
-        "entertainment",
-        "creativity",
-        "finance",
-        "education",
-        "rewards",
-        "shopping",
-        "competition",
-        "social",
-        "personal",
-        "challenges",
+        { key: "all", label: "All" },
+        { key: "finance", label: "Financial Literacy" },
+        { key: "wellness", label: "Brain Health" },
+        { key: "personal", label: "UVLS (Life Skills & Values)" },
+        { key: "education", label: "Digital Citizenship & Online Safety" },
+        { key: "creativity", label: "Moral Values" },
+        { key: "entertainment", label: "AI for All" },
+        { key: "social", label: "Health - Male" },
+        { key: "competition", label: "Health - Female" },
+        { key: "rewards", label: "Entrepreneurship & Higher Education" },
+        { key: "shopping", label: "Civic Responsibility & Global Citizenship" },
+        { key: "challenges", label: "Challenges" },
     ];
 
     const filteredCards =
         selectedCategory === "all"
-            ? featureCards
-            : featureCards.filter((card) => card.category === selectedCategory);
+            ? featureCards.filter((card) => 
+                !(card.title === "Kids Games" || 
+                  card.title === "Teen Games" || 
+                  card.title === "Adult Games")
+              )
+            : selectedCategory === "challenges"
+                ? featureCards.filter((card) => card.category === selectedCategory)
+                : featureCards.filter((card) => card.category === selectedCategory);
     
     console.log("Selected Category:", selectedCategory);
     console.log("Filtered Cards:", filteredCards);
@@ -748,16 +818,16 @@ export default function StudentDashboard() {
                     <div className="flex flex-wrap gap-2 justify-center">
                         {categories.map((category) => (
                             <motion.button
-                                key={category}
-                                onClick={() => setSelectedCategory(category)}
+                                key={category.key}
+                                onClick={() => setSelectedCategory(category.key)}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className={`px-4 py-2 rounded-full font-semibold transition-all ${selectedCategory === category
+                                className={`px-4 py-2 rounded-full font-semibold transition-all ${selectedCategory === category.key
                                         ? "bg-gradient-to-r from-indigo-500 to-purple-500 text-white shadow-lg"
                                         : "bg-white/80 text-gray-700 hover:bg-white shadow-md"
                                     }`}
                             >
-                                {category.charAt(0).toUpperCase() + category.slice(1)}
+                                {category.label}
                             </motion.button>
                         ))}
                     </div>
@@ -770,75 +840,183 @@ export default function StudentDashboard() {
                     animate="visible"
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8"
                 >
-                    {filteredCards.map((card, i) => (
-                        <motion.div
-                            key={i}
-                            variants={itemVariants}
-                            whileHover={{
-                                scale: 1.05,
-                                y: -8,
-                                transition: { duration: 0.2 },
-                            }}
-                            whileTap={{ scale: 0.95 }}
-                            className="group cursor-pointer relative"
-                            onClick={() => {
-                                // Log feature card click with detailed metadata
-                                logActivity({
-                                    activityType: "ui_interaction",
-                                    description: `Selected feature: ${card.title}`,
-                                    metadata: {
-                                        featureTitle: card.title,
-                                        featureCategory: card.category,
-                                        featurePath: card.path,
-                                        xpReward: card.xpReward,
-                                        section: "feature_cards",
-                                        timestamp: new Date().toISOString()
-                                    },
-                                    pageUrl: window.location.pathname
-                                });
-                                
-                                // Show toast for feature selection
-                                toast.success(`Loading ${card.title}...`, {
-                                    duration: 2000,
-                                    position: "bottom-center",
-                                    icon: "🚀"
-                                });
-                                handleNavigate(card.path, card.title);
-                            }}
-                        >
-                            <div className="bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40 hover:shadow-2xl transition-all duration-300 relative overflow-hidden h-full">
-                                <div
-                                    className={`absolute inset-0 bg-gradient-to-r from-${card.color.replace('bg-', '')} to-${card.color.replace('bg-', '')}/70 opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
-                                />
-
-                                <div className="relative z-10 flex flex-col items-center text-center h-full">
-                                    <motion.div
-                                        className={`w-16 h-16 rounded-2xl ${card.color} flex items-center justify-center text-white mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300`}
-                                        whileHover={{ rotate: 360 }}
-                                        transition={{ duration: 0.6 }}
-                                    >
-                                        <span className="text-2xl">{card.icon}</span>
-                                    </motion.div>
-
-                                    <h3 className="text-lg font-bold text-gray-800 mb-2">
-                                        {card.title}
-                                    </h3>
-
-                                    <p className="text-sm text-gray-600 mb-4 flex-1">
-                                        {card.description}
-                                    </p>
-
-                                    <div className="flex items-center justify-between w-full">
-                                        <div className="flex items-center gap-1 text-xs font-semibold text-indigo-600">
-                                            <Zap className="w-4 h-4" />
-                                            <span>+{card.xpReward} XP</span>
+                    {filteredCards.map((card, i) => {
+                        // Create a unique key for each card
+                        const cardKey = card.id ? `${card.id}-${i}` : `${card.title}-${card.category}-${i}`;
+                        
+                        // Check if this is a game card
+                        const isGameCard = ['Kids Games', 'Teen Games', 'Adult Games'].includes(card.title);
+                        const gameAccess = getGameAccessStatus();
+                        const userAge = gameAccess.userAge;
+                        
+                        // Determine if the game is playable based on age and completion
+                        let isDisabled = false;
+                        let disabledMessage = "";
+                        let lockReason = "";
+                        
+                        if (isGameCard && userAge !== null) {
+                            if (userAge < 13) {
+                                // 0-13.9 years old category
+                                if (card.title === 'Kids Games') {
+                                    // Kids games: always accessible
+                                    isDisabled = false;
+                                } else if (card.title === 'Teen Games') {
+                                    // Teen games: accessible only after completing kids games
+                                    if (!areKidsGamesCompleted()) {
+                                        isDisabled = true;
+                                        disabledMessage = "Complete all 200 finance related games from Kids section first.";
+                                        lockReason = "Completion Required";
+                                    }
+                                } else if (card.title === 'Adult Games') {
+                                    // Adult games: locked until 18
+                                    isDisabled = true;
+                                    disabledMessage = `Available at age 18. You are ${userAge} years old.`;
+                                    lockReason = "Age Restricted";
+                                }
+                            } else if (userAge >= 13 && userAge <= 17) {
+                                // 14-17.9 years old category
+                                if (card.title === 'Kids Games') {
+                                    // Kids games: accessible
+                                    isDisabled = false;
+                                } else if (card.title === 'Teen Games') {
+                                    // Teen games: accessible
+                                    isDisabled = false;
+                                } else if (card.title === 'Adult Games') {
+                                    // Adult games: accessible only after completing teen games
+                                    if (!areTeenGamesCompleted()) {
+                                        isDisabled = true;
+                                        disabledMessage = "Complete all games from Teen section first.";
+                                        lockReason = "Completion Required";
+                                    }
+                                }
+                            } else if (userAge >= 18) {
+                                // 18 and above category
+                                if (card.title === 'Kids Games') {
+                                    // Kids games: locked for lifetime
+                                    isDisabled = true;
+                                    disabledMessage = "Kids Games are only available for users under 18 years old.";
+                                    lockReason = "Age Restricted";
+                                } else if (card.title === 'Teen Games') {
+                                    // Teen games: accessible
+                                    isDisabled = false;
+                                } else if (card.title === 'Adult Games') {
+                                    // Adult games: accessible
+                                    isDisabled = false;
+                                }
+                            }
+                        }
+                        
+                        return (
+                            <motion.div
+                                key={cardKey}
+                                variants={itemVariants}
+                                whileHover={isDisabled ? {} : {
+                                    scale: 1.05,
+                                    y: -8,
+                                    transition: { duration: 0.2 },
+                                }}
+                                whileTap={isDisabled ? {} : { scale: 0.95 }}
+                                className={`group relative ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                                onClick={() => {
+                                    if (isDisabled) {
+                                        toast.error(disabledMessage, {
+                                            duration: 4000,
+                                            position: "bottom-center",
+                                            icon: "🔒"
+                                        });
+                                        return;
+                                    }
+                                    
+                                    // Log feature card click with detailed metadata
+                                    logActivity({
+                                        activityType: "ui_interaction",
+                                        description: `Selected feature: ${card.title}`,
+                                        metadata: {
+                                            featureTitle: card.title,
+                                            featureCategory: card.category,
+                                            featurePath: card.path,
+                                            xpReward: card.xpReward,
+                                            section: "feature_cards",
+                                            timestamp: new Date().toISOString()
+                                        },
+                                        pageUrl: window.location.pathname
+                                    });
+                                    
+                                    // Show toast for feature selection
+                                    toast.success(`Loading ${card.title}...`, {
+                                        duration: 2000,
+                                        position: "bottom-center",
+                                        icon: "🚀"
+                                    });
+                                    handleNavigate(card.path, card.title);
+                                }}
+                            >
+                                <div className={`bg-white/90 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/40 transition-all duration-300 relative overflow-hidden h-full ${
+                                    isDisabled 
+                                        ? 'bg-gradient-to-br from-gray-100 to-gray-200 border-gray-300' 
+                                        : 'hover:shadow-2xl'
+                                }`}>
+                                    {isDisabled && (
+                                        <div className="absolute inset-0 bg-gradient-to-br from-red-500/20 to-purple-600/20 rounded-3xl flex items-center justify-center z-10">
+                                            <div className="bg-black/20 backdrop-blur-sm rounded-full p-4 flex flex-col items-center">
+                                                <Lock className="w-8 h-8 text-white" />
+                                                {lockReason && (
+                                                    <span className="text-white text-xs mt-1 font-medium">{lockReason}</span>
+                                                )}
+                                            </div>
                                         </div>
-                                        <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                                    )}
+                                    <div
+                                        className={`absolute inset-0 bg-gradient-to-r from-${card.color.replace('bg-', '')} to-${card.color.replace('bg-', '')}/70 opacity-0 group-hover:opacity-10 transition-opacity duration-300`}
+                                    />
+
+                                    <div className="relative z-10 flex flex-col items-center text-center h-full">
+                                        <motion.div
+                                            className={`w-16 h-16 rounded-2xl ${card.color} flex items-center justify-center text-white mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300 ${
+                                                isDisabled ? 'grayscale opacity-70' : ''
+                                            }`}
+                                            whileHover={isDisabled ? {} : { rotate: 360 }}
+                                            transition={{ duration: 0.6 }}
+                                        >
+                                            <span className="text-2xl">{card.icon}</span>
+                                        </motion.div>
+
+                                        <h3 className={`text-lg font-bold mb-2 ${
+                                            isDisabled ? 'text-gray-500' : 'text-gray-800'
+                                        }`}>
+                                            {card.title}
+                                        </h3>
+
+                                        <p className={`text-sm mb-4 flex-1 ${
+                                            isDisabled ? 'text-gray-500' : 'text-gray-600'
+                                        }`}>
+                                            {card.description}
+                                        </p>
+
+                                        <div className="flex items-center justify-between w-full">
+                                            <div className={`flex items-center gap-1 text-xs font-semibold ${
+                                                isDisabled ? 'text-gray-500' : 'text-indigo-600'
+                                            }`}>
+                                                <Zap className="w-4 h-4" />
+                                                <span>+{card.xpReward} XP</span>
+                                            </div>
+                                            {isDisabled ? (
+                                                <Lock className="w-4 h-4 text-gray-500" />
+                                            ) : (
+                                                <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-indigo-500 transition-colors" />
+                                            )}
+                                        </div>
+                                        
+                                        {isDisabled && userAge !== null && (
+                                            <div className="mt-3 text-xs text-gray-600 text-center bg-white/50 rounded-lg p-2">
+                                                <span className="font-medium">{disabledMessage}</span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                            </div>
-                        </motion.div>
-                    ))}
+                            </motion.div>
+                        );
+                    })}
                 </motion.div>
 
                 {/* Recent Activities and Challenges Section */}

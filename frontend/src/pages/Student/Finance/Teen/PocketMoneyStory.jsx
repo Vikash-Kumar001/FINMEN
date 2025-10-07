@@ -1,112 +1,114 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GameShell from "../GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
 
-const Level1 = () => {
+const PocketMoneyStory = () => {
   const navigate = useNavigate();
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You received ₹10 as a gift from your grandmother. What would you like to do?",
+      text: "You receive ₹500 as monthly pocket money. What should you do with it?",
       options: [
         { 
           id: "save", 
-          text: "Save ₹5", 
+          text: "Save 20% (₹100)", 
           emoji: "💰", 
-          description: "Put ₹5 in your piggy bank for later",
+          description: "Put aside ₹100 for future needs and spend the rest wisely",
           isCorrect: true
         },
         { 
           id: "spend", 
-          text: "Spend All", 
+          text: "Spend all", 
           emoji: "🛍️", 
-          description: "Buy toys and treats right now",
+          description: "Use the entire ₹500 for entertainment and treats",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "You have ₹20 saved up. Your friend invites you to the movies which costs ₹15. What do you do?",
+      text: "You want to buy a ₹2000 gadget but only have ₹500 saved. What's the smart approach?",
       options: [
         { 
           id: "save", 
-          text: "Save for Later", 
-          emoji: "🏦", 
-          description: "Keep saving for something bigger",
+          text: "Save monthly", 
+          emoji: "📅", 
+          description: "Save ₹500 each month for 4 months to buy it",
           isCorrect: true
         },
         { 
           id: "spend", 
-          text: "Go to Movies", 
-          emoji: "🎬", 
-          description: "Spend ₹15 on the movie",
+          text: "Buy on credit", 
+          emoji: "💳", 
+          description: "Use a credit card to buy it now and pay later",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "You found ₹5 on the street. What's the best thing to do with it?",
+      text: "Your friends spend all their pocket money on expensive items. What should you do?",
       options: [
         { 
           id: "save", 
-          text: "Save It", 
-          emoji: "🫙", 
-          description: "Add it to your savings",
+          text: "Stick to your plan", 
+          emoji: "📝", 
+          description: "Continue with your saving plan regardless of peer pressure",
           isCorrect: true
         },
         { 
           id: "spend", 
-          text: "Buy Candy", 
-          emoji: "🍬", 
-          description: "Buy sweets from the shop",
+          text: "Spend like them", 
+          emoji: "👥", 
+          description: "Spend all your money to fit in with your friends",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Your birthday is coming up and you want a new bicycle that costs ₹500. You currently have ₹200. What should you do?",
+      text: "You saved ₹1000 but see a limited-time offer for a ₹1500 item. What's wise?",
       options: [
         { 
           id: "save", 
-          text: "Save More", 
-          emoji: "📈", 
-          description: "Keep saving ₹50 each month",
+          text: "Wait and save more", 
+          emoji: "⏳", 
+          description: "Wait until you have enough money to buy it without credit",
           isCorrect: true
         },
         { 
           id: "spend", 
-          text: "Buy Now", 
+          text: "Buy with partial payment", 
           emoji: "🛒", 
-          description: "Ask parents to buy it now",
+          description: "Pay ₹1000 now and ₹500 later with interest",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "You have ₹30 saved and see a toy you really want for ₹25. What's the smart choice?",
+      text: "You have ₹800 saved and want to buy a ₹1000 phone. What should you do?",
       options: [
         { 
           id: "save", 
-          text: "Save for Bigger", 
+          text: "Save ₹200 more", 
           emoji: "🎯", 
-          description: "Save for something more expensive",
+          description: "Save the remaining ₹200 before making the purchase",
           isCorrect: true
         },
         { 
           id: "spend", 
-          text: "Buy the Toy", 
-          emoji: "🧸", 
-          description: "Buy the toy you want now",
+          text: "Buy now with credit", 
+          emoji: "💸", 
+          description: "Buy the phone now and pay the remaining ₹200 with interest",
           isCorrect: false
         }
       ]
@@ -122,14 +124,18 @@ const Level1 = () => {
     
     setChoices(newChoices);
     
-    // If the choice is correct, add coins
-    if (questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect) {
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
       setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
     // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0); // Delay if correct to show animation
     } else {
       // Calculate final score
       const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
@@ -144,27 +150,30 @@ const Level1 = () => {
     setChoices([]);
     setCoins(0);
     setFinalScore(0);
+    resetFeedback();
   };
 
   const handleNext = () => {
-    navigate("/student/finance/kids/level2");
+    navigate("/student/finance/teen/quiz-on-savings-rate");
   };
 
   const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
-      title="Piggy Bank Story"
+      title="Pocket Money Story"
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct
       showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="finance-kids-level1"
+      gameId="finance-teen-pocket-money-story"
       gameType="finance"
-      totalLevels={10}
+      totalLevels={20}
       currentLevel={1}
       showConfetti={showResult && finalScore >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
         {!showResult ? (
@@ -208,7 +217,7 @@ const Level1 = () => {
                   <span>+{coins} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  You correctly chose to save money in most situations. That's a smart habit!
+                  You understand the importance of saving a portion of your income for future needs!
                 </p>
               </div>
             ) : (
@@ -237,4 +246,4 @@ const Level1 = () => {
   );
 };
 
-export default Level1;
+export default PocketMoneyStory;

@@ -162,7 +162,7 @@ const FinancialLiteracy = () => {
           </div>
           
           <button
-            onClick={() => navigate('/student/finance/kids/level1')}
+            onClick={() => navigate('/student/finance/kids/piggy-bank-story')}
             className="w-full mt-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:scale-105"
           >
             Start Level 1: Piggy Bank Story

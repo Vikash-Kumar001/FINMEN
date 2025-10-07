@@ -67,13 +67,13 @@ All games use the `GameShell` component which provides:
 ## Routes
 
 - `/student/finance/kids` - Main landing page
-- `/student/finance/kids/level1` - Level 1: Piggy Bank Story
-- `/student/finance/kids/level2` - Level 2: Quiz on Saving
-- `/student/finance/kids/level3` - Level 3: Reflex Savings
-- `/student/finance/kids/level4` - Level 4: Puzzle: Save or Spend
-- `/student/finance/kids/level5` - Level 5: Birthday Money Story
-- `/student/finance/kids/level6` - Level 6: Poster: Saving Habit
-- `/student/finance/kids/level7` - Level 7: Journal of Saving
-- `/student/finance/kids/level8` - Level 8: Shop Story
-- `/student/finance/kids/level9` - Level 9: Reflex Money Choice
-- `/student/finance/kids/level10` - Level 10: Badge: Saver Kid
+- `/student/finance/kids/piggy-bank-story` - Level 1: Piggy Bank Story
+- `/student/finance/kids/quiz-on-saving` - Level 2: Quiz on Saving
+- `/student/finance/kids/reflex-savings` - Level 3: Reflex Savings
+- `/student/finance/kids/puzzle-save-or-spend` - Level 4: Puzzle: Save or Spend
+- `/student/finance/kids/birthday-money-story` - Level 5: Birthday Money Story
+- `/student/finance/kids/poster-saving-habit` - Level 6: Poster: Saving Habit
+- `/student/finance/kids/journal-of-saving` - Level 7: Journal of Saving
+- `/student/finance/kids/shop-story` - Level 8: Shop Story
+- `/student/finance/kids/reflex-money-choice` - Level 9: Reflex Money Choice
+- `/student/finance/kids/badge-saver-kid` - Level 10: Badge: Saver Kid

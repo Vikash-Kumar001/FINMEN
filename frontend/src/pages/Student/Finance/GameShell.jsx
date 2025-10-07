@@ -37,7 +37,8 @@ export const ScoreFlash = ({ points }) => (
       +{points}
     </div>
 
-    {/* Global keyframes for score flash */}
+    {/* Global keyframes for score flash */
+    }
     <style>
       {`
         @keyframes score-flash {
@@ -50,6 +51,44 @@ export const ScoreFlash = ({ points }) => (
     </style>
   </div>
 );
+
+/* --------------------- Confetti --------------------- */
+export const Confetti = ({ duration = 3000 }) => {
+  const [isVisible, setIsVisible] = useState(true);
+  
+  useEffect(() => {
+    if (duration > 0) {
+      const timer = setTimeout(() => {
+        setIsVisible(false);
+      }, duration);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [duration]);
+
+  if (!isVisible) return null;
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
+      {Array.from({ length: 100 }).map((_, i) => (
+        <div
+          key={i}
+          style={{
+            position: "absolute",
+            backgroundColor: `hsl(${Math.random() * 360},100%,70%)`,
+            width: `${Math.random() * 10 + 5}px`,
+            height: `${Math.random() * 10 + 5}px`,
+            top: `${Math.random() * 100}%`,
+            left: `${Math.random() * 100}%`,
+            opacity: Math.random(),
+            animation: `confetti-fall ${Math.random() * 2 + 3}s linear infinite`,
+            transform: `rotate(${Math.random() * 360}deg)`,
+          }}
+        />
+      ))}
+    </div>
+  );
+};
 
 /* --------------------- Level Complete Component with Instant Coins --------------------- */
 export const LevelCompleteHandler = ({ 
@@ -168,28 +207,6 @@ export const FeedbackBubble = ({ message, type }) => (
   </div>
 );
 
-/* --------------------- Confetti --------------------- */
-export const Confetti = () => (
-  <div className="absolute inset-0 pointer-events-none z-50 overflow-hidden">
-    {Array.from({ length: 100 }).map((_, i) => (
-      <div
-        key={i}
-        style={{
-          position: "absolute",
-          backgroundColor: `hsl(${Math.random() * 360},100%,70%)`,
-          width: `${Math.random() * 10 + 5}px`,
-          height: `${Math.random() * 10 + 5}px`,
-          top: `${Math.random() * 100}%`,
-          left: `${Math.random() * 100}%`,
-          opacity: Math.random(),
-          animation: `confetti-fall ${Math.random() * 2 + 3}s linear infinite`,
-          transform: `rotate(${Math.random() * 360}deg)`,
-        }}
-      />
-    ))}
-  </div>
-);
-
 /* --------------------- Game Over Modal with Heal Coins --------------------- */
 export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 5, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -297,12 +314,16 @@ const GameShell = ({
   totalLevels = 5, // New prop for total levels
   currentLevel = 1, // New prop for current level
   showConfetti = false, // New prop to control confetti display
+  // New props for flash messages
+  flashPoints = null,
+  showAnswerConfetti = false,
+  backPath = "/games/financial-literacy/kids", // New prop for back navigation path
 }) => {
   const navigate = useNavigate();
 
   const handleGameOverClose = () => {
-    // Changed redirect URL to financial literacy games page
-    navigate("/games/financial-literacy/kids");
+    // Use the backPath prop for navigation
+    navigate(backPath);
   };
 
   return (
@@ -317,13 +338,19 @@ const GameShell = ({
       {/* Floating Particles */}
       <FloatingParticles />
       
-      {/* Confetti effect when showConfetti is true */}
+      {/* Score Flash */}
+      {flashPoints !== null && <ScoreFlash points={flashPoints} />}
+      
+      {/* Confetti effect for correct answers */}
+      {showAnswerConfetti && <Confetti duration={1000} />}
+      
+      {/* End of game confetti */}
       {showConfetti && <Confetti />}
-
+      
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 z-10">
         <button
-          onClick={() => navigate("/games/financial-literacy/kids")}
+          onClick={() => navigate(backPath)}
           className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full border border-white/20 backdrop-blur-md transition-all cursor-pointer"
         >
           ← Back
@@ -375,7 +402,8 @@ const GameShell = ({
             }}
           >
             <span>{nextLabel.split(" ")[0]}</span>
-            {nextLabel.split(" ")[1] && <span>{nextLabel.split(" ")[1]}</span>}
+            {nextLabel.split(" ")[1] && <span>{nextLabel.split(" ")[1]}</span>
+            }
           </button>
         </div>
       )}

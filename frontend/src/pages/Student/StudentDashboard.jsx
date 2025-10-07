@@ -114,14 +114,14 @@ export default function StudentDashboard() {
     const areKidsGamesCompleted = () => {
         // For demo purposes, we'll simulate this with a simple check
         // In a real implementation, this would check the user's game progress
-        return false; // Change to true to simulate completion
+        return false; // Will be updated to check actual completion of 20 games
     };
     
     // Check if teen games are completed (in a real app, this would check actual completion)
     const areTeenGamesCompleted = () => {
         // For demo purposes, we'll simulate this with a simple check
         // In a real implementation, this would check the user's game progress
-        return false; // Change to true to simulate completion
+        return false; // Will be updated to check actual completion of 20 games
     };
     
     // Get game access status for the current user
@@ -864,7 +864,7 @@ export default function StudentDashboard() {
                                     // Teen games: accessible only after completing kids games
                                     if (!areKidsGamesCompleted()) {
                                         isDisabled = true;
-                                        disabledMessage = "Complete all 200 finance related games from Kids section first.";
+                                        disabledMessage = "Complete all 20 finance related games from Kids section first.";
                                         lockReason = "Completion Required";
                                     }
                                 } else if (card.title === 'Adult Games') {

@@ -47,16 +47,92 @@ import ExpenseTracker from "./pages/Student/ExpenseTracker";
 import GameCategoryPage from "./pages/Games/GameCategoryPage";
 
 // Kids Finance Game Levels
-import Level1 from "./pages/Student/Finance/Kids/Level1";
-import Level2 from "./pages/Student/Finance/Kids/Level2";
-import Level3 from "./pages/Student/Finance/Kids/Level3";
-import Level4 from "./pages/Student/Finance/Kids/Level4";
-import Level5 from "./pages/Student/Finance/Kids/Level5";
-import Level6 from "./pages/Student/Finance/Kids/Level6";
-import Level7 from "./pages/Student/Finance/Kids/Level7";
-import Level8 from "./pages/Student/Finance/Kids/Level8";
-import Level9 from "./pages/Student/Finance/Kids/Level9";
-import Level10 from "./pages/Student/Finance/Kids/Level10";
+import PiggyBankStory from "./pages/Student/Finance/Kids/PiggyBankStory";
+import QuizOnSaving from "./pages/Student/Finance/Kids/QuizOnSaving";
+import ReflexSavings from "./pages/Student/Finance/Kids/ReflexSavings";
+import PuzzleSaveOrSpend from "./pages/Student/Finance/Kids/PuzzleSaveOrSpend";
+import BirthdayMoneyStory from "./pages/Student/Finance/Kids/BirthdayMoneyStory";
+import PosterSavingHabit from "./pages/Student/Finance/Kids/PosterSavingHabit";
+import JournalOfSaving from "./pages/Student/Finance/Kids/JournalOfSaving";
+import ShopStory from "./pages/Student/Finance/Kids/ShopStory";
+import ReflexMoneyChoice from "./pages/Student/Finance/Kids/ReflexMoneyChoice";
+import BadgeSaverKid from "./pages/Student/Finance/Kids/BadgeSaverKid";
+import IceCreamStory from "./pages/Student/Finance/Kids/IceCreamStory";
+import QuizOnSpending from "./pages/Student/Finance/Kids/QuizOnSpending";
+import ReflexSpending from "./pages/Student/Finance/Kids/ReflexSpending";
+import PuzzleSmartVsWaste from "./pages/Student/Finance/Kids/PuzzleSmartVsWaste";
+import ShopStory2 from "./pages/Student/Finance/Kids/ShopStory2";
+import PosterSmartShopping from "./pages/Student/Finance/Kids/PosterSmartShopping";
+import JournalOfSmartBuy from "./pages/Student/Finance/Kids/JournalOfSmartBuy";
+import CandyOfferStory from "./pages/Student/Finance/Kids/CandyOfferStory";
+import ReflexNeedsFirst from "./pages/Student/Finance/Kids/ReflexNeedsFirst";
+import BadgeSmartSpenderKid from "./pages/Student/Finance/Kids/BadgeSmartSpenderKid";
+
+// Teen Finance Game Levels
+import PocketMoneyStory from "./pages/Student/Finance/Teen/PocketMoneyStory";
+import QuizOnSavingsRate from "./pages/Student/Finance/Teen/QuizOnSavingsRate";
+import ReflexSmartSaver from "./pages/Student/Finance/Teen/ReflexSmartSaver";
+import PuzzleOfSavingGoals from "./pages/Student/Finance/Teen/PuzzleOfSavingGoals";
+import SalaryStory from "./pages/Student/Finance/Teen/SalaryStory";
+import DebateSaveVsSpend from "./pages/Student/Finance/Teen/DebateSaveVsSpend";
+import JournalOfSavingGoal from "./pages/Student/Finance/Teen/JournalOfSavingGoal";
+import SimulationMonthlyMoney from "./pages/Student/Finance/Teen/SimulationMonthlyMoney";
+import ReflexWiseUse from "./pages/Student/Finance/Teen/ReflexWiseUse";
+import BadgeSmartSaver from "./pages/Student/Finance/Teen/BadgeSmartSaver";
+import AllowanceStory from "./pages/Student/Finance/Teen/AllowanceStory";
+import SpendingQuiz from "./pages/Student/Finance/Teen/SpendingQuiz";
+import ReflexWiseChoices from "./pages/Student/Finance/Teen/ReflexWiseChoices";
+import PuzzleSmartSpending from "./pages/Student/Finance/Teen/PuzzleSmartSpending";
+import PartyStory from "./pages/Student/Finance/Teen/PartyStory";
+import DebateNeedsVsWants from "./pages/Student/Finance/Teen/DebateNeedsVsWants";
+import JournalOfSpending from "./pages/Student/Finance/Teen/JournalOfSpending";
+import SimulationShoppingMall from "./pages/Student/Finance/Teen/SimulationShoppingMall";
+import ReflexControl from "./pages/Student/Finance/Teen/ReflexControl";
+import BadgeSmartSpenderTeen from "./pages/Student/Finance/Teen/BadgeSmartSpenderTeen";
+
+// Brain Health Game Levels for Kids
+import WaterStory from "./pages/Student/Brain/Kids/WaterStory";
+import QuizOnBrainFood from "./pages/Student/Brain/Kids/QuizOnBrainFood";
+import ReflexBrainBoost from "./pages/Student/Brain/Kids/ReflexBrainBoost";
+import PuzzleOfBrainCare from "./pages/Student/Brain/Kids/PuzzleOfBrainCare";
+import BreakfastStory from "./pages/Student/Brain/Kids/BreakfastStory";
+import PosterBrainHealth from "./pages/Student/Brain/Kids/PosterBrainHealth";
+import JournalOfHabits from "./pages/Student/Brain/Kids/JournalOfHabits";
+import SportsStory from "./pages/Student/Brain/Kids/SportsStory";
+import ReflexDailyHabit from "./pages/Student/Brain/Kids/ReflexDailyHabit";
+import BadgeBrainCareKid from "./pages/Student/Brain/Kids/BadgeBrainCareKid";
+import ClassroomStory from "./pages/Student/Brain/Kids/ClassroomStory";
+import QuizOnFocus from "./pages/Student/Brain/Kids/QuizOnFocus";
+import ReflexAttention from "./pages/Student/Brain/Kids/ReflexAttention";
+import PuzzleOfFocus from "./pages/Student/Brain/Kids/PuzzleOfFocus";
+import HomeworkStory from "./pages/Student/Brain/Kids/HomeworkStory";
+import PosterFocusMatters from "./pages/Student/Brain/Kids/PosterFocusMatters";
+import JournalOfFocus from "./pages/Student/Brain/Kids/JournalOfFocus";
+import GameStory from "./pages/Student/Brain/Kids/GameStory";
+import ReflexQuickAttention from "./pages/Student/Brain/Kids/ReflexQuickAttention";
+import BadgeFocusKid from "./pages/Student/Brain/Kids/BadgeFocusKid";
+
+// Brain Health Game Levels for Teens
+import ExerciseStory from "./pages/Student/Brain/Teen/ExerciseStory";
+import QuizOnHabits from "./pages/Student/Brain/Teen/QuizOnHabits";
+import ReflexMindCheck from "./pages/Student/Brain/Teen/ReflexMindCheck";
+import PuzzleBrainFuel from "./pages/Student/Brain/Teen/PuzzleBrainFuel";
+import JunkFoodStory from "./pages/Student/Brain/Teen/JunkFoodStory";
+import DebateBrainVsBody from "./pages/Student/Brain/Teen/DebateBrainVsBody";
+import JournalOfBrainFitness from "./pages/Student/Brain/Teen/JournalOfBrainFitness";
+import SimulationDailyRoutine from "./pages/Student/Brain/Teen/SimulationDailyRoutine";
+import ReflexBrainBoostTeen from "./pages/Student/Brain/Teen/ReflexBrainBoost";
+import BadgeBrainHealthHero from "./pages/Student/Brain/Teen/BadgeBrainHealthHero";
+import ExamStory from "./pages/Student/Brain/Teen/ExamStory";
+import QuizOnAttention from "./pages/Student/Brain/Teen/QuizOnAttention";
+import ReflexConcentration from "./pages/Student/Brain/Teen/ReflexConcentration";
+import PuzzleOfDistractions from "./pages/Student/Brain/Teen/PuzzleOfDistractions";
+import SocialMediaStory from "./pages/Student/Brain/Teen/SocialMediaStory";
+import DebateMultitaskVsFocus from "./pages/Student/Brain/Teen/DebateMultitaskVsFocus";
+import JournalOfAttention from "./pages/Student/Brain/Teen/JournalOfAttention";
+import SimulationStudyPlan from "./pages/Student/Brain/Teen/SimulationStudyPlan";
+import ReflexDistractionAlert from "./pages/Student/Brain/Teen/ReflexDistractionAlert";
+import BadgeFocusHero from "./pages/Student/Brain/Teen/BadgeFocusHero";
 
 // Educator Pages
 import AssessmentTools from "./pages/Educator/AssessmentHub";
@@ -276,16 +352,92 @@ const App = () => {
           <Route path="/games/:category/:ageGroup" element={<ProtectedRoute roles={['student']}><GameCategoryPage /></ProtectedRoute>} />
 
           {/* Finance Games for Kids */}
-          <Route path="/student/finance/kids/level1" element={<ProtectedRoute roles={['student']}><Level1 /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/level2" element={<ProtectedRoute roles={['student']}><Level2 /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/level3" element={<ProtectedRoute roles={['student']}><Level3 /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/level4" element={<ProtectedRoute roles={['student']}><Level4 /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/level5" element={<ProtectedRoute roles={['student']}><Level5 /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/level6" element={<ProtectedRoute roles={['student']}><Level6 /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/level7" element={<ProtectedRoute roles={['student']}><Level7 /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/level8" element={<ProtectedRoute roles={['student']}><Level8 /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/level9" element={<ProtectedRoute roles={['student']}><Level9 /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/level10" element={<ProtectedRoute roles={['student']}><Level10 /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/piggy-bank-story" element={<ProtectedRoute roles={['student']}><PiggyBankStory /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/quiz-on-saving" element={<ProtectedRoute roles={['student']}><QuizOnSaving /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/reflex-savings" element={<ProtectedRoute roles={['student']}><ReflexSavings /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/puzzle-save-or-spend" element={<ProtectedRoute roles={['student']}><PuzzleSaveOrSpend /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/birthday-money-story" element={<ProtectedRoute roles={['student']}><BirthdayMoneyStory /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/poster-saving-habit" element={<ProtectedRoute roles={['student']}><PosterSavingHabit /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/journal-of-saving" element={<ProtectedRoute roles={['student']}><JournalOfSaving /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/shop-story" element={<ProtectedRoute roles={['student']}><ShopStory /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/reflex-money-choice" element={<ProtectedRoute roles={['student']}><ReflexMoneyChoice /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/badge-saver-kid" element={<ProtectedRoute roles={['student']}><BadgeSaverKid /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/ice-cream-story" element={<ProtectedRoute roles={['student']}><IceCreamStory /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/quiz-on-spending" element={<ProtectedRoute roles={['student']}><QuizOnSpending /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/reflex-spending" element={<ProtectedRoute roles={['student']}><ReflexSpending /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/puzzle-smart-vs-waste" element={<ProtectedRoute roles={['student']}><PuzzleSmartVsWaste /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/shop-story-2" element={<ProtectedRoute roles={['student']}><ShopStory2 /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/poster-smart-shopping" element={<ProtectedRoute roles={['student']}><PosterSmartShopping /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/journal-of-smart-buy" element={<ProtectedRoute roles={['student']}><JournalOfSmartBuy /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/candy-offer-story" element={<ProtectedRoute roles={['student']}><CandyOfferStory /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/reflex-needs-first" element={<ProtectedRoute roles={['student']}><ReflexNeedsFirst /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/badge-smart-spender-kid" element={<ProtectedRoute roles={['student']}><BadgeSmartSpenderKid /></ProtectedRoute>} />
+
+          {/* Finance Games for Teens */}
+          <Route path="/student/finance/teen/pocket-money-story" element={<ProtectedRoute roles={['student']}><PocketMoneyStory /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/quiz-on-savings-rate" element={<ProtectedRoute roles={['student']}><QuizOnSavingsRate /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/reflex-smart-saver" element={<ProtectedRoute roles={['student']}><ReflexSmartSaver /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/puzzle-of-saving-goals" element={<ProtectedRoute roles={['student']}><PuzzleOfSavingGoals /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/salary-story" element={<ProtectedRoute roles={['student']}><SalaryStory /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/debate-save-vs-spend" element={<ProtectedRoute roles={['student']}><DebateSaveVsSpend /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/journal-of-saving-goal" element={<ProtectedRoute roles={['student']}><JournalOfSavingGoal /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/simulation-monthly-money" element={<ProtectedRoute roles={['student']}><SimulationMonthlyMoney /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/reflex-wise-use" element={<ProtectedRoute roles={['student']}><ReflexWiseUse /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/badge-smart-saver" element={<ProtectedRoute roles={['student']}><BadgeSmartSaver /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/allowance-story" element={<ProtectedRoute roles={['student']}><AllowanceStory /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/spending-quiz" element={<ProtectedRoute roles={['student']}><SpendingQuiz /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/reflex-wise-choices" element={<ProtectedRoute roles={['student']}><ReflexWiseChoices /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/puzzle-smart-spending" element={<ProtectedRoute roles={['student']}><PuzzleSmartSpending /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/party-story" element={<ProtectedRoute roles={['student']}><PartyStory /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/debate-needs-vs-wants" element={<ProtectedRoute roles={['student']}><DebateNeedsVsWants /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/journal-of-spending" element={<ProtectedRoute roles={['student']}><JournalOfSpending /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/simulation-shopping-mall" element={<ProtectedRoute roles={['student']}><SimulationShoppingMall /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/reflex-control" element={<ProtectedRoute roles={['student']}><ReflexControl /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/badge-smart-spender-teen" element={<ProtectedRoute roles={['student']}><BadgeSmartSpenderTeen /></ProtectedRoute>} />
+
+          {/* Brain Health Games for Kids */}
+          <Route path="/student/brain/kids/water-story" element={<ProtectedRoute roles={['student']}><WaterStory /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/quiz-on-brain-food" element={<ProtectedRoute roles={['student']}><QuizOnBrainFood /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/reflex-brain-boost" element={<ProtectedRoute roles={['student']}><ReflexBrainBoost /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/puzzle-of-brain-care" element={<ProtectedRoute roles={['student']}><PuzzleOfBrainCare /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/breakfast-story" element={<ProtectedRoute roles={['student']}><BreakfastStory /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/poster-brain-health" element={<ProtectedRoute roles={['student']}><PosterBrainHealth /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/journal-of-habits" element={<ProtectedRoute roles={['student']}><JournalOfHabits /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/sports-story" element={<ProtectedRoute roles={['student']}><SportsStory /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/reflex-daily-habit" element={<ProtectedRoute roles={['student']}><ReflexDailyHabit /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/badge-brain-care-kid" element={<ProtectedRoute roles={['student']}><BadgeBrainCareKid /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/classroom-story" element={<ProtectedRoute roles={['student']}><ClassroomStory /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/quiz-on-focus" element={<ProtectedRoute roles={['student']}><QuizOnFocus /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/reflex-attention" element={<ProtectedRoute roles={['student']}><ReflexAttention /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/puzzle-of-focus" element={<ProtectedRoute roles={['student']}><PuzzleOfFocus /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/homework-story" element={<ProtectedRoute roles={['student']}><HomeworkStory /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/poster-focus-matters" element={<ProtectedRoute roles={['student']}><PosterFocusMatters /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/journal-of-focus" element={<ProtectedRoute roles={['student']}><JournalOfFocus /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/game-story" element={<ProtectedRoute roles={['student']}><GameStory /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/reflex-quick-attention" element={<ProtectedRoute roles={['student']}><ReflexQuickAttention /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/badge-focus-kid" element={<ProtectedRoute roles={['student']}><BadgeFocusKid /></ProtectedRoute>} />
+
+          {/* Brain Health Games for Teens */}
+          <Route path="/student/brain/teen/exercise-story" element={<ProtectedRoute roles={['student']}><ExerciseStory /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/quiz-on-habits" element={<ProtectedRoute roles={['student']}><QuizOnHabits /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/reflex-mind-check" element={<ProtectedRoute roles={['student']}><ReflexMindCheck /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/puzzle-brain-fuel" element={<ProtectedRoute roles={['student']}><PuzzleBrainFuel /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/junk-food-story" element={<ProtectedRoute roles={['student']}><JunkFoodStory /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/debate-brain-vs-body" element={<ProtectedRoute roles={['student']}><DebateBrainVsBody /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/journal-of-brain-fitness" element={<ProtectedRoute roles={['student']}><JournalOfBrainFitness /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/simulation-daily-routine" element={<ProtectedRoute roles={['student']}><SimulationDailyRoutine /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/reflex-brain-boost" element={<ProtectedRoute roles={['student']}><ReflexBrainBoostTeen /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/badge-brain-health-hero" element={<ProtectedRoute roles={['student']}><BadgeBrainHealthHero /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/exam-story" element={<ProtectedRoute roles={['student']}><ExamStory /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/quiz-on-attention" element={<ProtectedRoute roles={['student']}><QuizOnAttention /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/reflex-concentration" element={<ProtectedRoute roles={['student']}><ReflexConcentration /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/puzzle-of-distractions" element={<ProtectedRoute roles={['student']}><PuzzleOfDistractions /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/social-media-story" element={<ProtectedRoute roles={['student']}><SocialMediaStory /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/debate-multitask-vs-focus" element={<ProtectedRoute roles={['student']}><DebateMultitaskVsFocus /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/journal-of-attention" element={<ProtectedRoute roles={['student']}><JournalOfAttention /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/simulation-study-plan" element={<ProtectedRoute roles={['student']}><SimulationStudyPlan /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/reflex-distraction-alert" element={<ProtectedRoute roles={['student']}><ReflexDistractionAlert /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/badge-focus-hero" element={<ProtectedRoute roles={['student']}><BadgeFocusHero /></ProtectedRoute>} />
 
           {/* Educator Routes */}
           <Route path="/educator/dashboard" element={<ProtectedRoute roles={['educator']} requireApproved={true}><EducatorDashboard /></ProtectedRoute>} />

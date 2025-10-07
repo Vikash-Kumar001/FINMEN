@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GameShell from "../GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
 
-const Level2 = () => {
+const QuizOnSaving = () => {
   const navigate = useNavigate();
   const [coins, setCoins] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [isCorrect, setIsCorrect] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -28,13 +30,17 @@ const Level2 = () => {
     
     if (correct) {
       setCoins(3);
+      showCorrectAnswerFeedback(3, true);
     }
     
-    setShowResult(true);
+    // Show result immediately for incorrect, delay for correct to show animation
+    setTimeout(() => {
+      setShowResult(true);
+    }, correct ? 1000 : 0);
   };
 
   const handleNext = () => {
-    navigate("/student/finance/kids/level3");
+    navigate("/student/finance/kids/reflex-savings");
   };
 
   return (
@@ -48,6 +54,10 @@ const Level2 = () => {
       nextEnabled={showResult && isCorrect}
       showGameOver={showResult && isCorrect}
       score={coins}
+      gameId="finance-kids-quiz-on-saving"
+      gameType="finance"
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
         {!showResult ? (
@@ -105,6 +115,7 @@ const Level2 = () => {
                     setShowResult(false);
                     setSelectedAnswer(null);
                     setIsCorrect(false);
+                    resetFeedback();
                   }}
                   className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all"
                 >
@@ -119,4 +130,4 @@ const Level2 = () => {
   );
 };
 
-export default Level2;
+export default QuizOnSaving;

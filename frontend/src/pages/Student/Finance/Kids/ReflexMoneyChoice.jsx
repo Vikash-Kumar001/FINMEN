@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import GameShell from "../GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
 
-const Level9 = () => {
+const ReflexMoneyChoice = () => {
   const navigate = useNavigate();
   const [coins, setCoins] = useState(0);
   const [gameState, setGameState] = useState("ready"); // ready, playing, finished
@@ -10,16 +11,17 @@ const Level9 = () => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [currentWord, setCurrentWord] = useState("");
   const timerRef = useRef(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const words = [
-    { word: "DEPOSIT", isCorrect: true },
-    { word: "THROW AWAY", isCorrect: false },
-    { word: "SAVE", isCorrect: true },
-    { word: "WASTE", isCorrect: false },
-    { word: "INVEST", isCorrect: true },
-    { word: "LOSE", isCorrect: false },
-    { word: "BANK", isCorrect: true },
-    { word: "SPEND", isCorrect: false }
+    { word: "DEPOSIT", isCorrect: true, emoji: "📥" },
+    { word: "THROW AWAY", isCorrect: false, emoji: "🗑️" },
+    { word: "SAVE", isCorrect: true, emoji: "💰" },
+    { word: "WASTE", isCorrect: false, emoji: "❌" },
+    { word: "BANK", isCorrect: true, emoji: "🏦" },
+    { word: "SPEND", isCorrect: false, emoji: "💸" },
+    { word: "INVEST", isCorrect: true, emoji: "📈" },
+    { word: "LOSE", isCorrect: false, emoji: "📉" }
   ];
 
   useEffect(() => {
@@ -56,6 +58,7 @@ const Level9 = () => {
     if (isSave === currentWord.isCorrect) {
       setScore(prev => prev + 1);
       setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
     // Show next word after a short delay
@@ -63,7 +66,7 @@ const Level9 = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/finance/kids/level10");
+    navigate("/student/finance/kids/badge-saver-kid");
   };
 
   return (
@@ -77,6 +80,10 @@ const Level9 = () => {
       nextEnabled={gameState === "finished"}
       showGameOver={gameState === "finished"}
       score={Math.min(score, 3)}
+      gameId="finance-kids-reflex-money-choice"
+      gameType="finance"
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
         {gameState === "ready" && (
@@ -111,6 +118,7 @@ const Level9 = () => {
             </div>
 
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-12 border border-white/20 text-center">
+              <div className="text-6xl mb-4">{currentWord.emoji}</div>
               <div className="text-5xl font-bold text-white mb-8">
                 {currentWord.word}
               </div>
@@ -156,4 +164,4 @@ const Level9 = () => {
   );
 };
 
-export default Level9;
+export default ReflexMoneyChoice;

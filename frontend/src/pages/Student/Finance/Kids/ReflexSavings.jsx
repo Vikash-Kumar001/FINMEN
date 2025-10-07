@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import GameShell from "../GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
 
-const Level3 = () => {
+const ReflexSavings = () => {
   const navigate = useNavigate();
   const [coins, setCoins] = useState(0);
   const [gameState, setGameState] = useState("ready"); // ready, playing, finished
@@ -12,6 +13,7 @@ const Level3 = () => {
   const [reactionTime, setReactionTime] = useState(0);
   const startTimeRef = useRef(0);
   const timerRef = useRef(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const words = [
     { word: "SAVE", isCorrect: true },
@@ -63,6 +65,7 @@ const Level3 = () => {
     if (isSave === currentWord.isCorrect) {
       setScore(prev => prev + 1);
       setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
     // Show next word after a short delay
@@ -70,7 +73,7 @@ const Level3 = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/finance/kids/level4");
+    navigate("/student/finance/kids/puzzle-save-or-spend");
   };
 
   return (
@@ -84,6 +87,10 @@ const Level3 = () => {
       nextEnabled={gameState === "finished"}
       showGameOver={gameState === "finished"}
       score={coins}
+      gameId="finance-kids-reflex-savings"
+      gameType="finance"
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
         {gameState === "ready" && (
@@ -163,4 +170,4 @@ const Level3 = () => {
   );
 };
 
-export default Level3;
+export default ReflexSavings;

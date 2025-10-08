@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Apple, Coffee, Fish, Candy, Carrot, Burger, Leaf, Zap } from 'lucide-react';
+import { Apple, Coffee, Fish, Candy, Carrot, Menu, Leaf, Zap } from 'lucide-react';
 
 const ReflexBrainBoost = () => {
   const navigate = useNavigate();
@@ -19,7 +19,7 @@ const ReflexBrainBoost = () => {
     { id: 1, text: 'Fish (Omega-3)', type: 'good', icon: <Fish className="w-6 h-6" />, explanation: 'Supports brain function and development' },
     { id: 2, text: 'Candy', type: 'bad', icon: <Candy className="w-6 h-6" />, explanation: 'Causes energy crashes and poor concentration' },
     { id: 3, text: 'Carrots (Vitamins)', type: 'good', icon: <Carrot className="w-6 h-6" />, explanation: 'Rich in antioxidants for brain health' },
-    { id: 4, text: 'Fast Food Burger', type: 'bad', icon: <Burger className="w-6 h-6" />, explanation: 'High in unhealthy fats that slow brain function' },
+    { id: 4, text: 'Fast Food Burger', type: 'bad', icon: <Menu className="w-6 h-6" />, explanation: 'High in unhealthy fats that slow brain function' },
     { id: 5, text: 'Leafy Greens', type: 'good', icon: <Leaf className="w-6 h-6" />, explanation: 'Contains folate which improves cognitive function' },
     { id: 6, text: 'Energy Drink', type: 'bad', icon: <Zap className="w-6 h-6" />, explanation: 'Leads to crashes and disrupts sleep patterns' },
     { id: 7, text: 'Apples (Fiber)', type: 'good', icon: <Apple className="w-6 h-6" />, explanation: 'Steady energy source for sustained focus' },

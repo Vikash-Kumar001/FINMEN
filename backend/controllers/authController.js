@@ -1,5 +1,7 @@
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
+import Wallet from "../models/Wallet.js";
+import Transaction from "../models/Transaction.js";
 import { generateToken } from "../utils/generateToken.js";
 import { sendEmail } from "../utils/sendMail.js";
 

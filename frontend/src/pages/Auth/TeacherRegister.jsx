@@ -89,20 +89,13 @@ const TeacherRegister = () => {
 
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4 sm:px-6 lg:px-8">
         {/* Back Buttons */}
-        <div className="absolute top-6 left-6 flex gap-2">
+        <div className="absolute top-6 left-6">
           <button
             onClick={() => navigate("/choose-account-type")}
             className="bg-white/10 backdrop-blur-xl border border-white/20 text-white px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 text-sm flex items-center gap-2"
           >
             <ArrowRight className="w-4 h-4 rotate-180" />
             Back to Account Type
-          </button>
-          <button
-            onClick={() => navigate("/")}
-            className="bg-white/10 backdrop-blur-xl border border-white/20 text-white px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 text-sm flex items-center gap-2"
-          >
-            <ArrowRight className="w-4 h-4 rotate-180" />
-            Back to Homepage
           </button>
         </div>
 

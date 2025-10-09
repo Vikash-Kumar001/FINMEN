@@ -2,10 +2,15 @@ import mongoose from "mongoose";
 
 const feeStructureSchema = new mongoose.Schema(
   {
+    // Tenant Information
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+    },
     tenantId: {
       type: String,
       required: true,
-      // index removed, only keep schema.index()
     },
     orgId: {
       type: mongoose.Schema.Types.ObjectId,
@@ -21,13 +26,9 @@ const feeStructureSchema = new mongoose.Schema(
       classWise: [{
         classNumber: {
           type: Number,
-          min: 1,
-          max: 12,
+          required: true,
         },
-        stream: {
-          type: String,
-          enum: ["Science", "Commerce", "Arts"],
-        },
+        stream: String, // For classes 11-12
         fees: {
           admissionFee: {
             type: Number,
@@ -62,59 +63,6 @@ const feeStructureSchema = new mongoose.Schema(
             default: 0,
           },
         },
-      }],
-    },
-    // College-specific fee structure
-    collegeFees: {
-      courseWise: [{
-        courseId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Course",
-        },
-        departmentId: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Department",
-        },
-        semesterWise: [{
-          semester: {
-            type: Number,
-            required: true,
-          },
-          fees: {
-            tuitionFee: {
-              type: Number,
-              default: 0,
-            },
-            examFee: {
-              type: Number,
-              default: 0,
-            },
-            libraryFee: {
-              type: Number,
-              default: 0,
-            },
-            labFee: {
-              type: Number,
-              default: 0,
-            },
-            hostelFee: {
-              type: Number,
-              default: 0,
-            },
-            transportFee: {
-              type: Number,
-              default: 0,
-            },
-            miscellaneousFee: {
-              type: Number,
-              default: 0,
-            },
-            total: {
-              type: Number,
-              default: 0,
-            },
-          },
-        }],
       }],
     },
     // Common fee settings
@@ -179,22 +127,6 @@ feeStructureSchema.pre("save", function(next) {
                    (fees.libraryFee || 0) + 
                    (fees.transportFee || 0) + 
                    (fees.miscellaneousFee || 0);
-    });
-  }
-
-  // Calculate college fees totals
-  if (this.collegeFees && this.collegeFees.courseWise) {
-    this.collegeFees.courseWise.forEach(courseData => {
-      courseData.semesterWise.forEach(semesterData => {
-        const fees = semesterData.fees;
-        fees.total = (fees.tuitionFee || 0) + 
-                     (fees.examFee || 0) + 
-                     (fees.libraryFee || 0) + 
-                     (fees.labFee || 0) + 
-                     (fees.hostelFee || 0) + 
-                     (fees.transportFee || 0) + 
-                     (fees.miscellaneousFee || 0);
-      });
     });
   }
 

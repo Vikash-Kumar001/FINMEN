@@ -6,6 +6,7 @@ import { useAuth } from "./hooks/useAuth";
 // Global UI
 import Navbar from "./components/Navbar";
 import Chatbot from "./components/Chatbot"; 
+import Footer from "./components/Footer";
 // Auth Pages
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
@@ -184,22 +185,12 @@ import SchoolAdminDashboard from "./pages/School/SchoolAdminDashboard";
 import SchoolTeacherDashboard from "./pages/School/SchoolTeacherDashboard";
 import SchoolStudentDashboard from "./pages/School/SchoolStudentDashboard";
 import SchoolParentDashboard from "./pages/School/SchoolParentDashboard";
-import CollegeAdminDashboard from "./pages/College/CollegeAdminDashboard";
-import CollegeFacultyDashboard from "./pages/College/CollegeFacultyDashboard";
-import CollegeStudentDashboard from "./pages/College/CollegeStudentDashboard";
-import CollegeParentDashboard from "./pages/College/CollegeParentDashboard";
-import AlumniNetwork from "./pages/College/AlumniNetwork";
-import PlacementOfficerDashboard from "./pages/College/PlacementOfficerDashboard";
-import FacilityManagement from "./pages/College/FacilityManagement";
-import ReportsDashboard from "./pages/College/ReportsDashboard";
 import LandingPage from "./pages/LandingPage";
 import IndividualAccountSelection from "./pages/IndividualAccountSelection";
-  <Route path="/individual-account" element={<IndividualAccountSelection />} />
 
 // Multi-tenant registration pages
 import InstitutionTypeSelection from "./pages/MultiTenant/InstitutionTypeSelection";
 import SchoolRegistration from "./pages/MultiTenant/SchoolRegistration";
-import CollegeRegistration from "./pages/MultiTenant/CollegeRegistration";
 
 // 404 Page
 import NotFound from "./pages/NotFound";
@@ -207,6 +198,15 @@ import AssessmentHub from "./pages/Educator/AssessmentHub";
 import ErrorBoundary from "./components/ErrorBoundary";
 // Toast notification provider
 import { Toaster } from "react-hot-toast";
+
+// Additional Pages
+import About from "./pages/About";
+import Blog from "./pages/Blog";
+import Careers from "./pages/Careers";
+import Contact from "./pages/Contact";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Cookies from "./pages/Cookies";
 
 const App = () => {
   const { user, loading } = useAuth();
@@ -236,12 +236,6 @@ const App = () => {
     if (user.role === "school_student") return <Navigate to="/school-student/dashboard" replace />;
     if (user.role === "school_parent") return <Navigate to="/school-parent/dashboard" replace />;
     
-    // College roles
-    if (user.role === "college_admin") return <Navigate to="/college-admin/dashboard" replace />;
-    if (user.role === "college_faculty") return <Navigate to="/college-faculty/dashboard" replace />;
-    if (user.role === "college_student") return <Navigate to="/college-student/dashboard" replace />;
-    if (user.role === "college_parent") return <Navigate to="/college-parent/dashboard" replace />;
-    
     // Default fallback
     return <Navigate to="/student/dashboard" replace />;
   };
@@ -260,12 +254,34 @@ const App = () => {
     location.pathname.startsWith("/student/finance/kids/") ||
     location.pathname.startsWith("/games/");
 
+  // Hide navbar on public pages
+  const isPublicPage = [
+    "/about",
+    "/careers",
+    "/blog",
+    "/contact",
+    "/terms",
+    "/privacy",
+    "/cookies"
+  ].includes(location.pathname);
+
+  // Hide footer on auth and registration pages
+  const hideFooter = [
+    "/login",
+    "/school-registration",
+    "/register",
+    "/choose-account-type",
+    "/register-parent",
+    "/register-teacher",
+    "/register-seller"
+  ].includes(location.pathname);
+
   return (
     <div className="min-h-screen bg-gray-100">
   {!isAuthPage &&
     !isFullScreenGame &&
+    !isPublicPage &&
     location.pathname !== "/" &&
-    location.pathname !== "/college-registration" &&
     location.pathname !== "/school-registration" &&
     location.pathname !== "/institution-type" &&
     location.pathname !== "/individual-account" &&
@@ -304,7 +320,6 @@ const App = () => {
           {/* Institution Registration Routes */}
           <Route path="/institution-type" element={<InstitutionTypeSelection />} />
           <Route path="/school-registration" element={<SchoolRegistration />} />
-          <Route path="/college-registration" element={<CollegeRegistration />} />
           
           {/* School Routes */}
           <Route path="/school/admin/dashboard" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminDashboard /></ProtectedRoute>} />
@@ -312,16 +327,6 @@ const App = () => {
           <Route path="/school-student/dashboard" element={<ProtectedRoute roles={['school_student']}><SchoolStudentDashboard /></ProtectedRoute>} />
           <Route path="/school-parent/dashboard" element={<ProtectedRoute roles={['school_parent']}><SchoolParentDashboard /></ProtectedRoute>} />
           
-          {/* College Routes */}
-          <Route path="/college-admin/dashboard" element={<ProtectedRoute roles={['college_admin']}><CollegeAdminDashboard /></ProtectedRoute>} />
-          <Route path="/college-faculty/dashboard" element={<ProtectedRoute roles={['college_faculty']}><CollegeFacultyDashboard /></ProtectedRoute>} />
-          <Route path="/college-student/dashboard" element={<ProtectedRoute roles={['college_student']}><CollegeStudentDashboard /></ProtectedRoute>} />
-          <Route path="/college-parent/dashboard" element={<ProtectedRoute roles={['college_parent']}><CollegeParentDashboard /></ProtectedRoute>} />
-          <Route path="/college/alumni" element={<ProtectedRoute roles={['college_admin', 'college_faculty', 'college_student']}><AlumniNetwork /></ProtectedRoute>} />
-          <Route path="/college/placement" element={<ProtectedRoute roles={['college_admin', 'college_placement_officer']}><PlacementOfficerDashboard /></ProtectedRoute>} />
-          <Route path="/college/facilities" element={<ProtectedRoute roles={['college_admin']}><FacilityManagement /></ProtectedRoute>} />
-          <Route path="/college/reports" element={<ProtectedRoute roles={['college_admin', 'college_faculty']}><ReportsDashboard /></ProtectedRoute>} />
-
           {/* Student Routes */}
           <Route path="/student/dashboard" element={<ProtectedRoute roles={['student']}><StudentDashboard /></ProtectedRoute>} />
           <Route path="/student/mood-tracker" element={<ProtectedRoute roles={['student']}><MoodTracker /></ProtectedRoute>} />
@@ -486,11 +491,21 @@ const App = () => {
           {/* CSR Routes */}
           <Route path="/csr/dashboard" element={<ProtectedRoute roles={['csr']} requireApproved={true}><CSRDashboard /></ProtectedRoute>} />
 
+          {/* Public Pages */}
+          <Route path="/about" element={<About />} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/careers" element={<Careers />} />
+          <Route path="/contact" element={<Contact />} />
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/cookies" element={<Cookies />} />
+      
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </ErrorBoundary>
       <Toaster /> {/* Toast notification container */}
+      {!hideFooter && <Footer />} {/* Footer component */}
     </div>
   );
 };

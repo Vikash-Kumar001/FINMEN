@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { GraduationCap, Users, Store } from "lucide-react";
+import { GraduationCap, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function AccountTypeSelection() {
@@ -12,29 +12,8 @@ export default function AccountTypeSelection() {
       description:
         "Track your child’s progress, support their well-being, and stay involved in their learning.",
       color: "from-blue-500 to-cyan-500",
-      features: [
-        "Child Progress Monitoring",
-        "Wellness & Activity Reports",
-        "Parental Engagement Tools",
-        "Secure Account",
-      ],
       icon: Users,
       cta: () => navigate("/register-parent"),
-    },
-    {
-      key: "seller",
-      title: "Seller",
-      description:
-        "Join our marketplace to offer educational resources and track performance.",
-      color: "from-green-500 to-emerald-500",
-      features: [
-        "Business Profile",
-        "Product & Resource Listings",
-        "Performance Insights",
-        "Secure Account",
-      ],
-      icon: Store,
-      cta: () => navigate("/register-seller"),
     },
     {
       key: "teacher",
@@ -42,12 +21,6 @@ export default function AccountTypeSelection() {
       description:
         "Access teaching tools, manage classes, and track student progress effectively.",
       color: "from-purple-500 to-pink-500",
-      features: [
-        "Classes & Learning Tools",
-        "Student Progress Tracking",
-        "Gamified Challenges",
-        "Secure Account",
-      ],
       icon: GraduationCap,
       cta: () => navigate("/register-teacher"),
     },
@@ -67,11 +40,11 @@ export default function AccountTypeSelection() {
         <section className="text-center mb-10">
           <h1 className="text-4xl font-bold text-gray-900 mb-2">Choose Your Account Type</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Select whether you're registering as a Parent, Seller, or Teacher to get started with the option that fits you best.
+            Select whether you're registering as a Parent or Teacher to get started with the option that fits you best.
           </p>
         </section>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {cards.map(({ key, title, description, color, icon: Icon, cta }) => (
             <motion.div
               key={key}

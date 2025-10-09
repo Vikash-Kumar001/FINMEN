@@ -1,9 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
 import { 
   School, 
-  GraduationCap, 
   User, 
   Mail, 
   Lock, 
@@ -18,10 +16,9 @@ import { toast } from "react-hot-toast";
 
 const CreateOrganization = () => {
   const [step, setStep] = useState(1);
-  const [orgType, setOrgType] = useState("");
   const [formData, setFormData] = useState({
     name: "",
-    type: "",
+    type: "school",
     settings: {
       academicYear: {
         startDate: "",
@@ -79,19 +76,10 @@ const CreateOrganization = () => {
     }
   };
 
-  const handleTypeSelection = (type) => {
-    setOrgType(type);
-    setFormData(prev => ({
-      ...prev,
-      type,
-    }));
-    setStep(2);
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    if (!formData.name || !formData.type || !formData.adminUser.name || !formData.adminUser.email || !formData.adminUser.password) {
+    if (!formData.name || !formData.adminUser.name || !formData.adminUser.email || !formData.adminUser.password) {
       toast.error("Please fill in all required fields");
       return;
     }
@@ -118,7 +106,7 @@ const CreateOrganization = () => {
       localStorage.removeItem("company_token");
       
       // Redirect based on organization type
-      const dashboardPath = formData.type === "school" ? "/school-admin/dashboard" : "/college-admin/dashboard";
+      const dashboardPath = formData.type === "school" ? "/school-admin/dashboard" : "/admin/dashboard";
       navigate(dashboardPath);
 
     } catch (error) {
@@ -133,9 +121,7 @@ const CreateOrganization = () => {
   if (step === 1) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
+        <div
           className="max-w-4xl w-full"
         >
           <div className="text-center mb-12">
@@ -147,12 +133,10 @@ const CreateOrganization = () => {
             </p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-8">
+          <div className="grid md:grid-cols-1 gap-8">
             {/* School Option */}
-            <motion.div
-              whileHover={{ scale: 1.02, y: -5 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleTypeSelection("school")}
+            <div
+              onClick={() => setStep(2)}
               className="bg-white rounded-2xl shadow-xl p-8 cursor-pointer border-2 border-transparent hover:border-blue-500 transition-all"
             >
               <div className="text-center">
@@ -189,52 +173,9 @@ const CreateOrganization = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
-
-            {/* College Option */}
-            <motion.div
-              whileHover={{ scale: 1.02, y: -5 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => handleTypeSelection("college")}
-              className="bg-white rounded-2xl shadow-xl p-8 cursor-pointer border-2 border-transparent hover:border-purple-500 transition-all"
-            >
-              <div className="text-center">
-                <div className="w-20 h-20 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-                  <GraduationCap className="w-10 h-10 text-white" />
-                </div>
-                
-                <h3 className="text-2xl font-bold text-gray-900 mb-4">College</h3>
-                
-                <p className="text-gray-600 mb-6">
-                  Ideal for colleges and universities with departments, courses, semesters, and advanced features.
-                </p>
-                
-                <div className="space-y-2 text-left">
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    Departments & courses
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    Semester-based system
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    Faculty & student management
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    Placement management
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
-                    <CheckCircle className="w-4 h-4 text-green-500" />
-                    Alumni network
-                  </div>
-                </div>
-              </div>
-            </motion.div>
+            </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     );
   }
@@ -242,21 +183,19 @@ const CreateOrganization = () => {
   // Step 2: Organization Details Form
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-4">
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
+      <div
         className="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8"
       >
         <div className="text-center mb-8">
           <div className="w-16 h-16 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center mx-auto mb-4">
-            {orgType === "school" ? <School className="w-8 h-8 text-white" /> : <GraduationCap className="w-8 h-8 text-white" />}
+            <School className="w-8 h-8 text-white" />
           </div>
           
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Create Your {orgType === "school" ? "School" : "College"}
+            Create Your School
           </h1>
           <p className="text-gray-600">
-            Fill in the details to set up your {orgType}
+            Fill in the details to set up your school
           </p>
         </div>
 
@@ -264,7 +203,7 @@ const CreateOrganization = () => {
           {/* Organization Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              {orgType === "school" ? "School" : "College"} Name *
+              School Name *
             </label>
             <div className="relative">
               <Building className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -275,7 +214,7 @@ const CreateOrganization = () => {
                 onChange={handleInputChange}
                 required
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder={`Enter ${orgType} name`}
+                placeholder="Enter school name"
               />
             </div>
           </div>
@@ -452,19 +391,15 @@ const CreateOrganization = () => {
 
           {/* Navigation Buttons */}
           <div className="flex gap-4">
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <button
               type="button"
               onClick={() => setStep(1)}
               className="flex-1 bg-gray-200 text-gray-800 py-3 rounded-lg font-semibold"
             >
               Back
-            </motion.button>
+            </button>
             
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+            <button
               type="submit"
               disabled={isLoading}
               className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-semibold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -473,14 +408,14 @@ const CreateOrganization = () => {
                 <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
                 <>
-                  Create {orgType === "school" ? "School" : "College"}
+                  Create School
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
-            </motion.button>
+            </button>
           </div>
         </form>
-      </motion.div>
+      </div>
     </div>
   );
 };

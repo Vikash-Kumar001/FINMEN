@@ -2,91 +2,38 @@ import mongoose from "mongoose";
 
 const transportRouteSchema = new mongoose.Schema(
   {
+    // Tenant Information
+    organizationId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Organization",
+      required: true,
+    },
     tenantId: {
       type: String,
       required: true,
-      // index removed, only keep schema.index()
     },
-    orgId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Organization",
+    routeNumber: {
+      type: String,
       required: true,
     },
     routeName: {
       type: String,
       required: true,
-      trim: true,
-    },
-    routeNumber: {
-      type: String,
-      required: true,
-      unique: true,
-    },
-    vehicleDetails: {
-      vehicleNumber: {
-        type: String,
-        required: true,
-      },
-      vehicleType: {
-        type: String,
-        enum: ["Bus", "Van", "Mini Bus"],
-        required: true,
-      },
-      capacity: {
-        type: Number,
-        required: true,
-      },
-      currentOccupancy: {
-        type: Number,
-        default: 0,
-      },
-      fuelType: {
-        type: String,
-        enum: ["Petrol", "Diesel", "CNG", "Electric"],
-        default: "Diesel",
-      },
-      registrationExpiry: Date,
-      insuranceExpiry: Date,
-      pollutionExpiry: Date,
-      fitnessExpiry: Date,
-    },
-    driverDetails: {
-      driverName: {
-        type: String,
-        required: true,
-      },
-      driverPhone: {
-        type: String,
-        required: true,
-      },
-      licenseNumber: String,
-      licenseExpiry: Date,
-      experience: Number, // in years
-      emergencyContact: String,
-    },
-    conductorDetails: {
-      conductorName: String,
-      conductorPhone: String,
-      emergencyContact: String,
     },
     routeStops: [{
       stopName: {
         type: String,
         required: true,
       },
-      stopCode: String,
-      coordinates: {
-        latitude: Number,
-        longitude: Number,
-      },
-      address: String,
-      landmark: String,
-      morningTime: String, // Format: "HH:MM"
-      eveningTime: String, // Format: "HH:MM"
-      pickupFee: {
+      stopOrder: {
         type: Number,
-        default: 0,
+        required: true,
       },
+      distanceFromStart: {
+        type: Number, // in KM
+        required: true,
+      },
+      estimatedArrivalTime: String, // in HH:MM format
       students: [{
         studentId: {
           type: mongoose.Schema.Types.ObjectId,
@@ -94,7 +41,7 @@ const transportRouteSchema = new mongoose.Schema(
         },
         studentType: {
           type: String,
-          enum: ['SchoolStudent', 'CollegeStudent'],
+          enum: ['SchoolStudent'],
         },
         userId: {
           type: mongoose.Schema.Types.ObjectId,
@@ -115,6 +62,44 @@ const transportRouteSchema = new mongoose.Schema(
         },
       }],
     }],
+    vehicleDetails: {
+      vehicleNumber: {
+        type: String,
+        required: true,
+        unique: true,
+      },
+      vehicleType: {
+        type: String,
+        enum: ["Bus", "Van", "Car", "Other"],
+        required: true,
+      },
+      make: String,
+      model: String,
+      capacity: {
+        type: Number,
+        required: true,
+      },
+      currentOccupancy: {
+        type: Number,
+        default: 0,
+      },
+      insuranceExpiry: Date,
+      fitnessExpiry: Date,
+      permitExpiry: Date,
+    },
+    driverDetails: {
+      driverName: {
+        type: String,
+        required: true,
+      },
+      driverPhone: {
+        type: String,
+        required: true,
+      },
+      licenseNumber: String,
+      licenseExpiry: Date,
+      alternatePhone: String,
+    },
     schedule: {
       operatingDays: [{
         type: String,

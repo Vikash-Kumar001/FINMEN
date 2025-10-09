@@ -28,7 +28,7 @@ const companySchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['school', 'college'],
+      enum: ['school'],
       default: 'company'
     },
     academicInfo: {

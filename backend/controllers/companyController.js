@@ -4,11 +4,12 @@ import Company from "../models/Company.js";
 import Organization from "../models/Organization.js";
 import User from "../models/User.js";
 import { generateToken } from "../utils/jwt.js";
+import mongoose from "mongoose";
 
 // Company Signup
 export const companySignup = async (req, res) => {
   try {
-    const { name, email, password, contactInfo, type, academicInfo, schoolId, collegeId } = req.body;
+    const { name, email, password, contactInfo, type, academicInfo, schoolId } = req.body;
 
     // Validation
     if (!name || !email || !password) {
@@ -24,19 +25,19 @@ export const companySignup = async (req, res) => {
     });
     if (existingCompany) {
       return res.status(400).json({ 
-        message: `${type === 'school' ? 'School' : type === 'college' ? 'College' : 'Company'} with this email already exists`,
+        message: `${type === 'school' ? 'School' : 'Company'} with this email already exists`,
         error: 'DUPLICATE_EMAIL'
       });
     }
 
     // Check if institution ID already exists
-    if (schoolId || collegeId) {
+    if (schoolId) {
       const existingInstitution = await Company.findOne({ 
-        institutionId: schoolId || collegeId 
+        institutionId: schoolId 
       });
       if (existingInstitution) {
         return res.status(400).json({ 
-          message: `${type === 'school' ? 'School' : 'College'} ID already exists`,
+          message: `School ID already exists`,
           error: 'DUPLICATE_INSTITUTION_ID'
         });
       }
@@ -53,7 +54,7 @@ export const companySignup = async (req, res) => {
       contactInfo: contactInfo || {},
       type: type || 'company',
       academicInfo: academicInfo || {},
-      institutionId: schoolId || collegeId
+      institutionId: schoolId
     });
 
     // Create organization based on type
@@ -78,32 +79,10 @@ export const companySignup = async (req, res) => {
       // Set the correct tenantId and save again
       organization.tenantId = `school_${organization._id.toString()}`;
       await organization.save();
-    } else if (type === 'college') {
-      organization = new Organization({
-        name,
-        type: 'college',
-        companyId: company._id,
-        tenantId: 'temp', // Set temporary tenantId to match schema
-        settings: {
-          departments: academicInfo?.departments || [],
-          courses: academicInfo?.courses || [],
-          university: academicInfo?.university || '',
-          establishedYear: academicInfo?.establishedYear || '',
-          totalStudents: academicInfo?.totalStudents || 0,
-          totalFaculty: academicInfo?.totalFaculty || 0,
-          accreditation: academicInfo?.accreditation || '',
-          collegeType: academicInfo?.type || ''
-        }
-      });
-      // Save to generate the _id first
-      await organization.save();
-      // Set the correct tenantId and save again
-      organization.tenantId = `college_${organization._id.toString()}`;
-      await organization.save();
     }
 
     // Create admin user for the organization
-    const adminRole = type === 'school' ? 'school_admin' : 'college_admin';
+    const adminRole = type === 'school' ? 'school_admin' : 'admin';
     const adminUser = await User.create({
       name: `${name} Admin`,
       email: email.toLowerCase(),
@@ -118,7 +97,7 @@ export const companySignup = async (req, res) => {
     const token = generateToken(adminUser._id);
 
     res.status(201).json({
-      message: `${type === 'school' ? 'School' : 'College'} registered successfully`,
+      message: `${type === 'school' ? 'School' : 'Company'} registered successfully`,
       token,
       user: {
         id: adminUser._id,
@@ -214,7 +193,7 @@ export const registerOrganization = async (req, res) => {
   try {
     const { 
       organizationName,
-      organizationType, // "school" or "college"
+      organizationType, // "school"
       adminName,
       adminEmail,
       adminPassword,
@@ -228,9 +207,9 @@ export const registerOrganization = async (req, res) => {
       });
     }
 
-    if (!['school', 'college'].includes(organizationType)) {
+    if (!['school'].includes(organizationType)) {
       return res.status(400).json({ 
-        message: "Organization type must be either 'school' or 'college'" 
+        message: "Organization type must be 'school'" 
       });
     }
 
@@ -269,7 +248,7 @@ export const registerOrganization = async (req, res) => {
 
     // Create admin user
     const hashedPassword = await bcrypt.hash(adminPassword, 12);
-    const adminRole = organizationType === "school" ? "school_admin" : "college_admin";
+    const adminRole = organizationType === "school" ? "school_admin" : "admin";
 
     const admin = await User.create({
       name: adminName,
@@ -294,8 +273,6 @@ export const registerOrganization = async (req, res) => {
     // Auto-setup based on organization type
     if (organizationType === "school") {
       await setupSchoolDefaults(organization._id, organization.tenantId);
-    } else if (organizationType === "college") {
-      await setupCollegeDefaults(organization._id, organization.tenantId);
     }
 
     // Generate token for admin user
@@ -316,7 +293,7 @@ export const registerOrganization = async (req, res) => {
         role: admin.role,
         token
       },
-      redirectUrl: organizationType === "school" ? "/school/admin" : "/college/admin"
+      redirectUrl: organizationType === "school" ? "/school/admin" : "/admin/dashboard"
     });
   } catch (error) {
     console.error("Organization registration error:", error);
@@ -376,71 +353,6 @@ async function setupSchoolDefaults(orgId, tenantId) {
           { name: "Social Studies" },
           classNumber >= 6 ? { name: "Second Language" } : null
         ].filter(Boolean)
-      });
-    }
-  }
-}
-
-// Helper function to setup default departments and courses for colleges
-async function setupCollegeDefaults(orgId, tenantId) {
-  const Department = mongoose.model('Department');
-  const Course = mongoose.model('Course');
-  
-  // Default departments
-  const departments = [
-    { name: "Engineering", code: "ENG" },
-    { name: "Arts", code: "ARTS" },
-    { name: "Commerce", code: "COMM" }
-  ];
-  
-  for (const dept of departments) {
-    const department = await Department.create({
-      tenantId,
-      orgId,
-      name: dept.name,
-      code: dept.code,
-      description: `${dept.name} Department`,
-      establishedYear: new Date().getFullYear(),
-      totalSeats: 60,
-      facilities: ["Classroom", "Laboratory", "Library"]
-    });
-    
-    // Add placeholder courses for each department
-    if (dept.name === "Engineering") {
-      await Course.create({
-        tenantId,
-        orgId,
-        departmentId: department._id,
-        name: "Computer Science Engineering",
-        code: "CSE",
-        type: "UG",
-        duration: { years: 4, semesters: 8 },
-        totalSeats: 60,
-        subjects: ["Programming", "Data Structures", "Algorithms"]
-      });
-    } else if (dept.name === "Arts") {
-      await Course.create({
-        tenantId,
-        orgId,
-        departmentId: department._id,
-        name: "Bachelor of Arts",
-        code: "BA",
-        type: "UG",
-        duration: { years: 3, semesters: 6 },
-        totalSeats: 60,
-        subjects: ["Literature", "History", "Economics"]
-      });
-    } else if (dept.name === "Commerce") {
-      await Course.create({
-        tenantId,
-        orgId,
-        departmentId: department._id,
-        name: "Bachelor of Commerce",
-        code: "BCOM",
-        type: "UG",
-        duration: { years: 3, semesters: 6 },
-        totalSeats: 60,
-        subjects: ["Accounting", "Finance", "Business Law"]
       });
     }
   }
@@ -522,9 +434,9 @@ export const clearTestData = async (req, res) => {
       return res.status(403).json({ message: "Not allowed in production" });
     }
 
-    await Company.deleteMany({ type: { $in: ['school', 'college'] } });
-    await Organization.deleteMany({ type: { $in: ['school', 'college'] } });
-    await User.deleteMany({ role: { $in: ['school_admin', 'college_admin'] } });
+    await Company.deleteMany({ type: 'school' });
+    await Organization.deleteMany({ type: 'school' });
+    await User.deleteMany({ role: 'school_admin' });
 
     res.json({ message: "Test data cleared successfully" });
   } catch (error) {

@@ -120,7 +120,7 @@ const games = [
   },
   {
     title: 'Budget Hero',
-    description: 'Teenagers manage a month\'s budget as a college student, facing real-life expense scenarios, part-time jobs, and emergencies.',
+    description: 'Teenagers manage a month\'s budget as a student, facing real-life expense scenarios, part-time jobs, and emergencies.',
     type: 'financial',
     category: 'budget-hero',
     ageGroup: 'pro',

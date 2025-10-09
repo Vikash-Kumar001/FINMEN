@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import MainNavbar from "../components/MainNavbar";
+import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import {
   School,
   GraduationCap,
@@ -149,7 +150,7 @@ const AutoSlidingCards = () => {
                   <div className="space-y-3 flex-1">
                     {card.content.map((item, i) => (
                       <div key={i} className="flex items-start">
-                        <span className="text-white/90 text-sm leading-relaxed">
+                        <span className="text-white text-sm leading-relaxed">
                           • {item}
                         </span>
                       </div>
@@ -188,9 +189,9 @@ const LandingPage = () => {
   const studentServicesRef = useRef(null);
   const footerRef = useRef(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [email, setEmail] = useState('');
-  const [hoveredSocial, setHoveredSocial] = useState(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedFeature, setSelectedFeature] = useState(null);
 
   const services = [
     {
@@ -213,82 +214,258 @@ const LandingPage = () => {
     },
   ];
 
-  const quickLinks = [
-    { name: "Home", href: "/" },
-    { name: "Features", href: "#features" },
-    { name: "About Us", href: "/about" },
-    { name: "Contact", href: "#contact" },
-    { name: "Blog", href: "/blog" },
-    { name: "Careers", href: "/careers" },
-  ];
-
-  const socialLinks = [
-    { name: "Facebook", href: "https://facebook.com", icon: Facebook, color: "hover:bg-blue-600" },
-    { name: "Twitter", href: "https://twitter.com", icon: Twitter, color: "hover:bg-sky-500" },
-    { name: "Instagram", href: "https://instagram.com", icon: Instagram, color: "hover:bg-pink-600" },
-    { name: "LinkedIn", href: "https://linkedin.com", icon: Linkedin, color: "hover:bg-blue-700" },
-  ];
-
   const features = [
     {
       icon: <Target className="w-8 h-8" />,
       title: "Financial Literacy",
       description: "Smart with money from day one.",
       color: "from-emerald-500 to-green-500",
+      details: {
+        whatStudentsLearn: [
+          "Saving vs spending",
+          "Budgeting",
+          "UPI & digital banking basics",
+          "Scam awareness",
+          "Goal-based investing"
+        ],
+        whyItMatters: [
+          "Creates financially aware, confident youth who are less vulnerable to fraud",
+          "Better prepared for entrepreneurship and independent living"
+        ],
+        nationalAlignment: [
+          "RBI Financial Literacy Centres",
+          "SEBI Investor Education",
+          "NCFE",
+          "PM Jan Dhan Yojana"
+        ]
+      }
     },
     {
       icon: <Brain className="w-8 h-8" />,
       title: "Mental Health",
       description: "Balanced, resilient, and emotionally strong.",
       color: "from-purple-500 to-pink-500",
+      details: {
+        whatStudentsLearn: [
+          "Stress management",
+          "Resilience",
+          "Emotional regulation",
+          "Peer support"
+        ],
+        whyItMatters: [
+          "Improves focus, attendance, and emotional well-being",
+          "Reduces anxiety and classroom disruption"
+        ],
+        nationalAlignment: [
+          "National Mental Health Programme",
+          "MANAS App",
+          "Ayushman Bharat School Health"
+        ]
+      }
     },
     {
       icon: <Heart className="w-8 h-8" />,
       title: "Life Skills & Values (UVLS)",
       description: "Empathy, respect, and problem-solving.",
       color: "from-orange-500 to-rose-500",
+      details: {
+        whatStudentsLearn: [
+          "Empathy",
+          "Teamwork",
+          "Respect",
+          "Communication skills",
+          "Better decision-making",
+          "Conflict resolution"
+        ],
+        whyItMatters: [
+          "Develops compassionate, socially responsible students",
+          "Creates a harmonious school environment"
+        ],
+        nationalAlignment: [
+          "NCERT Life Skills",
+          "UNICEF Adolescent Development",
+          "Ministry of Youth Affairs Programmes"
+        ]
+      }
     },
     {
       icon: <Users className="w-8 h-8" />,
-      title: "Digital Citizenship",
+      title: "Digital Citizenship & Online Safety",
       description: "Safe, ethical, and confident in the online world.",
       color: "from-cyan-500 to-blue-500",
+      details: {
+        whatStudentsLearn: [
+          "Safe internet use",
+          "Cyberbullying awareness",
+          "Password and OTP protection",
+          "Digital balance"
+        ],
+        whyItMatters: [
+          "Protects students from online threats",
+          "Prepares them to use technology responsibly and productively"
+        ],
+        nationalAlignment: [
+          "MeitY Cyber Surakshit Bharat",
+          "Cyber Safety Drives",
+          "NCERT ICT Curriculum"
+        ]
+      }
     },
     {
       icon: <CheckCircle className="w-8 h-8" />,
       title: "Moral Values",
       description: "Honesty, kindness, and integrity in action.",
       color: "from-amber-500 to-yellow-500",
+      details: {
+        whatStudentsLearn: [
+          "Honesty",
+          "Kindness",
+          "Respect",
+          "Integrity",
+          "Responsibility",
+          "Cultural awareness",
+          "Ethical decision-making"
+        ],
+        whyItMatters: [
+          "Builds strong character, trust, and discipline within the school and community",
+          "Builds empathy, respect, and responsibility that strengthen relationships and social harmony",
+          "Inspires ethical thinking, integrity, and fairness in daily actions and decision-making."
+        ],
+        nationalAlignment: [
+          "NCERT Value Education",
+          "Ministry of Culture Initiatives",
+          "Nehru Yuva Kendra"
+        ]
+      }
     },
     {
       icon: <Star className="w-8 h-8" />,
       title: "AI for All",
       description: "Early exposure to tomorrow's technologies.",
       color: "from-indigo-500 to-purple-500",
-    },
-    {
-      icon: <Users className="w-8 h-8" />,
-      title: "Health – Boys",
-      description: "Hygiene, fitness, and self-awareness.",
-      color: "from-sky-500 to-teal-500",
+      details: {
+        whatStudentsLearn: [
+          "Basics of Artificial Intelligence",
+          "Automation",
+          "Data ethics"
+        ],
+        whyItMatters: [
+          "Prepares students for emerging digital careers",
+          "Aligns with the NEP 2020 vision for a tech-enabled future"
+        ],
+        nationalAlignment: [
+          "NITI Aayog #AIForAll",
+          "CBSE AI Curriculum",
+          "Digital India"
+        ]
+      }
     },
     {
       icon: <Heart className="w-8 h-8" />,
-      title: "Health – Girls",
-      description: "Menstrual health, nutrition, and self-care.",
+      title: "Health & Wellness",
+      description: "Hygiene, fitness, self-awareness, menstrual health, nutrition, and self-care.",
       color: "from-pink-500 to-rose-500",
+      details: {
+        whatStudentsLearn: [
+          "Hygiene and self-care",
+          "Puberty and physical changes",
+          "Fitness and nutrition",
+          "Menstrual health",
+          "Reproductive well-being",
+          "Body positivity"
+        ],
+        whyItMatters: [
+          "Promotes confidence, healthy habits, and positive attitudes towards growing up",
+          "Reduces absenteeism and empowers participation",
+          "Supports healthy adolescence for all students"
+        ],
+        nationalAlignment: [
+          "Ayushman Bharat",
+          "Rashtriya Kishor Swasthya Karyakram (RKSK)",
+          "Fit India",
+          "Menstrual Hygiene Scheme",
+          "Beti Bachao Beti Padhao",
+          "Poshan Abhiyan"
+        ]
+      }
     },
     {
       icon: <Building className="w-8 h-8" />,
-      title: "Entrepreneurship & Careers",
+      title: "Entrepreneurship & Higher Education",
       description: "Clarity, creativity, and innovation.",
       color: "from-red-500 to-orange-500",
+      details: {
+        whatStudentsLearn: [
+          "Leadership",
+          "Creativity",
+          "Innovation",
+          "Financial planning",
+          "Higher education and career choices"
+        ],
+        whyItMatters: [
+          "Inspires future entrepreneurs",
+          "Improves career clarity",
+          "Reduces dropout rates by showing clear pathways"
+        ],
+        nationalAlignment: [
+          "Atal Innovation Mission",
+          "Skill India",
+          "Startup India"
+        ]
+      }
     },
     {
       icon: <School className="w-8 h-8" />,
-      title: "Civic Responsibility",
+      title: "Civic Responsibility & Global Citizenship",
       description: "Rights, duties, and global citizenship.",
       color: "from-blue-500 to-indigo-500",
+      details: {
+        whatStudentsLearn: [
+          "Civic duties",
+          "Volunteering",
+          "Environmental care",
+          "Cultural respect",
+          "UN Sustainable Development Goals"
+        ],
+        whyItMatters: [
+          "Shapes responsible, globally aware citizens who contribute to society and respect diversity",
+          "Builds socially responsible citizens who contribute positively to their communities"
+        
+        ],
+        nationalAlignment: [
+          "NSS",
+          "Swachh Bharat Mission",
+          "Ek Bharat Shreshtha Bharat",
+          "UN SDG 4.7"
+        ]
+      }
+    },
+    {
+      icon: <Target className="w-8 h-8" />,
+      title: "Sustainability",
+      description: "Rights, duties, and global citizenship.",
+      color: "from-green-500 to-emerald-500",
+      details: {
+        whatStudentsLearn: [
+          "Environmental conservation",
+          "Sustainable practices",
+          "Climate change awareness",
+          "Resource management",
+          "Circular economy concepts"
+        ],
+        whyItMatters: [
+          "Addresses global challenges",
+          "Builds environmental consciousness",
+          "Promotes responsible consumption",
+          "Prepares for green economy"
+        ],
+        nationalAlignment: [
+          "National Action Plan on Climate Change",
+          "Swachh Bharat Mission",
+          "Sustainable Development Goals",
+          "Green Skill Development Programme"
+        ]
+      }
     },
   ];
 
@@ -296,11 +473,11 @@ const LandingPage = () => {
     {
       title: "Educational Institutions",
       description:
-        "Schools and colleges looking for comprehensive management solutions",
+        "Schools looking for comprehensive management solutions",
       icon: <Building className="w-12 h-12" />,
       color: "from-blue-500 to-cyan-500",
-      action: () => navigate("/institution-type"),
-      buttonText: "Start Your Institution",
+      action: () => navigate("/school-registration"),
+      buttonText: "Join as School",
     },
     {
       title: "Individual Students",
@@ -317,7 +494,15 @@ const LandingPage = () => {
       icon: <Users className="w-12 h-12" />,
       color: "from-green-500 to-emerald-500",
       action: () => navigate("/choose-account-type"),
-      buttonText: "Choose Account Type",
+      buttonText: "Choose Type",
+    },
+    {
+      title: "Impact Partners",
+      description: "Organizations contributing to student development and education",
+      icon: <Target className="w-12 h-12" />,
+      color: "from-amber-500 to-orange-500",
+      action: () => navigate("/register-seller"),
+      buttonText: "Partner With Us",
     },
   ];
 
@@ -350,13 +535,6 @@ const LandingPage = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleSubscribe = () => {
-    if (email) {
-      console.log("Subscribing email:", email);
-      setEmail('');
-    }
-  };
-
   useEffect(() => {
     const toggleVisibility = () => {
       setIsVisible(window.pageYOffset > 300);
@@ -365,214 +543,139 @@ const LandingPage = () => {
     return () => window.removeEventListener("scroll", toggleVisibility);
   }, []);
 
-  // Prevent scrolling when mobile menu is open
   useEffect(() => {
-    if (showMobileMenu) {
+    // Add CSS for animations
+    const style = document.createElement('style');
+    style.innerHTML = `
+      @keyframes pop-in {
+        0% {
+          opacity: 0;
+          transform: scale(0.8) translateY(20px);
+        }
+        100% {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+      
+      .animate-pop-in {
+        animation: pop-in 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      }
+    `;
+    document.head.appendChild(style);
+
+    // Prevent scrolling when modal is open
+    if (showModal) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = 'auto';
     }
 
-    // Cleanup function to restore scrolling
     return () => {
       document.body.style.overflow = 'auto';
+      document.head.removeChild(style);
     };
-  }, [showMobileMenu]);
+  }, [showModal]);
+
+  const openModal = (feature) => {
+    setSelectedFeature(feature);
+    setShowModal(true);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setSelectedFeature(null);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
       {/* Navbar */}
-      <nav className="bg-white shadow-md py-4 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center">
-            <div className="flex items-center">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
-                <span className="text-white font-bold">WS</span>
-              </div>
-              <h1 className="ml-3 text-xl font-semibold text-gray-900">
-                Wise Student
-              </h1>
-            </div>
+      <MainNavbar 
+        handlePillarsClick={handlePillarsClick}
+        handleWhyChooseClick={handleWhyChooseClick}
+        handlePricingClick={handlePricingClick}
+        handleStudentServicesClick={handleStudentServicesClick}
+        handleFooterClick={handleFooterClick}
+        showMobileMenu={showMobileMenu}
+        setShowMobileMenu={setShowMobileMenu}
+      />
 
-            {/* Desktop Navigation - hidden on mobile */}
-            <div className="hidden md:flex items-center space-x-4">
-              <button
-                onClick={handlePillarsClick}
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+      {/* Modal */}
+      {showModal && selectedFeature && (
+        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 overflow-hidden">
+          <div className="bg-white rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-out animate-pop-in">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-3xl border-b border-gray-200 p-4 flex justify-between items-center">
+              <h3 className="text-2xl font-bold text-white">{selectedFeature.title}</h3>
+              <button 
+                onClick={closeModal}
+                className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all duration-200 backdrop-blur-sm"
               >
-                Pillars
-              </button>
-
-              <button
-                onClick={handleWhyChooseClick}
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                Why Choose Us
-              </button>
-
-              <button
-                onClick={handlePricingClick}
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                Pricing
-              </button>
-
-              <button
-                onClick={handleStudentServicesClick}
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                Services
-              </button>
-
-              <button
-                onClick={handleFooterClick}
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
-              >
-                Contact
-              </button>
-
-              <button
-                onClick={() => navigate("/login")}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all text-sm font-medium"
-              >
-                Sign In
+                <X className="w-6 h-6 text-white" />
               </button>
             </div>
-
-            {/* Mobile menu button - visible only on mobile */}
-            <button
-              className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none"
-              onClick={() => setShowMobileMenu(!showMobileMenu)}
-            >
-              {showMobileMenu ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
-          </div>
-
-          {/* Mobile Menu Overlay - visible only on mobile */}
-          <AnimatePresence>
-            {showMobileMenu && (
-              <motion.div
-                className="md:hidden fixed inset-0 z-50"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.2 }}
-              >
-                {/* Dark overlay background */}
-                <motion.div
-                  className="fixed inset-0 bg-black/30 backdrop-blur-sm"
-                  onClick={() => setShowMobileMenu(false)}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                />
-
-                {/* Mobile menu panel */}
-                <motion.div
-                  className="fixed top-0 left-0 bottom-0 w-4/5 max-w-sm bg-white shadow-xl"
-                  initial={{ x: '-100%' }}
-                  animate={{ x: 0 }}
-                  exit={{ x: '-100%' }}
-                  transition={{
-                    type: "spring",
-                    damping: 25,
-                    stiffness: 300,
-                    mass: 0.8
-                  }}
-                >
-                  <div className="flex flex-col h-full">
-                    {/* Menu header */}
-                    <div className="flex items-center justify-between p-4 border-b border-gray-200">
-                      <div className="flex items-center">
-                        <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
-                          <span className="text-white font-bold text-sm">WS</span>
-                        </div>
-                        <h2 className="ml-2 text-lg font-semibold text-gray-900">Wise Student</h2>
-                      </div>
-                      <button
-                        className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                        onClick={() => setShowMobileMenu(false)}
-                      >
-                        <X className="h-6 w-6" />
-                      </button>
+            <div className="p-6 bg-gradient-to-br from-blue-50 to-purple-50">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white border-2 border-blue-200 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center">
+                      <Target className="w-6 h-6 text-white" />
                     </div>
-
-                    {/* Menu items */}
-                    <div className="flex flex-col p-4 space-y-4 flex-grow">
-                      <motion.button
-                        onClick={() => {
-                          handlePillarsClick();
-                          setShowMobileMenu(false);
-                        }}
-                        className="text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        Pillars
-                      </motion.button>
-
-                      <motion.button
-                        onClick={() => {
-                          handleWhyChooseClick();
-                          setShowMobileMenu(false);
-                        }}
-                        className="text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        Why Choose Us
-                      </motion.button>
-
-                      <motion.button
-                        onClick={() => {
-                          handlePricingClick();
-                          setShowMobileMenu(false);
-                        }}
-                        className="text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        Pricing
-                      </motion.button>
-
-                      <motion.button
-                        onClick={() => {
-                          handleStudentServicesClick();
-                          setShowMobileMenu(false);
-                        }}
-                        className="text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        Services
-                      </motion.button>
-
-                      <motion.button
-                        onClick={() => {
-                          handleFooterClick();
-                          setShowMobileMenu(false);
-                        }}
-                        className="text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        Contact
-                      </motion.button>
-
-                      <motion.button
-                        onClick={() => {
-                          navigate("/login");
-                          setShowMobileMenu(false);
-                        }}
-                        className="text-left px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90 transition-all font-medium mt-auto"
-                        whileTap={{ scale: 0.98 }}
-                      >
-                        Sign In
-                      </motion.button>
-                    </div>
+                    <h4 className="font-bold text-xl text-gray-900">
+                      What Students Learn
+                    </h4>
                   </div>
-                </motion.div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                  <ul className="space-y-3">
+                    {selectedFeature.details.whatStudentsLearn.map((item, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <span className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0 animate-pulse"></span>
+                        <span className="text-gray-700 font-medium">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="bg-white border-2 border-purple-200 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg flex items-center justify-center">
+                      <Building className="w-6 h-6 text-white" />
+                    </div>
+                    <h4 className="font-bold text-xl text-gray-900">
+                      Why It Matters for Schools
+                    </h4>
+                  </div>
+                  <ul className="space-y-3">
+                    {selectedFeature.details.whyItMatters.map((item, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <span className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0 animate-pulse"></span>
+                        <span className="text-gray-700 font-medium">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="bg-white border-2 border-green-200 rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-lg flex items-center justify-center">
+                      <CheckCircle className="w-6 h-6 text-white" />
+                    </div>
+                    <h4 className="font-bold text-xl text-gray-900">
+                      National Alignment
+                    </h4>
+                  </div>
+                  <ul className="space-y-3">
+                    {selectedFeature.details.nationalAlignment.map((item, index) => (
+                      <li key={index} className="flex items-start gap-3">
+                        <span className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0 animate-pulse"></span>
+                        <span className="text-gray-700 font-medium">{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-      </nav>
+      )}
 
       {/* Hero Section */}
       <div className="relative h-screen flex items-center justify-center">
@@ -595,9 +698,6 @@ const LandingPage = () => {
               <p className="font-bold text-sm mt-2">
                 Beyond Subjects. Building Humans.{" "}
               </p>
-              <p className="italic font-light text-sm mb-2">
-                Holistic & Futuristic Education for Every Student{" "}
-              </p>
             </motion.h1>
 
             <motion.p
@@ -610,10 +710,7 @@ const LandingPage = () => {
               balance, resilience, and future-ready skills. Our Platform raises
               students who are not just exam-ready, but life-ready.
             </motion.p>
-            <p className="text-sm font-bold mb-2">
-              The Firm foundation no textbook can teach — but every Student
-              needs.
-            </p>
+            
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -629,8 +726,11 @@ const LandingPage = () => {
                 Get Started
                 <ArrowRight className="w-5 h-5" />
               </motion.button>
+              
             </motion.div>
-
+              <p className="text-sm italic mt-2">
+              Holistic & Futuristic Education for Every Student
+            </p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -643,6 +743,9 @@ const LandingPage = () => {
                 className="w-full max-w-3xl mx-auto rounded-full"
               />
             </motion.div>
+            <p className="text-sm font-bold mb-2">
+              The Firm foundation no textbook can teach — but every Student needs.
+            </p>
           </motion.div>
         </div>
 
@@ -686,7 +789,8 @@ const LandingPage = () => {
                   damping: 18,
                 }}
                 whileHover={{ scale: 1.03, y: -2 }}
-                className="group rounded-2xl relative overflow-hidden"
+                className="group rounded-2xl relative overflow-hidden cursor-pointer"
+                onClick={() => openModal(feature)}
               >
                 <div className="group relative rounded-2xl p-6 transition-all overflow-hidden bg-white border border-gray-100">
                   <div
@@ -735,7 +839,7 @@ const LandingPage = () => {
 
       {/* Enhanced User Types Section */}
       <div id="get-started" ref={userTypesRef} className="py-16 bg-gradient-to-br from-white to-blue-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -751,7 +855,7 @@ const LandingPage = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {userTypes.map((type, index) => (
               <div key={index} className="group relative">
                 <div className={`relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 overflow-hidden flex flex-col`}>
@@ -1072,189 +1176,6 @@ const LandingPage = () => {
           </motion.div>
         </div>
       </div>
-
-      {/* Footer */}
-      <footer ref={footerRef} className="relative bg-gradient-to-br from-slate-50 via-white to-blue-50 overflow-hidden">
-        <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-br from-blue-100/40 to-purple-100/40 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 animate-pulse"></div>
-        <div
-          className="absolute bottom-0 right-0 w-[400px] h-[400px] bg-gradient-to-br from-purple-100/40 to-pink-100/40 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 animate-pulse"
-          style={{ animationDelay: "1s" }}
-        ></div>
-
-        <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16 sm:mt-20 mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-            <div className="space-y-6">
-              <div className="group">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
-                  <span className="text-white font-bold text-2xl">WS</span>
-                </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                  Wise Student
-                </h3>
-                <p className="text-gray-600 leading-relaxed text-sm">
-                  Empowering education with innovative management and wellness
-                  solutions for the next generation.
-                </p>
-              </div>
-
-              <div className="space-y-3">
-                <p className="text-sm font-semibold text-gray-700">
-                  Stay Updated
-                </p>
-                <div className="relative group">
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="your@email.com"
-                    className="w-full px-4 py-3 pr-12 rounded-xl bg-white border border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-300 text-sm outline-none"
-                  />
-                  <button
-                    onClick={handleSubscribe}
-                    className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center text-white hover:shadow-lg transition-all duration-300 hover:scale-110"
-                  >
-                    <ArrowRight className="w-4 h-4" />
-                  </button>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900 mb-6">
-                Quick Links
-              </h3>
-              <ul className="space-y-3">
-                {quickLinks.map((link, index) => (
-                  <li key={index}>
-                    <a
-                      href={link.href}
-                      className="text-gray-600 hover:text-blue-600 transition-all duration-300 text-sm flex items-center gap-2 group"
-                    >
-                      <span className="w-0 h-0.5 bg-blue-600 group-hover:w-4 transition-all duration-300"></span>
-                      <span className="group-hover:translate-x-1 transition-transform duration-300">
-                        {link.name}
-                      </span>
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900 mb-6">
-                Contact Us
-              </h3>
-              <div className="space-y-4">
-                <a
-                  href="mailto:support@wisestudent.com"
-                  className="flex items-start gap-3 text-gray-600 hover:text-blue-600 transition-all duration-300 group"
-                >
-                  <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-500 transition-all duration-300 flex-shrink-0">
-                    <Mail className="w-5 h-5 text-blue-600 group-hover:text-white transition-colors" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Email</p>
-                    <p className="text-sm font-medium">
-                      support@wisestudent.com
-                    </p>
-                  </div>
-                </a>
-
-                <a
-                  href="tel:+918595654823"
-                  className="flex items-start gap-3 text-gray-600 hover:text-blue-600 transition-all duration-300 group"
-                >
-                  <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-500 transition-all duration-300 flex-shrink-0">
-                    <Phone className="w-5 h-5 text-purple-600 group-hover:text-white transition-colors" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Phone</p>
-                    <p className="text-sm font-medium">+91-859-565-4823</p>
-                  </div>
-                </a>
-
-                <div className="flex items-start gap-3 text-gray-600 group">
-                  <div className="w-10 h-10 bg-pink-100 rounded-xl flex items-center justify-center flex-shrink-0">
-                    <MapPin className="w-5 h-5 text-pink-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Location</p>
-                    <p className="text-sm font-medium">Delhi, India</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900 mb-6">
-                Follow Us
-              </h3>
-              <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-                Join our community and stay connected with the latest updates
-                and educational insights.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {socialLinks.map((social, index) => (
-                  <a
-                    key={index}
-                    href={social.href}
-                    onMouseEnter={() => setHoveredSocial(index)}
-                    onMouseLeave={() => setHoveredSocial(null)}
-                    className={`w-12 h-12 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-600 hover:text-white transition-all duration-300 hover:border-transparent hover:shadow-lg hover:scale-110 ${social.color}`}
-                    aria-label={social.name}
-                  >
-                    <social.icon className="w-5 h-5" />
-                  </a>
-                ))}
-              </div>
-
-              <div className="mt-8 pt-6 border-t border-gray-200">
-                <p className="text-xs text-gray-500 mb-3">Trusted by</p>
-                <div className="flex items-center gap-3">
-                  <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg text-xs font-semibold text-blue-600 border border-blue-100">
-                    500+ Schools
-                  </div>
-                  <div className="px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg text-xs font-semibold text-purple-600 border border-purple-100">
-                    50K+ Students
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="pt-8 border-t border-gray-200">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-              <p className="text-sm text-gray-600">
-                © 2025 Wise Student. All rights reserved.
-              </p>
-              <div className="flex items-center gap-6">
-                <a
-                  href="/terms"
-                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-300 hover:underline"
-                >
-                  Terms of Service
-                </a>
-                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <a
-                  href="/privacy"
-                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-300 hover:underline"
-                >
-                  Privacy Policy
-                </a>
-                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                <a
-                  href="/cookies"
-                  className="text-sm text-gray-600 hover:text-blue-600 transition-colors duration-300 hover:underline"
-                >
-                  Cookie Policy
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500"></div>
-      </footer>
 
       {/* Back to Top Button */}
       {isVisible && (

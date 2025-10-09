@@ -103,10 +103,7 @@ import csrRoutes from "./routes/csrRoutes.js";
 import companyRoutes from "./routes/companyRoutes.js";
 import organizationRoutes from "./routes/organizationRoutes.js";
 import schoolRoutes from "./routes/schoolRoutes.js";
-import collegeRoutes from "./routes/collegeRoutes.js";
-import placementRoutes from "./routes/placementRoutes.js";
-import facilityRoutes from "./routes/facilityRoutes.js";
-import alumniRoutes from "./routes/alumniRoutes.js";
+
 import paymentRoutes from "./routes/paymentRoutes.js";
 
 // Import models and other logic
@@ -221,10 +218,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/company", companyRoutes);
 app.use("/api/organization", organizationRoutes);
 app.use("/api/school", schoolRoutes);
-app.use("/api/college", collegeRoutes);
-app.use("/api/placement", placementRoutes);
-app.use("/api/facilities", facilityRoutes);
-app.use("/api/alumni", alumniRoutes);
+
 app.use("/api/payment", paymentRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reports", reportRoutes);

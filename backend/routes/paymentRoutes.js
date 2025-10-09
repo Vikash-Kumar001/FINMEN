@@ -44,7 +44,7 @@ router.get('/history', requireAuth, async (req, res) => {
 });
 
 // Get pending payments
-router.get('/pending', requireAuth, checkRole(['college_student', 'school_student']), async (req, res) => {
+router.get('/pending', requireAuth, checkRole(['school_student']), async (req, res) => {
   try {
     const pendingPayments = [
       {
@@ -71,7 +71,7 @@ router.get('/pending', requireAuth, checkRole(['college_student', 'school_studen
 });
 
 // Process payment
-router.post('/process', requireAuth, checkRole(['college_student', 'school_student', 'college_parent', 'school_parent']), async (req, res) => {
+router.post('/process', requireAuth, checkRole(['school_student', 'school_parent']), async (req, res) => {
   try {
     const { paymentId, amount, method, cardDetails } = req.body;
 

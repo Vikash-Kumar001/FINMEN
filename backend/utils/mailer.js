@@ -17,16 +17,6 @@ export const sendInvitationEmail = async (toEmail, name, organizationName, role,
     school_accountant: "Accountant",
     school_librarian: "Librarian",
     school_transport_staff: "Transport Staff",
-    college_admin: "College Administrator",
-    college_hod: "Head of Department",
-    college_faculty: "Faculty",
-    college_student: "Student",
-    college_parent: "Parent",
-    college_placement_officer: "Placement Officer",
-    college_alumni: "Alumni",
-    college_accountant: "Accountant",
-    college_librarian: "Librarian",
-    college_hostel_staff: "Hostel Staff",
   };
   
   const roleLabel = roleLabels[role] || "User";

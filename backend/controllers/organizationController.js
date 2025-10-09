@@ -3,9 +3,6 @@ import User from "../models/User.js";
 import Organization from "../models/Organization.js";
 import SchoolClass from "../models/School/SchoolClass.js";
 import SchoolStudent from "../models/School/SchoolStudent.js";
-import Department from "../models/College/Department.js";
-import Course from "../models/College/Course.js";
-import CollegeStudent from "../models/College/CollegeStudent.js";
 import { generateToken } from "../utils/jwt.js";
 import { sendInvitationEmail } from "../utils/mailer.js";
 
@@ -73,12 +70,8 @@ export const inviteUser = async (req, res) => {
 
     // Validate role based on organization type
     const organization = req.organization;
-    const validRoles = organization.type === "school" 
-      ? ["school_admin", "school_teacher", "school_student", "school_parent", 
-         "school_accountant", "school_librarian", "school_transport_staff"]
-      : ["college_admin", "college_hod", "college_faculty", "college_student", 
-         "college_parent", "college_placement_officer", "college_alumni", 
-         "college_accountant", "college_librarian", "college_hostel_staff"];
+    const validRoles = ["school_admin", "school_teacher", "school_student", "school_parent", 
+         "school_accountant", "school_librarian", "school_transport_staff"];
 
     if (!validRoles.includes(role)) {
       return res.status(400).json({ 
@@ -198,12 +191,8 @@ export const updateUserRole = async (req, res) => {
 
     // Validate role
     const organization = req.organization;
-    const validRoles = organization.type === "school" 
-      ? ["school_admin", "school_teacher", "school_student", "school_parent", 
-         "school_accountant", "school_librarian", "school_transport_staff"]
-      : ["college_admin", "college_hod", "college_faculty", "college_student", 
-         "college_parent", "college_placement_officer", "college_alumni", 
-         "college_accountant", "college_librarian", "college_hostel_staff"];
+    const validRoles = ["school_admin", "school_teacher", "school_student", "school_parent", 
+         "school_accountant", "school_librarian", "school_transport_staff"];
 
     if (!validRoles.includes(role)) {
       return res.status(400).json({ 
@@ -302,18 +291,17 @@ export const linkParentToStudent = async (req, res) => {
     }
 
     // Verify both users exist in the same tenant
-    const [parent, student] = await Promise.all([
-      User.findOne({ 
-        _id: parentId, 
-        tenantId: req.tenantId,
-        role: { $in: ['school_parent', 'college_parent'] }
-      }),
-      User.findOne({ 
-        _id: studentId, 
-        tenantId: req.tenantId,
-        role: { $in: ['school_student', 'college_student'] }
-      })
-    ]);
+    const parent = await User.findOne({
+      _id: parentId, 
+      tenantId: req.tenantId,
+      role: { $in: ['school_parent'] }
+    });
+
+    const student = await User.findOne({
+      _id: studentId, 
+      tenantId: req.tenantId,
+      role: { $in: ['school_student'] }
+    });
 
     if (!parent) {
       return res.status(404).json({ message: "Parent not found" });
@@ -336,8 +324,7 @@ export const linkParentToStudent = async (req, res) => {
     }
 
     // Update student record in respective collection
-    const StudentModel = req.organization.type === "school" ? SchoolStudent : CollegeStudent;
-    await StudentModel.findOneAndUpdate(
+    await SchoolStudent.findOneAndUpdate(
       { userId: studentId, tenantId: req.tenantId },
       { $addToSet: { parentIds: parentId } }
     );
@@ -373,43 +360,21 @@ export const getOrganizationStats = async (req, res) => {
       User.countDocuments({ tenantId, isActive: { $ne: false } })
     ]);
 
-    let stats = {
+    // School-specific stats
+    const [totalClasses, totalStudents, totalTeachers] = await Promise.all([
+      SchoolClass.countDocuments({ tenantId, isActive: true }),
+      SchoolStudent.countDocuments({ tenantId, isActive: true }),
+      User.countDocuments({ tenantId, role: "school_teacher" })
+    ]);
+
+    const stats = {
       totalUsers,
       activeUsers,
       organizationType: orgType,
+      totalClasses,
+      totalStudents,
+      totalTeachers,
     };
-
-    if (orgType === "school") {
-      // School-specific stats
-      const [totalClasses, totalStudents, totalTeachers] = await Promise.all([
-        SchoolClass.countDocuments({ tenantId, isActive: true }),
-        SchoolStudent.countDocuments({ tenantId, isActive: true }),
-        User.countDocuments({ tenantId, role: "school_teacher" })
-      ]);
-
-      stats = {
-        ...stats,
-        totalClasses,
-        totalStudents,
-        totalTeachers,
-      };
-    } else {
-      // College-specific stats
-      const [totalDepartments, totalCourses, totalStudents, totalFaculty] = await Promise.all([
-        Department.countDocuments({ tenantId, isActive: true }),
-        Course.countDocuments({ tenantId, isActive: true }),
-        CollegeStudent.countDocuments({ tenantId, isActive: true }),
-        User.countDocuments({ tenantId, role: "college_faculty" })
-      ]);
-
-      stats = {
-        ...stats,
-        totalDepartments,
-        totalCourses,
-        totalStudents,
-        totalFaculty,
-      };
-    }
 
     res.status(200).json({ stats });
   } catch (error) {

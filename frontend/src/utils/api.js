@@ -19,7 +19,7 @@ api.interceptors.response.use(
     // Handle authentication errors
     if (error.response?.status === 401) {
       const currentPath = window.location.pathname;
-      const publicPaths = ['/', '/institution-type', '/individual-account', '/register-stakeholder', '/register-parent', '/register-seller', '/register-teacher', '/school-registration', '/college-registration', '/choose-account-type'];
+      const publicPaths = ['/', '/institution-type', '/individual-account', '/register-stakeholder', '/register-parent', '/register-seller', '/register-teacher', '/school-registration', '/choose-account-type'];
       
       // Only redirect if not already on login/register page and not on public paths
       if (!currentPath.includes('/login') && !currentPath.includes('/register') && !publicPaths.includes(currentPath)) {
@@ -73,7 +73,7 @@ api.interceptors.request.use(
               localStorage.removeItem("finmen_token");
               return config;
             }
-          } catch (parseError) {
+          } catch {
             console.warn("⚠️ Could not parse token payload");
           }
           

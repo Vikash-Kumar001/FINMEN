@@ -75,11 +75,7 @@ const userSchema = new mongoose.Schema(
         "student", "educator", "admin", "parent", "seller", "csr",
         // School roles
         "school_admin", "school_teacher", "school_student", "school_parent", 
-        "school_accountant", "school_librarian", "school_transport_staff",
-        // College roles
-        "college_admin", "college_hod", "college_faculty", "college_student", 
-        "college_parent", "college_placement_officer", "college_alumni", 
-        "college_accountant", "college_librarian", "college_hostel_staff"
+        "school_accountant", "school_librarian", "school_transport_staff"
       ],
       default: "student",
     },

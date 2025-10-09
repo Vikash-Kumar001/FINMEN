@@ -9,7 +9,7 @@ const organizationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["school", "college"],
+      enum: ["school"],
       required: true,
     },
     tenantId: {
@@ -73,24 +73,6 @@ const organizationSchema = new mongoose.Schema(
           type: String,
           enum: ["percentage", "gpa", "cgpa"],
           default: "percentage",
-        },
-      },
-      // College specific settings
-      collegeSettings: {
-        accreditation: String,
-        affiliatedUniversity: String,
-        establishedYear: Number,
-        hasHostel: {
-          type: Boolean,
-          default: false,
-        },
-        hasTransport: {
-          type: Boolean,
-          default: false,
-        },
-        hasPlacement: {
-          type: Boolean,
-          default: true,
         },
       },
     },

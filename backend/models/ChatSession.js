@@ -74,7 +74,6 @@ const chatSessionSchema = new mongoose.Schema({
 });
 
 // Index for faster queries
-chatSessionSchema.index({ userId: 1 });
 chatSessionSchema.index({ lastUsed: -1 });
 
 // Update lastUsed on save

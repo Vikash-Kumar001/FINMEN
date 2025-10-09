@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { School, GraduationCap } from "lucide-react";
+import { School } from "lucide-react";
 
 const InstitutionTypeSelection = () => {
   const [selectedType, setSelectedType] = useState("");
@@ -25,24 +24,6 @@ const InstitutionTypeSelection = () => {
         "✔ Academic Reports"
       ],
       route: "/school-registration"
-    },
-    {
-      id: "college",
-      title: "College",
-      subtitle: "Higher Education",
-      description: "Manage departments, courses, students, faculty, and placement activities.",
-      icon: <GraduationCap className="w-10 h-10 text-white" />,
-      gradient: "from-purple-500 to-pink-500",
-      border: "border-purple-500",
-      features: [
-        "✔ Department & Course Management",
-        "✔ Student & Faculty Tracking",
-        "✔ Placement & Alumni",
-        "✔ Research Projects",
-        "✔ Hostel & Transport",
-        "✔ Advanced Analytics"
-      ],
-      route: "/college-registration"
     }
   ];
 
@@ -70,17 +51,14 @@ const InstitutionTypeSelection = () => {
       <div className="max-w-4xl mx-auto px-4 py-8 relative z-10 w-full">
         <h2 className="text-4xl font-bold text-gray-900 text-center mb-2">Choose Your Institution Type</h2>
         <p className="text-center text-gray-600 mb-6">
-          Select whether you're registering a School or College to get started with the appropriate management system.
+          Select whether you're registering a School to get started with the appropriate management system.
         </p>
 
         {/* Institution Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
           {institutionTypes.map((type) => (
-            <motion.div
+            <div
               key={type.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              whileHover={{ scale: 1.02, boxShadow: "0 10px 20px rgba(0, 0, 0, 0.1)" }}
               className={`bg-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all text-center cursor-pointer border-2 ${selectedType === type.id ? type.border : "border-transparent"
                 }`}
               onClick={() => setSelectedType(type.id)}
@@ -100,7 +78,7 @@ const InstitutionTypeSelection = () => {
                   ))}
                 </ul>
               </div>
-            </motion.div>
+            </div>
           ))}
         </div>
 

@@ -2,16 +2,17 @@ import mongoose from "mongoose";
 
 const feePaymentSchema = new mongoose.Schema(
   {
-    tenantId: {
-      type: String,
-      required: true,
-      // index removed, only keep schema.index()
-    },
-    orgId: {
+    // Tenant Information
+    organizationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Organization",
       required: true,
     },
+    tenantId: {
+      type: String,
+      required: true,
+    },
+    // Student Information
     studentId: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
@@ -19,7 +20,7 @@ const feePaymentSchema = new mongoose.Schema(
     },
     studentType: {
       type: String,
-      enum: ['SchoolStudent', 'CollegeStudent'],
+      enum: ['SchoolStudent'],
       required: true,
     },
     userId: {
@@ -79,18 +80,6 @@ const feePaymentSchema = new mongoose.Schema(
       classNumber: Number,
       section: String,
       stream: String,
-    },
-    // College-specific fields
-    collegePayment: {
-      courseId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Course",
-      },
-      departmentId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Department",
-      },
-      semester: Number,
     },
     status: {
       type: String,

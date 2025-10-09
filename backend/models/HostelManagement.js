@@ -2,20 +2,19 @@ import mongoose from "mongoose";
 
 const hostelSchema = new mongoose.Schema(
   {
-    tenantId: {
-      type: String,
-      required: true,
-      // index removed, only keep schema.index()
-    },
-    orgId: {
+    // Tenant Information
+    organizationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Organization",
+      required: true,
+    },
+    tenantId: {
+      type: String,
       required: true,
     },
     hostelName: {
       type: String,
       required: true,
-      trim: true,
     },
     hostelType: {
       type: String,
@@ -27,27 +26,11 @@ const hostelSchema = new mongoose.Schema(
       city: String,
       state: String,
       pincode: String,
-      landmark: String,
     },
-    contactDetails: {
+    contactInfo: {
+      phone: String,
+      email: String,
       wardenName: String,
-      wardenPhone: String,
-      wardenEmail: String,
-      officePhone: String,
-      emergencyContact: String,
-    },
-    facilities: {
-      wifi: { type: Boolean, default: false },
-      laundry: { type: Boolean, default: false },
-      mess: { type: Boolean, default: false },
-      gym: { type: Boolean, default: false },
-      library: { type: Boolean, default: false },
-      commonRoom: { type: Boolean, default: false },
-      parking: { type: Boolean, default: false },
-      security: { type: Boolean, default: true },
-      powerBackup: { type: Boolean, default: false },
-      waterSupply: { type: Boolean, default: true },
-      other: [String],
     },
     blocks: [{
       blockName: {
@@ -66,7 +49,7 @@ const hostelSchema = new mongoose.Schema(
           },
           roomType: {
             type: String,
-            enum: ["Single", "Double", "Triple", "Quad"],
+            enum: ["Single", "Double", "Triple", "Dormitory"],
             required: true,
           },
           capacity: {
@@ -77,27 +60,6 @@ const hostelSchema = new mongoose.Schema(
             type: Number,
             default: 0,
           },
-          monthlyRent: {
-            type: Number,
-            required: true,
-          },
-          securityDeposit: {
-            type: Number,
-            default: 0,
-          },
-          amenities: {
-            ac: { type: Boolean, default: false },
-            fan: { type: Boolean, default: true },
-            bed: { type: Number, default: 1 },
-            study_table: { type: Number, default: 1 },
-            chair: { type: Number, default: 1 },
-            wardrobe: { type: Number, default: 1 },
-            bathroom: {
-              type: String,
-              enum: ["Attached", "Common"],
-              default: "Common",
-            },
-          },
           isAvailable: {
             type: Boolean,
             default: true,
@@ -105,7 +67,7 @@ const hostelSchema = new mongoose.Schema(
           residents: [{
             studentId: {
               type: mongoose.Schema.Types.ObjectId,
-              ref: "CollegeStudent",
+              ref: "SchoolStudent",
             },
             userId: {
               type: mongoose.Schema.Types.ObjectId,

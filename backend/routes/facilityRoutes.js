@@ -76,7 +76,7 @@ router.get('/bookings', requireAuth, async (req, res) => {
 });
 
 // Book a facility
-router.post('/book', requireAuth, checkRole(['college_student', 'college_faculty']), async (req, res) => {
+router.post('/book', requireAuth, checkRole(['school_student', 'school_teacher']), async (req, res) => {
   try {
     const { facilityId, startTime, endTime, purpose } = req.body;
 

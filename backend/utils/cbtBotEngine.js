@@ -42,7 +42,7 @@ const moodPatterns = {
 
 // Topic detection patterns
 const topicPatterns = {
-  academic: ['exam', 'study', 'school', 'college', 'homework', 'grades', 'test'],
+  academic: ['exam', 'study', 'school', 'homework', 'grades', 'test'],
   relationships: ['friend', 'family', 'boyfriend', 'girlfriend', 'parents', 'relationship'],
   career: ['job', 'work', 'career', 'interview', 'boss', 'internship', 'future'],
   health: ['sleep', 'eating', 'exercise', 'health', 'body', 'diet'],

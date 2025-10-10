@@ -269,7 +269,7 @@ import ReflexGratitude from "./pages/Student/MoralValues/Teen/ReflexGratitude";
 import BadgeGratitudeHero from "./pages/Student/MoralValues/Teen/BadgeGratitudeHero";
 
 // AI For All Kids Games
-import SpotThePattern from "./pages/Student/AIForAll/Kids/SpotThePattern";
+import SpotThePattern from "./pages/Student/AiForAll/Kids/SpotThePattern";
 import CatOrDogGame from "./pages/Student/AIForAll/Kids/CatOrDogGame";
 import SortingColors from "./pages/Student/AIForAll/Kids/SortingColors";
 import TrueFalseAIQuiz from "./pages/Student/AIForAll/Kids/TrueFalseAIQuiz";

@@ -13,7 +13,7 @@ const unifiedGameProgressSchema = new mongoose.Schema(
     },
     gameType: {
       type: String,
-      enum: ['ai', 'brain', 'finance', 'mental', 'financial', 'educational'],
+      enum: ['ai', 'brain', 'finance', 'mental', 'financial', 'educational', 'uvls', 'dcos', 'moral', 'ehe', 'crgc'],
       required: true
     },
     // Progress tracking

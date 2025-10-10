@@ -361,7 +361,7 @@ const GameShell = ({
       {showConfetti && <Confetti />}
       
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-4 z-10">
+      <div className="flex items-center justify-between px-6 py-4 relative z-30">
         <button
           onClick={() => navigate(backPath)}
           className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full border border-white/20 backdrop-blur-md transition-all cursor-pointer"
@@ -381,16 +381,16 @@ const GameShell = ({
       </div>
 
       {/* Main Game Area */}
-      <div className="flex-1 flex flex-col justify-center items-center text-center px-4 z-10">
+      <div className="flex-1 flex flex-col justify-center items-center text-center px-4 z-10 pt-8">
         {(title || subtitle) && (
-          <div className="mb-8">
+          <div className="mb-8 relative z-20">
             {title && (
-              <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent animate-title-glow">
+              <h1 className="text-3xl md:text-5xl font-bold bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent animate-title-glow mb-4 pb-2 leading-tight">
                 {title}
               </h1>
             )}
             {subtitle && (
-              <p className="text-white/80 text-base md:text-lg mt-2 font-medium">
+              <p className="text-white/80 text-base md:text-lg mt-4 font-medium">
                 {subtitle}
               </p>
             )}

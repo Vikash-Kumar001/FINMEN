@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import { 
     ArrowLeft, 
     Trophy, 
@@ -8,9 +8,12 @@ import {
     Coins, 
     Lock, 
     Play,
+    Puzzle,
     Users,
     Calendar,
+    Lightbulb,
     Star,
+    TrendingUp,
     Zap,
     Gamepad2,
     Brain,
@@ -24,7 +27,18 @@ import {
     HandHeart,
     ShoppingCart,
     BarChart4,
-    Cpu
+    Cpu,
+    Camera,
+    Smartphone,
+    UserX,
+    Eye,
+    Smile,
+    MessageSquare,
+    Flag,
+    RefreshCw,
+    Award,
+    Palette,
+    Home
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-hot-toast";
@@ -80,8 +94,8 @@ const GameCategoryPage = () => {
         // First game is always unlocked
         if (gameIndex === 0) return true;
         
-        // For finance and brain health kids and teens games, check if previous game is completed
-        if ((category === 'financial-literacy' || category === 'brain-health') && (ageGroup === 'kids' || ageGroup === 'teens')) {
+        // For finance, brain health, UVLS, DCOS, Moral Values, AI For All, EHE, and CRGC kids and teens games, check if previous game is completed
+        if ((category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')) {
             const previousGameId = getGameIdByIndex(gameIndex - 1);
             return gameCompletionStatus[previousGameId] || false;
         }
@@ -127,6 +141,102 @@ const GameCategoryPage = () => {
                 'brain-teens-6', 'brain-teens-7', 'brain-teens-8', 'brain-teens-9', 'brain-teens-10',
                 'brain-teens-11', 'brain-teens-12', 'brain-teens-13', 'brain-teens-14', 'brain-teens-15',
                 'brain-teens-16', 'brain-teens-17', 'brain-teens-18', 'brain-teens-19', 'brain-teens-20'
+            ];
+            return gameIds[index];
+        } else if (category === 'uvls' && ageGroup === 'kids') {
+            const gameIds = [
+                'uvls-kids-1', 'uvls-kids-2', 'uvls-kids-3', 'uvls-kids-4', 'uvls-kids-5',
+                'uvls-kids-6', 'uvls-kids-7', 'uvls-kids-8', 'uvls-kids-9', 'uvls-kids-10',
+                'uvls-kids-11', 'uvls-kids-12', 'uvls-kids-13', 'uvls-kids-14', 'uvls-kids-15',
+                'uvls-kids-16', 'uvls-kids-17', 'uvls-kids-18', 'uvls-kids-19', 'uvls-kids-20'
+            ];
+            return gameIds[index];
+        } else if (category === 'uvls' && ageGroup === 'teens') {
+            const gameIds = [
+                'uvls-teen-1', 'uvls-teen-2', 'uvls-teen-3', 'uvls-teen-4', 'uvls-teen-5',
+                'uvls-teen-6', 'uvls-teen-7', 'uvls-teen-8', 'uvls-teen-9', 'uvls-teen-10',
+                'uvls-teen-11', 'uvls-teen-12', 'uvls-teen-13', 'uvls-teen-14', 'uvls-teen-15',
+                'uvls-teen-16', 'uvls-teen-17', 'uvls-teen-18', 'uvls-teen-19', 'uvls-teen-20'
+            ];
+            return gameIds[index];
+        } else if (category === 'digital-citizenship' && ageGroup === 'kids') {
+            const gameIds = [
+                'dcos-kids-1', 'dcos-kids-2', 'dcos-kids-3', 'dcos-kids-4', 'dcos-kids-5',
+                'dcos-kids-6', 'dcos-kids-7', 'dcos-kids-8', 'dcos-kids-9', 'dcos-kids-10',
+                'dcos-kids-11', 'dcos-kids-12', 'dcos-kids-13', 'dcos-kids-14', 'dcos-kids-15',
+                'dcos-kids-16', 'dcos-kids-17', 'dcos-kids-18', 'dcos-kids-19', 'dcos-kids-20'
+            ];
+            return gameIds[index];
+        } else if (category === 'digital-citizenship' && ageGroup === 'teens') {
+            const gameIds = [
+                'dcos-teen-1', 'dcos-teen-2', 'dcos-teen-3', 'dcos-teen-4', 'dcos-teen-5',
+                'dcos-teen-6', 'dcos-teen-7', 'dcos-teen-8', 'dcos-teen-9', 'dcos-teen-10',
+                'dcos-teen-11', 'dcos-teen-12', 'dcos-teen-13', 'dcos-teen-14', 'dcos-teen-15',
+                'dcos-teen-16', 'dcos-teen-17', 'dcos-teen-18', 'dcos-teen-19', 'dcos-teen-20'
+            ];
+            return gameIds[index];
+        } else if (category === 'moral-values' && ageGroup === 'kids') {
+            const gameIds = [
+                'moral-kids-1', 'moral-kids-2', 'moral-kids-3', 'moral-kids-4', 'moral-kids-5',
+                'moral-kids-6', 'moral-kids-7', 'moral-kids-8', 'moral-kids-9', 'moral-kids-10',
+                'moral-kids-11', 'moral-kids-12', 'moral-kids-13', 'moral-kids-14', 'moral-kids-15',
+                'moral-kids-16', 'moral-kids-17', 'moral-kids-18', 'moral-kids-19', 'moral-kids-20'
+            ];
+            return gameIds[index];
+        } else if (category === 'moral-values' && ageGroup === 'teens') {
+            const gameIds = [
+                'moral-teen-1', 'moral-teen-2', 'moral-teen-3', 'moral-teen-4', 'moral-teen-5',
+                'moral-teen-6', 'moral-teen-7', 'moral-teen-8', 'moral-teen-9', 'moral-teen-10',
+                'moral-teen-11', 'moral-teen-12', 'moral-teen-13', 'moral-teen-14', 'moral-teen-15',
+                'moral-teen-16', 'moral-teen-17', 'moral-teen-18', 'moral-teen-19', 'moral-teen-20'
+            ];
+            return gameIds[index];
+        } else if (category === 'ai-for-all' && ageGroup === 'kids') {
+            const gameIds = [
+                'ai-kids-1', 'ai-kids-2', 'ai-kids-3', 'ai-kids-4', 'ai-kids-5',
+                'ai-kids-6', 'ai-kids-7', 'ai-kids-8', 'ai-kids-9', 'ai-kids-10',
+                'ai-kids-11', 'ai-kids-12', 'ai-kids-13', 'ai-kids-14', 'ai-kids-15',
+                'ai-kids-16', 'ai-kids-17', 'ai-kids-18', 'ai-kids-19', 'ai-kids-20'
+            ];
+            return gameIds[index];
+        } else if (category === 'ai-for-all' && ageGroup === 'teens') {
+            const gameIds = [
+                'ai-teen-1', 'ai-teen-2', 'ai-teen-3', 'ai-teen-4', 'ai-teen-5',
+                'ai-teen-6', 'ai-teen-7', 'ai-teen-8', 'ai-teen-9', 'ai-teen-10',
+                'ai-teen-11', 'ai-teen-12', 'ai-teen-13', 'ai-teen-14', 'ai-teen-15',
+                'ai-teen-16', 'ai-teen-17', 'ai-teen-18', 'ai-teen-19', 'ai-teen-20'
+            ];
+            return gameIds[index];
+        } else if (category === 'entrepreneurship' && ageGroup === 'kids') {
+            const gameIds = [
+                'ehe-kids-1', 'ehe-kids-2', 'ehe-kids-3', 'ehe-kids-4', 'ehe-kids-5',
+                'ehe-kids-6', 'ehe-kids-7', 'ehe-kids-8', 'ehe-kids-9', 'ehe-kids-10',
+                'ehe-kids-11', 'ehe-kids-12', 'ehe-kids-13', 'ehe-kids-14', 'ehe-kids-15',
+                'ehe-kids-16', 'ehe-kids-17', 'ehe-kids-18', 'ehe-kids-19', 'ehe-kids-20'
+            ];
+            return gameIds[index];
+        } else if (category === 'entrepreneurship' && ageGroup === 'teens') {
+            const gameIds = [
+                'ehe-teen-1', 'ehe-teen-2', 'ehe-teen-3', 'ehe-teen-4', 'ehe-teen-5',
+                'ehe-teen-6', 'ehe-teen-7', 'ehe-teen-8', 'ehe-teen-9', 'ehe-teen-10',
+                'ehe-teen-11', 'ehe-teen-12', 'ehe-teen-13', 'ehe-teen-14', 'ehe-teen-15',
+                'ehe-teen-16', 'ehe-teen-17', 'ehe-teen-18', 'ehe-teen-19', 'ehe-teen-20'
+            ];
+            return gameIds[index];
+        } else if (category === 'civic-responsibility' && ageGroup === 'kids') {
+            const gameIds = [
+                'crgc-kids-1', 'crgc-kids-2', 'crgc-kids-3', 'crgc-kids-4', 'crgc-kids-5',
+                'crgc-kids-6', 'crgc-kids-7', 'crgc-kids-8', 'crgc-kids-9', 'crgc-kids-10',
+                'crgc-kids-11', 'crgc-kids-12', 'crgc-kids-13', 'crgc-kids-14', 'crgc-kids-15',
+                'crgc-kids-16', 'crgc-kids-17', 'crgc-kids-18', 'crgc-kids-19', 'crgc-kids-20'
+            ];
+            return gameIds[index];
+        } else if (category === 'civic-responsibility' && ageGroup === 'teens') {
+            const gameIds = [
+                'crgc-teen-1', 'crgc-teen-2', 'crgc-teen-3', 'crgc-teen-4', 'crgc-teen-5',
+                'crgc-teen-6', 'crgc-teen-7', 'crgc-teen-8', 'crgc-teen-9', 'crgc-teen-10',
+                'crgc-teen-11', 'crgc-teen-12', 'crgc-teen-13', 'crgc-teen-14', 'crgc-teen-15',
+                'crgc-teen-16', 'crgc-teen-17', 'crgc-teen-18', 'crgc-teen-19', 'crgc-teen-20'
             ];
             return gameIds[index];
         }
@@ -183,10 +293,11 @@ const GameCategoryPage = () => {
     // Load game completion status
     const loadGameCompletionStatus = async () => {
         try {
-            // For finance kids games, load completion status
-            if ((category === 'financial-literacy' || category === 'brain-health') && (ageGroup === 'kids' || ageGroup === 'teens')) {
+            // For finance, brain health, UVLS, DCOS, Moral Values, AI For All, EHE, and CRGC kids games, load completion status
+            if ((category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')) {
                 const status = {};
-                for (let i = 0; i < 20; i++) {
+                const maxGames = 20; // All have 20 games
+                for (let i = 0; i < maxGames; i++) {
                     const gameId = getGameIdByIndex(i);
                     if (gameId) {
                         const isCompleted = await gameCompletionService.isGameCompleted(gameId);
@@ -204,8 +315,8 @@ const GameCategoryPage = () => {
         loadGameCompletionStatus();
         
         // Listen for game completion events
-        const handleGameCompleted = (event) => {
-            if ((category === 'financial-literacy' || category === 'brain-health') && (ageGroup === 'kids' || ageGroup === 'teens')) {
+        const handleGameCompleted = () => {
+            if ((category === 'financial-literacy' || category === 'brain-health' || category === 'uvls') && (ageGroup === 'kids' || ageGroup === 'teens')) {
                 // Reload game completion status when a game is completed
                 loadGameCompletionStatus();
             }
@@ -1375,6 +1486,3450 @@ const GameCategoryPage = () => {
             
             // Add our real teen brain games
             games.push(...realTeenBrainGames);
+        } else if (category === 'uvls' && ageGroup === 'kids') {
+            // Add our 10 real UVLS Kids games
+            const realUVLSGames = [
+                {
+                    id: 'uvls-kids-1',
+                    title: 'Share Your Toy',
+                    description: 'Practice simple sharing in play',
+                    icon: <HandHeart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-kids-1'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/share-your-toy',
+                    index: 0
+                },
+                {
+                    id: 'uvls-kids-2',
+                    title: 'Feelings Quiz',
+                    description: 'Recognize caregiving actions',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['uvls-kids-2'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/feelings-quiz',
+                    index: 1
+                },
+                {
+                    id: 'uvls-kids-3',
+                    title: 'Kind Reflex',
+                    description: 'Rapidly identify kind vs mean actions',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['uvls-kids-3'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/kind-reflex',
+                    index: 2
+                },
+                {
+                    id: 'uvls-kids-4',
+                    title: 'Match Faces',
+                    description: 'Link facial expressions to feelings',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-kids-4'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/match-faces',
+                    index: 3
+                },
+                {
+                    id: 'uvls-kids-5',
+                    title: 'Spot Help',
+                    description: 'Notice peers who need help',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-kids-5'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/spot-help',
+                    index: 4
+                },
+                {
+                    id: 'uvls-kids-6',
+                    title: 'Kind Poster',
+                    description: 'Express compassion visually',
+                    icon: <GraduationCap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '10-12 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['uvls-kids-6'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/kind-poster',
+                    index: 5
+                },
+                {
+                    id: 'uvls-kids-7',
+                    title: 'Mini Journal',
+                    description: 'Put helping into words (very short)',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-kids-7'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/mini-journal',
+                    index: 6
+                },
+                {
+                    id: 'uvls-kids-8',
+                    title: 'Comfort Roleplay',
+                    description: 'Choose kind phrases to comfort a sad peer',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-kids-8'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/comfort-roleplay',
+                    index: 7
+                },
+                {
+                    id: 'uvls-kids-9',
+                    title: 'Share Reflex',
+                    description: 'Reinforce sharing cue recognition',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['uvls-kids-9'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/share-reflex',
+                    index: 8
+                },
+                {
+                    id: 'uvls-kids-10',
+                    title: 'Little Empath Badge',
+                    description: 'Encourage consistent small acts of empathy',
+                    icon: <Trophy className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: 'Cumulative',
+                    coins: 3,
+                    xp: 20,
+                    completed: gameCompletionStatus['uvls-kids-10'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/little-empath-badge',
+                    index: 9
+                },
+                {
+                    id: 'uvls-kids-11',
+                    title: 'Greet the New Kid',
+                    description: 'Model welcoming behaviour',
+                    icon: <HandHeart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-kids-11'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/greet-the-new-kid',
+                    index: 10
+                },
+                {
+                    id: 'uvls-kids-12',
+                    title: 'Polite Words Quiz',
+                    description: 'Identify polite language',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-5 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['uvls-kids-12'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/polite-words-quiz',
+                    index: 11
+                },
+                {
+                    id: 'uvls-kids-13',
+                    title: 'Respect Tap',
+                    description: 'Spot respectful actions quickly',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['uvls-kids-13'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/respect-tap',
+                    index: 12
+                },
+                {
+                    id: 'uvls-kids-14',
+                    title: 'Inclusion Match',
+                    description: 'Link inclusive acts to positive outcomes',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-kids-14'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/inclusion-match',
+                    index: 13
+                },
+                {
+                    id: 'uvls-kids-15',
+                    title: 'Invite to Play',
+                    description: 'Practice inviting someone to join',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-kids-15'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/invite-to-play',
+                    index: 14
+                },
+                {
+                    id: 'uvls-kids-16',
+                    title: 'Inclusion Poster',
+                    description: 'Visualize "everyone belongs"',
+                    icon: <GraduationCap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '10-12 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['uvls-kids-16'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/inclusion-poster',
+                    index: 15
+                },
+                {
+                    id: 'uvls-kids-17',
+                    title: 'Inclusion Journal',
+                    description: 'Reflect on an inclusion act (one line)',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-kids-17'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/inclusion-journal',
+                    index: 16
+                },
+                {
+                    id: 'uvls-kids-18',
+                    title: 'Invite Roleplay',
+                    description: 'Choose inviting phrases to include shy students',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-kids-18'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/invite-roleplay',
+                    index: 17
+                },
+                {
+                    id: 'uvls-kids-19',
+                    title: 'Respect Signals',
+                    description: 'Recognize respect signals (eye contact, listening)',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '3-4 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['uvls-kids-19'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/respect-signals',
+                    index: 18
+                },
+                {
+                    id: 'uvls-kids-20',
+                    title: 'Inclusive Kid Badge',
+                    description: 'Reinforce repeated inclusive actions',
+                    icon: <Trophy className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: 'Cumulative',
+                    coins: 3,
+                    xp: 20,
+                    completed: gameCompletionStatus['uvls-kids-20'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/kids/inclusive-kid-badge',
+                    index: 19
+                }
+            ];
+            
+            // Add our real UVLS games
+            games.push(...realUVLSGames);
+        } else if (category === 'uvls' && ageGroup === 'teens') {
+            // Add our 20 real UVLS Teen games
+            const realUVLSTeenGames = [
+                {
+                    id: 'uvls-teen-1',
+                    title: 'Listen Deep',
+                    description: 'Respond supportively to a peer sharing a personal problem',
+                    icon: <HandHeart className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-teen-1'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/listen-deep',
+                    index: 0
+                },
+                {
+                    id: 'uvls-teen-2',
+                    title: 'Empathy Quiz',
+                    description: 'Distinguish empathy vs sympathy in scenarios',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['uvls-teen-2'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/empathy-quiz',
+                    index: 1
+                },
+                {
+                    id: 'uvls-teen-3',
+                    title: 'Perspective Puzzle',
+                    description: 'Map responses to how they help others',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-teen-3'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/perspective-puzzle',
+                    index: 2
+                },
+                {
+                    id: 'uvls-teen-4',
+                    title: 'Walk in Shoes Simulation',
+                    description: 'Experience choices as a marginalized student',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '8-10 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['uvls-teen-4'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/walk-in-shoes',
+                    index: 3
+                },
+                {
+                    id: 'uvls-teen-5',
+                    title: 'Empathy Debate',
+                    description: 'Argue for school empathy curriculum',
+                    icon: <GraduationCap className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '20-30 min',
+                    coins: 5,
+                    xp: 20,
+                    completed: gameCompletionStatus['uvls-teen-5'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/empathy-debate',
+                    index: 4
+                },
+                {
+                    id: 'uvls-teen-6',
+                    title: 'Reflective Journal',
+                    description: 'Write reflecting on understanding someone different',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '10-12 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-teen-6'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/reflective-journal',
+                    index: 5
+                },
+                {
+                    id: 'uvls-teen-7',
+                    title: 'Peer Support Roleplay',
+                    description: 'Practice a peer-support conversation',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '8-10 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['uvls-teen-7'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/peer-support-roleplay',
+                    index: 6
+                },
+                {
+                    id: 'uvls-teen-8',
+                    title: 'Case-Response Puzzle',
+                    description: 'Choose best empathetic responses in a multi-part case',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '8 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-teen-8'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/case-response-puzzle',
+                    index: 7
+                },
+                {
+                    id: 'uvls-teen-9',
+                    title: 'Spot Distress Reflex',
+                    description: 'Rapidly detect subtle distress cues',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '3-5 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['uvls-teen-9'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/spot-distress-reflex',
+                    index: 8
+                },
+                {
+                    id: 'uvls-teen-10',
+                    title: 'Empathy Champion Badge',
+                    description: 'Complete 5 teen empathy tasks',
+                    icon: <Trophy className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: 'Cumulative',
+                    coins: 3,
+                    xp: 20,
+                    completed: gameCompletionStatus['uvls-teen-10'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/empathy-champion-badge',
+                    index: 9
+                },
+                {
+                    id: 'uvls-teen-11',
+                    title: 'Cultural Greeting',
+                    description: 'Choose respectful greeting for different cultural contexts',
+                    icon: <HandHeart className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-teen-11'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/cultural-greeting',
+                    index: 10
+                },
+                {
+                    id: 'uvls-teen-12',
+                    title: 'Inclusion Quiz',
+                    description: 'Identify inclusive school actions/policies',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['uvls-teen-12'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/inclusion-quiz',
+                    index: 11
+                },
+                {
+                    id: 'uvls-teen-13',
+                    title: 'Accessibility Puzzle',
+                    description: 'Match accommodations to student needs',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '7 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-teen-13'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/accessibility-puzzle',
+                    index: 12
+                },
+                {
+                    id: 'uvls-teen-14',
+                    title: 'Inclusive Class Simulation',
+                    description: 'Design an activity that allows participation for all',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '10-12 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['uvls-teen-14'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/inclusive-class-simulation',
+                    index: 13
+                },
+                {
+                    id: 'uvls-teen-15',
+                    title: 'Respect Debate',
+                    description: 'Debate whether respect equals agreement',
+                    icon: <GraduationCap className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '20 min',
+                    coins: 5,
+                    xp: 20,
+                    completed: gameCompletionStatus['uvls-teen-15'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/respect-debate',
+                    index: 14
+                },
+                {
+                    id: 'uvls-teen-16',
+                    title: 'Inclusion Journal',
+                    description: 'Describe when you challenged exclusion & outcome',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '10 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['uvls-teen-16'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/inclusion-journal',
+                    index: 15
+                },
+                {
+                    id: 'uvls-teen-17',
+                    title: 'Correcting Bias Roleplay',
+                    description: 'Practice calling out bias respectfully',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '8-10 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['uvls-teen-17'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/correcting-bias-roleplay',
+                    index: 16
+                },
+                {
+                    id: 'uvls-teen-18',
+                    title: 'Name Respect Reflex',
+                    description: 'Identify correct pronunciation & respond respectfully',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '4 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['uvls-teen-18'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/name-respect-reflex',
+                    index: 17
+                },
+                {
+                    id: 'uvls-teen-19',
+                    title: 'Policy Case Puzzle',
+                    description: 'Recommend inclusive policy actions for a school case',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '10 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['uvls-teen-19'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/policy-case-puzzle',
+                    index: 18
+                },
+                {
+                    id: 'uvls-teen-20',
+                    title: 'Respect Leader Badge',
+                    description: 'Complete 5 inclusion leadership tasks',
+                    icon: <Trophy className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: 'Variable',
+                    coins: 3,
+                    xp: 25,
+                    completed: gameCompletionStatus['uvls-teen-20'] || false,
+                    isSpecial: true,
+                    path: '/student/uvls/teen/respect-leader-badge',
+                    index: 19
+                }
+            ];
+            
+            // Add our real UVLS Teen games
+            games.push(...realUVLSTeenGames);
+        } else if (category === 'digital-citizenship' && ageGroup === 'kids') {
+            // Add our 20 real DCOS Kids games
+            const realDCOSKidsGames = [
+                {
+                    id: 'dcos-kids-1',
+                    title: 'Strong Password Reflex',
+                    description: 'Choose between weak and strong passwords',
+                    icon: <Lock className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['dcos-kids-1'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/strong-password-reflex',
+                    index: 0
+                },
+                {
+                    id: 'dcos-kids-2',
+                    title: 'Stranger Chat Story',
+                    description: 'Learn not to share personal info online',
+                    icon: <Shield className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-5 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-kids-2'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/stranger-chat-story',
+                    index: 1
+                },
+                {
+                    id: 'dcos-kids-3',
+                    title: 'Photo Share Quiz',
+                    description: 'Should you post personal photos online?',
+                    icon: <Camera className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-4 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['dcos-kids-3'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/photo-share-quiz',
+                    index: 2
+                },
+                {
+                    id: 'dcos-kids-4',
+                    title: 'Personal Info Puzzle',
+                    description: 'Match items to Private or Okay to Share',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-6 min',
+                    coins: 3,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-kids-4'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/personal-info-puzzle',
+                    index: 3
+                },
+                {
+                    id: 'dcos-kids-5',
+                    title: 'Game Invite Reflex',
+                    description: 'Accept from friends, decline from strangers',
+                    icon: <Gamepad2 className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-4 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-kids-5'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/game-invite-reflex',
+                    index: 4
+                },
+                {
+                    id: 'dcos-kids-6',
+                    title: 'Safety Poster Task',
+                    description: 'Create a safety message poster',
+                    icon: <Palette className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-kids-6'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/safety-poster',
+                    index: 5
+                },
+                {
+                    id: 'dcos-kids-7',
+                    title: 'Family Rules Story',
+                    description: 'Follow family device rules',
+                    icon: <Home className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-kids-7'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/family-rules-story',
+                    index: 6
+                },
+                {
+                    id: 'dcos-kids-8',
+                    title: 'Device Sharing Quiz',
+                    description: 'Is it safe to share your device with strangers?',
+                    icon: <Smartphone className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-5 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['dcos-kids-8'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/device-sharing-quiz',
+                    index: 7
+                },
+                {
+                    id: 'dcos-kids-9',
+                    title: 'Online Friend Reflex',
+                    description: 'Never meet someone you only know online',
+                    icon: <UserX className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-kids-9'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/online-friend-reflex',
+                    index: 8
+                },
+                {
+                    id: 'dcos-kids-10',
+                    title: 'Safe User Badge',
+                    description: 'Complete 5 safety habits to earn badge',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-8 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['dcos-kids-10'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/safe-user-badge',
+                    index: 9
+                },
+                {
+                    id: 'dcos-kids-11',
+                    title: 'Spot the Bully Quiz',
+                    description: 'Identify bullying behavior',
+                    icon: <Eye className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-5 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['dcos-kids-11'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/spot-bully-quiz',
+                    index: 10
+                },
+                {
+                    id: 'dcos-kids-12',
+                    title: 'Kind Words Reflex',
+                    description: 'Tap kind words, avoid rude ones',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['dcos-kids-12'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/kind-words-reflex',
+                    index: 11
+                },
+                {
+                    id: 'dcos-kids-13',
+                    title: 'Smile Story',
+                    description: 'Choose to be kind to others',
+                    icon: <Smile className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-kids-13'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/smile-story',
+                    index: 12
+                },
+                {
+                    id: 'dcos-kids-14',
+                    title: 'Gossip Puzzle',
+                    description: 'Connect gossip to hurt feelings',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-6 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-kids-14'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/gossip-puzzle',
+                    index: 13
+                },
+                {
+                    id: 'dcos-kids-15',
+                    title: 'Playground Bystander',
+                    description: 'Help a child being bullied',
+                    icon: <HandHeart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-kids-15'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/playground-bystander',
+                    index: 14
+                },
+                {
+                    id: 'dcos-kids-16',
+                    title: 'Cyberbully Report',
+                    description: 'Report mean comments to adults',
+                    icon: <Flag className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-kids-16'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/cyberbully-report',
+                    index: 15
+                },
+                {
+                    id: 'dcos-kids-17',
+                    title: 'Role Swap Simulation',
+                    description: 'Experience how bullying feels',
+                    icon: <RefreshCw className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '8-10 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['dcos-kids-17'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/role-swap',
+                    index: 16
+                },
+                {
+                    id: 'dcos-kids-18',
+                    title: 'Journal of Kindness',
+                    description: 'Write about your kind act',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-kids-18'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/kindness-journal',
+                    index: 17
+                },
+                {
+                    id: 'dcos-kids-19',
+                    title: 'Friendship Reflex',
+                    description: 'Stand with your friend when needed',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-5 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-kids-19'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/friendship-reflex',
+                    index: 18
+                },
+                {
+                    id: 'dcos-kids-20',
+                    title: 'Kind Friend Badge',
+                    description: 'Complete 5 kindness acts to earn badge',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-8 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['dcos-kids-20'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/kids/kind-friend-badge',
+                    index: 19
+                }
+            ];
+            
+            // Add our real DCOS Kids games
+            games.push(...realDCOSKidsGames);
+        } else if (category === 'digital-citizenship' && ageGroup === 'teens') {
+            // Add our 20 real DCOS Teen games
+            const realDCOSTeenGames = [
+                {
+                    id: 'dcos-teen-1',
+                    title: 'Password Sharing Story',
+                    description: 'Never share your password with anyone',
+                    icon: <Lock className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-teen-1'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/password-sharing-story',
+                    index: 0
+                },
+                {
+                    id: 'dcos-teen-2',
+                    title: 'Privacy Settings Quiz',
+                    description: 'Should profiles be public or private?',
+                    icon: <Shield className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-teen-2'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/privacy-settings-quiz',
+                    index: 1
+                },
+                {
+                    id: 'dcos-teen-3',
+                    title: 'OTP Fraud Reflex',
+                    description: 'Detect and block OTP scams',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-teen-3'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/otp-fraud-reflex',
+                    index: 2
+                },
+                {
+                    id: 'dcos-teen-4',
+                    title: 'Profile Picture Simulation',
+                    description: 'Choose safe profile picture - cartoon vs photo',
+                    icon: <Camera className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-teen-4'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/profile-picture-simulation',
+                    index: 3
+                },
+                {
+                    id: 'dcos-teen-5',
+                    title: 'Social Media Journal',
+                    description: 'What info is okay to share online?',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '8-10 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-teen-5'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/social-media-journal',
+                    index: 4
+                },
+                {
+                    id: 'dcos-teen-6',
+                    title: 'Data Consent Quiz',
+                    description: 'App permissions - what is safe to allow?',
+                    icon: <Smartphone className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-teen-6'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/data-consent-quiz',
+                    index: 5
+                },
+                {
+                    id: 'dcos-teen-7',
+                    title: 'Fake Friend Story',
+                    description: 'Stranger claims to know your friend',
+                    icon: <UserX className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-teen-7'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/fake-friend-story',
+                    index: 6
+                },
+                {
+                    id: 'dcos-teen-8',
+                    title: 'Safety Reflex',
+                    description: 'Detect and report scam ads',
+                    icon: <Eye className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-teen-8'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/safety-reflex',
+                    index: 7
+                },
+                {
+                    id: 'dcos-teen-9',
+                    title: 'Debate: Online Friends',
+                    description: 'Is it safe to meet online friends in real life?',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '15-20 min',
+                    coins: 10,
+                    xp: 20,
+                    completed: gameCompletionStatus['dcos-teen-9'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/debate-stage-online-friends',
+                    index: 8
+                },
+                {
+                    id: 'dcos-teen-10',
+                    title: 'Online Safety Badge',
+                    description: 'Complete 5 teen safety acts',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['dcos-teen-10'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/online-safety-badge',
+                    index: 9
+                },
+                {
+                    id: 'dcos-teen-11',
+                    title: 'Cyberbully Reflex',
+                    description: 'Block and report hurtful comments',
+                    icon: <Shield className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-teen-11'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/cyberbully-reflex',
+                    index: 10
+                },
+                {
+                    id: 'dcos-teen-12',
+                    title: 'Peer Pressure Story',
+                    description: 'Friends want you to join trolling',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-teen-12'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/peer-pressure-story',
+                    index: 11
+                },
+                {
+                    id: 'dcos-teen-13',
+                    title: 'Gossip Chain Simulation',
+                    description: 'Rumor spreads across 3 chats - stop it',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '8-10 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['dcos-teen-13'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/gossip-chain-simulation',
+                    index: 12
+                },
+                {
+                    id: 'dcos-teen-14',
+                    title: 'Debate: Trolling',
+                    description: 'Is trolling funny? Build your argument',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '15-20 min',
+                    coins: 10,
+                    xp: 20,
+                    completed: gameCompletionStatus['dcos-teen-14'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/debate-stage-trolling',
+                    index: 13
+                },
+                {
+                    id: 'dcos-teen-15',
+                    title: 'Diversity Quiz',
+                    description: 'Defend friend mocked for their accent',
+                    icon: <Globe className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-teen-15'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/diversity-quiz',
+                    index: 14
+                },
+                {
+                    id: 'dcos-teen-16',
+                    title: 'Encourage Roleplay',
+                    description: 'Classmate cyberbullied - encourage & report',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '8-10 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['dcos-teen-16'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/encourage-roleplay',
+                    index: 15
+                },
+                {
+                    id: 'dcos-teen-17',
+                    title: 'Empathy Journal',
+                    description: 'How would I feel if trolled?',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '8-10 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-teen-17'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/empathy-journal',
+                    index: 16
+                },
+                {
+                    id: 'dcos-teen-18',
+                    title: 'Anti-Bully Reflex',
+                    description: 'Stand up when troll messages flash',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['dcos-teen-18'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/anti-bully-reflex',
+                    index: 17
+                },
+                {
+                    id: 'dcos-teen-19',
+                    title: 'Upstander Simulation',
+                    description: 'Group trolling victim - defend them',
+                    icon: <HandHeart className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 12,
+                    completed: gameCompletionStatus['dcos-teen-19'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/upstander-simulation',
+                    index: 18
+                },
+                {
+                    id: 'dcos-teen-20',
+                    title: 'Courage Badge',
+                    description: 'Complete 5 anti-bullying acts',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['dcos-teen-20'] || false,
+                    isSpecial: true,
+                    path: '/student/dcos/teen/courage-badge',
+                    index: 19
+                }
+            ];
+            
+            // Add our real DCOS Teen games
+            games.push(...realDCOSTeenGames);
+        } else if (category === 'moral-values' && ageGroup === 'kids') {
+            // Add our 20 real Moral Values Kids games
+            const realMoralKidsGames = [
+                {
+                    id: 'moral-kids-1',
+                    title: 'Lost Pencil Story',
+                    description: 'Return what you find',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-kids-1'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/lost-pencil-story',
+                    index: 0
+                },
+                {
+                    id: 'moral-kids-2',
+                    title: 'Homework Quiz',
+                    description: 'Lying about homework - is it honest?',
+                    icon: <GraduationCap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-5 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['moral-kids-2'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/homework-quiz',
+                    index: 1
+                },
+                {
+                    id: 'moral-kids-3',
+                    title: 'Truth Reflex',
+                    description: 'Tap truth or lie words',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-4 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['moral-kids-3'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/truth-reflex',
+                    index: 2
+                },
+                {
+                    id: 'moral-kids-4',
+                    title: 'Puzzle of Trust',
+                    description: 'Match Truth to Trust, Lie to Trouble',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-6 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-kids-4'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/puzzle-of-trust',
+                    index: 3
+                },
+                {
+                    id: 'moral-kids-5',
+                    title: 'Cheating Story',
+                    description: 'Friend wants you to cheat',
+                    icon: <Shield className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-kids-5'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/cheating-story',
+                    index: 4
+                },
+                {
+                    id: 'moral-kids-6',
+                    title: 'Poster of Honesty',
+                    description: 'Create honesty is best poster',
+                    icon: <Palette className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['moral-kids-6'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/poster-of-honesty',
+                    index: 5
+                },
+                {
+                    id: 'moral-kids-7',
+                    title: 'Journal of Truth',
+                    description: 'Write about telling the truth',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-kids-7'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/journal-of-truth',
+                    index: 6
+                },
+                {
+                    id: 'moral-kids-8',
+                    title: 'Candy Shop Story',
+                    description: 'Return extra candy to shopkeeper',
+                    icon: <ShoppingCart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-kids-8'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/candy-shop-story',
+                    index: 7
+                },
+                {
+                    id: 'moral-kids-9',
+                    title: 'Reflex Quick Choice',
+                    description: 'Fast truth or lie tapping',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-4 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['moral-kids-9'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/reflex-quick-choice',
+                    index: 8
+                },
+                {
+                    id: 'moral-kids-10',
+                    title: 'Badge: Truthful Kid',
+                    description: 'Complete 5 honesty acts',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-8 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['moral-kids-10'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/badge-truthful-kid',
+                    index: 9
+                },
+                {
+                    id: 'moral-kids-11',
+                    title: 'Respect Elders Story',
+                    description: 'Help grandpa right away',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-kids-11'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/respect-elders-story',
+                    index: 10
+                },
+                {
+                    id: 'moral-kids-12',
+                    title: 'Polite Words Quiz',
+                    description: 'Identify polite language',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-5 min',
+                    coins: 3,
+                    xp: 8,
+                    completed: gameCompletionStatus['moral-kids-12'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/polite-words-quiz',
+                    index: 11
+                },
+                {
+                    id: 'moral-kids-13',
+                    title: 'Reflex Respect',
+                    description: 'Tap kind or rude words',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-4 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['moral-kids-13'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/reflex-respect',
+                    index: 12
+                },
+                {
+                    id: 'moral-kids-14',
+                    title: 'Puzzle: Respect Match',
+                    description: 'Listen = Respect, Mock = Hurt',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-6 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-kids-14'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/puzzle-respect-match',
+                    index: 13
+                },
+                {
+                    id: 'moral-kids-15',
+                    title: 'Teacher Greeting Story',
+                    description: 'Greet teacher when they enter',
+                    icon: <GraduationCap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-kids-15'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/teacher-greeting-story',
+                    index: 14
+                },
+                {
+                    id: 'moral-kids-16',
+                    title: 'Gratitude Poster',
+                    description: 'Create a thank you poster',
+                    icon: <Palette className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['moral-kids-16'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/gratitude-poster',
+                    index: 15
+                },
+                {
+                    id: 'moral-kids-17',
+                    title: 'Journal of Gratitude',
+                    description: 'Today I thanked ___ for ___',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-kids-17'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/journal-of-gratitude',
+                    index: 16
+                },
+                {
+                    id: 'moral-kids-18',
+                    title: 'Playground Respect Story',
+                    description: 'Include smaller child in game',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-kids-18'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/playground-respect-story',
+                    index: 17
+                },
+                {
+                    id: 'moral-kids-19',
+                    title: 'Reflex Help',
+                    description: 'Tap help when needed',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-5 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['moral-kids-19'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/reflex-help',
+                    index: 18
+                },
+                {
+                    id: 'moral-kids-20',
+                    title: 'Badge: Respect Kid',
+                    description: 'Complete 5 respect actions',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['moral-kids-20'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/kids/badge-respect-kid',
+                    index: 19
+                }
+            ];
+            
+            // Add our real Moral Values Kids games
+            games.push(...realMoralKidsGames);
+        } else if (category === 'moral-values' && ageGroup === 'teens') {
+            // Add our 20 real Moral Values Teen games
+            const realMoralTeenGames = [
+                {
+                    id: 'moral-teen-1',
+                    title: "Friend's Lie Story",
+                    description: 'Refuse to lie for friend',
+                    icon: <Shield className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-teen-1'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/friend-lie-story',
+                    index: 0
+                },
+                {
+                    id: 'moral-teen-2',
+                    title: 'White Lie Quiz',
+                    description: 'Can small lies be harmless?',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['moral-teen-2'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/white-lie-quiz',
+                    index: 1
+                },
+                {
+                    id: 'moral-teen-3',
+                    title: 'Reflex: Spot Fake',
+                    description: 'Identify fake news quickly',
+                    icon: <Eye className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['moral-teen-3'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/reflex-spot-fake',
+                    index: 2
+                },
+                {
+                    id: 'moral-teen-4',
+                    title: 'Puzzle of Integrity',
+                    description: 'Integrity = Doing right when unseen',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-teen-4'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/puzzle-of-integrity',
+                    index: 3
+                },
+                {
+                    id: 'moral-teen-5',
+                    title: 'Bribe Simulation',
+                    description: 'Refuse bribe and report it',
+                    icon: <Shield className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '7-9 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['moral-teen-5'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/bribe-simulation',
+                    index: 4
+                },
+                {
+                    id: 'moral-teen-6',
+                    title: 'Debate: Lying for Friend',
+                    description: 'Is lying okay to protect a friend?',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '15-20 min',
+                    coins: 10,
+                    xp: 20,
+                    completed: gameCompletionStatus['moral-teen-6'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/debate-lying-for-friend',
+                    index: 5
+                },
+                {
+                    id: 'moral-teen-7',
+                    title: 'Integrity Journal',
+                    description: 'Write about telling a hard truth',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '8-10 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-teen-7'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/integrity-journal',
+                    index: 6
+                },
+                {
+                    id: 'moral-teen-8',
+                    title: 'Exam Cheating Story',
+                    description: 'Resist temptation to cheat',
+                    icon: <GraduationCap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-teen-8'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/exam-cheating-story',
+                    index: 7
+                },
+                {
+                    id: 'moral-teen-9',
+                    title: 'Roleplay: Truthful Leader',
+                    description: 'Lead group with honesty',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '8-10 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['moral-teen-9'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/roleplay-truthful-leader',
+                    index: 8
+                },
+                {
+                    id: 'moral-teen-10',
+                    title: 'Badge: Integrity Hero',
+                    description: 'Complete 5 integrity dilemmas',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['moral-teen-10'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/badge-integrity-hero',
+                    index: 9
+                },
+                {
+                    id: 'moral-teen-11',
+                    title: 'Debate: Obey or Question',
+                    description: 'Respect vs blind obedience',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '15-20 min',
+                    coins: 10,
+                    xp: 20,
+                    completed: gameCompletionStatus['moral-teen-11'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/debate-obey-or-question',
+                    index: 10
+                },
+                {
+                    id: 'moral-teen-12',
+                    title: 'Gratitude Story',
+                    description: 'Thank friend for sharing notes',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-teen-12'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/gratitude-story',
+                    index: 11
+                },
+                {
+                    id: 'moral-teen-13',
+                    title: 'Reflex: Politeness',
+                    description: 'Tap polite vs rude phrases',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['moral-teen-13'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/reflex-politeness',
+                    index: 12
+                },
+                {
+                    id: 'moral-teen-14',
+                    title: 'Puzzle of Gratitude',
+                    description: 'Thanks → Smile, Ignore → Hurt',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-teen-14'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/puzzle-of-gratitude',
+                    index: 13
+                },
+                {
+                    id: 'moral-teen-15',
+                    title: 'Service Story',
+                    description: 'Return dropped money to conductor',
+                    icon: <Coins className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-teen-15'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/service-story',
+                    index: 14
+                },
+                {
+                    id: 'moral-teen-16',
+                    title: 'Respect Journal',
+                    description: 'This week I showed respect by...',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '8-10 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['moral-teen-16'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/respect-journal',
+                    index: 15
+                },
+                {
+                    id: 'moral-teen-17',
+                    title: 'Debate: Respect Teachers',
+                    description: 'Argue rudely with teachers?',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '15-20 min',
+                    coins: 10,
+                    xp: 20,
+                    completed: gameCompletionStatus['moral-teen-17'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/debate-respect-teachers',
+                    index: 16
+                },
+                {
+                    id: 'moral-teen-18',
+                    title: 'Roleplay: Respect Leader',
+                    description: 'Lead by listening to everyone',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '8-10 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['moral-teen-18'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/roleplay-respect-leader',
+                    index: 17
+                },
+                {
+                    id: 'moral-teen-19',
+                    title: 'Reflex: Gratitude',
+                    description: 'Spot thank you vs rude emojis',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['moral-teen-19'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/reflex-gratitude',
+                    index: 18
+                },
+                {
+                    id: 'moral-teen-20',
+                    title: 'Badge: Gratitude Hero',
+                    description: 'Complete 5 gratitude acts',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['moral-teen-20'] || false,
+                    isSpecial: true,
+                    path: '/student/moral-values/teen/badge-gratitude-hero',
+                    index: 19
+                }
+            ];
+            
+            // Add our real Moral Values Teen games
+            games.push(...realMoralTeenGames);
+        } else if (category === 'ai-for-all' && ageGroup === 'kids') {
+            // Add our 20 real AI For All Kids games
+            const realAIKidsGames = [
+                {
+                    id: 'ai-kids-1',
+                    title: 'Spot the Pattern',
+                    description: 'Find what comes next in the pattern',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ai-kids-1'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/spot-the-pattern',
+                    index: 0
+                },
+                {
+                    id: 'ai-kids-2',
+                    title: 'Cat or Dog Game',
+                    description: 'Sort images into cat or dog',
+                    icon: <Eye className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 20,
+                    xp: 20,
+                    completed: gameCompletionStatus['ai-kids-2'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/cat-or-dog-game',
+                    index: 1
+                },
+                {
+                    id: 'ai-kids-3',
+                    title: 'Sorting Colors',
+                    description: 'Drag objects to correct color boxes',
+                    icon: <Palette className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 20,
+                    xp: 20,
+                    completed: gameCompletionStatus['ai-kids-3'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/sorting-colors',
+                    index: 2
+                },
+                {
+                    id: 'ai-kids-4',
+                    title: 'True or False AI Quiz',
+                    description: 'AI means Artificial Intelligence?',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '3-5 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-kids-4'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/true-false-ai-quiz',
+                    index: 3
+                },
+                {
+                    id: 'ai-kids-5',
+                    title: 'Emoji Classifier',
+                    description: 'Sort emojis into happy or sad buckets',
+                    icon: <Smile className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 20,
+                    xp: 20,
+                    completed: gameCompletionStatus['ai-kids-5'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/emoji-classifier',
+                    index: 4
+                },
+                {
+                    id: 'ai-kids-6',
+                    title: 'Self-Driving Car Game',
+                    description: 'Help AI car respond to traffic lights',
+                    icon: <Cpu className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['ai-kids-6'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/self-driving-car',
+                    index: 5
+                },
+                {
+                    id: 'ai-kids-7',
+                    title: 'Pattern Finder Puzzle',
+                    description: 'Find missing numbers in sequences',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ai-kids-7'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/pattern-finder-puzzle',
+                    index: 6
+                },
+                {
+                    id: 'ai-kids-8',
+                    title: 'Robot Helper Story',
+                    description: 'Learn to appreciate AI helpers',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-kids-8'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/robot-helper-story',
+                    index: 7
+                },
+                {
+                    id: 'ai-kids-9',
+                    title: 'Spam vs Not Spam',
+                    description: 'Filter emails like AI does',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 20,
+                    xp: 20,
+                    completed: gameCompletionStatus['ai-kids-9'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/spam-vs-not-spam',
+                    index: 8
+                },
+                {
+                    id: 'ai-kids-10',
+                    title: 'Siri/Alexa Quiz',
+                    description: 'Learn about AI assistants',
+                    icon: <Cpu className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-kids-10'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/siri-alexa-quiz',
+                    index: 9
+                },
+                {
+                    id: 'ai-kids-11',
+                    title: 'AI in Games',
+                    description: 'Who controls video game enemies?',
+                    icon: <Gamepad2 className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-kids-11'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/ai-in-games',
+                    index: 10
+                },
+                {
+                    id: 'ai-kids-12',
+                    title: 'Match AI Tools',
+                    description: 'Identify which tools use AI',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ai-kids-12'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/match-ai-tools',
+                    index: 11
+                },
+                {
+                    id: 'ai-kids-13',
+                    title: 'Pattern Music Game',
+                    description: 'Repeat rhythm patterns',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ai-kids-13'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/pattern-music-game',
+                    index: 12
+                },
+                {
+                    id: 'ai-kids-14',
+                    title: 'Robot Vision Game',
+                    description: 'Help robot see apple vs banana',
+                    icon: <Eye className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 20,
+                    xp: 20,
+                    completed: gameCompletionStatus['ai-kids-14'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/robot-vision-game',
+                    index: 13
+                },
+                {
+                    id: 'ai-kids-15',
+                    title: 'Smart Home Story',
+                    description: 'How AI controls smart homes',
+                    icon: <Home className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-kids-15'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/smart-home-story',
+                    index: 14
+                },
+                {
+                    id: 'ai-kids-16',
+                    title: 'Train the Robot',
+                    description: 'Teach robot what food is',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 20,
+                    xp: 20,
+                    completed: gameCompletionStatus['ai-kids-16'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/train-the-robot',
+                    index: 15
+                },
+                {
+                    id: 'ai-kids-17',
+                    title: 'Prediction Puzzle',
+                    description: 'Predict what comes next',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ai-kids-17'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/prediction-puzzle',
+                    index: 16
+                },
+                {
+                    id: 'ai-kids-18',
+                    title: 'Friendly AI Quiz',
+                    description: 'Should AI help people?',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-kids-18'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/friendly-ai-quiz',
+                    index: 17
+                },
+                {
+                    id: 'ai-kids-19',
+                    title: 'Robot Emotion Story',
+                    description: 'Show empathy with AI',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-kids-19'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/robot-emotion-story',
+                    index: 18
+                },
+                {
+                    id: 'ai-kids-20',
+                    title: 'Recommendation Game',
+                    description: 'How AI recommends content',
+                    icon: <Star className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ai-kids-20'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/kids/recommendation-game',
+                    index: 19
+                }
+            ];
+            
+            // Add our real AI For All Kids games
+            games.push(...realAIKidsGames);
+        } else if (category === 'ai-for-all' && ageGroup === 'teens') {
+            // Add our 20 real AI For All Teen games
+            const realAITeenGames = [
+                {
+                    id: 'ai-teen-1',
+                    title: 'What is AI? Quiz',
+                    description: 'Define what AI stands for',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-teen-1'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/what-is-ai-quiz',
+                    index: 0
+                },
+                {
+                    id: 'ai-teen-2',
+                    title: 'Pattern Prediction Puzzle',
+                    description: 'Predict the next number in sequences',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['ai-teen-2'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/pattern-prediction-puzzle',
+                    index: 1
+                },
+                {
+                    id: 'ai-teen-3',
+                    title: 'Image Classifier Game',
+                    description: 'Sort images into categories',
+                    icon: <Eye className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 20,
+                    xp: 20,
+                    completed: gameCompletionStatus['ai-teen-3'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/image-classifier-game',
+                    index: 2
+                },
+                {
+                    id: 'ai-teen-4',
+                    title: 'Human vs AI Quiz',
+                    description: 'Is Google Translate powered by AI?',
+                    icon: <Cpu className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-teen-4'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/human-vs-ai-quiz',
+                    index: 3
+                },
+                {
+                    id: 'ai-teen-5',
+                    title: 'Predict the Next Word',
+                    description: 'Complete sentences like GPT does',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['ai-teen-5'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/predict-next-word',
+                    index: 4
+                },
+                {
+                    id: 'ai-teen-6',
+                    title: 'Self-Driving Car Reflex',
+                    description: 'React fast to traffic lights',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['ai-teen-6'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/self-driving-car-reflex',
+                    index: 5
+                },
+                {
+                    id: 'ai-teen-7',
+                    title: 'Sorting Emotions Game',
+                    description: 'Classify emotions from emojis',
+                    icon: <Smile className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 20,
+                    xp: 20,
+                    completed: gameCompletionStatus['ai-teen-7'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/sorting-emotions-game',
+                    index: 6
+                },
+                {
+                    id: 'ai-teen-8',
+                    title: 'True or False AI Quiz',
+                    description: 'Is a calculator AI?',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-teen-8'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/true-false-ai-quiz',
+                    index: 7
+                },
+                {
+                    id: 'ai-teen-9',
+                    title: 'Chatbot Simulation',
+                    description: 'Have a conversation with an AI bot',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '8-10 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['ai-teen-9'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/chatbot-simulation',
+                    index: 8
+                },
+                {
+                    id: 'ai-teen-10',
+                    title: 'AI in Gaming Story',
+                    description: 'Who controls video game enemies?',
+                    icon: <Gamepad2 className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-teen-10'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/ai-in-gaming-story',
+                    index: 9
+                },
+                {
+                    id: 'ai-teen-11',
+                    title: 'Pattern Music Reflex',
+                    description: 'Repeat rhythm patterns',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['ai-teen-11'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/pattern-music-reflex',
+                    index: 10
+                },
+                {
+                    id: 'ai-teen-12',
+                    title: 'Computer Vision Basics',
+                    description: 'Identify objects with AI eyes',
+                    icon: <Eye className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 20,
+                    xp: 20,
+                    completed: gameCompletionStatus['ai-teen-12'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/computer-vision-basics',
+                    index: 11
+                },
+                {
+                    id: 'ai-teen-13',
+                    title: 'AI in Smartphones Quiz',
+                    description: 'Does face unlock use AI?',
+                    icon: <Smartphone className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-teen-13'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/ai-in-smartphones-quiz',
+                    index: 12
+                },
+                {
+                    id: 'ai-teen-14',
+                    title: 'Prediction Story',
+                    description: 'How AI forecasts weather',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 10,
+                    xp: 20,
+                    completed: gameCompletionStatus['ai-teen-14'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/prediction-story',
+                    index: 13
+                },
+                {
+                    id: 'ai-teen-15',
+                    title: 'Machine vs Human Reflex',
+                    description: 'Identify Human or AI quickly',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 20,
+                    xp: 20,
+                    completed: gameCompletionStatus['ai-teen-15'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/machine-vs-human-reflex',
+                    index: 14
+                },
+                {
+                    id: 'ai-teen-16',
+                    title: 'Language AI Quiz',
+                    description: 'Is Google Translate an AI?',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-teen-16'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/language-ai-quiz',
+                    index: 15
+                },
+                {
+                    id: 'ai-teen-17',
+                    title: 'Simple Algorithm Puzzle',
+                    description: 'Arrange steps to solve a problem',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['ai-teen-17'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/simple-algorithm-puzzle',
+                    index: 16
+                },
+                {
+                    id: 'ai-teen-18',
+                    title: 'Smart Home Story',
+                    description: 'How AI controls smart homes',
+                    icon: <Home className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 10,
+                    xp: 20,
+                    completed: gameCompletionStatus['ai-teen-18'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/smart-home-story',
+                    index: 17
+                },
+                {
+                    id: 'ai-teen-19',
+                    title: 'Recommendation Simulation',
+                    description: 'How AI recommends content',
+                    icon: <Star className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '8-10 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['ai-teen-19'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/recommendation-simulation',
+                    index: 18
+                },
+                {
+                    id: 'ai-teen-20',
+                    title: 'AI Everywhere Quiz',
+                    description: 'Understand AI\'s reach in our world',
+                    icon: <Globe className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ai-teen-20'] || false,
+                    isSpecial: true,
+                    path: '/student/ai-for-all/teen/ai-everywhere-quiz',
+                    index: 19
+                }
+            ];
+            
+            // Add our real AI For All Teen games
+            games.push(...realAITeenGames);
+        } else if (category === 'entrepreneurship' && ageGroup === 'kids') {
+            // Add our 20 real EHE Kids games
+            const realEHEKidsGames = [
+                {
+                    id: 'ehe-kids-1',
+                    title: 'Doctor Story',
+                    description: 'Learn about doctor\'s job',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-kids-1'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/doctor-story',
+                    index: 0
+                },
+                {
+                    id: 'ehe-kids-2',
+                    title: 'Quiz on Jobs',
+                    description: 'Match people to their jobs',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 12,
+                    completed: gameCompletionStatus['ehe-kids-2'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/quiz-on-jobs',
+                    index: 1
+                },
+                {
+                    id: 'ehe-kids-3',
+                    title: 'Reflex Job Match',
+                    description: 'Quick matching of jobs to workplaces',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-kids-3'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/reflex-job-match',
+                    index: 2
+                },
+                {
+                    id: 'ehe-kids-4',
+                    title: 'Puzzle: Who Does What?',
+                    description: 'Match jobs to their tasks',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ehe-kids-4'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/puzzle-who-does-what',
+                    index: 3
+                },
+                {
+                    id: 'ehe-kids-5',
+                    title: 'Dream Job Story',
+                    description: 'Find the job that fits your passion',
+                    icon: <Star className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-kids-5'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/dream-job-story',
+                    index: 4
+                },
+                {
+                    id: 'ehe-kids-6',
+                    title: 'Poster: My Dream Job',
+                    description: 'Create your dream job poster',
+                    icon: <Palette className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '8-10 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['ehe-kids-6'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/poster-my-dream-job',
+                    index: 5
+                },
+                {
+                    id: 'ehe-kids-7',
+                    title: 'Journal of Jobs',
+                    description: 'Write about your future career',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ehe-kids-7'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/journal-of-jobs',
+                    index: 6
+                },
+                {
+                    id: 'ehe-kids-8',
+                    title: 'School Helper Story',
+                    description: 'Who keeps school safe?',
+                    icon: <Shield className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-kids-8'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/school-helper-story',
+                    index: 7
+                },
+                {
+                    id: 'ehe-kids-9',
+                    title: 'Reflex Career Check',
+                    description: 'Quick career facts check',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-kids-9'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/reflex-career-check',
+                    index: 8
+                },
+                {
+                    id: 'ehe-kids-10',
+                    title: 'Badge: Career Explorer Kid',
+                    description: 'Complete career exploration',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['ehe-kids-10'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/badge-career-explorer',
+                    index: 9
+                },
+                {
+                    id: 'ehe-kids-11',
+                    title: 'Idea Story',
+                    description: 'Start your lemonade business',
+                    icon: <Lightbulb className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-kids-11'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/idea-story',
+                    index: 10
+                },
+                {
+                    id: 'ehe-kids-12',
+                    title: 'Quiz on Skills',
+                    description: 'What skills help entrepreneurs?',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-kids-12'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/quiz-on-skills',
+                    index: 11
+                },
+                {
+                    id: 'ehe-kids-13',
+                    title: 'Reflex Skill Check',
+                    description: 'Identify good entrepreneur skills',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-kids-13'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/reflex-skill-check',
+                    index: 12
+                },
+                {
+                    id: 'ehe-kids-14',
+                    title: 'Puzzle: Match Skills',
+                    description: 'Match roles to their actions',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ehe-kids-14'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/puzzle-match-skills',
+                    index: 13
+                },
+                {
+                    id: 'ehe-kids-15',
+                    title: 'Teamwork Story',
+                    description: 'Learn the power of collaboration',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-kids-15'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/teamwork-story',
+                    index: 14
+                },
+                {
+                    id: 'ehe-kids-16',
+                    title: 'Poster: Skills for Success',
+                    description: 'Create success formula poster',
+                    icon: <Palette className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '8-10 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['ehe-kids-16'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/poster-skills-for-success',
+                    index: 15
+                },
+                {
+                    id: 'ehe-kids-17',
+                    title: 'Journal of Skills',
+                    description: 'Reflect on skills to improve',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ehe-kids-17'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/journal-of-skills',
+                    index: 16
+                },
+                {
+                    id: 'ehe-kids-18',
+                    title: 'Risk Story',
+                    description: 'Build courage by trying new things',
+                    icon: <TrendingUp className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-kids-18'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/risk-story',
+                    index: 17
+                },
+                {
+                    id: 'ehe-kids-19',
+                    title: 'Reflex Innovation',
+                    description: 'Identify innovation mindset',
+                    icon: <Lightbulb className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-kids-19'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/reflex-innovation',
+                    index: 18
+                },
+                {
+                    id: 'ehe-kids-20',
+                    title: 'Badge: Young Innovator',
+                    description: 'Master entrepreneur skills',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['ehe-kids-20'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/kids/badge-young-innovator',
+                    index: 19
+                }
+            ];
+            
+            // Add our real EHE Kids games
+            games.push(...realEHEKidsGames);
+        } else if (category === 'entrepreneurship' && ageGroup === 'teens') {
+            // Add our 20 real EHE Teen games
+            const realEHETeenGames = [
+                {
+                    id: 'ehe-teen-1',
+                    title: 'Career Story',
+                    description: 'Match passion to career path',
+                    icon: <Star className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-teen-1'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/career-story',
+                    index: 0
+                },
+                {
+                    id: 'ehe-teen-2',
+                    title: 'Quiz on Careers',
+                    description: 'Test your career knowledge',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 3,
+                    xp: 12,
+                    completed: gameCompletionStatus['ehe-teen-2'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/quiz-on-careers',
+                    index: 1
+                },
+                {
+                    id: 'ehe-teen-3',
+                    title: 'Reflex Teen Career',
+                    description: 'Quick career matching',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-teen-3'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/reflex-teen-career',
+                    index: 2
+                },
+                {
+                    id: 'ehe-teen-4',
+                    title: 'Puzzle: Career Match',
+                    description: 'Match careers to responsibilities',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['ehe-teen-4'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/puzzle-career-match',
+                    index: 3
+                },
+                {
+                    id: 'ehe-teen-5',
+                    title: 'Passion Story',
+                    description: 'Find career that matches passion',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-teen-5'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/passion-story',
+                    index: 4
+                },
+                {
+                    id: 'ehe-teen-6',
+                    title: 'Debate: One Career or Many?',
+                    description: 'Discuss career exploration',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '8-10 min',
+                    coins: 10,
+                    xp: 20,
+                    completed: gameCompletionStatus['ehe-teen-6'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/debate-one-career-or-many',
+                    index: 5
+                },
+                {
+                    id: 'ehe-teen-7',
+                    title: 'Journal of Career Choice',
+                    description: 'Write about career interests',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ehe-teen-7'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/journal-of-career-choice',
+                    index: 6
+                },
+                {
+                    id: 'ehe-teen-8',
+                    title: 'Simulation: Career Fair',
+                    description: 'Practice professional networking',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['ehe-teen-8'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/simulation-career-fair',
+                    index: 7
+                },
+                {
+                    id: 'ehe-teen-9',
+                    title: 'Reflex Future Check',
+                    description: 'Quick career facts verification',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-teen-9'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/reflex-future-check',
+                    index: 8
+                },
+                {
+                    id: 'ehe-teen-10',
+                    title: 'Badge: Career Aware Teen',
+                    description: 'Career exploration achievement',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['ehe-teen-10'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/badge-career-aware-teen',
+                    index: 9
+                },
+                {
+                    id: 'ehe-teen-11',
+                    title: 'Opportunity Story',
+                    description: 'Spot business opportunities',
+                    icon: <Lightbulb className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ehe-teen-11'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/opportunity-story',
+                    index: 10
+                },
+                {
+                    id: 'ehe-teen-12',
+                    title: 'Quiz on Entrepreneur Traits',
+                    description: 'Key success traits',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-teen-12'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/quiz-on-entrepreneur-traits',
+                    index: 11
+                },
+                {
+                    id: 'ehe-teen-13',
+                    title: 'Reflex Teen Skills',
+                    description: 'Identify entrepreneur traits',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-teen-13'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/reflex-teen-skills',
+                    index: 12
+                },
+                {
+                    id: 'ehe-teen-14',
+                    title: 'Puzzle: Match Traits',
+                    description: 'Match entrepreneur traits to actions',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['ehe-teen-14'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/puzzle-match-traits',
+                    index: 13
+                },
+                {
+                    id: 'ehe-teen-15',
+                    title: 'Failure Story',
+                    description: 'Learn resilience from failure',
+                    icon: <TrendingUp className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ehe-teen-15'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/failure-story',
+                    index: 14
+                },
+                {
+                    id: 'ehe-teen-16',
+                    title: 'Debate: Born or Made?',
+                    description: 'Are entrepreneurs born or made?',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '8-10 min',
+                    coins: 10,
+                    xp: 20,
+                    completed: gameCompletionStatus['ehe-teen-16'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/debate-born-or-made',
+                    index: 15
+                },
+                {
+                    id: 'ehe-teen-17',
+                    title: 'Journal of Strengths',
+                    description: 'Reflect on entrepreneur strengths',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['ehe-teen-17'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/journal-of-strengths',
+                    index: 16
+                },
+                {
+                    id: 'ehe-teen-18',
+                    title: 'Simulation: Team Project',
+                    description: 'Resolve team conflicts',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 15,
+                    completed: gameCompletionStatus['ehe-teen-18'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/simulation-team-project',
+                    index: 17
+                },
+                {
+                    id: 'ehe-teen-19',
+                    title: 'Reflex Teen Innovator',
+                    description: 'Identify innovation behaviors',
+                    icon: <Lightbulb className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['ehe-teen-19'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/reflex-teen-innovator',
+                    index: 18
+                },
+                {
+                    id: 'ehe-teen-20',
+                    title: 'Badge: Future Entrepreneur',
+                    description: 'Master entrepreneur skills',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['ehe-teen-20'] || false,
+                    isSpecial: true,
+                    path: '/student/ehe/teen/badge-future-entrepreneur',
+                    index: 19
+                }
+            ];
+            
+            // Add our real EHE Teen games
+            games.push(...realEHETeenGames);
+        } else if (category === 'civic-responsibility' && ageGroup === 'kids') {
+            // Add our 20 real CRGC Kids games
+            const realCRGCKidsGames = [
+                {
+                    id: 'crgc-kids-1',
+                    title: "Friend's Sad Story",
+                    description: 'Comfort a friend in need',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-1'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/friends-sad-story',
+                    index: 0
+                },
+                {
+                    id: 'crgc-kids-2',
+                    title: 'Quiz on Empathy',
+                    description: 'What does empathy mean?',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-2'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/quiz-on-empathy',
+                    index: 1
+                },
+                {
+                    id: 'crgc-kids-3',
+                    title: 'Reflex Kindness',
+                    description: 'Identify kind actions quickly',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-3'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/reflex-kindness',
+                    index: 2
+                },
+                {
+                    id: 'crgc-kids-4',
+                    title: 'Puzzle: Match Feelings',
+                    description: 'Match emotions to expressions',
+                    icon: <Smile className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['crgc-kids-4'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/puzzle-match-feelings',
+                    index: 3
+                },
+                {
+                    id: 'crgc-kids-5',
+                    title: 'Animal Story',
+                    description: 'Show compassion to animals',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-5'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/animal-story',
+                    index: 4
+                },
+                {
+                    id: 'crgc-kids-6',
+                    title: 'Poster: Be Kind Always',
+                    description: 'Create kindness superpower poster',
+                    icon: <Palette className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '8-10 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['crgc-kids-6'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/poster-be-kind-always',
+                    index: 5
+                },
+                {
+                    id: 'crgc-kids-7',
+                    title: 'Journal of Empathy',
+                    description: 'Write about showing kindness',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['crgc-kids-7'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/journal-of-empathy',
+                    index: 6
+                },
+                {
+                    id: 'crgc-kids-8',
+                    title: 'Bully Story',
+                    description: 'Stand up against bullying',
+                    icon: <Shield className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-8'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/bully-story',
+                    index: 7
+                },
+                {
+                    id: 'crgc-kids-9',
+                    title: 'Reflex Help Alert',
+                    description: 'Choose helpful actions',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-9'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/reflex-help-alert',
+                    index: 8
+                },
+                {
+                    id: 'crgc-kids-10',
+                    title: 'Badge: Kind Kid',
+                    description: 'Master empathy skills',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['crgc-kids-10'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/badge-kind-kid',
+                    index: 9
+                },
+                {
+                    id: 'crgc-kids-11',
+                    title: 'Classroom Story',
+                    description: 'Respect different languages',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-11'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/classroom-story',
+                    index: 10
+                },
+                {
+                    id: 'crgc-kids-12',
+                    title: 'Quiz on Respect',
+                    description: 'What does respect mean?',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-12'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/quiz-on-respect',
+                    index: 11
+                },
+                {
+                    id: 'crgc-kids-13',
+                    title: 'Reflex Respect',
+                    description: 'Identify respectful actions',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-13'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/reflex-respect',
+                    index: 12
+                },
+                {
+                    id: 'crgc-kids-14',
+                    title: 'Puzzle: Respect Match',
+                    description: 'Match respect to people',
+                    icon: <Target className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['crgc-kids-14'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/puzzle-respect-match',
+                    index: 13
+                },
+                {
+                    id: 'crgc-kids-15',
+                    title: 'Gender Story',
+                    description: 'Everyone can play everything',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-15'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/gender-story',
+                    index: 14
+                },
+                {
+                    id: 'crgc-kids-16',
+                    title: 'Poster: Respect All',
+                    description: 'Every voice matters',
+                    icon: <Palette className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '8-10 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['crgc-kids-16'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/poster-respect-all',
+                    index: 15
+                },
+                {
+                    id: 'crgc-kids-17',
+                    title: 'Journal of Respect',
+                    description: 'Write about showing respect',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['crgc-kids-17'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/journal-of-respect',
+                    index: 16
+                },
+                {
+                    id: 'crgc-kids-18',
+                    title: 'Disability Story',
+                    description: 'Include everyone equally',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-18'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/disability-story',
+                    index: 17
+                },
+                {
+                    id: 'crgc-kids-19',
+                    title: 'Reflex Inclusion',
+                    description: 'Choose inclusive actions',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-19'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/reflex-inclusion',
+                    index: 18
+                },
+                {
+                    id: 'crgc-kids-20',
+                    title: 'Badge: Respect Kid',
+                    description: 'Complete respect examples',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['crgc-kids-20'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/badge-respect-kid',
+                    index: 19
+                }
+            ];
+            
+            // Add our real CRGC Kids games
+            games.push(...realCRGCKidsGames);
+        } else if (category === 'civic-responsibility' && ageGroup === 'teens') {
+            // Add our 20 real CRGC Teen games
+            const realCRGCTeenGames = [
+                {
+                    id: 'crgc-teen-1',
+                    title: 'Stranger Story',
+                    description: 'Help an elderly stranger',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-teen-1'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/stranger-story',
+                    index: 0
+                },
+                {
+                    id: 'crgc-teen-2',
+                    title: 'Quiz on Compassion',
+                    description: 'What does compassion mean?',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-teen-2'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/quiz-on-compassion',
+                    index: 1
+                },
+                {
+                    id: 'crgc-teen-3',
+                    title: 'Reflex Teen Compassion',
+                    description: 'Identify compassionate actions',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-teen-3'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/reflex-teen-compassion',
+                    index: 2
+                },
+                {
+                    id: 'crgc-teen-4',
+                    title: 'Puzzle: Kind Acts',
+                    description: 'Match compassionate actions',
+                    icon: <Puzzle className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['crgc-teen-4'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/puzzle-kind-acts',
+                    index: 3
+                },
+                {
+                    id: 'crgc-teen-5',
+                    title: 'Refugee Story',
+                    description: 'Welcome someone new',
+                    icon: <Globe className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-teen-5'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/refugee-story',
+                    index: 4
+                },
+                {
+                    id: 'crgc-teen-6',
+                    title: 'Debate: Kindness = Weakness?',
+                    description: 'Argue your position',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '15-20 min',
+                    coins: 10,
+                    xp: 20,
+                    completed: gameCompletionStatus['crgc-teen-6'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/debate-kindness-weakness',
+                    index: 5
+                },
+                {
+                    id: 'crgc-teen-7',
+                    title: 'Journal of Compassion',
+                    description: 'Reflect on kind acts',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['crgc-teen-7'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/journal-of-compassion',
+                    index: 6
+                },
+                {
+                    id: 'crgc-teen-8',
+                    title: 'Simulation: Hospital Visit',
+                    description: 'Support a sick classmate',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-teen-8'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/simulation-hospital-visit',
+                    index: 7
+                },
+                {
+                    id: 'crgc-teen-9',
+                    title: 'Reflex Global Empathy',
+                    description: 'Show global compassion',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-teen-9'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/reflex-global-empathy',
+                    index: 8
+                },
+                {
+                    id: 'crgc-teen-10',
+                    title: 'Badge: Compassion Leader',
+                    description: 'Complete 5 compassionate acts',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['crgc-teen-10'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/badge-compassion-leader',
+                    index: 9
+                },
+                {
+                    id: 'crgc-teen-11',
+                    title: 'Cultural Story',
+                    description: 'Respect different religions',
+                    icon: <Globe className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-teen-11'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/cultural-story',
+                    index: 10
+                },
+                {
+                    id: 'crgc-teen-12',
+                    title: 'Quiz on Inclusion',
+                    description: 'Understanding inclusion',
+                    icon: <Brain className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-teen-12'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/quiz-on-inclusion',
+                    index: 11
+                },
+                {
+                    id: 'crgc-teen-13',
+                    title: 'Reflex Teen Respect',
+                    description: 'Identify respectful actions',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-teen-13'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/reflex-teen-respect',
+                    index: 12
+                },
+                {
+                    id: 'crgc-teen-14',
+                    title: 'Puzzle: Inclusion Acts',
+                    description: 'Match inclusive actions',
+                    icon: <Puzzle className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['crgc-teen-14'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/puzzle-inclusion-acts',
+                    index: 13
+                },
+                {
+                    id: 'crgc-teen-15',
+                    title: 'Religion Story',
+                    description: 'Respect different prayers',
+                    icon: <Heart className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-teen-15'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/religion-story',
+                    index: 14
+                },
+                {
+                    id: 'crgc-teen-16',
+                    title: 'Debate: Equality for All?',
+                    description: 'Argue for equal treatment',
+                    icon: <MessageSquare className="w-6 h-6" />,
+                    difficulty: 'Hard',
+                    duration: '15-20 min',
+                    coins: 10,
+                    xp: 20,
+                    completed: gameCompletionStatus['crgc-teen-16'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/debate-equality-for-all',
+                    index: 15
+                },
+                {
+                    id: 'crgc-teen-17',
+                    title: 'Journal of Inclusion',
+                    description: 'Reflect on including others',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '6-8 min',
+                    coins: 5,
+                    xp: 12,
+                    completed: gameCompletionStatus['crgc-teen-17'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/journal-of-inclusion',
+                    index: 16
+                },
+                {
+                    id: 'crgc-teen-18',
+                    title: 'Simulation: School Event',
+                    description: 'Practice inclusion',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '5-7 min',
+                    coins: 5,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-teen-18'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/simulation-school-event',
+                    index: 17
+                },
+                {
+                    id: 'crgc-teen-19',
+                    title: 'Reflex Teen Inclusion',
+                    description: 'Recognize inclusive actions',
+                    icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Medium',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-teen-19'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/reflex-teen-inclusion',
+                    index: 18
+                },
+                {
+                    id: 'crgc-teen-20',
+                    title: 'Badge: Inclusion Leader',
+                    description: 'Complete inclusion actions',
+                    icon: <Award className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '2-3 min',
+                    coins: 3,
+                    xp: 15,
+                    completed: gameCompletionStatus['crgc-teen-20'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/teen/badge-inclusion-leader',
+                    index: 19
+                }
+            ];
+            
+            // Add our real CRGC Teen games
+            games.push(...realCRGCTeenGames);
         } else {
             // For all other categories, generate 20 mock games instead of 200
             for (let i = 1; i <= 20; i++) {
@@ -1421,11 +4976,8 @@ const GameCategoryPage = () => {
             return "Complete all 20 finance related games from Kids section first.";
         } else if (ageGroup === 'adults' && userAge < 18) {
             return `Available at age 18. You are ${userAge} years old.`;
-        } else if (ageGroup === 'adults' && userAge >= 18 && !areKidsGamesCompleted() && !areTeenGamesCompleted()) {
-            return "Complete all games from Kids and Teen sections first.";
-        } else if (ageGroup === 'adults' && userAge >= 18 && !areTeenGamesCompleted()) {
-            return "Complete all games from Teen section first.";
         }
+        // Additional adult unlocking requirements can be added here
         return "";
     };
     
@@ -1442,8 +4994,8 @@ const GameCategoryPage = () => {
             return;
         }
         
-        // Check if game is unlocked for sequential play (for finance and brain health kids and teens games)
-        if ((category === 'financial-literacy' || category === 'brain-health') && (ageGroup === 'kids' || ageGroup === 'teens')) {
+        // Check if game is unlocked for sequential play (for finance, brain health, UVLS, DCOS, Moral Values, AI For All, EHE, and CRGC kids and teens games)
+        if ((category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')) {
             if (!isGameUnlocked(game.index)) {
                 toast.error("Complete the previous game first to unlock this game!", {
                     duration: 4000,
@@ -1565,7 +5117,7 @@ const GameCategoryPage = () => {
                             <span className="text-gray-600 font-medium">Completed</span>
                         </div>
                         <p className="text-2xl font-bold text-gray-900">
-                            {(category === 'financial-literacy' || category === 'brain-health') && (ageGroup === 'kids' || ageGroup === 'teens')
+                            {(category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')
                                 ? Object.values(gameCompletionStatus).filter(status => status).length 
                                 : completedGames.size}
                         </p>
@@ -1577,9 +5129,9 @@ const GameCategoryPage = () => {
                             <span className="text-gray-600 font-medium">Coins Earned</span>
                         </div>
                         <p className="text-2xl font-bold text-gray-900">
-                            {(category === 'financial-literacy' || category === 'brain-health') && (ageGroup === 'kids' || ageGroup === 'teens')
-                                ? Object.values(gameCompletionStatus).filter(status => status).length * 35
-                                : completedGames.size * 35}
+                            {(category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')
+                                ? Object.values(gameCompletionStatus).filter(status => status).length * 3
+                                : completedGames.size * 3}
                         </p>
                     </div>
                     
@@ -1589,7 +5141,7 @@ const GameCategoryPage = () => {
                             <span className="text-gray-600 font-medium">XP Gained</span>
                         </div>
                         <p className="text-2xl font-bold text-gray-900">
-                            {(category === 'financial-literacy' || category === 'brain-health') && (ageGroup === 'kids' || ageGroup === 'teens')
+                            {(category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')
                                 ? Object.values(gameCompletionStatus).filter(status => status).length * 20
                                 : completedGames.size * 20}
                         </p>
@@ -1604,10 +5156,10 @@ const GameCategoryPage = () => {
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
                 >
                     {games.map((game, index) => {
-                        const isUnlocked = (category === 'financial-literacy' || category === 'brain-health') && (ageGroup === 'kids' || ageGroup === 'teens')
+                        const isUnlocked = (category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')
                             ? isGameUnlocked(index) 
                             : true;
-                        const isFullyCompleted = (category === 'financial-literacy' || category === 'brain-health') && (ageGroup === 'kids' || ageGroup === 'teens')
+                        const isFullyCompleted = (category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')
                             ? isGameFullyCompleted(game.id)
                             : false;
                         const isLocked = isFullyCompleted || (!isUnlocked);

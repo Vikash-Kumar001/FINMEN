@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MainNavbar from "../components/MainNavbar";
+import MainFooter from "../components/MainFooter";
 import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import {
   School,
@@ -188,7 +189,6 @@ const LandingPage = () => {
   const whyChooseRef = useRef(null);
   const studentServicesRef = useRef(null);
   const footerRef = useRef(null);
-  const [isVisible, setIsVisible] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState(null);
@@ -531,17 +531,6 @@ const LandingPage = () => {
     footerRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  const handleBackToTop = () => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  useEffect(() => {
-    const toggleVisibility = () => {
-      setIsVisible(window.pageYOffset > 300);
-    };
-    window.addEventListener("scroll", toggleVisibility);
-    return () => window.removeEventListener("scroll", toggleVisibility);
-  }, []);
 
   useEffect(() => {
     // Add CSS for animations
@@ -1177,16 +1166,8 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* Back to Top Button */}
-      {isVisible && (
-        <button
-          onClick={handleBackToTop}
-          className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-full shadow-lg hover:shadow-xl transition-all"
-          aria-label="Back to Top"
-        >
-          <ArrowUp className="w-5 h-5" />
-        </button>
-      )}
+      {/* Main Footer */}
+      <MainFooter />
     </div>
   );
 };

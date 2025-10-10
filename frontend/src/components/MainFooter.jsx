@@ -11,7 +11,7 @@ import {
   ArrowUp
 } from "lucide-react";
 
-const Footer = () => {
+const MainFooter = () => {
   const [email, setEmail] = React.useState('');
   const [isVisible, setIsVisible] = React.useState(false);
 
@@ -24,9 +24,6 @@ const Footer = () => {
     { name: "Contact", href: "/contact" },
     { name: "Blog", href: "/blog" },
     { name: "Careers", href: "/careers" },
-    { name: "Terms of Service", href: "/terms" },
-    { name: "Privacy Policy", href: "/privacy" },
-    { name: "Cookie Policy", href: "/cookies" },
   ];
 
   const socialLinks = [
@@ -251,4 +248,5 @@ const Footer = () => {
   );
 };
 
-export default Footer;
+export default MainFooter;
+

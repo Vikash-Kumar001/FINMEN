@@ -167,7 +167,7 @@ const DebateSaveVsSpend = () => {
       nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct
       showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="finance-teen-debate-save-vs-spend"
+      gameId="finance-teens-6"
       gameType="finance"
       totalLevels={20}
       currentLevel={6}

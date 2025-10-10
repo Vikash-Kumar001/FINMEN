@@ -32,7 +32,7 @@ const BadgeSaverKid = () => {
       nextLabel="Finish"
       showGameOver={showBadge}
       score={coins}
-      gameId="finance-kids-badge-saver-kid"
+      gameId="finance-kids-10"
       gameType="finance"
       showConfetti={showBadge}
       flashPoints={flashPoints}

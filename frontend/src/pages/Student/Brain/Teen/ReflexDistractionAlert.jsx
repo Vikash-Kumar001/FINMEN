@@ -107,7 +107,7 @@ const ReflexDistractionAlert = () => {
       score={score}
       currentLevel={1}
       totalLevels={1}
-      gameId="reflex-distraction-alert"
+      gameId="brain-teens-19"
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/teens"

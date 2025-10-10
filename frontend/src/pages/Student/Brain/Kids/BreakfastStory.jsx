@@ -84,7 +84,7 @@ const BreakfastStory = () => {
     }));
     
     if (isCorrect) {
-      setScore(score + 3); // 3 coins for correct answer (max 15 coins for 5 questions)
+      setScore(score + 10); // 10 coins for correct answer (max 50 coins for 5 questions)
       setShowConfetti(true);
       // Hide confetti after animation
       setTimeout(() => setShowConfetti(false), 1000);
@@ -120,10 +120,10 @@ const BreakfastStory = () => {
 
   const currentQuestionData = questions[currentQuestion];
 
-  // Calculate coins based on correct answers (max 15 coins for 5 questions)
+  // Calculate coins based on correct answers (max 50 coins for 5 questions)
   const calculateTotalCoins = () => {
     const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 3;
+    return correctAnswers * 10;
   };
 
   return (
@@ -132,8 +132,8 @@ const BreakfastStory = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
-      gameId="breakfast-story"
-      gameType="brain-health"
+      gameId="brain-kids-5"
+      gameType="brain"
       showGameOver={levelCompleted}
       onNext={handleNext}
       nextEnabled={currentQuestion < questions.length - 1}

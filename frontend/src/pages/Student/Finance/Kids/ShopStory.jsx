@@ -42,7 +42,7 @@ const ShopStory = () => {
       nextEnabled={showResult && choice === "save"}
       showGameOver={showResult && choice === "save"}
       score={coins}
-      gameId="finance-kids-shop-story"
+      gameId="finance-kids-8"
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}

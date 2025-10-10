@@ -100,13 +100,13 @@ const JournalOfAttention = () => {
       score={score}
       currentLevel={currentPrompt + 1}
       totalLevels={prompts.length}
-      gameId="journal-of-attention"
+      gameId="brain-teens-17"
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/teens"
     >
       <LevelCompleteHandler
-        gameId="journal-of-attention"
+        gameId="brain-teens-17"
         gameType="brain-health"
         levelNumber={currentPrompt + 1}
         levelScore={5}

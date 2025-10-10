@@ -34,7 +34,7 @@ const BadgeFocusKid = () => {
       score={100}
       currentLevel={1}
       totalLevels={1}
-      gameId="badge-focus-kid"
+      gameId="brain-kids-20"
       gameType="brain-health"
       showGameOver={levelCompleted}
       onNext={handleNext}
@@ -43,7 +43,7 @@ const BadgeFocusKid = () => {
       backPath="/games/brain-health/kids"
     >
       <LevelCompleteHandler
-        gameId="badge-focus-kid"
+        gameId="brain-kids-20"
         gameType="brain-health"
         levelNumber={1}
         levelScore={100}

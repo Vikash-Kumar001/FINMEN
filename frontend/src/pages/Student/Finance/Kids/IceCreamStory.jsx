@@ -167,7 +167,7 @@ const IceCreamStory = () => {
       nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct
       showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="finance-kids-ice-cream-story"
+      gameId="finance-kids-11"
       gameType="finance"
       totalLevels={10}
       currentLevel={1}

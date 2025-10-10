@@ -202,7 +202,7 @@ const QuizOnSavingsRate = () => {
       nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct
       showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="finance-teen-quiz-on-savings-rate"
+      gameId="finance-teens-2"
       gameType="finance"
       totalLevels={20}
       currentLevel={2}

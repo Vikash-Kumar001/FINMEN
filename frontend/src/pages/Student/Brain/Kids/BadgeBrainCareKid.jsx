@@ -29,7 +29,7 @@ const BadgeBrainCareKid = () => {
       score={100}
       currentLevel={1}
       totalLevels={1}
-      gameId="badge-brain-care-kid"
+      gameId="brain-kids-10"
       gameType="brain-health"
       showGameOver={true}
       backPath="/games/brain-health/kids"

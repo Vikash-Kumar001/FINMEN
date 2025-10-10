@@ -71,7 +71,7 @@ const JournalOfSpending = () => {
 
   return (
     <GameShell
-      gameId="journal-of-spending"
+      gameId="finance-teens-17"
       gameType="journal"
       totalLevels={journalPrompts.length}
       currentLevel={currentEntry + 1}

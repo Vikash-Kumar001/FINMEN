@@ -60,7 +60,7 @@ const PuzzleOfBrainCare = () => {
         setFeedbackType("correct");
         setFeedbackMessage('Correct match!');
         setShowFeedback(true);
-        setScore(score + 2.5); // 2.5 coins per correct match (max 15 coins for 6 matches)
+        setScore(score + 8.33); // 8.33 coins per correct match (max 50 coins for 6 matches)
         
         // Check if all pairs are matched
         if (matchedPairs.length + 1 === concepts.length) {
@@ -95,7 +95,7 @@ const PuzzleOfBrainCare = () => {
   };
 
   const calculateScore = () => {
-    return matchedPairs.length * 2.5;
+    return matchedPairs.length * 8.33;
   };
 
   const handleGameComplete = () => {
@@ -108,8 +108,8 @@ const PuzzleOfBrainCare = () => {
       score={Math.round(calculateScore())}
       currentLevel={matchedPairs.length + 1}
       totalLevels={concepts.length}
-      gameId="puzzle-of-brain-care"
-      gameType="brain-health"
+      gameId="brain-kids-4"
+      gameType="brain"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/kids"
     >
@@ -187,7 +187,7 @@ const PuzzleOfBrainCare = () => {
             Matches: {matchedPairs.length}/{concepts.length}
           </span>
           <span className="font-bold text-yellow-300">
-            Score: {Math.round(calculateScore())}/15
+            Score: {Math.round(calculateScore())}/50
           </span>
         </div>
       </GameCard>

@@ -173,7 +173,7 @@ const BadgeSmartSpenderKid = () => {
       nextEnabled={showResult}
       showGameOver={showResult}
       score={finalScore}
-      gameId="finance-kids-badge-smart-spender-kid"
+      gameId="finance-kids-20"
       gameType="finance"
       totalLevels={10}
       currentLevel={10}

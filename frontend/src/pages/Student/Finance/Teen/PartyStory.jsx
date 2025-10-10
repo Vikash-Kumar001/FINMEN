@@ -94,7 +94,7 @@ const PartyStory = () => {
 
   return (
     <GameShell
-      gameId="party-story"
+      gameId="finance-teens-15"
       gameType="story"
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}

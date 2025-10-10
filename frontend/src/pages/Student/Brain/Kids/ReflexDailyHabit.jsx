@@ -104,8 +104,8 @@ const ReflexDailyHabit = () => {
       score={score}
       currentLevel={1}
       totalLevels={1}
-      gameId="reflex-daily-habit"
-      gameType="brain-health"
+      gameId="brain-kids-9"
+      gameType="brain"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/kids"
     >

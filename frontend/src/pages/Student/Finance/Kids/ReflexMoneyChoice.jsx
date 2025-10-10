@@ -80,7 +80,7 @@ const ReflexMoneyChoice = () => {
       nextEnabled={gameState === "finished"}
       showGameOver={gameState === "finished"}
       score={Math.min(score, 3)}
-      gameId="finance-kids-reflex-money-choice"
+      gameId="finance-kids-9"
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}

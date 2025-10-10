@@ -154,7 +154,7 @@ const ReflexControl = () => {
 
   return (
     <GameShell
-      gameId="reflex-control"
+      gameId="finance-teens-19"
       gameType="reflex"
       totalLevels={1}
       currentLevel={1}

@@ -126,7 +126,7 @@ const DebateNeedsVsWants = () => {
 
   return (
     <GameShell
-      gameId="debate-needs-vs-wants"
+      gameId="finance-teens-16"
       gameType="debate"
       totalLevels={debateTopics.length}
       currentLevel={currentRound + 1}

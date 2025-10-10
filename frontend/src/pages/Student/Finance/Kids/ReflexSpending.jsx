@@ -90,7 +90,7 @@ const ReflexSpending = () => {
       nextEnabled={gameState === "finished"}
       showGameOver={gameState === "finished"}
       score={score}
-      gameId="finance-kids-reflex-spending"
+      gameId="finance-kids-13"
       gameType="finance"
       totalLevels={10}
       currentLevel={3}

@@ -211,7 +211,7 @@ const SimulationStudyPlan = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
-      gameId="simulation-study-plan"
+      gameId="brain-teens-18"
       gameType="brain-health"
       showGameOver={levelCompleted}
       showAnswerConfetti={showConfetti}

@@ -114,7 +114,7 @@ const PuzzleSmartVsWaste = () => {
       nextEnabled={showResult && finalScore >= 4} // Pass if 4 or more correct
       showGameOver={showResult && finalScore >= 4}
       score={coins}
-      gameId="finance-kids-puzzle-smart-vs-waste"
+      gameId="finance-kids-14"
       gameType="finance"
       totalLevels={10}
       currentLevel={4}

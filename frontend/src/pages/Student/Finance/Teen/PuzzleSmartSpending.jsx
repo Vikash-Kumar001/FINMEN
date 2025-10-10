@@ -118,7 +118,7 @@ const PuzzleSmartSpending = () => {
       nextEnabled={showResult && finalScore >= 4} // Pass if 4 or more correct
       showGameOver={showResult && finalScore >= 4}
       score={coins}
-      gameId="finance-teen-puzzle-smart-spending"
+      gameId="finance-teens-14"
       gameType="finance"
       totalLevels={20}
       currentLevel={14}

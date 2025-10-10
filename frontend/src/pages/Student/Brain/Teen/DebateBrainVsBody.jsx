@@ -120,14 +120,14 @@ const DebateBrainVsBody = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={debateTopics.length}
-      gameId="debate-brain-vs-body"
+      gameId="brain-teens-6"
       gameType="brain-health"
       showGameOver={levelCompleted}
       showAnswerConfetti={showConfetti}
       backPath="/games/brain-health/teens"
     >
       <LevelCompleteHandler
-        gameId="debate-brain-vs-body"
+        gameId="brain-teens-6"
         gameType="brain-health"
         levelNumber={currentQuestion + 1}
         levelScore={selectedOption === currentTopic.correct ? 10 : 0}

@@ -54,7 +54,7 @@ const QuizOnSaving = () => {
       nextEnabled={showResult && isCorrect}
       showGameOver={showResult && isCorrect}
       score={coins}
-      gameId="finance-kids-quiz-on-saving"
+      gameId="finance-kids-2"
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}

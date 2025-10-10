@@ -96,9 +96,9 @@ const ReflexMindCheck = () => {
     navigate('/games/brain-health/teens');
   };
 
-  // Calculate coins based on correct answers (max 15 coins)
+  // Calculate coins based on correct answers (max 50 coins)
   const calculateTotalCoins = () => {
-    return Math.min(totalCorrect * 0.5, 15); // 0.5 coins per correct answer, max 15
+    return Math.min(totalCorrect * 2, 50); // 2 coins per correct answer, max 50
   };
 
   return (
@@ -107,8 +107,8 @@ const ReflexMindCheck = () => {
       score={score}
       currentLevel={1}
       totalLevels={1}
-      gameId="reflex-mind-check"
-      gameType="brain-health"
+      gameId="brain-teens-3"
+      gameType="brain"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/teens"
     >

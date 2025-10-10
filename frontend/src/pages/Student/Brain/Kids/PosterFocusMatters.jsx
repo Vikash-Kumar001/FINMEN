@@ -90,7 +90,7 @@ const PosterFocusMatters = () => {
       score={score}
       currentLevel={1}
       totalLevels={1}
-      gameId="poster-focus-matters"
+      gameId="brain-kids-16"
       gameType="brain-health"
       showGameOver={levelCompleted}
       onNext={handleNext}

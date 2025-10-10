@@ -96,7 +96,7 @@ const PosterBrainHealth = () => {
       score={score}
       currentLevel={1}
       totalLevels={1}
-      gameId="poster-brain-health"
+      gameId="brain-kids-6"
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/kids"

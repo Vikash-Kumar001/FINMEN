@@ -172,7 +172,7 @@ const BadgeSmartSaver = () => {
       nextEnabled={showResult}
       showGameOver={showResult}
       score={finalScore}
-      gameId="finance-teen-badge-smart-saver"
+      gameId="finance-teens-10"
       gameType="finance"
       totalLevels={20}
       currentLevel={10}

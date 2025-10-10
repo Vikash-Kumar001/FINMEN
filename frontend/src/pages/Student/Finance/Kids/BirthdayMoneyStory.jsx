@@ -42,7 +42,7 @@ const BirthdayMoneyStory = () => {
       nextEnabled={showResult && choice === "save"}
       showGameOver={showResult && choice === "save"}
       score={coins}
-      gameId="finance-kids-birthday-money-story"
+      gameId="finance-kids-5"
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}

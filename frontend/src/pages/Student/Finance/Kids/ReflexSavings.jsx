@@ -87,7 +87,7 @@ const ReflexSavings = () => {
       nextEnabled={gameState === "finished"}
       showGameOver={gameState === "finished"}
       score={coins}
-      gameId="finance-kids-reflex-savings"
+      gameId="finance-kids-3"
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}

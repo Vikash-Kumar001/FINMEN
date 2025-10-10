@@ -113,7 +113,7 @@ const PuzzleBrainFuel = () => {
       score={Math.round(calculateScore())}
       currentLevel={matchedPairs.length + 1}
       totalLevels={concepts.length}
-      gameId="puzzle-brain-fuel"
+      gameId="brain-teens-4"
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/teens"

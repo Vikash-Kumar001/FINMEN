@@ -132,7 +132,7 @@ const HomeworkStory = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
-      gameId="homework-story"
+      gameId="brain-kids-15"
       gameType="brain-health"
       showGameOver={levelCompleted}
       onNext={handleNext}

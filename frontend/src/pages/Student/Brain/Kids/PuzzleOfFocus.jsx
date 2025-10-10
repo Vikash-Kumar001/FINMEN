@@ -99,7 +99,7 @@ const PuzzleOfFocus = () => {
       score={Math.round(score)}
       currentLevel={matchedPairs.length + 1}
       totalLevels={concepts.length}
-      gameId="puzzle-of-focus"
+      gameId="brain-kids-14"
       gameType="brain-health"
       showGameOver={levelCompleted}
       onNext={handleNext}

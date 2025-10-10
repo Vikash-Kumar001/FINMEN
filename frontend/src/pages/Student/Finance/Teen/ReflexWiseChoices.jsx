@@ -90,7 +90,7 @@ const ReflexWiseChoices = () => {
       nextEnabled={gameState === "finished"}
       showGameOver={gameState === "finished"}
       score={score}
-      gameId="finance-teen-reflex-wise-choices"
+      gameId="finance-teens-13"
       gameType="finance"
       totalLevels={20}
       currentLevel={13}

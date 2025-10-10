@@ -167,7 +167,7 @@ const AllowanceStory = () => {
       nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct
       showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="finance-teen-allowance-story"
+      gameId="finance-teens-11"
       gameType="finance"
       totalLevels={20}
       currentLevel={11}

@@ -72,7 +72,7 @@ const PosterSavingHabit = () => {
       nextEnabled={showResult && selectedPoster && posters.find(p => p.id === selectedPoster)?.isCorrect}
       showGameOver={showResult && selectedPoster && posters.find(p => p.id === selectedPoster)?.isCorrect}
       score={coins}
-      gameId="finance-kids-poster-saving-habit"
+      gameId="finance-kids-6"
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}

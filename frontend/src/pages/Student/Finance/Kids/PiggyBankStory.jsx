@@ -167,7 +167,7 @@ const PiggyBankStory = () => {
       nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct
       showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="finance-kids-piggy-bank-story"
+      gameId="finance-kids-1"
       gameType="finance"
       totalLevels={10}
       currentLevel={1}

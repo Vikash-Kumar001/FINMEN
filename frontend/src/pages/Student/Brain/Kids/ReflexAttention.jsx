@@ -97,7 +97,7 @@ const ReflexAttention = () => {
       score={score}
       currentLevel={1}
       totalLevels={1}
-      gameId="reflex-attention"
+      gameId="brain-kids-13"
       gameType="brain-health"
       showGameOver={levelCompleted}
       onNext={handleNext}

@@ -471,7 +471,7 @@ const LandingPage = () => {
 
   const userTypes = [
     {
-      title: "Educational Institutions",
+      title: "Educational Institution",
       description:
         "Schools looking for comprehensive management solutions",
       icon: <Building className="w-12 h-12" />,
@@ -839,7 +839,7 @@ const LandingPage = () => {
 
       {/* Enhanced User Types Section */}
       <div id="get-started" ref={userTypesRef} className="py-16 bg-gradient-to-br from-white to-blue-50">
-        <div className="max-w-[95%] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -855,7 +855,7 @@ const LandingPage = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
             {userTypes.map((type, index) => (
               <div key={index} className="group relative">
                 <div className={`relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 overflow-hidden flex flex-col`}>

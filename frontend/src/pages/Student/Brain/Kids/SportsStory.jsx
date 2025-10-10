@@ -132,7 +132,7 @@ const SportsStory = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
-      gameId="sports-story"
+      gameId="brain-kids-8"
       gameType="brain-health"
       showGameOver={levelCompleted}
       onNext={handleNext}

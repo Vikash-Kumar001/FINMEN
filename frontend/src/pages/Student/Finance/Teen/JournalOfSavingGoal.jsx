@@ -48,7 +48,7 @@ const JournalOfSavingGoal = () => {
       nextEnabled={showResult}
       showGameOver={showResult}
       score={finalScore}
-      gameId="finance-teen-journal-of-saving-goal"
+      gameId="finance-teens-7"
       gameType="finance"
       totalLevels={20}
       currentLevel={7}

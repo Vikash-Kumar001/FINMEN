@@ -137,7 +137,7 @@ const QuizOnFocus = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
-      gameId="quiz-on-focus"
+      gameId="brain-kids-12"
       gameType="brain-health"
       showGameOver={levelCompleted}
       onNext={handleNext}

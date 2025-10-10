@@ -167,7 +167,7 @@ const PocketMoneyStory = () => {
       nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct
       showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="finance-teen-pocket-money-story"
+      gameId="finance-teens-1"
       gameType="finance"
       totalLevels={20}
       currentLevel={1}

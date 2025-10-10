@@ -28,7 +28,7 @@ const BadgeBrainHealthHero = () => {
       score={100}
       currentLevel={1}
       totalLevels={1}
-      gameId="badge-brain-health-hero"
+      gameId="brain-teens-10"
       gameType="brain-health"
       showGameOver={true}
       backPath="/games/brain-health/teens"

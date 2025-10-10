@@ -168,7 +168,7 @@ const SimulationShoppingMall = () => {
 
   return (
     <GameShell
-      gameId="simulation-shopping-mall"
+      gameId="finance-teens-18"
       gameType="simulation"
       totalLevels={scenarios.length}
       currentLevel={currentScenario + 1}

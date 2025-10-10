@@ -48,7 +48,7 @@ const JournalOfSmartBuy = () => {
       nextEnabled={showResult}
       showGameOver={showResult}
       score={finalScore}
-      gameId="finance-kids-journal-of-smart-buy"
+      gameId="finance-kids-17"
       gameType="finance"
       totalLevels={10}
       currentLevel={7}

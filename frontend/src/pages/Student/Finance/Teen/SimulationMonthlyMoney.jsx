@@ -207,7 +207,7 @@ const SimulationMonthlyMoney = () => {
       nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct
       showGameOver={showResult && finalScore >= 3}
       score={coins}
-      gameId="finance-teen-simulation-monthly-money"
+      gameId="finance-teens-8"
       gameType="finance"
       totalLevels={20}
       currentLevel={8}

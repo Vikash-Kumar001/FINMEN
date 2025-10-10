@@ -80,7 +80,7 @@ const JournalOfFocus = () => {
       score={score}
       currentLevel={currentEntry + 1}
       totalLevels={journalPrompts.length}
-      gameId="journal-of-focus"
+      gameId="brain-kids-17"
       gameType="brain-health"
       showGameOver={levelCompleted}
       onNext={handleNext}

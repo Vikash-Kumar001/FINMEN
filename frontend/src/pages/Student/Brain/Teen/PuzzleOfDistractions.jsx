@@ -113,7 +113,7 @@ const PuzzleOfDistractions = () => {
       score={Math.round(calculateScore())}
       currentLevel={matchedPairs.length + 1}
       totalLevels={concepts.length}
-      gameId="puzzle-of-distractions"
+      gameId="brain-teens-14"
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/teens"

@@ -136,7 +136,7 @@ const QuizOnAttention = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
-      gameId="quiz-on-attention"
+      gameId="brain-teens-12"
       gameType="brain-health"
       showGameOver={levelCompleted}
       onNext={handleNext}

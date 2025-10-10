@@ -135,7 +135,7 @@ const SocialMediaStory = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
-      gameId="social-media-story"
+      gameId="brain-teens-15"
       gameType="brain-health"
       showGameOver={levelCompleted}
       onNext={handleNext}

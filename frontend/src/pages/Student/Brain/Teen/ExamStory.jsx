@@ -135,7 +135,7 @@ const ExamStory = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
-      gameId="exam-story"
+      gameId="brain-teens-11"
       gameType="brain-health"
       showGameOver={levelCompleted}
       onNext={handleNext}

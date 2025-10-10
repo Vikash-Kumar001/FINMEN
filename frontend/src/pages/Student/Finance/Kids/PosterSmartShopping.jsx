@@ -94,7 +94,7 @@ const PosterSmartShopping = () => {
       nextEnabled={showResult}
       showGameOver={showResult}
       score={selectedPoster?.isCorrect ? 1 : 0}
-      gameId="finance-kids-poster-smart-shopping"
+      gameId="finance-kids-16"
       gameType="finance"
       totalLevels={10}
       currentLevel={6}

@@ -28,7 +28,7 @@ const BadgeFocusHero = () => {
       score={100}
       currentLevel={1}
       totalLevels={1}
-      gameId="badge-focus-hero"
+      gameId="brain-teens-20"
       gameType="brain-health"
       showGameOver={true}
       backPath="/games/brain-health/teens"

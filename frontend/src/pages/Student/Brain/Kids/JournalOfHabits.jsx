@@ -98,13 +98,13 @@ const JournalOfHabits = () => {
       score={calculateTotalScore()}
       currentLevel={completedEntries.length + 1}
       totalLevels={journalPrompts.length}
-      gameId="journal-of-habits"
+      gameId="brain-kids-7"
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/kids"
     >
       <LevelCompleteHandler
-        gameId="journal-of-habits"
+        gameId="brain-kids-7"
         gameType="brain-health"
         levelNumber={completedEntries.length + 1}
         levelScore={20}

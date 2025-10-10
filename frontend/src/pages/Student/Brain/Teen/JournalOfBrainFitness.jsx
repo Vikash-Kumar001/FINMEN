@@ -106,7 +106,7 @@ const JournalOfBrainFitness = () => {
       score={score}
       currentLevel={currentPrompt + 1}
       totalLevels={prompts.length}
-      gameId="journal-of-brain-fitness"
+      gameId="brain-teens-7"
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/teens"

@@ -33,7 +33,7 @@ const BadgeSmartSpenderTeen = () => {
 
   return (
     <GameShell
-      gameId="badge-smart-spender-teen"
+      gameId="finance-teens-20"
       gameType="badge"
       totalLevels={1}
       currentLevel={1}

@@ -92,7 +92,7 @@ const PuzzleSaveOrSpend = () => {
       nextEnabled={showResult}
       showGameOver={showResult}
       score={coins}
-      gameId="finance-kids-puzzle-save-or-spend"
+      gameId="finance-kids-4"
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble, LevelCompleteHandler } from '../../Finance/GameShell';
+import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
 
 const SimulationDailyRoutine = () => {
   const navigate = useNavigate();
@@ -176,7 +176,7 @@ const SimulationDailyRoutine = () => {
     }));
     
     if (isCorrect) {
-      setScore(prevScore => prevScore + 5); // 5 coins for correct answer
+      setScore(prevScore => prevScore + 3); // 3 coins for correct answer (max 15 coins for 5 questions)
       setShowConfetti(true);
       // Hide confetti after animation
       setTimeout(() => setShowConfetti(false), 1000);
@@ -199,65 +199,64 @@ const SimulationDailyRoutine = () => {
     navigate('/games/brain-health/teens');
   };
 
+  // Calculate coins based on correct answers (max 15 coins for 5 questions)
+  const calculateTotalCoins = () => {
+    const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
+    return correctAnswers * 3;
+  };
+
   return (
     <GameShell
       title="Simulation: Daily Routine"
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
-      gameId="simulation-daily-routine"
+      gameId="brain-teens-8"
       gameType="brain-health"
       showGameOver={levelCompleted}
       showAnswerConfetti={showConfetti}
       backPath="/games/brain-health/teens"
     >
-      <LevelCompleteHandler
-        gameId="simulation-daily-routine"
-        gameType="brain-health"
-        levelNumber={currentQuestion + 1}
-        levelScore={selectedOption === currentScenario.correct ? 5 : 0}
-        maxLevelScore={5}
-      >
-        <GameCard>
-          <h3 className="text-2xl font-bold text-white mb-6 text-center">Daily Routine Simulator</h3>
-          <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-2xl p-6 mb-8">
-            <p className="text-xl font-semibold text-white text-center">"{currentScenario.text}"</p>
-          </div>
-          
-          <div className="space-y-4 mb-6">
-            <h4 className="text-lg font-semibold text-white mb-4">Choose the best option:</h4>
-            {currentScenario.options.map((option) => (
-              <div 
-                key={option.id}
-                onClick={() => handleOptionSelect(option.id)}
-                className={`p-4 rounded-xl border-2 cursor-pointer transition duration-200 ${
-                  selectedOption === option.id
-                    ? 'bg-white/20 border-white'
-                    : levelCompleted
-                    ? 'opacity-70 cursor-not-allowed'
-                    : 'bg-white/10 hover:bg-white/20 border-white/30'
-                }`}
-              >
-                <h5 className="font-bold text-white">{option.text}</h5>
-                <p className="text-white/80 text-sm mt-1">{option.description}</p>
-              </div>
-            ))}
-          </div>
-          
-          {showFeedback && (
-            <FeedbackBubble 
-              message={feedbackType === "correct" ? "Perfect choice! 🎉" : "Not quite! 🤔"}
-              type={feedbackType}
-            />
-          )}
-          
-          {showFeedback && feedbackType === "wrong" && (
-            <div className="mt-4 text-white/90 text-center">
-              <p>💡 {currentScenario.explanation}</p>
+      {/* Removed LevelCompleteHandler */}
+      <GameCard>
+        <h3 className="text-2xl font-bold text-white mb-6 text-center">Daily Routine Simulator</h3>
+        <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-2xl p-6 mb-8">
+          <p className="text-xl font-semibold text-white text-center">"{currentScenario.text}"</p>
+        </div>
+        
+        <div className="space-y-4 mb-6">
+          <h4 className="text-lg font-semibold text-white mb-4">Choose the best option:</h4>
+          {currentScenario.options.map((option) => (
+            <div 
+              key={option.id}
+              onClick={() => handleOptionSelect(option.id)}
+              className={`p-4 rounded-xl border-2 cursor-pointer transition duration-200 ${
+                selectedOption === option.id
+                  ? 'bg-white/20 border-white'
+                  : levelCompleted
+                  ? 'opacity-70 cursor-not-allowed'
+                  : 'bg-white/10 hover:bg-white/20 border-white/30'
+              }`}
+            >
+              <h5 className="font-bold text-white">{option.text}</h5>
+              <p className="text-white/80 text-sm mt-1">{option.description}</p>
             </div>
-          )}
-        </GameCard>
-      </LevelCompleteHandler>
+          ))}
+        </div>
+        
+        {showFeedback && (
+          <FeedbackBubble 
+            message={feedbackType === "correct" ? "Perfect choice! 🎉" : "Not quite! 🤔"}
+            type={feedbackType}
+          />
+        )}
+        
+        {showFeedback && feedbackType === "wrong" && (
+          <div className="mt-4 text-white/90 text-center">
+            <p>💡 {currentScenario.explanation}</p>
+          </div>
+        )}
+      </GameCard>
     </GameShell>
   );
 };

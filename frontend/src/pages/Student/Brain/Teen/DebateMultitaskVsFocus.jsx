@@ -120,14 +120,14 @@ const DebateMultitaskVsFocus = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={debateTopics.length}
-      gameId="debate-multitask-vs-focus"
+      gameId="brain-teens-16"
       gameType="brain-health"
       showGameOver={levelCompleted}
       showAnswerConfetti={showConfetti}
       backPath="/games/brain-health/teens"
     >
       <LevelCompleteHandler
-        gameId="debate-multitask-vs-focus"
+        gameId="brain-teens-16"
         gameType="brain-health"
         levelNumber={currentQuestion + 1}
         levelScore={selectedOption === currentTopic.correct ? 10 : 0}

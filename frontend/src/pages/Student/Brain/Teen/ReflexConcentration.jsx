@@ -107,7 +107,7 @@ const ReflexConcentration = () => {
       score={score}
       currentLevel={1}
       totalLevels={1}
-      gameId="reflex-concentration"
+      gameId="brain-teens-13"
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/teens"

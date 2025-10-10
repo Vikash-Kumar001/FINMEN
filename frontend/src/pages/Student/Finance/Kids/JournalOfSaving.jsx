@@ -45,7 +45,7 @@ const JournalOfSaving = () => {
       nextEnabled={showResult && journalEntry.trim().length > 10}
       showGameOver={showResult && journalEntry.trim().length > 10}
       score={coins}
-      gameId="finance-kids-journal-of-saving"
+      gameId="finance-kids-7"
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}

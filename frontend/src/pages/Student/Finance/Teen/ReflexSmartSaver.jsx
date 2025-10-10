@@ -90,7 +90,7 @@ const ReflexSmartSaver = () => {
       nextEnabled={gameState === "finished"}
       showGameOver={gameState === "finished"}
       score={score}
-      gameId="finance-teen-reflex-smart-saver"
+      gameId="finance-teens-3"
       gameType="finance"
       totalLevels={20}
       currentLevel={3}

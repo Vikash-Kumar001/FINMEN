@@ -219,6 +219,16 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 5,
       
       setIsSubmitting(true);
       try {
+        // First check if game is already fully completed
+        const progress = await gameCompletionService.getGameProgress(gameId);
+        
+        if (progress?.fullyCompleted) {
+          // Game already completed, don't submit again
+          setCoinsEarned(0);
+          setSubmissionComplete(true);
+          return;
+        }
+        
         const result = await gameCompletionService.completeGame({
           gameId,
           gameType,
@@ -233,6 +243,9 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 5,
         if (result.success) {
           setCoinsEarned(result.coinsEarned);
           setSubmissionComplete(true);
+          
+          // Emit custom event to notify other components
+          window.dispatchEvent(new CustomEvent('gameCompleted', { detail: { gameId, fullyCompleted: true } }));
         }
       } catch (error) {
         console.error('Failed to submit game completion:', error);
@@ -268,7 +281,7 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 5,
               <p className="text-3xl font-black text-green-600">+{coinsEarned}</p>
               {coinsEarned === 0 && (
                 <p className="text-sm text-gray-600 mt-2">
-                  You've already earned coins for this game, but you can replay for fun!
+                  You've already earned all coins for this game. This game is now locked.
                 </p>
               )}
             </div>

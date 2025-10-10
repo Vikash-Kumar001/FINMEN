@@ -107,7 +107,7 @@ const ReflexBrainBoost = () => {
       score={score}
       currentLevel={1}
       totalLevels={1}
-      gameId="reflex-brain-boost"
+      gameId="brain-teens-9"
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/teens"

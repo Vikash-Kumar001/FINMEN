@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -14,6 +14,7 @@ import {
     uploadUserAvatar, 
     updateUserPassword 
 } from "../services/dashboardService";
+import Avatar from "./Avatar";
 
 function AnimatedFormField({ icon: Icon, label, error, className = "", ...props }) {
     return (
@@ -103,14 +104,14 @@ function GlassCard({ title, children, className = "", gradient = "" }) {
 
 const Profile = () => {
     const { user } = useAuth();
-    const { subscribeProfileUpdate } = useSocket();
+    const { subscribeProfileUpdate, socket } = useSocket();
     const apiBaseUrl = import.meta.env.VITE_API_URL?.trim() || 'http://localhost:5000';
-    const normalizeAvatarUrl = (src) => {
+    const normalizeAvatarUrl = useCallback((src) => {
         if (!src) return src;
         if (src.startsWith('http')) return src;
         if (src.startsWith('/uploads/')) return `${apiBaseUrl}${src}`;
         return src; // e.g. /avatars/... served by frontend
-    };
+    }, [apiBaseUrl]);
     const [personalInfo, setPersonalInfo] = useState({
         name: "",
         email: "",
@@ -123,7 +124,6 @@ const Profile = () => {
     const [displayName, setDisplayName] = useState("");
     const [ageYears, setAgeYears] = useState("");
     const [avatarPreview, setAvatarPreview] = useState("/avatars/avatar1.png");
-    const [avatarFile, setAvatarFile] = useState(null);
     const [passwords, setPasswords] = useState({ current: "", newPass: "", confirmPass: "" });
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -150,17 +150,9 @@ const Profile = () => {
     });
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [errors, setErrors] = useState({});
-    const presetAvatars = [
-        '/avatars/avatar1.png',
-        '/avatars/avatar2.png',
-        '/avatars/avatar3.png',
-        '/avatars/avatar4.png',
-        '/avatars/avatar5.png',
-        '/avatars/avatar6.png',
-    ];
     const [selectedPreset, setSelectedPreset] = useState(null);
 
-    const calculateAge = (dobValue) => {
+    const calculateAge = useCallback((dobValue) => {
         if (!dobValue) return "";
         const dobDate = typeof dobValue === 'string' ? new Date(dobValue) : new Date(dobValue);
         if (isNaN(dobDate.getTime())) return "";
@@ -171,7 +163,7 @@ const Profile = () => {
             age--;
         }
         return age >= 0 ? String(age) : "";
-    };
+    }, []);
 
     useEffect(() => {
         if (user && subscribeProfileUpdate) {
@@ -201,7 +193,7 @@ const Profile = () => {
             });
             return () => unsubscribe();
         }
-    }, [user, subscribeProfileUpdate]);
+    }, [user, subscribeProfileUpdate, normalizeAvatarUrl, calculateAge]);
 
     useEffect(() => {
         if (user) {
@@ -249,7 +241,7 @@ const Profile = () => {
             };
             fetchUserProfileData();
         }
-    }, [user]);
+    }, [user, normalizeAvatarUrl, calculateAge]);
 
     const handleChange = (setter) => (e) => {
         setter((prev) => ({ ...prev, [e.target.name]: e.target.value }));
@@ -436,69 +428,30 @@ const Profile = () => {
                     Profile Picture
                 </label>
                 <div className="flex items-center gap-4">
-                    <motion.div
-                        className="w-24 h-24 rounded-full overflow-hidden border-2 border-indigo-300 flex-shrink-0 relative"
-                        whileHover={{ scale: 1.05 }}
-                    >
-                        <img
-                            src={avatarPreview}
-                            alt="Profile"
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                                e.target.src = '/avatars/avatar1.png';
-                            }}
-                        />
-                        {avatarPreview && avatarPreview !== '/avatars/avatar1.png' && (
-                            <motion.button
-                                onClick={handleRemoveAvatar}
-                                className="absolute -top-1 -right-1 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                title="Remove profile picture"
-                            >
-                                <X className="w-3 h-3" />
-                            </motion.button>
-                        )}
-                    </motion.div>
+                    <Avatar
+                        user={user}
+                        size="large"
+                        showCustomize={true}
+                        onAvatarUpdate={(newAvatar) => {
+                            setAvatarPreview(newAvatar.url);
+                            // Emit socket event for real-time updates
+                            if (socket) {
+                                socket.emit('profile_updated', {
+                                    userId: user.id || user._id,
+                                    avatar: newAvatar.url
+                                });
+                            }
+                        }}
+                        className="border-2 rounded-full border-indigo-300"
+                    />
                     <div className="flex-1">
-                        <label className="flex items-center justify-center w-full p-3 border-2 border-dashed border-gray-300 rounded-xl cursor-pointer hover:border-indigo-300 transition-all">
-                            <input
-                                type="file"
-                                accept="image/*"
-                                onChange={handleAvatarChange}
-                                className="hidden"
-                            />
-                            <Upload className="w-5 h-5 text-indigo-500 mr-2" />
-                            <span className="text-sm font-medium text-gray-600">Upload new picture</span>
-                        </label>
-                        <p className="text-xs text-gray-500 mt-1">JPG, PNG or GIF. Max size 2MB.</p>
-                        
-                        {/* Remove Picture Button */}
-                        {avatarPreview && avatarPreview !== '/avatars/avatar1.png' && (
-                            <motion.button
-                                onClick={handleRemoveAvatar}
-                                disabled={loading}
-                                className="w-full mt-2 px-3 py-2 bg-red-50 text-red-600 border border-red-200 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors flex items-center justify-center gap-2"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.98 }}
-                            >
-                                <X className="w-4 h-4" />
-                                Remove Picture
-                            </motion.button>
-                        )}
+                        <p className="text-sm text-gray-600 mb-2">
+                            Click the camera icon to customize your avatar. You can upload your own image or choose from generated options.
+                        </p>
+                        <p className="text-xs text-gray-500">
+                            Supports JPG, PNG, or GIF. Max size 5MB.
+                        </p>
                     </div>
-                </div>
-                <div className="flex flex-wrap gap-2 mt-4">
-                    {presetAvatars.map((avatar, idx) => (
-                        <motion.img
-                            key={avatar}
-                            src={avatar}
-                            alt={`Preset avatar ${idx + 1}`}
-                            className={`w-14 h-14 rounded-full border-2 cursor-pointer object-cover ${selectedPreset === avatar ? 'border-indigo-500 ring-2 ring-indigo-400' : 'border-gray-200'}`}
-                            whileHover={{ scale: 1.1 }}
-                            onClick={() => handlePresetAvatarSelect(avatar)}
-                        />
-                    ))}
                 </div>
             </div>
 
@@ -652,7 +605,7 @@ const Profile = () => {
     const [loadingAchievements, setLoadingAchievements] = useState(false);
 
     // Fetch real achievements and stats
-    const fetchRealAchievementsAndStats = async () => {
+    const fetchRealAchievementsAndStats = useCallback(async () => {
         try {
             setLoadingAchievements(true);
             const [achievementsRes, progressRes, statsRes] = await Promise.all([
@@ -677,14 +630,14 @@ const Profile = () => {
         } finally {
             setLoadingAchievements(false);
         }
-    };
+    }, [user]);
 
     // Fetch achievements on component mount
     useEffect(() => {
         if (user) {
             fetchRealAchievementsAndStats();
         }
-    }, [user]);
+    }, [user, fetchRealAchievementsAndStats]);
 
     const renderAchievementsTab = () => {
         // Use real achievements if available, otherwise show loading or fallback
@@ -697,10 +650,10 @@ const Profile = () => {
             })) : 
             // Fallback achievements based on role
             (user?.role === "student" ? [
-                { icon: <Flame className="w-5 h-5" />, title: "Getting Started", description: "Welcome to FINMEN!", color: "from-orange-400 to-red-400" },
+                { icon: <Flame className="w-5 h-5" />, title: "Getting Started", description: "Welcome to WiseStudent!", color: "from-orange-400 to-red-400" },
                 { icon: <Target className="w-5 h-5" />, title: "First Steps", description: "Complete your profile", color: "from-green-400 to-emerald-400" }
             ] : [
-                { icon: <Award className="w-5 h-5" />, title: "Educator", description: "Welcome to FINMEN!", color: "from-blue-400 to-indigo-400" },
+                { icon: <Award className="w-5 h-5" />, title: "Welcome", description: "Welcome to WiseStudent!", color: "from-blue-400 to-indigo-400" },
                 { icon: <Users className="w-5 h-5" />, title: "Mentor", description: "Ready to guide students", color: "from-green-400 to-teal-400" }
             ]);
         
@@ -862,6 +815,7 @@ const Profile = () => {
                             <input
                                 type="checkbox"
                                 id="2fa-toggle"
+                                readOnly
                                 className="absolute w-0 h-0 opacity-0"
                             />
                             <label
@@ -885,6 +839,7 @@ const Profile = () => {
                                 type="checkbox"
                                 id="login-toggle"
                                 checked={true}
+                                readOnly
                                 className="absolute w-0 h-0 opacity-0"
                             />
                             <label

@@ -19,9 +19,9 @@ router.post('/log', logActivity);
 router.get('/my-activities', getMyActivities);
 router.get('/recent', getMyActivities); // Alias for recent activities
 
-// Admin and educator routes
-router.get('/user/:userId', checkRole(['admin', 'educator']), getUserActivities);
+// Admin and  routes
+router.get('/user/:userId', checkRole(['admin', '']), getUserActivities);
 router.get('/summary', checkRole(['admin']), getActivitySummary);
-router.get('/stream', checkRole(['admin', 'educator']), getActivityStream);
+router.get('/stream', checkRole(['admin', '']), getActivityStream);
 
 export default router;

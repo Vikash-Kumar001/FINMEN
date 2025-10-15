@@ -7,6 +7,11 @@ import {
   markAsRead,
   deleteNotification,
   getUnreadCount,
+  getApprovalQueue,
+  createApprovalNotification,
+  notifyPolicyChange,
+  getPolicyChangeNotifications,
+  acknowledgePolicyChange,
 } from "../controllers/notificationController.js";
 
 const router = express.Router();
@@ -31,5 +36,22 @@ router.delete("/:id", deleteNotification);
 
 // GET unread notification count
 router.get("/unread-count", getUnreadCount);
+
+// ============= APPROVAL QUEUE =============
+// GET approval queue (pending assignments)
+router.get("/approval-queue", getApprovalQueue);
+
+// POST create approval notification
+router.post("/approval-queue/notify", createApprovalNotification);
+
+// ============= POLICY CHANGES =============
+// POST notify policy change
+router.post("/policy-change/notify", notifyPolicyChange);
+
+// GET policy change notifications
+router.get("/policy-changes", getPolicyChangeNotifications);
+
+// PATCH acknowledge policy change (for parents)
+router.patch("/policy-change/:notificationId/acknowledge", acknowledgePolicyChange);
 
 export default router;

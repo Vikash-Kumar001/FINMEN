@@ -11,24 +11,6 @@ export const fetchAnalyticsData = async (filters = {}) => {
     }
 };
 
-// Educators
-export const getPendingEducators = () => api.get("/api/admin/educators/pending");
-export const approveEducator = (id) =>
-    api.put(`/api/admin/educators/approve/${id}`);
-export const blockEducator = (id) => api.put(`/api/admin/educators/block/${id}`);
-export const fetchAllEducators = () => api.get("/api/admin/educators");
-export const deleteEducator = (educatorId) =>
-    api.delete(`/api/admin/educators/${educatorId}`);
-export const exportEducatorData = () =>
-    api.get("/api/admin/educators/export/csv", {
-        responseType: "blob",
-    });
-export const fetchEducatorStats = () =>
-    api.get("/api/admin/educators/stats");
-export const sendBulkEducatorMessage = ({ recipients, subject, message }) =>
-    api.post("/api/admin/educators/bulk-message", { recipients, subject, message });
-export const createEducatorAccount = (educatorData) =>
-    api.post("/api/admin/educators/create", educatorData);
 
 // Students
 export const fetchAllStudents = () => api.get("/api/admin/students");
@@ -130,15 +112,5 @@ export const fetchRedemptions = async (filters = {}) => {
     }
 };
 
-// Educator Tracking
-export const fetchEducatorTracking = async (educatorId) => {
-    try {
-        const response = await api.get(`/api/admin/educators/${educatorId}/tracking`);
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching educator tracking:', error);
-        throw new Error(error.response?.data?.message || 'Failed to fetch educator tracking data');
-    }
-};
 
 export default api;

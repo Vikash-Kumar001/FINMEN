@@ -1,6 +1,6 @@
 import React from "react";
 import { useEffect, useState } from "react";
-import { fetchStudentProgress } from "../../services/educatorService";
+import { fetchStudentProgress } from "../../services/adminService";
 
 const StudentProgressModal = ({ studentId, onClose }) => {
     const [progress, setProgress] = useState(null);

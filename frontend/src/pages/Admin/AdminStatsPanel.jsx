@@ -6,8 +6,6 @@ export default function AdminStatsPanel() {
     const [stats, setStats] = useState({
         totalUsers: 0,
         totalStudents: 0,
-        totalEducators: 0,
-        pendingEducators: 0,
         redemptions: 0,
     });
     const socket = useSocket();
@@ -46,8 +44,6 @@ export default function AdminStatsPanel() {
     const cards = [
         { label: "👥 Total Users", value: stats.totalUsers },
         { label: "👩‍🎓 Total Students", value: stats.totalStudents },
-        { label: "🧑‍🏫 Approved Educators", value: stats.totalEducators },
-        { label: "⏳ Pending Educators", value: stats.pendingEducators },
         { label: "💸 Total Redemptions", value: stats.redemptions },
     ];
 

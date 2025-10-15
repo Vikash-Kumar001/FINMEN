@@ -58,15 +58,6 @@ export const fetchStudentStats = async () => {
   }
 };
 
-export const fetchEducatorStats = async () => {
-  try {
-    const res = await api.get("/stats/educator");
-    return res.data;
-  } catch (err) {
-    console.error("❌ Failed to fetch educator stats:", err);
-    throw err;
-  }
-};
 
 export const fetchAdminStats = async () => {
   try {

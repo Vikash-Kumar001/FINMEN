@@ -102,8 +102,6 @@ const Register = () => {
             const user = await fetchUser();
             if (user?.role === "admin") {
                 navigate("/admin/dashboard");
-            } else if (user?.role === "educator") {
-                navigate("/educator/dashboard");
             } else if (user?.role === "student") {
                 navigate("/student/dashboard");
             } else {

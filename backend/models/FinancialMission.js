@@ -26,7 +26,7 @@ const financialMissionSchema = new mongoose.Schema({
   },
   userRole: {
     type: String,
-    enum: ["student", "educator", "admin"],
+    enum: ["student", "admin"],
     required: true,
   },
   department: {

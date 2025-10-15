@@ -14,7 +14,9 @@ import {
   completeUnifiedGame,
   getUnifiedGameProgress,
   updateUnifiedGameProgress,
-  getCompletedGames
+  getCompletedGames,
+  getDCOSGames,
+  getBrainTeaserGames
 } from '../controllers/gameController.js';
 import { requireAuth } from '../middlewares/requireAuth.js';
 
@@ -64,5 +66,11 @@ router.put('/progress/:gameId', requireAuth, updateUnifiedGameProgress);
 
 // 📊 GET /api/game/completed-games — Get all completed games for user
 router.get('/completed-games', requireAuth, getCompletedGames);
+
+// 🔒 GET /api/game/dcos-games — Get DCOS games
+router.get('/dcos-games', requireAuth, getDCOSGames);
+
+// 🧠 GET /api/game/brain-teaser-games — Get Brain Teaser games
+router.get('/brain-teaser-games', requireAuth, getBrainTeaserGames);
 
 export default router;

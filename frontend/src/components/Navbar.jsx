@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthUtils";
 import { useWallet } from "../context/WalletContext";
 import { useSocket } from "../context/SocketContext";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
+import Avatar from "./Avatar";
 import { 
     Bell, 
     Wallet, 
@@ -14,20 +16,17 @@ import {
     LogOut,
     Menu,
     X,
-    Search,
     Home,
-    BookOpen,
-    Award,
     BarChart3,
-    HelpCircle,
     TrendingUp,
     Gift,
-    Calendar,
-    FileText,
-    Briefcase,
     MessageSquare,
     AlertCircle,
-    Zap
+    Zap,
+    Users,
+    Mail,
+    CheckCircle,
+    FileText
 } from "lucide-react";
 
 
@@ -39,13 +38,12 @@ const Navbar = () => {
     const [showProfileMenu, setShowProfileMenu] = useState(false);
     const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
-    const [showHelpMenu, setShowHelpMenu] = useState(false);
     const profileMenuRef = useRef(null);
-    const helpMenuRef = useRef(null);
 
-    // Function to normalize avatar URL
-    const apiBaseUrl = import.meta.env.VITE_API_URL?.trim() || 'http://localhost:5000';
+    // Function to normalize avatar URL (utility kept for future use)
+    // eslint-disable-next-line no-unused-vars
     const normalizeAvatarUrl = (src) => {
+        const apiBaseUrl = import.meta.env.VITE_API_URL?.trim() || 'http://localhost:5000';
         if (!src) return '/default-avatar.png';
         if (src.startsWith('http')) return src;
         if (src.startsWith('/uploads/')) return `${apiBaseUrl}${src}`;
@@ -55,7 +53,13 @@ const Navbar = () => {
     const getDashboardLabel = () => {
         switch (user?.role) {
             case "admin": return "Admin Dashboard";
-            case "educator": return "Educator Dashboard";
+            case "parent": return "Parent Dashboard";
+            case "seller": return "Seller Dashboard";
+            case "csr": return "CSR Dashboard";
+            case "school_admin": return "School Admin Dashboard";
+            case "school_teacher": return "Teacher Dashboard";
+            case "school_student": return "Student Dashboard";
+            case "school_parent": return "Parent Dashboard";
             case "student":
             default: return "Student Dashboard";
         }
@@ -65,7 +69,13 @@ const Navbar = () => {
         if (!user) return;
         const paths = {
             admin: "/admin/dashboard",
-            educator: "/educator/dashboard",
+            parent: "/parent/overview",
+            seller: "/seller/dashboard",
+            csr: "/csr/dashboard",
+            school_admin: "/school/admin/dashboard",
+            school_teacher: "/school-teacher/overview",
+            school_student: "/school-student/dashboard",
+            school_parent: "/school-parent/dashboard",
             student: "/student/dashboard"
         };
         navigate(paths[user.role] || paths.student);
@@ -74,31 +84,39 @@ const Navbar = () => {
     const navigationItems = user?.role === "student" ? [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
         { icon: <TrendingUp className="w-5 h-5" />, label: "Challenges", onClick: () => navigate("/student/challenge") },
-        { icon: <Zap className="w-5 h-5" />, label: "Daily Challenges", onClick: () => navigate("/student/daily-challenges") },
-        { icon: <Calendar className="w-5 h-5" />, label: "This Week", onClick: () => navigate("/student/this-week") }
-    ] : user?.role === "educator" ? [
-        { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
-        { icon: <User className="w-5 h-5" />, label: "Students", onClick: () => navigate("/educator/students") },
-        { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => navigate("/educator/analytics") },
-        { icon: <Gift className="w-5 h-5" />, label: "Rewards", onClick: () => navigate("/educator/rewards") },
-        { icon: <MessageSquare className="w-5 h-5" />, label: "Communication", onClick: () => navigate("/educator/communication") }
-    ] : [
+        { icon: <Zap className="w-5 h-5" />, label: "Daily Challenges", onClick: () => navigate("/student/daily-challenges") }
+    ] : user?.role === "parent" ? [
+        { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
+        { icon: <Users className="w-5 h-5" />, label: "Children", onClick: () => navigate("/parent/children") },
+        { icon: <Mail className="w-5 h-5" />, label: "Messages", onClick: () => navigate("/parent/messages") },
+        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate("/parent/settings") }
+    ] : user?.role === "admin" ? [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
         { icon: <User className="w-5 h-5" />, label: "Users", onClick: () => navigate("/admin/users") },
         { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => navigate("/admin/analytics") },
-        { icon: <AlertCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/admin/pending-educators") }
+        { icon: <AlertCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/admin/pending-approvals") }
+    ] : user?.role === "school_admin" ? [
+        { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
+        { icon: <Users className="w-5 h-5" />, label: "Students", onClick: () => navigate("/school/admin/students") },
+        { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => navigate("/school/admin/analytics") },
+        { icon: <CheckCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/school/admin/approvals") },
+        { icon: <FileText className="w-5 h-5" />, label: "Templates", onClick: () => navigate("/school/admin/templates") },
+        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate("/school/admin/settings") }
+    ] : user?.role === "school_teacher" ? [
+        { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
+        { icon: <Users className="w-5 h-5" />, label: "Students", onClick: () => navigate("/school-teacher/students") },
+        { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => navigate("/school-teacher/analytics") },
+        { icon: <Mail className="w-5 h-5" />, label: "Messages", onClick: () => navigate("/school-teacher/messages") },
+        { icon: <CheckCircle className="w-5 h-5" />, label: "Tasks", onClick: () => navigate("/school-teacher/tasks") },
+        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate("/school-teacher/settings") }
+    ] : [
+        { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect }
     ];
 
     const profileMenuItems = [
         { icon: <User className="w-5 h-5" />, label: "Profile", onClick: () => navigate(`/${user?.role}/profile`) },
         { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate(`/${user?.role}/settings`) },
         { icon: <LogOut className="w-5 h-5" />, label: "Sign Out", onClick: logoutUser, danger: true }
-    ];
-
-    const helpMenuItems = [
-        { icon: <FileText className="w-5 h-5" />, label: "Documentation", onClick: () => window.open("#", "_blank") },
-        { icon: <MessageSquare className="w-5 h-5" />, label: "Support Chat", onClick: () => navigate("/student/support") },
-        { icon: <Briefcase className="w-5 h-5" />, label: "Financial Resources", onClick: () => navigate("/learn/financial-literacy") },
     ];
 
     const profileMenuVariants = {
@@ -109,7 +127,6 @@ const Navbar = () => {
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) setShowProfileMenu(false);
-            if (helpMenuRef.current && !helpMenuRef.current.contains(event.target)) setShowHelpMenu(false);
             if (showMobileMenu && !event.target.closest('.mobile-menu-button')) setShowMobileMenu(false);
         };
         document.addEventListener('click', handleClickOutside);
@@ -152,114 +169,88 @@ const Navbar = () => {
 
     return (
         <>
-            <header className="w-full bg-gray-100 border-b border-gray-200 shadow-sm sticky top-0 z-50">
-                <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6">
-                    <div className="flex items-center justify-between h-14 sm:h-16">
+            <header className="w-full bg-white shadow-lg sticky top-0 z-50 border-b-4 border-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+                {/* Subtle gradient border at bottom */}
+                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+                
+                <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative">
+                    <div className="flex items-center justify-between gap-4 h-16 sm:h-20">
                         {/* Logo/Brand */}
                         <motion.div
                             className="flex-shrink-0 flex items-center cursor-pointer"
                             onClick={handleDashboardRedirect}
-                            whileHover={{ scale: 1.03 }}
-                            whileTap={{ scale: 0.97 }}
+                            whileHover={{ scale: 1.05, rotate: 2 }}
+                            whileTap={{ scale: 0.95 }}
                         >
-                            <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            <motion.div 
+                                className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg"
+                                animate={{
+                                    boxShadow: [
+                                        '0 4px 20px rgba(139, 92, 246, 0.3)',
+                                        '0 4px 40px rgba(139, 92, 246, 0.5)',
+                                        '0 4px 20px rgba(139, 92, 246, 0.3)'
+                                    ]
+                                }}
+                                transition={{ duration: 3, repeat: Infinity }}
+                            >
                                 <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
-                            </div>
+                            </motion.div>
                             <div className="ml-2 sm:ml-3">
-                                <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">WiseStudent</h1>
-                                <p className="hidden sm:block text-xs sm:text-sm text-gray-600">{getDashboardLabel()}</p>
+                                <h1 className="text-lg sm:text-xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight">WiseStudent</h1>
+                                <p className="hidden lg:block text-xs text-gray-600 font-semibold">{getDashboardLabel()}</p>
                             </div>
                         </motion.div>
 
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center space-x-2 lg:space-x-4">
+                        <nav className="hidden md:flex items-center gap-1.5 lg:gap-2 flex-1 justify-center max-w-3xl">
                             {navigationItems.map((item, index) => (
                                 <motion.button
                                     key={index}
                                     onClick={item.onClick}
-                                    className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg text-xs sm:text-sm font-medium text-gray-700 hover:bg-indigo-100 hover:text-indigo-600 transition-all duration-200"
-                                    whileHover={{ scale: 1.03 }}
+                                    className="flex items-center gap-1.5 px-2.5 lg:px-3 xl:px-4 py-2 rounded-lg text-xs lg:text-sm font-semibold text-gray-700 hover:text-white bg-gray-100 hover:bg-gradient-to-r hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 border-2 border-gray-200 hover:border-transparent transition-all duration-200 shadow-sm hover:shadow-md"
+                                    whileHover={{ scale: 1.03, y: -1 }}
                                     whileTap={{ scale: 0.97 }}
                                 >
-                                    {item.icon}
-                                    <span>{item.label}</span>
+                                    <div className="w-4 h-4 lg:w-4.5 lg:h-4.5">{item.icon}</div>
+                                    <span className="hidden lg:inline whitespace-nowrap">{item.label}</span>
                                 </motion.button>
                             ))}
                         </nav>
 
                         {/* Right Side */}
-                        <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
-
-                            {/* Help Menu */}
-                            <div className="relative" ref={helpMenuRef}>
-                                <motion.button
-                                    className="p-2 sm:p-2.5 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-all duration-200"
-                                    onClick={(e) => {
-                                        e.stopPropagation();
-                                        setShowHelpMenu(!showHelpMenu);
-                                    }}
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                >
-                                    <HelpCircle className="w-5 h-5 sm:w-6 sm:h-6" />
-                                </motion.button>
-                                <AnimatePresence>
-                                    {showHelpMenu && (
-                                        <motion.div
-                                            variants={profileMenuVariants}
-                                            initial="hidden"
-                                            animate="visible"
-                                            exit="hidden"
-                                            className="absolute right-0 mt-1.5 sm:mt-2 w-52 sm:w-56 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
-                                        >
-                                            <div className="px-3 sm:px-4 py-2 sm:py-3 border-b border-gray-100 bg-gray-50">
-                                                <p className="text-xs sm:text-sm font-medium text-gray-900">Help & Resources</p>
-                                            </div>
-                                            {helpMenuItems.map((item, index) => (
-                                                <motion.button
-                                                    key={index}
-                                                    onClick={() => {
-                                                        item.onClick();
-                                                        setShowHelpMenu(false);
-                                                    }}
-                                                    className="w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm text-gray-700 hover:bg-gray-50 transition-all duration-200"
-                                                    whileHover={{ x: 3 }}
-                                                >
-                                                    {item.icon}
-                                                    <span>{item.label}</span>
-                                                </motion.button>
-                                            ))}
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
+                        <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
 
                             {user && (
                                 <>
                                     {user.role === "student" && (
                                         <motion.button
-                                            className="flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-green-500 text-white rounded-lg font-medium text-xs sm:text-sm shadow-md hover:bg-green-600 transition-all duration-200"
+                                            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 border-2 border-yellow-500"
                                             whileHover={{ scale: 1.03 }}
                                             whileTap={{ scale: 0.97 }}
                                             onClick={() => navigate("/student/wallet")}
                                         >
-                                            <Wallet className="w-4 h-4 sm:w-5 sm:h-5" />
-                                            <span className="hidden sm:block">₹{wallet?.balance || 0}</span>
+                                            <Wallet className="w-4 h-4" />
+                                            <span className="font-black">{wallet?.balance || 0}</span>
+                                            <span className="hidden sm:inline text-xs">Coins</span>
                                         </motion.button>
                                     )}
 
-                                    {(user.role === "student" || user.role === "educator" || user.role === "admin") && (
+                                    {(user.role === "student" || user.role === "admin") && (
                                         <motion.button
-                                            className="relative p-2 sm:p-2.5 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-all duration-200"
-                                            whileHover={{ scale: 1.05 }}
+                                            className="relative p-2 sm:p-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                                            whileHover={{ scale: 1.08, rotate: -10 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={() => navigate(`/${user.role}/notifications`)}
                                         >
-                                            <Bell className="w-5 h-5 sm:w-6 sm:h-6" />
+                                            <Bell className="w-5 h-5" />
                                             {unreadCount > 0 && (
-                                                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-4 h-4 sm:w-5 sm:h-5 flex items-center justify-center font-medium">
-                                                    {unreadCount}
-                                                </span>
+                                                <motion.span 
+                                                    className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg border-2 border-white"
+                                                    animate={{ scale: [1, 1.2, 1] }}
+                                                    transition={{ duration: 2, repeat: Infinity }}
+                                                >
+                                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                                </motion.span>
                                             )}
                                         </motion.button>
                                     )}
@@ -267,7 +258,7 @@ const Navbar = () => {
                                     {/* Profile Menu */}
                                     <div className="relative" ref={profileMenuRef}>
                                         <motion.button
-                                            className="flex items-center gap-1.5 sm:gap-2 p-1.5 sm:p-2 rounded-lg hover:bg-indigo-100 transition-all duration-200"
+                                            className="flex items-center gap-2 px-2.5 sm:px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setShowProfileMenu(!showProfileMenu);
@@ -276,18 +267,22 @@ const Navbar = () => {
                                             whileTap={{ scale: 0.97 }}
                                         >
                                             <div className="relative">
-                                                <img
-                                                    src={user.avatar || "/default-avatar.png"}
-                                                    alt="Profile"
-                                                    className="w-8 h-8 sm:w-10 sm:h-10 rounded-full object-cover border-2 border-indigo-100 shadow-md"
+                                                <Avatar
+                                                    user={user}
+                                                    size="small"
+                                                    className=""
                                                 />
-                                                <div className="absolute bottom-0 right-0 w-2.5 h-2.5 sm:w-3.5 sm:h-3.5 bg-green-500 border-2 border-white rounded-full"></div>
+                                                <motion.div 
+                                                    className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full shadow-lg"
+                                                    animate={{ scale: [1, 1.3, 1] }}
+                                                    transition={{ duration: 2, repeat: Infinity }}
+                                                />
                                             </div>
-                                            <div className="hidden md:block text-left">
-                                                <p className="text-xs sm:text-sm font-medium text-gray-900">{user.name || "User"}</p>
-                                                <p className="text-xs text-gray-600 capitalize">{user.role}</p>
+                                            <div className="hidden xl:block text-left">
+                                                <p className="text-xs font-bold text-gray-900 leading-tight">{user.name?.split(' ')[0] || "User"}</p>
+                                                <p className="text-xs text-gray-600 font-medium capitalize leading-tight">{user.role?.replace('_', ' ')}</p>
                                             </div>
-                                            <ChevronDown className="w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
+                                            <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
                                         </motion.button>
                                         <AnimatePresence>
                                             {showProfileMenu && (
@@ -296,23 +291,34 @@ const Navbar = () => {
                                                     initial="hidden"
                                                     animate="visible"
                                                     exit="hidden"
-                                                    className="absolute right-0 mt-1.5 sm:mt-2 w-56 sm:w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 overflow-hidden"
+                                                    className="absolute right-0 mt-3 w-64 sm:w-72 bg-white rounded-2xl shadow-2xl border-2 border-gray-200 z-50 overflow-hidden"
                                                 >
-                                                    <div className="px-3 sm:px-4 py-3 sm:py-4 border-b border-gray-100 bg-gray-50">
-                                                        <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                                                            <img
-                                                                src={user.avatar || "/default-avatar.png"}
-                                                                alt="Profile"
-                                                                className="w-10 h-10 sm:w-12 sm:h-12 rounded-full object-cover border-2 border-white shadow-md"
+                                                    <div className="px-4 sm:px-5 py-4 sm:py-5 border-b border-gray-100 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+                                                        <div className="flex items-center gap-3 mb-3">
+                                                            <Avatar
+                                                                user={user}
+                                                                size="medium"
+                                                                className="border-2 rounded-full border-white shadow-xl ring-4 ring-indigo-100"
                                                             />
                                                             <div>
-                                                                <p className="text-xs sm:text-sm font-semibold text-gray-900">{user.name}</p>
+                                                                <p className="text-sm sm:text-base font-bold text-gray-900">{user.name}</p>
                                                                 <p className="text-xs text-gray-600 truncate">{user.email}</p>
                                                             </div>
                                                         </div>
-                                                        <span className="inline-block text-xs px-2 sm:px-2.5 py-0.5 sm:py-1 bg-indigo-100 text-indigo-800 rounded-full">
-                                                            {user.role === "student" ? "Student Account" : user.role === "educator" ? "Educator Account" : "Admin Account"}
-                                                        </span>
+                                                        <motion.span 
+                                                            className="inline-block text-xs font-bold px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full shadow-lg"
+                                                            whileHover={{ scale: 1.05 }}
+                                                        >
+                                                            {user.role === "student" ? "🎓 Student Account" : 
+                                                             user.role === "parent" ? "👨‍👩‍👧 Parent Account" :
+                                                             user.role === "seller" ? "🛍️ Seller Account" :
+                                                             user.role === "csr" ? "🤝 CSR Account" :
+                                                             user.role === "school_admin" ? "🏫 School Admin Account" :
+                                                             user.role === "school_teacher" ? "👨‍🏫 Teacher Account" :
+                                                             user.role === "school_student" ? "📚 Student Account" :
+                                                             user.role === "school_parent" ? "👪 Parent Account" :
+                                                             "⚡ Admin Account"}
+                                                        </motion.span>
                                                     </div>
                                                     {profileMenuItems.map((item, index) => (
                                                         <motion.button
@@ -321,12 +327,12 @@ const Navbar = () => {
                                                                 item.onClick();
                                                                 setShowProfileMenu(false);
                                                             }}
-                                                            className={`w-full flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm transition-all duration-200 ${
+                                                            className={`w-full flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-3.5 text-sm font-semibold transition-all duration-200 ${
                                                                 item.danger
-                                                                    ? 'text-red-600 hover:bg-red-50'
-                                                                    : 'text-gray-700 hover:bg-gray-50'
+                                                                    ? 'text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50'
+                                                                    : 'text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50'
                                                             }`}
-                                                            whileHover={{ x: 3 }}
+                                                            whileHover={{ x: 5, scale: 1.02 }}
                                                         >
                                                             {item.icon}
                                                             <span>{item.label}</span>
@@ -341,7 +347,7 @@ const Navbar = () => {
 
                             {/* Mobile Menu Button */}
                             <motion.button
-                                className="md:hidden p-2 text-gray-500 hover:bg-indigo-100 hover:text-indigo-600 rounded-lg transition-all duration-200 mobile-menu-button"
+                                className="md:hidden p-2 text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg transition-all duration-200 shadow-sm mobile-menu-button"
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     setShowMobileMenu(!showMobileMenu);
@@ -349,7 +355,7 @@ const Navbar = () => {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                             >
-                                {showMobileMenu ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
+                                {showMobileMenu ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
                             </motion.button>
                         </div>
                     </div>
@@ -363,9 +369,9 @@ const Navbar = () => {
                             animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="md:hidden border-t border-gray-200 bg-white shadow-lg"
+                            className="md:hidden border-t-2 border-gray-200 bg-white shadow-lg"
                         >
-                            <div className="px-3 sm:px-4 py-3 sm:py-4 space-y-1.5 sm:space-y-2">
+                            <div className="px-4 py-4 space-y-2">
                                 {navigationItems.map((item, index) => (
                                     <motion.button
                                         key={index}
@@ -373,34 +379,17 @@ const Navbar = () => {
                                             item.onClick();
                                             setShowMobileMenu(false);
                                         }}
-                                        className="flex items-center gap-2 sm:gap-3 w-full px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base font-medium text-gray-700 hover:bg-indigo-100 rounded-lg transition-all duration-200"
-                                        whileHover={{ x: 4 }}
+                                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-gray-700 hover:text-white bg-gray-100 hover:bg-gradient-to-r hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 border-2 border-gray-200 hover:border-transparent rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg"
+                                        whileHover={{ x: 5, scale: 1.02 }}
+                                        initial={{ x: -20, opacity: 0 }}
+                                        animate={{ x: 0, opacity: 1 }}
+                                        transition={{ delay: index * 0.05 }}
                                     >
                                         {item.icon}
                                         <span>{item.label}</span>
                                     </motion.button>
                                 ))}
                             </div>
-
-
-
-                            {/* <div className="px-3 sm:px-4 py-3 sm:py-4 border-t border-gray-200">
-                                <p className="text-xs sm:text-sm font-medium text-gray-500 mb-2 sm:mb-3">Help & Resources</p>
-                                {helpMenuItems.map((item, index) => (
-                                    <motion.button
-                                        key={index}
-                                        onClick={() => {
-                                            item.onClick();
-                                            setShowMobileMenu(false);
-                                        }}
-                                        className="flex items-center gap-2 sm:gap-3 w-full px-3 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200"
-                                        whileHover={{ x: 4 }}
-                                    >
-                                        {item.icon}
-                                        <span>{item.label}</span>
-                                    </motion.button>
-                                ))}
-                            </div> */}
                         </motion.div>
                     )}
                 </AnimatePresence>

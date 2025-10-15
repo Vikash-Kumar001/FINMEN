@@ -40,14 +40,6 @@ const PendingApprovals = () => {
     const { user } = useAuth();
 
     const roleConfig = {
-        educator: {
-            icon: <GraduationCap className="w-5 h-5" />,
-            color: "from-blue-500 to-indigo-500",
-            bgColor: "bg-blue-50",
-            textColor: "text-blue-700",
-            borderColor: "border-blue-200",
-            label: "Educator"
-        },
         parent: {
             icon: <Heart className="w-5 h-5" />,
             color: "from-pink-500 to-rose-500",
@@ -207,22 +199,6 @@ const PendingApprovals = () => {
         
         return (
             <div className="space-y-2">
-                {user.role === "educator" && (
-                    <>
-                        {user.position && (
-                            <p className="text-sm text-gray-600 flex items-center gap-2">
-                                <Briefcase className="w-4 h-4" />
-                                <strong>Position:</strong> {user.position}
-                            </p>
-                        )}
-                        {user.subjects && (
-                            <p className="text-sm text-gray-600 flex items-center gap-2">
-                                <School className="w-4 h-4" />
-                                <strong>Subjects:</strong> {user.subjects}
-                            </p>
-                        )}
-                    </>
-                )}
                 
                 {user.role === "parent" && user.childEmail && (
                     <p className="text-sm text-gray-600 flex items-center gap-2">
@@ -267,7 +243,6 @@ const PendingApprovals = () => {
 
     const roleStats = {
         all: pendingUsers.length,
-        educator: pendingUsers.filter(u => u.role === "educator").length,
         parent: pendingUsers.filter(u => u.role === "parent").length,
         seller: pendingUsers.filter(u => u.role === "seller").length,
         csr: pendingUsers.filter(u => u.role === "csr").length,

@@ -22,7 +22,7 @@ export const logActivity = async (req, res, next) => {
       pageUrl: pageUrl || req.headers.referer,
     });
 
-    // Emit real-time notification to admin and educators
+    // Emit real-time notification to admin and s
     const io = req.app.get('io');
     if (io) {
       // Emit to admin room
@@ -35,9 +35,9 @@ export const logActivity = async (req, res, next) => {
         },
       });
 
-      // If the student has an assigned educator, emit to that educator's room
-      if (req.user.educatorId) {
-        io.to(`educator-${req.user.educatorId}`).emit('student-activity', {
+      // If the student has an assigned , emit to that 's room
+      if (req.user.Id) {
+        io.to(`-${req.user.Id}`).emit('student-activity', {
           activityLog,
           user: {
             id: req.user._id,
@@ -57,7 +57,7 @@ export const logActivity = async (req, res, next) => {
   }
 };
 
-// Get activities for a specific user (for admin and educators)
+// Get activities for a specific user (for admin and s)
 export const getUserActivities = async (req, res, next) => {
   try {
     const { userId } = req.params;
@@ -70,9 +70,9 @@ export const getUserActivities = async (req, res, next) => {
     }
 
     // Check if the requester has permission to view this user's activities
-    if (req.user.role === 'educator') {
+    if (req.user.role === '') {
       const student = await User.findById(userId);
-      if (!student || student.educatorId?.toString() !== req.user._id.toString()) {
+      if (!student || student.Id?.toString() !== req.user._id.toString()) {
         throw new ErrorResponse('You do not have permission to view this student\'s activities', 403);
       }
     }

@@ -12,6 +12,10 @@ const schoolStudentSchema = new mongoose.Schema(
       ref: "Organization",
       required: true,
     },
+    campusId: {
+      type: String,
+      index: true,
+    },
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -123,6 +127,65 @@ const schoolStudentSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    wellbeingFlags: [{
+      type: {
+        type: String,
+        enum: ['mood_concern', 'low_engagement', 'academic_stress', 'social_issue', 'other'],
+        required: true,
+      },
+      description: String,
+      severity: {
+        type: String,
+        enum: ['low', 'medium', 'high'],
+        default: 'medium',
+      },
+      flaggedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+      flaggedAt: {
+        type: Date,
+        default: Date.now,
+      },
+      status: {
+        type: String,
+        enum: ['open', 'in_progress', 'resolved'],
+        default: 'open',
+      },
+      resolvedAt: Date,
+      resolvedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+      notes: String,
+    }],
+    pillars: {
+      uvls: { type: Number, default: 0, min: 0, max: 100 }, // Understanding Values & Life Skills
+      dcos: { type: Number, default: 0, min: 0, max: 100 }, // Digital Citizenship & Online Safety
+      moral: { type: Number, default: 0, min: 0, max: 100 }, // Moral & Spiritual Education
+      ehe: { type: Number, default: 0, min: 0, max: 100 }, // Environmental & Health Education
+      crgc: { type: Number, default: 0, min: 0, max: 100 }, // Cultural Roots & Global Citizenship
+    },
+    lastActive: {
+      type: Date,
+    },
+    trainingModules: [{
+      moduleId: String,
+      moduleName: String,
+      status: {
+        type: String,
+        enum: ['not_started', 'in_progress', 'completed'],
+        default: 'not_started',
+      },
+      startedAt: Date,
+      completedAt: Date,
+      progress: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 100,
+      },
+    }],
   },
   {
     timestamps: true,

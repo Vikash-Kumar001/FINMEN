@@ -12,8 +12,9 @@ export const setupChatSocket = (io, socket, user) => {
   // Student subscribe to chat - Enhanced with AIML chat history
   socket.on('student:chat:subscribe', async ({ studentId }) => {
     try {
-      // Verify student permissions
-      if (user._id.toString() !== studentId || user.role !== 'student') {
+      // Verify user permissions (allow students, teachers, and other school roles)
+      const allowedRoles = ['student', 'school_teacher', 'school_student', 'parent', 'school_parent'];
+      if (user._id.toString() !== studentId || !allowedRoles.includes(user.role)) {
         socket.emit('student:chat:error', { message: 'Unauthorized access' });
         return;
       }
@@ -69,8 +70,9 @@ export const setupChatSocket = (io, socket, user) => {
   // Student send chat message - Enhanced with AIML integration
   socket.on('student:chat:send', async ({ studentId, message, text, attachments = [] }) => {
     try {
-      // Verify student permissions
-      if (user._id.toString() !== studentId || user.role !== 'student') {
+      // Verify user permissions (allow students, teachers, and other school roles)
+      const allowedRoles = ['student', 'school_teacher', 'school_student', 'parent', 'school_parent'];
+      if (user._id.toString() !== studentId || !allowedRoles.includes(user.role)) {
         socket.emit('student:chat:error', { message: 'Unauthorized access' });
         return;
       }

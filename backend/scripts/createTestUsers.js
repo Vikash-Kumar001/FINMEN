@@ -42,16 +42,6 @@ const createTestUsers = async () => {
         approvalStatus: "approved"
       },
       {
-        name: "John Educator",
-        email: "educator@test.com",
-        password: "Educator123",
-        role: "educator",
-        position: "Mathematics Teacher",
-        subjects: "Mathematics, Physics",
-        isVerified: true,
-        approvalStatus: "approved"
-      },
-      {
         name: "Admin User",
         email: "admin@test.com",
         password: "Admin123",
@@ -95,7 +85,6 @@ const createTestUsers = async () => {
     console.log("Parent: parent@gmail.com / Parent123 (linked to child@gmail.com)");
     console.log("Seller: seller@gmail.com / Seller123 (Seller Enterprises - Stationery)");
     console.log("CSR: csr@example.com / csr123 (NGO Name)");
-    console.log("Educator: educator@test.com / Educator123");
     console.log("Admin: admin@test.com / Admin123");
     console.log("Child: child@gmail.com / Child123 (linked to parent account)");
 

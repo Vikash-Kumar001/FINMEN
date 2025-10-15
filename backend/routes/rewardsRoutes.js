@@ -9,7 +9,7 @@ import { checkAdmin } from '../middlewares/checkRole.js';
 
 const router = express.Router();
 
-// ✅ Authenticated users (students/educators) can view rewards
+// ✅ Authenticated users (students/s) can view rewards
 router.get('/', requireAuth, getAvailableRewards);
 
 // ✅ Admin-only routes for managing rewards

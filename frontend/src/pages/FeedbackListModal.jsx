@@ -9,7 +9,7 @@ const FeedbackListModal = ({ studentId, onClose }) => {
 
   const fetchFeedbacks = async () => {
     try {
-      const res = await api.get(`/api/educators/feedback/${studentId}`);
+      const res = await api.get(`/api/admin/feedback/${studentId}`);
       setFeedbacks(res.data || []);
     } catch (err) {
       console.error("Failed to fetch feedback history:", err);

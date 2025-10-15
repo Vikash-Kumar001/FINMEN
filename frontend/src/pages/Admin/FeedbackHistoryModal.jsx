@@ -56,7 +56,7 @@ const FeedbackHistoryModal = ({ studentId, onClose }) => {
                             <li key={item._id} className="bg-gray-100 dark:bg-gray-800 p-3 rounded shadow-sm">
                                 <p className="text-gray-700 dark:text-gray-300">{item.feedback}</p>
                                 <p className="text-sm text-gray-500 mt-1">
-                                    — {item.educatorId?.name || 'Educator'},{" "}
+                                    — {item.userId?.name || 'User'},{" "}
                                     {new Date(item.createdAt).toLocaleString()}
                                 </p>
                             </li>

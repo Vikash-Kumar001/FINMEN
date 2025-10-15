@@ -12,7 +12,6 @@ const HomeRedirect = () => {
 
         if (!user) navigate("/login");
         else if (user.role === "admin") navigate("/admin/dashboard");
-        else if (user.role === "educator") navigate("/educator/dashboard");
         else navigate("/student/dashboard");
     }, [user, loading, navigate]);
 

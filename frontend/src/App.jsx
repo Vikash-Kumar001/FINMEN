@@ -21,8 +21,11 @@ import AccountTypeSelection from "./pages/Auth/AccountTypeSelection";
 
 // Student Pages
 import StudentDashboard from "./pages/Student/StudentDashboard";
+import CategoryView from "./pages/Student/CategoryView";
+import QuickQuiz from "./pages/Student/QuickQuiz";
 import MoodTracker from "./pages/Student/MoodTracker";
 import Journal from "./pages/Student/Journal";
+import MindfulnessBreak from "./pages/Student/MindfulnessBreak";
 
 import RewardsPage from "./pages/Student/RewardsPage";
 import RedeemPage from "./pages/Student/RedeemPage";
@@ -33,9 +36,6 @@ import Notifications from "./components/Notifications";
 import Profile from "./components/Profile";
 import Setting from "./components/Settings";
 import BreathingExercise from "./pages/Student/BreathingExercise";
-import QuickStart from "./pages/Student/QuickStart";
-import ThisWeek from "./pages/Student/ThisWeek";
-import DailyGoal from "./pages/Student/DailyGoal";
 import DailyChallenges from "./pages/Student/DailyChallenges";
 import Challenge from "./pages/Student/Challenge";
 import FinancialLiteracy from "./pages/Student/FinancialLiteracy";
@@ -45,6 +45,9 @@ import SavingsGoals from "./pages/Student/SavingsGoals";
 import FinancialQuiz from "./pages/Student/FinancialQuiz";
 import ExpenseTracker from "./pages/Student/ExpenseTracker";
 import GameCategoryPage from "./pages/Games/GameCategoryPage";
+import DCOSGames from "./pages/Games/DCOSGames";
+import BrainTeaserGames from "./pages/Games/BrainTeaserGames";
+import BrainTeaserPlay from "./pages/Games/BrainTeaserPlay";
 
 // Kids Finance Game Levels
 import PiggyBankStory from "./pages/Student/Finance/Kids/PiggyBankStory";
@@ -400,33 +403,12 @@ import SimulationSchoolEvent from "./pages/Student/CRGC/Teen/SimulationSchoolEve
 import ReflexTeenInclusionCRGC from "./pages/Student/CRGC/Teen/ReflexTeenInclusion";
 import BadgeInclusionLeader from "./pages/Student/CRGC/Teen/BadgeInclusionLeader";
 
-// Educator Pages
-import AssessmentTools from "./pages/Educator/AssessmentHub";
-import EducatorDashboard from "./pages/Educator/EducatorDashboard";
-import StudentManagement from "./pages/Educator/StudentManagement";
-import StudentActivityTracker from "./pages/Educator/StudentActivityTracker";
-import EducatorTools from "./pages/Educator/EducatorTools";
-import RedemptionRequests from "./pages/Educator/RedemptionRequests";
-import PendingApproval from "./pages/Educator/PendingApproval";
-import SystemSettings from "./pages/Educator/SystemSettings";
-import AISupport from "./pages/Educator/AISupport";
-import QuickActions from "./pages/Educator/QuickActions";
-import ResourceLibrary from "./pages/Educator/ResourceLibrary";
-import SmartAlerts from "./pages/Educator/SmartAlerts";
-import SmartRewardsSystem from "./pages/Educator/SmartRewardsSystem";
-import ProgressAnalytics from "./pages/Educator/ProgressAnalytics";
-import RealTimeAnalytics from "./pages/Educator/RealTimeAnalytics";
-import CommunicationCenter from "./pages/Educator/CommunicationCenter";
-import CurriculumBuilder from "./pages/Educator/CurriculumBuilder";
-import WellnessMonitor from "./pages/Educator/WellnessMonitor";
 
 // Admin Pages
 import AdminPanel from "./pages/Admin/AdminPanel";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 import AdminAnalytics from "./pages/Admin/AdminAnalytics";
 import AllStudents from "./pages/Admin/AllStudents";
-import AllEducator from "./pages/Admin/AllEducator";
-import PendingEducators from "./pages/Admin/PendingEducators";
 import AdminRedemptions from "./pages/Admin/AdminRedemptions";
 import FeedbackHistoryModal from "./pages/Admin/FeedbackHistoryModal";
 import AllRedemptions from "./pages/Admin/AllRedemptions";
@@ -436,6 +418,14 @@ import AdminSettings from "./pages/Admin/AdminSettings";
 
 // Parent Pages
 import ParentDashboard from "./pages/Parent/ParentDashboard";
+import ParentOverview from "./pages/Parent/ParentOverview";
+import ParentChildren from "./pages/Parent/ParentChildren";
+import ParentChildAnalytics from "./pages/Parent/ParentChildAnalytics";
+import ChildProgress from "./pages/Parent/ChildProgress";
+import ChildMoodWellbeing from "./pages/Parent/ChildMoodWellbeing";
+import ChildWalletRewards from "./pages/Parent/ChildWalletRewards";
+import ParentMessages from "./pages/Parent/ParentMessages";
+import ParentSettings from "./pages/Parent/ParentSettings";
 
 // Seller Pages
 import SellerDashboard from "./pages/Seller/SellerDashboard";
@@ -447,9 +437,31 @@ import CSRDashboard from "./pages/CSR/CSRDashboard";
 import CompanySignup from "./pages/MultiTenant/CompanySignup";
 import CreateOrganization from "./pages/MultiTenant/CreateOrganization";
 import SchoolAdminDashboard from "./pages/School/SchoolAdminDashboard";
+import SchoolAdminAnalytics from "./pages/School/SchoolAdminAnalytics";
+import SchoolAdminStudents from "./pages/School/SchoolAdminStudents";
+import SchoolAdminTeachers from "./pages/School/SchoolAdminTeachers";
+import SchoolAdminClasses from "./pages/School/SchoolAdminClasses";
+import SchoolAdminStaff from "./pages/School/SchoolAdminStaff";
+import SchoolAdminApprovals from "./pages/School/SchoolAdminApprovals";
+import SchoolAdminTemplates from "./pages/School/SchoolAdminTemplates";
+import SchoolAdminNEPTracking from "./pages/School/SchoolAdminNEPTracking";
+import SchoolAdminCompliance from "./pages/School/SchoolAdminCompliance";
+import SchoolAdminBilling from "./pages/School/SchoolAdminBilling";
+import SchoolAdminEmergency from "./pages/School/SchoolAdminEmergency";
+import SchoolAdminEvents from "./pages/School/SchoolAdminEvents";
+import SchoolAdminSettings from "./pages/School/SchoolAdminSettings";
+import SchoolAdminProfile from "./pages/School/SchoolAdminProfile";
+import SchoolAdminSettingsPersonal from "./pages/School/SchoolAdminSettingsPersonal";
 import SchoolTeacherDashboard from "./pages/School/SchoolTeacherDashboard";
 import SchoolStudentDashboard from "./pages/School/SchoolStudentDashboard";
 import SchoolParentDashboard from "./pages/School/SchoolParentDashboard";
+import TeacherOverview from "./pages/School/TeacherOverview";
+import TeacherStudents from "./pages/School/TeacherStudents";
+import TeacherAnalytics from "./pages/School/TeacherAnalytics";
+import TeacherMessages from "./pages/School/TeacherMessages";
+import TeacherTasks from "./pages/School/TeacherTasks";
+import TeacherSettings from "./pages/School/TeacherSettings";
+import TeacherStudentProgress from "./pages/School/TeacherStudentProgress";
 import LandingPage from "./pages/LandingPage";
 import IndividualAccountSelection from "./pages/IndividualAccountSelection";
 
@@ -459,7 +471,6 @@ import SchoolRegistration from "./pages/MultiTenant/SchoolRegistration";
 
 // 404 Page
 import NotFound from "./pages/NotFound";
-import AssessmentHub from "./pages/Educator/AssessmentHub";
 import ErrorBoundary from "./components/ErrorBoundary";
 // Toast notification provider
 import { Toaster } from "react-hot-toast";
@@ -490,14 +501,13 @@ const App = () => {
     
     // Legacy roles
     if (user.role === "admin") return <Navigate to="/admin/dashboard" replace />;
-    if (user.role === "educator") return <Navigate to="/educator/dashboard" replace />;
-    if (user.role === "parent") return <Navigate to="/parent/dashboard" replace />;
+    if (user.role === "parent") return <Navigate to="/parent/overview" replace />;
     if (user.role === "seller") return <Navigate to="/seller/dashboard" replace />;
     if (user.role === "csr") return <Navigate to="/csr/dashboard" replace />;
     
   // School roles
   if (user.role === "school_admin") return <Navigate to="/school/admin/dashboard" replace />;
-    if (user.role === "school_teacher") return <Navigate to="/school-teacher/dashboard" replace />;
+    if (user.role === "school_teacher") return <Navigate to="/school-teacher/overview" replace />;
     if (user.role === "school_student") return <Navigate to="/school-student/dashboard" replace />;
     if (user.role === "school_parent") return <Navigate to="/school-parent/dashboard" replace />;
     
@@ -563,7 +573,7 @@ const App = () => {
     location.pathname !== "/register-teacher" &&
     location.pathname !== "/pending-approval" &&
     <Navbar />}
-      {!isAuthPage && user && <Chatbot />} {/* ✅ Floating Chatbot */}
+      {!isAuthPage && user && (user.role === 'student' || user.role === 'school_student') && <Chatbot />} {/* ✅ Floating Chatbot - Only for students */}
 
       <ErrorBoundary>
         <Routes>
@@ -593,14 +603,47 @@ const App = () => {
           <Route path="/institution-type" element={<InstitutionTypeSelection />} />
           <Route path="/school-registration" element={<SchoolRegistration />} />
           
-          {/* School Routes */}
+          {/* School Admin Routes */}
           <Route path="/school/admin/dashboard" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminDashboard /></ProtectedRoute>} />
+          <Route path="/school/admin/analytics" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminAnalytics /></ProtectedRoute>} />
+          <Route path="/school/admin/students" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminStudents /></ProtectedRoute>} />
+          <Route path="/school/admin/teachers" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminTeachers /></ProtectedRoute>} />
+          <Route path="/school/admin/classes" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminClasses /></ProtectedRoute>} />
+          <Route path="/school/admin/staff" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminStaff /></ProtectedRoute>} />
+          <Route path="/school/admin/approvals" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminApprovals /></ProtectedRoute>} />
+          <Route path="/school/admin/templates" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminTemplates /></ProtectedRoute>} />
+          <Route path="/school/admin/nep-tracking" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminNEPTracking /></ProtectedRoute>} />
+          <Route path="/school/admin/compliance" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminCompliance /></ProtectedRoute>} />
+          <Route path="/school/admin/billing" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminBilling /></ProtectedRoute>} />
+          <Route path="/school/admin/emergency" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminEmergency /></ProtectedRoute>} />
+          <Route path="/school/admin/events" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminEvents /></ProtectedRoute>} />
+          <Route path="/school/admin/settings" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminSettings /></ProtectedRoute>} />
+          
+          {/* School Admin Profile & Settings Routes */}
+          <Route path="/school_admin/profile" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminProfile /></ProtectedRoute>} />
+          <Route path="/school_admin/settings" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminSettingsPersonal /></ProtectedRoute>} />
+          
+          {/* School Teacher Routes */}
+          <Route path="/school-teacher/overview" element={<ProtectedRoute roles={['school_teacher']}><TeacherOverview /></ProtectedRoute>} />
           <Route path="/school-teacher/dashboard" element={<ProtectedRoute roles={['school_teacher']}><SchoolTeacherDashboard /></ProtectedRoute>} />
+          <Route path="/school-teacher/students" element={<ProtectedRoute roles={['school_teacher']}><TeacherStudents /></ProtectedRoute>} />
+          <Route path="/school-teacher/analytics" element={<ProtectedRoute roles={['school_teacher']}><TeacherAnalytics /></ProtectedRoute>} />
+          <Route path="/school-teacher/messages" element={<ProtectedRoute roles={['school_teacher']}><TeacherMessages /></ProtectedRoute>} />
+          <Route path="/school-teacher/tasks" element={<ProtectedRoute roles={['school_teacher']}><TeacherTasks /></ProtectedRoute>} />
+          <Route path="/school-teacher/settings" element={<ProtectedRoute roles={['school_teacher']}><TeacherSettings /></ProtectedRoute>} />
+          <Route path="/school_teacher/settings" element={<ProtectedRoute roles={['school_teacher']}><TeacherSettings /></ProtectedRoute>} />
+          <Route path="/school-teacher/student/:studentId/progress" element={<ProtectedRoute roles={['school_teacher']}><TeacherStudentProgress /></ProtectedRoute>} />
+          <Route path="/school-teacher/profile" element={<ProtectedRoute roles={['school_teacher']}><Profile /></ProtectedRoute>} />
+          <Route path="/school_teacher/profile" element={<ProtectedRoute roles={['school_teacher']}><Profile /></ProtectedRoute>} />
+          
           <Route path="/school-student/dashboard" element={<ProtectedRoute roles={['school_student']}><SchoolStudentDashboard /></ProtectedRoute>} />
           <Route path="/school-parent/dashboard" element={<ProtectedRoute roles={['school_parent']}><SchoolParentDashboard /></ProtectedRoute>} />
           
           {/* Student Routes */}
           <Route path="/student/dashboard" element={<ProtectedRoute roles={['student']}><StudentDashboard /></ProtectedRoute>} />
+          <Route path="/student/dashboard/quick-quiz" element={<ProtectedRoute roles={['student']}><QuickQuiz /></ProtectedRoute>} />
+          <Route path="/student/dashboard/:categorySlug" element={<ProtectedRoute roles={['student']}><CategoryView /></ProtectedRoute>} />
+          <Route path="/student/mindfull-break" element={<ProtectedRoute roles={['student']}><MindfulnessBreak /></ProtectedRoute>} />
           <Route path="/student/mood-tracker" element={<ProtectedRoute roles={['student']}><MoodTracker /></ProtectedRoute>} />
           <Route path="/student/journal" element={<ProtectedRoute roles={['student']}><Journal /></ProtectedRoute>} />
           <Route path="/student/rewards" element={<ProtectedRoute roles={['student']}><RewardsPage /></ProtectedRoute>} />
@@ -611,10 +654,7 @@ const App = () => {
           <Route path="/student/notifications" element={<ProtectedRoute roles={['student']}><Notifications /></ProtectedRoute>} />
           <Route path="/student/profile" element={<ProtectedRoute roles={['student']}><Profile /></ProtectedRoute>} />
           <Route path="/student/settings" element={<ProtectedRoute roles={['student']}><Setting /></ProtectedRoute>} />
-          <Route path="/student/breathing" element={<ProtectedRoute roles={['student']}><BreathingExercise /></ProtectedRoute>} />
-          <Route path="/student/quick-start" element={<ProtectedRoute roles={['student']}><QuickStart /></ProtectedRoute>} />
-          <Route path="/student/this-week" element={<ProtectedRoute roles={['student']}><ThisWeek /></ProtectedRoute>} />
-          <Route path="/student/daily-goal" element={<ProtectedRoute roles={['student']}><DailyGoal /></ProtectedRoute>} />
+          <Route path="/student/breathing" element={<ProtectedRoute roles={['student']}><MindfulnessBreak /></ProtectedRoute>} />
           <Route path="/student/daily-challenges" element={<ProtectedRoute roles={['student']}><DailyChallenges /></ProtectedRoute>} />
           <Route path="/student/challenge" element={<ProtectedRoute roles={['student']}><Challenge /></ProtectedRoute>} />
           <Route path="/learn/financial-literacy" element={<ProtectedRoute roles={['student']}><FinancialLiteracy /></ProtectedRoute>} />
@@ -626,6 +666,9 @@ const App = () => {
           <Route path="/tools/expense-tracker" element={<ProtectedRoute roles={['student']}><ExpenseTracker /></ProtectedRoute>} />
 
           {/* Game Category Pages */}
+          <Route path="/games/dcos" element={<ProtectedRoute roles={['student']}><DCOSGames /></ProtectedRoute>} />
+          <Route path="/games/brain-teaser" element={<ProtectedRoute roles={['student']}><BrainTeaserGames /></ProtectedRoute>} />
+          <Route path="/games/brain-teaser/:gameId" element={<ProtectedRoute roles={['student']}><BrainTeaserPlay /></ProtectedRoute>} />
           <Route path="/games/:category/:ageGroup" element={<ProtectedRoute roles={['student']}><GameCategoryPage /></ProtectedRoute>} />
 
           {/* Finance Games for Kids */}
@@ -982,35 +1025,12 @@ const App = () => {
           <Route path="/student/civic-responsibility/teen/reflex-teen-inclusion" element={<ProtectedRoute roles={['student']}><ReflexTeenInclusionCRGC /></ProtectedRoute>} />
           <Route path="/student/civic-responsibility/teen/badge-inclusion-leader" element={<ProtectedRoute roles={['student']}><BadgeInclusionLeader /></ProtectedRoute>} />
 
-          {/* Educator Routes */}
-          <Route path="/educator/dashboard" element={<ProtectedRoute roles={['educator']} requireApproved={true}><EducatorDashboard /></ProtectedRoute>} />
-          <Route path="/educator/students" element={<ProtectedRoute roles={['educator']}><StudentManagement /></ProtectedRoute>} />
-          <Route path="/educator/student/:studentId/activity" element={<ProtectedRoute roles={['educator']}><StudentActivityTracker /></ProtectedRoute>} />
-          <Route path="/educator/tools" element={<ProtectedRoute roles={['educator']}><EducatorTools /></ProtectedRoute>} />
-          <Route path="/educator/redemptions" element={<ProtectedRoute roles={['educator']}><RedemptionRequests /></ProtectedRoute>} />
-          <Route path="/pending-approval" element={<ProtectedRoute roles={['educator']}><PendingApproval /></ProtectedRoute>} />
-          <Route path="/educator/settings" element={<ProtectedRoute roles={['educator']}><Setting /></ProtectedRoute>} />
-          <Route path="/educator/profile" element={<ProtectedRoute roles={['educator']}><Profile /></ProtectedRoute>} />
-          <Route path="/educator/notifications" element={<ProtectedRoute roles={['educator']}><Notifications /></ProtectedRoute>} />
-          <Route path="/educator/ai-support" element={<ProtectedRoute roles={['educator']}><AISupport /></ProtectedRoute>} />
-          <Route path="/educator/quick-actions" element={<ProtectedRoute roles={['educator']}><QuickActions /></ProtectedRoute>} />
-          <Route path="/educator/resources" element={<ProtectedRoute roles={['educator']}><ResourceLibrary /></ProtectedRoute>} />
-          <Route path="/educator/alerts" element={<ProtectedRoute roles={['educator']}><SmartAlerts /></ProtectedRoute>} />
-          <Route path="/educator/rewards" element={<ProtectedRoute roles={['educator']}><SmartRewardsSystem /></ProtectedRoute>} />
-          <Route path="/educator/progress" element={<ProtectedRoute roles={['educator']}><ProgressAnalytics /></ProtectedRoute>} />
-          <Route path="/educator/analytics" element={<ProtectedRoute roles={['educator']}><RealTimeAnalytics /></ProtectedRoute>} />
-          <Route path="/educator/communication" element={<ProtectedRoute roles={['educator']}><CommunicationCenter /></ProtectedRoute>} />
-          <Route path="/educator/curriculum" element={<ProtectedRoute roles={['educator']}><CurriculumBuilder /></ProtectedRoute>} />
-          <Route path="/educator/wellness" element={<ProtectedRoute roles={['educator']}><WellnessMonitor /></ProtectedRoute>} />
-          <Route path="/educator/assessment" element={<ProtectedRoute roles={['educator']}><AssessmentHub /></ProtectedRoute>} />
 
           {/* Admin Routes */}
           <Route path="/admin/panel" element={<ProtectedRoute roles={['admin']}><AdminPanel /></ProtectedRoute>} />
           <Route path="/admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
           <Route path="/admin/analytics" element={<ProtectedRoute roles={['admin']}><AdminAnalytics /></ProtectedRoute>} />
           <Route path="/admin/students" element={<ProtectedRoute roles={['admin']}><AllStudents /></ProtectedRoute>} />
-          <Route path="/admin/educators" element={<ProtectedRoute roles={['admin']}><AllEducator /></ProtectedRoute>} />
-          <Route path="/admin/pending-educators" element={<ProtectedRoute roles={['admin']}><PendingEducators /></ProtectedRoute>} />
           <Route path="/admin/redemptions" element={<ProtectedRoute roles={['admin']}><AdminRedemptions /></ProtectedRoute>} />
           <Route path="/admin/feedback" element={<ProtectedRoute roles={['admin']}><FeedbackHistoryModal /></ProtectedRoute>} />
           <Route path="/admin/all-redemptions" element={<ProtectedRoute roles={['admin']}><AllRedemptions /></ProtectedRoute>} />
@@ -1021,7 +1041,22 @@ const App = () => {
           <Route path="/admin/notifications" element={<ProtectedRoute roles={['admin']}><Notifications /></ProtectedRoute>} />
 
           {/* Parent Routes */}
+          <Route path="/parent/overview" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentOverview /></ProtectedRoute>} />
           <Route path="/parent/dashboard" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentDashboard /></ProtectedRoute>} />
+          <Route path="/parent/children" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentChildren /></ProtectedRoute>} />
+          <Route path="/parent/messages" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentMessages /></ProtectedRoute>} />
+          <Route path="/parent/settings" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentSettings /></ProtectedRoute>} />
+          
+          {/* Child Analytics Routes */}
+          <Route path="/parent/child/:childId" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentChildAnalytics /></ProtectedRoute>} />
+          <Route path="/parent/child/:childId/analytics" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentChildAnalytics /></ProtectedRoute>} />
+          <Route path="/parent/child/:childId/progress" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ChildProgress /></ProtectedRoute>} />
+          <Route path="/parent/child/:childId/wellbeing" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ChildMoodWellbeing /></ProtectedRoute>} />
+          <Route path="/parent/child/:childId/wallet" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ChildWalletRewards /></ProtectedRoute>} />
+          
+          <Route path="/parent/profile" element={<ProtectedRoute roles={['parent']}><Profile /></ProtectedRoute>} />
+          <Route path="/parent/notifications" element={<ProtectedRoute roles={['parent']}><Notifications /></ProtectedRoute>} />
+          <Route path="/parent/progress" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentDashboard /></ProtectedRoute>} />
 
           {/* Seller Routes */}
           <Route path="/seller/dashboard" element={<ProtectedRoute roles={['seller']} requireApproved={true}><SellerDashboard /></ProtectedRoute>} />

@@ -21,12 +21,6 @@ export const checkAdmin = (req, res, next) => {
   next();
 };
 
-export const checkEducator = (req, res, next) => {
-  if (!req.user || req.user.role !== 'educator') {
-    return res.status(403).json({ message: "Educator access required" });
-  }
-  next();
-};
 
 export const checkStudent = (req, res, next) => {
   if (!req.user || req.user.role !== 'student') {

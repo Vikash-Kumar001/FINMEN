@@ -78,7 +78,7 @@ const MoodTracker = () => {
         // Fetch mood options from API
         const fetchMoodOptions = async () => {
             try {
-                const response = await api.get('/api/moods/options');
+                const response = await api.get('/api/mood/options');
                 setMoodOptions(response.data);
             } catch (error) {
                 console.error('Error fetching mood options:', error);

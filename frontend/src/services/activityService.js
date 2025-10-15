@@ -22,7 +22,7 @@ export const getMyActivities = async (params = {}) => {
   }
 };
 
-// Get user activities (for admin and educators)
+// Get user activities (for admin)
 export const getUserActivities = async (userId, params = {}) => {
   try {
     const res = await api.get(`/api/activity/user/${userId}`, { params });

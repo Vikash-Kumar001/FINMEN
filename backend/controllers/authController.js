@@ -4,6 +4,7 @@ import Wallet from "../models/Wallet.js";
 import Transaction from "../models/Transaction.js";
 import { generateToken } from "../utils/generateToken.js";
 import { sendEmail } from "../utils/sendMail.js";
+import { generateAvatar } from "../utils/avatarGenerator.js";
 
 
 const generateOTP = () => {
@@ -14,8 +15,8 @@ export const sendOTP = async (email, type = "verify") => {
   try {
     const user = await User.findOne({ email: email.toLowerCase() });
 
-    if (user && (user.role === "admin" || user.role === "educator" || user.role === "parent" || user.role === "seller" || user.role === "csr")) {
-      return { success: true, message: "No OTP required for admin/educator/parent/seller/csr accounts" };
+    if (user && (user.role === "admin" || user.role === "parent" || user.role === "seller" || user.role === "csr")) {
+      return { success: true, message: "No OTP required for admin/parent/seller/csr accounts" };
     }
 
     const otp = generateOTP();
@@ -62,8 +63,8 @@ export const verifyOTP = async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(400).json({ message: "User not found" });
 
-    if (user.role === "admin" || user.role === "educator") {
-      return res.status(400).json({ message: "Admin and educator accounts don't require OTP verification" });
+    if (user.role === "admin") {
+      return res.status(400).json({ message: "Admin accounts don't require OTP verification" });
     }
 
     if (user.otp !== otp || user.otpExpiresAt < new Date()) {
@@ -117,8 +118,8 @@ export const forgotPassword = async (req, res) => {
 
     // Allow password reset via OTP even if no password is currently set
 
-    if (user.role === "admin" || user.role === "educator") {
-      return res.status(400).json({ message: "Admin and educator accounts cannot reset password via OTP. Please contact your administrator." });
+    if (user.role === "admin") {
+      return res.status(400).json({ message: "Admin accounts cannot reset password via OTP. Please contact your administrator." });
     }
 
     await sendOTP(user.email, "reset");
@@ -144,8 +145,8 @@ export const resetPasswordWithOTP = async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(400).json({ message: "User not found" });
 
-    if (user.role === "admin" || user.role === "educator") {
-      return res.status(400).json({ message: "Admin and educator accounts cannot reset password via OTP. Please contact your administrator." });
+    if (user.role === "admin") {
+      return res.status(400).json({ message: "Admin accounts cannot reset password via OTP. Please contact your administrator." });
     }
 
     if (user.otp !== otp || user.otpExpiresAt < new Date()) {
@@ -182,14 +183,11 @@ export const registerByAdmin = async (req, res) => {
     }
 
     // Allow school_admin, school_student, school_teacher, school_parent
-    const allowedRoles = ["admin", "educator", "parent", "seller", "csr", "school_admin", "school_student", "school_teacher", "school_parent"];
+    const allowedRoles = ["admin", "parent", "seller", "csr", "school_admin", "school_student", "school_teacher", "school_parent"];
     if (!allowedRoles.includes(role)) {
       return res.status(400).json({ message: `Role must be one of: ${allowedRoles.join(", ")}` });
     }
 
-    if (role === "educator" && (!position || !subjects)) {
-      return res.status(400).json({ message: "Position and subjects are required for educator role" });
-    }
 
     // For school_student, generate permanent random code
     let studentCode;
@@ -216,21 +214,31 @@ export const registerByAdmin = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Generate avatar for the new user
+    const avatarData = generateAvatar({
+      name,
+      email: normalizedEmail,
+      role
+    });
+
     const newUser = await User.create({
       name,
       email: normalizedEmail,
       password: hashedPassword,
       role,
       isVerified: true, // All roles created by admin are pre-verified
-      position: role === "educator" ? position : undefined,
-      subjects: role === "educator" ? subjects : undefined,
-      approvalStatus: ["educator", "parent", "seller", "csr"].includes(role) ? "pending" : "approved",
+      approvalStatus: ["parent", "seller", "csr"].includes(role) ? "pending" : "approved",
       studentCode: role === "school_student" ? studentCode : undefined,
       linkedStudentId: role === "school_parent" && linkedStudent ? linkedStudent._id : undefined,
+      avatar: avatarData.url, // Set legacy avatar field
+      avatarData: {
+        type: 'generated',
+        ...avatarData
+      }
     });
 
     res.status(201).json({
-      message: ["educator", "parent", "seller", "csr"].includes(role)
+      message: ["parent", "seller", "csr"].includes(role)
         ? `${role.charAt(0).toUpperCase() + role.slice(1)} registered successfully. Account is pending approval.`
         : `${role.charAt(0).toUpperCase() + role.slice(1)} registered successfully`,
       user: {
@@ -257,12 +265,12 @@ export const checkVerificationStatus = async (req, res) => {
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) return res.status(400).json({ message: "User not found" });
 
-    if (user.role === "admin" || user.role === "educator") {
+    if (user.role === "admin") {
       return res.status(200).json({
         needsVerification: false,
         isVerified: true,
         role: user.role,
-        message: "Admin and educator accounts don't require email verification"
+        message: "Admin accounts don't require email verification"
       });
     }
 
@@ -308,8 +316,8 @@ export const login = async (req, res) => {
     // Email verification is no longer required for student login.
     // We allow login regardless of verification status.
 
-    // Approval status checks for educator, parent, seller, csr
-    if (["educator", "parent", "seller", "csr"].includes(user.role)) {
+    // Approval status checks for parent, seller, csr
+    if (["parent", "seller", "csr"].includes(user.role)) {
       if (user.approvalStatus === "pending") {
         return res.status(403).json({
           message: `Your ${user.role} account is currently under review. You will be notified once approved.`,

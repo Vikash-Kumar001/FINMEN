@@ -9,7 +9,6 @@ import {
   login
 } from "../controllers/authController.js";
 import { requireAuth, requireAdmin } from "../middlewares/requireAuth.js";
-import { trackEducatorLogin } from "../utils/educatorActivityTracker.js";
 import { generateToken } from "../utils/generateToken.js";
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
@@ -131,7 +130,7 @@ router.post("/verify-otp", verifyOTP);
 router.post("/check-verification", checkVerificationStatus);
 
 // ✅ Login with role-based checks
-router.post("/login", trackEducatorLogin, login);
+router.post("/login", login);
 
 // ✅ Forgot Password
 router.post("/forgot-password", forgotPassword);
@@ -153,16 +152,14 @@ router.post("/register-stakeholder", async (req, res) => {
       businessName, shopType,
       // CSR fields
       organization,
-      // Educator fields
-      position, subjects
     } = req.body;
 
     if (!email || !password || !name || !role) {
       return res.status(400).json({ message: "Email, password, name, and role are required" });
     }
 
-    if (!["parent", "seller", "csr", "educator"].includes(role)) {
-      return res.status(400).json({ message: "Role must be one of: parent, seller, csr, educator" });
+    if (!["parent", "seller", "csr"].includes(role)) {
+      return res.status(400).json({ message: "Role must be one of: parent, seller, csr" });
     }
 
     // Role-specific validation
@@ -178,9 +175,6 @@ router.post("/register-stakeholder", async (req, res) => {
       return res.status(400).json({ message: "Organization name is required for CSR role" });
     }
     
-    if (role === "educator" && (!position || !subjects)) {
-      return res.status(400).json({ message: "Position and subjects are required for educator role" });
-    }
 
     const normalizedEmail = email.toLowerCase();
     const existingUser = await User.findOne({ email: normalizedEmail });
@@ -208,9 +202,6 @@ router.post("/register-stakeholder", async (req, res) => {
       userData.shopType = shopType;
     } else if (role === "csr") {
       userData.organization = organization;
-    } else if (role === "educator") {
-      userData.position = position;
-      userData.subjects = subjects;
     }
 
     const newUser = await User.create(userData);
@@ -249,7 +240,7 @@ router.post("/register-stakeholder", async (req, res) => {
   }
 });
 
-// ✅ Admin-only: Register admin or educator
+// ✅ Admin-only: Register admin
 router.post("/admin-register", requireAuth, requireAdmin, registerByAdmin);
 
 // ✅ Get Logged-in User

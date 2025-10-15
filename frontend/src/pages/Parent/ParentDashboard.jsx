@@ -1,15 +1,20 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect, useCallback } from 'react';
+// eslint-disable-next-line no-unused-vars
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  User, TrendingUp, Coins, Gift, Crown, Calendar,
-  BarChart3, PieChart, Award, Target,
-  Bell, Settings, Download, Share2, Heart,
-  Brain, DollarSign, Clock, Star, Zap,
-  BookOpen, Gamepad2, Trophy, Shield,
-  CreditCard, Smartphone, Mail, CheckCircle
+  TrendingUp, Coins, Award, Calendar,
+  BarChart3, Clock, Star, Zap, Heart,
+  BookOpen, Gamepad2, Trophy, AlertTriangle,
+  ArrowUp, ArrowDown, Minus, Users,
+  Activity, DollarSign, Target, Share2,
+  RefreshCw, Mail, Phone, School, MessageSquare,
+  CheckCircle, XCircle, Lightbulb, ListTodo,
+  Shield, Eye, EyeOff, Lock, Settings, Search, Filter, X, Send
 } from 'lucide-react';
 import { Line, Doughnut } from 'react-chartjs-2';
 import { toast } from 'react-hot-toast';
+import { useNavigate, useParams } from 'react-router-dom';
+import api from '../../utils/api';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -36,699 +41,2181 @@ ChartJS.register(
 );
 
 const ParentDashboard = () => {
-  const [selectedChild, setSelectedChild] = useState(0);
-  const [timeRange, setTimeRange] = useState('month');
+  const navigate = useNavigate();
+  const { childId } = useParams();
+  const [children, setChildren] = useState([]);
+  const [selectedChildId, setSelectedChildId] = useState(childId || null);
+  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState('all');
+  const [showAddChildModal, setShowAddChildModal] = useState(false);
+  const [childEmail, setChildEmail] = useState('');
+  const [addingChild, setAddingChild] = useState(false);
 
-  const [childData, setChildData] = useState(null);
-  const [loadingChild, setLoadingChild] = useState(true);
-
-  // Fetch child data on component mount
-  useEffect(() => {
-    const fetchChildData = async () => {
-      try {
-        const response = await fetch('/api/parent/child', {
-          headers: {
-            'Authorization': `Bearer ${localStorage.getItem('finmen_token')}`
-          }
-        });
-        
-        if (response.ok) {
-          const data = await response.json();
-          setChildData(data);
-        } else {
-          toast.error('Failed to load child data');
+  const fetchChildren = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/api/parent/children');
+      const childrenData = response.data.children || [];
+      setChildren(childrenData);
+      
+      // Auto-select first child if none selected
+      if (childrenData.length > 0 && !selectedChildId) {
+        setSelectedChildId(childId || childrenData[0]._id);
         }
       } catch (error) {
-        console.error('Error fetching child data:', error);
-        toast.error('Error loading child data');
+      console.error('Error fetching children:', error);
+      toast.error('Failed to load children data');
       } finally {
-        setLoadingChild(false);
-      }
-    };
-
-    fetchChildData();
-  }, []);
-
-  // Mock child data structure for when API data is not available
-  const [mockChildData] = useState([{
-      id: 1,
-      name: "Child User",
-      age: 12,
-      avatar: "👦",
-      level: 8,
-      totalCoins: 2450,
-      currentStreak: 15,
-      digitalTwin: {
-        finance: { 
-          level: 6, 
-          progress: 75, 
-          weeklyGrowth: 12,
-          skillsLearned: ['Budgeting', 'Saving', 'Investment Basics'],
-          gamesCompleted: 25,
-          timeSpent: 180 // minutes
-        },
-        mentalWellness: { 
-          level: 7, 
-          progress: 85, 
-          weeklyGrowth: 8,
-          skillsLearned: ['Stress Management', 'Mindfulness', 'Emotional Intelligence'],
-          gamesCompleted: 30,
-          timeSpent: 150
-        },
-        values: { 
-          level: 5, 
-          progress: 60, 
-          weeklyGrowth: 15,
-          skillsLearned: ['Honesty', 'Responsibility', 'Empathy'],
-          gamesCompleted: 18,
-          timeSpent: 120
-        },
-        ai: { 
-          level: 4, 
-          progress: 45, 
-          weeklyGrowth: 20,
-          skillsLearned: ['Basic Coding', 'Problem Solving', 'Logic'],
-          gamesCompleted: 12,
-          timeSpent: 90
-        }
-      },
-      progressReport: {
-        coinsEarnedWeekly: 340,
-        coinsEarnedMonthly: 1200,
-        gamesCompletedByPillar: {
-          finance: 25,
-          mentalWellness: 30,
-          values: 18,
-          ai: 12
-        },
-        timeSpentByModule: {
-          finance: 180,
-          mentalWellness: 150,
-          values: 120,
-          ai: 90
-        },
-        strengths: ["Problem Solving", "Financial Planning", "Emotional Intelligence"],
-        needsSupport: ["Time Management", "Advanced Coding", "Leadership Skills"]
-      },
-      walletSummary: {
-        itemsRedeemed: [
-          { item: "School Shoes", coins: 1200, value: 800, date: "2025-01-05" },
-          { item: "Notebook Set", coins: 500, value: 250, date: "2025-01-03" },
-          { item: "Art Supplies", coins: 700, value: 350, date: "2024-12-28" }
-        ],
-        totalValueSaved: 450, // Total savings this month
-        monthlySpending: 2400
-      },
-      recentActivity: [
-        { type: "game", title: "Budget Hero", coins: 50, time: "2 hours ago", pillar: "finance" },
-        { type: "quiz", title: "Savings Challenge", coins: 30, time: "1 day ago", pillar: "finance" },
-        { type: "mood", title: "Daily Check-in", coins: 10, time: "1 day ago", pillar: "mentalWellness" },
-        { type: "values", title: "Honesty Quest", coins: 25, time: "2 days ago", pillar: "values" }
-      ]
-    }]
-  );
-
-  // Subscription data
-  const [subscriptionData] = useState({
-    currentPlan: "Premium Family",
-    status: "Active",
-    nextBilling: "2025-02-15",
-    monthlyPrice: 499,
-    features: [
-      "Unlimited Access to All Games",
-      "Detailed Progress Reports", 
-      "Priority Customer Support",
-      "Advanced Analytics",
-      "Parent-Child Communication Tools"
-    ],
-    upgradeOptions: [
-      {
-        name: "Premium Plus",
-        price: 799,
-        additionalFeatures: ["1-on-1 Counseling Sessions", "Custom Learning Paths", "Advanced AI Tutoring"]
-      }
-    ]
-  });
-
-  // Notifications data
-  const [notifications] = useState([
-    {
-      id: 1,
-      type: "achievement",
-      title: "Game Completed!",
-      message: "Arjun completed 100 Finance games and earned the 'Money Master' badge",
-      time: "2 hours ago",
-      icon: "🏆"
-    },
-    {
-      id: 2,
-      type: "redemption",
-      title: "Voucher Redeemed",
-      message: "Successfully redeemed School Shoes voucher for 1200 HealCoins",
-      time: "1 day ago",
-      icon: "🎁"
-    },
-    {
-      id: 3,
-      type: "milestone",
-      title: "Level Up!",
-      message: "Arjun reached Level 8 in overall progress",
-      time: "3 days ago",
-      icon: "⭐"
-    },
-    {
-      id: 4,
-      type: "weekly_report",
-      title: "Weekly Report Ready",
-      message: "Your child's weekly progress report is now available",
-      time: "1 week ago",
-      icon: "📊"
+      setLoading(false);
     }
-  ]);
+  }, [selectedChildId, childId]);
+
+  const fetchChildAnalytics = useCallback(async (id) => {
+    try {
+      setAnalyticsLoading(true);
+      const response = await api.get(`/api/parent/child/${id}/analytics`);
+      setAnalytics(response.data);
+    } catch (error) {
+      console.error('Error fetching analytics:', error);
+      toast.error('Failed to load analytics');
+    } finally {
+      setAnalyticsLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1000);
-    return () => clearTimeout(timer);
-  }, []);
+    fetchChildren();
+  }, [fetchChildren]);
 
-  const currentChild = childData || (mockChildData && mockChildData[0]) || null;
+  useEffect(() => {
+    if (selectedChildId) {
+      fetchChildAnalytics(selectedChildId);
+    }
+  }, [selectedChildId, fetchChildAnalytics]);
 
-  // Show loading state if no child data is available
-  if (loadingChild) {
+  const handleAddChild = async () => {
+    if (!childEmail.trim()) {
+      toast.error('Please enter child\'s email');
+      return;
+    }
+
+    // Basic email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(childEmail)) {
+      toast.error('Please enter a valid email address');
+      return;
+    }
+
+    try {
+      setAddingChild(true);
+      const response = await api.post('/api/parent/link-child', { childEmail: childEmail.trim() });
+      toast.success(response.data.message || 'Child linked successfully!');
+      setShowAddChildModal(false);
+      setChildEmail('');
+      fetchChildren(); // Refresh the children list
+    } catch (error) {
+      console.error('Error linking child:', error);
+      toast.error(error.response?.data?.message || 'Failed to link child');
+    } finally {
+      setAddingChild(false);
+    }
+  };
+
+  // eslint-disable-next-line no-unused-vars
+  const selectedChild = children.find(c => c._id === selectedChildId);
+
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading child data...</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center">
+        <motion.div
+          animate={{ rotate: 360 }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full"
+        />
       </div>
     );
   }
 
-  // Show error state if no child data is available
-  if (!currentChild) {
+  if (children.length === 0) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="text-6xl mb-4">👶</div>
-          <h2 className="text-2xl font-bold text-gray-800 mb-2">No Child Data Available</h2>
-          <p className="text-gray-600">Please link your child's account or contact support.</p>
-        </div>
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center bg-white rounded-3xl p-12 shadow-2xl max-w-md"
+        >
+          <Users className="w-20 h-20 text-purple-500 mx-auto mb-4" />
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">No Children Linked</h2>
+          <p className="text-gray-600 mb-6">Link your child's account to start tracking their progress</p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => navigate('/parent/children')}
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl font-bold shadow-lg"
+          >
+            View Children
+          </motion.button>
+        </motion.div>
       </div>
     );
   }
 
-  // Enhanced chart configurations
-  const growthChartData = {
-    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
-    datasets: [
-      {
-        label: 'Finance',
-        data: [65, 70, 72, 75],
-        borderColor: '#10B981',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        tension: 0.4,
-        fill: true
-      },
-      {
-        label: 'Mental Wellness',
-        data: [70, 75, 80, 85],
-        borderColor: '#8B5CF6',
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        tension: 0.4,
-        fill: true
-      },
-      {
-        label: 'Values',
-        data: [50, 55, 58, 60],
-        borderColor: '#F59E0B',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        tension: 0.4,
-        fill: true
-      },
-      {
-        label: 'AI Skills',
-        data: [30, 35, 40, 45],
-        borderColor: '#EF4444',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        tension: 0.4,
-        fill: true
+  const getActivityStatus = (lastActive) => {
+    if (!lastActive) return 'inactive';
+    const daysSinceActive = Math.floor((Date.now() - new Date(lastActive)) / (1000 * 60 * 60 * 24));
+    if (daysSinceActive === 0) return 'active';
+    if (daysSinceActive <= 7) return 'recent';
+    return 'inactive';
+  };
+
+  const filteredChildren = children.filter(child => {
+    const matchesSearch = child.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                         child.email?.toLowerCase().includes(searchQuery.toLowerCase());
+    const status = getActivityStatus(child.lastActive);
+    const matchesFilter = filterStatus === 'all' || 
+                         (filterStatus === 'active' && status === 'active') ||
+                         (filterStatus === 'inactive' && status === 'inactive');
+    return matchesSearch && matchesFilter;
+  });
+
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
       }
-    ]
-  };
-
-  const skillsDistribution = {
-    labels: ['Finance', 'Mental Wellness', 'Values', 'AI Skills'],
-    datasets: [{
-      data: [75, 85, 60, 45],
-      backgroundColor: ['#10B981', '#8B5CF6', '#F59E0B', '#EF4444'],
-      borderWidth: 0
-    }]
-  };
-
-  const handleUpgrade = () => {
-    toast.success('Redirecting to upgrade page...', {
-      duration: 3000,
-      icon: '🚀'
-    });
-  };
-
-  const handleExportReport = () => {
-    toast.success('Generating detailed report...', {
-      duration: 3000,
-      icon: '📊'
-    });
-  };
-
-  const handleShareReport = () => {
-    toast.success('Report shared successfully!', {
-      duration: 3000,
-      icon: '📤'
-    });
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
-        {/* Enhanced Header */}
+        
+        {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: -20 }}
+          initial={{ opacity: 0, y: -30 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                Parent Dashboard
-              </h1>
-              <p className="text-gray-600 mt-2 flex items-center gap-2">
-                <Shield className="w-4 h-4" />
-                Track your child's growth, justify reward usage, and build trust
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleExportReport}
-                className="bg-white px-4 py-2 rounded-xl shadow-md flex items-center gap-2 hover:shadow-lg transition-all"
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <motion.div
+                className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl"
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                transition={{ duration: 0.3 }}
               >
-                <Download className="w-4 h-4" />
-                Export Report
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleShareReport}
-                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-xl shadow-md flex items-center gap-2 hover:shadow-lg transition-all"
-              >
-                <Share2 className="w-4 h-4" />
-                Share Report
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className="bg-white p-3 rounded-xl shadow-md hover:shadow-lg transition-all relative"
-              >
-                <Bell className="w-5 h-5 text-gray-600" />
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full"></div>
-              </motion.button>
-            </div>
-          </div>
-
-          {/* Child Info Display */}
-          {loadingChild ? (
-            <div className="flex justify-center items-center p-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-              <span className="ml-3 text-gray-600">Loading child data...</span>
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl p-6 shadow-lg mb-6">
-              <div className="flex items-center gap-4">
-                <div className="text-3xl">{currentChild?.avatar || '👶'}</div>
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-800">{currentChild?.name || 'Child'}</h2>
-                  <div className="text-gray-600">Level {currentChild?.level || 0} • {currentChild?.currentStreak || 0} day streak</div>
-                  {childData?.parentLinked && (
-                    <div className="text-sm text-green-600 flex items-center gap-1 mt-1">
-                      <CheckCircle className="w-4 h-4" />
-                      Linked to your account
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          )}
-        </motion.div>
-
-        {/* Child Growth & Digital Twin Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
-        >
-          {/* Growth Chart */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-blue-500" />
-                Digital Twin Growth
-              </h3>
-              <select
-                value={timeRange}
-                onChange={(e) => setTimeRange(e.target.value)}
-                className="px-3 py-1 border rounded-lg text-sm"
-              >
-                <option value="week">This Week</option>
-                <option value="month">This Month</option>
-                <option value="quarter">This Quarter</option>
-              </select>
-            </div>
-            <div className="h-64">
-              <Line
-                data={growthChartData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { position: 'bottom' }
-                  },
-                  scales: {
-                    y: { beginAtZero: true, max: 100 }
-                  }
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Skills Distribution */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <PieChart className="w-5 h-5 text-purple-500" />
-              Skills Distribution
-            </h3>
-            <div className="h-64 flex items-center justify-center">
-              <Doughnut
-                data={skillsDistribution}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { position: 'bottom' }
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Digital Twin Progress Cards */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
-          {currentChild?.digitalTwin && Object.entries(currentChild.digitalTwin).map(([skill, data], index) => (
-            <div key={skill} className="bg-white rounded-2xl p-6 shadow-lg">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  {skill === 'finance' && <DollarSign className="w-5 h-5 text-green-500" />}
-                  {skill === 'mentalWellness' && <Heart className="w-5 h-5 text-purple-500" />}
-                  {skill === 'values' && <Star className="w-5 h-5 text-yellow-500" />}
-                  {skill === 'ai' && <Brain className="w-5 h-5 text-red-500" />}
-                  <h4 className="font-semibold capitalize">{skill.replace('mentalWellness', 'Mental Wellness')}</h4>
-                </div>
-                <div className="text-sm text-green-600 font-medium">
-                  +{data.weeklyGrowth}%
-                </div>
-              </div>
-              <div className="mb-3">
-                <div className="flex justify-between text-sm mb-1">
-                  <span>Level {data.level}</span>
-                  <span>{data.progress}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${data.progress}%` }}
-                    transition={{ duration: 1, delay: index * 0.1 }}
-                    className={`h-2 rounded-full ${
-                      skill === 'finance' ? 'bg-green-500' :
-                      skill === 'mentalWellness' ? 'bg-purple-500' :
-                      skill === 'values' ? 'bg-yellow-500' : 'bg-red-500'
-                    }`}
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <div className="text-xs text-gray-600">
-                  Games: {data.gamesCompleted} | Time: {data.timeSpent}min
-                </div>
-                <div className="flex flex-wrap gap-1">
-                  {data.skillsLearned.slice(0, 2).map((skill, i) => (
-                    <span key={i} className="text-xs bg-gray-100 text-gray-600 px-2 py-1 rounded-full">
-                      {skill}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          ))}
-        </motion.div>
-
-        {/* Progress Report & Wallet Summary */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8"
-        >
-          {/* Enhanced Progress Report */}
-          <div className="lg:col-span-2 bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <BarChart3 className="w-5 h-5 text-blue-500" />
-              Detailed Progress Report
-            </h3>
-            
-            {/* Coins Earned */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-              <div className="text-center p-4 bg-green-50 rounded-xl">
-                <Coins className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-green-600">{currentChild?.progressReport?.coinsEarnedWeekly || 0}</div>
-                <div className="text-sm text-gray-600">Weekly Coins</div>
-              </div>
-              <div className="text-center p-4 bg-blue-50 rounded-xl">
-                <Coins className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-blue-600">{currentChild?.progressReport?.coinsEarnedMonthly || 0}</div>
-                <div className="text-sm text-gray-600">Monthly Coins</div>
-              </div>
-              <div className="text-center p-4 bg-purple-50 rounded-xl">
-                <Clock className="w-8 h-8 text-purple-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-purple-600">
-                  {currentChild?.progressReport?.timeSpentByModule ? Object.values(currentChild.progressReport.timeSpentByModule).reduce((a, b) => a + b, 0) : 0}m
-                </div>
-                <div className="text-sm text-gray-600">Total Time</div>
-              </div>
-              <div className="text-center p-4 bg-yellow-50 rounded-xl">
-                <Target className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                <div className="text-2xl font-bold text-yellow-600">{currentChild?.currentStreak || 0}</div>
-                <div className="text-sm text-gray-600">Day Streak</div>
-              </div>
-            </div>
-
-            {/* Games Completed by Pillar */}
-            <div className="mb-6">
-              <h4 className="font-semibold mb-3">Games Completed per Pillar</h4>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {currentChild?.progressReport?.gamesCompletedByPillar && Object.entries(currentChild.progressReport.gamesCompletedByPillar).map(([pillar, count]) => (
-                  <div key={pillar} className="bg-gray-50 p-3 rounded-lg text-center">
-                    <div className="font-bold text-lg">{count}</div>
-                    <div className="text-sm text-gray-600 capitalize">{pillar.replace('mentalWellness', 'Mental')}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Strengths & Needs Support */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <Users className="w-8 h-8 text-white" />
+              </motion.div>
               <div>
-                <h4 className="font-semibold text-green-600 mb-2 flex items-center gap-2">
-                  <Trophy className="w-4 h-4" />
-                  Strengths
-                </h4>
-                <div className="space-y-2">
-                  {currentChild?.progressReport?.strengths?.map((strength, index) => (
-                    <div key={index} className="bg-green-50 px-3 py-2 rounded-lg text-sm flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-500" />
-                      {strength}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h4 className="font-semibold text-orange-600 mb-2 flex items-center gap-2">
-                  <Zap className="w-4 h-4" />
-                  Needs Support
-                </h4>
-                <div className="space-y-2">
-                  {currentChild?.progressReport?.needsSupport?.map((need, index) => (
-                    <div key={index} className="bg-orange-50 px-3 py-2 rounded-lg text-sm flex items-center gap-2">
-                      <Target className="w-4 h-4 text-orange-500" />
-                      {need}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Enhanced Wallet & Rewards Summary */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Gift className="w-5 h-5 text-purple-500" />
-              Wallet & Rewards
-            </h3>
-            <div className="text-center mb-6">
-              <div className="text-3xl font-bold text-purple-600 mb-2">
-                {currentChild?.totalCoins || 0}
-              </div>
-              <div className="text-gray-600">Current HealCoins</div>
-            </div>
-            
-            {/* Items Redeemed */}
-            <div className="mb-6">
-              <h4 className="font-semibold mb-3">Recent Redemptions</h4>
-              <div className="space-y-3">
-                {currentChild?.walletSummary?.itemsRedeemed?.map((item, index) => (
-                  <div key={index} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                    <div>
-                      <div className="font-medium text-sm">{item.item}</div>
-                      <div className="text-xs text-gray-500">{item.date}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-purple-600 font-semibold text-sm">-{item.coins} coins</div>
-                      <div className="text-green-600 text-xs">₹{item.value} value</div>
-                    </div>
-                  </div>
-                ))}
+                <h1 className="text-4xl font-black text-gray-900">My Children</h1>
+                <p className="text-gray-600 text-lg font-medium mt-1">
+                  Track and support your children's learning journey
+                </p>
               </div>
             </div>
 
-            {/* Value Saved */}
-            <div className="bg-green-50 p-4 rounded-xl">
-              <div className="text-center">
-                <div className="text-2xl font-bold text-green-600">₹{currentChild?.walletSummary?.totalValueSaved || 0}</div>
-                <div className="text-sm text-green-700">Total Value Saved This Month</div>
-              </div>
+            <div className="flex items-center gap-3">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowAddChildModal(true)}
+                className="px-4 py-2 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
+              >
+                <Users className="w-5 h-5 inline mr-2" />
+                Add Child
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => fetchChildren()}
+                className="px-4 py-2 bg-white text-purple-600 border-2 border-purple-200 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all"
+              >
+                <Activity className="w-5 h-5 inline mr-2" />
+                Refresh
+              </motion.button>
             </div>
           </div>
         </motion.div>
 
-        {/* Subscription & Notifications */}
+        {/* Search and Filter */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
+          className="mb-6 flex flex-wrap gap-4"
         >
-          {/* Enhanced Subscription & Upgrades */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Crown className="w-5 h-5 text-yellow-500" />
-              Subscription & Upgrades
-            </h3>
-            <div className="bg-gradient-to-r from-yellow-50 to-orange-50 p-4 rounded-xl mb-4">
-              <div className="flex justify-between items-center mb-2">
-                <span className="font-semibold">{subscriptionData.currentPlan}</span>
-                <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs">
-                  {subscriptionData.status}
-                </span>
-              </div>
-              <div className="text-sm text-gray-600 mb-3">
-                Next billing: {subscriptionData.nextBilling} • ₹{subscriptionData.monthlyPrice}/month
-              </div>
-              <div className="space-y-1">
-                {subscriptionData.features.map((feature, index) => (
-                  <div key={index} className="text-sm flex items-center gap-2">
-                    <CheckCircle className="w-3 h-3 text-green-500" />
-                    {feature}
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            {/* Upgrade Option */}
-            <div className="border-2 border-dashed border-purple-300 p-4 rounded-xl mb-4">
-              <div className="text-center">
-                <h4 className="font-semibold text-purple-600 mb-2">Upgrade to Premium Plus</h4>
-                <div className="text-2xl font-bold text-purple-600 mb-2">₹{subscriptionData.upgradeOptions[0].price}/month</div>
-                <div className="text-sm text-gray-600 mb-3">
-                  Get {subscriptionData.upgradeOptions[0].additionalFeatures.join(', ')}
-                </div>
-              </div>
-            </div>
-            
-            <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={handleUpgrade}
-              className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 rounded-xl font-semibold"
+          <div className="flex-1 min-w-[200px] relative">
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <input
+              type="text"
+              placeholder="Search children..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-12 pr-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:outline-none transition-all bg-white shadow-md"
+            />
+          </div>
+
+          <div className="flex gap-2">
+            {['all', 'active', 'inactive'].map((status) => (
+              <motion.button
+                key={status}
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setFilterStatus(status)}
+                className={`px-4 py-3 rounded-xl font-semibold transition-all ${
+                  filterStatus === status
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-600 text-white shadow-lg'
+                    : 'bg-white text-gray-600 border-2 border-gray-200'
+                }`}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </motion.button>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Children Grid */}
+        {filteredChildren.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-16"
+          >
+            <Users className="w-20 h-20 text-gray-300 mx-auto mb-4" />
+            <h3 className="text-2xl font-bold text-gray-700 mb-2">No children found</h3>
+            <p className="text-gray-500 mb-6">
+              {searchQuery ? 'Try a different search term' : 'Link your children to get started'}
+            </p>
+          </motion.div>
+        ) : (
+          <motion.div
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            {filteredChildren.map((child) => (
+              <ChildCard key={child._id} child={child} navigate={navigate} />
+            ))}
+          </motion.div>
+        )}
+
+        {/* Add Child Modal */}
+        <AnimatePresence>
+          {showAddChildModal && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4"
+              onClick={() => setShowAddChildModal(false)}
             >
-              One-Click Upgrade
-            </motion.button>
-          </div>
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                className="bg-white rounded-3xl p-8 shadow-2xl max-w-md w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                {/* Modal Header */}
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    Add Child
+                  </h2>
+                  <button
+                    onClick={() => setShowAddChildModal(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <X className="w-6 h-6" />
+                  </button>
+                </div>
 
-          {/* Enhanced Notifications */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Bell className="w-5 h-5 text-blue-500" />
-              Recent Notifications
-            </h3>
-            <div className="space-y-3">
-              {notifications.map((notification) => (
-                <div key={notification.id} className={`p-3 rounded-lg border-l-4 ${
-                  notification.type === 'achievement' ? 'bg-yellow-50 border-yellow-500' :
-                  notification.type === 'redemption' ? 'bg-green-50 border-green-500' :
-                  notification.type === 'milestone' ? 'bg-purple-50 border-purple-500' :
-                  'bg-blue-50 border-blue-500'
-                }`}>
-                  <div className="flex items-start gap-3">
-                    <div className="text-lg">{notification.icon}</div>
-                    <div className="flex-1">
-                      <div className="font-medium text-sm">{notification.title}</div>
-                      <div className="text-xs text-gray-600 mb-1">{notification.message}</div>
-                      <div className={`text-xs font-medium ${
-                        notification.type === 'achievement' ? 'text-yellow-600' :
-                        notification.type === 'redemption' ? 'text-green-600' :
-                        notification.type === 'milestone' ? 'text-purple-600' :
-                        'text-blue-600'
-                      }`}>
-                        {notification.time}
-                      </div>
+                {/* Modal Content */}
+                <div className="space-y-6">
+                  <p className="text-gray-600">
+                    Enter your child's email address to link their account and track their progress.
+                  </p>
+
+                  {/* Email Input */}
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Child's Email Address
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+                      <input
+                        type="email"
+                        placeholder="child@example.com"
+                        value={childEmail}
+                        onChange={(e) => setChildEmail(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === 'Enter') {
+                            handleAddChild();
+                          }
+                        }}
+                        className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:border-purple-500 focus:ring-2 focus:ring-purple-200 transition-all outline-none"
+                        disabled={addingChild}
+                      />
                     </div>
                   </div>
+
+                  {/* Action Buttons */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setShowAddChildModal(false);
+                        setChildEmail('');
+                      }}
+                      className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all"
+                      disabled={addingChild}
+                    >
+                      Cancel
+                    </button>
+                    <motion.button
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                      onClick={handleAddChild}
+                      disabled={addingChild}
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {addingChild ? (
+                        <>
+                          <motion.div
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                            className="w-5 h-5 border-2 border-white border-t-transparent rounded-full"
+                          />
+                          Linking...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-5 h-5" />
+                          Add Child
+                        </>
+                      )}
+                    </motion.button>
+                  </div>
                 </div>
-              ))}
-            </div>
-            
-            {/* Notification Settings */}
-            <div className="mt-4 pt-4 border-t">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Email Notifications</span>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input type="checkbox" className="sr-only peer" defaultChecked />
-                  <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                </label>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   );
 };
 
+const ChildCard = ({ child, navigate }) => {
+  const activityStatus = child.lastActive 
+    ? Math.floor((Date.now() - new Date(child.lastActive)) / (1000 * 60 * 60 * 24))
+    : null;
+
+  const statusColor = activityStatus === null ? 'gray' :
+                     activityStatus === 0 ? 'green' :
+                     activityStatus <= 7 ? 'yellow' : 'red';
+
+  const calculateAge = (dob) => {
+    if (!dob) return null;
+    const birthDate = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const age = calculateAge(child.dob);
+
+    return (
+    <motion.div
+      variants={{
+        hidden: { opacity: 0, y: 20 },
+        visible: { opacity: 1, y: 0 }
+      }}
+      whileHover={{ y: -5 }}
+      className="bg-white rounded-3xl shadow-xl border-2 border-gray-100 overflow-hidden hover:shadow-2xl transition-all cursor-pointer group"
+      onClick={() => navigate(`/parent/child/${child._id}`)}
+    >
+      {/* Header with Avatar */}
+      <div className="relative h-32 bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 p-6">
+        <div className="absolute top-4 right-4">
+          <div className={`w-3 h-3 rounded-full bg-${statusColor}-500 animate-pulse shadow-lg`} />
+        </div>
+        <div className="absolute -bottom-12 left-6">
+          <motion.div
+            whileHover={{ scale: 1.1 }}
+            className="w-24 h-24 rounded-full border-4 border-white shadow-xl overflow-hidden bg-gray-200"
+          >
+            <img
+              src={child.avatar || '/avatars/avatar1.png'}
+              alt={child.name}
+              className="w-full h-full object-cover"
+            />
+          </motion.div>
+      </div>
+      </div>
+
+      {/* Content */}
+      <div className="pt-16 px-6 pb-6 space-y-4">
+        {/* Name and Info */}
+        <div>
+          <h3 className="text-2xl font-bold text-gray-900 mb-1">{child.name}</h3>
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Mail className="w-4 h-4" />
+            <span className="truncate">{child.email}</span>
+          </div>
+          {child.institution && (
+            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+              <School className="w-4 h-4" />
+              <span>{child.institution}</span>
+            </div>
+          )}
+          {age && (
+            <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+              <Calendar className="w-4 h-4" />
+              <span>{age} years old</span>
+            </div>
+          )}
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl p-3 border border-blue-100">
+            <div className="flex items-center gap-2 mb-1">
+              <Star className="w-4 h-4 text-blue-600" />
+              <span className="text-xs font-semibold text-blue-600">Level</span>
+            </div>
+            <p className="text-2xl font-black text-blue-900">{child.level || 1}</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl p-3 border border-amber-100">
+            <div className="flex items-center gap-2 mb-1">
+              <Zap className="w-4 h-4 text-amber-600" />
+              <span className="text-xs font-semibold text-amber-600">XP</span>
+            </div>
+            <p className="text-2xl font-black text-amber-900">{child.xp || 0}</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-3 border border-green-100">
+            <div className="flex items-center gap-2 mb-1">
+              <Coins className="w-4 h-4 text-green-600" />
+              <span className="text-xs font-semibold text-green-600">Coins</span>
+            </div>
+            <p className="text-2xl font-black text-green-900">{child.totalCoins || 0}</p>
+          </div>
+
+          <div className="bg-gradient-to-br from-orange-50 to-red-50 rounded-xl p-3 border border-orange-100">
+            <div className="flex items-center gap-2 mb-1">
+              <Target className="w-4 h-4 text-orange-600" />
+              <span className="text-xs font-semibold text-orange-600">Streak</span>
+            </div>
+            <p className="text-2xl font-black text-orange-900">{child.streak || 0}</p>
+          </div>
+        </div>
+
+        {/* Activity Status */}
+        <div className="pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-500 flex items-center gap-1">
+              <Clock className="w-4 h-4" />
+              Last active
+            </span>
+            <span className="font-semibold text-gray-700">
+              {activityStatus === null
+                ? 'Never'
+                : activityStatus === 0
+                ? 'Today'
+                : activityStatus === 1
+                ? 'Yesterday'
+                : `${activityStatus} days ago`}
+            </span>
+          </div>
+        </div>
+
+        {/* Action Button */}
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={(e) => {
+            e.stopPropagation();
+            navigate(`/parent/child/${child._id}`);
+          }}
+          className="w-full py-3 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
+        >
+          <Eye className="w-5 h-5" />
+          View Progress
+        </motion.button>
+      </div>
+    </motion.div>
+  );
+};
+
+const AnalyticsView = ({ analytics }) => {
+  const {
+    childCard,
+    snapshotKPIs,
+    detailedProgressReport,
+    walletRewards,
+    subscriptionAndNotifications,
+    weeklyEngagement,
+    moodSummary,
+    recentAchievements,
+    healCoins,
+    activityTimeline,
+    homeSupportPlan,
+    messages,
+    level,
+    xp,
+    streak,
+    digitalTwinData,
+    skillsDistribution
+  } = analytics;
+
+  const [permissions, setPermissions] = useState(null);
+  const [loadingPermissions, setLoadingPermissions] = useState(false);
+
+  useEffect(() => {
+    fetchPermissions();
+  }, []);
+
+  const fetchPermissions = async () => {
+    try {
+      setLoadingPermissions(true);
+      const response = await api.get('/api/parent/permissions');
+      setPermissions(response.data.permissions);
+    } catch (error) {
+      console.error('Error fetching permissions:', error);
+    } finally {
+      setLoadingPermissions(false);
+    }
+  };
+
+  const updatePermissions = async (newPermissions) => {
+    try {
+      await api.put('/api/parent/permissions', { permissions: newPermissions });
+      setPermissions(newPermissions);
+      toast.success('Permissions updated successfully');
+    } catch (error) {
+      console.error('Error updating permissions:', error);
+      toast.error('Failed to update permissions');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Child Card */}
+      <ChildInfoCard childCard={childCard} />
+
+      {/* Snapshot KPIs Strip */}
+      <SnapshotKPIsStrip kpis={snapshotKPIs} level={level} xp={xp} streak={streak} healCoins={healCoins.currentBalance} />
+
+      {/* Detailed Progress Report & Wallet & Rewards */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <DetailedProgressReportCard progressReport={detailedProgressReport} />
+        <WalletRewardsCard walletRewards={walletRewards} />
+      </div>
+
+      {/* Digital Twin Growth & Skills Distribution */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <DigitalTwinGrowthCard digitalTwinData={digitalTwinData} />
+        <SkillsDistributionCard skillsDistribution={skillsDistribution} />
+      </div>
+
+      {/* Mood Summary with Conversation Prompts */}
+      <MoodWithPromptsCard moodSummary={moodSummary} />
+
+      {/* Two Column Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Activity Timeline */}
+        <ActivityTimelineCard activityTimeline={activityTimeline} />
+
+        {/* Weekly Engagement */}
+        <EngagementCard weeklyEngagement={weeklyEngagement} />
+      </div>
+
+      {/* Home Support Plan */}
+      <HomeSupportPlanCard supportPlan={homeSupportPlan} />
+
+      {/* Messages & Notifications */}
+      <MessagesCard messages={messages} />
+
+      {/* Recent Achievements */}
+      <AchievementsCard achievements={recentAchievements} />
+
+      {/* HealCoins Activity */}
+      <HealCoinsCard healCoins={healCoins} />
+
+      {/* Subscription & Upgrades and Recent Notifications */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <SubscriptionUpgradesCard subscriptionData={subscriptionAndNotifications} />
+        <RecentNotificationsCard notificationsData={subscriptionAndNotifications} />
+      </div>
+
+      {/* Settings: Permission Management */}
+      <PermissionsCard 
+        permissions={permissions} 
+        loading={loadingPermissions}
+        onUpdate={updatePermissions}
+      />
+    </div>
+  );
+};
+
+// eslint-disable-next-line no-unused-vars
+const QuickStatCard = ({ icon: Icon, label, value, suffix = '', gradient }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      whileHover={{ scale: 1.03, y: -5 }}
+      className={`bg-gradient-to-br ${gradient} rounded-2xl p-6 shadow-xl text-white relative overflow-hidden`}
+    >
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16" />
+      <Icon className="w-8 h-8 mb-3 relative z-10" />
+      <p className="text-sm font-semibold opacity-90 mb-1 relative z-10">{label}</p>
+      <p className="text-3xl font-black relative z-10">{value}{suffix}</p>
+    </motion.div>
+  );
+};
+
+// Digital Twin Growth Card Component
+export const DigitalTwinGrowthCard = ({ digitalTwinData }) => {
+  const [selectedPeriod, setSelectedPeriod] = useState('This Month');
+
+  const chartData = {
+    labels: ['Week 1', 'Week 2', 'Week 3', 'Week 4'],
+    datasets: [
+      {
+        label: 'Finance',
+        data: digitalTwinData?.finance || [65, 68, 72, 75],
+        borderColor: '#22c55e',
+        backgroundColor: 'rgba(34, 197, 94, 0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        borderWidth: 3
+      },
+      {
+        label: 'Mental Wellness',
+        data: digitalTwinData?.mentalWellness || [70, 75, 80, 85],
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        borderWidth: 3
+      },
+      {
+        label: 'Values',
+        data: digitalTwinData?.values || [50, 52, 55, 60],
+        borderColor: '#f97316',
+        backgroundColor: 'rgba(249, 115, 22, 0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        borderWidth: 3
+      },
+      {
+        label: 'AI Skills',
+        data: digitalTwinData?.aiSkills || [30, 35, 40, 45],
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239, 68, 68, 0.1)',
+        fill: true,
+        tension: 0.4,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        borderWidth: 3
+      }
+    ]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom',
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          font: { size: 12, weight: 'bold' }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        titleFont: { size: 14, weight: 'bold' },
+        bodyFont: { size: 13 }
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        max: 100,
+        ticks: { 
+          callback: (value) => value % 20 === 0 ? value : '',
+          stepSize: 20
+        },
+        grid: { color: 'rgba(0, 0, 0, 0.05)' }
+      },
+      x: {
+        grid: { display: false }
+      }
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <TrendingUp className="w-6 h-6 text-purple-600" />
+          Child Growth Mastery
+        </h3>
+        <select 
+          value={selectedPeriod}
+          onChange={(e) => setSelectedPeriod(e.target.value)}
+          className="bg-white border border-gray-200 rounded-lg px-3 py-2 text-sm font-medium text-gray-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
+        >
+          <option value="This Week">This Week</option>
+          <option value="This Month">This Month</option>
+          <option value="Last 3 Months">Last 3 Months</option>
+        </select>
+      </div>
+
+      {/* Growth Chart */}
+      <div className="h-80">
+        <Line data={chartData} options={chartOptions} />
+      </div>
+    </motion.div>
+  );
+};
+
+// Skills Distribution Card Component
+export const SkillsDistributionCard = ({ skillsDistribution }) => {
+  const chartData = {
+    labels: ['Finance', 'Mental Wellness', 'Values', 'AI Skills'],
+    datasets: [
+      {
+        data: [
+          skillsDistribution?.finance || 32,
+          skillsDistribution?.mentalWellness || 28,
+          skillsDistribution?.values || 22,
+          skillsDistribution?.aiSkills || 18
+        ],
+        backgroundColor: [
+          '#22c55e',
+          '#8b5cf6',
+          '#f97316',
+          '#ef4444'
+        ],
+        borderWidth: 0,
+        cutout: '60%'
+      }
+    ]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        display: true,
+        position: 'bottom',
+        labels: {
+          usePointStyle: true,
+          padding: 20,
+          font: { size: 12, weight: 'bold' }
+        }
+      },
+      tooltip: {
+        backgroundColor: 'rgba(0, 0, 0, 0.8)',
+        padding: 12,
+        titleFont: { size: 14, weight: 'bold' },
+        bodyFont: { size: 13 },
+        callbacks: {
+          label: (context) => `${context.label}: ${context.parsed}%`
+        }
+      }
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Clock className="w-6 h-6 text-purple-600" />
+          Skills Distribution
+        </h3>
+      </div>
+
+      {/* Donut Chart */}
+      <div className="h-80 flex items-center justify-center">
+        <Doughnut data={chartData} options={chartOptions} />
+      </div>
+    </motion.div>
+  );
+};
+
+export const EngagementCard = ({ weeklyEngagement }) => {
+  const chartData = {
+    labels: ['Games', 'Lessons'],
+    datasets: [{
+      data: [weeklyEngagement?.gamesMinutes || 0, weeklyEngagement?.lessonsMinutes || 0],
+      backgroundColor: [
+        'rgba(147, 51, 234, 0.8)',
+        'rgba(236, 72, 153, 0.8)'
+      ],
+      borderWidth: 0
+    }]
+  };
+
+  const chartOptions = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'bottom',
+        labels: { font: { size: 12, weight: 'bold' } }
+      }
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <Clock className="w-6 h-6 text-purple-600" />
+        Weekly Engagement
+      </h3>
+
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-4 border border-purple-100">
+          <Activity className="w-6 h-6 text-purple-600 mb-2" />
+          <p className="text-3xl font-black text-purple-900">{weeklyEngagement?.totalMinutes || 0}</p>
+          <p className="text-sm font-semibold text-gray-600">Total Minutes</p>
+        </div>
+        <div className="bg-gradient-to-br from-pink-50 to-rose-50 rounded-xl p-4 border border-pink-100">
+          <Target className="w-6 h-6 text-pink-600 mb-2" />
+          <p className="text-3xl font-black text-pink-900">{weeklyEngagement?.totalSessions || 0}</p>
+          <p className="text-sm font-semibold text-gray-600">Sessions</p>
+        </div>
+      </div>
+
+      <div className="h-48">
+        <Doughnut data={chartData} options={chartOptions} />
+      </div>
+
+      <div className="mt-4 grid grid-cols-2 gap-3">
+        <div className="flex items-center justify-between p-3 bg-purple-50 rounded-xl">
+          <div className="flex items-center gap-2">
+            <Gamepad2 className="w-4 h-4 text-purple-600" />
+            <span className="text-sm font-semibold text-gray-700">Games</span>
+          </div>
+          <span className="font-bold text-purple-900">{weeklyEngagement?.gameSessions || 0}</span>
+        </div>
+        <div className="flex items-center justify-between p-3 bg-pink-50 rounded-xl">
+          <div className="flex items-center gap-2">
+            <BookOpen className="w-4 h-4 text-pink-600" />
+            <span className="text-sm font-semibold text-gray-700">Lessons</span>
+          </div>
+          <span className="font-bold text-pink-900">{weeklyEngagement?.lessonSessions || 0}</span>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+const MoodSummaryCard = ({ moodSummary }) => {
+  const getMoodEmoji = (score) => {
+    if (score >= 4) return '😄';
+    if (score === 3) return '😊';
+    if (score === 2) return '😐';
+    return '😔';
+  };
+
+  const getMoodColor = (score) => {
+    if (score >= 4) return 'from-green-400 to-emerald-500';
+    if (score === 3) return 'from-blue-400 to-cyan-500';
+    if (score === 2) return 'from-yellow-400 to-orange-500';
+    return 'from-red-400 to-pink-500';
+  };
+
+  return (
+        <motion.div
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <Heart className="w-6 h-6 text-pink-600" />
+        Mood Tracker (Last 7 Days)
+      </h3>
+
+      {/* Average Score */}
+      <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-4 mb-4 border border-pink-100">
+        <div className="flex items-center justify-between">
+            <div>
+            <p className="text-sm font-semibold text-gray-600 mb-1">Average Mood</p>
+            <p className="text-4xl font-black text-pink-900">{moodSummary?.averageScore || '3.0'}</p>
+          </div>
+          <div className="text-6xl">{getMoodEmoji(parseFloat(moodSummary?.averageScore || 3))}</div>
+        </div>
+      </div>
+
+      {/* Alerts */}
+      {moodSummary?.alerts && moodSummary.alerts.length > 0 && (
+        <div className="space-y-2 mb-4">
+          {moodSummary.alerts.map((alert, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className={`p-4 rounded-xl border-l-4 ${
+                alert.severity === 'high'
+                  ? 'bg-red-50 border-red-500'
+                  : 'bg-yellow-50 border-yellow-500'
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                <AlertTriangle className={`w-5 h-5 ${
+                  alert.severity === 'high' ? 'text-red-600' : 'text-yellow-600'
+                } flex-shrink-0 mt-0.5`} />
+                <div>
+                  <p className={`font-bold ${
+                    alert.severity === 'high' ? 'text-red-900' : 'text-yellow-900'
+                  }`}>
+                    {alert.type === 'alert' ? '⚠️ Attention Needed' : '⚡ Notice'}
+                  </p>
+                  <p className="text-sm text-gray-700">{alert.message}</p>
+            </div>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      )}
+
+      {/* Mood Entries Timeline */}
+      <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+        {moodSummary?.entries && moodSummary.entries.length > 0 ? (
+          moodSummary.entries.map((entry, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className={`bg-gradient-to-r ${getMoodColor(entry.score)} bg-opacity-10 rounded-xl p-3 border border-gray-200`}
+            >
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-2xl">{entry.emoji || getMoodEmoji(entry.score)}</span>
+                <span className="text-xs font-semibold text-gray-500">
+                  {new Date(entry.date).toLocaleDateString()}
+                </span>
+              </div>
+              {entry.note && (
+                <p className="text-sm text-gray-700 italic">&quot;{entry.note}&quot;</p>
+              )}
+            </motion.div>
+          ))
+        ) : (
+          <p className="text-center text-gray-500 py-8">No mood entries this week</p>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+export const AchievementsCard = ({ achievements }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <Trophy className="w-6 h-6 text-yellow-600" />
+        Recent Achievements
+      </h3>
+
+      {achievements && achievements.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {achievements.map((achievement, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.05 }}
+              whileHover={{ scale: 1.05, y: -5 }}
+              className={`p-4 rounded-2xl border-2 shadow-lg ${
+                achievement.type === 'certificate'
+                  ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border-amber-200'
+                  : 'bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200'
+              }`}
+            >
+              <div className="flex items-start gap-3">
+                {achievement.type === 'certificate' ? (
+                  <Award className="w-8 h-8 text-amber-600 flex-shrink-0" />
+                ) : (
+                  <Trophy className="w-8 h-8 text-purple-600 flex-shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-gray-900 mb-1 truncate">{achievement.achievement}</p>
+                  <p className="text-sm text-gray-600 mb-1 truncate">{achievement.game}</p>
+                  <p className="text-xs text-gray-500">{achievement.category}</p>
+                  <p className="text-xs text-gray-400 mt-2">
+                    {new Date(achievement.unlockedAt).toLocaleDateString()}
+                  </p>
+            </div>
+          </div>
+            </motion.div>
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-12">
+          <Trophy className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+          <p className="text-gray-500">No achievements yet. Keep learning!</p>
+        </div>
+      )}
+    </motion.div>
+  );
+};
+
+export const HealCoinsCard = ({ healCoins }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <Coins className="w-6 h-6 text-green-600" />
+        HealCoins Activity
+      </h3>
+
+      {/* Stats Row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100">
+          <DollarSign className="w-6 h-6 text-green-600 mb-2" />
+          <p className="text-3xl font-black text-green-900">{healCoins?.currentBalance || 0}</p>
+          <p className="text-sm font-semibold text-gray-600">Current Balance</p>
+        </div>
+        <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-4 border border-blue-100">
+          <ArrowUp className="w-6 h-6 text-blue-600 mb-2" />
+          <p className="text-3xl font-black text-blue-900">{healCoins?.weeklyEarned || 0}</p>
+          <p className="text-sm font-semibold text-gray-600">Weekly Earned</p>
+        </div>
+        <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-4 border border-red-100">
+          <ArrowDown className="w-6 h-6 text-red-600 mb-2" />
+          <p className="text-3xl font-black text-red-900">{healCoins?.weeklySpent || 0}</p>
+          <p className="text-sm font-semibold text-gray-600">Weekly Spent</p>
+        </div>
+      </div>
+
+      {/* Recent Transactions */}
+      <div>
+        <h4 className="text-lg font-bold text-gray-800 mb-3">Recent Transactions</h4>
+        <div className="space-y-2 max-h-64 overflow-y-auto custom-scrollbar">
+          {healCoins?.recentTransactions && healCoins.recentTransactions.length > 0 ? (
+            healCoins.recentTransactions.map((transaction, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className={`flex items-center justify-between p-3 rounded-xl ${
+                  transaction.type === 'credit'
+                    ? 'bg-green-50 border border-green-100'
+                    : 'bg-red-50 border border-red-100'
+                }`}
+              >
+                <div className="flex items-center gap-3">
+                  {transaction.type === 'credit' ? (
+                    <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                      <ArrowUp className="w-4 h-4 text-white" />
+            </div>
+          ) : (
+                    <div className="w-8 h-8 bg-red-500 rounded-full flex items-center justify-center">
+                      <ArrowDown className="w-4 h-4 text-white" />
+                    </div>
+                  )}
+                  <div>
+                    <p className="font-semibold text-gray-900">{transaction.description}</p>
+                    <p className="text-xs text-gray-500">
+                      {new Date(transaction.date).toLocaleString()}
+                    </p>
+                  </div>
+                </div>
+                <span className={`font-black text-lg ${
+                  transaction.type === 'credit' ? 'text-green-700' : 'text-red-700'
+                }`}>
+                  {transaction.type === 'credit' ? '+' : '-'}{Math.abs(transaction.amount)}
+                </span>
+              </motion.div>
+            ))
+          ) : (
+            <p className="text-center text-gray-500 py-8">No transactions this week</p>
+          )}
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// Child Info Card Component
+export const ChildInfoCard = ({ childCard }) => {
+  if (!childCard) return null;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-gradient-to-br from-purple-500 via-pink-500 to-blue-500 rounded-3xl p-6 shadow-xl text-white relative overflow-hidden"
+    >
+      <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32" />
+      <div className="relative z-10">
+        <div className="flex items-start justify-between flex-wrap gap-4">
+          {/* Avatar and Basic Info */}
+              <div className="flex items-center gap-4">
+            <motion.div
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              className="w-20 h-20 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white"
+            >
+              <img
+                src={childCard.avatar || '/avatars/avatar1.png'}
+                alt={childCard.name}
+                className="w-full h-full object-cover"
+              />
+            </motion.div>
+                <div>
+              <h2 className="text-3xl font-black mb-1">{childCard.name}</h2>
+              <div className="flex items-center gap-4 text-sm font-semibold opacity-90">
+                <div className="flex items-center gap-1">
+                  <School className="w-4 h-4" />
+                  <span>{childCard.grade}</span>
+                </div>
+                {childCard.age && (
+                  <div className="flex items-center gap-1">
+                    <Calendar className="w-4 h-4" />
+                    <span>{childCard.age} years</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+          </div>
+
+          {/* Teacher Contact */}
+          {childCard.teacherContact && (
+            <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30">
+              <h3 className="text-sm font-bold mb-2 flex items-center gap-2">
+                <Users className="w-4 h-4" />
+                Primary Teacher
+              </h3>
+              <p className="font-bold mb-1">{childCard.teacherContact.name}</p>
+              <div className="space-y-1 text-sm opacity-90">
+                <div className="flex items-center gap-2">
+                  <Mail className="w-3 h-3" />
+                  <span>{childCard.teacherContact.email}</span>
+                </div>
+                {childCard.teacherContact.phone && (
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-3 h-3" />
+                    <span>{childCard.teacherContact.phone}</span>
+            </div>
+          )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+        </motion.div>
+  );
+};
+
+// Snapshot KPIs Strip Component
+export const SnapshotKPIsStrip = ({ kpis, level, xp, streak, healCoins }) => {
+  const kpiItems = [
+    { label: 'Level', value: level, icon: Star, color: 'from-blue-500 to-indigo-600' },
+    { label: 'Total XP', value: xp, icon: Zap, color: 'from-amber-500 to-orange-600' },
+    { label: 'Streak', value: `${streak} days`, icon: Target, color: 'from-orange-500 to-red-600' },
+    { label: 'Coins', value: healCoins, icon: Coins, color: 'from-green-500 to-emerald-600' },
+    { label: 'Games Done', value: kpis?.totalGamesCompleted || 0, icon: Gamepad2, color: 'from-purple-500 to-pink-600' },
+    { label: 'This Week', value: `${kpis?.totalTimeSpent || 0}m`, icon: Clock, color: 'from-cyan-500 to-blue-600' },
+  ];
+
+  return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-2xl p-4 shadow-xl border border-white/50"
+    >
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        {kpiItems.map((item, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: idx * 0.05 }}
+            className="text-center"
+          >
+            <div className={`w-12 h-12 bg-gradient-to-br ${item.color} rounded-xl flex items-center justify-center mx-auto mb-2 shadow-lg`}>
+              <item.icon className="w-6 h-6 text-white" />
+            </div>
+            <p className="text-2xl font-black text-gray-900">{item.value}</p>
+            <p className="text-xs font-semibold text-gray-600">{item.label}</p>
+          </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+// Mood Summary with Conversation Prompts Component
+export const MoodWithPromptsCard = ({ moodSummary }) => {
+  const getMoodEmoji = (score) => {
+    if (score >= 4) return '😄';
+    if (score === 3) return '😊';
+    if (score === 2) return '😐';
+    return '😔';
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <Heart className="w-6 h-6 text-pink-600" />
+        Mood & Conversation Starters
+              </h3>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Mood Summary */}
+        <div>
+          <div className="bg-gradient-to-br from-pink-50 to-purple-50 rounded-2xl p-4 mb-4 border border-pink-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm font-semibold text-gray-600 mb-1">Average Mood (7 days)</p>
+                <p className="text-4xl font-black text-pink-900">{moodSummary?.averageScore || '3.0'}</p>
+              </div>
+              <div className="text-6xl">{getMoodEmoji(parseFloat(moodSummary?.averageScore || 3))}</div>
+            </div>
+          </div>
+
+          {/* Alerts */}
+          {moodSummary?.alerts && moodSummary.alerts.length > 0 && (
+            <div className="space-y-2">
+              {moodSummary.alerts.map((alert, idx) => (
+                <motion.div
+                  key={idx}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className={`p-3 rounded-xl border-l-4 ${
+                    alert.severity === 'high'
+                      ? 'bg-red-50 border-red-500'
+                      : 'bg-yellow-50 border-yellow-500'
+                  }`}
+                >
+                  <div className="flex items-start gap-2">
+                    <AlertTriangle className={`w-4 h-4 ${
+                      alert.severity === 'high' ? 'text-red-600' : 'text-yellow-600'
+                    } flex-shrink-0 mt-0.5`} />
+                    <p className="text-sm font-semibold text-gray-700">{alert.message}</p>
+            </div>
+                </motion.div>
+              ))}
+            </div>
+          )}
+          </div>
+
+        {/* Conversation Prompts */}
+        <div>
+          <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-purple-600" />
+            Suggested Conversation Starters
+          </h4>
+          <div className="space-y-3">
+            {moodSummary?.conversationPrompts?.map((prompt, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                whileHover={{ scale: 1.02, x: 5 }}
+                className="bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl p-4 border border-purple-100 cursor-pointer"
+              >
+                <div className="flex items-start gap-3">
+                  <span className="text-2xl flex-shrink-0">{prompt.icon}</span>
+                  <div>
+                    <p className="font-semibold text-gray-900 mb-1">{prompt.prompt}</p>
+                    <p className="text-xs text-gray-500">{prompt.context}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// Activity Timeline Component
+export const ActivityTimelineCard = ({ activityTimeline }) => {
+  const getActivityIcon = (type) => {
+    switch (type) {
+      case 'game': return <Gamepad2 className="w-4 h-4" />;
+      case 'lesson': return <BookOpen className="w-4 h-4" />;
+      case 'quiz': return <Trophy className="w-4 h-4" />;
+      case 'mood': return <Heart className="w-4 h-4" />;
+      default: return <Activity className="w-4 h-4" />;
+    }
+  };
+
+ const getActivityColor = (type) => {
+    switch (type) {
+      case 'game': return 'from-purple-500 to-pink-600';
+      case 'lesson': return 'from-blue-500 to-cyan-600';
+      case 'quiz': return 'from-amber-500 to-orange-600';
+      case 'mood': return 'from-pink-500 to-rose-600';
+      default: return 'from-gray-500 to-slate-600';
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <Activity className="w-6 h-6 text-purple-600" />
+        Activity Timeline (7 Days)
+            </h3>
+
+      <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+        {activityTimeline && activityTimeline.length > 0 ? (
+          activityTimeline.map((activity, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.03 }}
+              className="flex items-start gap-3 p-3 rounded-xl bg-gradient-to-r from-gray-50 to-purple-50 border border-gray-100"
+            >
+              <div className={`w-10 h-10 bg-gradient-to-br ${getActivityColor(activity.type)} rounded-lg flex items-center justify-center text-white flex-shrink-0`}>
+                {getActivityIcon(activity.type)}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-semibold text-gray-900 truncate">{activity.action}</p>
+                <div className="flex items-center gap-3 mt-1 text-xs text-gray-500">
+                  <span>{new Date(activity.timestamp).toLocaleString()}</span>
+                  <span>•</span>
+                  <span>{activity.duration}m</span>
+                  {activity.category && (
+                    <>
+                      <span>•</span>
+                      <span className="text-purple-600 font-semibold">{activity.category}</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            </motion.div>
+          ))
+        ) : (
+          <p className="text-center text-gray-500 py-8">No activities this week</p>
+        )}
+      </div>
+    </motion.div>
+  );
+};
+
+// Home Support Plan Component
+export const HomeSupportPlanCard = ({ supportPlan }) => {
+  const getPriorityColor = (priority) => {
+    switch (priority) {
+      case 'high': return 'from-red-500 to-pink-600';
+      case 'medium': return 'from-amber-500 to-orange-600';
+      default: return 'from-blue-500 to-cyan-600';
+    }
+  };
+
+  const getPriorityBadge = (priority) => {
+    switch (priority) {
+      case 'high': return 'bg-red-100 text-red-700';
+      case 'medium': return 'bg-amber-100 text-amber-700';
+      default: return 'bg-blue-100 text-blue-700';
+    }
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <Lightbulb className="w-6 h-6 text-yellow-600" />
+        Home Support Plan
+      </h3>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {supportPlan?.map((task, idx) => (
+          <motion.div
+            key={idx}
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: idx * 0.1 }}
+            whileHover={{ scale: 1.03, y: -5 }}
+            className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-5 border-2 border-purple-100 shadow-lg"
+          >
+            <div className="flex items-start justify-between mb-3">
+              <div className={`w-10 h-10 bg-gradient-to-br ${getPriorityColor(task.priority)} rounded-xl flex items-center justify-center text-white shadow-md`}>
+                <ListTodo className="w-5 h-5" />
+            </div>
+              <span className={`text-xs font-bold px-2 py-1 rounded-full ${getPriorityBadge(task.priority)}`}>
+                {task.priority}
+              </span>
+            </div>
+            <h4 className="text-lg font-bold text-gray-900 mb-2">{task.title}</h4>
+            <p className="text-sm text-gray-600 mb-3">{task.description}</p>
+            <div className="pt-3 border-t border-purple-200">
+              <p className="text-xs font-semibold text-purple-700 flex items-center gap-1">
+                <CheckCircle className="w-3 h-3" />
+                Action: {task.actionable}
+              </p>
+          </div>
+        </motion.div>
+        ))}
+      </div>
+    </motion.div>
+  );
+};
+
+// Messages & Notifications Component
+export const MessagesCard = ({ messages }) => {
+  return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <MessageSquare className="w-6 h-6 text-blue-600" />
+        Messages & Notifications
+      </h3>
+
+      <div className="space-y-3 max-h-96 overflow-y-auto custom-scrollbar">
+        {messages && messages.length > 0 ? (
+          messages.map((message, idx) => (
+            <motion.div
+              key={message.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.05 }}
+              className={`p-4 rounded-xl border-2 ${
+                message.requiresAction
+                  ? 'bg-amber-50 border-amber-300'
+                  : message.read
+                  ? 'bg-gray-50 border-gray-200'
+                  : 'bg-blue-50 border-blue-300'
+              }`}
+            >
+              <div className="flex items-start justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <Mail className={`w-4 h-4 ${message.read ? 'text-gray-400' : 'text-blue-600'}`} />
+                  <span className="text-sm font-semibold text-gray-600">{message.sender}</span>
+                </div>
+                <span className="text-xs text-gray-500">
+                  {new Date(message.timestamp).toLocaleDateString()}
+                </span>
+                </div>
+              <h4 className="font-bold text-gray-900 mb-1">{message.title}</h4>
+              <p className="text-sm text-gray-700">{message.message}</p>
+              {message.requiresAction && (
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="mt-3 px-4 py-2 bg-gradient-to-r from-amber-500 to-orange-600 text-white rounded-lg text-sm font-bold shadow-md"
+                >
+                  Take Action
+                </motion.button>
+              )}
+            </motion.div>
+          ))
+        ) : (
+          <div className="text-center py-12">
+            <Mail className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">No new messages</p>
+              </div>
+        )}
+                </div>
+    </motion.div>
+  );
+};
+
+// Permission Management Component
+export const PermissionsCard = ({ permissions, loading, onUpdate }) => {
+  const [localPermissions, setLocalPermissions] = useState(permissions);
+  const [hasChanges, setHasChanges] = useState(false);
+
+  useEffect(() => {
+    setLocalPermissions(permissions);
+  }, [permissions]);
+
+  const handleToggle = (category, key) => {
+    const newPermissions = {
+      ...localPermissions,
+      [category]: {
+        ...localPermissions[category],
+        [key]: !localPermissions[category][key]
+      }
+    };
+    setLocalPermissions(newPermissions);
+    setHasChanges(true);
+  };
+
+  const handleSave = () => {
+    onUpdate(localPermissions);
+    setHasChanges(false);
+  };
+
+  if (loading || !localPermissions) {
+    return (
+      <div className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-500 mx-auto"></div>
+      </div>
+    );
+  }
+
+  return (
+                  <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <Shield className="w-6 h-6 text-indigo-600" />
+          Privacy & Permissions
+        </h3>
+        {hasChanges && (
+          <motion.button
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handleSave}
+            className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-xl font-bold shadow-lg"
+          >
+            Save Changes
+          </motion.button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Data Sharing */}
+        <div className="space-y-3">
+          <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <Share2 className="w-5 h-5 text-blue-600" />
+            Data Sharing Consent
+          </h4>
+          <PermissionToggle
+            label="Share with Teachers"
+            checked={localPermissions?.dataSharing?.withTeachers}
+            onChange={() => handleToggle('dataSharing', 'withTeachers')}
+            description="Allow teachers to view progress and activities"
+          />
+          <PermissionToggle
+            label="Share with School"
+            checked={localPermissions?.dataSharing?.withSchool}
+            onChange={() => handleToggle('dataSharing', 'withSchool')}
+            description="Allow school administrators to access reports"
+          />
+          <PermissionToggle
+            label="Research & Improvement"
+            checked={localPermissions?.dataSharing?.forResearch}
+            onChange={() => handleToggle('dataSharing', 'forResearch')}
+            description="Help us improve by sharing anonymized data"
+          />
+          <PermissionToggle
+            label="Third-Party Services"
+            checked={localPermissions?.dataSharing?.thirdParty}
+            onChange={() => handleToggle('dataSharing', 'thirdParty')}
+            description="Share data with trusted educational partners"
+                  />
+                </div>
+
+        {/* Child Activity Permissions */}
+        <div className="space-y-3">
+          <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <Lock className="w-5 h-5 text-purple-600" />
+            Child Activity Controls
+          </h4>
+          <PermissionToggle
+            label="Allow Games"
+            checked={localPermissions?.childActivity?.allowGames}
+            onChange={() => handleToggle('childActivity', 'allowGames')}
+            description="Enable access to learning games"
+          />
+          <PermissionToggle
+            label="Social Features"
+            checked={localPermissions?.childActivity?.allowSocialFeatures}
+            onChange={() => handleToggle('childActivity', 'allowSocialFeatures')}
+            description="Allow leaderboards and friend interactions"
+          />
+          <PermissionToggle
+            label="In-App Purchases"
+            checked={localPermissions?.childActivity?.allowPurchases}
+            onChange={() => handleToggle('childActivity', 'allowPurchases')}
+            description="Permit coin redemptions and purchases"
+          />
+              </div>
+                </div>
+    </motion.div>
+  );
+};
+
+// Permission Toggle Component
+const PermissionToggle = ({ label, checked, onChange, description }) => {
+  return (
+    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all">
+      <div className="flex-1">
+        <p className="font-semibold text-gray-900">{label}</p>
+        <p className="text-xs text-gray-500 mt-0.5">{description}</p>
+                </div>
+      <div className="relative">
+        <input
+          type="checkbox"
+          checked={checked}
+          onChange={onChange}
+          className="sr-only peer"
+        />
+        <div
+          onClick={onChange}
+          className={`w-14 h-7 rounded-full cursor-pointer transition-all ${
+            checked ? 'bg-gradient-to-r from-purple-500 to-pink-600' : 'bg-gray-300'
+          }`}
+        >
+          <div
+            className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 mt-1 ${
+              checked ? 'translate-x-8 ml-1' : 'translate-x-1'
+            }`}
+          />
+              </div>
+            </div>
+    </div>
+  );
+};
+
+// Detailed Progress Report Component
+export const DetailedProgressReportCard = ({ progressReport }) => {
+  if (!progressReport) return null;
+
+  const { 
+    weeklyCoins = 0, 
+    monthlyCoins = 0, 
+    totalTimeMinutes = 0, 
+    dayStreak = 0, 
+    gamesPerPillar = {}, 
+    strengths = [], 
+    needsSupport = [] 
+  } = progressReport;
+
+  const pillarColors = {
+    'Financial Literacy': 'from-green-500 to-emerald-600',
+    'Brain Health': 'from-blue-500 to-cyan-600',
+    'UVLS': 'from-purple-500 to-pink-600',
+    'Digital Citizenship & Online Safety': 'from-orange-500 to-red-600',
+    'Moral Values': 'from-indigo-500 to-blue-600',
+    'AI for All': 'from-pink-500 to-rose-600',
+    'Health - Male': 'from-teal-500 to-cyan-600',
+    'Health - Female': 'from-rose-500 to-pink-600',
+    'Entrepreneurship & Higher Education': 'from-amber-500 to-orange-600',
+    'Civic Responsibility & Global Citizenship': 'from-violet-500 to-purple-600'
+  };
+
+  const pillarLabels = {
+    'Financial Literacy': 'Finance',
+    'Brain Health': 'Mental',
+    'UVLS': 'Values',
+    'Digital Citizenship & Online Safety': 'Digital',
+    'Moral Values': 'Values',
+    'AI for All': 'AI',
+    'Health - Male': 'Health',
+    'Health - Female': 'Health',
+    'Entrepreneurship & Higher Education': 'Business',
+    'Civic Responsibility & Global Citizenship': 'Civic'
+  };
+
+  return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <BarChart3 className="w-6 h-6 text-blue-600" />
+              Detailed Progress Report
+            </h3>
+            
+      {/* Top Metrics Row */}
+      <div className="grid grid-cols-2 gap-4 mb-6">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-4 border border-green-100"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-emerald-600 rounded-lg flex items-center justify-center">
+              <Coins className="w-4 h-4 text-white" />
+              </div>
+            <span className="text-sm font-semibold text-gray-600">Weekly Coins</span>
+              </div>
+          <p className="text-3xl font-black text-green-600">{weeklyCoins}</p>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-4 border border-blue-100"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg flex items-center justify-center">
+              <Coins className="w-4 h-4 text-white" />
+                </div>
+            <span className="text-sm font-semibold text-gray-600">Monthly Coins</span>
+              </div>
+          <p className="text-3xl font-black text-blue-600">{monthlyCoins}</p>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4 border border-purple-100"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
+              <Clock className="w-4 h-4 text-white" />
+              </div>
+            <span className="text-sm font-semibold text-gray-600">Total Time</span>
+            </div>
+          <p className="text-3xl font-black text-purple-600">{totalTimeMinutes}m</p>
+        </motion.div>
+
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="bg-gradient-to-br from-orange-50 to-yellow-50 rounded-2xl p-4 border border-orange-100"
+        >
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-orange-500 to-yellow-600 rounded-lg flex items-center justify-center">
+              <Target className="w-4 h-4 text-white" />
+                  </div>
+            <span className="text-sm font-semibold text-gray-600">Day Streak</span>
+          </div>
+          <p className="text-3xl font-black text-orange-600">{dayStreak}</p>
+        </motion.div>
+      </div>
+
+      {/* Games Completed per Pillar */}
+      <div className="mb-6">
+        <h4 className="text-lg font-bold text-gray-800 mb-3">Games Completed per Pillar</h4>
+        <div className="grid grid-cols-2 gap-3">
+          {Object.entries(gamesPerPillar).slice(0, 4).map(([pillar, count], idx) => (
+            <motion.div
+              key={pillar}
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: idx * 0.1 }}
+              whileHover={{ scale: 1.05 }}
+              className={`bg-gradient-to-br ${pillarColors[pillar] || 'from-gray-500 to-slate-600'} rounded-xl p-4 text-white shadow-lg`}
+            >
+              <p className="text-2xl font-black">{count}</p>
+              <p className="text-sm font-semibold opacity-90">{pillarLabels[pillar] || pillar}</p>
+            </motion.div>
+                ))}
+              </div>
+            </div>
+            
+      {/* Strengths and Needs Support */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Strengths */}
+              <div>
+          <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <Trophy className="w-5 h-5 text-green-600" />
+                  Strengths
+                </h4>
+                <div className="space-y-2">
+            {strengths.map((strength, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="flex items-center gap-3 p-3 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-100"
+              >
+                <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
+                <span className="font-semibold text-gray-800">{strength}</span>
+              </motion.div>
+                  ))}
+                </div>
+              </div>
+
+        {/* Needs Support */}
+              <div>
+          <h4 className="text-lg font-bold text-gray-800 mb-3 flex items-center gap-2">
+            <Zap className="w-5 h-5 text-orange-600" />
+                  Needs Support
+                </h4>
+                <div className="space-y-2">
+            {needsSupport.map((support, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="flex items-center gap-3 p-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl border border-orange-100"
+              >
+                <Target className="w-5 h-5 text-orange-600 flex-shrink-0" />
+                <span className="font-semibold text-gray-800">{support}</span>
+              </motion.div>
+                  ))}
+                </div>
+              </div>
+            </div>
+    </motion.div>
+  );
+};
+
+// Wallet & Rewards Component
+export const WalletRewardsCard = ({ walletRewards }) => {
+  if (!walletRewards) return null;
+
+  const { currentHealCoins, recentRedemptions, totalValueSaved } = walletRewards;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <Award className="w-6 h-6 text-purple-600" />
+              Wallet & Rewards
+            </h3>
+
+      {/* Current HealCoins */}
+      <div className="mb-6">
+        <p className="flex justify-center text-4xl font-black text-purple-600 mb-1">{currentHealCoins}</p>
+        <p className="flex justify-center text-lg font-semibold text-gray-600">Current HealCoins</p>
+            </div>
+            
+      {/* Recent Redemptions */}
+            <div className="mb-6">
+        <h4 className="text-lg font-bold text-gray-800 mb-3">Recent Redemptions</h4>
+              <div className="space-y-3">
+          {recentRedemptions && recentRedemptions.length > 0 ? (
+            recentRedemptions.map((redemption, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-100"
+              >
+                <div className="flex-1">
+                  <p className="font-bold text-gray-900">{redemption.item}</p>
+                  <p className="text-sm text-gray-500">
+                    {new Date(redemption.date).toLocaleDateString()}
+                  </p>
+                    </div>
+                    <div className="text-right">
+                  <p className="text-sm font-bold text-purple-600">-{redemption.coins} coins</p>
+                  <p className="text-sm font-bold text-green-600">₹{redemption.value} value</p>
+                    </div>
+              </motion.div>
+            ))
+          ) : (
+            <div className="text-center py-8">
+              <Award className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+              <p className="text-gray-500">No recent redemptions</p>
+                  </div>
+          )}
+              </div>
+            </div>
+
+      {/* Total Value Saved */}
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl p-4 border border-green-100"
+      >
+        <p className="flex justify-center text-3xl font-black text-green-600 mb-1">₹{totalValueSaved}</p>
+        <p className="flex justify-center text-sm font-semibold text-green-700">Total Value Saved This Month</p>
+        </motion.div>
+    </motion.div>
+  );
+};
+
+// Subscription & Upgrades Component
+export const SubscriptionUpgradesCard = ({ subscriptionData }) => {
+  const [loading, setLoading] = useState(false);
+
+  const handleUpgrade = async () => {
+    try {
+      setLoading(true);
+      await api.post('/api/parent/upgrade-subscription', { 
+        planType: 'premium_plus' 
+      });
+      toast.success('Subscription upgraded successfully!');
+      // Refresh the page to show updated subscription
+      window.location.reload();
+    } catch (error) {
+      console.error('Error upgrading subscription:', error);
+      toast.error('Failed to upgrade subscription');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (!subscriptionData) return null;
+
+  const { subscription } = subscriptionData;
+
+  return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <Award className="w-6 h-6 text-yellow-600" />
+              Subscription & Upgrades
+            </h3>
+
+      {/* Current Plan */}
+      <div className="mb-6">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="bg-gradient-to-br from-yellow-50 to-amber-50 rounded-2xl p-4 border border-yellow-200 relative"
+        >
+          <div className="flex items-start justify-between mb-3">
+            <h4 className="text-xl font-bold text-gray-900">{subscription.currentPlan.name}</h4>
+            <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-full">
+              {subscription.currentPlan.status}
+                </span>
+              </div>
+          
+          <p className="text-sm text-gray-600 mb-4">
+            Next billing: {subscription.currentPlan.nextBilling} • {subscription.currentPlan.currency}{subscription.currentPlan.price}/{subscription.currentPlan.billingCycle}
+          </p>
+
+          {/* Features List */}
+          <div className="space-y-2">
+            {subscription.currentPlan.features.map((feature, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4 text-green-600 flex-shrink-0" />
+                <span className="text-sm text-gray-700">{feature}</span>
+              </motion.div>
+                ))}
+              </div>
+        </motion.div>
+            </div>
+            
+            {/* Upgrade Option */}
+      <div className="mb-6">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-2xl p-4 border-2 border-dashed border-purple-300"
+        >
+          <h4 className="text-lg font-bold text-purple-700 mb-2">
+            Upgrade to {subscription.upgradeOption.name}
+          </h4>
+          <p className="text-2xl font-black text-purple-600 mb-3">
+            {subscription.upgradeOption.currency}{subscription.upgradeOption.price}/{subscription.upgradeOption.billingCycle}
+          </p>
+          
+          <div className="space-y-1 mb-4">
+            {subscription.upgradeOption.features.map((feature, idx) => (
+              <motion.div
+                key={idx}
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: idx * 0.1 }}
+                className="flex items-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4 text-purple-600 flex-shrink-0" />
+                <span className="text-sm text-purple-700">{feature}</span>
+              </motion.div>
+            ))}
+                </div>
+        </motion.div>
+            </div>
+            
+      {/* Upgrade Button */}
+            <motion.button
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleUpgrade}
+        disabled={loading}
+        className="w-full bg-gradient-to-r from-orange-500 to-yellow-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+      >
+        {loading ? (
+          <div className="flex items-center justify-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            Upgrading...
+          </div>
+        ) : (
+          'One-Click Upgrade'
+        )}
+      </motion.button>
+    </motion.div>
+  );
+};
+
+// Recent Notifications Component
+export const RecentNotificationsCard = ({ notificationsData }) => {
+  const [emailNotifications, setEmailNotifications] = useState(
+    notificationsData?.emailNotificationsEnabled || true
+  );
+
+  const handleToggleEmailNotifications = async () => {
+    try {
+      const newValue = !emailNotifications;
+      await api.put('/api/parent/email-notifications', { enabled: newValue });
+      setEmailNotifications(newValue);
+      toast.success(`Email notifications ${newValue ? 'enabled' : 'disabled'}`);
+    } catch (error) {
+      console.error('Error updating email notifications:', error);
+      toast.error('Failed to update email notifications');
+    }
+  };
+
+  const getTimeAgo = (timestamp) => {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffInHours = Math.floor((now - time) / (1000 * 60 * 60));
+    
+    if (diffInHours < 1) return 'Just now';
+    if (diffInHours < 24) return `${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+    
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays < 7) return `${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+    
+    const diffInWeeks = Math.floor(diffInDays / 7);
+    return `${diffInWeeks} week${diffInWeeks > 1 ? 's' : ''} ago`;
+  };
+
+  const getCardColors = (cardColor) => {
+    switch (cardColor) {
+      case 'yellow':
+        return 'from-yellow-50 to-amber-50 border-yellow-200';
+      case 'green':
+        return 'from-green-50 to-emerald-50 border-green-200';
+      case 'purple':
+        return 'from-purple-50 to-pink-50 border-purple-200';
+      case 'blue':
+        return 'from-blue-50 to-cyan-50 border-blue-200';
+      default:
+        return 'from-gray-50 to-slate-50 border-gray-200';
+    }
+  };
+
+  if (!notificationsData) return null;
+
+  const { notifications } = notificationsData;
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="bg-white/80 backdrop-blur-xl rounded-3xl p-6 shadow-xl border border-white/50"
+    >
+      <h3 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+        <MessageSquare className="w-6 h-6 text-blue-600" />
+              Recent Notifications
+            </h3>
+
+      {/* Notifications List */}
+      <div className="space-y-3 mb-6">
+        {notifications && notifications.length > 0 ? (
+          notifications.map((notification, idx) => (
+            <motion.div
+              key={notification.id}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: idx * 0.1 }}
+              whileHover={{ scale: 1.02 }}
+              className={`bg-gradient-to-r ${getCardColors(notification.cardColor)} rounded-xl p-4 border-2 shadow-sm`}
+            >
+                  <div className="flex items-start gap-3">
+                <div className="text-2xl flex-shrink-0">{notification.icon}</div>
+                <div className="flex-1 min-w-0">
+                  <h4 className="font-bold text-gray-900 mb-1">{notification.title}</h4>
+                  <p className="text-sm text-gray-700 mb-2">{notification.message}</p>
+                  <p className="text-xs text-gray-500">{getTimeAgo(notification.timestamp)}</p>
+                      </div>
+                    </div>
+            </motion.div>
+          ))
+        ) : (
+          <div className="text-center py-8">
+            <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-2" />
+            <p className="text-gray-500">No recent notifications</p>
+                  </div>
+        )}
+            </div>
+            
+      {/* Email Notifications Toggle */}
+      <div className="border-t border-gray-200 pt-4">
+              <div className="flex items-center justify-between">
+          <span className="text-sm font-semibold text-gray-700">Email Notifications</span>
+          <div className="relative">
+            <input
+              type="checkbox"
+              checked={emailNotifications}
+              onChange={handleToggleEmailNotifications}
+              className="sr-only peer"
+            />
+            <div
+              onClick={handleToggleEmailNotifications}
+              className={`w-12 h-6 rounded-full cursor-pointer transition-all ${
+                emailNotifications ? 'bg-blue-600' : 'bg-gray-300'
+              }`}
+            >
+              <div
+                className={`w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 mt-0.5 ${
+                  emailNotifications ? 'translate-x-7 ml-1' : 'translate-x-1'
+                }`}
+              />
+              </div>
+            </div>
+          </div>
+      </div>
+    </motion.div>
+  );
+};
+
 export default ParentDashboard;
+

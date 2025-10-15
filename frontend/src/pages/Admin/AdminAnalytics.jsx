@@ -152,7 +152,6 @@ const AdminAnalytics = () => {
         ? [
               { metric: "Total Users", value: stats.totalUsers },
               { metric: "Total Students", value: stats.totalStudents },
-              { metric: "Total Educators", value: stats.totalEducators },
               { metric: "Total Mood Logs", value: stats.totalMoods },
               ...(stats.moodStats?.map(item => ({
                   metric: `Mood: ${item._id}`,
@@ -284,12 +283,6 @@ const AdminAnalytics = () => {
                                 gradient="bg-gradient-to-r from-green-500 to-emerald-500"
                             />
                             <StatCard
-                                title="Total Educators"
-                                value={stats.totalEducators}
-                                icon={<UserCheck className="w-5 h-5" />}
-                                gradient="bg-gradient-to-r from-purple-500 to-violet-500"
-                            />
-                            <StatCard
                                 title="Total Mood Logs"
                                 value={stats.totalMoods}
                                 icon={<Heart className="w-5 h-5" />}
@@ -325,7 +318,6 @@ const AdminAnalytics = () => {
                                     >
                                         <option value="all">All Users</option>
                                         <option value="student">Students</option>
-                                        <option value="educator">Educators</option>
                                     </select>
                                 </div>
                                 <div className="relative flex-1 max-w-md">

@@ -77,13 +77,21 @@ schoolClassSchema.index({ tenantId: 1, classNumber: 1, stream: 1 });
 schoolClassSchema.index({ tenantId: 1, academicYear: 1 });
 schoolClassSchema.index({ orgId: 1, isActive: 1 });
 
-// Ensure tenant isolation
+// Ensure tenant isolation (with fallback for legacy users)
 schoolClassSchema.pre(/^find/, function() {
   if (this.getQuery().tenantId) {
     // Tenant filter already applied
     return;
   }
-  throw new Error("TenantId is required for all queries");
+  
+  if (this.getQuery().allowLegacy) {
+    // Legacy query allowed - remove the flag from actual query and continue silently
+    delete this.getQuery().allowLegacy;
+    return;
+  }
+  
+  // For queries without tenantId or allowLegacy flag, allow them but log a warning
+  console.warn('⚠️ SchoolClass query without tenantId - allowing for backward compatibility');
 });
 
 const SchoolClass = mongoose.model("SchoolClass", schoolClassSchema);

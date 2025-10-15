@@ -21,6 +21,27 @@ const userSchema = new mongoose.Schema(
     avatar: {
       type: String,
     },
+    avatarData: {
+      type: {
+        type: String,
+        enum: ['uploaded', 'generated'],
+        default: 'generated'
+      },
+      url: String,
+      initials: String,
+      colors: {
+        bg: String,
+        text: String
+      },
+      icon: String,
+      role: String,
+      isGenerated: {
+        type: Boolean,
+        default: true
+      },
+      generatedAt: Date,
+      updatedAt: Date
+    },
     // Legacy field (string). Kept for backward compatibility.
     dob: {
       type: String,
@@ -72,7 +93,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: [
         // Legacy roles
-        "student", "educator", "admin", "parent", "seller", "csr",
+        "student", "admin", "parent", "seller", "csr",
         // School roles
         "school_admin", "school_teacher", "school_student", "school_parent", 
         "school_accountant", "school_librarian", "school_transport_staff"
@@ -87,6 +108,10 @@ const userSchema = new mongoose.Schema(
     tenantId: {
       type: String,
       // index removed, only keep as field
+    },
+    campusId: {
+      type: String,
+      index: true,
     },
     // Linked relationships
     linkedIds: {
@@ -106,18 +131,6 @@ const userSchema = new mongoose.Schema(
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",
       }],
-    },
-    position: {
-      type: String,
-      required: function () {
-        return this.role === "educator";
-      },
-    },
-    subjects: {
-      type: String,
-      required: function () {
-        return this.role === "educator";
-      },
     },
     // Parent-specific fields
     childEmail: {
@@ -156,7 +169,7 @@ const userSchema = new mongoose.Schema(
     isVerified: {
       type: Boolean,
       default: function () {
-        return this.role === "parent" || this.role === "seller" || this.role === "csr" || this.role === "admin" || this.role === "educator";
+        return this.role === "parent" || this.role === "seller" || this.role === "csr" || this.role === "admin";
       },
     },
     approvalStatus: {
@@ -165,7 +178,7 @@ const userSchema = new mongoose.Schema(
       default: function () {
         // Auto-approve parent accounts; others may require admin approval
         if (this.role === "parent") return "approved";
-        return ["educator", "seller", "csr"].includes(this.role) ? "pending" : "approved";
+        return ["seller", "csr"].includes(this.role) ? "pending" : "approved";
       },
     },
     otp: {
@@ -208,13 +221,65 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.Mixed,
       default: {}
     },
+    // Teacher notes and flags
+    teacherNotes: [{
+      text: String,
+      teacher: String,
+      teacherId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+      },
+      date: {
+        type: Date,
+        default: Date.now
+      }
+    }],
+    flaggedForCounselor: {
+      type: Boolean,
+      default: false
+    },
+    flaggedReason: String,
+    flaggedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User'
+    },
+    flaggedAt: Date,
+    consentFlags: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
+    },
+    // Registration codes and class assignments
+    registrationNumber: String,
+    dateOfBirth: Date,
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {}
+    },
+    // Teacher training modules
+    trainingModules: [{
+      moduleId: String,
+      moduleName: String,
+      status: {
+        type: String,
+        enum: ['not_started', 'in_progress', 'completed'],
+        default: 'not_started',
+      },
+      startedAt: Date,
+      completedAt: Date,
+      progress: {
+        type: Number,
+        default: 0,
+        min: 0,
+        max: 100,
+      },
+    }],
   },
   { timestamps: true }
 );
 
 userSchema.pre("save", function (next) {
-  if ((this.role === "admin" || this.role === "educator") && !this.password) {
-    return next(new Error("Password is required for admin and educator accounts"));
+  if (this.role === "admin" && !this.password) {
+    return next(new Error("Password is required for admin accounts"));
   }
   next();
 });
@@ -226,6 +291,10 @@ userSchema.virtual("canUseGoogleLogin").get(function () {
 userSchema.virtual("needsOTPVerification").get(function () {
   return this.role === "student" && !this.isVerified;
 });
+
+// Ensure virtual fields are included in JSON output
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
 
 const User = mongoose.models.User || mongoose.model("User", userSchema);
 export default User;

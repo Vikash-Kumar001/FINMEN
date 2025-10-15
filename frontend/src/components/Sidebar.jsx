@@ -43,18 +43,10 @@ const Sidebar = () => {
         { to: "/student/setting", label: "Settings", icon: <FaCogs /> },
     ];
 
-    const educatorLinks = [
-        { to: "/educator/dashboard", label: "Dashboard", icon: <FaHome /> },
-        { to: "/educator/students", label: "Students", icon: <FaUsers /> },
-        { to: "/educator/tools", label: "Tools", icon: <FaTools /> },
-        { to: "/educator/redemptions", label: "Redemptions", icon: <FaGift /> },
-    ];
 
     const adminLinks = [
         { to: "/admin/dashboard", label: "Dashboard", icon: <FaChartPie /> },
         { to: "/admin/students", label: "All Students", icon: <FaUserGraduate /> },
-        { to: "/admin/educators", label: "All Educators", icon: <FaChalkboardTeacher /> },
-        { to: "/admin/pending-educators", label: "Pending Requests", icon: <FaHourglassHalf /> },
         { to: "/admin/redemptions", label: "Redemptions", icon: <FaGift /> },
         { to: "/admin/analytics", label: "Analytics", icon: <FaChartLine /> },
         { to: "/admin/users", label: "Users Panel", icon: <FaUsers /> },
@@ -62,7 +54,6 @@ const Sidebar = () => {
 
     const getLinksByRole = () => {
         if (user?.role === "admin") return adminLinks;
-        if (user?.role === "educator") return educatorLinks;
         return studentLinks;
     };
 

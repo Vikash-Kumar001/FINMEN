@@ -66,7 +66,6 @@ export const setupStatsSocket = (io, socket, user) => {
     
     // User statistics
     const totalStudents = await User.countDocuments({ role: 'student' });
-    const totalEducators = await User.countDocuments({ role: 'educator' });
     const activeStudents = await User.countDocuments({ 
       role: 'student', 
       lastActive: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) } 
@@ -122,7 +121,6 @@ export const setupStatsSocket = (io, socket, user) => {
     return {
       users: {
         totalStudents,
-        totalEducators,
         activeStudents,
         newStudentsToday,
         newStudentsThisWeek,

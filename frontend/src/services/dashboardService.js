@@ -68,69 +68,116 @@ export const fetchStudentChallenges = async () => {
   }
 };
 
-// ================== EDUCATOR DASHBOARD APIs ==================
-export const fetchEducatorDashboardData = async () => {
+// New Analytics Metrics
+export const fetchPillarMastery = async () => {
   try {
-    const [stats, students, analytics, notifications] = await Promise.all([
-      api.get("/api/educators/stats"),
-      api.get("/api/educators/students"),
-      api.get("/api/educators/analytics"), 
-      api.get("/api/notifications?role=educator")
-    ]);
-
-    return {
-      stats: stats.data,
-      students: students.data,
-      analytics: analytics.data,
-      notifications: notifications.data
-    };
-  } catch (error) {
-    console.error("Error fetching educator dashboard data:", error);
-    throw error;
-  }
-};
-
-export const fetchEducatorStats = async () => {
-  try {
-    const response = await api.get("/api/educators/stats");
+    const response = await api.get("/api/stats/pillar-mastery");
     return response.data;
   } catch (error) {
-    console.error("Error fetching educator stats:", error);
+    console.error("Error fetching pillar mastery:", error);
     return {
-      totalStudents: 0,
-      activeStudents: 0,
-      completedActivities: 0,
-      averageProgress: 0,
-      pendingAssignments: 0,
-      recentAlerts: []
+      overallMastery: 0,
+      totalPillars: 0,
+      pillars: [],
+      weakPillars: []
     };
   }
 };
 
-export const fetchEducatorStudents = async (page = 1, limit = 10) => {
+export const fetchEmotionalScore = async () => {
   try {
-    const response = await api.get(`/api/educators/students?page=${page}&limit=${limit}`);
+    const response = await api.get("/api/stats/emotional-score");
     return response.data;
   } catch (error) {
-    console.error("Error fetching educator students:", error);
-    return { students: [], total: 0, page: 1, totalPages: 1 };
-  }
-};
-
-export const fetchEducatorAnalytics = async (timeRange = "week") => {
-  try {
-    const response = await api.get(`/api/educators/analytics?timeRange=${timeRange}`);
-    return response.data;
-  } catch (error) {
-    console.error("Error fetching educator analytics:", error);
+    console.error("Error fetching emotional score:", error);
     return {
-      studentEngagement: [],
-      progressTrends: [],
-      completionRates: [],
-      moodTrends: []
+      averageScore: 3,
+      trend: 'stable',
+      trendData: [],
+      totalEntries: 0,
+      entriesThisWeek: 0
     };
   }
 };
+
+export const fetchEngagementMinutes = async () => {
+  try {
+    const response = await api.get("/api/stats/engagement-minutes");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching engagement minutes:", error);
+    return {
+      totalMinutes: 0,
+      avgMinutesPerDay: 0,
+      daysActive: 0,
+      streak: 0,
+      dailyEngagement: [],
+      goalMinutes: 30,
+      goalProgress: 0
+    };
+  }
+};
+
+export const fetchActivityHeatmap = async () => {
+  try {
+    const response = await api.get("/api/stats/activity-heatmap");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching activity heatmap:", error);
+    return { heatmapData: [], totalActivities: 0 };
+  }
+};
+
+export const fetchMoodTimeline = async () => {
+  try {
+    const response = await api.get("/api/stats/mood-timeline");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching mood timeline:", error);
+    return { timeline: [], totalEntries: 0 };
+  }
+};
+
+export const fetchRecommendations = async () => {
+  try {
+    const response = await api.get("/api/stats/recommendations");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching recommendations:", error);
+    return { recommendations: [] };
+  }
+};
+
+export const fetchLeaderboardSnippet = async () => {
+  try {
+    const response = await api.get("/api/stats/leaderboard-snippet");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching leaderboard:", error);
+    return { leaderboard: [], currentUserRank: 0, currentUserXP: 0, totalUsers: 0 };
+  }
+};
+
+export const fetchAchievementTimeline = async () => {
+  try {
+    const response = await api.get("/api/stats/achievement-timeline");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching achievement timeline:", error);
+    return { achievements: [], totalAchievements: 0 };
+  }
+};
+
+export const fetchDailyActions = async () => {
+  try {
+    const response = await api.get("/api/stats/daily-actions");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching daily actions:", error);
+    return { dailyCheckIn: false, missionStarted: false, quizCompleted: false, inboxCount: 0 };
+  }
+};
+
 
 // ================== ADMIN DASHBOARD APIs ==================
 export const fetchAdminDashboardData = async () => {
@@ -163,8 +210,6 @@ export const fetchAdminStats = async () => {
     return {
       totalUsers: 0,
       totalStudents: 0,
-      totalEducators: 0,
-      pendingEducators: 0,
       redemptions: 0,
       systemStatus: "Unknown"
     };
@@ -249,8 +294,6 @@ export const refreshDashboardData = async (dashboardType) => {
     switch (dashboardType) {
       case 'student':
         return await fetchStudentDashboardData();
-      case 'educator':
-        return await fetchEducatorDashboardData();
       case 'admin':
         return await fetchAdminDashboardData();
       default:

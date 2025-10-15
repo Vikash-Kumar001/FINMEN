@@ -39,14 +39,11 @@ import {
 import { toast } from "react-hot-toast";
 import AdminStatsPanel from "./AdminStatsPanel";
 import AllStudents from "./AllStudents";
-import AllEducator from "./AllEducator";
 import AdminRedemptions from "./AdminRedemptions";
 import AdminAnalytics from "./AdminAnalytics";
 import AdminUsersPanel from "./AdminUsersPanel";
-import PendingEducators from "./PendingEducators";
 import PendingApprovals from "./PendingApprovals";
 import AdminSettings from "./AdminSettings";
-import EducatorTracker from "./EducatorTracker";
 import AuditLogs from "./AuditLogs";
 import SecurityPanel from "./SecurityPanel";
 import DataManagement from "./DataManagement";
@@ -65,8 +62,6 @@ const AdminDashboard = () => {
     const [adminStats, setAdminStats] = useState({
         totalUsers: 0,
         totalStudents: 0,
-        totalEducators: 0,
-        pendingEducators: 0,
         redemptions: 0
     });
     const [systemHealth, setSystemHealth] = useState({});
@@ -215,7 +210,7 @@ const AdminDashboard = () => {
     // Real-time data simulation
     useEffect(() => {
         const interval = setInterval(() => {
-            setSystemStatus((prev) => prev); // Update to match EducatorDashboard's real-time feel
+            setSystemStatus((prev) => prev); // Update to match real-time feel
         }, 30000);
         return () => clearInterval(interval);
     }, []);
@@ -242,24 +237,6 @@ const AdminDashboard = () => {
                 "Progress tracking",
                 "Group assignments",
             ],
-        },
-        {
-            id: "educators",
-            title: "Educator Management",
-            icon: <Users className="w-8 h-8" />,
-            gradient: "from-purple-400 via-violet-400 to-indigo-400",
-            description: "Manage all educator accounts",
-            category: "management",
-            features: ["Educator overview", "Account management", "Activity tracking"],
-        },
-        {
-            id: "educator-tracker",
-            title: "Educator Monitoring",
-            icon: <Eye className="w-8 h-8" />,
-            gradient: "from-teal-400 via-cyan-400 to-blue-400",
-            description: "Real-time educator activity tracking",
-            category: "tracking",
-            features: ["Live monitoring", "Activity reports", "Performance insights"],
         },
         {
             id: "pending",
@@ -399,10 +376,6 @@ const AdminDashboard = () => {
                 return <AdminStatsPanel />;
             case "students":
                 return <AllStudents />;
-            case "educators":
-                return <AllEducator />;
-            case "educator-tracker":
-                return <EducatorTracker />;
             case "pending":
                 return <PendingApprovals />;
             case "redemptions":
@@ -638,19 +611,10 @@ const AdminDashboard = () => {
                         </div>
                         <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/40">
                             <div className="flex items-center gap-3">
-                                <GraduationCap className="w-8 h-8 text-green-500" />
-                                <div>
-                                    <p className="text-sm text-gray-600">Total Educators</p>
-                                    <p className="text-2xl font-bold text-gray-800">{adminStats.totalEducators}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-6 shadow-xl border border-white/40">
-                            <div className="flex items-center gap-3">
                                 <Clock className="w-8 h-8 text-orange-500" />
                                 <div>
                                     <p className="text-sm text-gray-600">Pending Approvals</p>
-                                    <p className="text-2xl font-bold text-gray-800">{adminStats.pendingEducators}</p>
+                                    <p className="text-2xl font-bold text-gray-800">0</p>
                                 </div>
                             </div>
                         </div>

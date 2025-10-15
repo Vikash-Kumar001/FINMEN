@@ -52,9 +52,8 @@ export const sendInvitationEmail = async (toEmail, name, organizationName, role,
   });
 };
 
-export const sendApprovalEmail = async (toEmail, name, role = "educator") => {
+export const sendApprovalEmail = async (toEmail, name, role = "parent") => {
   const roleLabels = {
-    educator: "Educator",
     parent: "Parent",
     seller: "Seller",
     csr: "CSR"
@@ -81,7 +80,6 @@ export const sendApprovalEmail = async (toEmail, name, role = "educator") => {
             ${role === "parent" ? "<li>Link with your child's account</li>" : ""}
             ${role === "seller" ? "<li>Set up your product listings</li>" : ""}
             ${role === "csr" ? "<li>Configure your organization settings</li>" : ""}
-            ${role === "educator" ? "<li>Create your first class or assignment</li>" : ""}
           </ul>
         </div>
         <p>If you have any questions, feel free to reach out to our support team.</p>

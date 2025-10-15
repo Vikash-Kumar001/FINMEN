@@ -124,3 +124,22 @@ export const getMoodHistory = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch mood history" });
   }
 };
+
+// Get mood options (emoji list)
+export const getMoodOptions = async (req, res) => {
+  try {
+    const moodOptions = [
+      { emoji: "😄", value: "😄", label: "Happy", color: "from-yellow-400 to-orange-400", score: 5 },
+      { emoji: "😊", value: "😊", label: "Content", color: "from-green-400 to-emerald-400", score: 4 },
+      { emoji: "😐", value: "😐", label: "Neutral", color: "from-gray-400 to-slate-400", score: 3 },
+      { emoji: "😢", value: "😢", label: "Sad", color: "from-blue-400 to-indigo-400", score: 2 },
+      { emoji: "😠", value: "😠", label: "Angry", color: "from-red-400 to-pink-400", score: 1 },
+      { emoji: "😰", value: "😰", label: "Anxious", color: "from-purple-400 to-violet-400", score: 1 }
+    ];
+
+    res.status(200).json(moodOptions);
+  } catch (err) {
+    console.error("❌ Failed to get mood options:", err);
+    res.status(500).json({ error: "Failed to fetch mood options" });
+  }
+};

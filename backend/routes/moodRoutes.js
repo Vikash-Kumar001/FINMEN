@@ -6,6 +6,7 @@ import {
   getMoodAnalytics,
   getMoodHistory,         // ✅ For week/month filter
   getWeeklyMoodStats,     // ✅ For MoodChart (weekly score)
+  getMoodOptions
 } from "../controllers/moodController.js";
 
 const router = express.Router();
@@ -15,6 +16,7 @@ router.post("/log", requireAuth, logMood);
 
 // 📋 All logs of the authenticated user
 router.get("/my-logs", requireAuth, getUserMoodLogs);
+router.get("/logs", requireAuth, getUserMoodLogs);  // Alias for compatibility
 
 // 📊 Mood analytics (total + grouped weekly)
 router.get("/analytics", requireAuth, getMoodAnalytics);
@@ -23,6 +25,9 @@ router.get("/analytics", requireAuth, getMoodAnalytics);
 router.get("/history", requireAuth, getMoodHistory);
 
 // 📈 Weekly mood scores for MoodChart.jsx
-router.get("/week", requireAuth, getWeeklyMoodStats);  // ✅ NEW
+router.get("/week", requireAuth, getWeeklyMoodStats);
+
+// 😊 Mood options (emoji list)
+router.get("/options", requireAuth, getMoodOptions);
 
 export default router;

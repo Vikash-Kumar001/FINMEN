@@ -287,32 +287,6 @@ const StakeholderRegister = () => {
                                 </div>
                             )}
 
-                            {formData.role === "educator" && (
-                                <>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            name="position"
-                                            value={formData.position}
-                                            onChange={handleInputChange}
-                                            placeholder="Position (e.g., Mathematics Teacher)"
-                                            required
-                                            className="w-full px-4 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 text-xs sm:text-sm"
-                                        />
-                                    </div>
-                                    <div className="relative">
-                                        <input
-                                            type="text"
-                                            name="subjects"
-                                            value={formData.subjects}
-                                            onChange={handleInputChange}
-                                            placeholder="Subjects (e.g., Mathematics, Physics)"
-                                            required
-                                            className="w-full px-4 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 text-xs sm:text-sm"
-                                        />
-                                    </div>
-                                </>
-                            )}
 
                             <button
                                 type="submit"

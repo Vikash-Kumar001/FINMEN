@@ -13,7 +13,7 @@ export default function AdminPanel() {
     useEffect(() => {
         if (socket && socket.socket && user) {
             socket.socket.emit('admin:panel:subscribe', { adminId: user._id });
-            socket.socket.on('admin:panel:pendingEducators', setPending);
+            socket.socket.on('admin:panel:pendingUsers', setPending);
             socket.socket.on('admin:panel:users', setUsers);
             socket.socket.on('admin:panel:update', (update) => {
                 if (update.users) setUsers(update.users);
@@ -21,27 +21,27 @@ export default function AdminPanel() {
             });
 
             return () => {
-                socket.socket.off('admin:panel:pendingEducators');
+                socket.socket.off('admin:panel:pendingUsers');
                 socket.socket.off('admin:panel:users');
                 socket.socket.off('admin:panel:update');
             };
         }
     }, [socket, user]);
 
-    const approveEducator = (id) => {
+    const approveUser = (id) => {
         if (!socket || !socket.socket) {
-            console.error("❌ Socket not available for approving educator");
+            console.error("❌ Socket not available for approving user");
             toast.error("Connection error. Please try again.");
             return;
         }
         
         try {
-            socket.socket.emit('admin:panel:approveEducator', { adminId: user._id, educatorId: id });
-            toast.success("Educator approved");
+            socket.socket.emit('admin:panel:approveUser', { adminId: user._id, userId: id });
+            toast.success("User approved");
             // UI will auto-update from server push
         } catch (err) {
-            console.error("❌ Error approving educator:", err.message);
-            toast.error("Failed to approve educator");
+            console.error("❌ Error approving user:", err.message);
+            toast.error("Failed to approve user");
         }
     };
 
@@ -87,7 +87,7 @@ export default function AdminPanel() {
                     className={`px-4 py-2 rounded ${activeTab === "pending" ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-700"}`}
                     onClick={() => setActiveTab("pending")}
                 >
-                    Pending Educators
+                    Pending Users
                 </button>
                 <button
                     className={`px-4 py-2 rounded ${activeTab === "users" ? "bg-indigo-600 text-white" : "bg-gray-200 text-gray-700"}`}
@@ -100,7 +100,7 @@ export default function AdminPanel() {
             {activeTab === "pending" && (
                 <>
                     {pending.length === 0 ? (
-                        <p className="text-gray-500">No pending educators.</p>
+                        <p className="text-gray-500">No pending users.</p>
                     ) : (
                         <ul className="space-y-4">
                             {pending.map((edu) => (
@@ -115,7 +115,7 @@ export default function AdminPanel() {
                                             </p>
                                         </div>
                                         <button
-                                            onClick={() => approveEducator(edu._id)}
+                                            onClick={() => approveUser(edu._id)}
                                             className="px-4 py-1 bg-green-600 text-white rounded hover:bg-green-700"
                                         >
                                             Approve
@@ -153,7 +153,6 @@ export default function AdminPanel() {
                                             className="border rounded px-2 py-1"
                                         >
                                             <option value="student">Student</option>
-                                            <option value="educator">Educator</option>
                                             <option value="admin">Admin</option>
                                         </select>
                                     </td>

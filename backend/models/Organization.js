@@ -88,6 +88,57 @@ const organizationSchema = new mongoose.Schema(
       type: Number,
       default: 100, // Based on subscription
     },
+    // Multi-campus support
+    campuses: [{
+      campusId: {
+        type: String,
+        required: true,
+      },
+      name: {
+        type: String,
+        required: true,
+      },
+      code: String, // Short code like "MAIN", "EAST", "WEST"
+      location: {
+        street: String,
+        city: String,
+        state: String,
+        pincode: String,
+        country: String,
+      },
+      contactInfo: {
+        phone: String,
+        email: String,
+      },
+      principal: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+      },
+      isMain: {
+        type: Boolean,
+        default: false,
+      },
+      isActive: {
+        type: Boolean,
+        default: true,
+      },
+      studentCount: {
+        type: Number,
+        default: 0,
+      },
+      teacherCount: {
+        type: Number,
+        default: 0,
+      },
+      createdAt: {
+        type: Date,
+        default: Date.now,
+      },
+    }],
+    subscriptionId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Subscription',
+    },
   },
   {
     timestamps: true,

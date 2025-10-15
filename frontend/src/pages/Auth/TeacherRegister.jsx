@@ -11,7 +11,7 @@ const TeacherRegister = () => {
     email: "",
     password: "",
     confirmPassword: "",
-    role: "educator",
+    role: "school_teacher",
     position: "",
     subjects: "",
   });
@@ -45,7 +45,7 @@ const TeacherRegister = () => {
         name: formData.name,
         email: formData.email,
         password: formData.password,
-        role: "educator",
+        role: "school_teacher",
         position: formData.position,
         subjects: formData.subjects,
       };
@@ -124,7 +124,7 @@ const TeacherRegister = () => {
                 Teacher Registration
               </h1>
               <p className="text-gray-300 text-xs sm:text-sm lg:text-base">
-                Create your educator account
+                Create your teacher account
               </p>
             </motion.div>
 

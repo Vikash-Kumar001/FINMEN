@@ -9,6 +9,15 @@ import {
     Lock,
     Sparkles,
     ArrowRight,
+    Home,
+    User,
+    GraduationCap,
+    Users,
+    BookOpen,
+    ShoppingBag,
+    Building2,
+    AlertCircle,
+    ArrowLeft,
 } from "lucide-react";
 
 const Login = () => {
@@ -40,23 +49,11 @@ const Login = () => {
 
             await fetchUser();
 
-            if (user.role === "educator" && user.approvalStatus === "pending") {
-                navigate("/pending-approval", {
-                    state: {
-                        message: "Your educator account is still under review.",
-                        user: { email: user.email },
-                    },
-                });
-                return;
-            }
 
             // Navigate based on user role
             switch (user.role) {
                 case "admin":
                     navigate("/admin/dashboard");
-                    break;
-                case "educator":
-                    navigate("/educator/dashboard");
                     break;
                 case "parent":
                     navigate("/parent/dashboard");
@@ -94,151 +91,225 @@ const Login = () => {
         }
     };
 
+    const registrationOptions = [
+        { label: "School", icon: Building2, path: "/school-registration", gradient: "from-blue-500 to-cyan-500" },
+        { label: "Student", icon: GraduationCap, path: "/register", gradient: "from-purple-500 to-pink-500" },
+        { label: "Parent", icon: Users, path: "/register-parent", gradient: "from-green-500 to-emerald-500" },
+        { label: "Teacher", icon: BookOpen, path: "/register-teacher", gradient: "from-orange-500 to-red-500" },
+        { label: "Seller", icon: ShoppingBag, path: "/register-seller", gradient: "from-yellow-500 to-orange-500" },
+    ];
+
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+        <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950 relative overflow-hidden">
+            {/* Animated Background Elements */}
             <div className="absolute inset-0 overflow-hidden">
-                <div className="absolute -top-20 -left-20 w-96 h-96 bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-full blur-3xl"></div>
-                <div className="absolute -bottom-20 -right-20 w-96 h-96 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 rounded-full blur-3xl"></div>
+                <div className="absolute -top-40 -left-40 w-80 h-80 bg-gradient-to-r from-purple-600/30 to-pink-600/30 rounded-full blur-3xl animate-pulse"></div>
+                <div className="absolute top-1/2 -right-40 w-96 h-96 bg-gradient-to-r from-blue-600/25 to-cyan-600/25 rounded-full blur-3xl animate-pulse delay-1000"></div>
+                <div className="absolute -bottom-40 left-1/4 w-80 h-80 bg-gradient-to-r from-indigo-600/20 to-purple-600/20 rounded-full blur-3xl animate-pulse delay-2000"></div>
+                
+                {/* Grid Pattern Overlay */}
+                <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:50px_50px]"></div>
             </div>
 
-            <div className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8">
-                {/* Back to Homepage Button */}
-                <button
-                    onClick={() => navigate("/")}
-                    className="absolute top-6 left-6 bg-white/10 backdrop-blur-xl border border-white/20 text-white px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 text-sm flex items-center gap-2"
-                >
-                    <ArrowRight className="w-4 h-4 rotate-180" />
-                    Back to Homepage
-                </button>
-
-                <div className="w-full max-w-4xl">
-                    <div className="flex flex-col lg:flex-row gap-6">
-                        {/* Login Form Card */}
-                        <div className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 shadow-2xl w-full">
-                            <div className="text-center mb-6 sm:mb-8">
-                                <div className="inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-r from-purple-500 to-pink-500 rounded-2xl mb-3 sm:mb-4">
-                                    <Sparkles className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
-                                </div>
-                                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">
-                                    Welcome Back
-                                </h1>
-                                <p className="text-gray-300 text-xs sm:text-sm lg:text-base">
-                                    Sign in to continue your journey
-                                </p>
-                            </div>
-
-                            {error && (
-                                <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-2 sm:p-3 mb-4 sm:mb-6">
-                                    <p className="text-red-300 text-xs sm:text-sm text-center">{error}</p>
-                                </div>
-                            )}
-
-                            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
-                                        <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                                    </div>
-                                    <input
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="Email address"
-                                        required
-                                        className="w-full pl-10 sm:pl-12 pr-4 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 text-xs sm:text-sm"
-                                    />
-                                </div>
-
-                                <div className="relative">
-                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
-                                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
-                                    </div>
-                                    <input
-                                        type={showPassword ? "text" : "password"}
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Password"
-                                        required
-                                        className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 text-xs sm:text-sm"
-                                    />
+            <div className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-6">
+                <div className="w-full max-w-6xl">
+                    <div className="grid lg:grid-cols-2 gap-4 lg:gap-6 items-stretch">
+                        {/* Left Side - Login Form */}
+                        <div className="order-2 lg:order-1">
+                            <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-6 sm:p-7 shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 h-full flex flex-col">
+                                {/* Back to Home Button */}
+                                <div className="flex justify-start mb-3">
                                     <button
-                                        type="button"
-                                        onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-gray-400 hover:text-white"
+                                        onClick={() => navigate("/")}
+                                        className="group flex items-center gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white p-2.5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95"
+                                        title="Back to Home"
                                     >
-                                        {showPassword ? (
-                                            <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" />
-                                        ) : (
-                                            <Eye className="h-4 w-4 sm:h-5 sm:w-5" />
-                                        )}
+                                        <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform duration-300" />
+                                        <Home className="w-4 h-4" />
                                     </button>
                                 </div>
 
-                                <button
-                                    type="submit"
-                                    disabled={isLoading}
-                                    className="w-full py-3 sm:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl transition-all duration-300 text-sm sm:text-base"
-                                >
-                                    <span className="flex items-center justify-center">
-                                        {isLoading ? (
-                                            <div className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                                        ) : (
-                                            <>
-                                                Sign In <ArrowRight className="ml-1 sm:ml-2 h-3 w-3 sm:h-4 sm:w-4" />
-                                            </>
-                                        )}
-                                    </span>
-                                </button>
-                            </form>
+                                {/* Header */}
+                                <div className="text-center mb-5">
+                                    <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl mb-3 shadow-lg shadow-purple-500/50 animate-pulse">
+                                        <Sparkles className="w-7 h-7 text-white" />
+                                    </div>
+                                    <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-white via-purple-200 to-white mb-1">
+                                        Welcome Back
+                                    </h1>
+                                    <p className="text-gray-300 text-sm">
+                                        Sign in to continue your financial journey
+                                    </p>
+                                </div>
 
-                            <div className="text-center mt-3 sm:mt-4">
-                                <button
-                                    onClick={() => navigate("/forgot-password")}
-                                    className="text-purple-400 hover:underline text-xs sm:text-sm block mx-auto"
-                                >
-                                    Forgot your password?
-                                </button>
+                                {/* Form Container - Centered */}
+                                <div className="flex-1 flex flex-col justify-center">
+                                    {/* Error Message */}
+                                    {error && (
+                                        <div className="bg-red-500/10 border border-red-500/30 rounded-xl p-3 mb-4 backdrop-blur-sm animate-shake">
+                                            <div className="flex items-center gap-2">
+                                                <AlertCircle className="w-4 h-4 text-red-400 flex-shrink-0" />
+                                                <p className="text-red-300 text-xs">{error}</p>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Form */}
+                                    <form onSubmit={handleSubmit} className="space-y-4">
+                                    {/* Email Input */}
+                                    <div className="group">
+                                        <label className="block text-gray-300 text-xs font-medium mb-1.5 ml-1">
+                                            Email Address
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <Mail className="h-4 w-4 text-gray-400 group-focus-within:text-purple-400 transition-colors duration-300" />
+                                            </div>
+                                            <input
+                                                type="email"
+                                                value={email}
+                                                onChange={(e) => setEmail(e.target.value)}
+                                                placeholder="you@example.com"
+                                                required
+                                                className="w-full pl-10 pr-3 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 text-sm focus:bg-white/10 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all duration-300"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {/* Password Input */}
+                                    <div className="group">
+                                        <label className="block text-gray-300 text-xs font-medium mb-1.5 ml-1">
+                                            Password
+                                        </label>
+                                        <div className="relative">
+                                            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                <Lock className="h-4 w-4 text-gray-400 group-focus-within:text-purple-400 transition-colors duration-300" />
+                                            </div>
+                                            <input
+                                                type={showPassword ? "text" : "password"}
+                                                value={password}
+                                                onChange={(e) => setPassword(e.target.value)}
+                                                placeholder="Enter your password"
+                                                required
+                                                className="w-full pl-10 pr-10 py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 text-sm focus:bg-white/10 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all duration-300"
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-white transition-colors duration-300"
+                                            >
+                                                {showPassword ? (
+                                                    <EyeOff className="h-4 w-4" />
+                                                ) : (
+                                                    <Eye className="h-4 w-4" />
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    {/* Forgot Password Link */}
+                                    <div className="text-right">
+                                        <button
+                                            type="button"
+                                            onClick={() => navigate("/forgot-password")}
+                                            className="text-purple-400 hover:text-purple-300 text-xs font-medium transition-colors duration-300"
+                                        >
+                                            Forgot Password?
+                                        </button>
+                                    </div>
+
+                                    {/* Submit Button */}
+                                    <button
+                                        type="submit"
+                                        disabled={isLoading}
+                                        className="w-full py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 text-sm"
+                                        style={{
+                                            backgroundSize: "200% auto",
+                                            backgroundPosition: isLoading ? "100% center" : "0% center"
+                                        }}
+                                    >
+                                        {isLoading ? (
+                                            <span className="flex items-center justify-center gap-2">
+                                                <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                                Signing in...
+                                            </span>
+                                        ) : (
+                                            <span className="flex items-center justify-center gap-2">
+                                                Sign In 
+                                                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform duration-300" />
+                                            </span>
+                                        )}
+                                    </button>
+                                </form>
+                                </div>
                             </div>
                         </div>
 
-                        {/* Registration Links Card */}
-                        <div className="bg-white/5 backdrop-blur-xl border border-white/10 rounded-2xl p-4 sm:p-6 flex flex-col justify-center w-[60%]">
-                            <h3 className="text-white text-center font-semibold mb-3 sm:mb-4">Don't have an account? Register as:</h3>
-                            <div className="flex flex-wrap justify-center gap-2 sm:gap-3">
-                                <button
-                                    onClick={() => navigate("/school-registration")}
-                                    className="text-xs sm:text-sm bg-white/10 hover:bg-white/20 text-white py-2 px-3 rounded-xl transition-all duration-300 border border-white/20 whitespace-nowrap"
-                                >
-                                    Register as School
-                                </button>
-                                <button
-                                    onClick={() => navigate("/register")}
-                                    className="text-xs sm:text-sm bg-white/10 hover:bg-white/20 text-white py-2 px-3 rounded-xl transition-all duration-300 border border-white/20 whitespace-nowrap"
-                                >
-                                    Register as Student
-                                </button>
-                                <button
-                                    onClick={() => navigate("/register-parent")}
-                                    className="text-xs sm:text-sm bg-white/10 hover:bg-white/20 text-white py-2 px-3 rounded-xl transition-all duration-300 border border-white/20 whitespace-nowrap"
-                                >
-                                    Register as Parent
-                                </button>
-                                <button
-                                    onClick={() => navigate("/register-teacher")}
-                                    className="text-xs sm:text-sm bg-white/10 hover:bg-white/20 text-white py-2 px-3 rounded-xl transition-all duration-300 border border-white/20 whitespace-nowrap"
-                                >
-                                    Register as Teacher
-                                </button>
-                                <button
-                                    onClick={() => navigate("/register-seller")}
-                                    className="text-xs sm:text-sm bg-white/10 hover:bg-white/20 text-white py-2 px-3 rounded-xl transition-all duration-300 border border-white/20 whitespace-nowrap"
-                                >
-                                    Register as Seller
-                                </button>
+                        {/* Right Side - Registration Options */}
+                        <div className="order-1 lg:order-2">
+                            <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-6 sm:p-7 shadow-2xl h-full flex flex-col">
+                                <div className="text-center mb-5">
+                                    <h2 className="text-3xl font-bold text-white mb-1">
+                                        New Here?
+                                    </h2>
+                                    <p className="text-gray-300 text-sm">
+                                        Create your account and start your journey
+                                    </p>
+                                </div>
+
+                                {/* Registration Cards Container - Centered */}
+                                <div className="flex-1 flex flex-col justify-center">
+                                    <div className="space-y-2.5">
+                                    {registrationOptions.map((option) => {
+                                        const Icon = option.icon;
+                                        return (
+                                            <button
+                                                key={option.label}
+                                                onClick={() => navigate(option.path)}
+                                                className="group w-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl p-3 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg"
+                                            >
+                                                <div className="flex items-center gap-3">
+                                                    <div className={`w-10 h-10 bg-gradient-to-br ${option.gradient} rounded-xl flex items-center justify-center shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+                                                        <Icon className="w-5 h-5 text-white" />
+                                                    </div>
+                                                    <div className="flex-1 text-left">
+                                                        <p className="text-white font-semibold text-sm">
+                                                            Register as {option.label}
+                                                        </p>
+                                                        <p className="text-gray-400 text-xs">
+                                                            Create a {option.label.toLowerCase()} account
+                                                        </p>
+                                                    </div>
+                                                    <ArrowRight className="w-4 h-4 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
+                                                </div>
+                                            </button>
+                                        );
+                                    })}
+                                    </div>
+
+                                    {/* Additional Info */}
+                                    <div className="mt-5 pt-4 border-t border-white/10">
+                                        <p className="text-gray-400 text-xs text-center leading-relaxed">
+                                            By continuing, you agree to our Terms of Service and Privacy Policy
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <style dangerouslySetInnerHTML={{__html: `
+                @keyframes shake {
+                    0%, 100% { transform: translateX(0); }
+                    10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                    20%, 40%, 60%, 80% { transform: translateX(5px); }
+                }
+                .animate-shake {
+                    animation: shake 0.5s ease-in-out;
+                }
+            `}} />
         </div>
     );
 };

@@ -51,7 +51,6 @@ const AdminSettings = () => {
         adminAlerts: true,
         systemNotifications: true,
         userRegistrations: true,
-        educatorApprovals: true,
         errorReports: true,
         securityAlerts: true
     });
@@ -482,7 +481,6 @@ const AdminSettings = () => {
                                     
                                     {Object.entries({
                                         userRegistrations: 'New User Registrations',
-                                        educatorApprovals: 'Educator Approval Requests'
                                     }).map(([key, label]) => (
                                         <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                             <div>

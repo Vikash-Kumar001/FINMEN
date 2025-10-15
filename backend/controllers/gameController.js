@@ -6,6 +6,7 @@ import GameAchievement from '../models/GameAchievement.js';
 import UnifiedGameProgress from '../models/UnifiedGameProgress.js';
 import Wallet from '../models/Wallet.js';
 import Transaction from '../models/Transaction.js';
+import UserProgress from '../models/UserProgress.js';
 import { ErrorResponse } from '../utils/ErrorResponse.js';
 
 // 📥 GET /api/game/missions/:level
@@ -240,14 +241,65 @@ export const completeGame = async (req, res) => {
     // Save game progress
     await gameProgress.save();
     
+    // ✨ UPDATE USERPROGRESS FOR DASHBOARD
+    let userProgress = await UserProgress.findOne({ userId });
+    
+    if (!userProgress) {
+      userProgress = await UserProgress.create({
+        userId,
+        xp: 0,
+        level: 1,
+        healCoins: 0,
+        streak: 0
+      });
+    }
+    
+    // Award XP for game completion
+    const xpEarned = Math.floor(coinsEarned * 2); // 2 XP per coin
+    userProgress.xp += xpEarned;
+    
+    // Calculate level (100 XP per level)
+    userProgress.level = Math.floor(userProgress.xp / 100) + 1;
+    
+    // Update streak
+    const lastCheckIn = userProgress.lastCheckIn ? new Date(userProgress.lastCheckIn) : null;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    if (lastCheckIn) {
+      const lastCheckInDay = new Date(lastCheckIn);
+      lastCheckInDay.setHours(0, 0, 0, 0);
+      
+      const yesterday = new Date(today);
+      yesterday.setDate(yesterday.getDate() - 1);
+      
+      if (lastCheckInDay.getTime() === yesterday.getTime()) {
+        // Consecutive day
+        userProgress.streak += 1;
+      } else if (lastCheckInDay.getTime() < yesterday.getTime()) {
+        // Missed days, reset streak
+        userProgress.streak = 1;
+      }
+      // Same day - don't change streak
+    } else {
+      // First time
+      userProgress.streak = 1;
+    }
+    
+    userProgress.lastCheckIn = today;
+    await userProgress.save();
+    
     // After saving game progress and wallet
     // Emit socket event for real-time updates
     const io = req.app.get('io');
     io.to(userId.toString()).emit('game-completed', {
       gameId,
       coinsEarned,
+      xpEarned,
       newBalance: wallet.balance,
-      streak: gameProgress.streak,
+      streak: userProgress.streak,
+      level: userProgress.level,
+      totalXP: userProgress.xp,
       achievements: gameProgress.achievements,
       message: 'Game completed and rewards granted!'
     });
@@ -419,6 +471,263 @@ export const getLeaderboard = async (req, res) => {
 };
 
 // 🎮 POST /api/game/complete-unified/:gameId - Unified game completion with heal coins
+// Get Brain Teaser Games
+export const getBrainTeaserGames = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Define Brain Teaser games
+    const brainGames = [
+      {
+        id: 'memory-matrix',
+        title: 'Memory Matrix',
+        description: 'Remember and match the pattern in this visual memory challenge',
+        icon: '🧩',
+        color: 'from-purple-500 to-pink-500',
+        difficulty: 'medium',
+        duration: '7 min',
+        xpReward: 40,
+        category: 'Memory',
+        skills: ['Visual Memory', 'Pattern Recognition']
+      },
+      {
+        id: 'logic-puzzle',
+        title: 'Logic Puzzle Master',
+        description: 'Solve complex logic puzzles to unlock your analytical thinking',
+        icon: '🎯',
+        color: 'from-blue-500 to-cyan-500',
+        difficulty: 'hard',
+        duration: '10 min',
+        xpReward: 60,
+        category: 'Logic',
+        skills: ['Logical Reasoning', 'Problem Solving']
+      },
+      {
+        id: 'word-wizard',
+        title: 'Word Wizard',
+        description: 'Challenge your vocabulary and word-finding abilities',
+        icon: '📝',
+        color: 'from-green-500 to-emerald-500',
+        difficulty: 'easy',
+        duration: '5 min',
+        xpReward: 30,
+        category: 'Language',
+        skills: ['Vocabulary', 'Word Recognition']
+      },
+      {
+        id: 'number-ninja',
+        title: 'Number Ninja',
+        description: 'Master quick mental math and number patterns',
+        icon: '🔢',
+        color: 'from-orange-500 to-red-500',
+        difficulty: 'medium',
+        duration: '6 min',
+        xpReward: 35,
+        category: 'Math',
+        skills: ['Mental Math', 'Number Patterns']
+      },
+      {
+        id: 'shape-shifter',
+        title: 'Shape Shifter',
+        description: 'Identify shapes and spatial relationships',
+        icon: '🔷',
+        color: 'from-teal-500 to-cyan-500',
+        difficulty: 'easy',
+        duration: '5 min',
+        xpReward: 25,
+        category: 'Spatial',
+        skills: ['Spatial Awareness', 'Shape Recognition']
+      },
+      {
+        id: 'speed-think',
+        title: 'Speed Think',
+        description: 'Quick decision-making under time pressure',
+        icon: '⚡',
+        color: 'from-yellow-500 to-amber-500',
+        difficulty: 'hard',
+        duration: '8 min',
+        xpReward: 50,
+        category: 'Speed',
+        skills: ['Quick Thinking', 'Decision Making']
+      },
+      {
+        id: 'pattern-pro',
+        title: 'Pattern Pro',
+        description: 'Complete sequences and predict the next element',
+        icon: '🔮',
+        color: 'from-indigo-500 to-purple-500',
+        difficulty: 'medium',
+        duration: '7 min',
+        xpReward: 45,
+        category: 'Patterns',
+        skills: ['Pattern Recognition', 'Prediction']
+      },
+      {
+        id: 'attention-ace',
+        title: 'Attention Ace',
+        description: 'Focus and spot differences in complex scenarios',
+        icon: '👁️',
+        color: 'from-pink-500 to-rose-500',
+        difficulty: 'easy',
+        duration: '6 min',
+        xpReward: 30,
+        category: 'Focus',
+        skills: ['Attention to Detail', 'Concentration']
+      }
+    ];
+
+    // Get user's progress for each game
+    const gameProgress = await UnifiedGameProgress.find({
+      userId,
+      gameType: 'brain'
+    });
+
+    // Enrich games with user progress
+    const enrichedGames = brainGames.map(game => {
+      const progress = gameProgress.find(p => p.gameId === game.id);
+      return {
+        ...game,
+        progress: progress ? {
+          completed: progress.fullyCompleted,
+          levelsCompleted: progress.levelsCompleted,
+          totalLevels: progress.totalLevels,
+          highestScore: progress.highestScore,
+          lastPlayed: progress.lastPlayedAt,
+          timePlayed: progress.totalTimePlayed
+        } : null
+      };
+    });
+
+    res.status(200).json({
+      games: enrichedGames,
+      totalGames: brainGames.length,
+      completedGames: gameProgress.filter(g => g.fullyCompleted).length,
+      totalXPAvailable: brainGames.reduce((sum, g) => sum + g.xpReward, 0)
+    });
+  } catch (err) {
+    console.error('❌ Failed to get Brain Teaser games:', err);
+    res.status(500).json({ error: 'Failed to fetch Brain Teaser games' });
+  }
+};
+
+// Get DCOS Games
+export const getDCOSGames = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // Define DCOS games
+    const dcosGames = [
+      {
+        id: 'password-master',
+        title: 'Password Master',
+        description: 'Learn to create strong, secure passwords',
+        icon: '🔐',
+        color: 'from-blue-500 to-cyan-500',
+        difficulty: 'easy',
+        duration: '5 min',
+        xpReward: 30,
+        skills: ['Password Security', 'Account Safety']
+      },
+      {
+        id: 'phishing-detective',
+        title: 'Phishing Detective',
+        description: 'Identify and avoid phishing scams',
+        icon: '🕵️',
+        color: 'from-red-500 to-orange-500',
+        difficulty: 'medium',
+        duration: '8 min',
+        xpReward: 50,
+        skills: ['Email Safety', 'Scam Detection']
+      },
+      {
+        id: 'privacy-guardian',
+        title: 'Privacy Guardian',
+        description: 'Protect your personal information online',
+        icon: '🛡️',
+        color: 'from-purple-500 to-pink-500',
+        difficulty: 'medium',
+        duration: '7 min',
+        xpReward: 40,
+        skills: ['Privacy Settings', 'Data Protection']
+      },
+      {
+        id: 'social-media-hero',
+        title: 'Social Media Hero',
+        description: 'Navigate social media safely and responsibly',
+        icon: '📱',
+        color: 'from-green-500 to-emerald-500',
+        difficulty: 'easy',
+        duration: '6 min',
+        xpReward: 35,
+        skills: ['Social Media Safety', 'Digital Footprint']
+      },
+      {
+        id: 'cyberbully-stopper',
+        title: 'Cyberbully Stopper',
+        description: 'Recognize and respond to cyberbullying',
+        icon: '🚫',
+        color: 'from-orange-500 to-red-500',
+        difficulty: 'medium',
+        duration: '10 min',
+        xpReward: 60,
+        skills: ['Cyberbullying Prevention', 'Online Kindness']
+      },
+      {
+        id: 'digital-footprint',
+        title: 'Digital Footprint',
+        description: 'Understand your online presence',
+        icon: '👣',
+        color: 'from-indigo-500 to-purple-500',
+        difficulty: 'easy',
+        duration: '5 min',
+        xpReward: 30,
+        skills: ['Online Reputation', 'Digital Literacy']
+      },
+      {
+        id: 'safe-browsing',
+        title: 'Safe Browsing Quest',
+        description: 'Browse the internet safely and securely',
+        icon: '🌐',
+        color: 'from-teal-500 to-cyan-500',
+        difficulty: 'easy',
+        duration: '6 min',
+        xpReward: 35,
+        skills: ['Safe Browsing', 'URL Safety']
+      }
+    ];
+
+    // Get user's progress for each game
+    const gameProgress = await UnifiedGameProgress.find({
+      userId,
+      gameType: 'dcos'
+    });
+
+    // Enrich games with user progress
+    const enrichedGames = dcosGames.map(game => {
+      const progress = gameProgress.find(p => p.gameId === game.id);
+      return {
+        ...game,
+        progress: progress ? {
+          completed: progress.fullyCompleted,
+          levelsCompleted: progress.levelsCompleted,
+          totalLevels: progress.totalLevels,
+          highestScore: progress.highestScore,
+          lastPlayed: progress.lastPlayedAt
+        } : null
+      };
+    });
+
+    res.status(200).json({
+      games: enrichedGames,
+      totalGames: dcosGames.length,
+      completedGames: gameProgress.filter(g => g.fullyCompleted).length
+    });
+  } catch (err) {
+    console.error('❌ Failed to get DCOS games:', err);
+    res.status(500).json({ error: 'Failed to fetch DCOS games' });
+  }
+};
+
 export const completeUnifiedGame = async (req, res) => {
   const userId = req.user?._id;
   const { gameId } = req.params;
@@ -512,9 +821,59 @@ export const completeUnifiedGame = async (req, res) => {
       }
     }
 
+    // ✨ UPDATE USERPROGRESS FOR DASHBOARD
+    let userProgress = await UserProgress.findOne({ userId });
+    
+    if (!userProgress) {
+      userProgress = await UserProgress.create({
+        userId,
+        xp: 0,
+        level: 1,
+        healCoins: 0,
+        streak: 0
+      });
+    }
+    
     // Award coins if any
     let newBalance = 0;
+    let xpEarned = 0;
+    
     if (coinsToAward > 0) {
+      // Award XP (2 XP per coin)
+      xpEarned = Math.floor(coinsToAward * 2);
+      userProgress.xp += xpEarned;
+      
+      // Calculate level (100 XP per level)
+      userProgress.level = Math.floor(userProgress.xp / 100) + 1;
+      
+      // Update global streak
+      const lastCheckIn = userProgress.lastCheckIn ? new Date(userProgress.lastCheckIn) : null;
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (lastCheckIn) {
+        const lastCheckInDay = new Date(lastCheckIn);
+        lastCheckInDay.setHours(0, 0, 0, 0);
+        
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        if (lastCheckInDay.getTime() === yesterday.getTime()) {
+          // Consecutive day
+          userProgress.streak += 1;
+        } else if (lastCheckInDay.getTime() < yesterday.getTime()) {
+          // Missed days, reset streak
+          userProgress.streak = 1;
+        }
+        // Same day - don't change streak
+      } else {
+        // First time
+        userProgress.streak = 1;
+      }
+      
+      userProgress.lastCheckIn = today;
+      await userProgress.save();
+      
       // Update wallet
       let wallet = await Wallet.findOne({ userId });
       
@@ -565,8 +924,12 @@ export const completeUnifiedGame = async (req, res) => {
       io.to(userId.toString()).emit('game-completed', {
         gameId,
         coinsEarned: coinsToAward,
+        xpEarned,
         newBalance,
-        streak: gameProgress.currentStreak,
+        streak: userProgress.streak,
+        level: userProgress.level,
+        totalXP: userProgress.xp,
+        gameStreak: gameProgress.currentStreak,
         achievements: gameProgress.achievements,
         message: 'Game completed and rewards granted!'
       });
@@ -575,12 +938,16 @@ export const completeUnifiedGame = async (req, res) => {
     res.status(200).json({
       message: coinsToAward > 0 ? '🎉 Game completed successfully!' : 'Game completed! Thanks for playing again!',
       coinsEarned: coinsToAward,
+      xpEarned,
       totalCoinsEarned: gameProgress.totalCoinsEarned,
       newLevelsCompleted,
       totalLevelsCompleted: gameProgress.levelsCompleted,
       fullyCompleted: gameProgress.fullyCompleted,
       newBalance,
-      streak: gameProgress.currentStreak,
+      streak: userProgress.streak,
+      level: userProgress.level,
+      totalXP: userProgress.xp,
+      gameStreak: gameProgress.currentStreak,
       achievements: gameProgress.achievements
     });
   } catch (err) {

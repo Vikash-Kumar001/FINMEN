@@ -33,13 +33,6 @@ export const requireAdmin = (req, res, next) => {
   next();
 };
 
-// ✅ Middleware: Educator-only access
-export const requireEducator = (req, res, next) => {
-  if (req.user?.role !== "educator") {
-    return res.status(403).json({ message: "Access denied. Educators only." });
-  }
-  next();
-};
 
 // ✅ Middleware: Student-only access
 export const requireStudent = (req, res, next) => {
@@ -69,6 +62,31 @@ export const requireSeller = (req, res, next) => {
 export const requireCSR = (req, res, next) => {
   if (req.user?.role !== "csr") {
     return res.status(403).json({ message: "Access denied. CSR users only." });
+  }
+  next();
+};
+
+// ✅ Middleware: School Admin-only access
+export const requireSchoolAdmin = (req, res, next) => {
+  if (req.user?.role !== "school_admin") {
+    return res.status(403).json({ message: "Access denied. School admins only." });
+  }
+  next();
+};
+
+// ✅ Middleware: School Teacher-only access
+export const requireSchoolTeacher = (req, res, next) => {
+  if (req.user?.role !== "school_teacher") {
+    return res.status(403).json({ message: "Access denied. School teachers only." });
+  }
+  next();
+};
+
+// ✅ Middleware: Any School Role access (admin, teacher, student, parent)
+export const requireSchoolRole = (req, res, next) => {
+  const schoolRoles = ['school_admin', 'school_teacher', 'school_student', 'school_parent', 'school_accountant', 'school_librarian'];
+  if (!schoolRoles.includes(req.user?.role)) {
+    return res.status(403).json({ message: "Access denied. School users only." });
   }
   next();
 };

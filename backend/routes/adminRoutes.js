@@ -5,10 +5,6 @@ import {
   approveRedemption,
   rejectRedemption,
   getLeaderboard,
-  getAllEducators,
-  getPendingEducators,
-  approveEducator,
-  rejectEducator,
   getAdminStats,
   getAnalytics,
   getPendingStakeholders,
@@ -29,13 +25,8 @@ router.get("/stats", getAdminStats);
 // 📊 Analytics Data for AdminAnalytics
 router.get("/analytics", getAnalytics);
 
-// 👩‍🏫 Educator Management
-router.get("/educators", getAllEducators);
-router.get("/educators/pending", getPendingEducators);
-router.put("/educators/approve/:id", approveEducator);
-router.put("/educators/reject/:id", rejectEducator);
 
-// 👥 All Stakeholder Management (Educators, Parents, Sellers, CSRs)
+// 👥 All Stakeholder Management (Parents, Sellers, CSRs)
 router.get("/pending-approvals", getPendingStakeholders);
 router.put("/approve-stakeholder/:id", approveStakeholder);
 router.put("/reject-stakeholder/:id", rejectStakeholder);
@@ -51,7 +42,7 @@ router.get("/redemptions", getRedemptionRequests);
 router.put("/redemptions/approve/:id", approveRedemption);
 router.put("/redemptions/reject/:id", rejectRedemption);
 
-// ➕ Admin Creates Admin or Educator
+// ➕ Admin Creates Admin
 router.post("/create-user", registerByAdmin);
 
 export default router;

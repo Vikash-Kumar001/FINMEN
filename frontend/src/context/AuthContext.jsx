@@ -79,13 +79,6 @@ export const AuthProvider = ({ children }) => {
                 case "school_admin":
                     navigate("/school/admin/dashboard");
                     break;
-                case "educator":
-                    if (!enhancedUser.isApproved) {
-                        navigate("/pending-approval");
-                    } else {
-                        navigate("/educator/dashboard");
-                    }
-                    break;
                 case "parent":
                     // Parents are auto-approved; route directly to dashboard
                     navigate("/parent/dashboard");

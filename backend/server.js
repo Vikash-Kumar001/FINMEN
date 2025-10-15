@@ -79,8 +79,6 @@ import moodRoutes from "./routes/moodRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
 import rewardsRoutes from "./routes/rewardsRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-import adminEducatorRoutes from "./routes/adminEducatorRoutes.js";
-import educatorRoutes from "./routes/educatorRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
@@ -98,6 +96,7 @@ import userRoutes from "./routes/userRoutes.js";
 import parentRoutes from "./routes/parentRoutes.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
 import csrRoutes from "./routes/csrRoutes.js";
+import avatarRoutes from "./routes/avatarRoutes.js";
 
 // Multi-tenant routes
 import companyRoutes from "./routes/companyRoutes.js";
@@ -112,17 +111,13 @@ import { errorHandler } from "./middlewares/errorMiddleware.js";
 import { scheduleWeeklyReports } from "./cronJobs/reportScheduler.js";
 
 // Socket Handlers
-import { setupAdminEducatorSocket } from "./socketHandlers/adminEducatorSocket.js";
 import { setupWalletSocket } from "./socketHandlers/walletSocket.js";
 import { setupStudentSocket } from "./socketHandlers/studentSocket.js";
 import { setupStatsSocket } from "./socketHandlers/statsSocket.js";
 import { setupFeedbackSocket } from "./socketHandlers/feedbackSocket.js";
 import { setupGameSocket } from "./socketHandlers/gameSocket.js";
-import { setupAdminPanelSocket } from "./socketHandlers/adminPanelSocket.js";
 import { setupJournalSocket } from "./socketHandlers/journalSocket.js";
 import { setupChatSocket } from "./socketHandlers/chatSocket.js";
-import { setupEducatorSocket } from "./socketHandlers/educatorSocket.js";
-import { setupStudentRedemptionSocket } from "./socketHandlers/studentRedemptionSocket.js";
 
 // Socket.IO Authentication and Events
 io.on("connection", async (socket) => {
@@ -155,29 +150,18 @@ io.on("connection", async (socket) => {
       return socket.disconnect();
     }
 
-    if (user.role === "educator" && user.approvalStatus !== "approved") {
-      socket.emit("error", { message: "Access denied: Not approved" });
-      return socket.disconnect();
-    }
 
     socket.join(user._id.toString());
     if (user.role === "admin") {
       socket.join("admins");
       socket.join("admin-room");
     }
-    if (user.role === "educator") {
-      socket.join("educators");
-      socket.join(`educator-${user._id}`);
-    }
 
     console.log(`👤 User ${user._id} (${user.role}) joined their room`);
 
     if (user.role === "admin") {
-      setupAdminEducatorSocket(io, socket, user);
       setupStudentSocket(io, socket, user);
       setupStatsSocket(io, socket, user);
-      setupAdminPanelSocket(io, socket, user);
-      setupEducatorSocket(io, socket, user);
     }
 
     setupWalletSocket(io, socket, user);
@@ -185,11 +169,7 @@ io.on("connection", async (socket) => {
     setupGameSocket(io, socket, user);
     setupJournalSocket(io, socket, user);
     setupChatSocket(io, socket, user);
-    setupStudentRedemptionSocket(io, socket, user);
 
-    if (user.role === "educator") {
-      await User.findByIdAndUpdate(user._id, { lastActive: new Date() });
-    }
   } catch (err) {
     console.error("❌ Socket auth error:", err.message);
     socket.emit("error", { message: "Authentication error" });
@@ -210,8 +190,6 @@ app.use("/api/mood", moodRoutes);
 app.use("/api/game", gameRoutes);
 app.use("/api/rewards", rewardsRoutes);
 app.use("/api/admin", adminRoutes);
-app.use("/api/admin/educators", adminEducatorRoutes);
-app.use("/api/educators", educatorRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
 // Multi-tenant Routes
@@ -236,6 +214,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/parent', parentRoutes);
 app.use('/api/seller', sellerRoutes);
 app.use('/api/csr', csrRoutes);
+app.use('/api/avatar', avatarRoutes);
 
 // Health Check
 app.get("/", (_, res) => {

@@ -30,9 +30,6 @@ const activityLogSchema = new mongoose.Schema(
         "xp_earned",
         "level_up",
         "feature_used",
-        // Educator-specific activities
-        "student_view",
-        "report_view",
         "analytics_view",
         "student_interaction",
         "feedback_provided",
@@ -40,9 +37,6 @@ const activityLogSchema = new mongoose.Schema(
         "assignment_graded",
         // Admin actions
         "admin_action",
-        "educator_created",
-        "educator_approved",
-        "educator_rejected",
         // New activity types from StudentDashboard
         "data_fetch",
         "navigation",

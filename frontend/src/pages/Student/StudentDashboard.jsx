@@ -496,6 +496,7 @@ export default function StudentDashboard() {
         { key: "competition", label: "Health - Female" },
         { key: "rewards", label: "Entrepreneurship & Higher Education" },
         { key: "shopping", label: "Civic Responsibility & Global Citizenship" },
+        { key: "sustainability", label: "Sustainability" },
         { key: "challenges", label: "Challenges" },
     ];
 
@@ -578,7 +579,6 @@ export default function StudentDashboard() {
                 <motion.div
                     initial={{ opacity: 0, y: -30 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.8 }}
                     className="text-center mb-8 mt-2"
                 >
                     <motion.div
@@ -610,7 +610,6 @@ export default function StudentDashboard() {
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.5, duration: 0.6 }}
                         className="py-10"
                     >
                         <div className="flex flex-wrap gap-3 justify-center">
@@ -626,7 +625,7 @@ export default function StudentDashboard() {
                                     'from-teal-500 to-cyan-500',
                                     'from-red-500 to-orange-500',
                                     'from-lime-500 to-green-500',
-                                    'from-fuchsia-500 to-purple-500',
+                                    'from-blue-500 to-cyan-500',
                                     'from-violet-500 to-purple-500'
                                 ];
                                 const gradientColors = colorClasses[index % colorClasses.length];
@@ -656,11 +655,10 @@ export default function StudentDashboard() {
                                             // Navigate to category page
                                             navigate(`/student/dashboard/${categorySlug}`);
                                         }}
-                                        whileHover={{ scale: 1.08, y: -4 }}
+                                        whileHover={{ scale: 1.08 }}
                             whileTap={{ scale: 0.95 }}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        transition={{ delay: 0.6 + index * 0.05 }}
                                         className={`bg-gradient-to-r ${gradientColors} text-white px-6 py-4 rounded-full font-bold text-sm shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden group`}
                                     >
                                         {/* Shine effect on hover */}
@@ -668,7 +666,6 @@ export default function StudentDashboard() {
                                             className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
                                             initial={{ x: '-100%' }}
                                             whileHover={{ x: '100%' }}
-                                            transition={{ duration: 0.6 }}
                                         />
                                         
                                         {/* Pulse animation */}
@@ -679,10 +676,8 @@ export default function StudentDashboard() {
                                                 opacity: [0, 0.3, 0],
                                             }}
                                             transition={{
-                                                duration: 2,
                                                 repeat: Infinity,
                                                 ease: "easeInOut",
-                                                delay: index * 0.2
                                             }}
                                         />
                                         

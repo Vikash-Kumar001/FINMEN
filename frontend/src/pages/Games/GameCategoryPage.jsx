@@ -38,8 +38,15 @@ import {
     RefreshCw,
     Award,
     Palette,
-    Home
+    Home,
+    Leaf,
+    Sun,
+    Droplets,
+    Cloud,
+    Book
 } from "lucide-react";
+
+
 import { useAuth } from "../../hooks/useAuth";
 import { toast } from "react-hot-toast";
 import gameCompletionService from "../../services/gameCompletionService";
@@ -74,6 +81,11 @@ const GameCategoryPage = () => {
     const canAccessGame = (gameAgeGroup, userAge) => {
         if (userAge === null) return false;
         
+        // For sustainability category, no age restrictions
+        if (category === 'sustainability') {
+            return true;
+        }
+        
         switch (gameAgeGroup) {
             case 'kids':
                 // Kids games: accessible to users under 18, locked for 18+
@@ -84,6 +96,12 @@ const GameCategoryPage = () => {
             case 'adults':
                 // Adult games: only accessible to users 18 and above
                 return userAge >= 18;
+            case 'solar-and-city':
+            case 'water-and-recycle':
+            case 'carbon-and-climate':
+            case 'water-and-energy':
+                // Sustainability subcategories: accessible to all users
+                return true;
             default:
                 return true;
         }
@@ -94,8 +112,8 @@ const GameCategoryPage = () => {
         // First game is always unlocked
         if (gameIndex === 0) return true;
         
-        // For finance, brain health, UVLS, DCOS, Moral Values, AI For All, EHE, and CRGC kids and teens games, check if previous game is completed
-        if ((category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')) {
+        // For finance, brain health, UVLS, DCOS, Moral Values, AI For All, EHE, CRGC, and Sustainability kids and teens games, check if previous game is completed
+        if ((category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility' || category === 'sustainability') && (ageGroup === 'kids' || ageGroup === 'teens' || ageGroup === 'solar-and-city' || ageGroup === 'water-and-recycle' || ageGroup === 'carbon-and-climate' || ageGroup === 'water-and-energy')) {
             const previousGameId = getGameIdByIndex(gameIndex - 1);
             return gameCompletionStatus[previousGameId] || false;
         }
@@ -103,7 +121,6 @@ const GameCategoryPage = () => {
         // For other categories, unlock all games (existing behavior)
         return true;
     };
-    
     // Check if a game is fully completed and should be locked
     const isGameFullyCompleted = (gameId) => {
         return gameCompletionStatus[gameId] === true;
@@ -239,6 +256,51 @@ const GameCategoryPage = () => {
                 'crgc-teen-16', 'crgc-teen-17', 'crgc-teen-18', 'crgc-teen-19', 'crgc-teen-20'
             ];
             return gameIds[index];
+        } else if (category === 'sustainability') {
+            // For sustainability subcategories, we'll use different IDs based on the ageGroup
+            if (ageGroup === 'solar-and-city') {
+                const gameIds = [
+                    'sustainability-solar-1', 'sustainability-solar-2', 'sustainability-solar-3', 'sustainability-solar-4',
+                    'sustainability-solar-5', 'sustainability-solar-6', 'sustainability-solar-7', 'sustainability-solar-8',
+                    'sustainability-solar-9', 'sustainability-solar-10', 'sustainability-solar-11', 'sustainability-solar-12',
+                    'sustainability-solar-13', 'sustainability-solar-14', 'sustainability-solar-15', 'sustainability-solar-16',
+                    'sustainability-solar-17', 'sustainability-solar-18', 'sustainability-solar-19', 'sustainability-solar-20'
+                ];
+                return gameIds[index];
+            } else if (ageGroup === 'water-and-recycle') {
+                const gameIds = [
+                    'sustainability-water-1', 'sustainability-water-2', 'sustainability-water-3', 'sustainability-water-4',
+                    'sustainability-water-5', 'sustainability-water-6', 'sustainability-water-7', 'sustainability-water-8',
+                    'sustainability-water-9', 'sustainability-water-10', 'sustainability-water-11', 'sustainability-water-12',
+                    'sustainability-water-13', 'sustainability-water-14', 'sustainability-water-15', 'sustainability-water-16',
+                    'sustainability-water-17', 'sustainability-water-18', 'sustainability-water-19', 'sustainability-water-20'
+                ];
+                return gameIds[index];
+            } else if (ageGroup === 'carbon-and-climate') {
+                const gameIds = [
+                    'sustainability-carbon-1', 'sustainability-carbon-2', 'sustainability-carbon-3', 'sustainability-carbon-4',
+                    'sustainability-carbon-5', 'sustainability-carbon-6', 'sustainability-carbon-7', 'sustainability-carbon-8',
+                    'sustainability-carbon-9', 'sustainability-carbon-10', 'sustainability-carbon-11', 'sustainability-carbon-12',
+                    'sustainability-carbon-13', 'sustainability-carbon-14', 'sustainability-carbon-15', 'sustainability-carbon-16',
+                    'sustainability-carbon-17', 'sustainability-carbon-18', 'sustainability-carbon-19', 'sustainability-carbon-20'
+                ];
+                return gameIds[index];
+            } else if (ageGroup === 'water-and-energy') {
+                const gameIds = [
+                    'sustainability-energy-1', 'sustainability-energy-2', 'sustainability-energy-3', 'sustainability-energy-4',
+                    'sustainability-energy-5', 'sustainability-energy-6', 'sustainability-energy-7', 'sustainability-energy-8',
+                    'sustainability-energy-9', 'sustainability-energy-10', 'sustainability-energy-11', 'sustainability-energy-12',
+                    'sustainability-energy-13', 'sustainability-energy-14', 'sustainability-energy-15', 'sustainability-energy-16',
+                    'sustainability-energy-17', 'sustainability-energy-18', 'sustainability-energy-19', 'sustainability-energy-20'
+                ];
+                return gameIds[index];
+            } else {
+                // Default case
+                const gameIds = [
+                    'sustainability-1', 'sustainability-2', 'sustainability-3', 'sustainability-4'
+                ];
+                return gameIds[index];
+            }
         }
         return null;
     };
@@ -255,7 +317,8 @@ const GameCategoryPage = () => {
             'health-male': <Shield className="w-6 h-6" />,
             'health-female': <Shield className="w-6 h-6" />,
             'entrepreneurship': <Target className="w-6 h-6" />,
-            'civic-responsibility': <Globe className="w-6 h-6" />
+            'civic-responsibility': <Globe className="w-6 h-6" />,
+            'sustainability': <Leaf className="w-6 h-6" />
         };
         
         return iconMap[categoryName] || <Gamepad2 className="w-6 h-6" />;
@@ -267,13 +330,15 @@ const GameCategoryPage = () => {
             'financial-literacy': 'Financial Literacy',
             'brain-health': 'Brain Health',
             'uvls': 'UVLS (Life Skills & Values)',
+
             'digital-citizenship': 'Digital Citizenship & Online Safety',
             'moral-values': 'Moral Values',
             'ai-for-all': 'AI for All',
             'health-male': 'Health - Male',
             'health-female': 'Health - Female',
             'entrepreneurship': 'Entrepreneurship & Higher Education',
-            'civic-responsibility': 'Civic Responsibility & Global Citizenship'
+            'civic-responsibility': 'Civic Responsibility & Global Citizenship',
+            'sustainability': 'Sustainability'
         };
         
         return titleMap[categoryName] || categoryName;
@@ -284,7 +349,11 @@ const GameCategoryPage = () => {
         const titleMap = {
             'kids': 'Kids Games',
             'teens': 'Teen Games',
-            'adults': 'Adult Games'
+            'adults': 'Adult Games',
+            'solar-and-city': 'Solar & City Games',
+            'water-and-recycle': 'Water & Recycle Games',
+            'carbon-and-climate': 'Carbon & Climate Games',
+            'water-and-energy': 'Water & Energy Games'
         };
         
         return titleMap[ageGroup] || ageGroup;
@@ -293,10 +362,11 @@ const GameCategoryPage = () => {
     // Load game completion status
     const loadGameCompletionStatus = async () => {
         try {
-            // For finance, brain health, UVLS, DCOS, Moral Values, AI For All, EHE, and CRGC kids games, load completion status
-            if ((category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')) {
+            // For finance, brain health, UVLS, DCOS, Moral Values, AI For All, EHE, CRGC, and Sustainability kids games, load completion status
+            if ((category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility' || category === 'sustainability') && (ageGroup === 'kids' || ageGroup === 'teens' || ageGroup === 'solar-and-city' || ageGroup === 'water-and-recycle' || ageGroup === 'carbon-and-climate' || ageGroup === 'water-and-energy')) {
                 const status = {};
-                const maxGames = 20; // All have 20 games
+                // For all categories, we have 20 games
+                const maxGames = 20;
                 for (let i = 0; i < maxGames; i++) {
                     const gameId = getGameIdByIndex(i);
                     if (gameId) {
@@ -316,7 +386,7 @@ const GameCategoryPage = () => {
         
         // Listen for game completion events
         const handleGameCompleted = () => {
-            if ((category === 'financial-literacy' || category === 'brain-health' || category === 'uvls') && (ageGroup === 'kids' || ageGroup === 'teens')) {
+            if ((category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'sustainability') && (ageGroup === 'kids' || ageGroup === 'teens' || ageGroup === 'solar-and-city' || ageGroup === 'water-and-recycle' || ageGroup === 'carbon-and-climate' || ageGroup === 'water-and-energy')) {
                 // Reload game completion status when a game is completed
                 loadGameCompletionStatus();
             }
@@ -328,7 +398,6 @@ const GameCategoryPage = () => {
             window.removeEventListener('gameCompleted', handleGameCompleted);
         };
     }, [category, ageGroup]);
-    
     // Generate mock games data
     const generateGamesData = () => {
         const games = [];
@@ -4356,6 +4425,9 @@ const GameCategoryPage = () => {
             
             // Add our real EHE Teen games
             games.push(...realEHETeenGames);
+        } else if (category === 'civic-responsibility' && ageGroup === 'teen') {
+            // Add our real CRGC Teen games
+            games.push(...realCRGCTeenGames);
         } else if (category === 'civic-responsibility' && ageGroup === 'kids') {
             // Add our 20 real CRGC Kids games
             const realCRGCKidsGames = [
@@ -4392,6 +4464,244 @@ const GameCategoryPage = () => {
                     title: 'Reflex Kindness',
                     description: 'Identify kind actions quickly',
                     icon: <Zap className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-3'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/reflex-kindness',
+                    index: 2
+                },
+                {
+                    id: 'crgc-kids-4',
+                    title: 'Kindness in Action',
+                    description: 'Practice kindness in real life',
+                    icon: <Hand className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-4'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/kindness-in-action',
+                    index: 3
+                },
+                {
+                    id: 'crgc-kids-5',
+                    title: 'Empathy in Stories',
+                    description: 'Find empathy in stories',
+                    icon: <Book className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-5'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/empathy-in-stories',
+                    index: 4
+                },
+                {
+                    id: 'crgc-kids-6',
+                    title: 'Kindness Challenge',
+                    description: 'Complete kindness challenges',
+                    icon: <Trophy className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-6'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/kindness-challenge',
+                    index: 5
+                },
+                {
+                    id: 'crgc-kids-7',
+                    title: 'Empathy Quiz',
+                    description: 'Test your empathy skills',
+                    icon: <QuestionMarkCircle className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-7'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/empathy-quiz',
+                    index: 6
+                },
+                {
+                    id: 'crgc-kids-8',
+                    title: 'Kindness Stories',
+                    description: 'Read stories about kindness',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-8'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/kindness-stories',
+                    index: 7
+                },
+                {
+                    id: 'crgc-kids-9',
+                    title: 'Empathy Role Play',
+                    description: 'Practice empathy in role play',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-9'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/empathy-role-play',
+                    index: 8
+                },
+                {
+                    id: 'crgc-kids-10',
+                    title: 'Kindness Journal',
+                    description: 'Write about kindness',
+                    icon: <Pencil className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-10'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/kindness-journal',
+                    index: 9
+                },
+                {
+                    id: 'crgc-kids-11',
+                    title: 'Empathy Scenarios',
+                    description: 'Identify empathy in scenarios',
+                    icon: <ClipboardList className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-11'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/empathy-scenarios',
+                    index: 10
+                },
+                {
+                    id: 'crgc-kids-12',
+                    title: 'Kindness Actions',
+                    description: 'List kind actions',
+                    icon: <List className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-12'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/kindness-actions',
+                    index: 11
+                },
+                {
+                    id: 'crgc-kids-13',
+                    title: 'Empathy Stories',
+                    description: 'Write empathy stories',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-13'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/empathy-stories',
+                    index: 12
+                },
+                {
+                    id: 'crgc-kids-14',
+                    title: 'Kindness Reflection',
+                    description: 'Reflect on kindness',
+                    icon: <Sparkles className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-14'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/kindness-reflection',
+                    index: 13
+                },
+                {
+                    id: 'crgc-kids-15',
+                    title: 'Empathy Role Play',
+                    description: 'Practice empathy in role play',
+                    icon: <Users className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-15'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/empathy-role-play',
+                    index: 14
+                },
+                {
+                    id: 'crgc-kids-16',
+                    title: 'Kindness Journal',
+                    description: 'Write about kindness',
+                    icon: <Pencil className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-16'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/kindness-journal',
+                    index: 15
+                },
+                {
+                    id: 'crgc-kids-17',
+                    title: 'Empathy Scenarios',
+                    description: 'Identify empathy in scenarios',
+                    icon: <ClipboardList className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-17'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/empathy-scenarios',
+                    index: 16
+                },
+                {
+                    id: 'crgc-kids-18',
+                    title: 'Kindness Actions',
+                    description: 'List kind actions',
+                    icon: <List className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-18'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/kindness-actions',
+                    index: 17
+                },
+                {
+                    id: 'crgc-kids-19',
+                    title: 'Empathy Stories',
+                    description: 'Write empathy stories',
+                    icon: <BookOpen className="w-6 h-6" />,
+                    difficulty: 'Easy',
+                    duration: '4-6 min',
+                    coins: 3,
+                    xp: 10,
+                    completed: gameCompletionStatus['crgc-kids-19'] || false,
+                    isSpecial: true,
+                    path: '/student/civic-responsibility/kids/empathy-stories',
+                    index: 18
+                },
+                {
+                    id: 'crgc-kids-20',
+                    title: 'Kindness Reflection',
+                    description: 'Reflect on kindness',
+                    icon: <Sparkles className="w-6 h-6" />,
                     difficulty: 'Easy',
                     duration: '4-6 min',
                     coins: 3,
@@ -4930,6 +5240,104 @@ const GameCategoryPage = () => {
             
             // Add our real CRGC Teen games
             games.push(...realCRGCTeenGames);
+        } else if (category === 'sustainability') {
+            // For sustainability, we need to check the ageGroup to determine which subcategory we're in
+            if (ageGroup === 'solar-and-city') {
+                const solarAndCityGames = [
+                    {
+                        id: 'sustainability-1',
+                        title: 'Solar & City Challenge',
+                        description: 'Learn about solar energy and sustainable cities',
+                        icon: <Sun className="w-6 h-6" />,
+                        difficulty: 'Easy',
+                        duration: '5 min',
+                        coins: 5,
+                        xp: 10,
+                        completed: gameCompletionStatus['sustainability-1'] || false,
+                        isSpecial: true,
+                        path: '/student/sustainability/solar-and-city/test-solar-game',
+                        index: 0
+                    }
+                    // Add more games here as they are created
+                ];
+                games.push(...solarAndCityGames);
+            } else if (ageGroup === 'water-and-recycle') {
+                const waterAndRecycleGames = [
+                    {
+                        id: 'sustainability-2',
+                        title: 'Water & Recycle Challenge',
+                        description: 'Learn about water conservation and recycling',
+                        icon: <Droplets className="w-6 h-6" />,
+                        difficulty: 'Easy',
+                        duration: '5 min',
+                        coins: 5,
+                        xp: 10,
+                        completed: gameCompletionStatus['sustainability-2'] || false,
+                        isSpecial: true,
+                        path: '/student/sustainability/water-and-recycle/test-water-recycle-game',
+                        index: 0
+                    }
+                    // Add more games here as they are created
+                ];
+                games.push(...waterAndRecycleGames);
+            } else if (ageGroup === 'carbon-and-climate') {
+                const carbonAndClimateGames = [
+                    {
+                        id: 'sustainability-3',
+                        title: 'Carbon & Climate Challenge',
+                        description: 'Learn about carbon footprints and climate change',
+                        icon: <Cloud className="w-6 h-6" />,
+                        difficulty: 'Medium',
+                        duration: '6 min',
+                        coins: 5,
+                        xp: 10,
+                        completed: gameCompletionStatus['sustainability-3'] || false,
+                        isSpecial: true,
+                        path: '/student/sustainability/carbon-and-climate/test-carbon-game',
+                        index: 0
+                    }
+                    // Add more games here as they are created
+                ];
+                games.push(...carbonAndClimateGames);
+            } else if (ageGroup === 'water-and-energy') {
+                const waterAndEnergyGames = [
+                    {
+                        id: 'sustainability-4',
+                        title: 'Water & Energy Challenge',
+                        description: 'Learn about the connection between water and energy',
+                        icon: <Zap className="w-6 h-6" />,
+                        difficulty: 'Medium',
+                        duration: '6 min',
+                        coins: 5,
+                        xp: 10,
+                        completed: gameCompletionStatus['sustainability-4'] || false,
+                        isSpecial: true,
+                        path: '/student/sustainability/water-and-energy/test-water-energy-game',
+                        index: 0
+                    }
+                    // Add more games here as they are created
+                ];
+                games.push(...waterAndEnergyGames);
+            } else {
+                // Default case if no specific ageGroup is matched
+                const defaultSustainabilityGames = [
+                    {
+                        id: 'sustainability-1',
+                        title: 'Solar & City Challenge',
+                        description: 'Learn about solar energy and sustainable cities',
+                        icon: <Leaf className="w-6 h-6" />,
+                        difficulty: 'Easy',
+                        duration: '5 min',
+                        coins: 5,
+                        xp: 10,
+                        completed: gameCompletionStatus['sustainability-1'] || false,
+                        isSpecial: true,
+                        path: '/student/sustainability/solar-and-city/test-solar-game',
+                        index: 0
+                    }
+                ];
+                games.push(...defaultSustainabilityGames);
+            }
         } else {
             // For all other categories, generate 20 mock games instead of 200
             for (let i = 1; i <= 20; i++) {
@@ -4942,16 +5350,85 @@ const GameCategoryPage = () => {
                     description: `An engaging ${difficulty.toLowerCase()} game that helps improve your skills in ${getCategoryTitle(category)}.`,
                     icon: icon,
                     difficulty: difficulty,
-                    duration: `${Math.floor(Math.random() * 10) + 5}-${Math.floor(Math.random() * 10) + 10} min`,
-                    coins: Math.floor(Math.random() * 50) + 20,
-                    xp: Math.floor(Math.random() * 30) + 10,
-                    completed: completedGames.has(`${ageGroup}-${i}`)
+                    duration: `${Math.floor(Math.random() * 10) + 1}-${Math.floor(Math.random() * 10) + 1} min`,
+                    coins: Math.floor(Math.random() * 10) + 1,
+                    xp: Math.floor(Math.random() * 10) + 1,
+                    completed: gameCompletionStatus[`${ageGroup}-${i}`] || false,
+                    isSpecial: false,
+                    path: `/student/${category}/${ageGroup}/game-${i}`,
+                    index: i - 1
                 });
             }
         }
         
         return games;
     };
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     const [games, setGames] = useState([]);
     
@@ -5117,7 +5594,7 @@ const GameCategoryPage = () => {
                             <span className="text-gray-600 font-medium">Completed</span>
                         </div>
                         <p className="text-2xl font-bold text-gray-900">
-                            {(category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')
+                            {(category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility' || category === 'sustainability') && (ageGroup === 'kids' || ageGroup === 'teens')
                                 ? Object.values(gameCompletionStatus).filter(status => status).length 
                                 : completedGames.size}
                         </p>
@@ -5129,7 +5606,7 @@ const GameCategoryPage = () => {
                             <span className="text-gray-600 font-medium">Coins Earned</span>
                         </div>
                         <p className="text-2xl font-bold text-gray-900">
-                            {(category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')
+                            {(category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility' || category === 'sustainability') && (ageGroup === 'kids' || ageGroup === 'teens')
                                 ? Object.values(gameCompletionStatus).filter(status => status).length * 3
                                 : completedGames.size * 3}
                         </p>
@@ -5141,7 +5618,7 @@ const GameCategoryPage = () => {
                             <span className="text-gray-600 font-medium">XP Gained</span>
                         </div>
                         <p className="text-2xl font-bold text-gray-900">
-                            {(category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')
+                            {(category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility' || category === 'sustainability') && (ageGroup === 'kids' || ageGroup === 'teens')
                                 ? Object.values(gameCompletionStatus).filter(status => status).length * 20
                                 : completedGames.size * 20}
                         </p>
@@ -5156,10 +5633,10 @@ const GameCategoryPage = () => {
                     className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
                 >
                     {games.map((game, index) => {
-                        const isUnlocked = (category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')
+                        const isUnlocked = (category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility' || category === 'sustainability') && (ageGroup === 'kids' || ageGroup === 'teens')
                             ? isGameUnlocked(index) 
                             : true;
-                        const isFullyCompleted = (category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility') && (ageGroup === 'kids' || ageGroup === 'teens')
+                        const isFullyCompleted = (category === 'financial-literacy' || category === 'brain-health' || category === 'uvls' || category === 'digital-citizenship' || category === 'moral-values' || category === 'ai-for-all' || category === 'entrepreneurship' || category === 'civic-responsibility' || category === 'sustainability') && (ageGroup === 'kids' || ageGroup === 'teens')
                             ? isGameFullyCompleted(game.id)
                             : false;
                         const isLocked = isFullyCompleted || (!isUnlocked);

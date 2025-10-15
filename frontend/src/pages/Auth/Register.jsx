@@ -162,7 +162,8 @@ const Register = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
+        // Changed from min-h-screen to h-screen to ensure exact screen height
+        <div className="h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
             {/* Animated Background Elements */}
             <motion.div
                 className="absolute inset-0 overflow-hidden"
@@ -218,8 +219,8 @@ const Register = () => {
                 ))}
             </motion.div>
 
-            {/* Main Content */}
-            <div className="relative z-10 min-h-screen flex items-center justify-center px-4 sm:px-6 lg:px-8 py-12">
+            {/* Main Content - Changed to use flex to fill entire screen */}
+            <div className="relative z-10 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
                 {/* Back to Homepage Button */}
                 <button
                     onClick={() => navigate("/")}
@@ -492,16 +493,6 @@ const Register = () => {
                                 </motion.button>
                             </p>
                         </motion.div>
-                    </motion.div>
-
-                    {/* Footer */}
-                    <motion.div
-                        className="text-center mt-8"
-                        variants={itemVariants}
-                    >
-                        <p className="text-gray-400 text-xs">
-                            By creating an account, you agree to our Terms of Service
-                        </p>
                     </motion.div>
                 </motion.div>
             </div>

@@ -50,12 +50,12 @@ const AutoSlidingCards = () => {
     {
       title: "For Parents",
       content: [
-        "Progress You Can See – Beyond marks, track growth in skills & values.",
+        "Progress You Can See – Beyond marks, track growth in skills.",
         "Peace of Mind – Tools for resilience, safety, and well-being.",
         "Beyond Textbooks – Education that shapes character and confidence.",
         "Partnership – Parents play an active role in their child's journey.",
       ],
-      color: "from-purple-500 to-pink-500",
+      color: "from-rose-500 to-red-500",
       icon: "👨‍👩‍👧",
     },
     {
@@ -71,7 +71,7 @@ const AutoSlidingCards = () => {
       icon: "👩‍🏫",
     },
     {
-      title: "For Schools & Academic Institutions",
+      title: "For Schools & Institutions",
       content: [
         "Holistic Edge – Differentiate with life skills beyond academics.",
         "Future-Ready Reputation – Position as pioneers of new education.",
@@ -133,13 +133,13 @@ const AutoSlidingCards = () => {
                       : "translate-x-[-50%] translate-y-[-50%] scale-50 z-0 opacity-0"
                 }`}
               style={{
-                width: "450px",
+                width: "550px",
                 maxWidth: "90vw",
               }}
             >
               <div
                 className={`bg-gradient-to-br ${card.color
-                  } rounded-3xl p-8 text-white shadow-2xl h-[480px] flex flex-col relative overflow-hidden transition-transform duration-300 ${position === "center" ? "hover:scale-105" : ""
+                  } rounded-3xl p-8 text-white shadow-2xl h-[500px] sm:h-[400px] flex flex-col relative overflow-hidden transition-transform duration-300 ${position === "center" ? "hover:scale-105" : ""
                   }`}
               >
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
@@ -151,7 +151,7 @@ const AutoSlidingCards = () => {
                   <div className="space-y-3 flex-1">
                     {card.content.map((item, i) => (
                       <div key={i} className="flex items-start">
-                        <span className="text-white text-sm leading-relaxed">
+                        <span className="text-white font-medium text-sm leading-relaxed">
                           • {item}
                         </span>
                       </div>
@@ -703,27 +703,22 @@ const LandingPage = () => {
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center"
             >
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleGetStartedClick}
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-2xl font-semibold text-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-all relative z-10"
+                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-2xl font-semibold text-lg flex items-center gap-2 shadow-lg hover:shadow-xl transition-all relative z-10 cursor-pointer"
               >
                 Get Started
                 <ArrowRight className="w-5 h-5" />
               </motion.button>
               
             </motion.div>
-              <p className="text-sm italic mt-2">
-              Holistic & Futuristic Education for Every Student
-            </p>
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.4 }}
               className="flex justify-center items-center mt-8 w-full max-w-3xl mx-auto rounded-full"
             >
               <motion.img
@@ -771,12 +766,6 @@ const LandingPage = () => {
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{
-                  delay: index * 0.06,
-                  type: "spring",
-                  stiffness: 260,
-                  damping: 18,
-                }}
                 whileHover={{ scale: 1.03, y: -2 }}
                 className="group rounded-2xl relative overflow-hidden cursor-pointer"
                 onClick={() => openModal(feature)}

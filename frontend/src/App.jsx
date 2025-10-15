@@ -403,6 +403,10 @@ import SimulationSchoolEvent from "./pages/Student/CRGC/Teen/SimulationSchoolEve
 import ReflexTeenInclusionCRGC from "./pages/Student/CRGC/Teen/ReflexTeenInclusion";
 import BadgeInclusionLeader from "./pages/Student/CRGC/Teen/BadgeInclusionLeader";
 
+import TestSolarGame from "./pages/Student/Sustainability/SolarAndCity/TestSolarGame";
+import TestWaterRecycleGame from "./pages/Student/Sustainability/WaterAndRecycle/TestWaterRecycleGame";
+import TestCarbonGame from "./pages/Student/Sustainability/CarbonAndClimate/TestCarbonGame";
+import TestWaterEnergyGame from "./pages/Student/Sustainability/WaterAndEnergy/TestWaterEnergyGame";
 
 // Admin Pages
 import AdminPanel from "./pages/Admin/AdminPanel";
@@ -1025,6 +1029,11 @@ const App = () => {
           <Route path="/student/civic-responsibility/teen/reflex-teen-inclusion" element={<ProtectedRoute roles={['student']}><ReflexTeenInclusionCRGC /></ProtectedRoute>} />
           <Route path="/student/civic-responsibility/teen/badge-inclusion-leader" element={<ProtectedRoute roles={['student']}><BadgeInclusionLeader /></ProtectedRoute>} />
 
+          {/* Sustainability Games */}
+          <Route path="/student/sustainability/solar-and-city/test-solar-game" element={<ProtectedRoute roles={['student']}><TestSolarGame /></ProtectedRoute>} />
+          <Route path="/student/sustainability/water-and-recycle/test-water-recycle-game" element={<ProtectedRoute roles={['student']}><TestWaterRecycleGame /></ProtectedRoute>} />
+          <Route path="/student/sustainability/carbon-and-climate/test-carbon-game" element={<ProtectedRoute roles={['student']}><TestCarbonGame /></ProtectedRoute>} />
+          <Route path="/student/sustainability/water-and-energy/test-water-energy-game" element={<ProtectedRoute roles={['student']}><TestWaterEnergyGame /></ProtectedRoute>} />
 
           {/* Admin Routes */}
           <Route path="/admin/panel" element={<ProtectedRoute roles={['admin']}><AdminPanel /></ProtectedRoute>} />

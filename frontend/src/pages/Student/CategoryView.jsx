@@ -33,6 +33,7 @@ export default function CategoryView() {
         { key: "competition", label: "Health - Female", color: "from-red-500 to-orange-500" },
         { key: "rewards", label: "Entrepreneurship & Higher Education", color: "from-lime-500 to-green-500" },
         { key: "shopping", label: "Civic Responsibility & Global Citizenship", color: "from-fuchsia-500 to-purple-500" },
+        { key: "sustainability", label: "Sustainability", color: "from-green-500 to-emerald-500" },
         { key: "challenges", label: "Challenges", color: "from-violet-500 to-purple-500" },
     ];
 
@@ -48,10 +49,57 @@ export default function CategoryView() {
         if (category) {
             setCategoryInfo(category);
             
-            // Filter cards by category
-            const filtered = mockFeatures.filter((card) => card.category === category.key);
-            
-            setFeatureCards(filtered);
+            // Special handling for Sustainability category
+            if (category.key === 'sustainability') {
+                // Create specific game cards for Sustainability
+                const sustainabilityCards = [
+                    {
+                        id: 'sustainability-1',
+                        title: 'Solar & City Games',
+                        description: 'Learn about solar energy and sustainable cities',
+                        icon: '☀️',
+                        path: '/games/sustainability/solar-and-city',
+                        color: 'bg-yellow-500',
+                        category: 'sustainability',
+                        xpReward: 45
+                    },
+                    {
+                        id: 'sustainability-2',
+                        title: 'Water & Recycle Games',
+                        description: 'Learn about water conservation and recycling',
+                        icon: '💧',
+                        path: '/games/sustainability/water-and-recycle',
+                        color: 'bg-blue-500',
+                        category: 'sustainability',
+                        xpReward: 45
+                    },
+                    {
+                        id: 'sustainability-3',
+                        title: 'Carbon & Climate Games',
+                        description: 'Learn about carbon footprints and climate change',
+                        icon: '🌍',
+                        path: '/games/sustainability/carbon-and-climate',
+                        color: 'bg-gray-500',
+                        category: 'sustainability',
+                        xpReward: 45
+                    },
+                    {
+                        id: 'sustainability-4',
+                        title: 'Water & Energy Games',
+                        description: 'Learn about the connection between water and energy',
+                        icon: '⚡',
+                        path: '/games/sustainability/water-and-energy',
+                        color: 'bg-green-500',
+                        category: 'sustainability',
+                        xpReward: 45
+                    }
+                ];
+                setFeatureCards(sustainabilityCards);
+            } else {
+                // Filter cards by category for other categories
+                const filtered = mockFeatures.filter((card) => card.category === category.key);
+                setFeatureCards(filtered);
+            }
         } else {
             // Invalid category, redirect to dashboard
             navigate('/student/dashboard');

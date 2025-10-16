@@ -7,9 +7,9 @@ import { useSocket } from "../context/SocketContext";
 import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import Avatar from "./Avatar";
-import { 
-    Bell, 
-    Wallet, 
+import {
+    Bell,
+    Wallet,
     ChevronDown,
     Settings,
     User,
@@ -141,7 +141,7 @@ const Navbar = () => {
                 setUnreadCount(0);
                 return;
             }
-            
+
             try {
                 const response = await api.get('/api/notifications/unread-count');
                 if (response.status === 200) setUnreadCount(response.data.count || 0);
@@ -153,14 +153,14 @@ const Navbar = () => {
                 setUnreadCount(0);
             }
         };
-        
+
         // Only fetch if user exists
         if (user) {
             fetchUnreadCount();
         } else {
             setUnreadCount(0);
         }
-        
+
         if (socket?.socket && user) {
             socket.socket.on('student:notifications:update', fetchUnreadCount);
             return () => socket.socket.off('student:notifications:update', fetchUnreadCount);
@@ -169,12 +169,12 @@ const Navbar = () => {
 
     return (
         <>
-            <header className="w-full bg-white shadow-lg sticky top-0 z-50 border-b-4 border-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
+            <header className="w-full bg-white shadow-lg sticky top-0 z-50">
                 {/* Subtle gradient border at bottom */}
-                <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
-                
+                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
+
                 <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative">
-                    <div className="flex items-center justify-between gap-4 h-16 sm:h-20">
+                    <div className="flex items-center justify-between sm:gap-4 gap-0 h-16 sm:h-20">
                         {/* Logo/Brand */}
                         <motion.div
                             className="flex-shrink-0 flex items-center cursor-pointer"
@@ -182,7 +182,7 @@ const Navbar = () => {
                             whileHover={{ scale: 1.05, rotate: 2 }}
                             whileTap={{ scale: 0.95 }}
                         >
-                            <motion.div 
+                            <motion.div
                                 className="w-10 h-10 sm:w-11 sm:h-11 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg"
                                 animate={{
                                     boxShadow: [
@@ -193,10 +193,10 @@ const Navbar = () => {
                                 }}
                                 transition={{ duration: 3, repeat: Infinity }}
                             >
-                                <Zap className="w-5 h-5 sm:w-6 sm:h-6" />
+                                <Zap className="w-4 h-4 sm:w-6 sm:h-6" />
                             </motion.div>
-                            <div className="ml-2 sm:ml-3">
-                                <h1 className="text-lg sm:text-xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight">WiseStudent</h1>
+                            <div className="ml-0 sm:ml-3">
+                                <h1 className="hidden lg:block text-lg sm:text-xl font-black bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent tracking-tight">WiseStudent</h1>
                                 <p className="hidden lg:block text-xs text-gray-600 font-semibold">{getDashboardLabel()}</p>
                             </div>
                         </motion.div>
@@ -207,8 +207,8 @@ const Navbar = () => {
                                 <motion.button
                                     key={index}
                                     onClick={item.onClick}
-                                    className="flex items-center gap-1.5 px-2.5 lg:px-3 xl:px-4 py-2 rounded-lg text-xs lg:text-sm font-semibold text-gray-700 hover:text-white bg-gray-100 hover:bg-gradient-to-r hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 border-2 border-gray-200 hover:border-transparent transition-all duration-200 shadow-sm hover:shadow-md"
-                                    whileHover={{ scale: 1.03, y: -1 }}
+                                    className="flex items-center gap-1.5 px-2.5 lg:px-3 xl:px-4 py-2 rounded-lg text-xs lg:text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 duration-200 shadow-md hover:shadow-lg cursor-pointer"
+                                    whileHover={{ scale: 1.03 }}
                                     whileTap={{ scale: 0.97 }}
                                 >
                                     <div className="w-4 h-4 lg:w-4.5 lg:h-4.5">{item.icon}</div>
@@ -224,7 +224,7 @@ const Navbar = () => {
                                 <>
                                     {user.role === "student" && (
                                         <motion.button
-                                            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 border-2 border-yellow-500"
+                                            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 border-2 border-yellow-500 cursor-pointer"
                                             whileHover={{ scale: 1.03 }}
                                             whileTap={{ scale: 0.97 }}
                                             onClick={() => navigate("/student/wallet")}
@@ -237,14 +237,14 @@ const Navbar = () => {
 
                                     {(user.role === "student" || user.role === "admin") && (
                                         <motion.button
-                                            className="relative p-2 sm:p-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md"
+                                            className="relative p-2 sm:p-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
                                             whileHover={{ scale: 1.08, rotate: -10 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={() => navigate(`/${user.role}/notifications`)}
                                         >
                                             <Bell className="w-5 h-5" />
                                             {unreadCount > 0 && (
-                                                <motion.span 
+                                                <motion.span
                                                     className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg border-2 border-white"
                                                     animate={{ scale: [1, 1.2, 1] }}
                                                     transition={{ duration: 2, repeat: Infinity }}
@@ -258,7 +258,7 @@ const Navbar = () => {
                                     {/* Profile Menu */}
                                     <div className="relative" ref={profileMenuRef}>
                                         <motion.button
-                                            className="flex items-center gap-2 px-2.5 sm:px-3 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 transition-all duration-200 shadow-sm hover:shadow-md"
+                                            className="flex items-center gap-2 px-2.5 sm:px-3 py-1 rounded-lg bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 transition-all duration-200 shadow-md hover:shadow-lg cursor-pointer"
                                             onClick={(e) => {
                                                 e.stopPropagation();
                                                 setShowProfileMenu(!showProfileMenu);
@@ -272,7 +272,7 @@ const Navbar = () => {
                                                     size="small"
                                                     className=""
                                                 />
-                                                <motion.div 
+                                                <motion.div
                                                     className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 border-2 border-white rounded-full shadow-lg"
                                                     animate={{ scale: [1, 1.3, 1] }}
                                                     transition={{ duration: 2, repeat: Infinity }}
@@ -305,19 +305,19 @@ const Navbar = () => {
                                                                 <p className="text-xs text-gray-600 truncate">{user.email}</p>
                                                             </div>
                                                         </div>
-                                                        <motion.span 
+                                                        <motion.span
                                                             className="inline-block text-xs font-bold px-3 py-1.5 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-full shadow-lg"
                                                             whileHover={{ scale: 1.05 }}
                                                         >
-                                                            {user.role === "student" ? "🎓 Student Account" : 
-                                                             user.role === "parent" ? "👨‍👩‍👧 Parent Account" :
-                                                             user.role === "seller" ? "🛍️ Seller Account" :
-                                                             user.role === "csr" ? "🤝 CSR Account" :
-                                                             user.role === "school_admin" ? "🏫 School Admin Account" :
-                                                             user.role === "school_teacher" ? "👨‍🏫 Teacher Account" :
-                                                             user.role === "school_student" ? "📚 Student Account" :
-                                                             user.role === "school_parent" ? "👪 Parent Account" :
-                                                             "⚡ Admin Account"}
+                                                            {user.role === "student" ? "🎓 Student Account" :
+                                                                user.role === "parent" ? "👨‍👩‍👧 Parent Account" :
+                                                                    user.role === "seller" ? "🛍️ Seller Account" :
+                                                                        user.role === "csr" ? "🤝 CSR Account" :
+                                                                            user.role === "school_admin" ? "🏫 School Admin Account" :
+                                                                                user.role === "school_teacher" ? "👨‍🏫 Teacher Account" :
+                                                                                    user.role === "school_student" ? "📚 Student Account" :
+                                                                                        user.role === "school_parent" ? "👪 Parent Account" :
+                                                                                            "⚡ Admin Account"}
                                                         </motion.span>
                                                     </div>
                                                     {profileMenuItems.map((item, index) => (
@@ -327,11 +327,10 @@ const Navbar = () => {
                                                                 item.onClick();
                                                                 setShowProfileMenu(false);
                                                             }}
-                                                            className={`w-full flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-3.5 text-sm font-semibold transition-all duration-200 ${
-                                                                item.danger
+                                                            className={`w-full flex items-center gap-3 px-4 sm:px-5 py-3 sm:py-3.5 text-sm font-semibold transition-all duration-200 ${item.danger
                                                                     ? 'text-red-600 hover:bg-gradient-to-r hover:from-red-50 hover:to-pink-50'
                                                                     : 'text-gray-700 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50'
-                                                            }`}
+                                                                }`}
                                                             whileHover={{ x: 5, scale: 1.02 }}
                                                         >
                                                             {item.icon}
@@ -394,8 +393,6 @@ const Navbar = () => {
                     )}
                 </AnimatePresence>
             </header>
-
-
         </>
     );
 };

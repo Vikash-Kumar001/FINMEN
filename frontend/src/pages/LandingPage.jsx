@@ -125,12 +125,12 @@ const AutoSlidingCards = () => {
             <div
               key={index}
               className={`absolute top-1/2 left-1/2 transition-all duration-700 ease-out ${position === "center"
-                  ? "translate-x-[-50%] translate-y-[-50%] scale-100 z-30 opacity-100"
-                  : position === "right"
-                    ? "translate-x-[20%] translate-y-[-50%] scale-75 z-10 opacity-60"
-                    : position === "left"
-                      ? "translate-x-[-120%] translate-y-[-50%] scale-75 z-10 opacity-60"
-                      : "translate-x-[-50%] translate-y-[-50%] scale-50 z-0 opacity-0"
+                ? "translate-x-[-50%] translate-y-[-50%] scale-100 z-30 opacity-100"
+                : position === "right"
+                  ? "translate-x-[20%] translate-y-[-50%] scale-75 z-10 opacity-60"
+                  : position === "left"
+                    ? "translate-x-[-120%] translate-y-[-50%] scale-75 z-10 opacity-60"
+                    : "translate-x-[-50%] translate-y-[-50%] scale-50 z-0 opacity-0"
                 }`}
               style={{
                 width: "550px",
@@ -170,8 +170,8 @@ const AutoSlidingCards = () => {
             key={index}
             onClick={() => handleDotClick(index)}
             className={`transition-all duration-300 rounded-full ${index === currentIndex
-                ? "w-10 h-3 bg-gradient-to-r from-blue-600 to-purple-600"
-                : "w-3 h-3 bg-gray-300 hover:bg-gray-400"
+              ? "w-10 h-3 bg-gradient-to-r from-blue-600 to-purple-600"
+              : "w-3 h-3 bg-gray-300 hover:bg-gray-400"
               }`}
             aria-label={`Go to slide ${index + 1}`}
           />
@@ -430,7 +430,7 @@ const LandingPage = () => {
         whyItMatters: [
           "Shapes responsible, globally aware citizens who contribute to society and respect diversity",
           "Builds socially responsible citizens who contribute positively to their communities"
-        
+
         ],
         nationalAlignment: [
           "NSS",
@@ -471,15 +471,6 @@ const LandingPage = () => {
 
   const userTypes = [
     {
-      title: "Educational Institution",
-      description:
-        "Schools looking for comprehensive management solutions",
-      icon: <Building className="w-12 h-12" />,
-      color: "from-blue-500 to-cyan-500",
-      action: () => navigate("/school-registration"),
-      buttonText: "Join as School",
-    },
-    {
       title: "Individual Students",
       description:
         "Students wanting to access mental wellness and learning tools",
@@ -487,6 +478,15 @@ const LandingPage = () => {
       color: "from-purple-500 to-pink-500",
       action: () => navigate("/register"),
       buttonText: "Join as Student",
+    },
+    {
+      title: "Educational Institution",
+      description:
+        "Schools looking for comprehensive management solutions",
+      icon: <Building className="w-12 h-12" />,
+      color: "from-blue-500 to-cyan-500",
+      action: () => navigate("/school-registration"),
+      buttonText: "Join as School",
     },
     {
       title: "Mentors & Guides",
@@ -579,7 +579,7 @@ const LandingPage = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
       {/* Navbar */}
-      <MainNavbar 
+      <MainNavbar
         handlePillarsClick={handlePillarsClick}
         handleWhyChooseClick={handleWhyChooseClick}
         handlePricingClick={handlePricingClick}
@@ -595,7 +595,7 @@ const LandingPage = () => {
           <div className="bg-white rounded-3xl max-w-6xl w-full max-h-[90vh] overflow-y-auto transform transition-all duration-300 ease-out animate-pop-in">
             <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-purple-600 rounded-t-3xl border-b border-gray-200 p-4 flex justify-between items-center">
               <h3 className="text-2xl font-bold text-white">{selectedFeature.title}</h3>
-              <button 
+              <button
                 onClick={closeModal}
                 className="w-10 h-10 rounded-full bg-white/20 hover:bg-white/30 flex items-center justify-center transition-all duration-200 backdrop-blur-sm"
               >
@@ -699,7 +699,7 @@ const LandingPage = () => {
               balance, resilience, and future-ready skills. Our Platform raises
               students who are not just exam-ready, but life-ready.
             </motion.p>
-            
+
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -714,7 +714,7 @@ const LandingPage = () => {
                 Get Started
                 <ArrowRight className="w-5 h-5" />
               </motion.button>
-              
+
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 20 }}

@@ -1,18 +1,18 @@
 import React from "react";
 // Remove unused motion import
-import { 
-  Mail, 
-  Phone, 
-  MapPin, 
-  Facebook, 
-  Twitter, 
-  Instagram, 
+import {
+  Mail,
+  Phone,
+  MapPin,
+  Facebook,
+  Twitter,
+  Instagram,
   Linkedin,
-  ArrowUp
+  ArrowUp,
 } from "lucide-react";
 
 const MainFooter = () => {
-  const [email, setEmail] = React.useState('');
+  const [email, setEmail] = React.useState("");
   const [isVisible, setIsVisible] = React.useState(false);
 
   // Remove unused services array
@@ -27,16 +27,36 @@ const MainFooter = () => {
   ];
 
   const socialLinks = [
-    { name: "Facebook", href: "https://facebook.com", icon: Facebook, color: "hover:bg-blue-600" },
-    { name: "Twitter", href: "https://twitter.com", icon: Twitter, color: "hover:bg-sky-500" },
-    { name: "Instagram", href: "https://instagram.com", icon: Instagram, color: "hover:bg-pink-600" },
-    { name: "LinkedIn", href: "https://linkedin.com", icon: Linkedin, color: "hover:bg-blue-700" },
+    {
+      name: "Facebook",
+      href: "https://facebook.com",
+      icon: Facebook,
+      color: "hover:bg-blue-600",
+    },
+    {
+      name: "Twitter",
+      href: "https://twitter.com",
+      icon: Twitter,
+      color: "hover:bg-sky-500",
+    },
+    {
+      name: "Instagram",
+      href: "https://instagram.com",
+      icon: Instagram,
+      color: "hover:bg-pink-600",
+    },
+    {
+      name: "LinkedIn",
+      href: "https://linkedin.com",
+      icon: Linkedin,
+      color: "hover:bg-blue-700",
+    },
   ];
 
   const handleSubscribe = () => {
     if (email) {
       console.log("Subscribing email:", email);
-      setEmail('');
+      setEmail("");
     }
   };
 
@@ -203,8 +223,9 @@ const MainFooter = () => {
           <div className="pt-8 border-t border-gray-200">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-sm text-gray-600">
-                © 2025 Wise Student. All rights reserved.
+                © {new Date().getFullYear()} Wise Student. All rights reserved.
               </p>
+
               <div className="flex items-center gap-6">
                 <a
                   href="/terms"
@@ -238,7 +259,7 @@ const MainFooter = () => {
       {isVisible && (
         <button
           onClick={handleBackToTop}
-          className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-full shadow-lg hover:shadow-xl transition-all z-50"
+          className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-full shadow-lg hover:shadow-xl transition-all z-50 border-1 border-white/40 cursor-pointer hover:scale-105 duration-200 ease-in-out"
           aria-label="Back to Top"
         >
           <ArrowUp className="w-5 h-5" />
@@ -249,4 +270,3 @@ const MainFooter = () => {
 };
 
 export default MainFooter;
-

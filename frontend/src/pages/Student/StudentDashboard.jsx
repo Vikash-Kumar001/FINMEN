@@ -612,7 +612,7 @@ export default function StudentDashboard() {
                         animate={{ opacity: 1, y: 0 }}
                         className="py-10"
                     >
-                        <div className="flex flex-wrap gap-3 justify-center">
+                        <div className="flex flex-wrap gap-2 justify-center">
                             {categories.map((category, index) => {
                                 const colorClasses = [
                                     'from-purple-500 to-pink-500',
@@ -659,7 +659,7 @@ export default function StudentDashboard() {
                             whileTap={{ scale: 0.95 }}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
-                                        className={`bg-gradient-to-r ${gradientColors} text-white px-6 py-4 rounded-full font-bold text-sm shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden group`}
+                                        className={`bg-gradient-to-r ${gradientColors} cursor-pointer text-white px-6 py-4 rounded-full font-bold text-sm shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden group`}
                                     >
                                         {/* Shine effect on hover */}
                                         <motion.div
@@ -696,9 +696,9 @@ export default function StudentDashboard() {
                     initial={{ opacity: 0, scale: 0.95 }}
                     animate={{ opacity: 1, scale: 1 }}
                     transition={{ duration: 0.6 }}
-                    className="bg-white/95 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/50 mb-8 relative overflow-hidden"
+                    className="bg-white/95 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/50 mb-8 relative"
                 >
-                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/8 via-purple-500/8 to-pink-500/8" />
+                    <div className="absolute inset-0 bg-gradient-to-r rounded-3xl from-blue-500/8 via-purple-500/8 to-pink-500/8" />
 
                     {loading ? (
                         <div className="relative z-10 animate-pulse">
@@ -816,7 +816,7 @@ export default function StudentDashboard() {
                                 {achievements.map((achievement, i) => (
                                     <motion.div
                                         key={i}
-                                        whileHover={{ scale: 1.1, y: -2 }}
+                                        whileHover={{ scale: 1.1 }}
                                         whileTap={{ scale: 0.95 }}
                                         className="bg-gradient-to-r from-yellow-400 to-orange-400 p-3 rounded-xl shadow-lg cursor-pointer group relative border border-yellow-300"
                                         onClick={() => {
@@ -1197,7 +1197,7 @@ export default function StudentDashboard() {
                         transition={{ duration: 0.6, delay: 0.3 }}
                         className="py-20"
                     >
-                        <div className="flex flex-wrap gap-4 justify-center">
+                        <div className="grid grid-cols-2 md:grid-cols-4 sm:gap-4 gap-2 justify-center">
                             {/* Daily Check-in */}
                             <motion.button
                                 whileHover={{ scale: 1.05, rotate: dailyActions.dailyCheckIn ? 0 : 2 }}
@@ -1208,16 +1208,16 @@ export default function StudentDashboard() {
                                         handleNavigate('/student/mood-tracker', 'Daily Check-in');
                                     }
                                 }}
-                                className={`relative overflow-hidden rounded-2xl p-6 min-w-[200px] shadow-xl transition-all ${
+                                className={`relative overflow-hidden rounded-2xl p-6 shadow-xl transition-all ${
                                     dailyActions.dailyCheckIn 
                                         ? 'bg-gradient-to-br from-green-400 to-emerald-500' 
                                         : 'bg-gradient-to-br from-blue-400 to-cyan-500'
                                 }`}
                             >
                                 <motion.div
-                                    className="absolute top-0 right-0 w-20 h-20 bg-white/20 rounded-full blur-2xl"
-                                    animate={{ scale: [1, 1.5, 1] }}
-                                    transition={{ duration: 3, repeat: Infinity }}
+                                    className="absolute top-0 right-0 w-full h-full bg-white/10"
+                                    animate={{ rotate: [0, 360] }}
+                                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                                 />
                                 <div className="relative z-10">
                                     <div className="flex items-center justify-between mb-2">
@@ -1236,16 +1236,16 @@ export default function StudentDashboard() {
                                 whileHover={{ scale: 1.05, rotate: dailyActions.missionStarted ? 0 : -2 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleNavigate('/student/daily-challenges', 'Start Mission')}
-                                className={`relative overflow-hidden rounded-2xl p-6 min-w-[200px] shadow-xl transition-all ${
+                                className={`relative overflow-hidden rounded-2xl p-6 shadow-xl transition-all ${
                                     dailyActions.missionStarted 
                                         ? 'bg-gradient-to-br from-purple-400 to-violet-500' 
                                         : 'bg-gradient-to-br from-orange-400 to-red-500'
                                 }`}
                             >
                                 <motion.div
-                                    className="absolute bottom-0 left-0 w-20 h-20 bg-white/20 rounded-full blur-2xl"
-                                    animate={{ scale: [1, 1.3, 1] }}
-                                    transition={{ duration: 2.5, repeat: Infinity, delay: 0.5 }}
+                                    className="absolute top-0 right-0 w-full h-full bg-white/10"
+                                    animate={{ rotate: [0, 360] }}
+                                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                                 />
                                 <div className="relative z-10">
                                     <div className="flex items-center justify-between mb-2">
@@ -1264,16 +1264,16 @@ export default function StudentDashboard() {
                                 whileHover={{ scale: 1.05, rotate: dailyActions.quizCompleted ? 0 : 2 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleNavigate('/student/dashboard/quick-quiz', 'Quick Quiz')}
-                                className={`relative overflow-hidden rounded-2xl p-6 min-w-[200px] shadow-xl transition-all ${
+                                className={`relative overflow-hidden rounded-2xl p-6 shadow-xl transition-all ${
                                     dailyActions.quizCompleted 
                                         ? 'bg-gradient-to-br from-yellow-400 to-amber-500' 
                                         : 'bg-gradient-to-br from-pink-400 to-rose-500'
                                 }`}
                             >
                                 <motion.div
-                                    className="absolute top-0 left-1/2 w-20 h-20 bg-white/20 rounded-full blur-2xl"
-                                    animate={{ y: [0, -10, 0] }}
-                                    transition={{ duration: 2, repeat: Infinity, delay: 1 }}
+                                    className="absolute top-0 right-0 w-full h-full bg-white/10"
+                                    animate={{ rotate: [0, 360] }}
+                                    transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
                                 />
                                 <div className="relative z-10">
                                     <div className="flex items-center justify-between mb-2">
@@ -1292,7 +1292,7 @@ export default function StudentDashboard() {
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
                                 onClick={() => handleNavigate('/student/notifications', 'Inbox')}
-                                className="relative overflow-hidden bg-gradient-to-br from-indigo-400 to-blue-500 rounded-2xl p-6 min-w-[200px] shadow-xl"
+                                className="relative overflow-hidden bg-gradient-to-br from-indigo-400 to-blue-500 rounded-2xl p-6 shadow-xl"
                             >
                                 <motion.div
                                     className="absolute top-0 right-0 w-full h-full bg-white/10"
@@ -1336,7 +1336,7 @@ export default function StudentDashboard() {
                             <p className="text-gray-600 font-medium">Master all skills and unlock your potential!</p>
                         </div>
                         
-                        <div className="flex flex-wrap gap-8 justify-center">
+                        <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 sm:gap-8 justify-center">
                             {pillarMastery.pillars.map((pillar, index) => {
                                 const colorSchemes = [
                                     { 
@@ -1422,19 +1422,18 @@ export default function StudentDashboard() {
                                         transition={{ 
                                             type: "spring",
                                             stiffness: 150,
-                                            damping: 12,
-                                            delay: index * 0.08
+                                            damping: 12
                                         }}
                                         whileHover={{ 
                                             scale: 1.08, 
                                             y: -5,
                                             transition: { duration: 0.2 }
                                         }}
-                                        className="relative group cursor-pointer"
+                                        className="sm:w-auto w-full relative group cursor-pointer"
                                     >
                                         {/* 3D Card Container */}
                                         <div 
-                                            className={`relative bg-gradient-to-br ${colorScheme.bg} -z-10 rounded-3xl p-6 shadow-xl ${colorScheme.shadow} transition-all duration-300 group-hover:shadow-2xl`}
+                                            className={`relative bg-gradient-to-br ${colorScheme.bg} -z-10 rounded-3xl sm:p-6 p-3 shadow-xl ${colorScheme.shadow} transition-all duration-300 group-hover:shadow-2xl`}
                                             style={{
                                                 boxShadow: `0 10px 30px -10px ${colorScheme.glow}`
                                             }}
@@ -1527,8 +1526,6 @@ export default function StudentDashboard() {
                                                 </p>
                                             </motion.div>
                                             
-                                            
-                                            
                                             {/* Hover Tooltip */}
                                             <div className="absolute -bottom-16 left-1/2 transform -translate-x-1/2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs rounded-xl px-4 py-3 whitespace-nowrap z-50 shadow-2xl pointer-events-none">
                                                 <div className="font-bold mb-1">{pillar.pillar}</div>
@@ -1569,16 +1566,16 @@ export default function StudentDashboard() {
                                 Activity Heatmap
                             </span>
                         </h2>
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto sm:overflow-hidden">
                             <div className="min-w-[600px]">
                                 {activityHeatmap.heatmapData.map((day, dayIndex) => (
-                                    <div key={dayIndex} className="flex items-center gap-2 mb-2">
+                                    <div key={dayIndex} className="flex items-center justify-none sm:justify-start gap-10 sm:gap-32 mb-1">
                                         <span className="text-xs font-bold text-gray-600 w-12">{day.day}</span>
                                         <div className="flex gap-1 flex-1">
                                             {day.hours.map((count, hourIndex) => {
                                                 const intensity = count === 0 ? 0 : Math.min(count / 5, 1);
                                                 const bgColor = count === 0 
-                                                    ? 'bg-gray-100' 
+                                                    ? 'bg-gray-300' 
                                                     : `bg-gradient-to-br from-blue-${Math.round(intensity * 500)} to-indigo-${Math.round(intensity * 600)}`;
                                                 
                                                 return (
@@ -1587,18 +1584,17 @@ export default function StudentDashboard() {
                                                         initial={{ scale: 0 }}
                                                         animate={{ scale: 1 }}
                                                         transition={{ delay: (dayIndex * 0.05) + (hourIndex * 0.002) }}
-                                                        whileHover={{ scale: 1.5, zIndex: 10 }}
-                                                        className={`w-4 h-8 rounded-sm ${bgColor} cursor-pointer group relative`}
+                                                        whileHover={{ zIndex: 10 }}
+                                                        className={`size-4 sm:size-8 rounded-sm ${bgColor} cursor-pointer group relative`}
                                                         style={{
                                                             opacity: count === 0 ? 0.3 : 0.6 + (intensity * 0.4),
                                                             backgroundColor: count > 0 ? `rgba(99, 102, 241, ${0.3 + intensity * 0.7})` : undefined
                                                         }}
-                                                        title={`${day.day} ${hourIndex}:00 - ${count} activities`}
                                                     >
                                                         {count > 0 && (
-                                                            <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap pointer-events-none z-50">
-                                                                {hourIndex}:00 • {count} activities
-                                            </div>
+                                                            <div className="absolute top-full left-1/2 mb-1 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap pointer-events-none">
+                                                                • {hourIndex}:00 - {count} activities •
+                                                            </div>
                                                         )}
                                                     </motion.div>
                                                 );
@@ -1606,10 +1602,10 @@ export default function StudentDashboard() {
                                         </div>
                                     </div>
                                 ))}
-                                <div className="flex justify-between items-center mt-4 text-xs text-gray-500">
-                                    <span>🌙 0:00</span>
-                                    <span>☀️ 12:00</span>
-                                    <span>🌙 23:00</span>
+                                <div className="flex justify-center items-center translate-x-5 sm:gap-96 gap-48 mt-4 text-xs text-gray-500">
+                                    <span>0:00</span>
+                                    <span className="sm:translate-x-6 translate-x-4">12:00</span>
+                                    <span className="sm:translate-x-2 translate-x-4">23:00</span>
                                 </div>
                             </div>
                         </div>
@@ -1676,7 +1672,7 @@ export default function StudentDashboard() {
                                                     {new Date(entry.date).toLocaleDateString('en-US', { 
                                                         month: 'short', 
                                                         day: 'numeric',
-                                                        weekday: 'short'
+                                                        weekday: 'long'
                                                     })}
                                                 </span>
                                                 <span className="text-xs text-gray-500">

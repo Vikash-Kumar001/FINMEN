@@ -51,9 +51,9 @@ export const getStudentStats = async (req, res) => {
     // Calculate weekly XP from recent XP logs (if available)
     const oneWeekAgo = new Date();
     oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
-    const weeklyXpLogs = await XPLog.find({ 
-      userId, 
-      date: { $gte: oneWeekAgo } 
+    const weeklyXpLogs = await XPLog.find({
+      userId,
+      date: { $gte: oneWeekAgo }
     });
     const weeklyXP = weeklyXpLogs.reduce((sum, log) => sum + log.amount, 0);
 
@@ -100,55 +100,49 @@ export const getXPLogs = async (req, res) => {
 export const getPillarMastery = async (req, res) => {
   try {
     const userId = req.user._id;
-    
-    // Define all pillars
+
+    // Define all pillars with their total game counts
     const pillars = [
-      { key: 'finance', name: 'Financial Literacy', icon: '💰' },
-      { key: 'mental', name: 'Mental Health', icon: '🧠' },
-      { key: 'ai', name: 'AI for All', icon: '🤖' },
-      { key: 'brain', name: 'Brain Health', icon: '🎯' },
-      { key: 'uvls', name: 'Life Skills & Values', icon: '🌟' },
-      { key: 'dcos', name: 'Digital Citizenship', icon: '🔒' },
-      { key: 'moral', name: 'Moral Values', icon: '💫' },
-      { key: 'ehe', name: 'Entrepreneurship', icon: '🚀' },
-      { key: 'crgc', name: 'Global Citizenship', icon: '🌍' },
-      { key: 'educational', name: 'Education', icon: '📚' }
+      { key: 'finance', name: 'Financial Literacy', icon: '💰', totalGames: 42 }, // 21 Kids + 21 Teen
+      { key: 'mental', name: 'Mental Health', icon: '🧠', totalGames: 42 },
+      { key: 'ai', name: 'AI for All', icon: '🤖', totalGames: 42 },
+      { key: 'brain', name: 'Brain Health', icon: '🎯', totalGames: 42 },
+      { key: 'uvls', name: 'Life Skills & Values', icon: '🌟', totalGames: 42 },
+      { key: 'dcos', name: 'Digital Citizenship', icon: '🔒', totalGames: 42 },
+      { key: 'moral', name: 'Moral Values', icon: '💫', totalGames: 42 },
+      { key: 'ehe', name: 'Entrepreneurship', icon: '🚀', totalGames: 42 },
+      { key: 'crgc', name: 'Global Citizenship', icon: '🌍', totalGames: 42 },
+      { key: 'educational', name: 'Education', icon: '📚', totalGames: 42 }
     ];
 
     // Get all game progress for user
     const gameProgress = await UnifiedGameProgress.find({ userId });
-    
+
     // Calculate mastery for each pillar
     const pillarMastery = pillars.map(pillar => {
       const pillarGames = gameProgress.filter(game => game.gameType === pillar.key);
-      
+
       if (pillarGames.length === 0) {
         return {
           pillar: pillar.name,
           icon: pillar.icon,
           mastery: 0,
           gamesCompleted: 0,
-          totalGames: 0
+          totalGames: pillar.totalGames
         };
       }
 
-      // Calculate average completion percentage
-      const totalMastery = pillarGames.reduce((sum, game) => {
-        const completionPercent = game.totalLevels > 0 
-          ? (game.levelsCompleted / game.totalLevels) * 100 
-          : 0;
-        return sum + completionPercent;
-      }, 0);
-
-      const avgMastery = totalMastery / pillarGames.length;
+      // Calculate mastery based on games completed vs total games
+      // This is the fix - we were calculating based on level completion percentage before
       const gamesCompleted = pillarGames.filter(g => g.fullyCompleted).length;
+      const mastery = Math.round((gamesCompleted / pillar.totalGames) * 100);
 
       return {
         pillar: pillar.name,
         icon: pillar.icon,
-        mastery: Math.round(avgMastery),
+        mastery: mastery,
         gamesCompleted,
-        totalGames: pillarGames.length
+        totalGames: pillar.totalGames
       };
     }).filter(p => p.totalGames > 0); // Only include pillars with games
 
@@ -171,18 +165,12 @@ export const getPillarMastery = async (req, res) => {
 
     const lastWeekPillarMastery = pillars.map(pillar => {
       const pillarGames = lastWeekProgress.filter(game => game.gameType === pillar.key);
-      if (pillarGames.length === 0) return { pillar: pillar.name, mastery: 0 };
-      
-      const totalMastery = pillarGames.reduce((sum, game) => {
-        const completionPercent = game.totalLevels > 0 
-          ? (game.levelsCompleted / game.totalLevels) * 100 
-          : 0;
-        return sum + completionPercent;
-      }, 0);
+      const gamesCompleted = pillarGames.filter(g => g.fullyCompleted).length;
+      const mastery = Math.round((gamesCompleted / pillar.totalGames) * 100);
 
       return {
         pillar: pillar.name,
-        mastery: Math.round(totalMastery / pillarGames.length)
+        mastery: mastery
       };
     });
 
@@ -190,7 +178,7 @@ export const getPillarMastery = async (req, res) => {
     const pillarMasteryWithDelta = pillarMastery.map(current => {
       const previous = lastWeekPillarMastery.find(p => p.pillar === current.pillar);
       const delta = previous ? current.mastery - previous.mastery : 0;
-      
+
       return {
         ...current,
         deltaWoW: delta
@@ -279,13 +267,13 @@ export const getEmotionalScore = async (req, res) => {
     // Calculate trend direction
     const recentScores = validScores.slice(-3).map(d => d.score);
     const olderScores = validScores.slice(0, -3).map(d => d.score);
-    const recentAvg = recentScores.length > 0 
-      ? recentScores.reduce((a, b) => a + b, 0) / recentScores.length 
+    const recentAvg = recentScores.length > 0
+      ? recentScores.reduce((a, b) => a + b, 0) / recentScores.length
       : avgScore;
-    const olderAvg = olderScores.length > 0 
-      ? olderScores.reduce((a, b) => a + b, 0) / olderScores.length 
+    const olderAvg = olderScores.length > 0
+      ? olderScores.reduce((a, b) => a + b, 0) / olderScores.length
       : avgScore;
-    
+
     const trend = recentAvg > olderAvg ? 'up' : recentAvg < olderAvg ? 'down' : 'stable';
 
     res.status(200).json({
@@ -390,7 +378,7 @@ export const getEngagementMinutes = async (req, res) => {
 export const getActivityHeatmap = async (req, res) => {
   try {
     const userId = req.user._id;
-    
+
     // Get activity logs for the last 7 days
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -403,27 +391,27 @@ export const getActivityHeatmap = async (req, res) => {
     // Create heatmap data: days × hours
     const heatmapData = [];
     const daysOfWeek = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-    
+
     for (let dayOffset = 6; dayOffset >= 0; dayOffset--) {
       const date = new Date();
       date.setDate(date.getDate() - dayOffset);
       date.setHours(0, 0, 0, 0);
-      
+
       const dayName = daysOfWeek[date.getDay()];
       const hourlyData = Array(24).fill(0);
-      
+
       // Count activities per hour
       activityLogs.forEach(log => {
         const logDate = new Date(log.timestamp);
         const logDay = new Date(logDate);
         logDay.setHours(0, 0, 0, 0);
-        
+
         if (logDay.getTime() === date.getTime()) {
           const hour = logDate.getHours();
           hourlyData[hour]++;
         }
       });
-      
+
       heatmapData.push({
         day: dayName,
         date: date.toISOString().split('T')[0],
@@ -552,7 +540,7 @@ export const getRecommendations = async (req, res) => {
           xpReward: 35
         }
       ];
-      
+
       const randomRec = defaults[recommendations.length % defaults.length];
       recommendations.push(randomRec);
     }
@@ -611,7 +599,7 @@ export const getAchievementTimeline = async (req, res) => {
 
     // Get achievements from game progress
     const gameProgress = await UnifiedGameProgress.find({ userId });
-    
+
     const achievements = [];
     gameProgress.forEach(game => {
       if (game.achievements && game.achievements.length > 0) {

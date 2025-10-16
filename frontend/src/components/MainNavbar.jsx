@@ -8,7 +8,6 @@ const MainNavbar = ({
     handleWhyChooseClick,
     handlePricingClick,
     handleStudentServicesClick,
-    handleFooterClick,
     showMobileMenu,
     setShowMobileMenu
 }) => {
@@ -17,9 +16,9 @@ const MainNavbar = ({
     return (
         <nav className="bg-white shadow-md py-4 relative">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
+                <div className="flex justify-between items-center cursor-pointer">
+                    <div onClick={() => navigate("/")} className="flex items-center hover:scale-102 duration-200 ease-in-out">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-md flex items-center justify-center">
                             <span className="text-white font-bold">WS</span>
                         </div>
                         <h1 className="ml-3 text-xl font-semibold text-gray-900">
@@ -31,42 +30,42 @@ const MainNavbar = ({
                     <div className="hidden md:flex items-center space-x-4">
                         <button
                             onClick={handlePillarsClick}
-                            className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                            className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
                         >
                             Pillars
                         </button>
 
                         <button
                             onClick={handleWhyChooseClick}
-                            className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                            className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
                         >
                             Why Choose Us
                         </button>
 
                         <button
                             onClick={handlePricingClick}
-                            className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                            className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
                         >
                             Pricing
                         </button>
 
                         <button
                             onClick={handleStudentServicesClick}
-                            className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                            className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
                         >
                             Services
                         </button>
 
                         <button
-                            onClick={handleFooterClick}
-                            className="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                            onClick={() => navigate("/contact")}
+                            className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
                         >
                             Contact
                         </button>
 
                         <button
                             onClick={() => navigate("/login")}
-                            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-all text-sm font-medium"
+                            className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded-lg hover:scale-105 duration-200 ease-in-out hover:bg-opacity-90 transition-all text-sm font-medium cursor-pointer"
                         >
                             Sign In
                         </button>

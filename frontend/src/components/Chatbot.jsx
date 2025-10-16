@@ -273,7 +273,7 @@ const Chatbot = () => {
                         {/* Mobile overlay */}
                         <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-40 sm:hidden" onClick={() => setIsOpen(false)}></div>
                         {/* Chat window */}
-                        <motion.div className="fixed inset-4 z-50 sm:static sm:w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl sm:h-[800px] bg-white/95 backdrop-blur-xl shadow-2xl rounded-3xl sm:rounded-3xl flex flex-col border border-white/50 overflow-hidden sm:mr-6 sm:mb-6 sm:mt-0 sm:ml-auto" initial={{ opacity: 0, scale: 0.8, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}>
+                        <motion.div className="fixed inset-4 z-50 sm:static sm:w-full sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl sm:h-[650px] bg-white/95 backdrop-blur-xl shadow-2xl rounded-3xl sm:rounded-3xl flex flex-col border border-white/50 overflow-hidden sm:mr-6 sm:mb-6 sm:mt-0 sm:ml-auto" initial={{ opacity: 0, scale: 0.8, y: 50 }} animate={{ opacity: 1, scale: 1, y: 0 }} transition={{ type: "spring", stiffness: 200, damping: 20 }}>
                             {/* Animated background */}
                             <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 via-purple-50/50 to-pink-50/50 pointer-events-none" />
                             {/* Header */}

@@ -9,7 +9,7 @@ import {
 } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
-import AddTeacherModal from '../../components/AddTeacherModal';
+import CreateTeacherModal from '../../components/CreateTeacherModal';
 import TeacherDetailModal from '../../components/TeacherDetailModal';
 
 const SchoolAdminTeachers = () => {
@@ -69,8 +69,11 @@ const SchoolAdminTeachers = () => {
   const handleAddTeacher = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/api/school/admin/teachers/create', newTeacher);
-      toast.success('Teacher added successfully!');
+      const response = await api.post('/api/school/admin/teachers/create', newTeacher);
+      toast.success(`Teacher added successfully! Login credentials: Email: ${newTeacher.email}, Password: teacher123`, {
+        duration: 8000,
+        icon: '✅'
+      });
       setShowAddTeacherModal(false);
       setNewTeacher({ 
         name: '', 
@@ -112,6 +115,14 @@ const SchoolAdminTeachers = () => {
       console.error('Error deleting teacher:', error);
       toast.error(error.response?.data?.message || 'Failed to delete teacher');
     }
+  };
+
+  const handleViewClass = (classId) => {
+    // Navigate to the classes page and open the specific class detail
+    navigate('/school/admin/classes');
+    // The class detail will be opened by the parent component
+    // We can pass the classId through URL params or state
+    window.location.href = `/school/admin/classes?openClass=${classId}`;
   };
 
   const handleExportTeachers = async () => {
@@ -429,10 +440,8 @@ const SchoolAdminTeachers = () => {
                     <td className="py-4 px-6 text-sm font-semibold text-gray-900">{teacher.totalStudents || 0}</td>
                     <td className="py-4 px-6 text-sm font-semibold text-gray-900">{teacher.experience || 0} yrs</td>
                     <td className="py-4 px-6">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        teacher.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {teacher.isActive ? 'Active' : 'Inactive'}
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                        Active
                       </span>
                     </td>
                     <td className="py-4 px-6">
@@ -481,7 +490,7 @@ const SchoolAdminTeachers = () => {
       </div>
 
       {/* Modals */}
-      <AddTeacherModal
+      <CreateTeacherModal
         showAddTeacherModal={showAddTeacherModal}
         setShowAddTeacherModal={setShowAddTeacherModal}
         newTeacher={newTeacher}
@@ -494,6 +503,7 @@ const SchoolAdminTeachers = () => {
         setShowTeacherDetail={setShowTeacherDetail}
         selectedTeacher={selectedTeacher}
         handleDeleteTeacher={handleDeleteTeacher}
+        onViewClass={handleViewClass}
       />
     </div>
   );

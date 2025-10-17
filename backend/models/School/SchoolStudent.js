@@ -30,11 +30,11 @@ const schoolStudentSchema = new mongoose.Schema(
     classId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "SchoolClass",
-      required: true,
+      required: false, // Made optional to allow students without class assignment
     },
     section: {
       type: String,
-      required: true,
+      required: false, // Made optional to allow students without class assignment
     },
     academicYear: {
       type: String,
@@ -43,7 +43,7 @@ const schoolStudentSchema = new mongoose.Schema(
     parentIds: [{
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true, // At least one parent is mandatory
+      required: false, // Parents can be added later
     }],
     personalInfo: {
       dateOfBirth: Date,
@@ -194,15 +194,13 @@ const schoolStudentSchema = new mongoose.Schema(
 
 // Indexes for efficient queries
 schoolStudentSchema.index({ tenantId: 1, admissionNumber: 1 });
-schoolStudentSchema.index({ tenantId: 1, classId: 1, section: 1 });
+schoolStudentSchema.index({ tenantId: 1, classId: 1, section: 1 }, { sparse: true }); // Sparse index for optional fields
 schoolStudentSchema.index({ tenantId: 1, academicYear: 1 });
 schoolStudentSchema.index({ userId: 1, tenantId: 1 });
 
-// Validate at least one parent
+// Pre-save middleware for calculations
 schoolStudentSchema.pre("save", function(next) {
-  if (!this.parentIds || this.parentIds.length === 0) {
-    return next(new Error("At least one parent is required for each student"));
-  }
+  // Parents can be added later - no validation required
   
   // Calculate pending fees
   if (this.fees.totalFees && this.fees.paidAmount) {

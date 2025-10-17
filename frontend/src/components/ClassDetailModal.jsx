@@ -1,7 +1,7 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import {motion, AnimatePresence } from 'framer-motion';
 import {
-  X, Users, BookOpen, GraduationCap, Calendar, UserPlus
+  X, Users, BookOpen, GraduationCap, Calendar, UserPlus, Trash2, UserMinus
 } from 'lucide-react';
 
 const ClassDetailModal = ({
@@ -9,7 +9,10 @@ const ClassDetailModal = ({
   setShowClassDetailModal,
   selectedClass,
   teachers,
-  setShowAddStudentsModal
+  setShowAddStudentModal,
+  setShowAddTeacherModal,
+  onRemoveTeacher,
+  onRemoveStudent
 }) => {
   return (
     <AnimatePresence>
@@ -54,15 +57,22 @@ const ClassDetailModal = ({
                       <Users className="w-5 h-5 text-indigo-600" />
                       Sections ({selectedClass.sections?.length || 0})
                     </h3>
-                    <button
-                      onClick={() => {
-                        setShowAddStudentsModal(true);
-                      }}
-                      className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center gap-2"
-                    >
-                      <UserPlus className="w-4 h-4" />
-                      Add Students
-                    </button>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setShowAddTeacherModal(true)}
+                        className="px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center gap-2"
+                      >
+                        <GraduationCap className="w-4 h-4" />
+                        Add Teachers
+                      </button>
+                      <button
+                        onClick={() => setShowAddStudentModal(true)}
+                        className="px-4 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center gap-2"
+                      >
+                        <UserPlus className="w-4 h-4" />
+                        Add Students
+                      </button>
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {selectedClass.sections?.map((section, idx) => (
@@ -74,18 +84,85 @@ const ClassDetailModal = ({
                           </div>
                         </div>
                         {section.classTeacher && (
-                          <div className="flex items-center gap-2 text-sm text-gray-700">
-                            <GraduationCap className="w-4 h-4" />
-                            <span className="font-semibold">
-                              {typeof section.classTeacher === 'object' 
-                                ? section.classTeacher.name 
-                                : teachers.find(t => t._id === section.classTeacher)?.name || 'Not assigned'}
-                            </span>
+                          <div className="flex items-center justify-between text-sm text-gray-700">
+                            <div className="flex items-center gap-2">
+                              <GraduationCap className="w-4 h-4" />
+                              <span className="font-semibold">
+                                {typeof section.classTeacher === 'object' 
+                                  ? section.classTeacher.name 
+                                  : teachers.find(t => t._id === section.classTeacher)?.name || 'Not assigned'}
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => onRemoveTeacher && onRemoveTeacher(
+                                typeof section.classTeacher === 'object' ? section.classTeacher._id : section.classTeacher, 
+                                section.name
+                              )}
+                              className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors"
+                              title="Remove teacher from this section"
+                            >
+                              <UserMinus className="w-4 h-4" />
+                            </button>
                           </div>
                         )}
                       </div>
                     ))}
                   </div>
+                </div>
+
+                {/* Assigned Teachers */}
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <GraduationCap className="w-5 h-5 text-indigo-600" />
+                    Assigned Teachers
+                  </h3>
+                  {selectedClass.sections?.some(section => section.classTeacher) ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {selectedClass.sections
+                        .filter(section => section.classTeacher)
+                        .map((section, idx) => (
+                          <div key={idx} className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border-2 border-green-200">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center text-white font-bold">
+                                  {typeof section.classTeacher === 'object' 
+                                    ? section.classTeacher.name?.charAt(0)?.toUpperCase() || 'T'
+                                    : 'T'}
+                                </div>
+                                <div>
+                                  <div className="font-bold text-gray-900">
+                                    {typeof section.classTeacher === 'object' 
+                                      ? section.classTeacher.name 
+                                      : teachers.find(t => t._id === section.classTeacher)?.name || 'Not assigned'}
+                                  </div>
+                                  <div className="text-sm text-gray-600">
+                                    Section {section.name} • {typeof section.classTeacher === 'object' 
+                                      ? section.classTeacher.subject || 'No subject'
+                                      : teachers.find(t => t._id === section.classTeacher)?.subject || 'No subject'}
+                                  </div>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => onRemoveTeacher && onRemoveTeacher(
+                                  typeof section.classTeacher === 'object' ? section.classTeacher._id : section.classTeacher, 
+                                  section.name
+                                )}
+                                className="p-2 text-red-500 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Remove teacher from this section"
+                              >
+                                <UserMinus className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 text-gray-500 bg-gray-50 rounded-xl border-2 border-gray-200">
+                      <GraduationCap className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                      <p className="font-semibold">No teachers assigned yet</p>
+                      <p className="text-sm">Click "Add Teachers" to assign teachers to this class</p>
+                    </div>
+                  )}
                 </div>
 
                 {/* Subjects */}
@@ -133,12 +210,23 @@ const ClassDetailModal = ({
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                       {selectedClass.students.map((student, idx) => (
                         <div key={idx} className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                          <div className="font-semibold text-gray-900">
-                            {typeof student === 'object' ? student.name : student}
+                          <div className="flex items-center justify-between">
+                            <div className="flex-1">
+                              <div className="font-semibold text-gray-900">
+                                {typeof student === 'object' ? student.name : student}
+                              </div>
+                              {typeof student === 'object' && student.rollNumber && (
+                                <div className="text-sm text-gray-600">{student.rollNumber}</div>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => onRemoveStudent && onRemoveStudent(student)}
+                              className="p-1 text-red-500 hover:text-red-700 hover:bg-red-50 rounded transition-colors ml-2"
+                              title="Remove student from this class"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
                           </div>
-                          {typeof student === 'object' && student.rollNumber && (
-                            <div className="text-sm text-gray-600">{student.rollNumber}</div>
-                          )}
                         </div>
                       ))}
                     </div>

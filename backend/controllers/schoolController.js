@@ -163,18 +163,21 @@ export const getSchoolStudents = async (req, res) => {
     const { tenantId } = req;
 
     const students = await SchoolStudent.find({ tenantId })
-      .populate('userId', 'name email avatar')
+      .populate('userId', 'name email avatar phone')
       .populate('classId', 'classNumber stream')
-      .select('admissionNumber rollNumber section academicYear parentIds');
+      .select('admissionNumber rollNumber section academicYear parentIds personalInfo');
 
     const studentsWithDetails = students.map(student => ({
       id: student._id,
       name: student.userId.name,
       email: student.userId.email,
       avatar: student.userId.avatar,
+      phone: student.userId.phone || 'N/A',
+      gender: student.personalInfo?.gender || 'N/A',
       admissionNumber: student.admissionNumber,
       rollNumber: student.rollNumber,
-      class: `Class ${student.classId.classNumber}${student.classId.stream ? ` ${student.classId.stream}` : ''}`,
+      class: `Class ${student.classId?.classNumber || 'N/A'}${student.classId?.stream ? ` ${student.classId.stream}` : ''}`,
+      grade: student.classId?.classNumber || 'N/A',
       section: student.section,
       academicYear: student.academicYear
     }));
@@ -222,11 +225,10 @@ export const getSchoolTeachers = async (req, res) => {
 
     const query = { tenantId, role: 'school_teacher' };
     if (subject) query.subject = subject;
-    if (status === 'active') query.isActive = true;
-    if (status === 'inactive') query.isActive = false;
+    // Note: isActive field doesn't exist in User model, so we'll skip status filtering for now
 
     const teachers = await User.find(query)
-      .select('name email avatar phone subject isActive createdAt metadata')
+      .select('name email avatar phone subject createdAt metadata')
       .lean();
 
     // Enhance with additional data
@@ -255,6 +257,74 @@ export const getSchoolTeachers = async (req, res) => {
     res.json({ teachers: enhancedTeachers });
   } catch (error) {
     console.error('Error fetching school teachers:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get available teachers (not assigned to any class)
+export const getAvailableTeachers = async (req, res) => {
+  try {
+    const { tenantId } = req;
+
+    // Get all teachers
+    const allTeachers = await User.find({ tenantId, role: 'school_teacher' })
+      .select('name email avatar phone subject createdAt metadata')
+      .lean();
+
+    // Get all assigned teachers
+    const assignedTeachers = await SchoolClass.find({ tenantId })
+      .select('sections.classTeacher')
+      .lean();
+
+    const assignedTeacherIds = new Set();
+    assignedTeachers.forEach(classData => {
+      classData.sections.forEach(section => {
+        if (section.classTeacher) {
+          assignedTeacherIds.add(section.classTeacher.toString());
+        }
+      });
+    });
+
+    // Filter out assigned teachers
+    const availableTeachers = allTeachers.filter(teacher => 
+      !assignedTeacherIds.has(teacher._id.toString())
+    );
+
+    res.json(availableTeachers);
+  } catch (error) {
+    console.error('Error fetching available teachers:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Get available students (not assigned to any class)
+export const getAvailableStudents = async (req, res) => {
+  try {
+    const { tenantId } = req;
+
+    // Get all students not assigned to any class
+    const students = await SchoolStudent.find({ 
+      tenantId, 
+      classId: null 
+    })
+      .populate('userId', 'name email avatar phone')
+      .select('admissionNumber rollNumber personalInfo')
+      .lean();
+
+    const studentsWithDetails = students.map(student => ({
+      _id: student._id,
+      name: student.userId?.name || 'N/A',
+      email: student.userId?.email || 'N/A',
+      avatar: student.userId?.avatar,
+      phone: student.userId?.phone || 'N/A',
+      gender: student.personalInfo?.gender || 'N/A',
+      admissionNumber: student.admissionNumber,
+      rollNumber: student.rollNumber
+    }));
+
+    res.json(studentsWithDetails);
+  } catch (error) {
+    console.error('Error fetching available students:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -310,12 +380,22 @@ export const getTeacherDetailsById = async (req, res) => {
     }).select('classNumber stream sections academicYear').lean();
 
     const classesWithStudents = await Promise.all(assignedClasses.map(async (cls) => {
+      // Find which sections this teacher is assigned to
+      const teacherSections = cls.sections.filter(section => 
+        section.classTeacher && section.classTeacher.toString() === teacher._id.toString()
+      );
+
       const studentCount = await SchoolStudent.countDocuments({
         tenantId,
         classId: cls._id
       });
+
       return {
-        ...cls,
+        _id: cls._id,
+        classNumber: cls.classNumber,
+        stream: cls.stream,
+        academicYear: cls.academicYear,
+        sections: teacherSections, // Only sections assigned to this teacher
         students: studentCount
       };
     }));
@@ -368,7 +448,9 @@ export const createTeacher = async (req, res) => {
 
     // Create user account
     const bcrypt = (await import('bcryptjs')).default;
-    const hashedPassword = await bcrypt.hash(password || 'teacher123', 10);
+    const defaultPassword = password || 'teacher123';
+    console.log('Creating teacher with password:', defaultPassword);
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
     
     const teacher = await User.create({
       name,
@@ -379,7 +461,6 @@ export const createTeacher = async (req, res) => {
       orgId,
       phone,
       subject,
-      isActive: true,
       metadata: {
         qualification: qualification || '',
         experience: parseInt(experience) || 0,
@@ -522,6 +603,14 @@ export const getTeacherStats = async (req, res) => {
   try {
     const { tenantId, user } = req;
 
+    // First get the classes assigned to this teacher
+    const assignedClasses = await SchoolClass.find({
+      tenantId,
+      'sections.classTeacher': user._id
+    }).select('_id').lean();
+
+    const classIds = assignedClasses.map(cls => cls._id);
+
     const [
       totalStudents,
       totalClasses,
@@ -530,14 +619,14 @@ export const getTeacherStats = async (req, res) => {
     ] = await Promise.all([
       SchoolStudent.countDocuments({ 
         tenantId,
-        classId: { $in: user.assignedClasses || [] }
+        classId: { $in: classIds }
       }),
       SchoolClass.countDocuments({ 
         tenantId,
         'sections.classTeacher': user._id
       }),
       SchoolStudent.aggregate([
-        { $match: { tenantId } },
+        { $match: { tenantId, classId: { $in: classIds } } },
         { $group: { _id: null, avg: { $avg: '$attendance.percentage' } } }
       ]),
       // Mock data - in real app, this would come from Assignment model
@@ -585,6 +674,7 @@ export const getTeacherClasses = async (req, res) => {
     if (classes.length === 0) {
       return res.json([
         {
+          _id: 'mock-class-1',
           name: 'Class 10A',
           students: 42,
           sections: 2,
@@ -592,6 +682,7 @@ export const getTeacherClasses = async (req, res) => {
           avg: 85
         },
         {
+          _id: 'mock-class-2',
           name: 'Class 9B',
           students: 38,
           sections: 2,
@@ -599,6 +690,7 @@ export const getTeacherClasses = async (req, res) => {
           avg: 82
         },
         {
+          _id: 'mock-class-3',
           name: 'Class 8A',
           students: 35,
           sections: 1,
@@ -609,6 +701,7 @@ export const getTeacherClasses = async (req, res) => {
     }
 
     const classesWithStats = classes.map(cls => ({
+      _id: cls._id,
       name: `Class ${cls.classNumber}${cls.stream ? ` ${cls.stream}` : ''}`,
       students: cls.sections.reduce((sum, section) => sum + section.currentStrength, 0),
       sections: cls.sections.length,
@@ -1554,18 +1647,27 @@ export const getStudentAnalyticsForTeacher = async (req, res) => {
 export const getClassMasteryByPillar = async (req, res) => {
   try {
     const { tenantId, user, isLegacyUser } = req;
+    const teacherId = user._id;
 
-    // Get all students in teacher's classes
-    const query = {};
-    if (!isLegacyUser && tenantId) {
-      query.tenantId = tenantId;
-      query.role = 'school_student';
-    } else {
-      query.role = { $in: ['student', 'school_student'] };
+    // First get the classes assigned to this teacher
+    const assignedClasses = await SchoolClass.find({
+      tenantId,
+      'sections.classTeacher': teacherId
+    }).select('_id').lean();
+
+    const classIds = assignedClasses.map(cls => cls._id);
+
+    if (classIds.length === 0) {
+      return res.json({});
     }
 
-    const students = await User.find(query).select('_id').lean();
-    const studentIds = students.map(s => s._id);
+    // Get students assigned to the teacher's classes
+    const schoolStudents = await SchoolStudent.find({
+      tenantId,
+      classId: { $in: classIds }
+    }).populate('userId', '_id').lean();
+
+    const studentIds = schoolStudents.map(ss => ss.userId._id).filter(Boolean);
 
     // Get game progress for all students
     const gameProgress = await UnifiedGameProgress.find({ 
@@ -1600,20 +1702,30 @@ export const getClassMasteryByPillar = async (req, res) => {
 export const getStudentsAtRisk = async (req, res) => {
   try {
     const { tenantId, isLegacyUser } = req;
+    const teacherId = req.user._id;
 
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    // Get all students
-    const query = {};
-    if (!isLegacyUser && tenantId) {
-      query.tenantId = tenantId;
-      query.role = 'school_student';
-    } else {
-      query.role = { $in: ['student', 'school_student'] };
+    // First get the classes assigned to this teacher
+    const assignedClasses = await SchoolClass.find({
+      tenantId,
+      'sections.classTeacher': teacherId
+    }).select('_id').lean();
+
+    const classIds = assignedClasses.map(cls => cls._id);
+
+    if (classIds.length === 0) {
+      return res.json({ students: [] });
     }
 
-    const students = await User.find(query).select('_id name avatar').lean();
+    // Get students assigned to the teacher's classes
+    const schoolStudents = await SchoolStudent.find({
+      tenantId,
+      classId: { $in: classIds }
+    }).populate('userId', '_id name avatar').lean();
+
+    const students = schoolStudents.map(ss => ss.userId).filter(Boolean);
     const atRiskStudents = [];
 
     // Check each student for risk factors
@@ -1669,21 +1781,34 @@ export const getStudentsAtRisk = async (req, res) => {
 export const getSessionEngagement = async (req, res) => {
   try {
     const { tenantId, isLegacyUser } = req;
+    const teacherId = req.user._id;
 
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    // Get all students
-    const query = {};
-    if (!isLegacyUser && tenantId) {
-      query.tenantId = tenantId;
-      query.role = 'school_student';
-    } else {
-      query.role = { $in: ['student', 'school_student'] };
+    // First get the classes assigned to this teacher
+    const assignedClasses = await SchoolClass.find({
+      tenantId,
+      'sections.classTeacher': teacherId
+    }).select('_id').lean();
+
+    const classIds = assignedClasses.map(cls => cls._id);
+
+    if (classIds.length === 0) {
+      return res.json({ 
+        averageEngagement: 0,
+        totalSessions: 0,
+        engagementTrend: []
+      });
     }
 
-    const students = await User.find(query).select('_id').lean();
-    const studentIds = students.map(s => s._id);
+    // Get students assigned to the teacher's classes
+    const schoolStudents = await SchoolStudent.find({
+      tenantId,
+      classId: { $in: classIds }
+    }).populate('userId', '_id').lean();
+
+    const studentIds = schoolStudents.map(ss => ss.userId._id).filter(Boolean);
 
     // Get activity logs
     const activityLogs = await ActivityLog.find({
@@ -1749,17 +1874,27 @@ export const getPendingTasks = async (req, res) => {
 export const getLeaderboard = async (req, res) => {
   try {
     const { tenantId, isLegacyUser } = req;
+    const teacherId = req.user._id;
 
-    // Get all students
-    const query = {};
-    if (!isLegacyUser && tenantId) {
-      query.tenantId = tenantId;
-      query.role = 'school_student';
-    } else {
-      query.role = { $in: ['student', 'school_student'] };
+    // First get the classes assigned to this teacher
+    const assignedClasses = await SchoolClass.find({
+      tenantId,
+      'sections.classTeacher': teacherId
+    }).select('_id').lean();
+
+    const classIds = assignedClasses.map(cls => cls._id);
+
+    if (classIds.length === 0) {
+      return res.json({ leaderboard: [] });
     }
 
-    const students = await User.find(query).select('_id name avatar').lean();
+    // Get students assigned to the teacher's classes
+    const schoolStudents = await SchoolStudent.find({
+      tenantId,
+      classId: { $in: classIds }
+    }).populate('userId', '_id name avatar').lean();
+
+    const students = schoolStudents.map(ss => ss.userId).filter(Boolean);
     
     // Get progress and wallet for each student
     const leaderboardData = await Promise.all(
@@ -1800,20 +1935,25 @@ export const getClassStudents = async (req, res) => {
     const { classId } = req.params;
     const { tenantId, isLegacyUser } = req;
 
-    // For now, return all students (in real app, filter by class)
-    const query = {};
-    if (!isLegacyUser && tenantId) {
-      query.tenantId = tenantId;
-      query.role = 'school_student';
-    } else {
-      query.role = { $in: ['student', 'school_student'] };
+    // Get students assigned to the specific class
+    const schoolStudents = await SchoolStudent.find({ 
+      tenantId, 
+      classId: classId 
+    })
+      .populate('userId', '_id name email avatar lastActive')
+      .lean();
+
+    if (!schoolStudents || schoolStudents.length === 0) {
+      return res.json({ students: [] });
     }
 
-    const students = await User.find(query).select('_id name email avatar lastActive').lean();
+    // Extract user data from populated SchoolStudent records
+    const students = schoolStudents.map(ss => ss.userId).filter(Boolean);
 
     // Enrich with progress data
     const enrichedStudents = await Promise.all(
-      students.map(async (student, index) => {
+      schoolStudents.map(async (schoolStudent, index) => {
+        const student = schoolStudent.userId;
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
@@ -1866,7 +2006,7 @@ export const getClassStudents = async (req, res) => {
           name: student.name,
           email: student.email,
           avatar: student.avatar,
-          rollNumber: index + 1,
+          rollNumber: schoolStudent.rollNumber || `ROLL${index + 1}`,
           level: progress?.level || 1,
           xp: progress?.xp || 0,
           coins: wallet?.balance || 0,
@@ -7499,7 +7639,7 @@ export const createClass = async (req, res) => {
   try {
     const { tenantId } = req;
     const orgId = req.user?.orgId;
-    const { classNumber, stream, sections, subjects, academicYear } = req.body;
+    const { classNumber, stream, sections, subjects, academicYear, selectedTeachers } = req.body;
 
     if (!classNumber || !academicYear || !sections || sections.length === 0) {
       return res.status(400).json({ 
@@ -7543,6 +7683,43 @@ export const createClass = async (req, res) => {
       isActive: true
     });
 
+    // Assign selected teachers to the class if any
+    if (selectedTeachers && selectedTeachers.length > 0) {
+      try {
+        // Get the class data to update sections
+        const classData = await SchoolClass.findById(newClass._id);
+        
+        // Assign teachers to sections (one teacher per section, cycling if more teachers than sections)
+        selectedTeachers.forEach((teacherId, index) => {
+          const sectionIndex = index % classData.sections.length;
+          if (!classData.sections[sectionIndex].classTeacher) {
+            classData.sections[sectionIndex].classTeacher = teacherId;
+          }
+        });
+
+        await classData.save();
+
+        // Log teacher assignment
+        await ComplianceAuditLog.logAction({
+          tenantId,
+          orgId,
+          userId: req.user._id,
+          userRole: req.user.role,
+          userName: req.user.name,
+          action: 'teachers_assigned_to_class',
+          targetType: 'class',
+          targetId: newClass._id,
+          targetName: `Class ${classNumber}${stream ? ` - ${stream}` : ''}`,
+          description: `${selectedTeachers.length} teacher(s) assigned to Class ${classNumber}`,
+          ipAddress: req.ip,
+          userAgent: req.headers['user-agent'],
+        });
+      } catch (teacherError) {
+        console.error('Error assigning teachers to class:', teacherError);
+        // Don't fail the class creation if teacher assignment fails
+      }
+    }
+
     // Log audit
     await ComplianceAuditLog.logAction({
       tenantId,
@@ -7554,14 +7731,16 @@ export const createClass = async (req, res) => {
       targetType: 'class',
       targetId: newClass._id,
       targetName: `Class ${classNumber}${stream ? ` - ${stream}` : ''}`,
-      description: `New class created: Class ${classNumber}${stream ? ` - ${stream}` : ''} for ${academicYear}`,
+      description: `New class created: Class ${classNumber}${stream ? ` - ${stream}` : ''} for ${academicYear}${selectedTeachers && selectedTeachers.length > 0 ? ` with ${selectedTeachers.length} teacher(s)` : ''}`,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
 
     res.status(201).json({
       success: true,
-      message: 'Class created successfully',
+      message: selectedTeachers && selectedTeachers.length > 0 
+        ? `Class created successfully with ${selectedTeachers.length} teacher(s) assigned`
+        : 'Class created successfully',
       class: newClass
     });
   } catch (error) {
@@ -7591,6 +7770,24 @@ export const addStudentsToClass = async (req, res) => {
     const targetSection = section || classData.sections[0]?.name;
     if (!targetSection) {
       return res.status(400).json({ message: 'No sections available in this class' });
+    }
+
+    // Check for students already assigned to other classes
+    const studentsAlreadyAssigned = await SchoolStudent.find({
+      _id: { $in: studentIds },
+      tenantId,
+      classId: { $ne: classId, $ne: null }
+    }).populate('classId', 'classNumber');
+
+    if (studentsAlreadyAssigned.length > 0) {
+      const errorMessages = studentsAlreadyAssigned.map(student => 
+        `${student.name || 'Student'} is already assigned to Class ${student.classId?.classNumber || 'Unknown'}`
+      );
+      return res.status(400).json({ 
+        message: 'Some students are already assigned to other classes',
+        errors: errorMessages,
+        studentsAlreadyAssigned: studentsAlreadyAssigned.map(s => s._id)
+      });
     }
 
     // Update students
@@ -7643,6 +7840,404 @@ export const addStudentsToClass = async (req, res) => {
     });
   } catch (error) {
     console.error('Error adding students to class:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Add students to class by email
+export const addStudentsByEmailToClass = async (req, res) => {
+  try {
+    const { tenantId } = req;
+    const { classId } = req.params;
+    const { emails, section } = req.body;
+
+    if (!emails || emails.length === 0) {
+      return res.status(400).json({ message: 'No email addresses provided' });
+    }
+
+    if (!section) {
+      return res.status(400).json({ message: 'Section is required' });
+    }
+
+    // Get class details
+    const classData = await SchoolClass.findOne({ _id: classId, tenantId });
+    if (!classData) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
+
+    // Verify section exists
+    const sectionExists = classData.sections.some(s => s.name === section);
+    if (!sectionExists) {
+      return res.status(400).json({ message: 'Section does not exist in this class' });
+    }
+
+    const results = {
+      success: [],
+      errors: [],
+      alreadyAssigned: []
+    };
+
+    // Process each email
+    for (const email of emails) {
+      try {
+        // Find user by email
+        const user = await User.findOne({ email, tenantId });
+        if (!user) {
+          results.errors.push({ email, error: 'User not found' });
+          continue;
+        }
+
+        // Check if user is a student
+        if (user.role !== 'student' && user.role !== 'school_student') {
+          results.errors.push({ email, error: 'User is not a student' });
+          continue;
+        }
+
+        // Find or create SchoolStudent record
+        let schoolStudent = await SchoolStudent.findOne({ userId: user._id, tenantId });
+        
+        if (!schoolStudent) {
+          // Create SchoolStudent record
+          const admissionNumber = `ADM${new Date().getFullYear()}${Date.now().toString().slice(-6)}`;
+          const rollNumber = `ROLL${Date.now().toString().slice(-6)}`;
+          
+          schoolStudent = await SchoolStudent.create({
+            tenantId,
+            orgId: req.user?.orgId,
+            userId: user._id,
+            admissionNumber,
+            rollNumber,
+            classId: classId,
+            section: section,
+            academicYear: classData.academicYear,
+            parentIds: [], // Will be assigned later
+            personalInfo: {
+              gender: 'Other' // Default, can be updated later
+            },
+            academicInfo: {
+              admissionDate: new Date()
+            },
+            fees: {
+              totalFees: 0,
+              paidAmount: 0,
+              pendingAmount: 0
+            },
+            attendance: {
+              totalDays: 0,
+              presentDays: 0,
+              percentage: 0
+            },
+            isActive: true,
+            wellbeingFlags: [],
+            pillars: {
+              uvls: 0,
+              dcos: 0,
+              moral: 0,
+              ehe: 0,
+              crgc: 0,
+            },
+          });
+        } else {
+          // Check if already assigned to this class
+          if (schoolStudent.classId && schoolStudent.classId.toString() === classId) {
+            results.alreadyAssigned.push({ email, name: user.name });
+            continue;
+          }
+
+          // Check if already assigned to another class
+          if (schoolStudent.classId && schoolStudent.classId.toString() !== classId) {
+            const existingClass = await SchoolClass.findById(schoolStudent.classId);
+            results.errors.push({ 
+              email, 
+              error: `Student is already assigned to Class ${existingClass?.classNumber || 'Unknown'}. One student can only be assigned to one class.` 
+            });
+            continue;
+          }
+
+          // Update existing SchoolStudent
+          schoolStudent.classId = classId;
+          schoolStudent.section = section;
+          schoolStudent.academicYear = classData.academicYear;
+          await schoolStudent.save();
+        }
+
+        results.success.push({ email, name: user.name, studentId: schoolStudent._id });
+
+      } catch (error) {
+        console.error(`Error processing email ${email}:`, error);
+        results.errors.push({ email, error: error.message });
+      }
+    }
+
+    // Update section strength
+    const currentCount = await SchoolStudent.countDocuments({
+      tenantId,
+      classId,
+      section: section
+    });
+    
+    const sectionIndex = classData.sections.findIndex(s => s.name === section);
+    if (sectionIndex !== -1) {
+      classData.sections[sectionIndex].currentStrength = currentCount;
+      await classData.save();
+    }
+
+    // Log audit
+    await ComplianceAuditLog.logAction({
+      tenantId,
+      orgId: req.user?.orgId,
+      userId: req.user._id,
+      userRole: req.user.role,
+      userName: req.user.name,
+      action: 'students_added_by_email',
+      targetType: 'class',
+      targetId: classId,
+      targetName: `Class ${classData.classNumber}`,
+      description: `${results.success.length} student(s) added to Class ${classData.classNumber} - Section ${section} by email`,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    res.json({
+      success: true,
+      message: `Processed ${emails.length} email(s)`,
+      results: {
+        success: results.success.length,
+        errors: results.errors.length,
+        alreadyAssigned: results.alreadyAssigned.length,
+        details: results
+      }
+    });
+
+  } catch (error) {
+    console.error('Error adding students by email:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Add teachers to class
+export const addTeachersToClass = async (req, res) => {
+  try {
+    const { tenantId } = req;
+    const { classId } = req.params;
+    const { teacherIds } = req.body;
+
+    if (!teacherIds || teacherIds.length === 0) {
+      return res.status(400).json({ message: 'No teachers provided' });
+    }
+
+    // Get class details
+    const classData = await SchoolClass.findOne({ _id: classId, tenantId });
+    if (!classData) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
+
+    const results = {
+      success: [],
+      errors: []
+    };
+
+    // Process each teacher
+    for (const teacherId of teacherIds) {
+      try {
+        // Find teacher
+        const teacher = await User.findOne({ _id: teacherId, tenantId, role: 'school_teacher' });
+        if (!teacher) {
+          results.errors.push({ teacherId, error: 'Teacher not found or not a school teacher' });
+          continue;
+        }
+
+        // Check if teacher is already assigned to this class
+        const alreadyAssigned = classData.sections.some(section => 
+          section.classTeacher && section.classTeacher.toString() === teacherId
+        );
+
+        if (alreadyAssigned) {
+          results.errors.push({ teacherId, error: 'Teacher already assigned to this class' });
+          continue;
+        }
+
+        // Check if teacher is already assigned to any other class
+        const assignedToOtherClass = await SchoolClass.findOne({
+          tenantId,
+          _id: { $ne: classId },
+          'sections.classTeacher': teacherId
+        });
+
+        if (assignedToOtherClass) {
+          results.errors.push({ 
+            teacherId, 
+            error: `Teacher is already assigned to Class ${assignedToOtherClass.classNumber}. One teacher can only manage one class.` 
+          });
+          continue;
+        }
+
+        // Assign teacher to first available section without a class teacher
+        let assigned = false;
+        for (let i = 0; i < classData.sections.length; i++) {
+          if (!classData.sections[i].classTeacher) {
+            classData.sections[i].classTeacher = teacherId;
+            assigned = true;
+            break;
+          }
+        }
+
+        if (!assigned) {
+          // If all sections have teachers, assign to first section
+          classData.sections[0].classTeacher = teacherId;
+        }
+
+        results.success.push({ teacherId, name: teacher.name });
+
+      } catch (error) {
+        console.error(`Error processing teacher ${teacherId}:`, error);
+        results.errors.push({ teacherId, error: error.message });
+      }
+    }
+
+    // Save class with updated teachers
+    await classData.save();
+
+    // Log audit
+    await ComplianceAuditLog.logAction({
+      tenantId,
+      orgId: req.user?.orgId,
+      userId: req.user._id,
+      userRole: req.user.role,
+      userName: req.user.name,
+      action: 'teachers_added_to_class',
+      targetType: 'class',
+      targetId: classId,
+      targetName: `Class ${classData.classNumber}`,
+      description: `${results.success.length} teacher(s) added to Class ${classData.classNumber}`,
+      ipAddress: req.ip,
+      userAgent: req.headers['user-agent'],
+    });
+
+    res.json({
+      success: true,
+      message: `Processed ${teacherIds.length} teacher(s)`,
+      results: {
+        success: results.success.length,
+        errors: results.errors.length,
+        details: results
+      }
+    });
+
+  } catch (error) {
+    console.error('Error adding teachers to class:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Remove teacher from class
+export const removeTeacherFromClass = async (req, res) => {
+  try {
+    const { tenantId } = req;
+    const { classId, teacherId } = req.params;
+
+    // Get class details
+    const classData = await SchoolClass.findOne({ _id: classId, tenantId });
+    if (!classData) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
+
+    // Find and remove teacher from sections
+    let teacherRemoved = false;
+    classData.sections.forEach(section => {
+      if (section.classTeacher && section.classTeacher.toString() === teacherId) {
+        section.classTeacher = undefined;
+        teacherRemoved = true;
+      }
+    });
+
+    if (!teacherRemoved) {
+      return res.status(404).json({ message: 'Teacher not found in this class' });
+    }
+
+    await classData.save();
+
+    // Log audit
+    await ComplianceAuditLog.logAction({
+      tenantId,
+      orgId: req.user?.orgId,
+      userId: req.user._id,
+      userRole: req.user.role,
+      userName: req.user.name,
+      action: 'teacher_removed_from_class',
+      targetType: 'class',
+      targetId: classId,
+      description: `Teacher removed from Class ${classData.classNumber}`,
+      metadata: { teacherId }
+    });
+
+    res.json({
+      success: true,
+      message: 'Teacher removed from class successfully'
+    });
+  } catch (error) {
+    console.error('Error removing teacher from class:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Remove student from class
+export const removeStudentFromClass = async (req, res) => {
+  try {
+    const { tenantId } = req;
+    const { classId, studentId } = req.params;
+
+    // Get class details
+    const classData = await SchoolClass.findOne({ _id: classId, tenantId });
+    if (!classData) {
+      return res.status(404).json({ message: 'Class not found' });
+    }
+
+    // Find student
+    const student = await SchoolStudent.findOne({ _id: studentId, tenantId, classId });
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found in this class' });
+    }
+
+    // Remove student from class (set classId, grade, section to null)
+    await SchoolStudent.findByIdAndUpdate(studentId, {
+      classId: null,
+      grade: null,
+      section: null
+    });
+
+    // Update section strength
+    const sectionIndex = classData.sections.findIndex(s => s.name === student.section);
+    if (sectionIndex !== -1) {
+      const currentCount = await SchoolStudent.countDocuments({
+        tenantId,
+        classId,
+        section: student.section
+      });
+      classData.sections[sectionIndex].currentStrength = currentCount;
+      await classData.save();
+    }
+
+    // Log audit
+    await ComplianceAuditLog.logAction({
+      tenantId,
+      orgId: req.user?.orgId,
+      userId: req.user._id,
+      userRole: req.user.role,
+      userName: req.user.name,
+      action: 'student_removed_from_class',
+      targetType: 'class',
+      targetId: classId,
+      description: `Student ${student.name || 'Unknown'} removed from Class ${classData.classNumber}`,
+      metadata: { studentId }
+    });
+
+    res.json({
+      success: true,
+      message: 'Student removed from class successfully'
+    });
+  } catch (error) {
+    console.error('Error removing student from class:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
@@ -7734,11 +8329,10 @@ export const createSequentialClass = async (req, res) => {
           email: teacherData.email,
           phone: teacherData.phone,
           role: 'school_teacher',
-          isActive: true,
-          profile: {
+          subject: teacherData.subject,
+          metadata: {
             qualification: teacherData.qualification,
             experience: teacherData.experience,
-            subject: teacherData.subject,
             joiningDate: teacherData.joiningDate
           }
         }], { session });
@@ -7995,20 +8589,50 @@ export const deleteClass = async (req, res) => {
     const { tenantId } = req;
     const { classId } = req.params;
 
-    // Check if class has students
-    const studentCount = await SchoolStudent.countDocuments({ tenantId, classId });
-    if (studentCount > 0) {
-      return res.status(400).json({ 
-        message: `Cannot delete class with ${studentCount} student(s). Please reassign or remove students first.` 
-      });
-    }
-
-    const classData = await SchoolClass.findOneAndDelete({ _id: classId, tenantId });
+    // Get class data first
+    const classData = await SchoolClass.findOne({ _id: classId, tenantId });
     if (!classData) {
       return res.status(404).json({ message: 'Class not found' });
     }
 
-    // Log audit
+    // Check if class has students
+    const studentsInClass = await SchoolStudent.find({ tenantId, classId });
+    const studentCount = studentsInClass.length;
+
+    if (studentCount > 0) {
+      // Remove students from the class (set classId to null)
+      await SchoolStudent.updateMany(
+        { tenantId, classId },
+        { 
+          $set: { 
+            classId: null, 
+            grade: null, 
+            section: null 
+          } 
+        }
+      );
+
+      // Log audit for student removal
+      await ComplianceAuditLog.logAction({
+        tenantId,
+        orgId: req.user?.orgId,
+        userId: req.user._id,
+        userRole: req.user.role,
+        userName: req.user.name,
+        action: 'students_unassigned_from_class',
+        targetType: 'class',
+        targetId: classId,
+        targetName: `Class ${classData.classNumber}`,
+        description: `${studentCount} student(s) unassigned from Class ${classData.classNumber} before deletion`,
+        ipAddress: req.ip,
+        userAgent: req.headers['user-agent'],
+      });
+    }
+
+    // Delete the class
+    await SchoolClass.findOneAndDelete({ _id: classId, tenantId });
+
+    // Log audit for class deletion
     await ComplianceAuditLog.logAction({
       tenantId,
       orgId: req.user?.orgId,
@@ -8019,14 +8643,16 @@ export const deleteClass = async (req, res) => {
       targetType: 'class',
       targetId: classId,
       targetName: `Class ${classData.classNumber}`,
-      description: `Class ${classData.classNumber}${classData.stream ? ` - ${classData.stream}` : ''} deleted`,
+      description: `Class ${classData.classNumber}${classData.stream ? ` - ${classData.stream}` : ''} deleted${studentCount > 0 ? ` (${studentCount} students unassigned)` : ''}`,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
 
     res.json({
       success: true,
-      message: 'Class deleted successfully'
+      message: studentCount > 0 
+        ? `Class deleted successfully. ${studentCount} student(s) have been unassigned from this class.`
+        : 'Class deleted successfully'
     });
   } catch (error) {
     console.error('Error deleting class:', error);
@@ -8064,8 +8690,9 @@ export const getStudentsWithFilters = async (req, res) => {
     }
 
     const students = await SchoolStudent.find(filter)
-      .populate('userId', 'name email lastActive')
+      .populate('userId', 'name email phone lastActive')
       .populate('classId', 'classNumber stream')
+      .select('personalInfo pillars')
       .limit(100)
       .sort({ createdAt: -1 }); // Show newest first
 
@@ -8074,6 +8701,8 @@ export const getStudentsWithFilters = async (req, res) => {
       _id: s._id,
       name: s.userId?.name || 'N/A',
       email: s.userId?.email || 'N/A',
+      phone: s.userId?.phone || 'N/A',
+      gender: s.personalInfo?.gender || 'N/A',
       rollNumber: s.rollNumber || 'N/A',
       section: s.section || 'A',
       grade: s.classId?.classNumber || 0,
@@ -8132,22 +8761,16 @@ export const createStudent = async (req, res) => {
   try {
     const { tenantId } = req;
     const orgId = req.user?.orgId;
-    const { name, email, rollNumber, grade, section, phone, password, gender } = req.body;
+    const { name, email, phone, password, gender } = req.body;
 
-    if (!name || !email || !rollNumber || !grade || !password || !gender) {
-      return res.status(400).json({ message: 'Missing required fields: name, email, rollNumber, grade, gender, and password are required' });
+    if (!name || !email || !phone || !password || !gender) {
+      return res.status(400).json({ message: 'Missing required fields: name, email, phone, gender, and password are required' });
     }
 
     // Check if user with email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: 'Email already exists' });
-    }
-
-    // Check if student with roll number already exists
-    const existingStudent = await SchoolStudent.findOne({ tenantId, rollNumber });
-    if (existingStudent) {
-      return res.status(400).json({ message: 'Student with this roll number already exists' });
     }
 
     // Generate admission number (unique)
@@ -8157,33 +8780,33 @@ export const createStudent = async (req, res) => {
     // Get current academic year
     const academicYear = `${currentYear}-${currentYear + 1}`;
 
-    // Find or create a default class for this grade
-    let classId;
-    const existingClass = await SchoolClass.findOne({ 
-      tenantId, 
-      classNumber: parseInt(grade),
-      academicYear 
-    });
+    // Generate roll number (unique)
+    const rollNumber = `ROLL${Date.now().toString().slice(-6)}`;
 
-    if (existingClass) {
-      classId = existingClass._id;
-    } else {
-      // Create a default class if it doesn't exist
-      const newClass = await SchoolClass.create({
-        tenantId,
-        orgId,
-        classNumber: parseInt(grade),
-        sections: [{ name: section || 'A', capacity: 40, currentStrength: 0 }],
-        subjects: [],
-        academicYear,
-        isActive: true
-      });
-      classId = newClass._id;
+    // Check if student with roll number already exists
+    const existingStudent = await SchoolStudent.findOne({ tenantId, rollNumber });
+    if (existingStudent) {
+      return res.status(400).json({ message: 'Student with this roll number already exists' });
     }
+
+    // No automatic class assignment - students will be assigned to classes later by admin
+    const classId = null;
+    const grade = null;
+    const section = null;
 
     // Create user account with provided password
     const bcrypt = (await import('bcryptjs')).default;
     const hashedPassword = await bcrypt.hash(password, 10);
+    
+    console.log('Creating student with:', {
+      name,
+      email,
+      password: password.substring(0, 3) + '***', // Only show first 3 chars for security
+      hashedPassword: hashedPassword.substring(0, 20) + '...', // Show first 20 chars of hash
+      role: 'school_student',
+      tenantId,
+      orgId
+    });
     
     const user = await User.create({
       name,
@@ -8194,17 +8817,12 @@ export const createStudent = async (req, res) => {
       orgId,
       phone,
     });
-
-    // Create a default parent user (placeholder)
-    const parentEmail = `parent_${user._id}@temp.school`;
-    const parentUser = await User.create({
-      name: `Parent of ${name}`,
-      email: parentEmail,
-      password: hashedPassword,
-      role: 'school_parent',
-      tenantId,
-      orgId,
-      phone: phone || '',
+    
+    console.log('Student created successfully:', {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+      hasPassword: !!user.password
     });
 
     // Create student profile
@@ -8214,13 +8832,13 @@ export const createStudent = async (req, res) => {
       userId: user._id,
       admissionNumber,
       rollNumber,
-      classId,
-      section: section || 'A',
+      classId: classId, // null - will be assigned later by admin
+      section: section, // null - will be assigned later by admin
       academicYear,
-      parentIds: [parentUser._id],
+      parentIds: [], // Empty array - parents will link themselves later
       personalInfo: {
         dateOfBirth: null,
-        gender: gender || null,
+        gender: gender,
         bloodGroup: null,
       },
       academicInfo: {
@@ -8261,22 +8879,22 @@ export const createStudent = async (req, res) => {
       targetType: 'student',
       targetId: student._id,
       targetName: name,
-      description: `New student ${name} (${rollNumber}) added to Grade ${grade}-${section || 'A'}`,
+      description: `New student ${name} (${rollNumber}) created - class assignment pending`,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
 
     res.status(201).json({
       success: true,
-      message: 'Student account created successfully',
+      message: 'Student account created successfully - class assignment pending',
       student: {
         _id: student._id,
         name,
         email,
         rollNumber,
         admissionNumber,
-        grade: parseInt(grade),
-        section: section || 'A',
+        grade: null, // No class assigned yet
+        section: null, // No class assigned yet
         academicYear,
         gender
       },
@@ -8431,7 +9049,7 @@ export const getSchoolStudentDetails = async (req, res) => {
 
     const student = await SchoolStudent.findOne({ _id: studentId, tenantId })
       .populate('userId', 'name email phone lastActive')
-      .populate('classId', 'name grade section');
+      .populate('classId', 'classNumber stream');
 
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
@@ -8444,6 +9062,8 @@ export const getSchoolStudentDetails = async (req, res) => {
       phone: student.userId?.phone || student.phone,
       lastActive: student.userId?.lastActive || student.lastActive,
       isActive: student.userId?.lastActive >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      grade: student.classId?.classNumber || 'N/A',
+      class: student.classId ? `Class ${student.classId.classNumber}${student.classId.stream ? ` - ${student.classId.stream}` : ''}` : 'N/A',
       avgScore: Math.round(
         ((student.pillars?.uvls || 0) + (student.pillars?.dcos || 0) + (student.pillars?.moral || 0) + (student.pillars?.ehe || 0) + (student.pillars?.crgc || 0)) / 5
       ),

@@ -512,7 +512,7 @@ const App = () => {
   // School roles
   if (user.role === "school_admin") return <Navigate to="/school/admin/dashboard" replace />;
     if (user.role === "school_teacher") return <Navigate to="/school-teacher/overview" replace />;
-    if (user.role === "school_student") return <Navigate to="/school-student/dashboard" replace />;
+    if (user.role === "school_student") return <Navigate to="/student/dashboard" replace />;
     if (user.role === "school_parent") return <Navigate to="/school-parent/dashboard" replace />;
     
     // Default fallback
@@ -644,396 +644,396 @@ const App = () => {
           <Route path="/school-parent/dashboard" element={<ProtectedRoute roles={['school_parent']}><SchoolParentDashboard /></ProtectedRoute>} />
           
           {/* Student Routes */}
-          <Route path="/student/dashboard" element={<ProtectedRoute roles={['student']}><StudentDashboard /></ProtectedRoute>} />
-          <Route path="/student/dashboard/quick-quiz" element={<ProtectedRoute roles={['student']}><QuickQuiz /></ProtectedRoute>} />
-          <Route path="/student/dashboard/:categorySlug" element={<ProtectedRoute roles={['student']}><CategoryView /></ProtectedRoute>} />
-          <Route path="/student/mindfull-break" element={<ProtectedRoute roles={['student']}><MindfulnessBreak /></ProtectedRoute>} />
-          <Route path="/student/mood-tracker" element={<ProtectedRoute roles={['student']}><MoodTracker /></ProtectedRoute>} />
-          <Route path="/student/journal" element={<ProtectedRoute roles={['student']}><Journal /></ProtectedRoute>} />
-          <Route path="/student/rewards" element={<ProtectedRoute roles={['student']}><RewardsPage /></ProtectedRoute>} />
-          <Route path="/student/redeem" element={<ProtectedRoute roles={['student']}><RedeemPage /></ProtectedRoute>} />
-          <Route path="/student/wallet" element={<ProtectedRoute roles={['student']}><WalletPage /></ProtectedRoute>} />
-          <Route path="/student/leaderboard" element={<ProtectedRoute roles={['student']}><Leaderboard /></ProtectedRoute>} />
-          <Route path="/student/game" element={<ProtectedRoute roles={['student']}><StudentGame /></ProtectedRoute>} />
-          <Route path="/student/notifications" element={<ProtectedRoute roles={['student']}><Notifications /></ProtectedRoute>} />
-          <Route path="/student/profile" element={<ProtectedRoute roles={['student']}><Profile /></ProtectedRoute>} />
-          <Route path="/student/settings" element={<ProtectedRoute roles={['student']}><Setting /></ProtectedRoute>} />
-          <Route path="/student/breathing" element={<ProtectedRoute roles={['student']}><MindfulnessBreak /></ProtectedRoute>} />
-          <Route path="/student/daily-challenges" element={<ProtectedRoute roles={['student']}><DailyChallenges /></ProtectedRoute>} />
-          <Route path="/student/challenge" element={<ProtectedRoute roles={['student']}><Challenge /></ProtectedRoute>} />
-          <Route path="/learn/financial-literacy" element={<ProtectedRoute roles={['student']}><FinancialLiteracy /></ProtectedRoute>} />
-          <Route path="/tools/budget-planner" element={<ProtectedRoute roles={['student']}><BudgetPlanner /></ProtectedRoute>} />
-          <Route path="/games/investment-simulator" element={<ProtectedRoute roles={['student']}><InvestmentSimulator /></ProtectedRoute>} />
+          <Route path="/student/dashboard" element={<ProtectedRoute roles={['student', 'school_student']}><StudentDashboard /></ProtectedRoute>} />
+          <Route path="/student/dashboard/quick-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><QuickQuiz /></ProtectedRoute>} />
+          <Route path="/student/dashboard/:categorySlug" element={<ProtectedRoute roles={['student', 'school_student']}><CategoryView /></ProtectedRoute>} />
+          <Route path="/student/mindfull-break" element={<ProtectedRoute roles={['student', 'school_student']}><MindfulnessBreak /></ProtectedRoute>} />
+          <Route path="/student/mood-tracker" element={<ProtectedRoute roles={['student', 'school_student']}><MoodTracker /></ProtectedRoute>} />
+          <Route path="/student/journal" element={<ProtectedRoute roles={['student', 'school_student']}><Journal /></ProtectedRoute>} />
+          <Route path="/student/rewards" element={<ProtectedRoute roles={['student', 'school_student']}><RewardsPage /></ProtectedRoute>} />
+          <Route path="/student/redeem" element={<ProtectedRoute roles={['student', 'school_student']}><RedeemPage /></ProtectedRoute>} />
+          <Route path="/student/wallet" element={<ProtectedRoute roles={['student', 'school_student']}><WalletPage /></ProtectedRoute>} />
+          <Route path="/student/leaderboard" element={<ProtectedRoute roles={['student', 'school_student']}><Leaderboard /></ProtectedRoute>} />
+          <Route path="/student/game" element={<ProtectedRoute roles={['student', 'school_student']}><StudentGame /></ProtectedRoute>} />
+          <Route path="/student/notifications" element={<ProtectedRoute roles={['student', 'school_student']}><Notifications /></ProtectedRoute>} />
+          <Route path="/student/profile" element={<ProtectedRoute roles={['student', 'school_student']}><Profile /></ProtectedRoute>} />
+          <Route path="/student/settings" element={<ProtectedRoute roles={['student', 'school_student']}><Setting /></ProtectedRoute>} />
+          <Route path="/student/breathing" element={<ProtectedRoute roles={['student', 'school_student']}><MindfulnessBreak /></ProtectedRoute>} />
+          <Route path="/student/daily-challenges" element={<ProtectedRoute roles={['student', 'school_student']}><DailyChallenges /></ProtectedRoute>} />
+          <Route path="/student/challenge" element={<ProtectedRoute roles={['student', 'school_student']}><Challenge /></ProtectedRoute>} />
+          <Route path="/learn/financial-literacy" element={<ProtectedRoute roles={['student', 'school_student']}><FinancialLiteracy /></ProtectedRoute>} />
+          <Route path="/tools/budget-planner" element={<ProtectedRoute roles={['student', 'school_student']}><BudgetPlanner /></ProtectedRoute>} />
+          <Route path="/games/investment-simulator" element={<ProtectedRoute roles={['student', 'school_student']}><InvestmentSimulator /></ProtectedRoute>} />
 
-          <Route path="/tools/savings-goals" element={<ProtectedRoute roles={['student']}><SavingsGoals /></ProtectedRoute>} />
-          <Route path="/learn/financial-quiz" element={<ProtectedRoute roles={['student']}><FinancialQuiz /></ProtectedRoute>} />
-          <Route path="/tools/expense-tracker" element={<ProtectedRoute roles={['student']}><ExpenseTracker /></ProtectedRoute>} />
+          <Route path="/tools/savings-goals" element={<ProtectedRoute roles={['student', 'school_student']}><SavingsGoals /></ProtectedRoute>} />
+          <Route path="/learn/financial-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><FinancialQuiz /></ProtectedRoute>} />
+          <Route path="/tools/expense-tracker" element={<ProtectedRoute roles={['student', 'school_student']}><ExpenseTracker /></ProtectedRoute>} />
 
           {/* Game Category Pages */}
-          <Route path="/games/dcos" element={<ProtectedRoute roles={['student']}><DCOSGames /></ProtectedRoute>} />
-          <Route path="/games/brain-teaser" element={<ProtectedRoute roles={['student']}><BrainTeaserGames /></ProtectedRoute>} />
-          <Route path="/games/brain-teaser/:gameId" element={<ProtectedRoute roles={['student']}><BrainTeaserPlay /></ProtectedRoute>} />
-          <Route path="/games/:category/:ageGroup" element={<ProtectedRoute roles={['student']}><GameCategoryPage /></ProtectedRoute>} />
+          <Route path="/games/dcos" element={<ProtectedRoute roles={['student', 'school_student']}><DCOSGames /></ProtectedRoute>} />
+          <Route path="/games/brain-teaser" element={<ProtectedRoute roles={['student', 'school_student']}><BrainTeaserGames /></ProtectedRoute>} />
+          <Route path="/games/brain-teaser/:gameId" element={<ProtectedRoute roles={['student', 'school_student']}><BrainTeaserPlay /></ProtectedRoute>} />
+          <Route path="/games/:category/:ageGroup" element={<ProtectedRoute roles={['student', 'school_student']}><GameCategoryPage /></ProtectedRoute>} />
 
           {/* Finance Games for Kids */}
-          <Route path="/student/finance/kids/piggy-bank-story" element={<ProtectedRoute roles={['student']}><PiggyBankStory /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/quiz-on-saving" element={<ProtectedRoute roles={['student']}><QuizOnSaving /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/reflex-savings" element={<ProtectedRoute roles={['student']}><ReflexSavings /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/puzzle-save-or-spend" element={<ProtectedRoute roles={['student']}><PuzzleSaveOrSpend /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/birthday-money-story" element={<ProtectedRoute roles={['student']}><BirthdayMoneyStory /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/poster-saving-habit" element={<ProtectedRoute roles={['student']}><PosterSavingHabit /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/journal-of-saving" element={<ProtectedRoute roles={['student']}><JournalOfSaving /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/shop-story" element={<ProtectedRoute roles={['student']}><ShopStory /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/reflex-money-choice" element={<ProtectedRoute roles={['student']}><ReflexMoneyChoice /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/badge-saver-kid" element={<ProtectedRoute roles={['student']}><BadgeSaverKid /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/ice-cream-story" element={<ProtectedRoute roles={['student']}><IceCreamStory /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/quiz-on-spending" element={<ProtectedRoute roles={['student']}><QuizOnSpending /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/reflex-spending" element={<ProtectedRoute roles={['student']}><ReflexSpending /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/puzzle-smart-vs-waste" element={<ProtectedRoute roles={['student']}><PuzzleSmartVsWaste /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/shop-story-2" element={<ProtectedRoute roles={['student']}><ShopStory2 /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/poster-smart-shopping" element={<ProtectedRoute roles={['student']}><PosterSmartShopping /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/journal-of-smart-buy" element={<ProtectedRoute roles={['student']}><JournalOfSmartBuy /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/candy-offer-story" element={<ProtectedRoute roles={['student']}><CandyOfferStory /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/reflex-needs-first" element={<ProtectedRoute roles={['student']}><ReflexNeedsFirst /></ProtectedRoute>} />
-          <Route path="/student/finance/kids/badge-smart-spender-kid" element={<ProtectedRoute roles={['student']}><BadgeSmartSpenderKid /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/piggy-bank-story" element={<ProtectedRoute roles={['student', 'school_student']}><PiggyBankStory /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/quiz-on-saving" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnSaving /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/reflex-savings" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexSavings /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/puzzle-save-or-spend" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleSaveOrSpend /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/birthday-money-story" element={<ProtectedRoute roles={['student', 'school_student']}><BirthdayMoneyStory /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/poster-saving-habit" element={<ProtectedRoute roles={['student', 'school_student']}><PosterSavingHabit /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/journal-of-saving" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfSaving /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/shop-story" element={<ProtectedRoute roles={['student', 'school_student']}><ShopStory /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/reflex-money-choice" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexMoneyChoice /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/badge-saver-kid" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeSaverKid /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/ice-cream-story" element={<ProtectedRoute roles={['student', 'school_student']}><IceCreamStory /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/quiz-on-spending" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnSpending /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/reflex-spending" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexSpending /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/puzzle-smart-vs-waste" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleSmartVsWaste /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/shop-story-2" element={<ProtectedRoute roles={['student', 'school_student']}><ShopStory2 /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/poster-smart-shopping" element={<ProtectedRoute roles={['student', 'school_student']}><PosterSmartShopping /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/journal-of-smart-buy" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfSmartBuy /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/candy-offer-story" element={<ProtectedRoute roles={['student', 'school_student']}><CandyOfferStory /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/reflex-needs-first" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexNeedsFirst /></ProtectedRoute>} />
+          <Route path="/student/finance/kids/badge-smart-spender-kid" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeSmartSpenderKid /></ProtectedRoute>} />
 
           {/* Finance Games for Teens */}
-          <Route path="/student/finance/teen/pocket-money-story" element={<ProtectedRoute roles={['student']}><PocketMoneyStory /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/quiz-on-savings-rate" element={<ProtectedRoute roles={['student']}><QuizOnSavingsRate /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/reflex-smart-saver" element={<ProtectedRoute roles={['student']}><ReflexSmartSaver /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/puzzle-of-saving-goals" element={<ProtectedRoute roles={['student']}><PuzzleOfSavingGoals /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/salary-story" element={<ProtectedRoute roles={['student']}><SalaryStory /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/debate-save-vs-spend" element={<ProtectedRoute roles={['student']}><DebateSaveVsSpend /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/journal-of-saving-goal" element={<ProtectedRoute roles={['student']}><JournalOfSavingGoal /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/simulation-monthly-money" element={<ProtectedRoute roles={['student']}><SimulationMonthlyMoney /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/reflex-wise-use" element={<ProtectedRoute roles={['student']}><ReflexWiseUse /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/badge-smart-saver" element={<ProtectedRoute roles={['student']}><BadgeSmartSaver /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/allowance-story" element={<ProtectedRoute roles={['student']}><AllowanceStory /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/spending-quiz" element={<ProtectedRoute roles={['student']}><SpendingQuiz /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/reflex-wise-choices" element={<ProtectedRoute roles={['student']}><ReflexWiseChoices /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/puzzle-smart-spending" element={<ProtectedRoute roles={['student']}><PuzzleSmartSpending /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/party-story" element={<ProtectedRoute roles={['student']}><PartyStory /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/debate-needs-vs-wants" element={<ProtectedRoute roles={['student']}><DebateNeedsVsWants /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/journal-of-spending" element={<ProtectedRoute roles={['student']}><JournalOfSpending /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/simulation-shopping-mall" element={<ProtectedRoute roles={['student']}><SimulationShoppingMall /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/reflex-control" element={<ProtectedRoute roles={['student']}><ReflexControl /></ProtectedRoute>} />
-          <Route path="/student/finance/teen/badge-smart-spender-teen" element={<ProtectedRoute roles={['student']}><BadgeSmartSpenderTeen /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/pocket-money-story" element={<ProtectedRoute roles={['student', 'school_student']}><PocketMoneyStory /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/quiz-on-savings-rate" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnSavingsRate /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/reflex-smart-saver" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexSmartSaver /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/puzzle-of-saving-goals" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleOfSavingGoals /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/salary-story" element={<ProtectedRoute roles={['student', 'school_student']}><SalaryStory /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/debate-save-vs-spend" element={<ProtectedRoute roles={['student', 'school_student']}><DebateSaveVsSpend /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/journal-of-saving-goal" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfSavingGoal /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/simulation-monthly-money" element={<ProtectedRoute roles={['student', 'school_student']}><SimulationMonthlyMoney /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/reflex-wise-use" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexWiseUse /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/badge-smart-saver" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeSmartSaver /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/allowance-story" element={<ProtectedRoute roles={['student', 'school_student']}><AllowanceStory /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/spending-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><SpendingQuiz /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/reflex-wise-choices" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexWiseChoices /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/puzzle-smart-spending" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleSmartSpending /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/party-story" element={<ProtectedRoute roles={['student', 'school_student']}><PartyStory /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/debate-needs-vs-wants" element={<ProtectedRoute roles={['student', 'school_student']}><DebateNeedsVsWants /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/journal-of-spending" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfSpending /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/simulation-shopping-mall" element={<ProtectedRoute roles={['student', 'school_student']}><SimulationShoppingMall /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/reflex-control" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexControl /></ProtectedRoute>} />
+          <Route path="/student/finance/teen/badge-smart-spender-teen" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeSmartSpenderTeen /></ProtectedRoute>} />
 
           {/* Brain Health Games for Kids */}
-          <Route path="/student/brain/kids/water-story" element={<ProtectedRoute roles={['student']}><WaterStory /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/quiz-on-brain-food" element={<ProtectedRoute roles={['student']}><QuizOnBrainFood /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/reflex-brain-boost" element={<ProtectedRoute roles={['student']}><ReflexBrainBoost /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/puzzle-of-brain-care" element={<ProtectedRoute roles={['student']}><PuzzleOfBrainCare /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/breakfast-story" element={<ProtectedRoute roles={['student']}><BreakfastStory /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/poster-brain-health" element={<ProtectedRoute roles={['student']}><PosterBrainHealth /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/journal-of-habits" element={<ProtectedRoute roles={['student']}><JournalOfHabits /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/sports-story" element={<ProtectedRoute roles={['student']}><SportsStory /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/reflex-daily-habit" element={<ProtectedRoute roles={['student']}><ReflexDailyHabit /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/badge-brain-care-kid" element={<ProtectedRoute roles={['student']}><BadgeBrainCareKid /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/classroom-story" element={<ProtectedRoute roles={['student']}><ClassroomStory /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/quiz-on-focus" element={<ProtectedRoute roles={['student']}><QuizOnFocus /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/reflex-attention" element={<ProtectedRoute roles={['student']}><ReflexAttention /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/puzzle-of-focus" element={<ProtectedRoute roles={['student']}><PuzzleOfFocus /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/homework-story" element={<ProtectedRoute roles={['student']}><HomeworkStory /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/poster-focus-matters" element={<ProtectedRoute roles={['student']}><PosterFocusMatters /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/journal-of-focus" element={<ProtectedRoute roles={['student']}><JournalOfFocus /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/game-story" element={<ProtectedRoute roles={['student']}><GameStory /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/reflex-quick-attention" element={<ProtectedRoute roles={['student']}><ReflexQuickAttention /></ProtectedRoute>} />
-          <Route path="/student/brain/kids/badge-focus-kid" element={<ProtectedRoute roles={['student']}><BadgeFocusKid /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/water-story" element={<ProtectedRoute roles={['student', 'school_student']}><WaterStory /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/quiz-on-brain-food" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnBrainFood /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/reflex-brain-boost" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexBrainBoost /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/puzzle-of-brain-care" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleOfBrainCare /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/breakfast-story" element={<ProtectedRoute roles={['student', 'school_student']}><BreakfastStory /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/poster-brain-health" element={<ProtectedRoute roles={['student', 'school_student']}><PosterBrainHealth /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/journal-of-habits" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfHabits /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/sports-story" element={<ProtectedRoute roles={['student', 'school_student']}><SportsStory /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/reflex-daily-habit" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexDailyHabit /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/badge-brain-care-kid" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeBrainCareKid /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/classroom-story" element={<ProtectedRoute roles={['student', 'school_student']}><ClassroomStory /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/quiz-on-focus" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnFocus /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/reflex-attention" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexAttention /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/puzzle-of-focus" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleOfFocus /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/homework-story" element={<ProtectedRoute roles={['student', 'school_student']}><HomeworkStory /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/poster-focus-matters" element={<ProtectedRoute roles={['student', 'school_student']}><PosterFocusMatters /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/journal-of-focus" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfFocus /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/game-story" element={<ProtectedRoute roles={['student', 'school_student']}><GameStory /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/reflex-quick-attention" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexQuickAttention /></ProtectedRoute>} />
+          <Route path="/student/brain/kids/badge-focus-kid" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeFocusKid /></ProtectedRoute>} />
 
           {/* Brain Health Games for Teens */}
-          <Route path="/student/brain/teen/exercise-story" element={<ProtectedRoute roles={['student']}><ExerciseStory /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/quiz-on-habits" element={<ProtectedRoute roles={['student']}><QuizOnHabits /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/reflex-mind-check" element={<ProtectedRoute roles={['student']}><ReflexMindCheck /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/puzzle-brain-fuel" element={<ProtectedRoute roles={['student']}><PuzzleBrainFuel /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/junk-food-story" element={<ProtectedRoute roles={['student']}><JunkFoodStory /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/debate-brain-vs-body" element={<ProtectedRoute roles={['student']}><DebateBrainVsBody /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/journal-of-brain-fitness" element={<ProtectedRoute roles={['student']}><JournalOfBrainFitness /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/simulation-daily-routine" element={<ProtectedRoute roles={['student']}><SimulationDailyRoutine /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/reflex-brain-boost" element={<ProtectedRoute roles={['student']}><ReflexBrainBoostTeen /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/badge-brain-health-hero" element={<ProtectedRoute roles={['student']}><BadgeBrainHealthHero /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/exam-story" element={<ProtectedRoute roles={['student']}><ExamStory /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/quiz-on-attention" element={<ProtectedRoute roles={['student']}><QuizOnAttention /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/reflex-concentration" element={<ProtectedRoute roles={['student']}><ReflexConcentration /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/puzzle-of-distractions" element={<ProtectedRoute roles={['student']}><PuzzleOfDistractions /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/social-media-story" element={<ProtectedRoute roles={['student']}><SocialMediaStory /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/debate-multitask-vs-focus" element={<ProtectedRoute roles={['student']}><DebateMultitaskVsFocus /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/journal-of-attention" element={<ProtectedRoute roles={['student']}><JournalOfAttention /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/simulation-study-plan" element={<ProtectedRoute roles={['student']}><SimulationStudyPlan /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/reflex-distraction-alert" element={<ProtectedRoute roles={['student']}><ReflexDistractionAlert /></ProtectedRoute>} />
-          <Route path="/student/brain/teen/badge-focus-hero" element={<ProtectedRoute roles={['student']}><BadgeFocusHero /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/exercise-story" element={<ProtectedRoute roles={['student', 'school_student']}><ExerciseStory /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/quiz-on-habits" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnHabits /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/reflex-mind-check" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexMindCheck /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/puzzle-brain-fuel" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleBrainFuel /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/junk-food-story" element={<ProtectedRoute roles={['student', 'school_student']}><JunkFoodStory /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/debate-brain-vs-body" element={<ProtectedRoute roles={['student', 'school_student']}><DebateBrainVsBody /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/journal-of-brain-fitness" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfBrainFitness /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/simulation-daily-routine" element={<ProtectedRoute roles={['student', 'school_student']}><SimulationDailyRoutine /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/reflex-brain-boost" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexBrainBoostTeen /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/badge-brain-health-hero" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeBrainHealthHero /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/exam-story" element={<ProtectedRoute roles={['student', 'school_student']}><ExamStory /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/quiz-on-attention" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnAttention /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/reflex-concentration" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexConcentration /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/puzzle-of-distractions" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleOfDistractions /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/social-media-story" element={<ProtectedRoute roles={['student', 'school_student']}><SocialMediaStory /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/debate-multitask-vs-focus" element={<ProtectedRoute roles={['student', 'school_student']}><DebateMultitaskVsFocus /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/journal-of-attention" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfAttention /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/simulation-study-plan" element={<ProtectedRoute roles={['student', 'school_student']}><SimulationStudyPlan /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/reflex-distraction-alert" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexDistractionAlert /></ProtectedRoute>} />
+          <Route path="/student/brain/teen/badge-focus-hero" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeFocusHero /></ProtectedRoute>} />
 
           {/* UVLS Kids Games - Set 1 (Empathy & Compassion) */}
-          <Route path="/student/uvls/kids/share-your-toy" element={<ProtectedRoute roles={['student']}><ShareYourToy /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/feelings-quiz" element={<ProtectedRoute roles={['student']}><FeelingsQuiz /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/kind-reflex" element={<ProtectedRoute roles={['student']}><KindReflex /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/match-faces" element={<ProtectedRoute roles={['student']}><MatchFaces /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/spot-help" element={<ProtectedRoute roles={['student']}><SpotHelp /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/kind-poster" element={<ProtectedRoute roles={['student']}><KindPoster /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/mini-journal" element={<ProtectedRoute roles={['student']}><MiniJournal /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/comfort-roleplay" element={<ProtectedRoute roles={['student']}><ComfortRoleplay /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/share-reflex" element={<ProtectedRoute roles={['student']}><ShareReflex /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/little-empath-badge" element={<ProtectedRoute roles={['student']}><LittleEmpathBadge /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/share-your-toy" element={<ProtectedRoute roles={['student', 'school_student']}><ShareYourToy /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/feelings-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><FeelingsQuiz /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/kind-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><KindReflex /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/match-faces" element={<ProtectedRoute roles={['student', 'school_student']}><MatchFaces /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/spot-help" element={<ProtectedRoute roles={['student', 'school_student']}><SpotHelp /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/kind-poster" element={<ProtectedRoute roles={['student', 'school_student']}><KindPoster /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/mini-journal" element={<ProtectedRoute roles={['student', 'school_student']}><MiniJournal /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/comfort-roleplay" element={<ProtectedRoute roles={['student', 'school_student']}><ComfortRoleplay /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/share-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><ShareReflex /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/little-empath-badge" element={<ProtectedRoute roles={['student', 'school_student']}><LittleEmpathBadge /></ProtectedRoute>} />
           
           {/* UVLS Kids Games - Set 2 (Respect & Inclusion) */}
-          <Route path="/student/uvls/kids/greet-the-new-kid" element={<ProtectedRoute roles={['student']}><GreetTheNewKid /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/polite-words-quiz" element={<ProtectedRoute roles={['student']}><PoliteWordsQuiz /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/respect-tap" element={<ProtectedRoute roles={['student']}><RespectTap /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/inclusion-match" element={<ProtectedRoute roles={['student']}><InclusionMatch /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/invite-to-play" element={<ProtectedRoute roles={['student']}><InviteToPlay /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/inclusion-poster" element={<ProtectedRoute roles={['student']}><InclusionPoster /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/inclusion-journal" element={<ProtectedRoute roles={['student']}><InclusionJournal /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/invite-roleplay" element={<ProtectedRoute roles={['student']}><InviteRoleplay /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/respect-signals" element={<ProtectedRoute roles={['student']}><RespectSignals /></ProtectedRoute>} />
-          <Route path="/student/uvls/kids/inclusive-kid-badge" element={<ProtectedRoute roles={['student']}><InclusiveKidBadge /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/greet-the-new-kid" element={<ProtectedRoute roles={['student', 'school_student']}><GreetTheNewKid /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/polite-words-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><PoliteWordsQuiz /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/respect-tap" element={<ProtectedRoute roles={['student', 'school_student']}><RespectTap /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/inclusion-match" element={<ProtectedRoute roles={['student', 'school_student']}><InclusionMatch /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/invite-to-play" element={<ProtectedRoute roles={['student', 'school_student']}><InviteToPlay /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/inclusion-poster" element={<ProtectedRoute roles={['student', 'school_student']}><InclusionPoster /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/inclusion-journal" element={<ProtectedRoute roles={['student', 'school_student']}><InclusionJournal /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/invite-roleplay" element={<ProtectedRoute roles={['student', 'school_student']}><InviteRoleplay /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/respect-signals" element={<ProtectedRoute roles={['student', 'school_student']}><RespectSignals /></ProtectedRoute>} />
+          <Route path="/student/uvls/kids/inclusive-kid-badge" element={<ProtectedRoute roles={['student', 'school_student']}><InclusiveKidBadge /></ProtectedRoute>} />
 
           {/* UVLS Teen Games */}
-          <Route path="/student/uvls/teen/listen-deep" element={<ProtectedRoute roles={['student']}><ListenDeep /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/empathy-quiz" element={<ProtectedRoute roles={['student']}><EmpathyQuizTeen /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/perspective-puzzle" element={<ProtectedRoute roles={['student']}><PerspectivePuzzle /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/walk-in-shoes" element={<ProtectedRoute roles={['student']}><WalkInShoes /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/empathy-debate" element={<ProtectedRoute roles={['student']}><EmpathyDebate /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/reflective-journal" element={<ProtectedRoute roles={['student']}><ReflectiveJournal /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/peer-support-roleplay" element={<ProtectedRoute roles={['student']}><PeerSupportRoleplay /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/case-response-puzzle" element={<ProtectedRoute roles={['student']}><CaseResponsePuzzle /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/spot-distress-reflex" element={<ProtectedRoute roles={['student']}><SpotDistressReflex /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/empathy-champion-badge" element={<ProtectedRoute roles={['student']}><EmpathyChampionBadge /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/cultural-greeting" element={<ProtectedRoute roles={['student']}><CulturalGreeting /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/inclusion-quiz" element={<ProtectedRoute roles={['student']}><InclusionQuizTeen /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/accessibility-puzzle" element={<ProtectedRoute roles={['student']}><AccessibilityPuzzle /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/inclusive-class-simulation" element={<ProtectedRoute roles={['student']}><InclusiveClassSimulation /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/respect-debate" element={<ProtectedRoute roles={['student']}><RespectDebate /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/inclusion-journal" element={<ProtectedRoute roles={['student']}><InclusionJournalTeen /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/correcting-bias-roleplay" element={<ProtectedRoute roles={['student']}><CorrectingBiasRoleplay /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/name-respect-reflex" element={<ProtectedRoute roles={['student']}><NameRespectReflex /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/policy-case-puzzle" element={<ProtectedRoute roles={['student']}><PolicyCasePuzzle /></ProtectedRoute>} />
-          <Route path="/student/uvls/teen/respect-leader-badge" element={<ProtectedRoute roles={['student']}><RespectLeaderBadge /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/listen-deep" element={<ProtectedRoute roles={['student', 'school_student']}><ListenDeep /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/empathy-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><EmpathyQuizTeen /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/perspective-puzzle" element={<ProtectedRoute roles={['student', 'school_student']}><PerspectivePuzzle /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/walk-in-shoes" element={<ProtectedRoute roles={['student', 'school_student']}><WalkInShoes /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/empathy-debate" element={<ProtectedRoute roles={['student', 'school_student']}><EmpathyDebate /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/reflective-journal" element={<ProtectedRoute roles={['student', 'school_student']}><ReflectiveJournal /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/peer-support-roleplay" element={<ProtectedRoute roles={['student', 'school_student']}><PeerSupportRoleplay /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/case-response-puzzle" element={<ProtectedRoute roles={['student', 'school_student']}><CaseResponsePuzzle /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/spot-distress-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><SpotDistressReflex /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/empathy-champion-badge" element={<ProtectedRoute roles={['student', 'school_student']}><EmpathyChampionBadge /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/cultural-greeting" element={<ProtectedRoute roles={['student', 'school_student']}><CulturalGreeting /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/inclusion-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><InclusionQuizTeen /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/accessibility-puzzle" element={<ProtectedRoute roles={['student', 'school_student']}><AccessibilityPuzzle /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/inclusive-class-simulation" element={<ProtectedRoute roles={['student', 'school_student']}><InclusiveClassSimulation /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/respect-debate" element={<ProtectedRoute roles={['student', 'school_student']}><RespectDebate /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/inclusion-journal" element={<ProtectedRoute roles={['student', 'school_student']}><InclusionJournalTeen /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/correcting-bias-roleplay" element={<ProtectedRoute roles={['student', 'school_student']}><CorrectingBiasRoleplay /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/name-respect-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><NameRespectReflex /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/policy-case-puzzle" element={<ProtectedRoute roles={['student', 'school_student']}><PolicyCasePuzzle /></ProtectedRoute>} />
+          <Route path="/student/uvls/teen/respect-leader-badge" element={<ProtectedRoute roles={['student', 'school_student']}><RespectLeaderBadge /></ProtectedRoute>} />
 
           {/* DCOS Kids Games - Digital Citizenship & Online Safety */}
-          <Route path="/student/dcos/kids/strong-password-reflex" element={<ProtectedRoute roles={['student']}><StrongPasswordReflex /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/stranger-chat-story" element={<ProtectedRoute roles={['student']}><StrangerChatStory /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/photo-share-quiz" element={<ProtectedRoute roles={['student']}><PhotoShareQuiz /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/personal-info-puzzle" element={<ProtectedRoute roles={['student']}><PersonalInfoPuzzle /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/game-invite-reflex" element={<ProtectedRoute roles={['student']}><GameInviteReflex /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/safety-poster" element={<ProtectedRoute roles={['student']}><SafetyPoster /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/family-rules-story" element={<ProtectedRoute roles={['student']}><FamilyRulesStory /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/device-sharing-quiz" element={<ProtectedRoute roles={['student']}><DeviceSharingQuiz /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/online-friend-reflex" element={<ProtectedRoute roles={['student']}><OnlineFriendReflex /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/safe-user-badge" element={<ProtectedRoute roles={['student']}><SafeUserBadge /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/spot-bully-quiz" element={<ProtectedRoute roles={['student']}><SpotBullyQuiz /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/kind-words-reflex" element={<ProtectedRoute roles={['student']}><KindWordsReflex /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/smile-story" element={<ProtectedRoute roles={['student']}><SmileStory /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/gossip-puzzle" element={<ProtectedRoute roles={['student']}><GossipPuzzle /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/playground-bystander" element={<ProtectedRoute roles={['student']}><PlaygroundBystander /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/cyberbully-report" element={<ProtectedRoute roles={['student']}><CyberBullyReport /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/role-swap" element={<ProtectedRoute roles={['student']}><RoleSwap /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/kindness-journal" element={<ProtectedRoute roles={['student']}><KindnessJournal /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/friendship-reflex" element={<ProtectedRoute roles={['student']}><FriendshipReflex /></ProtectedRoute>} />
-          <Route path="/student/dcos/kids/kind-friend-badge" element={<ProtectedRoute roles={['student']}><KindFriendBadge /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/strong-password-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><StrongPasswordReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/stranger-chat-story" element={<ProtectedRoute roles={['student', 'school_student']}><StrangerChatStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/photo-share-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><PhotoShareQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/personal-info-puzzle" element={<ProtectedRoute roles={['student', 'school_student']}><PersonalInfoPuzzle /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/game-invite-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><GameInviteReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/safety-poster" element={<ProtectedRoute roles={['student', 'school_student']}><SafetyPoster /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/family-rules-story" element={<ProtectedRoute roles={['student', 'school_student']}><FamilyRulesStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/device-sharing-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><DeviceSharingQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/online-friend-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><OnlineFriendReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/safe-user-badge" element={<ProtectedRoute roles={['student', 'school_student']}><SafeUserBadge /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/spot-bully-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><SpotBullyQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/kind-words-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><KindWordsReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/smile-story" element={<ProtectedRoute roles={['student', 'school_student']}><SmileStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/gossip-puzzle" element={<ProtectedRoute roles={['student', 'school_student']}><GossipPuzzle /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/playground-bystander" element={<ProtectedRoute roles={['student', 'school_student']}><PlaygroundBystander /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/cyberbully-report" element={<ProtectedRoute roles={['student', 'school_student']}><CyberBullyReport /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/role-swap" element={<ProtectedRoute roles={['student', 'school_student']}><RoleSwap /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/kindness-journal" element={<ProtectedRoute roles={['student', 'school_student']}><KindnessJournal /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/friendship-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><FriendshipReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/kids/kind-friend-badge" element={<ProtectedRoute roles={['student', 'school_student']}><KindFriendBadge /></ProtectedRoute>} />
 
           {/* DCOS Teen Games - Digital Citizenship & Online Safety */}
-          <Route path="/student/dcos/teen/password-sharing-story" element={<ProtectedRoute roles={['student']}><PasswordSharingStory /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/privacy-settings-quiz" element={<ProtectedRoute roles={['student']}><PrivacySettingsQuiz /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/otp-fraud-reflex" element={<ProtectedRoute roles={['student']}><OTPFraudReflex /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/profile-picture-simulation" element={<ProtectedRoute roles={['student']}><ProfilePictureSimulation /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/social-media-journal" element={<ProtectedRoute roles={['student']}><SocialMediaJournal /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/data-consent-quiz" element={<ProtectedRoute roles={['student']}><DataConsentQuiz /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/fake-friend-story" element={<ProtectedRoute roles={['student']}><FakeFriendStory /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/safety-reflex" element={<ProtectedRoute roles={['student']}><SafetyReflex /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/debate-stage-online-friends" element={<ProtectedRoute roles={['student']}><DebateStageOnlineFriends /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/online-safety-badge" element={<ProtectedRoute roles={['student']}><OnlineSafetyBadge /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/cyberbully-reflex" element={<ProtectedRoute roles={['student']}><CyberBullyReflex /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/peer-pressure-story" element={<ProtectedRoute roles={['student']}><PeerPressureStory /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/gossip-chain-simulation" element={<ProtectedRoute roles={['student']}><GossipChainSimulation /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/debate-stage-trolling" element={<ProtectedRoute roles={['student']}><DebateStageTrolling /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/diversity-quiz" element={<ProtectedRoute roles={['student']}><DiversityQuiz /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/encourage-roleplay" element={<ProtectedRoute roles={['student']}><EncourageRoleplay /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/empathy-journal" element={<ProtectedRoute roles={['student']}><EmpathyJournal /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/anti-bully-reflex" element={<ProtectedRoute roles={['student']}><AntiBullyReflex /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/upstander-simulation" element={<ProtectedRoute roles={['student']}><UpstanderSimulation /></ProtectedRoute>} />
-          <Route path="/student/dcos/teen/courage-badge" element={<ProtectedRoute roles={['student']}><CourageBadge /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/password-sharing-story" element={<ProtectedRoute roles={['student', 'school_student']}><PasswordSharingStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/privacy-settings-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><PrivacySettingsQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/otp-fraud-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><OTPFraudReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/profile-picture-simulation" element={<ProtectedRoute roles={['student', 'school_student']}><ProfilePictureSimulation /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/social-media-journal" element={<ProtectedRoute roles={['student', 'school_student']}><SocialMediaJournal /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/data-consent-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><DataConsentQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/fake-friend-story" element={<ProtectedRoute roles={['student', 'school_student']}><FakeFriendStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/safety-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><SafetyReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/debate-stage-online-friends" element={<ProtectedRoute roles={['student', 'school_student']}><DebateStageOnlineFriends /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/online-safety-badge" element={<ProtectedRoute roles={['student', 'school_student']}><OnlineSafetyBadge /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/cyberbully-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><CyberBullyReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/peer-pressure-story" element={<ProtectedRoute roles={['student', 'school_student']}><PeerPressureStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/gossip-chain-simulation" element={<ProtectedRoute roles={['student', 'school_student']}><GossipChainSimulation /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/debate-stage-trolling" element={<ProtectedRoute roles={['student', 'school_student']}><DebateStageTrolling /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/diversity-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><DiversityQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/encourage-roleplay" element={<ProtectedRoute roles={['student', 'school_student']}><EncourageRoleplay /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/empathy-journal" element={<ProtectedRoute roles={['student', 'school_student']}><EmpathyJournal /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/anti-bully-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><AntiBullyReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/upstander-simulation" element={<ProtectedRoute roles={['student', 'school_student']}><UpstanderSimulation /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/courage-badge" element={<ProtectedRoute roles={['student', 'school_student']}><CourageBadge /></ProtectedRoute>} />
 
           {/* Moral Values Kids Games - Honesty & Respect */}
-          <Route path="/student/moral-values/kids/lost-pencil-story" element={<ProtectedRoute roles={['student']}><LostPencilStory /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/homework-quiz" element={<ProtectedRoute roles={['student']}><HomeworkQuiz /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/truth-reflex" element={<ProtectedRoute roles={['student']}><TruthReflex /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/puzzle-of-trust" element={<ProtectedRoute roles={['student']}><PuzzleOfTrust /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/cheating-story" element={<ProtectedRoute roles={['student']}><CheatingStory /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/poster-of-honesty" element={<ProtectedRoute roles={['student']}><PosterOfHonesty /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/journal-of-truth" element={<ProtectedRoute roles={['student']}><JournalOfTruth /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/candy-shop-story" element={<ProtectedRoute roles={['student']}><CandyShopStory /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/reflex-quick-choice" element={<ProtectedRoute roles={['student']}><ReflexQuickChoice /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/badge-truthful-kid" element={<ProtectedRoute roles={['student']}><BadgeTruthfulKid /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/respect-elders-story" element={<ProtectedRoute roles={['student']}><RespectEldersStory /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/polite-words-quiz" element={<ProtectedRoute roles={['student']}><PoliteWordsQuiz2 /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/reflex-respect" element={<ProtectedRoute roles={['student']}><ReflexRespect /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/puzzle-respect-match" element={<ProtectedRoute roles={['student']}><PuzzleRespectMatch /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/teacher-greeting-story" element={<ProtectedRoute roles={['student']}><TeacherGreetingStory /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/gratitude-poster" element={<ProtectedRoute roles={['student']}><GratitudePoster /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/journal-of-gratitude" element={<ProtectedRoute roles={['student']}><JournalOfGratitude /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/playground-respect-story" element={<ProtectedRoute roles={['student']}><PlaygroundRespectStory /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/reflex-help" element={<ProtectedRoute roles={['student']}><ReflexHelp /></ProtectedRoute>} />
-          <Route path="/student/moral-values/kids/badge-respect-kid" element={<ProtectedRoute roles={['student']}><BadgeRespectKid /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/lost-pencil-story" element={<ProtectedRoute roles={['student', 'school_student']}><LostPencilStory /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/homework-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><HomeworkQuiz /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/truth-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><TruthReflex /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/puzzle-of-trust" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleOfTrust /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/cheating-story" element={<ProtectedRoute roles={['student', 'school_student']}><CheatingStory /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/poster-of-honesty" element={<ProtectedRoute roles={['student', 'school_student']}><PosterOfHonesty /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/journal-of-truth" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfTruth /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/candy-shop-story" element={<ProtectedRoute roles={['student', 'school_student']}><CandyShopStory /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/reflex-quick-choice" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexQuickChoice /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/badge-truthful-kid" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeTruthfulKid /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/respect-elders-story" element={<ProtectedRoute roles={['student', 'school_student']}><RespectEldersStory /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/polite-words-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><PoliteWordsQuiz2 /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/reflex-respect" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexRespect /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/puzzle-respect-match" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleRespectMatch /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/teacher-greeting-story" element={<ProtectedRoute roles={['student', 'school_student']}><TeacherGreetingStory /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/gratitude-poster" element={<ProtectedRoute roles={['student', 'school_student']}><GratitudePoster /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/journal-of-gratitude" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfGratitude /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/playground-respect-story" element={<ProtectedRoute roles={['student', 'school_student']}><PlaygroundRespectStory /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/reflex-help" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexHelp /></ProtectedRoute>} />
+          <Route path="/student/moral-values/kids/badge-respect-kid" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeRespectKid /></ProtectedRoute>} />
 
           {/* Moral Values Teen Games - Integrity & Respect */}
-          <Route path="/student/moral-values/teen/friend-lie-story" element={<ProtectedRoute roles={['student']}><FriendLieStory /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/white-lie-quiz" element={<ProtectedRoute roles={['student']}><WhiteLieQuiz /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/reflex-spot-fake" element={<ProtectedRoute roles={['student']}><ReflexSpotFake /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/puzzle-of-integrity" element={<ProtectedRoute roles={['student']}><PuzzleOfIntegrity /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/bribe-simulation" element={<ProtectedRoute roles={['student']}><BribeSimulation /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/debate-lying-for-friend" element={<ProtectedRoute roles={['student']}><DebateLyingForFriend /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/integrity-journal" element={<ProtectedRoute roles={['student']}><IntegrityJournal /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/exam-cheating-story" element={<ProtectedRoute roles={['student']}><ExamCheatingStory /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/roleplay-truthful-leader" element={<ProtectedRoute roles={['student']}><RoleplayTruthfulLeader /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/badge-integrity-hero" element={<ProtectedRoute roles={['student']}><BadgeIntegrityHero /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/debate-obey-or-question" element={<ProtectedRoute roles={['student']}><DebateObeyOrQuestion /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/gratitude-story" element={<ProtectedRoute roles={['student']}><GratitudeStory /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/reflex-politeness" element={<ProtectedRoute roles={['student']}><ReflexPoliteness /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/puzzle-of-gratitude" element={<ProtectedRoute roles={['student']}><PuzzleOfGratitude /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/service-story" element={<ProtectedRoute roles={['student']}><ServiceStory /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/respect-journal" element={<ProtectedRoute roles={['student']}><RespectJournal /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/debate-respect-teachers" element={<ProtectedRoute roles={['student']}><DebateRespectTeachers /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/roleplay-respect-leader" element={<ProtectedRoute roles={['student']}><RoleplayRespectLeader /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/reflex-gratitude" element={<ProtectedRoute roles={['student']}><ReflexGratitude /></ProtectedRoute>} />
-          <Route path="/student/moral-values/teen/badge-gratitude-hero" element={<ProtectedRoute roles={['student']}><BadgeGratitudeHero /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/friend-lie-story" element={<ProtectedRoute roles={['student', 'school_student']}><FriendLieStory /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/white-lie-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><WhiteLieQuiz /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/reflex-spot-fake" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexSpotFake /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/puzzle-of-integrity" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleOfIntegrity /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/bribe-simulation" element={<ProtectedRoute roles={['student', 'school_student']}><BribeSimulation /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/debate-lying-for-friend" element={<ProtectedRoute roles={['student', 'school_student']}><DebateLyingForFriend /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/integrity-journal" element={<ProtectedRoute roles={['student', 'school_student']}><IntegrityJournal /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/exam-cheating-story" element={<ProtectedRoute roles={['student', 'school_student']}><ExamCheatingStory /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/roleplay-truthful-leader" element={<ProtectedRoute roles={['student', 'school_student']}><RoleplayTruthfulLeader /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/badge-integrity-hero" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeIntegrityHero /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/debate-obey-or-question" element={<ProtectedRoute roles={['student', 'school_student']}><DebateObeyOrQuestion /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/gratitude-story" element={<ProtectedRoute roles={['student', 'school_student']}><GratitudeStory /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/reflex-politeness" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexPoliteness /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/puzzle-of-gratitude" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleOfGratitude /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/service-story" element={<ProtectedRoute roles={['student', 'school_student']}><ServiceStory /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/respect-journal" element={<ProtectedRoute roles={['student', 'school_student']}><RespectJournal /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/debate-respect-teachers" element={<ProtectedRoute roles={['student', 'school_student']}><DebateRespectTeachers /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/roleplay-respect-leader" element={<ProtectedRoute roles={['student', 'school_student']}><RoleplayRespectLeader /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/reflex-gratitude" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexGratitude /></ProtectedRoute>} />
+          <Route path="/student/moral-values/teen/badge-gratitude-hero" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeGratitudeHero /></ProtectedRoute>} />
 
           {/* AI For All Kids Games */}
-          <Route path="/student/ai-for-all/kids/spot-the-pattern" element={<ProtectedRoute roles={['student']}><SpotThePattern /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/cat-or-dog-game" element={<ProtectedRoute roles={['student']}><CatOrDogGame /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/sorting-colors" element={<ProtectedRoute roles={['student']}><SortingColors /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/true-false-ai-quiz" element={<ProtectedRoute roles={['student']}><TrueFalseAIQuiz /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/emoji-classifier" element={<ProtectedRoute roles={['student']}><EmojiClassifier /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/self-driving-car" element={<ProtectedRoute roles={['student']}><SelfDrivingCar /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/pattern-finder-puzzle" element={<ProtectedRoute roles={['student']}><PatternFinderPuzzle /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/robot-helper-story" element={<ProtectedRoute roles={['student']}><RobotHelperStory /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/spam-vs-not-spam" element={<ProtectedRoute roles={['student']}><SpamVsNotSpam /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/siri-alexa-quiz" element={<ProtectedRoute roles={['student']}><SiriAlexaQuiz /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/ai-in-games" element={<ProtectedRoute roles={['student']}><AIInGames /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/match-ai-tools" element={<ProtectedRoute roles={['student']}><MatchAITools /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/pattern-music-game" element={<ProtectedRoute roles={['student']}><PatternMusicGame /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/robot-vision-game" element={<ProtectedRoute roles={['student']}><RobotVisionGame /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/smart-home-story" element={<ProtectedRoute roles={['student']}><SmartHomeStory /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/train-the-robot" element={<ProtectedRoute roles={['student']}><TrainTheRobot /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/prediction-puzzle" element={<ProtectedRoute roles={['student']}><PredictionPuzzle /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/friendly-ai-quiz" element={<ProtectedRoute roles={['student']}><FriendlyAIQuiz /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/robot-emotion-story" element={<ProtectedRoute roles={['student']}><RobotEmotionStory /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/kids/recommendation-game" element={<ProtectedRoute roles={['student']}><RecommendationGame /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/spot-the-pattern" element={<ProtectedRoute roles={['student', 'school_student']}><SpotThePattern /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/cat-or-dog-game" element={<ProtectedRoute roles={['student', 'school_student']}><CatOrDogGame /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/sorting-colors" element={<ProtectedRoute roles={['student', 'school_student']}><SortingColors /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/true-false-ai-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><TrueFalseAIQuiz /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/emoji-classifier" element={<ProtectedRoute roles={['student', 'school_student']}><EmojiClassifier /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/self-driving-car" element={<ProtectedRoute roles={['student', 'school_student']}><SelfDrivingCar /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/pattern-finder-puzzle" element={<ProtectedRoute roles={['student', 'school_student']}><PatternFinderPuzzle /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/robot-helper-story" element={<ProtectedRoute roles={['student', 'school_student']}><RobotHelperStory /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/spam-vs-not-spam" element={<ProtectedRoute roles={['student', 'school_student']}><SpamVsNotSpam /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/siri-alexa-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><SiriAlexaQuiz /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/ai-in-games" element={<ProtectedRoute roles={['student', 'school_student']}><AIInGames /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/match-ai-tools" element={<ProtectedRoute roles={['student', 'school_student']}><MatchAITools /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/pattern-music-game" element={<ProtectedRoute roles={['student', 'school_student']}><PatternMusicGame /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/robot-vision-game" element={<ProtectedRoute roles={['student', 'school_student']}><RobotVisionGame /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/smart-home-story" element={<ProtectedRoute roles={['student', 'school_student']}><SmartHomeStory /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/train-the-robot" element={<ProtectedRoute roles={['student', 'school_student']}><TrainTheRobot /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/prediction-puzzle" element={<ProtectedRoute roles={['student', 'school_student']}><PredictionPuzzle /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/friendly-ai-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><FriendlyAIQuiz /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/robot-emotion-story" element={<ProtectedRoute roles={['student', 'school_student']}><RobotEmotionStory /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/kids/recommendation-game" element={<ProtectedRoute roles={['student', 'school_student']}><RecommendationGame /></ProtectedRoute>} />
 
           {/* AI For All Teen Games */}
-          <Route path="/student/ai-for-all/teen/what-is-ai-quiz" element={<ProtectedRoute roles={['student']}><WhatIsAIQuiz /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/pattern-prediction-puzzle" element={<ProtectedRoute roles={['student']}><PatternPredictionPuzzle /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/image-classifier-game" element={<ProtectedRoute roles={['student']}><ImageClassifierGame /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/human-vs-ai-quiz" element={<ProtectedRoute roles={['student']}><HumanVsAIQuiz /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/predict-next-word" element={<ProtectedRoute roles={['student']}><PredictNextWord /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/self-driving-car-reflex" element={<ProtectedRoute roles={['student']}><SelfDrivingCarReflex /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/sorting-emotions-game" element={<ProtectedRoute roles={['student']}><SortingEmotionsGame /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/true-false-ai-quiz" element={<ProtectedRoute roles={['student']}><TrueFalseAIQuizTeen /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/chatbot-simulation" element={<ProtectedRoute roles={['student']}><ChatbotSimulation /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/ai-in-gaming-story" element={<ProtectedRoute roles={['student']}><AIInGamingStory /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/pattern-music-reflex" element={<ProtectedRoute roles={['student']}><PatternMusicReflexTeen /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/computer-vision-basics" element={<ProtectedRoute roles={['student']}><ComputerVisionBasics /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/ai-in-smartphones-quiz" element={<ProtectedRoute roles={['student']}><AIInSmartphonesQuiz /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/prediction-story" element={<ProtectedRoute roles={['student']}><PredictionStory /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/machine-vs-human-reflex" element={<ProtectedRoute roles={['student']}><MachineVsHumanReflex /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/language-ai-quiz" element={<ProtectedRoute roles={['student']}><LanguageAIQuiz /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/simple-algorithm-puzzle" element={<ProtectedRoute roles={['student']}><SimpleAlgorithmPuzzle /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/smart-home-story" element={<ProtectedRoute roles={['student']}><SmartHomeStoryTeen /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/recommendation-simulation" element={<ProtectedRoute roles={['student']}><RecommendationSimulation /></ProtectedRoute>} />
-          <Route path="/student/ai-for-all/teen/ai-everywhere-quiz" element={<ProtectedRoute roles={['student']}><AIEverywhereQuiz /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/what-is-ai-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><WhatIsAIQuiz /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/pattern-prediction-puzzle" element={<ProtectedRoute roles={['student', 'school_student']}><PatternPredictionPuzzle /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/image-classifier-game" element={<ProtectedRoute roles={['student', 'school_student']}><ImageClassifierGame /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/human-vs-ai-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><HumanVsAIQuiz /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/predict-next-word" element={<ProtectedRoute roles={['student', 'school_student']}><PredictNextWord /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/self-driving-car-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><SelfDrivingCarReflex /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/sorting-emotions-game" element={<ProtectedRoute roles={['student', 'school_student']}><SortingEmotionsGame /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/true-false-ai-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><TrueFalseAIQuizTeen /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/chatbot-simulation" element={<ProtectedRoute roles={['student', 'school_student']}><ChatbotSimulation /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/ai-in-gaming-story" element={<ProtectedRoute roles={['student', 'school_student']}><AIInGamingStory /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/pattern-music-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><PatternMusicReflexTeen /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/computer-vision-basics" element={<ProtectedRoute roles={['student', 'school_student']}><ComputerVisionBasics /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/ai-in-smartphones-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><AIInSmartphonesQuiz /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/prediction-story" element={<ProtectedRoute roles={['student', 'school_student']}><PredictionStory /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/machine-vs-human-reflex" element={<ProtectedRoute roles={['student', 'school_student']}><MachineVsHumanReflex /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/language-ai-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><LanguageAIQuiz /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/simple-algorithm-puzzle" element={<ProtectedRoute roles={['student', 'school_student']}><SimpleAlgorithmPuzzle /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/smart-home-story" element={<ProtectedRoute roles={['student', 'school_student']}><SmartHomeStoryTeen /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/recommendation-simulation" element={<ProtectedRoute roles={['student', 'school_student']}><RecommendationSimulation /></ProtectedRoute>} />
+          <Route path="/student/ai-for-all/teen/ai-everywhere-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><AIEverywhereQuiz /></ProtectedRoute>} />
 
           {/* EHE Kids Games */}
-          <Route path="/student/ehe/kids/doctor-story" element={<ProtectedRoute roles={['student']}><DoctorStory /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/quiz-on-jobs" element={<ProtectedRoute roles={['student']}><QuizOnJobs /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/reflex-job-match" element={<ProtectedRoute roles={['student']}><ReflexJobMatch /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/puzzle-who-does-what" element={<ProtectedRoute roles={['student']}><PuzzleWhoDoesWhat /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/dream-job-story" element={<ProtectedRoute roles={['student']}><DreamJobStory /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/poster-my-dream-job" element={<ProtectedRoute roles={['student']}><PosterMyDreamJob /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/journal-of-jobs" element={<ProtectedRoute roles={['student']}><JournalOfJobs /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/school-helper-story" element={<ProtectedRoute roles={['student']}><SchoolHelperStory /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/reflex-career-check" element={<ProtectedRoute roles={['student']}><ReflexCareerCheck /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/badge-career-explorer" element={<ProtectedRoute roles={['student']}><BadgeCareerExplorer /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/idea-story" element={<ProtectedRoute roles={['student']}><IdeaStory /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/quiz-on-skills" element={<ProtectedRoute roles={['student']}><QuizOnSkills /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/reflex-skill-check" element={<ProtectedRoute roles={['student']}><ReflexSkillCheck /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/puzzle-match-skills" element={<ProtectedRoute roles={['student']}><PuzzleMatchSkills /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/teamwork-story" element={<ProtectedRoute roles={['student']}><TeamworkStory /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/poster-skills-for-success" element={<ProtectedRoute roles={['student']}><PosterSkillsForSuccess /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/journal-of-skills" element={<ProtectedRoute roles={['student']}><JournalOfSkills /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/risk-story" element={<ProtectedRoute roles={['student']}><RiskStory /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/reflex-innovation" element={<ProtectedRoute roles={['student']}><ReflexInnovation /></ProtectedRoute>} />
-          <Route path="/student/ehe/kids/badge-young-innovator" element={<ProtectedRoute roles={['student']}><BadgeYoungInnovator /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/doctor-story" element={<ProtectedRoute roles={['student', 'school_student']}><DoctorStory /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/quiz-on-jobs" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnJobs /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/reflex-job-match" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexJobMatch /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/puzzle-who-does-what" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleWhoDoesWhat /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/dream-job-story" element={<ProtectedRoute roles={['student', 'school_student']}><DreamJobStory /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/poster-my-dream-job" element={<ProtectedRoute roles={['student', 'school_student']}><PosterMyDreamJob /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/journal-of-jobs" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfJobs /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/school-helper-story" element={<ProtectedRoute roles={['student', 'school_student']}><SchoolHelperStory /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/reflex-career-check" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexCareerCheck /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/badge-career-explorer" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeCareerExplorer /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/idea-story" element={<ProtectedRoute roles={['student', 'school_student']}><IdeaStory /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/quiz-on-skills" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnSkills /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/reflex-skill-check" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexSkillCheck /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/puzzle-match-skills" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleMatchSkills /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/teamwork-story" element={<ProtectedRoute roles={['student', 'school_student']}><TeamworkStory /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/poster-skills-for-success" element={<ProtectedRoute roles={['student', 'school_student']}><PosterSkillsForSuccess /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/journal-of-skills" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfSkills /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/risk-story" element={<ProtectedRoute roles={['student', 'school_student']}><RiskStory /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/reflex-innovation" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexInnovation /></ProtectedRoute>} />
+          <Route path="/student/ehe/kids/badge-young-innovator" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeYoungInnovator /></ProtectedRoute>} />
 
           {/* EHE Teen Games */}
-          <Route path="/student/ehe/teen/career-story" element={<ProtectedRoute roles={['student']}><CareerStory /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/quiz-on-careers" element={<ProtectedRoute roles={['student']}><QuizOnCareers /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/reflex-teen-career" element={<ProtectedRoute roles={['student']}><ReflexTeenCareer /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/puzzle-career-match" element={<ProtectedRoute roles={['student']}><PuzzleCareerMatch /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/passion-story" element={<ProtectedRoute roles={['student']}><PassionStory /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/debate-one-career-or-many" element={<ProtectedRoute roles={['student']}><DebateOneCareerOrMany /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/journal-of-career-choice" element={<ProtectedRoute roles={['student']}><JournalOfCareerChoice /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/simulation-career-fair" element={<ProtectedRoute roles={['student']}><SimulationCareerFair /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/reflex-future-check" element={<ProtectedRoute roles={['student']}><ReflexFutureCheck /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/badge-career-aware-teen" element={<ProtectedRoute roles={['student']}><BadgeCareerAwareTeen /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/opportunity-story" element={<ProtectedRoute roles={['student']}><OpportunityStory /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/quiz-on-entrepreneur-traits" element={<ProtectedRoute roles={['student']}><QuizOnEntrepreneurTraits /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/reflex-teen-skills" element={<ProtectedRoute roles={['student']}><ReflexTeenSkills /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/puzzle-match-traits" element={<ProtectedRoute roles={['student']}><PuzzleMatchTraits /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/failure-story" element={<ProtectedRoute roles={['student']}><FailureStory /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/debate-born-or-made" element={<ProtectedRoute roles={['student']}><DebateBornOrMade /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/journal-of-strengths" element={<ProtectedRoute roles={['student']}><JournalOfStrengths /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/simulation-team-project" element={<ProtectedRoute roles={['student']}><SimulationTeamProject /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/reflex-teen-innovator" element={<ProtectedRoute roles={['student']}><ReflexTeenInnovator /></ProtectedRoute>} />
-          <Route path="/student/ehe/teen/badge-future-entrepreneur" element={<ProtectedRoute roles={['student']}><BadgeFutureEntrepreneur /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/career-story" element={<ProtectedRoute roles={['student', 'school_student']}><CareerStory /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/quiz-on-careers" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnCareers /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/reflex-teen-career" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexTeenCareer /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/puzzle-career-match" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleCareerMatch /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/passion-story" element={<ProtectedRoute roles={['student', 'school_student']}><PassionStory /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/debate-one-career-or-many" element={<ProtectedRoute roles={['student', 'school_student']}><DebateOneCareerOrMany /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/journal-of-career-choice" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfCareerChoice /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/simulation-career-fair" element={<ProtectedRoute roles={['student', 'school_student']}><SimulationCareerFair /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/reflex-future-check" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexFutureCheck /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/badge-career-aware-teen" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeCareerAwareTeen /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/opportunity-story" element={<ProtectedRoute roles={['student', 'school_student']}><OpportunityStory /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/quiz-on-entrepreneur-traits" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnEntrepreneurTraits /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/reflex-teen-skills" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexTeenSkills /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/puzzle-match-traits" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleMatchTraits /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/failure-story" element={<ProtectedRoute roles={['student', 'school_student']}><FailureStory /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/debate-born-or-made" element={<ProtectedRoute roles={['student', 'school_student']}><DebateBornOrMade /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/journal-of-strengths" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfStrengths /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/simulation-team-project" element={<ProtectedRoute roles={['student', 'school_student']}><SimulationTeamProject /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/reflex-teen-innovator" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexTeenInnovator /></ProtectedRoute>} />
+          <Route path="/student/ehe/teen/badge-future-entrepreneur" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeFutureEntrepreneur /></ProtectedRoute>} />
 
           {/* CRGC Kids Games */}
-          <Route path="/student/civic-responsibility/kids/friends-sad-story" element={<ProtectedRoute roles={['student']}><FriendsSadStory /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/quiz-on-empathy" element={<ProtectedRoute roles={['student']}><QuizOnEmpathy /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/reflex-kindness" element={<ProtectedRoute roles={['student']}><ReflexKindness /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/puzzle-match-feelings" element={<ProtectedRoute roles={['student']}><PuzzleMatchFeelings /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/animal-story" element={<ProtectedRoute roles={['student']}><AnimalStory /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/poster-be-kind-always" element={<ProtectedRoute roles={['student']}><PosterBeKindAlways /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/journal-of-empathy" element={<ProtectedRoute roles={['student']}><JournalOfEmpathy /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/bully-story" element={<ProtectedRoute roles={['student']}><BullyStory /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/reflex-help-alert" element={<ProtectedRoute roles={['student']}><ReflexHelpAlert /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/badge-kind-kid" element={<ProtectedRoute roles={['student']}><BadgeKindKid /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/classroom-story" element={<ProtectedRoute roles={['student']}><ClassroomStoryCRGC /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/quiz-on-respect" element={<ProtectedRoute roles={['student']}><QuizOnRespect /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/reflex-respect" element={<ProtectedRoute roles={['student']}><ReflexRespectCRGC /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/puzzle-respect-match" element={<ProtectedRoute roles={['student']}><PuzzleRespectMatchCRGC /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/gender-story" element={<ProtectedRoute roles={['student']}><GenderStory /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/poster-respect-all" element={<ProtectedRoute roles={['student']}><PosterRespectAll /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/journal-of-respect" element={<ProtectedRoute roles={['student']}><JournalOfRespect /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/disability-story" element={<ProtectedRoute roles={['student']}><DisabilityStory /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/reflex-inclusion" element={<ProtectedRoute roles={['student']}><ReflexInclusion /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/kids/badge-respect-kid" element={<ProtectedRoute roles={['student']}><BadgeRespectKidCRGC /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/friends-sad-story" element={<ProtectedRoute roles={['student', 'school_student']}><FriendsSadStory /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/quiz-on-empathy" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnEmpathy /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/reflex-kindness" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexKindness /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/puzzle-match-feelings" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleMatchFeelings /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/animal-story" element={<ProtectedRoute roles={['student', 'school_student']}><AnimalStory /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/poster-be-kind-always" element={<ProtectedRoute roles={['student', 'school_student']}><PosterBeKindAlways /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/journal-of-empathy" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfEmpathy /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/bully-story" element={<ProtectedRoute roles={['student', 'school_student']}><BullyStory /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/reflex-help-alert" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexHelpAlert /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/badge-kind-kid" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeKindKid /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/classroom-story" element={<ProtectedRoute roles={['student', 'school_student']}><ClassroomStoryCRGC /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/quiz-on-respect" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnRespect /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/reflex-respect" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexRespectCRGC /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/puzzle-respect-match" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleRespectMatchCRGC /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/gender-story" element={<ProtectedRoute roles={['student', 'school_student']}><GenderStory /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/poster-respect-all" element={<ProtectedRoute roles={['student', 'school_student']}><PosterRespectAll /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/journal-of-respect" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfRespect /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/disability-story" element={<ProtectedRoute roles={['student', 'school_student']}><DisabilityStory /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/reflex-inclusion" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexInclusion /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/kids/badge-respect-kid" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeRespectKidCRGC /></ProtectedRoute>} />
 
           {/* CRGC Teen Games */}
-          <Route path="/student/civic-responsibility/teen/stranger-story" element={<ProtectedRoute roles={['student']}><StrangerStory /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/quiz-on-compassion" element={<ProtectedRoute roles={['student']}><QuizOnCompassionTeen /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/reflex-teen-compassion" element={<ProtectedRoute roles={['student']}><ReflexTeenCompassion /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/puzzle-kind-acts" element={<ProtectedRoute roles={['student']}><PuzzleKindActs /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/refugee-story" element={<ProtectedRoute roles={['student']}><RefugeeStory /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/debate-kindness-weakness" element={<ProtectedRoute roles={['student']}><DebateKindnessWeakness /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/journal-of-compassion" element={<ProtectedRoute roles={['student']}><JournalOfCompassionTeen /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/simulation-hospital-visit" element={<ProtectedRoute roles={['student']}><SimulationHospitalVisit /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/reflex-global-empathy" element={<ProtectedRoute roles={['student']}><ReflexGlobalEmpathy /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/badge-compassion-leader" element={<ProtectedRoute roles={['student']}><BadgeCompassionLeader /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/cultural-story" element={<ProtectedRoute roles={['student']}><CulturalStory /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/quiz-on-inclusion" element={<ProtectedRoute roles={['student']}><QuizOnInclusionTeen /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/reflex-teen-respect" element={<ProtectedRoute roles={['student']}><ReflexTeenRespect /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/puzzle-inclusion-acts" element={<ProtectedRoute roles={['student']}><PuzzleInclusionActs /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/religion-story" element={<ProtectedRoute roles={['student']}><ReligionStory /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/debate-equality-for-all" element={<ProtectedRoute roles={['student']}><DebateEqualityForAll /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/journal-of-inclusion" element={<ProtectedRoute roles={['student']}><JournalOfInclusionTeen /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/simulation-school-event" element={<ProtectedRoute roles={['student']}><SimulationSchoolEvent /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/reflex-teen-inclusion" element={<ProtectedRoute roles={['student']}><ReflexTeenInclusionCRGC /></ProtectedRoute>} />
-          <Route path="/student/civic-responsibility/teen/badge-inclusion-leader" element={<ProtectedRoute roles={['student']}><BadgeInclusionLeader /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/stranger-story" element={<ProtectedRoute roles={['student', 'school_student']}><StrangerStory /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/quiz-on-compassion" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnCompassionTeen /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/reflex-teen-compassion" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexTeenCompassion /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/puzzle-kind-acts" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleKindActs /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/refugee-story" element={<ProtectedRoute roles={['student', 'school_student']}><RefugeeStory /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/debate-kindness-weakness" element={<ProtectedRoute roles={['student', 'school_student']}><DebateKindnessWeakness /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/journal-of-compassion" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfCompassionTeen /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/simulation-hospital-visit" element={<ProtectedRoute roles={['student', 'school_student']}><SimulationHospitalVisit /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/reflex-global-empathy" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexGlobalEmpathy /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/badge-compassion-leader" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeCompassionLeader /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/cultural-story" element={<ProtectedRoute roles={['student', 'school_student']}><CulturalStory /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/quiz-on-inclusion" element={<ProtectedRoute roles={['student', 'school_student']}><QuizOnInclusionTeen /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/reflex-teen-respect" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexTeenRespect /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/puzzle-inclusion-acts" element={<ProtectedRoute roles={['student', 'school_student']}><PuzzleInclusionActs /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/religion-story" element={<ProtectedRoute roles={['student', 'school_student']}><ReligionStory /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/debate-equality-for-all" element={<ProtectedRoute roles={['student', 'school_student']}><DebateEqualityForAll /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/journal-of-inclusion" element={<ProtectedRoute roles={['student', 'school_student']}><JournalOfInclusionTeen /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/simulation-school-event" element={<ProtectedRoute roles={['student', 'school_student']}><SimulationSchoolEvent /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/reflex-teen-inclusion" element={<ProtectedRoute roles={['student', 'school_student']}><ReflexTeenInclusionCRGC /></ProtectedRoute>} />
+          <Route path="/student/civic-responsibility/teen/badge-inclusion-leader" element={<ProtectedRoute roles={['student', 'school_student']}><BadgeInclusionLeader /></ProtectedRoute>} />
 
           {/* Sustainability Games */}
-          <Route path="/student/sustainability/solar-and-city/test-solar-game" element={<ProtectedRoute roles={['student']}><TestSolarGame /></ProtectedRoute>} />
-          <Route path="/student/sustainability/water-and-recycle/test-water-recycle-game" element={<ProtectedRoute roles={['student']}><TestWaterRecycleGame /></ProtectedRoute>} />
-          <Route path="/student/sustainability/carbon-and-climate/test-carbon-game" element={<ProtectedRoute roles={['student']}><TestCarbonGame /></ProtectedRoute>} />
-          <Route path="/student/sustainability/water-and-energy/test-water-energy-game" element={<ProtectedRoute roles={['student']}><TestWaterEnergyGame /></ProtectedRoute>} />
+          <Route path="/student/sustainability/solar-and-city/test-solar-game" element={<ProtectedRoute roles={['student', 'school_student']}><TestSolarGame /></ProtectedRoute>} />
+          <Route path="/student/sustainability/water-and-recycle/test-water-recycle-game" element={<ProtectedRoute roles={['student', 'school_student']}><TestWaterRecycleGame /></ProtectedRoute>} />
+          <Route path="/student/sustainability/carbon-and-climate/test-carbon-game" element={<ProtectedRoute roles={['student', 'school_student']}><TestCarbonGame /></ProtectedRoute>} />
+          <Route path="/student/sustainability/water-and-energy/test-water-energy-game" element={<ProtectedRoute roles={['student', 'school_student']}><TestWaterEnergyGame /></ProtectedRoute>} />
 
           {/* Admin Routes */}
           <Route path="/admin/panel" element={<ProtectedRoute roles={['admin']}><AdminPanel /></ProtectedRoute>} />

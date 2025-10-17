@@ -9,6 +9,16 @@ const AddStudentModal = ({
   setNewStudent,
   handleAddStudent
 }) => {
+  const [confirmPassword, setConfirmPassword] = React.useState('');
+  const [passwordError, setPasswordError] = React.useState('');
+
+  // Reset form when modal is closed
+  React.useEffect(() => {
+    if (!showAddStudentModal) {
+      setConfirmPassword('');
+      setPasswordError('');
+    }
+  }, [showAddStudentModal]);
   return (
     <AnimatePresence>
       {showAddStudentModal && (
@@ -53,6 +63,15 @@ const AddStudentModal = ({
               <form
                 onSubmit={(e) => {
                   e.preventDefault();
+                  if (newStudent.password !== confirmPassword) {
+                    setPasswordError('Passwords do not match');
+                    return;
+                  }
+                  if (newStudent.password.length < 6) {
+                    setPasswordError('Password must be at least 6 characters');
+                    return;
+                  }
+                  setPasswordError('');
                   handleAddStudent(e);
                 }}
                 className="p-6 space-y-4"
@@ -94,27 +113,7 @@ const AddStudentModal = ({
 
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Roll Number *
-                    </label>
-                    <input
-                      type="text"
-                      value={newStudent.rollNumber}
-                      onChange={(e) =>
-                        setNewStudent((prev) => ({
-                          ...prev,
-                          rollNumber: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
-                      placeholder="ROLL-001"
-                      required
-                      autoComplete="off"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Phone
+                      Phone Number *
                     </label>
                     <input
                       type="tel"
@@ -124,52 +123,9 @@ const AddStudentModal = ({
                       }
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
                       placeholder="+91 98765 43210"
+                      required
                       autoComplete="off"
                     />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Grade *
-                    </label>
-                    <select
-                      value={newStudent.grade}
-                      onChange={(e) =>
-                        setNewStudent((prev) => ({ ...prev, grade: e.target.value }))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
-                      required
-                    >
-                      <option value="">Select Grade</option>
-                      {[6, 7, 8, 9, 10, 11, 12].map((g) => (
-                        <option key={g} value={g}>
-                          Grade {g}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Section *
-                    </label>
-                    <select
-                      value={newStudent.section}
-                      onChange={(e) =>
-                        setNewStudent((prev) => ({
-                          ...prev,
-                          section: e.target.value,
-                        }))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
-                      required
-                    >
-                      {['A', 'B', 'C', 'D', 'E'].map((sec) => (
-                        <option key={sec} value={sec}>
-                          Section {sec}
-                        </option>
-                      ))}
-                    </select>
                   </div>
 
                   <div>
@@ -201,9 +157,10 @@ const AddStudentModal = ({
                     <input
                       type="password"
                       value={newStudent.password}
-                      onChange={(e) =>
-                        setNewStudent((prev) => ({ ...prev, password: e.target.value }))
-                      }
+                      onChange={(e) => {
+                        setNewStudent((prev) => ({ ...prev, password: e.target.value }));
+                        if (passwordError) setPasswordError('');
+                      }}
                       className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
                       placeholder="Enter login password"
                       required
@@ -213,6 +170,29 @@ const AddStudentModal = ({
                     <p className="text-xs text-gray-500 mt-1">
                       Student will use this password to login (min. 6 characters)
                     </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Confirm Password *
+                    </label>
+                    <input
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => {
+                        setConfirmPassword(e.target.value);
+                        if (passwordError) setPasswordError('');
+                      }}
+                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none font-semibold ${
+                        passwordError ? 'border-red-500' : 'border-gray-200 focus:border-purple-500'
+                      }`}
+                      placeholder="Confirm password"
+                      required
+                      autoComplete="new-password"
+                    />
+                    {passwordError && (
+                      <p className="text-xs text-red-500 mt-1">{passwordError}</p>
+                    )}
                   </div>
                 </div>
 

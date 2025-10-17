@@ -79,6 +79,9 @@ export const AuthProvider = ({ children }) => {
                 case "school_admin":
                     navigate("/school/admin/dashboard");
                     break;
+                case "school_teacher":
+                    navigate("/school-teacher/overview");
+                    break;
                 case "parent":
                     // Parents are auto-approved; route directly to dashboard
                     navigate("/parent/dashboard");
@@ -108,6 +111,7 @@ export const AuthProvider = ({ children }) => {
                     }
                     break;
                 case "student":
+                case "school_student":
                 default:
                     navigate("/student/dashboard");
                     break;

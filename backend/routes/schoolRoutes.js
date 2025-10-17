@@ -5,6 +5,7 @@ import {
   getSchoolClasses,
   getSchoolStudents,
   getSchoolTeachers,
+  getAvailableTeachers,
   getAdminTeacherStats,
   getTeacherDetailsById,
   createTeacher,
@@ -16,6 +17,10 @@ import {
   createClass,
   createSequentialClass,
   addStudentsToClass,
+  addStudentsByEmailToClass,
+  addTeachersToClass,
+  removeTeacherFromClass,
+  removeStudentFromClass,
   updateClass,
   deleteClass,
   getTeacherStats,
@@ -156,6 +161,7 @@ import {
   getPerformanceByGrade,
   getEngagementTrend,
   getStudentsWithFilters,
+  getAvailableStudents,
   getAdminStudentStats,
   getStaffStats,
   createStudent,
@@ -287,19 +293,21 @@ router.get('/admin/weekly-trend', requireAuth, requireSchoolAdmin, getWeeklyTren
 router.get('/admin/analytics/performance-by-grade', requireAuth, requireSchoolAdmin, getPerformanceByGrade);
 router.get('/admin/analytics/engagement-trend', requireAuth, requireSchoolAdmin, getEngagementTrend);
 router.get('/admin/analytics/export', requireAuth, requireSchoolAdmin, exportAnalyticsReport);
-router.get('/admin/classes', requireAuth, requireSchoolAdmin, getAllClasses);
-router.get('/admin/students', requireAuth, requireSchoolAdmin, getStudentsWithFilters);
-router.post('/admin/students/create', requireAuth, requireSchoolAdmin, createStudent);
-router.get('/admin/students/stats', requireAuth, requireSchoolAdmin, getAdminStudentStats);
-router.get('/admin/students/export', requireAuth, requireSchoolAdmin, exportStudents);
-router.get('/admin/students/:studentId', requireAuth, requireSchoolAdmin, getSchoolStudentDetails);
+router.get('/admin/classes', extractTenant, requireAuth, requireSchoolAdmin, getAllClasses);
+router.get('/admin/students', extractTenant, requireAuth, requireSchoolAdmin, getStudentsWithFilters);
+router.get('/admin/students/available', extractTenant, requireAuth, requireSchoolAdmin, getAvailableStudents);
+router.post('/admin/students/create', extractTenant, requireAuth, requireSchoolAdmin, createStudent);
+router.get('/admin/students/stats', extractTenant, requireAuth, requireSchoolAdmin, getAdminStudentStats);
+router.get('/admin/students/export', extractTenant, requireAuth, requireSchoolAdmin, exportStudents);
+router.get('/admin/students/:studentId', extractTenant, requireAuth, requireSchoolAdmin, getSchoolStudentDetails);
 router.post('/admin/students/:studentId/reset-password', requireAuth, requireSchoolAdmin, resetStudentPassword);
 router.delete('/admin/students/:studentId', requireAuth, requireSchoolAdmin, deleteStudent);
 router.get('/admin/staff/stats', requireAuth, requireSchoolAdmin, getStaffStats);
 
 // Teacher Management Routes (Admin only)
-router.get('/admin/teachers', requireAuth, requireSchoolAdmin, getSchoolTeachers);
-router.post('/admin/teachers/create', requireAuth, requireSchoolAdmin, createTeacher);
+router.get('/admin/teachers', extractTenant, requireAuth, requireSchoolAdmin, getSchoolTeachers);
+router.get('/admin/teachers/available', extractTenant, requireAuth, requireSchoolAdmin, getAvailableTeachers);
+router.post('/admin/teachers/create', extractTenant, requireAuth, requireSchoolAdmin, createTeacher);
 router.get('/admin/teachers/stats', requireAuth, requireSchoolAdmin, getAdminTeacherStats);
 router.get('/admin/teachers/export', requireAuth, requireSchoolAdmin, exportTeachers);
 router.get('/admin/teachers/:teacherId', requireAuth, requireSchoolAdmin, getTeacherDetailsById);
@@ -307,13 +315,17 @@ router.delete('/admin/teachers/:teacherId', requireAuth, requireSchoolAdmin, del
 
 // Class Management Routes (Admin only)
 router.get('/admin/classes', requireAuth, requireSchoolAdmin, getAllClasses);
-router.post('/admin/classes/create', requireAuth, requireSchoolAdmin, createClass);
-router.post('/admin/classes/create-sequential', requireAuth, requireSchoolAdmin, createSequentialClass);
-router.get('/admin/classes/stats', requireAuth, requireSchoolAdmin, getClassStats);
-router.get('/admin/classes/:classId', requireAuth, requireSchoolAdmin, getClassDetails);
-router.post('/admin/classes/:classId/students', requireAuth, requireSchoolAdmin, addStudentsToClass);
-router.put('/admin/classes/:classId', requireAuth, requireSchoolAdmin, updateClass);
-router.delete('/admin/classes/:classId', requireAuth, requireSchoolAdmin, deleteClass);
+router.post('/admin/classes/create', extractTenant, requireAuth, requireSchoolAdmin, createClass);
+router.post('/admin/classes/create-sequential', extractTenant, requireAuth, requireSchoolAdmin, createSequentialClass);
+router.get('/admin/classes/stats', extractTenant, requireAuth, requireSchoolAdmin, getClassStats);
+router.get('/admin/classes/:classId', extractTenant, requireAuth, requireSchoolAdmin, getClassDetails);
+router.post('/admin/classes/:classId/students', extractTenant, requireAuth, requireSchoolAdmin, addStudentsToClass);
+router.post('/admin/classes/:classId/students-by-email', extractTenant, requireAuth, requireSchoolAdmin, addStudentsByEmailToClass);
+router.post('/admin/classes/:classId/teachers', extractTenant, requireAuth, requireSchoolAdmin, addTeachersToClass);
+router.delete('/admin/classes/:classId/teachers/:teacherId', extractTenant, requireAuth, requireSchoolAdmin, removeTeacherFromClass);
+router.delete('/admin/classes/:classId/students/:studentId', extractTenant, requireAuth, requireSchoolAdmin, removeStudentFromClass);
+router.put('/admin/classes/:classId', extractTenant, requireAuth, requireSchoolAdmin, updateClass);
+router.delete('/admin/classes/:classId', extractTenant, requireAuth, requireSchoolAdmin, deleteClass);
 
 // NEP Competency Tracking & Export Routes (Admin only)
 router.get('/admin/nep/competencies', requireAuth, requireSchoolAdmin, getNEPCompetencies);

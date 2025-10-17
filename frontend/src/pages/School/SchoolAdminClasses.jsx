@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
   Users, Search, Grid, List, Eye, BookOpen, Plus, X, 
@@ -9,10 +10,11 @@ import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
 import AddClassModal from '../../components/AddClassModal';
 import ClassDetailModal from '../../components/ClassDetailModal';
-import AddStudentsModal from '../../components/AddStudentsModal';
-import SequentialClassCreationModal from '../../components/SequentialClassCreationModal';
+import AddStudentToClassModal from '../../components/AddStudentToClassModal';
+import AddTeacherModal from '../../components/AddTeacherModal';
 
 const SchoolAdminClasses = () => {
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [classes, setClasses] = useState([]);
   const [teachers, setTeachers] = useState([]);
@@ -26,8 +28,8 @@ const SchoolAdminClasses = () => {
   // Modals
   const [showAddClassModal, setShowAddClassModal] = useState(false);
   const [showClassDetailModal, setShowClassDetailModal] = useState(false);
-  const [showAddStudentsModal, setShowAddStudentsModal] = useState(false);
-  const [showSequentialModal, setShowSequentialModal] = useState(false);
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
+  const [showAddTeacherModal, setShowAddTeacherModal] = useState(false);
   const [selectedClass, setSelectedClass] = useState(null);
 
   // Form states
@@ -38,7 +40,6 @@ const SchoolAdminClasses = () => {
     academicYear: new Date().getFullYear().toString()
   });
 
-  const [selectedStudentsToAdd, setSelectedStudentsToAdd] = useState([]);
 
   const streams = ['Science', 'Commerce', 'Arts'];
 
@@ -72,10 +73,26 @@ const SchoolAdminClasses = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleAddClass = async (e) => {
+  // Handle URL parameter to open specific class
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const openClassId = urlParams.get('openClass');
+    
+    if (openClassId && classes.length > 0) {
+      const classToOpen = classes.find(cls => cls._id === openClassId);
+      if (classToOpen) {
+        handleViewClass(classToOpen);
+        // Clean up URL parameter
+        window.history.replaceState({}, '', '/school/admin/classes');
+      }
+    }
+  }, [classes, location.search]);
+
+  const handleAddClass = async (e, classData = null) => {
     e.preventDefault();
     try {
-      await api.post('/api/school/admin/classes/create', newClass);
+      const dataToSend = classData || newClass;
+      await api.post('/api/school/admin/classes/create', dataToSend);
       toast.success('Class created successfully!');
       setShowAddClassModal(false);
       setNewClass({
@@ -119,36 +136,58 @@ const SchoolAdminClasses = () => {
 
 
 
-  const handleAddStudentsToClass = async () => {
-    if (!selectedClass || selectedStudentsToAdd.length === 0) {
-      toast.error('Please select students to add');
-      return;
-    }
-
-    try {
-      await api.post(`/api/school/admin/classes/${selectedClass._id}/students`, {
-        studentIds: selectedStudentsToAdd
-      });
-      toast.success('Students added successfully!');
-      setShowAddStudentsModal(false);
-      setSelectedStudentsToAdd([]);
-      fetchData();
-    } catch (err) {
-      console.error('Error adding students:', err);
-      toast.error(err.response?.data?.message || 'Failed to add students');
-    }
-  };
 
   const handleDeleteClass = async (classId) => {
-    if (!window.confirm('Are you sure you want to delete this class?')) return;
+    const classItem = classes.find(cls => cls._id === classId);
+    const studentCount = classItem?.totalStudents || 0;
+    
+    const confirmMessage = studentCount > 0 
+      ? `Are you sure you want to delete this class? This will unassign ${studentCount} student(s) from the class. The students will remain in the system but will need to be reassigned to other classes.`
+      : 'Are you sure you want to delete this class?';
+    
+    if (!window.confirm(confirmMessage)) return;
     
     try {
-      await api.delete(`/api/school/admin/classes/${classId}`);
-      toast.success('Class deleted successfully!');
+      const response = await api.delete(`/api/school/admin/classes/${classId}`);
+      toast.success(response.data.message || 'Class deleted successfully!');
       fetchData();
     } catch (err) {
       console.error('Error deleting class:', err);
-      toast.error('Failed to delete class');
+      toast.error(err.response?.data?.message || 'Failed to delete class');
+    }
+  };
+
+  const handleRemoveTeacher = async (teacherId, sectionName) => {
+    if (!selectedClass) return;
+    
+    const confirmMessage = `Are you sure you want to remove this teacher from Section ${sectionName}?`;
+    if (!window.confirm(confirmMessage)) return;
+    
+    try {
+      await api.delete(`/api/school/admin/classes/${selectedClass._id}/teachers/${teacherId}`);
+      toast.success('Teacher removed from class successfully!');
+      fetchData(); // Refresh data to update the class details
+    } catch (error) {
+      console.error('Error removing teacher:', error);
+      toast.error(error.response?.data?.message || 'Failed to remove teacher');
+    }
+  };
+
+  const handleRemoveStudent = async (student) => {
+    if (!selectedClass) return;
+    
+    const studentName = typeof student === 'object' ? student.name : student;
+    const confirmMessage = `Are you sure you want to remove ${studentName} from this class?`;
+    if (!window.confirm(confirmMessage)) return;
+    
+    try {
+      const studentId = typeof student === 'object' ? student._id : student;
+      await api.delete(`/api/school/admin/classes/${selectedClass._id}/students/${studentId}`);
+      toast.success('Student removed from class successfully!');
+      fetchData(); // Refresh data to update the class details
+    } catch (error) {
+      console.error('Error removing student:', error);
+      toast.error(error.response?.data?.message || 'Failed to remove student');
     }
   };
 
@@ -319,7 +358,7 @@ const SchoolAdminClasses = () => {
               </div>
 
               <button
-                onClick={() => setShowSequentialModal(true)}
+                onClick={() => setShowAddClassModal(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-500 to-purple-500 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
               >
                 <Plus className="w-4 h-4" />
@@ -454,7 +493,7 @@ const SchoolAdminClasses = () => {
             <h3 className="text-2xl font-bold text-gray-900 mb-2">No Classes Found</h3>
             <p className="text-gray-600 mb-6">Get started by creating your first class</p>
             <button
-              onClick={() => setShowSequentialModal(true)}
+              onClick={() => setShowAddClassModal(true)}
               className="px-6 py-3 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:shadow-xl transition-all flex items-center gap-2 mx-auto"
             >
               <Plus className="w-5 h-5" />
@@ -465,11 +504,6 @@ const SchoolAdminClasses = () => {
       </div>
 
       {/* Modals */}
-      <SequentialClassCreationModal
-        showModal={showSequentialModal}
-        setShowModal={setShowSequentialModal}
-        onSuccess={fetchData}
-      />
       <AddClassModal
         showAddClassModal={showAddClassModal}
         setShowAddClassModal={setShowAddClassModal}
@@ -485,16 +519,22 @@ const SchoolAdminClasses = () => {
         setShowClassDetailModal={setShowClassDetailModal}
         selectedClass={selectedClass}
         teachers={teachers}
-        setShowAddStudentsModal={setShowAddStudentsModal}
+        setShowAddStudentModal={setShowAddStudentModal}
+        setShowAddTeacherModal={setShowAddTeacherModal}
+        onRemoveTeacher={handleRemoveTeacher}
+        onRemoveStudent={handleRemoveStudent}
       />
-      <AddStudentsModal
-        showAddStudentsModal={showAddStudentsModal}
-        setShowAddStudentsModal={setShowAddStudentsModal}
+      <AddStudentToClassModal
+        showAddStudentModal={showAddStudentModal}
+        setShowAddStudentModal={setShowAddStudentModal}
         selectedClass={selectedClass}
-        students={students}
-        selectedStudentsToAdd={selectedStudentsToAdd}
-        setSelectedStudentsToAdd={setSelectedStudentsToAdd}
-        handleAddStudentsToClass={handleAddStudentsToClass}
+        onSuccess={fetchData}
+      />
+      <AddTeacherModal
+        showAddTeacherModal={showAddTeacherModal}
+        setShowAddTeacherModal={setShowAddTeacherModal}
+        selectedClass={selectedClass}
+        onSuccess={fetchData}
       />
     </div>
   );

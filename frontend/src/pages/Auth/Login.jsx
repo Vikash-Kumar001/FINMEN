@@ -54,6 +54,12 @@ const Login = () => {
                 case "admin":
                     navigate("/admin/dashboard");
                     break;
+                case "school_admin":
+                    navigate("/school/admin/dashboard");
+                    break;
+                case "school_teacher":
+                    navigate("/school-teacher/overview");
+                    break;
                 case "parent":
                     navigate("/parent/dashboard");
                     break;
@@ -64,6 +70,7 @@ const Login = () => {
                     navigate("/csr/dashboard");
                     break;
                 case "student":
+                case "school_student":
                 default:
                     navigate("/student/dashboard");
                     break;

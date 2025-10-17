@@ -1,8 +1,9 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  X, Users, Plus, Trash2, School
+  X, Users, Plus, Trash2, School, Search, GraduationCap, CheckCircle
 } from 'lucide-react';
+import api from '../utils/api';
 
 const AddClassModal = ({
   showAddClassModal,
@@ -14,6 +15,43 @@ const AddClassModal = ({
   handleRemoveSection,
   streams
 }) => {
+  const [teachers, setTeachers] = useState([]);
+  const [selectedTeachers, setSelectedTeachers] = useState([]);
+  const [teacherSearchTerm, setTeacherSearchTerm] = useState('');
+  const [loadingTeachers, setLoadingTeachers] = useState(false);
+
+  // Fetch teachers when modal opens
+  useEffect(() => {
+    if (showAddClassModal) {
+      fetchTeachers();
+    }
+  }, [showAddClassModal]);
+
+  const fetchTeachers = async () => {
+    try {
+      setLoadingTeachers(true);
+      const response = await api.get('/api/school/admin/teachers');
+      setTeachers(response.data.teachers || []);
+    } catch (error) {
+      console.error('Error fetching teachers:', error);
+    } finally {
+      setLoadingTeachers(false);
+    }
+  };
+
+  const handleTeacherSelect = (teacherId) => {
+    setSelectedTeachers(prev =>
+      prev.includes(teacherId)
+        ? prev.filter(id => id !== teacherId)
+        : [...prev, teacherId]
+    );
+  };
+
+  const filteredTeachers = teachers.filter(teacher =>
+    teacher.name?.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
+    teacher.email?.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
+    teacher.subject?.toLowerCase().includes(teacherSearchTerm.toLowerCase())
+  );
   return (
     <AnimatePresence>
       {showAddClassModal && (
@@ -50,7 +88,15 @@ const AddClassModal = ({
                 </div>
               </div>
 
-              <form onSubmit={handleAddClass} className="p-6 space-y-6">
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                // Include selected teachers in the class data
+                const classDataWithTeachers = {
+                  ...newClass,
+                  selectedTeachers: selectedTeachers
+                };
+                handleAddClass(e, classDataWithTeachers);
+              }} className="p-6 space-y-6">
                 {/* Basic Info */}
                 <div className="space-y-4">
                   <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -190,6 +236,79 @@ const AddClassModal = ({
                   </div>
                 </div>
 
+                {/* Teacher Assignment */}
+                <div className="space-y-5">
+                  <div className="flex items-center justify-between pb-3 border-b-2 border-indigo-100">
+                    <h3 className="text-xl font-black text-gray-900 flex items-center gap-3">
+                      <div className="p-2 bg-indigo-100 rounded-lg">
+                        <GraduationCap className="w-5 h-5 text-indigo-600" />
+                      </div>
+                      Assign Teachers
+                    </h3>
+                    <div className="text-sm text-gray-600">
+                      {selectedTeachers.length} teacher(s) selected
+                    </div>
+                  </div>
+
+                  {/* Teacher Search */}
+                  <div className="relative">
+                    <Search className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                    <input
+                      type="text"
+                      placeholder="Search teachers by name, email, or subject..."
+                      value={teacherSearchTerm}
+                      onChange={(e) => setTeacherSearchTerm(e.target.value)}
+                      className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none font-semibold"
+                    />
+                  </div>
+
+                  {/* Teachers List */}
+                  <div className="max-h-64 overflow-y-auto space-y-2 border-2 border-gray-200 rounded-lg p-4">
+                    {loadingTeachers ? (
+                      <div className="text-center py-8 text-gray-500">
+                        <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                        Loading teachers...
+                      </div>
+                    ) : filteredTeachers.length > 0 ? (
+                      filteredTeachers.map((teacher) => (
+                        <div
+                          key={teacher._id}
+                          onClick={() => handleTeacherSelect(teacher._id)}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                            selectedTeachers.includes(teacher._id)
+                              ? 'border-indigo-500 bg-indigo-50'
+                              : 'border-gray-200 hover:border-indigo-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-500 rounded-full flex items-center justify-center text-white font-bold">
+                                {teacher.name?.charAt(0)?.toUpperCase() || 'T'}
+                              </div>
+                              <div>
+                                <div className="font-bold text-gray-900">{teacher.name}</div>
+                                <div className="text-sm text-gray-600">
+                                  {teacher.email} • {teacher.subject || 'No subject specified'}
+                                </div>
+                              </div>
+                            </div>
+                            {selectedTeachers.includes(teacher._id) && (
+                              <CheckCircle className="w-6 h-6 text-indigo-600" />
+                            )}
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-gray-500">
+                        <GraduationCap className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                        <p>No teachers found</p>
+                        {teacherSearchTerm && (
+                          <p className="text-sm">Try a different search term</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
 
                 {/* Submit Buttons */}
                 <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">

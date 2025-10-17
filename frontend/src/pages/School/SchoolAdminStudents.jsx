@@ -4,7 +4,7 @@ import {
   Users, Search, Filter, Grid, List, Flag, ChevronDown, Download, Eye,
   BookOpen, TrendingUp, Zap, Coins, Star, Activity, MessageSquare, FileText,
   Heart, Clock, Plus, UserPlus, MoreVertical, AlertCircle, CheckCircle, Award,
-  X, Mail, Phone, Calendar, MapPin, Shield, Target, Brain, Trophy, Trash2, Key, Copy, Lock
+  X, Mail, Phone, Calendar, MapPin, Shield, Target, Brain, Trophy, Trash2, Key, Copy, Lock, User
 } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
@@ -18,8 +18,6 @@ const SchoolAdminStudents = () => {
   const [selectedClass] = useState('all');
   const [viewMode, setViewMode] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterGrade, setFilterGrade] = useState('all');
-  const [filterSection, setFilterSection] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [stats, setStats] = useState({});
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -32,7 +30,7 @@ const SchoolAdminStudents = () => {
     newPassword: ''
   });
   const [newStudent, setNewStudent] = useState({
-    name: '', email: '', rollNumber: '', grade: '', section: 'A', phone: '', gender: '', password: ''
+    name: '', email: '', phone: '', gender: '', password: ''
   });
 
   const fetchStudentsData = useCallback(async () => {
@@ -40,8 +38,6 @@ const SchoolAdminStudents = () => {
       setLoading(true);
       const params = new URLSearchParams();
       if (selectedClass !== 'all') params.append('classId', selectedClass);
-      if (filterGrade !== 'all') params.append('grade', filterGrade);
-      if (filterSection !== 'all') params.append('section', filterSection);
       if (filterStatus !== 'all') params.append('status', filterStatus);
 
       const [studentsRes, statsRes] = await Promise.all([
@@ -57,7 +53,7 @@ const SchoolAdminStudents = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedClass, filterGrade, filterSection, filterStatus]);
+  }, [selectedClass, filterStatus]);
 
   useEffect(() => {
     fetchStudentsData();
@@ -69,7 +65,7 @@ const SchoolAdminStudents = () => {
       await api.post('/api/school/admin/students/create', newStudent);
       toast.success('Student added successfully! Login credentials have been created.');
       setShowAddStudentModal(false);
-      setNewStudent({ name: '', email: '', rollNumber: '', grade: '', section: 'A', phone: '', gender: '', password: '' });
+      setNewStudent({ name: '', email: '', phone: '', gender: '', password: '' });
       fetchStudentsData();
     } catch (error) {
       console.error('Error adding student:', error);
@@ -135,8 +131,6 @@ const SchoolAdminStudents = () => {
   const handleExportStudents = async () => {
     try {
       const params = new URLSearchParams();
-      if (filterGrade !== 'all') params.append('grade', filterGrade);
-      if (filterSection !== 'all') params.append('section', filterSection);
       if (filterStatus !== 'all') params.append('status', filterStatus);
 
       const response = await api.get(`/api/school/admin/students/export?format=csv&${params}`, {
@@ -160,7 +154,7 @@ const SchoolAdminStudents = () => {
   const filteredStudents = students.filter(student =>
     student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.rollNumber?.toLowerCase().includes(searchTerm.toLowerCase())
+    student.phone?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -262,7 +256,7 @@ const SchoolAdminStudents = () => {
               <Search className="w-5 h-5 text-gray-500" />
               <input
                 type="text"
-                placeholder="Search students by name, email, or roll number..."
+                placeholder="Search students by name, email, or phone number..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
@@ -270,28 +264,6 @@ const SchoolAdminStudents = () => {
             </div>
 
             <div className="flex items-center gap-3 flex-wrap">
-              <select
-                value={filterGrade}
-                onChange={(e) => setFilterGrade(e.target.value)}
-                className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none bg-white font-semibold"
-              >
-                <option value="all">All Grades</option>
-                {[6, 7, 8, 9, 10, 11, 12].map(grade => (
-                  <option key={grade} value={grade}>Grade {grade}</option>
-                ))}
-              </select>
-
-              <select
-                value={filterSection}
-                onChange={(e) => setFilterSection(e.target.value)}
-                className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none bg-white font-semibold"
-              >
-                <option value="all">All Sections</option>
-                {['A', 'B', 'C', 'D', 'E'].map(sec => (
-                  <option key={sec} value={sec}>Section {sec}</option>
-                ))}
-              </select>
-
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
@@ -355,42 +327,28 @@ const SchoolAdminStudents = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-gray-900 truncate">{student.name || 'Student'}</h3>
-                    <p className="text-xs text-gray-600">{student.rollNumber || 'N/A'}</p>
+                    <p className="text-xs text-gray-600">{student.email || 'N/A'}</p>
                   </div>
                   {student.wellbeingFlags?.length > 0 && (
                     <Flag className="w-5 h-5 text-red-500" />
                   )}
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  <div className="text-center p-2 rounded-lg bg-blue-50">
-                    <p className="text-xs text-gray-600">Grade</p>
-                    <p className="text-lg font-black text-blue-600">{student.grade || 'N/A'}</p>
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-600">Email:</span>
+                    <span className="font-semibold text-gray-900 truncate">{student.email || 'N/A'}</span>
                   </div>
-                  <div className="text-center p-2 rounded-lg bg-green-50">
-                    <p className="text-xs text-gray-600">Section</p>
-                    <p className="text-lg font-black text-green-600">{student.section || 'A'}</p>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-600">Phone:</span>
+                    <span className="font-semibold text-gray-900">{student.phone || 'N/A'}</span>
                   </div>
-                  <div className="text-center p-2 rounded-lg bg-purple-50">
-                    <p className="text-xs text-gray-600">Score</p>
-                    <p className="text-lg font-black text-purple-600">{student.avgScore || 0}%</p>
-                  </div>
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Overall Progress</span>
-                    <span className="font-bold text-gray-900">{student.avgScore || 0}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all ${
-                        (student.avgScore || 0) >= 75 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
-                        (student.avgScore || 0) >= 50 ? 'bg-gradient-to-r from-yellow-500 to-orange-600' :
-                        'bg-gradient-to-r from-red-500 to-pink-600'
-                      }`}
-                      style={{ width: `${student.avgScore || 0}%` }}
-                    />
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-600">Gender:</span>
+                    <span className="font-semibold text-gray-900">{student.gender || 'N/A'}</span>
                   </div>
                 </div>
 
@@ -421,10 +379,8 @@ const SchoolAdminStudents = () => {
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                 <tr>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Student</th>
-                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Roll No</th>
-                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Grade</th>
-                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Section</th>
-                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Avg Score</th>
+                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Phone</th>
+                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Gender</th>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Status</th>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Actions</th>
                 </tr>
@@ -449,20 +405,8 @@ const SchoolAdminStudents = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-sm font-semibold text-gray-900">{student.rollNumber || 'N/A'}</td>
-                    <td className="py-4 px-6 text-sm font-bold text-gray-900">{student.grade || 'N/A'}</td>
-                    <td className="py-4 px-6 text-sm font-semibold text-gray-900">{student.section || 'A'}</td>
-                    <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
-                        <div className="w-20 bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
-                            style={{ width: `${student.avgScore || 0}%` }}
-                          />
-                        </div>
-                        <span className="text-sm font-black text-gray-900">{student.avgScore || 0}%</span>
-                      </div>
-                    </td>
+                    <td className="py-4 px-6 text-sm font-semibold text-gray-900">{student.phone || 'N/A'}</td>
+                    <td className="py-4 px-6 text-sm font-bold text-gray-900">{student.gender || 'N/A'}</td>
                     <td className="py-4 px-6">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                         student.wellbeingFlags?.length > 0 ? 'bg-red-100 text-red-700' :

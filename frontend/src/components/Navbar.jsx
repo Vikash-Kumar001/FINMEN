@@ -74,14 +74,14 @@ const Navbar = () => {
             csr: "/csr/dashboard",
             school_admin: "/school/admin/dashboard",
             school_teacher: "/school-teacher/overview",
-            school_student: "/school-student/dashboard",
+            school_student: "/student/dashboard",
             school_parent: "/school-parent/dashboard",
             student: "/student/dashboard"
         };
         navigate(paths[user.role] || paths.student);
     };
 
-    const navigationItems = user?.role === "student" ? [
+    const navigationItems = (user?.role === "student" || user?.role === "school_student") ? [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
         { icon: <TrendingUp className="w-5 h-5" />, label: "Challenges", onClick: () => navigate("/student/challenge") },
         { icon: <Zap className="w-5 h-5" />, label: "Daily Challenges", onClick: () => navigate("/student/daily-challenges") }

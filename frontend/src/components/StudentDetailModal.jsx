@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  X, Mail, Phone, Calendar, Activity, Lock, Copy, AlertCircle, Target, Trash2, Key
+  X, Mail, Phone, Calendar, Activity, Lock, Copy, AlertCircle, Target, Trash2, Key, User
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -117,6 +117,11 @@ const StudentDetailModal = ({
                       <Phone className="w-4 h-4 text-gray-500" />
                       <span className="text-gray-600">Phone:</span>
                       <span className="font-semibold text-gray-900">{selectedStudent.phone || 'N/A'}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4 text-gray-500" />
+                      <span className="text-gray-600">Gender:</span>
+                      <span className="font-semibold text-gray-900">{selectedStudent.gender || 'N/A'}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Calendar className="w-4 h-4 text-gray-500" />

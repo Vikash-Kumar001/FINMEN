@@ -296,20 +296,36 @@ export const login = async (req, res) => {
     }
 
     const normalizedEmail = email.toLowerCase();
+    console.log('Login attempt for:', normalizedEmail);
+    
     const user = await User.findOne({ email: normalizedEmail });
 
     if (!user) {
+      console.log('User not found for email:', normalizedEmail);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    console.log('User found:', {
+      id: user._id,
+      email: user.email,
+      role: user.role,
+      hasPassword: !!user.password,
+      passwordLength: user.password ? user.password.length : 0
+    });
+
     if (!user.password) {
+      console.log('No password set for user:', user.email);
       return res.status(400).json({
         message: "No password set for this account. Please reset your password.",
       });
     }
 
+    console.log('Comparing passwords...');
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match result:', isMatch);
+    
     if (!isMatch) {
+      console.log('Password mismatch for user:', user.email);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
@@ -336,7 +352,7 @@ export const login = async (req, res) => {
     const token = generateToken(user._id);
 
     // Daily login reward for students
-    if (user.role === "student") {
+    if (user.role === "student" || user.role === "school_student") {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       

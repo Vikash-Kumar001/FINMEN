@@ -8,7 +8,8 @@ const TeacherDetailModal = ({
   showTeacherDetail,
   setShowTeacherDetail,
   selectedTeacher,
-  handleDeleteTeacher
+  handleDeleteTeacher,
+  onViewClass
 }) => {
   return (
     <AnimatePresence>
@@ -108,32 +109,52 @@ const TeacherDetailModal = ({
                     <div className="flex items-center gap-2">
                       <Activity className="w-4 h-4 text-gray-500" />
                       <span className="text-gray-600">Status:</span>
-                      <span className={`px-2 py-1 rounded-lg text-xs font-bold ${
-                        selectedTeacher.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {selectedTeacher.isActive ? 'Active' : 'Inactive'}
+                      <span className="px-2 py-1 rounded-lg text-xs font-bold bg-green-100 text-green-700">
+                        Active
                       </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Classes Assigned */}
-                {selectedTeacher.assignedClasses && selectedTeacher.assignedClasses.length > 0 && (
-                  <div className="bg-white rounded-xl border-2 border-gray-200 p-6 mb-6">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <BookOpen className="w-5 h-5 text-blue-600" />
-                      Assigned Classes
-                    </h3>
+                <div className="bg-white rounded-xl border-2 border-gray-200 p-6 mb-6">
+                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-blue-600" />
+                    Assigned Classes
+                  </h3>
+                  {selectedTeacher.assignedClasses && selectedTeacher.assignedClasses.length > 0 ? (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                       {selectedTeacher.assignedClasses.map((cls, idx) => (
-                        <div key={idx} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <div className="font-bold text-gray-900">{cls.name || `Class ${cls.grade}-${cls.section}`}</div>
-                          <div className="text-sm text-gray-600">{cls.students || 0} students</div>
+                        <div 
+                          key={idx} 
+                          onClick={() => onViewClass && onViewClass(cls._id)}
+                          className="p-3 bg-blue-50 rounded-lg border border-blue-200 cursor-pointer hover:bg-blue-100 hover:border-blue-300 transition-all duration-200 group"
+                        >
+                          <div className="font-bold text-gray-900 group-hover:text-blue-800">
+                            Class {cls.classNumber}{cls.stream ? ` - ${cls.stream}` : ''}
+                            {cls.sections && cls.sections.length > 0 && (
+                              <span className="text-sm text-blue-600 ml-2">
+                                ({cls.sections.map(s => s.name).join(', ')})
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-sm text-gray-600 group-hover:text-blue-700">
+                            {cls.students || 0} students • Academic Year: {cls.academicYear}
+                          </div>
+                          <div className="text-xs text-blue-500 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            Click to view class details →
+                          </div>
                         </div>
                       ))}
                     </div>
-                  </div>
-                )}
+                  ) : (
+                    <div className="text-center py-8 text-gray-500">
+                      <BookOpen className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                      <p>No classes assigned yet</p>
+                      <p className="text-sm">This teacher can be assigned to classes from the class management page</p>
+                    </div>
+                  )}
+                </div>
 
                 {/* Performance Metrics */}
                 {selectedTeacher.metrics && (

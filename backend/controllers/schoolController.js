@@ -7647,6 +7647,320 @@ export const addStudentsToClass = async (req, res) => {
   }
 };
 
+// Create class with teachers and students sequentially
+export const createSequentialClass = async (req, res) => {
+  try {
+    const { tenantId } = req;
+    const orgId = req.user?.orgId;
+    const { classInfo, teachers, students } = req.body;
+
+    // Validate class information
+    if (!classInfo.classNumber || !classInfo.academicYear || !classInfo.sections || classInfo.sections.length === 0) {
+      return res.status(400).json({ 
+        message: 'Missing required class fields: classNumber, academicYear, and at least one section are required' 
+      });
+    }
+
+    // Validate stream for classes 11-12
+    if (parseInt(classInfo.classNumber) >= 11 && !classInfo.stream) {
+      return res.status(400).json({ message: 'Stream is required for classes 11 and 12' });
+    }
+
+    // Validate teachers
+    if (!teachers || teachers.length === 0) {
+      return res.status(400).json({ message: 'At least one teacher is required' });
+    }
+
+    // Validate students
+    if (!students || students.length === 0) {
+      return res.status(400).json({ message: 'At least one student is required' });
+    }
+
+    // Check if class already exists
+    const existingClass = await SchoolClass.findOne({
+      tenantId,
+      classNumber: parseInt(classInfo.classNumber),
+      stream: classInfo.stream || null,
+      academicYear: classInfo.academicYear
+    });
+
+    if (existingClass) {
+      return res.status(400).json({ 
+        message: 'A class with this number, stream, and academic year already exists' 
+      });
+    }
+
+    // Start transaction
+    const session = await SchoolClass.startSession();
+    session.startTransaction();
+
+    try {
+      // 1. Create the class
+      const newClass = await SchoolClass.create([{
+        tenantId,
+        orgId,
+        classNumber: parseInt(classInfo.classNumber),
+        stream: classInfo.stream || undefined,
+        sections: classInfo.sections.map(s => ({
+          name: s.name,
+          capacity: s.capacity || 40,
+          currentStrength: 0
+        })),
+        subjects: [],
+        academicYear: classInfo.academicYear,
+        isActive: true
+      }], { session });
+
+      const classId = newClass[0]._id;
+
+      // 2. Create teachers
+      const createdTeachers = [];
+      for (const teacherData of teachers) {
+        // Check if teacher email already exists
+        const existingTeacher = await User.findOne({
+          email: teacherData.email,
+          tenantId
+        });
+
+        if (existingTeacher) {
+          throw new Error(`Teacher with email ${teacherData.email} already exists`);
+        }
+
+        // Create user account for teacher
+        const teacherUser = await User.create([{
+          tenantId,
+          orgId,
+          name: teacherData.name,
+          email: teacherData.email,
+          phone: teacherData.phone,
+          role: 'school_teacher',
+          isActive: true,
+          profile: {
+            qualification: teacherData.qualification,
+            experience: teacherData.experience,
+            subject: teacherData.subject,
+            joiningDate: teacherData.joiningDate
+          }
+        }], { session });
+
+        createdTeachers.push(teacherUser[0]);
+      }
+
+      // 3. Create students
+      const createdStudents = [];
+      for (let i = 0; i < students.length; i++) {
+        const studentData = students[i];
+        
+        // Check if student email already exists
+        const existingStudent = await User.findOne({
+          email: studentData.email,
+          tenantId
+        });
+
+        if (existingStudent) {
+          throw new Error(`Student with email ${studentData.email} already exists`);
+        }
+        
+        // Use provided admission number or generate one
+        const admissionNumber = studentData.admissionNumber || `ADM${classInfo.academicYear.slice(-2)}${classInfo.classNumber.toString().padStart(2, '0')}${(i + 1).toString().padStart(3, '0')}`;
+        
+        // Check if admission number already exists
+        const existingAdmission = await SchoolStudent.findOne({
+          admissionNumber: admissionNumber,
+          tenantId
+        });
+
+        if (existingAdmission) {
+          throw new Error(`Student with admission number ${admissionNumber} already exists`);
+        }
+        
+        // Create user account for student
+        const studentUser = await User.create([{
+          tenantId,
+          orgId,
+          name: studentData.name,
+          email: studentData.email,
+          phone: studentData.phone,
+          role: 'school_student',
+          isActive: true,
+          profile: {
+            rollNumber: studentData.rollNumber,
+            grade: studentData.grade,
+            section: studentData.section,
+            gender: studentData.gender
+          }
+        }], { session });
+
+        // Create a temporary parent user for the student (required field)
+        const parentEmail = `parent_${studentData.email}`;
+        
+        // Check if parent email already exists
+        let tempParentUser;
+        const existingParent = await User.findOne({
+          email: parentEmail,
+          tenantId
+        });
+
+        if (existingParent) {
+          // Use existing parent
+          tempParentUser = existingParent;
+        } else {
+          // Create new parent
+          const newParent = await User.create([{
+            tenantId,
+            orgId,
+            name: `${studentData.name} Parent`,
+            email: parentEmail,
+            phone: studentData.phone || '0000000000',
+            role: 'school_parent',
+            isActive: true,
+            profile: {
+              relation: 'parent',
+              studentId: studentUser[0]._id
+            }
+          }], { session });
+          tempParentUser = newParent[0];
+        }
+
+        // Create school student record
+        const schoolStudent = await SchoolStudent.create([{
+          tenantId,
+          orgId,
+          userId: studentUser[0]._id,
+          admissionNumber: admissionNumber,
+          classId: classId,
+          name: studentData.name,
+          email: studentData.email,
+          phone: studentData.phone,
+          rollNumber: studentData.rollNumber,
+          grade: studentData.grade,
+          section: studentData.section,
+          gender: studentData.gender,
+          academicYear: classInfo.academicYear,
+          parentIds: [tempParentUser._id], // Required field
+          isActive: true,
+          attendance: {
+            totalDays: 0,
+            presentDays: 0,
+            percentage: 0
+          },
+          fees: {
+            totalFees: 0,
+            paidFees: 0,
+            pendingFees: 0
+          }
+        }], { session });
+
+        createdStudents.push(schoolStudent[0]);
+
+        // Create wallet for student
+        await Wallet.create([{
+          tenantId,
+          userId: studentUser[0]._id,
+          balance: 0,
+          currency: 'INR'
+        }], { session });
+
+        // Create user progress record
+        await UserProgress.create([{
+          tenantId,
+          userId: studentUser[0]._id,
+          level: 1,
+          xp: 0,
+          coins: 0,
+          streak: 0,
+          lastActive: new Date()
+        }], { session });
+      }
+
+      // 4. Update class with student count
+      const sectionCounts = {};
+      createdStudents.forEach(student => {
+        const section = student.section;
+        sectionCounts[section] = (sectionCounts[section] || 0) + 1;
+      });
+
+      // Update section strengths
+      const updatedSections = newClass[0].sections.map(section => ({
+        ...section,
+        currentStrength: sectionCounts[section.name] || 0
+      }));
+
+      await SchoolClass.findByIdAndUpdate(
+        classId,
+        { sections: updatedSections },
+        { session }
+      );
+
+      // Commit transaction
+      await session.commitTransaction();
+
+      // 5. Log audit (after successful transaction)
+      try {
+        await ComplianceAuditLog.logAction({
+          tenantId,
+          orgId,
+          userId: req.user._id,
+          userRole: req.user.role,
+          userName: req.user.name,
+          action: 'class_created',
+          targetType: 'class',
+          targetId: classId,
+          targetName: `Class ${classInfo.classNumber}${classInfo.stream ? ` - ${classInfo.stream}` : ''}`,
+          description: `Sequential class creation: Class ${classInfo.classNumber}${classInfo.stream ? ` - ${classInfo.stream}` : ''} with ${createdTeachers.length} teachers and ${createdStudents.length} students`,
+          ipAddress: req.ip,
+          userAgent: req.headers['user-agent'],
+        });
+      } catch (auditError) {
+        console.error('Error logging audit action:', auditError);
+        // Don't fail the main operation if audit logging fails
+      }
+
+      res.status(201).json({
+        success: true,
+        message: 'Class created successfully with teachers and students',
+        class: {
+          id: classId,
+          classNumber: classInfo.classNumber,
+          stream: classInfo.stream,
+          academicYear: classInfo.academicYear,
+          sections: updatedSections,
+          teachersCount: createdTeachers.length,
+          studentsCount: createdStudents.length
+        }
+      });
+
+    } catch (error) {
+      // Rollback transaction
+      await session.abortTransaction();
+      throw error;
+    } finally {
+      session.endSession();
+    }
+
+  } catch (error) {
+    console.error('Error creating sequential class:', error);
+    
+    // Handle specific error types
+    if (error.message.includes('already exists')) {
+      res.status(400).json({ 
+        message: error.message,
+        error: 'DUPLICATE_ENTRY'
+      });
+    } else if (error.name === 'ValidationError') {
+      res.status(400).json({ 
+        message: 'Validation error: ' + error.message,
+        error: 'VALIDATION_ERROR'
+      });
+    } else {
+      res.status(500).json({ 
+        message: 'Server error', 
+        error: error.message 
+      });
+    }
+  }
+};
+
 // Update class
 export const updateClass = async (req, res) => {
   try {

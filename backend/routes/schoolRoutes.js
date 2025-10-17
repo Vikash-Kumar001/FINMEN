@@ -14,6 +14,7 @@ import {
   getClassStats,
   getClassDetails,
   createClass,
+  createSequentialClass,
   addStudentsToClass,
   updateClass,
   deleteClass,
@@ -307,6 +308,7 @@ router.delete('/admin/teachers/:teacherId', requireAuth, requireSchoolAdmin, del
 // Class Management Routes (Admin only)
 router.get('/admin/classes', requireAuth, requireSchoolAdmin, getAllClasses);
 router.post('/admin/classes/create', requireAuth, requireSchoolAdmin, createClass);
+router.post('/admin/classes/create-sequential', requireAuth, requireSchoolAdmin, createSequentialClass);
 router.get('/admin/classes/stats', requireAuth, requireSchoolAdmin, getClassStats);
 router.get('/admin/classes/:classId', requireAuth, requireSchoolAdmin, getClassDetails);
 router.post('/admin/classes/:classId/students', requireAuth, requireSchoolAdmin, addStudentsToClass);

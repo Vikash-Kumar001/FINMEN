@@ -19,6 +19,7 @@ const Avatar = ({
 
   // Size configurations
   const sizeConfig = {
+    xsmall: { size: 32, text: 'text-xxs' },
     small: { size: 40, text: 'text-xs' },
     medium: { size: 60, text: 'text-sm' },
     large: { size: 120, text: 'text-lg' },

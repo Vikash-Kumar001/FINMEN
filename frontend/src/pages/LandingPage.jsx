@@ -195,22 +195,132 @@ const LandingPage = () => {
 
   const services = [
     {
-      title: "Curated Solutions",
-      description:
-        "Tools, services, and resources that support real student needs",
+      title: "RBI Financial Literacy Centres",
+      logo: "🏦",
     },
     {
-      title: "Meaningful Reach",
-      description:
-        "Connect with families, schools, and learners ina purposeful way.",
+      title: "SEBI Investor Education",
+      logo: "📈",
     },
     {
-      title: "Trusted Network",
-      description: "Part of a community built around education and growth.",
+      title: "NCFE",
+      logo: "🎓",
     },
     {
-      title: "Aligned with Values",
-      description: "Contribute to student development, not just transactions.",
+      title: "PM Jan Dhan Yojana",
+      logo: "💰",
+    },
+    {
+      title: "National Mental Health Programme",
+      logo: "🧠",
+    },
+    {
+      title: "MANAS App",
+      logo: "📱",
+    },
+    {
+      title: "Ayushman Bharat School Health",
+      logo: "🏥",
+    },
+    {
+      title: "NCERT Life Skills",
+      logo: "🌟",
+    },
+    {
+      title: "UNICEF Adolescent Development",
+      logo: "👥",
+    },
+    {
+      title: "Youth Affairs Programmes",
+      logo: "🎯",
+    },
+    {
+      title: "MeitY Cyber Surakshit Bharat",
+      logo: "🛡️",
+    },
+    {
+      title: "Cyber Safety Drives",
+      logo: "🔒",
+    },
+    {
+      title: "NCERT ICT Curriculum",
+      logo: "💻",
+    },
+    {
+      title: "NCERT Value Education",
+      logo: "📚",
+    },
+    {
+      title: "Ministry of Culture Initiatives",
+      logo: "🎭",
+    },
+    {
+      title: "Nehru Yuva Kendra",
+      logo: "🏛️",
+    },
+    {
+      title: "NITI Aayog",
+      logo: "🤖",
+    },
+    {
+      title: "CBSE AI Curriculum",
+      logo: "🧠",
+    },
+    {
+      title: "Digital India",
+      logo: "💻",
+    },
+    {
+      title: "Ayushman Bharat",
+      logo: "🏥",
+    },
+    {
+      title: "Rashtriya Kishor Swasthya Karyakram (RKSK)",
+      logo: "💪",
+    },
+    {
+      title: "Fit India",
+      logo: "🏃",
+    },
+    {
+      title: "Menstrual Hygiene Scheme",
+      logo: "🌸",
+    },
+    {
+      title: "Beti Bachao Beti Padhao",
+      logo: "👧",
+    },
+    {
+      title: "Poshan Abhiyan",
+      logo: "🥗",
+    },
+    {
+      title: "Atal Innovation Mission",
+      logo: "🚀",
+    },
+    {
+      title: "Skill India",
+      logo: "🛠️",
+    },
+    {
+      title: "Startup India",
+      logo: "💡",
+    },
+    {
+      title: "NSS",
+      logo: "🎓",
+    },
+    {
+      title: "Swachh Bharat Mission",
+      logo: "🧹",
+    },
+    {
+      title: "Ek Bharat Shreshtha Bharat",
+      logo: "🇮🇳",
+    },
+    {
+      title: "UN SDG 4.7",
+      logo: "🌍",
     },
   ];
 
@@ -874,7 +984,7 @@ const LandingPage = () => {
       {/* Pricing Section */}
       {/* Add ref to the pricing section div */}
       <div ref={pricingRef} className="py-16 bg-gradient-to-br from-purple-50 to-pink-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="sm:max-w-[90%] w-full mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -884,154 +994,242 @@ const LandingPage = () => {
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
               Final Pricing & Inclusions
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
               Choose the plan that best fits your needs with comprehensive features for holistic education
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Student Plan */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Free Plan */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              whileHover={{ y: -10 }}
-              className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 relative overflow-hidden group"
+              className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-green-200 relative overflow-hidden group flex flex-col h-full"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-purple-500 opacity-0 group-hover:opacity-5 transition-opacity duration-500"></div>
-              <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full opacity-5 group-hover:opacity-10 transition-opacity duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
+              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-emerald-400 to-green-400 rounded-full opacity-5 group-hover:opacity-15 transition-opacity duration-500"></div>
 
-              <div className="relative z-10">
-                <div className="flex justify-between items-start mb-6">
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex justify-between items-start mb-6 h-44">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Plan 1 – Student Plan</h3>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Free Plan</h3>
+                    <p className="text-sm text-gray-600 mb-5">Start your WiseStudent journey free — 5 games in every pillar, full growth unlocked when you're ready.</p>
                     <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-blue-600">₹1,999</span>
+                      <span className="text-3xl font-bold text-green-600">₹0</span>
+                    </div>
+                  </div>
+                  <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center text-white text-green-500 shadow-lg">
+                    <Star className="w-6 h-6" />
+                  </div>
+                </div>
+
+                <button className="w-full mb-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                  Get Free Plan
+                </button>
+
+                <div className="space-y-3 flex-1">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">5 Free Games per Pillar</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Earn heal coins and save them</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Access to All 10 Pillars (Preview Mode)</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Basic Student Dashboard</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Gamified micro-lessons & interactive storytelling</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Inavora Presentation Preview</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Daily Reflection Prompts (Trial)</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">WiseClub Access (Restricted)</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">NEP 2020 Aligned Foundation</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Upgrade Anytime to Full Plan</span>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Students Premium Plan */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: 0.2 }}
+              className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-blue-200 relative overflow-hidden group flex flex-col h-full"
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
+              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-cyan-400 to-blue-400 rounded-full opacity-5 group-hover:opacity-15 transition-opacity duration-500"></div>
+
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex justify-between items-start mb-6 h-44">
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Students Premium Plan</h3>
+                    <p className="text-sm text-gray-600 mb-5">Perfect for self-driven students who aspire to grow emotionally, mentally, ethically as well as academically.</p>
+                    <div className="flex items-baseline">
+                      <span className="text-3xl font-bold text-blue-600">₹4,499</span>
                       <span className="text-gray-500">/year</span>
-                      <span className="text-sm text-gray-500 line-through ml-2">₹2,500</span>
-                      <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full ml-2">
-                        Save ₹501
+                      <span className="text-sm text-gray-500 line-through ml-1 sm:ml-2">₹9,999</span>
+                      <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full ml-1 sm:ml-2">
+                        Save ₹5,500
                       </span>
                     </div>
                   </div>
-                  <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center text-white">
+                  <div className=" bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white text-blue-500 p-2 shadow-lg">
                     <GraduationCap className="w-6 h-6" />
                   </div>
                 </div>
 
-                <div className="space-y-4">
+                <button className="w-full mb-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                  Get Students Premium Plan
+                </button>
+
+                <div className="space-y-3 flex-1">
                   <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">Full access to all 10 WiseStudent pillars</span>
+                    <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Full Access to all 10 WiseStudent pillars</span>
                   </div>
                   <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">Gamified learning, challenges & WiseClub</span>
+                    <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">More than 2200+ Gaming micro lessons</span>
                   </div>
                   <div className="flex items-start gap-3">
-                    <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700">Certificates & NEP-linked skills</span>
+                    <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Exclusive Student Gamified Learning Dashboard with badges, levels, rewards, collectables and challenges</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Full access to inavora presentation tool</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Earn Heal Coins, save them, share them, and spend them</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Personal Growth Tracker — emotional, academic, and skill analytics</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">WiseClub Community Access (peer learning and group missions)</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">NEP 2020-Aligned Curriculum</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Daily, Weekly Motivation & Reflection Prompts</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Certificates & Achievements — issued automatically each term</span>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="w-5 h-5 text-blue-500 flex-shrink-0 mt-0.5" />
+                    <span className="text-gray-700 text-sm">Secure, Private, and Student-Centric</span>
                   </div>
                 </div>
-
-                <button className="w-full mt-8 bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                  Get Student Plan
-                </button>
               </div>
             </motion.div>
 
-            {/* Family & School Well-being Pack */}
+            {/* Student + Parent Premium Pro Plan */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              transition={{ delay: 0.2 }}
-              whileHover={{ y: -10 }}
-              className="bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 relative overflow-hidden group"
+              transition={{ delay: 0.3 }}
+              className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-purple-200 relative overflow-hidden group flex flex-col h-full"
             >
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 opacity-0 group-hover:opacity-5 transition-opacity duration-500"></div>
-              <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full opacity-5 group-hover:opacity-10 transition-opacity duration-500"></div>
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
+              <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
+              <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full opacity-5 group-hover:opacity-15 transition-opacity duration-500"></div>
 
-              <div className="relative z-10">
-                <div className="flex justify-between items-start mb-6">
+              <div className="relative z-10 flex flex-col h-full">
+                <div className="flex justify-between items-start mb-6 h-44">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Plan 2 – Family & School Well-being Pack</h3>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-3xl font-bold text-purple-600">₹2,499</span>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Student + Parent Premium Pro Plan</h3>
+                    <p className="text-sm text-gray-600 mb-3">For families who want a complete emotional and value-based learning ecosystem.</p>
+                    <div className="flex items-baseline">
+                      <span className="text-3xl font-bold text-purple-600">₹4,999</span>
                       <span className="text-gray-500">/year</span>
-                      <span className="text-sm text-gray-500 line-through ml-2">₹3,000</span>
-                      <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full ml-2">
-                        Save ₹501
+                      <span className="text-sm text-gray-500 line-through ml-1 sm:ml-2">₹12,999</span>
+                      <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full ml-1 sm:ml-2">
+                        Save ₹8,000
                       </span>
                     </div>
                   </div>
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center text-white">
+                  <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-purple-500 shadow-lg">
                     <Users className="w-6 h-6" />
                   </div>
                 </div>
 
-                <div className="space-y-6">
-                  <div>
-                    <h4 className="font-bold text-gray-900 mb-2 flex items-center gap-2">
-                      <span className="w-6 h-6 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs">+</span>
-                      Everything in Student Plan PLUS:
-                    </h4>
-                  </div>
+                <button className="w-full mb-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                  Get Student + Parent Pro Plan
+                </button>
 
-                  <div className="bg-blue-50 rounded-2xl p-4">
-                    <h5 className="font-bold text-blue-800 mb-2 flex items-center gap-2">
-                      <Heart className="w-4 h-4" />
-                      For Parents:
-                    </h5>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-blue-700 text-sm">Mental Health (stress care, emotional well-being, family harmony)</span>
+                <div className="space-y-4 flex-1">
+
+
+                  <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700 text-sm">Includes everything in the Students Premium Plan, along with:</span>
                     </div>
-                  </div>
-
-                  <div className="bg-green-50 rounded-2xl p-4">
-                    <h5 className="font-bold text-green-800 mb-2 flex items-center gap-2">
-                      <Brain className="w-4 h-4" />
-                      For Teachers:
-                    </h5>
-                    <div className="flex items-start gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-green-700 text-sm">Mental Health & Stress Care (school-wide, included automatically)</span>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700 text-sm">Exclusive Parent dashboard with clear, concise snapshot of their child's learning progress, wellbeing, engagement, and suggested at-home activities to support growth</span>
                     </div>
-                  </div>
-
-                  <div className="bg-purple-50 rounded-2xl p-4">
-                    <h5 className="font-bold text-purple-800 mb-2 flex items-center gap-2">
-                      <Building className="w-4 h-4" />
-                      For Schools:
-                    </h5>
-                    <div className="space-y-2">
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-purple-700 text-sm">Teacher dashboards & student reports</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-purple-700 text-sm">NEP-aligned compliance tools</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle className="w-4 h-4 text-purple-500 flex-shrink-0 mt-0.5" />
-                        <span className="text-purple-700 text-sm">Collective gamification (school-level challenges, recognition)</span>
-                      </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700 text-sm">Parents' Mental Health care (stress care, emotional well-being, family harmony)</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700 text-sm">Family Progress Tracking & Analytics</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700 text-sm">Parent-Child Learning Challenges</span>
+                    </div>
+                    <div className="flex items-start gap-3">
+                      <CheckCircle className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-gray-700 text-sm">Secure, Private, and Family-Centric — only parents and students have data access</span>
                     </div>
                   </div>
                 </div>
-
-                <button className="w-full mt-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105">
-                  Get Family & School Pack
-                </button>
               </div>
             </motion.div>
           </div>
 
           {/* Add-ons Section */}
-          <motion.div
+          {/* <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -1060,7 +1258,7 @@ const LandingPage = () => {
                 </span>
               </div>
             </div>
-          </motion.div>
+          </motion.div> */}
         </div>
       </div>
 
@@ -1074,75 +1272,69 @@ const LandingPage = () => {
             className="text-left"
           >
             <h2 className="text-4xl font-bold text-white mb-10 text-center">
-              Student Services & Resource Partners
+              National Alignments
             </h2>
 
             <div className="relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm p-12">
               <motion.div
                 animate={{
-                  x: [0, -100, -200, -300, -400, -500, -600, -700, -800, 0],
+                  x: [0, -100 * services.length * 12], // Dynamic width calculation for variable content
                 }}
                 transition={{
-                  duration: 20,
+                  duration: 180,
                   repeat: Infinity,
                   ease: "linear",
                 }}
                 className="flex gap-8 whitespace-nowrap"
                 style={{ width: "max-content" }}
               >
+                {/* First set of services */}
                 {services.map((service, index) => (
                   <div
                     key={`first-${index}`}
-                    className="flex items-start gap-3 min-w-80 flex-shrink-0"
+                    className="flex items-center gap-3 flex-shrink-0 px-4 py-2"
                   >
-                    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <CheckCircle className="w-4 h-4 text-blue-600" />
+                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                      <span className="text-lg">{service.logo}</span>
                     </div>
-                    <div className="whitespace-normal">
-                      <h3 className="text-xl font-semibold text-white mb-1">
+                    <div className="whitespace-nowrap">
+                      <h3 className="text-lg font-semibold text-white">
                         {service.title}
                       </h3>
-                      <p className="text-blue-100 text-sm">
-                        {service.description}
-                      </p>
                     </div>
                   </div>
                 ))}
 
+                {/* Second set of services for seamless loop */}
                 {services.map((service, index) => (
                   <div
                     key={`second-${index}`}
-                    className="flex items-start gap-3 min-w-80 flex-shrink-0"
+                    className="flex items-center gap-3 flex-shrink-0 px-4 py-2"
                   >
-                    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <CheckCircle className="w-4 h-4 text-blue-600" />
+                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                      <span className="text-lg">{service.logo}</span>
                     </div>
-                    <div className="whitespace-normal">
-                      <h3 className="text-xl font-semibold text-white mb-1">
+                    <div className="whitespace-nowrap">
+                      <h3 className="text-lg font-semibold text-white">
                         {service.title}
                       </h3>
-                      <p className="text-blue-100 text-sm">
-                        {service.description}
-                      </p>
                     </div>
                   </div>
                 ))}
 
+                {/* Third set of services for seamless loop */}
                 {services.map((service, index) => (
                   <div
                     key={`third-${index}`}
-                    className="flex items-start gap-3 min-w-80 flex-shrink-0"
+                    className="flex items-center gap-3 flex-shrink-0 px-4 py-2"
                   >
-                    <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center flex-shrink-0 mt-1">
-                      <CheckCircle className="w-4 h-4 text-blue-600" />
+                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
+                      <span className="text-lg">{service.logo}</span>
                     </div>
-                    <div className="whitespace-normal">
-                      <h3 className="text-xl font-semibold text-white mb-1">
+                    <div className="whitespace-nowrap">
+                      <h3 className="text-lg font-semibold text-white">
                         {service.title}
                       </h3>
-                      <p className="text-blue-100 text-sm">
-                        {service.description}
-                      </p>
                     </div>
                   </div>
                 ))}

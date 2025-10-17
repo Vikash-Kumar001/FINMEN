@@ -224,7 +224,7 @@ const Navbar = () => {
                                 <>
                                     {user.role === "student" && (
                                         <motion.button
-                                            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 border-2 border-yellow-500 cursor-pointer"
+                                            className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 border-2 border-yellow-500 cursor-pointer"
                                             whileHover={{ scale: 1.03 }}
                                             whileTap={{ scale: 0.97 }}
                                             onClick={() => navigate("/student/wallet")}
@@ -269,7 +269,7 @@ const Navbar = () => {
                                             <div className="relative">
                                                 <Avatar
                                                     user={user}
-                                                    size="small"
+                                                    size="xsmall"
                                                     className=""
                                                 />
                                                 <motion.div

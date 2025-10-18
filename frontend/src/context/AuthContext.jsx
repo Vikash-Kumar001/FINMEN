@@ -99,16 +99,8 @@ export const AuthProvider = ({ children }) => {
                     }
                     break;
                 case "csr":
-                    if (!enhancedUser.isApproved) {
-                        navigate("/pending-approval", {
-                            state: {
-                                message: "Your CSR account is currently under review. You will be notified once approved.",
-                                user: { email: enhancedUser.email },
-                            },
-                        });
-                    } else {
-                        navigate("/csr/dashboard");
-                    }
+                    // Removed approval check for CSR users - they should go directly to dashboard
+                    navigate("/csr/dashboard");
                     break;
                 case "student":
                 case "school_student":

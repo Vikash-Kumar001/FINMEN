@@ -332,8 +332,8 @@ export const login = async (req, res) => {
     // Email verification is no longer required for student login.
     // We allow login regardless of verification status.
 
-    // Approval status checks for parent, seller, csr
-    if (["parent", "seller", "csr"].includes(user.role)) {
+    // Approval status checks for parent and seller only (CSR users don't need approval)
+    if (["parent", "seller"].includes(user.role)) {
       if (user.approvalStatus === "pending") {
         return res.status(403).json({
           message: `Your ${user.role} account is currently under review. You will be notified once approved.`,

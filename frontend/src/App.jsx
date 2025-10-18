@@ -564,19 +564,21 @@ const App = () => {
 
   return (
     <div className="min-h-screen bg-gray-100">
-  {!isAuthPage &&
-    !isFullScreenGame &&
-    !isPublicPage &&
-    location.pathname !== "/" &&
-    location.pathname !== "/school-registration" &&
-    location.pathname !== "/institution-type" &&
-    location.pathname !== "/individual-account" &&
-    location.pathname !== "/choose-account-type" &&
-    location.pathname !== "/register-parent" &&
-    location.pathname !== "/register-seller" &&
-    location.pathname !== "/register-teacher" &&
-    location.pathname !== "/pending-approval" &&
-    <Navbar />}
+      {!isAuthPage &&
+        !isFullScreenGame &&
+        !isPublicPage &&
+        location.pathname !== "/" &&
+        location.pathname !== "/school-registration" &&
+        location.pathname !== "/institution-type" &&
+        location.pathname !== "/individual-account" &&
+        location.pathname !== "/choose-account-type" &&
+        location.pathname !== "/register-parent" &&
+        location.pathname !== "/register-seller" &&
+        location.pathname !== "/register-teacher" &&
+        location.pathname !== "/register-stakeholder" &&
+        location.pathname !== "/pending-approval" && (
+          <Navbar />
+        )}
       {!isAuthPage && user && (user.role === 'student' || user.role === 'school_student') && <Chatbot />} {/* ✅ Floating Chatbot - Only for students */}
 
       <ErrorBoundary>
@@ -1071,7 +1073,7 @@ const App = () => {
           <Route path="/seller/dashboard" element={<ProtectedRoute roles={['seller']} requireApproved={true}><SellerDashboard /></ProtectedRoute>} />
 
           {/* CSR Routes */}
-          <Route path="/csr/dashboard" element={<ProtectedRoute roles={['csr']} requireApproved={true}><CSRDashboard /></ProtectedRoute>} />
+          <Route path="/csr/dashboard" element={<ProtectedRoute roles={['csr']}><CSRDashboard /></ProtectedRoute>} />
 
           {/* Public Pages */}
           <Route path="/about" element={<About />} />

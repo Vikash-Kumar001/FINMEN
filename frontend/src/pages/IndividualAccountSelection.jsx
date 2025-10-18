@@ -26,7 +26,7 @@ const IndividualAccountSelection = () => {
             <h1 className="ml-3 text-2xl font-semibold text-gray-800">Wise Student</h1>
           </div>
                     <button
-                        className="text-gray-600 hover:text-gray-800"
+                        className="text-gray-600 hover:text-gray-800 z-50"
                         onClick={() => navigate('/')}
                     >
                         Back to Home

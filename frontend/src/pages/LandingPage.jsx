@@ -611,7 +611,7 @@ const LandingPage = () => {
       description: "Organizations contributing to student development and education",
       icon: <Target className="w-12 h-12" />,
       color: "from-amber-500 to-orange-500",
-      action: () => navigate("/register-seller"),
+      action: () => navigate("/register-stakeholder"),
       buttonText: "Partner With Us",
     },
   ];
@@ -1281,7 +1281,7 @@ const LandingPage = () => {
                   x: [0, -100 * services.length * 12], // Dynamic width calculation for variable content
                 }}
                 transition={{
-                  duration: 180,
+                  duration: 500,
                   repeat: Infinity,
                   ease: "linear",
                 }}

@@ -19,6 +19,21 @@ const AddStudentModal = ({
       setPasswordError('');
     }
   }, [showAddStudentModal]);
+
+  // Prevent background scrolling when modal is open
+  React.useEffect(() => {
+    if (showAddStudentModal) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    // Cleanup function to reset overflow when component unmounts
+    return () => {
+      document.body.style.overflow = 'unset';
+    };
+  }, [showAddStudentModal]);
+
   return (
     <AnimatePresence>
       {showAddStudentModal && (
@@ -29,7 +44,7 @@ const AddStudentModal = ({
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowAddStudentModal(false)}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
+            className="fixed inset-0 bg-black/70 bg-opacity-70 backdrop-blur-sm z-40"
           />
           <motion.div
             key="add-student-modal"
@@ -37,11 +52,11 @@ const AddStudentModal = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none"
+            className="fixed inset-0 flex items-start justify-center z-40 p-4 pointer-events-none pt-24"
           >
             <div
               onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto"
+              className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto"
             >
               <div className="sticky top-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-t-2xl">
                 <div className="flex items-center justify-between">

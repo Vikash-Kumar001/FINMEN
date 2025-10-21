@@ -10,10 +10,16 @@ import {
   Linkedin,
   ArrowUp,
 } from "lucide-react";
+import { globalStatsService } from "../services/globalStatsService";
 
 const MainFooter = () => {
   const [email, setEmail] = React.useState("");
   const [isVisible, setIsVisible] = React.useState(false);
+  const [globalStats, setGlobalStats] = React.useState({
+    totalSchools: 0,
+    totalStudents: 0,
+    loading: true
+  });
 
   // Remove unused services array
 
@@ -63,6 +69,59 @@ const MainFooter = () => {
   const handleBackToTop = () => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
+
+  // Format large numbers (e.g., 1000 -> 1K, 1000000 -> 1M)
+  const formatNumber = (num) => {
+    if (num >= 1000000) {
+      return (num / 1000000).toFixed(1) + 'M';
+    } else if (num >= 1000) {
+      return (num / 1000).toFixed(1) + 'K';
+    }
+    return num.toString();
+  };
+
+  // Fetch global stats on component mount
+  React.useEffect(() => {
+    const fetchGlobalStats = async () => {
+      try {
+        const response = await globalStatsService.getCachedGlobalStats();
+        
+        if (response.success) {
+          setGlobalStats({
+            totalSchools: response.data.totalSchools,
+            totalStudents: response.data.totalStudents,
+            loading: false
+          });
+        } else {
+          // Fallback to regular stats if cached fails
+          const fallbackResponse = await globalStatsService.getGlobalStats();
+          
+          if (fallbackResponse.success) {
+            setGlobalStats({
+              totalSchools: fallbackResponse.data.totalSchools,
+              totalStudents: fallbackResponse.data.totalStudents,
+              loading: false
+            });
+          } else {
+            setGlobalStats({
+              totalSchools: 0,
+              totalStudents: 0,
+              loading: false
+            });
+          }
+        }
+      } catch (error) {
+        console.error('MainFooter: Error fetching global stats:', error);
+        setGlobalStats({
+          totalSchools: 0,
+          totalStudents: 0,
+          loading: false
+        });
+      }
+    };
+
+    fetchGlobalStats();
+  }, []);
 
   React.useEffect(() => {
     const toggleVisibility = () => {
@@ -146,7 +205,7 @@ const MainFooter = () => {
               </h3>
               <div className="space-y-4">
                 <a
-                  href="mailto:support@wisestudent.com"
+                  href="mailto:support@wisestudent.org"
                   className="flex items-start gap-3 text-gray-600 hover:text-blue-600 transition-all duration-300 group"
                 >
                   <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-500 transition-all duration-300 flex-shrink-0">
@@ -155,13 +214,13 @@ const MainFooter = () => {
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Email</p>
                     <p className="text-sm font-medium">
-                      support@wisestudent.com
+                      support@wisestudent.org
                     </p>
                   </div>
                 </a>
 
                 <a
-                  href="tel:+918595654823"
+                  href="tel:+919043411110"
                   className="flex items-start gap-3 text-gray-600 hover:text-blue-600 transition-all duration-300 group"
                 >
                   <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-500 transition-all duration-300 flex-shrink-0">
@@ -169,7 +228,7 @@ const MainFooter = () => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Phone</p>
-                    <p className="text-sm font-medium">+91-859-565-4823</p>
+                    <p className="text-sm font-medium">+91-904-341-1110</p>
                   </div>
                 </a>
 
@@ -179,7 +238,7 @@ const MainFooter = () => {
                   </div>
                   <div>
                     <p className="text-xs text-gray-500 mb-1">Location</p>
-                    <p className="text-sm font-medium">Delhi, India</p>
+                    <p className="text-sm font-medium">Delhi | Bangalore | Chennai</p>
                   </div>
                 </div>
               </div>
@@ -210,10 +269,18 @@ const MainFooter = () => {
                 <p className="text-xs text-gray-500 mb-3">Trusted by</p>
                 <div className="flex items-center gap-3">
                   <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg text-xs font-semibold text-blue-600 border border-blue-100">
-                    500+ Schools
+                    {globalStats.loading ? (
+                      <span className="animate-pulse">Loading...</span>
+                    ) : (
+                      `${globalStats.totalSchools}+ Schools`
+                    )}
                   </div>
                   <div className="px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg text-xs font-semibold text-purple-600 border border-purple-100">
-                    50K+ Students
+                    {globalStats.loading ? (
+                      <span className="animate-pulse">Loading...</span>
+                    ) : (
+                      `${formatNumber(globalStats.totalStudents)}+ Students`
+                    )}
                   </div>
                 </div>
               </div>

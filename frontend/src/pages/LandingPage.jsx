@@ -590,6 +590,14 @@ const LandingPage = () => {
       buttonText: "Join as Student",
     },
     {
+      title: "Mentors & Guides",
+      description: "Parents, Teachers, and Mentors supporting student growth",
+      icon: <Users className="w-12 h-12" />,
+      color: "from-green-500 to-emerald-500",
+      action: () => navigate("/choose-account-type"),
+      buttonText: "Choose Type",
+    },
+    {
       title: "Educational Institution",
       description:
         "Schools looking for comprehensive management solutions",
@@ -597,14 +605,6 @@ const LandingPage = () => {
       color: "from-blue-500 to-cyan-500",
       action: () => navigate("/school-registration"),
       buttonText: "Join as School",
-    },
-    {
-      title: "Mentors & Guides",
-      description: "Parents, Teachers, and Mentors supporting student growth",
-      icon: <Users className="w-12 h-12" />,
-      color: "from-green-500 to-emerald-500",
-      action: () => navigate("/choose-account-type"),
-      buttonText: "Choose Type",
     },
     {
       title: "Impact Partners",

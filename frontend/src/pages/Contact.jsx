@@ -58,19 +58,19 @@ const Contact = () => {
     {
       icon: <Mail className="w-6 h-6" />,
       title: "Email Us",
-      content: "support@wisestudent.com",
+      content: "support@wisestudent.org",
       description: "We'll respond within 24 hours"
     },
     {
       icon: <Phone className="w-6 h-6" />,
       title: "Call Us",
-      content: "+91-859-565-4823",
+      content: "+91-904-341-1110",
       description: "Mon-Fri from 9 AM to 6 PM"
     },
     {
       icon: <MapPin className="w-6 h-6" />,
       title: "Visit Us",
-      content: "Delhi, India",
+      content: "Delhi | Bangalore | Chennai, India",
       description: "Our headquarters and innovation center"
     },
     {

@@ -26,7 +26,9 @@ import {
     Users,
     Mail,
     CheckCircle,
-    FileText
+    FileText,
+    Target,
+    DollarSign
 } from "lucide-react";
 
 
@@ -71,7 +73,7 @@ const Navbar = () => {
             admin: "/admin/dashboard",
             parent: "/parent/overview",
             seller: "/seller/dashboard",
-            csr: "/csr/dashboard",
+            csr: "/csr/overview",
             school_admin: "/school/admin/dashboard",
             school_teacher: "/school-teacher/overview",
             school_student: "/student/dashboard",
@@ -109,6 +111,16 @@ const Navbar = () => {
         { icon: <Mail className="w-5 h-5" />, label: "Messages", onClick: () => navigate("/school-teacher/messages") },
         { icon: <CheckCircle className="w-5 h-5" />, label: "Tasks", onClick: () => navigate("/school-teacher/tasks") },
         { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate("/school-teacher/settings") }
+    ] : user?.role === "csr" ? [
+        { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: () => navigate("/csr/overview") },
+        { icon: <Target className="w-5 h-5" />, label: "Campaigns", onClick: () => navigate("/csr/campaigns") },
+        { icon: <Zap className="w-5 h-5" />, label: "Wizard", onClick: () => navigate("/csr/campaign-wizard") },
+        { icon: <DollarSign className="w-5 h-5" />, label: "Financial", onClick: () => navigate("/csr/financial") },
+        { icon: <FileText className="w-5 h-5" />, label: "Reports", onClick: () => navigate("/csr/reports") },
+        { icon: <CheckCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/csr/approvals") },
+        { icon: <TrendingUp className="w-5 h-5" />, label: "Tracking", onClick: () => navigate("/csr/budget-tracking") },
+        { icon: <Gift className="w-5 h-5" />, label: "Budget", onClick: () => navigate("/csr/budget") },
+        { icon: <Users className="w-5 h-5" />, label: "Legal", onClick: () => navigate("/csr/cobranding") }
     ] : [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect }
     ];
@@ -173,7 +185,7 @@ const Navbar = () => {
                 {/* Subtle gradient border at bottom */}
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
 
-                <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative">
+                <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative">
                     <div className="flex items-center justify-between sm:gap-4 gap-0 h-16 sm:h-20">
                         {/* Logo/Brand */}
                         <motion.div
@@ -202,19 +214,46 @@ const Navbar = () => {
                         </motion.div>
 
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center gap-1.5 lg:gap-2 flex-1 justify-center max-w-3xl">
+                        <nav className="hidden lg:flex items-center gap-2 xl:gap-3 flex-1 justify-center max-w-6xl overflow-x-auto scrollbar-hide">
                             {navigationItems.map((item, index) => (
                                 <motion.button
                                     key={index}
                                     onClick={item.onClick}
-                                    className="flex items-center gap-1.5 px-2.5 lg:px-3 xl:px-4 py-2 rounded-lg text-xs lg:text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 duration-200 shadow-md hover:shadow-lg cursor-pointer"
-                                    whileHover={{ scale: 1.03 }}
-                                    whileTap={{ scale: 0.97 }}
+                                    className="flex items-center gap-2 px-3 xl:px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 duration-200 shadow-md hover:shadow-lg cursor-pointer whitespace-nowrap flex-shrink-0"
+                                    whileHover={{ scale: 1.02, y: -1 }}
+                                    whileTap={{ scale: 0.98 }}
                                 >
-                                    <div className="w-4 h-4 lg:w-4.5 lg:h-4.5">{item.icon}</div>
-                                    <span className="hidden lg:inline whitespace-nowrap">{item.label}</span>
+                                    <div className="w-4 h-4">{item.icon}</div>
+                                    <span className="whitespace-nowrap">{item.label}</span>
                                 </motion.button>
                             ))}
+                        </nav>
+
+                        {/* Tablet Navigation (md to lg) */}
+                        <nav className="hidden md:flex lg:hidden items-center gap-1.5 flex-1 justify-center max-w-4xl overflow-x-auto scrollbar-hide">
+                            {navigationItems.slice(0, 6).map((item, index) => (
+                                <motion.button
+                                    key={index}
+                                    onClick={item.onClick}
+                                    className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 duration-200 shadow-md hover:shadow-lg cursor-pointer whitespace-nowrap flex-shrink-0"
+                                    whileHover={{ scale: 1.02, y: -1 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    <div className="w-3.5 h-3.5">{item.icon}</div>
+                                    <span className="whitespace-nowrap">{item.label}</span>
+                                </motion.button>
+                            ))}
+                            {navigationItems.length > 6 && (
+                                <motion.button
+                                    onClick={() => setShowMobileMenu(true)}
+                                    className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 duration-200 shadow-md hover:shadow-lg cursor-pointer whitespace-nowrap flex-shrink-0"
+                                    whileHover={{ scale: 1.02, y: -1 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    <div className="w-3.5 h-3.5">⋯</div>
+                                    <span className="whitespace-nowrap">More</span>
+                                </motion.button>
+                            )}
                         </nav>
 
                         {/* Right Side */}
@@ -368,26 +407,28 @@ const Navbar = () => {
                             animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="md:hidden border-t-2 border-gray-200 bg-white shadow-lg"
+                            className="md:hidden border-t-2 border-gray-200 bg-white shadow-lg max-h-96 overflow-y-auto"
                         >
-                            <div className="px-4 py-4 space-y-2">
-                                {navigationItems.map((item, index) => (
-                                    <motion.button
-                                        key={index}
-                                        onClick={() => {
-                                            item.onClick();
-                                            setShowMobileMenu(false);
-                                        }}
-                                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-gray-700 hover:text-white bg-gray-100 hover:bg-gradient-to-r hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 border-2 border-gray-200 hover:border-transparent rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg"
-                                        whileHover={{ x: 5, scale: 1.02 }}
-                                        initial={{ x: -20, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                        transition={{ delay: index * 0.05 }}
-                                    >
-                                        {item.icon}
-                                        <span>{item.label}</span>
-                                    </motion.button>
-                                ))}
+                            <div className="px-4 py-4">
+                                <div className="grid grid-cols-2 gap-2 mb-4">
+                                    {navigationItems.map((item, index) => (
+                                        <motion.button
+                                            key={index}
+                                            onClick={() => {
+                                                item.onClick();
+                                                setShowMobileMenu(false);
+                                            }}
+                                            className="flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-gray-700 hover:text-white bg-gray-100 hover:bg-gradient-to-r hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 border-2 border-gray-200 hover:border-transparent rounded-lg transition-all duration-200 shadow-sm hover:shadow-lg"
+                                            whileHover={{ scale: 1.02 }}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.03 }}
+                                        >
+                                            <div className="w-4 h-4">{item.icon}</div>
+                                            <span className="truncate">{item.label}</span>
+                                        </motion.button>
+                                    ))}
+                                </div>
                             </div>
                         </motion.div>
                     )}

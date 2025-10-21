@@ -436,6 +436,15 @@ import SellerDashboard from "./pages/Seller/SellerDashboard";
 
 // CSR Pages
 import CSRDashboard from "./pages/CSR/CSRDashboard";
+import CSROverview from "./pages/CSR/CSROverview";
+import CSRCampaigns from "./pages/CSR/CSRCampaigns";
+import CSRCampaignWizard from "./pages/CSR/CSRCampaignWizard";
+import CSRFinancial from "./pages/CSR/CSRFinancial";
+import CSRReports from "./pages/CSR/CSRReports";
+import CSRApprovals from "./pages/CSR/CSRApprovals";
+import CSRBudgetTracking from "./pages/CSR/CSRBudgetTracking";
+import CSRBudget from "./pages/CSR/CSRBudget";
+import CSRCobranding from "./pages/CSR/CSRCobranding";
 
 // Multi-Tenant Pages
 import CompanySignup from "./pages/MultiTenant/CompanySignup";
@@ -1073,7 +1082,17 @@ const App = () => {
           <Route path="/seller/dashboard" element={<ProtectedRoute roles={['seller']} requireApproved={true}><SellerDashboard /></ProtectedRoute>} />
 
           {/* CSR Routes */}
+          <Route path="/csr" element={<Navigate to="/csr/overview" replace />} />
           <Route path="/csr/dashboard" element={<ProtectedRoute roles={['csr']}><CSRDashboard /></ProtectedRoute>} />
+          <Route path="/csr/overview" element={<ProtectedRoute roles={['csr']}><CSROverview /></ProtectedRoute>} />
+          <Route path="/csr/campaigns" element={<ProtectedRoute roles={['csr']}><CSRCampaigns /></ProtectedRoute>} />
+          <Route path="/csr/campaign-wizard" element={<ProtectedRoute roles={['csr']}><CSRCampaignWizard /></ProtectedRoute>} />
+          <Route path="/csr/financial" element={<ProtectedRoute roles={['csr']}><CSRFinancial /></ProtectedRoute>} />
+          <Route path="/csr/reports" element={<ProtectedRoute roles={['csr']}><CSRReports /></ProtectedRoute>} />
+          <Route path="/csr/approvals" element={<ProtectedRoute roles={['csr']}><CSRApprovals /></ProtectedRoute>} />
+          <Route path="/csr/budget-tracking" element={<ProtectedRoute roles={['csr']}><CSRBudgetTracking /></ProtectedRoute>} />
+          <Route path="/csr/budget" element={<ProtectedRoute roles={['csr']}><CSRBudget /></ProtectedRoute>} />
+          <Route path="/csr/cobranding" element={<ProtectedRoute roles={['csr']}><CSRCobranding /></ProtectedRoute>} />
 
           {/* Public Pages */}
           <Route path="/about" element={<About />} />

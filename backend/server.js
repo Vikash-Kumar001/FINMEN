@@ -96,12 +96,25 @@ import userRoutes from "./routes/userRoutes.js";
 import parentRoutes from "./routes/parentRoutes.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
 import csrRoutes from "./routes/csrRoutes.js";
+import csrKPIRoutes from "./routes/csrKPIRoutes.js";
+import campaignRoutes from "./routes/campaignRoutes.js";
+import budgetTransactionRoutes from "./routes/budgetTransactionRoutes.js";
+import impactReportRoutes from "./routes/impactReportRoutes.js";
+import cobrandingLegalRoutes from "./routes/cobrandingLegalRoutes.js";
+import campaignWizardRoutes from "./routes/campaignWizardRoutes.js";
+import csrPaymentRoutes from "./routes/csrPaymentRoutes.js";
+import invoiceRoutes from "./routes/invoiceRoutes.js";
+import csrReportRoutes from "./routes/csrReportRoutes.js";
+import campaignApprovalRoutes from "./routes/campaignApprovalRoutes.js";
+import budgetTrackingRoutes from "./routes/budgetTrackingRoutes.js";
+import csrOverviewRoutes from "./routes/csrOverviewRoutes.js";
 import avatarRoutes from "./routes/avatarRoutes.js";
 
 // Multi-tenant routes
 import companyRoutes from "./routes/companyRoutes.js";
 import organizationRoutes from "./routes/organizationRoutes.js";
 import schoolRoutes from "./routes/schoolRoutes.js";
+import globalStatsRoutes from "./routes/globalStatsRoutes.js";
 
 import paymentRoutes from "./routes/paymentRoutes.js";
 
@@ -118,6 +131,7 @@ import { setupFeedbackSocket } from "./socketHandlers/feedbackSocket.js";
 import { setupGameSocket } from "./socketHandlers/gameSocket.js";
 import { setupJournalSocket } from "./socketHandlers/journalSocket.js";
 import { setupChatSocket } from "./socketHandlers/chatSocket.js";
+import { setupCSROverviewSocket } from "./socketHandlers/csrOverviewSocket.js";
 
 // Socket.IO Authentication and Events
 io.on("connection", async (socket) => {
@@ -169,6 +183,11 @@ io.on("connection", async (socket) => {
     setupGameSocket(io, socket, user);
     setupJournalSocket(io, socket, user);
     setupChatSocket(io, socket, user);
+    
+    // Setup CSR-specific sockets
+    if (user.role === "csr") {
+      setupCSROverviewSocket(io, socket, user);
+    }
 
   } catch (err) {
     console.error("❌ Socket auth error:", err.message);
@@ -196,6 +215,7 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/company", companyRoutes);
 app.use("/api/organization", organizationRoutes);
 app.use("/api/school", schoolRoutes);
+app.use("/api/global", globalStatsRoutes);
 
 app.use("/api/payment", paymentRoutes);
 app.use("/api/notifications", notificationRoutes);
@@ -214,6 +234,18 @@ app.use('/api/user', userRoutes);
 app.use('/api/parent', parentRoutes);
 app.use('/api/seller', sellerRoutes);
 app.use('/api/csr', csrRoutes);
+app.use('/api/csr-kpis', csrKPIRoutes);
+app.use('/api/csr', campaignRoutes);
+app.use('/api/budget', budgetTransactionRoutes);
+app.use('/api/csr', impactReportRoutes);
+app.use('/api/csr', cobrandingLegalRoutes);
+app.use('/api/campaign-wizard', campaignWizardRoutes);
+app.use('/api/csr-financial', csrPaymentRoutes);
+app.use('/api/csr-financial', invoiceRoutes);
+app.use('/api/csr-reports', csrReportRoutes);
+app.use('/api/campaign-approvals', campaignApprovalRoutes);
+app.use('/api/budget-tracking', budgetTrackingRoutes);
+app.use('/api/csr-overview', csrOverviewRoutes);
 app.use('/api/avatar', avatarRoutes);
 
 // Health Check

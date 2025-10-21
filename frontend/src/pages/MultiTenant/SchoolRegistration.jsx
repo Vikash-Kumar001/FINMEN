@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import {
@@ -48,6 +48,28 @@ const SchoolRegistration = () => {
   const [step, setStep] = useState(1);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const navigate = useNavigate();
+  const activeStepRef = useRef(null);
+  const progressContainerRef = useRef(null);
+
+  // Auto-scroll to active step on mobile
+  useEffect(() => {
+    if (activeStepRef.current && progressContainerRef.current) {
+      const container = progressContainerRef.current;
+      const activeStep = activeStepRef.current;
+      
+      // Only auto-scroll on mobile devices
+      if (window.innerWidth < 640) {
+        const containerRect = container.getBoundingClientRect();
+        const activeStepRect = activeStep.getBoundingClientRect();
+        
+        const scrollLeft = activeStep.offsetLeft - containerRect.width / 2 + activeStepRect.width / 2;
+        container.scrollTo({
+          left: scrollLeft,
+          behavior: 'smooth'
+        });
+      }
+    }
+  }, [step]);
 
   const classOptions = [
     { value: "1", label: "Class 1" },
@@ -282,9 +304,16 @@ const SchoolRegistration = () => {
         {/* Progress Steps - Adjusted for mobile */}
       <div className="bg-transparent border-b border-white/10 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
-          <div className="flex items-center justify-between overflow-x-auto pb-2">
+          <div 
+            ref={progressContainerRef}
+            className="flex items-center justify-between pb-2 overflow-x-auto sm:overflow-x-hidden"
+          >
             {steps.map((stepItem, index) => (
-              <div key={stepItem.number} className="flex items-center flex-shrink-0">
+              <div 
+                key={stepItem.number} 
+                className="flex items-center flex-shrink-0"
+                ref={stepItem.number === step ? activeStepRef : null}
+              >
                 <div
                   className={`flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full text-xs sm:text-sm font-semibold cursor-pointer ${step >= stepItem.number
                       ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white'

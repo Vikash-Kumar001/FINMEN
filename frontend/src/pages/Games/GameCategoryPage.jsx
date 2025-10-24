@@ -43,7 +43,8 @@ import {
     Sun,
     Droplets,
     Cloud,
-    Book
+    Book,
+    Hand
 } from "lucide-react";
 
 
@@ -2563,7 +2564,7 @@ const GameCategoryPage = () => {
                     id: 'dcos-teen-11',
                     title: 'Cyberbully Reflex',
                     description: 'Block and report hurtful comments',
-                    icon: <Shield className="w-6 h-6" />,
+                    icon: <Shield className="w-6 h-6" />,  
                     difficulty: 'Medium',
                     duration: '5-7 min',
                     coins: 3,

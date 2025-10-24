@@ -62,7 +62,7 @@ const gameCategories = {
     icon: '🚀',
     color: 'from-violet-500 to-purple-600'
   },
-  crgc: {
+  'civic-responsibility': {
     games: crgcGames,
     getGame: getCrgcGame,
     title: 'Civic Responsibility',
@@ -107,7 +107,7 @@ const UniversalGameRenderer = () => {
     }
 
     // Validate age group
-    if (!['kids', 'teen'].includes(age)) {
+    if (!['kids', 'teen', 'adult'].includes(age)) {
       setError(`Invalid age group: ${age}. Must be 'kids' or 'teen'`);
       setLoading(false);
       return;

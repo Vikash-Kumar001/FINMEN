@@ -1,0 +1,99 @@
+diff a/frontend/src/App.jsx b/frontend/src/App.jsx	(rejected hunks)
+@@ -21,6 +21,8 @@ import AccountTypeSelection from "./pages/Auth/AccountTypeSelection";
+ 
+ // Student Pages
+ import StudentDashboard from "./pages/Student/StudentDashboard";
++import StudentActivity from "./pages/Student/StudentActivity";
++import AssignmentAttempt from "./pages/Student/AssignmentAttempt";
+ import CategoryView from "./pages/Student/CategoryView";
+ import QuickQuiz from "./pages/Student/QuickQuiz";
+ import MoodTracker from "./pages/Student/MoodTracker";
+@@ -36,8 +38,6 @@ import Notifications from "./components/Notifications";
+ import Profile from "./components/Profile";
+ import Setting from "./components/Settings";
+ import BreathingExercise from "./pages/Student/BreathingExercise";
+-import DailyChallenges from "./pages/Student/DailyChallenges";
+-import Challenge from "./pages/Student/Challenge";
+ import FinancialLiteracy from "./pages/Student/FinancialLiteracy";
+ import BudgetPlanner from "./pages/Student/BudgetPlanner";
+ import InvestmentSimulator from "./pages/Student/InvestmentSimulator";
+@@ -450,6 +450,8 @@ import CSRCobranding from "./pages/CSR/CSRCobranding";
+ import CompanySignup from "./pages/MultiTenant/CompanySignup";
+ import CreateOrganization from "./pages/MultiTenant/CreateOrganization";
+ import SchoolAdminDashboard from "./pages/School/SchoolAdminDashboard";
++import AnnouncementManagement from "./pages/School/AnnouncementManagement";
++import Announcements from "./pages/School/Announcements";
+ import SchoolAdminAnalytics from "./pages/School/SchoolAdminAnalytics";
+ import SchoolAdminStudents from "./pages/School/SchoolAdminStudents";
+ import SchoolAdminTeachers from "./pages/School/SchoolAdminTeachers";
+@@ -475,6 +477,9 @@ import TeacherMessages from "./pages/School/TeacherMessages";
+ import TeacherTasks from "./pages/School/TeacherTasks";
+ import TeacherSettings from "./pages/School/TeacherSettings";
+ import TeacherStudentProgress from "./pages/School/TeacherStudentProgress";
++import TeacherParentChat from "./pages/School/TeacherParentChat";
++import ParentChat from "./pages/Parent/ParentChat";
++import AssignmentTracking from "./pages/School/AssignmentTracking";
+ import LandingPage from "./pages/LandingPage";
+ import IndividualAccountSelection from "./pages/IndividualAccountSelection";
+ 
+@@ -625,6 +630,7 @@ const App = () => {
+           <Route path="/school/admin/teachers" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminTeachers /></ProtectedRoute>} />
+           <Route path="/school/admin/classes" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminClasses /></ProtectedRoute>} />
+           <Route path="/school/admin/staff" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminStaff /></ProtectedRoute>} />
++          <Route path="/school/admin/announcements" element={<ProtectedRoute roles={['school_admin']}><AnnouncementManagement /></ProtectedRoute>} />
+           <Route path="/school/admin/approvals" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminApprovals /></ProtectedRoute>} />
+           <Route path="/school/admin/templates" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminTemplates /></ProtectedRoute>} />
+           <Route path="/school/admin/nep-tracking" element={<ProtectedRoute roles={['school_admin']}><SchoolAdminNEPTracking /></ProtectedRoute>} />
+@@ -644,18 +650,27 @@ const App = () => {
+           <Route path="/school-teacher/students" element={<ProtectedRoute roles={['school_teacher']}><TeacherStudents /></ProtectedRoute>} />
+           <Route path="/school-teacher/analytics" element={<ProtectedRoute roles={['school_teacher']}><TeacherAnalytics /></ProtectedRoute>} />
+           <Route path="/school-teacher/messages" element={<ProtectedRoute roles={['school_teacher']}><TeacherMessages /></ProtectedRoute>} />
++          <Route path="/school-teacher/announcements" element={<ProtectedRoute roles={['school_teacher']}><Announcements /></ProtectedRoute>} />
+           <Route path="/school-teacher/tasks" element={<ProtectedRoute roles={['school_teacher']}><TeacherTasks /></ProtectedRoute>} />
++          <Route path="/school-teacher/tracking" element={<ProtectedRoute roles={['school_teacher']}><AssignmentTracking /></ProtectedRoute>} />
+           <Route path="/school-teacher/settings" element={<ProtectedRoute roles={['school_teacher']}><TeacherSettings /></ProtectedRoute>} />
+           <Route path="/school_teacher/settings" element={<ProtectedRoute roles={['school_teacher']}><TeacherSettings /></ProtectedRoute>} />
+           <Route path="/school-teacher/student/:studentId/progress" element={<ProtectedRoute roles={['school_teacher']}><TeacherStudentProgress /></ProtectedRoute>} />
++          <Route path="/school-teacher/student/:studentId/chat" element={<ProtectedRoute roles={['school_teacher']}><TeacherParentChat /></ProtectedRoute>} />
+           <Route path="/school-teacher/profile" element={<ProtectedRoute roles={['school_teacher']}><Profile /></ProtectedRoute>} />
+           <Route path="/school_teacher/profile" element={<ProtectedRoute roles={['school_teacher']}><Profile /></ProtectedRoute>} />
+           
+           <Route path="/school-student/dashboard" element={<ProtectedRoute roles={['school_student']}><SchoolStudentDashboard /></ProtectedRoute>} />
++          <Route path="/school-student/announcements" element={<ProtectedRoute roles={['school_student']}><Announcements /></ProtectedRoute>} />
+           <Route path="/school-parent/dashboard" element={<ProtectedRoute roles={['school_parent']}><SchoolParentDashboard /></ProtectedRoute>} />
++          <Route path="/school-parent/announcements" element={<ProtectedRoute roles={['school_parent']}><Announcements /></ProtectedRoute>} />
++          <Route path="/school-parent/student/:studentId/chat" element={<ProtectedRoute roles={['school_parent']}><ParentChat /></ProtectedRoute>} />
+           
+           {/* Student Routes */}
+           <Route path="/student/dashboard" element={<ProtectedRoute roles={['student', 'school_student']}><StudentDashboard /></ProtectedRoute>} />
++          <Route path="/student/activity" element={<ProtectedRoute roles={['student', 'school_student']}><StudentActivity /></ProtectedRoute>} />
++          <Route path="/student/assignment/:assignmentId/attempt" element={<ProtectedRoute roles={['student', 'school_student']}><AssignmentAttempt /></ProtectedRoute>} />
++          <Route path="/student/announcements" element={<ProtectedRoute roles={['student']}><Announcements /></ProtectedRoute>} />
+           <Route path="/student/dashboard/quick-quiz" element={<ProtectedRoute roles={['student', 'school_student']}><QuickQuiz /></ProtectedRoute>} />
+           <Route path="/student/dashboard/:categorySlug" element={<ProtectedRoute roles={['student', 'school_student']}><CategoryView /></ProtectedRoute>} />
+           <Route path="/student/mindfull-break" element={<ProtectedRoute roles={['student', 'school_student']}><MindfulnessBreak /></ProtectedRoute>} />
+@@ -670,8 +685,6 @@ const App = () => {
+           <Route path="/student/profile" element={<ProtectedRoute roles={['student', 'school_student']}><Profile /></ProtectedRoute>} />
+           <Route path="/student/settings" element={<ProtectedRoute roles={['student', 'school_student']}><Setting /></ProtectedRoute>} />
+           <Route path="/student/breathing" element={<ProtectedRoute roles={['student', 'school_student']}><MindfulnessBreak /></ProtectedRoute>} />
+-          <Route path="/student/daily-challenges" element={<ProtectedRoute roles={['student', 'school_student']}><DailyChallenges /></ProtectedRoute>} />
+-          <Route path="/student/challenge" element={<ProtectedRoute roles={['student', 'school_student']}><Challenge /></ProtectedRoute>} />
+           <Route path="/learn/financial-literacy" element={<ProtectedRoute roles={['student', 'school_student']}><FinancialLiteracy /></ProtectedRoute>} />
+           <Route path="/tools/budget-planner" element={<ProtectedRoute roles={['student', 'school_student']}><BudgetPlanner /></ProtectedRoute>} />
+           <Route path="/games/investment-simulator" element={<ProtectedRoute roles={['student', 'school_student']}><InvestmentSimulator /></ProtectedRoute>} />
+@@ -1063,6 +1076,7 @@ const App = () => {
+           {/* Parent Routes */}
+           <Route path="/parent/overview" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentOverview /></ProtectedRoute>} />
+           <Route path="/parent/dashboard" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentDashboard /></ProtectedRoute>} />
++          <Route path="/parent/announcements" element={<ProtectedRoute roles={['parent']} requireApproved={true}><Announcements /></ProtectedRoute>} />
+           <Route path="/parent/children" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentChildren /></ProtectedRoute>} />
+           <Route path="/parent/messages" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentMessages /></ProtectedRoute>} />
+           <Route path="/parent/settings" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentSettings /></ProtectedRoute>} />
+@@ -1073,6 +1087,7 @@ const App = () => {
+           <Route path="/parent/child/:childId/progress" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ChildProgress /></ProtectedRoute>} />
+           <Route path="/parent/child/:childId/wellbeing" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ChildMoodWellbeing /></ProtectedRoute>} />
+           <Route path="/parent/child/:childId/wallet" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ChildWalletRewards /></ProtectedRoute>} />
++          <Route path="/parent/child/:childId/chat" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentChat /></ProtectedRoute>} />
+           
+           <Route path="/parent/profile" element={<ProtectedRoute roles={['parent']}><Profile /></ProtectedRoute>} />
+           <Route path="/parent/notifications" element={<ProtectedRoute roles={['parent']}><Notifications /></ProtectedRoute>} />

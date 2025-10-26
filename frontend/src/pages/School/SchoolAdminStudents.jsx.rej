@@ -1,0 +1,19 @@
+diff a/frontend/src/pages/School/SchoolAdminStudents.jsx b/frontend/src/pages/School/SchoolAdminStudents.jsx	(rejected hunks)
+@@ -30,7 +30,7 @@ const SchoolAdminStudents = () => {
+     newPassword: ''
+   });
+   const [newStudent, setNewStudent] = useState({
+-    name: '', email: '', phone: '', gender: '', password: ''
++    name: '', email: '', phone: '', gender: '', password: '', dateOfBirth: ''
+   });
+ 
+   const fetchStudentsData = useCallback(async () => {
+@@ -65,7 +65,7 @@ const SchoolAdminStudents = () => {
+       await api.post('/api/school/admin/students/create', newStudent);
+       toast.success('Student added successfully! Login credentials have been created.');
+       setShowAddStudentModal(false);
+-      setNewStudent({ name: '', email: '', phone: '', gender: '', password: '' });
++      setNewStudent({ name: '', email: '', phone: '', gender: '', password: '', dateOfBirth: '' });
+       fetchStudentsData();
+     } catch (error) {
+       console.error('Error adding student:', error);

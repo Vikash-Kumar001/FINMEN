@@ -1,0 +1,12 @@
+diff a/backend/models/User.js b/backend/models/User.js	(rejected hunks)
+@@ -68,6 +68,10 @@ const userSchema = new mongoose.Schema(
+     bio: {
+       type: String,
+     },
++    pronouns: {
++      type: String,
++      trim: true,
++    },
+     city: {
+       type: String,
+     },

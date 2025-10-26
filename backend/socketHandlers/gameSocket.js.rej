@@ -1,0 +1,84 @@
+diff a/backend/socketHandlers/gameSocket.js b/backend/socketHandlers/gameSocket.js	(rejected hunks)
+@@ -1,6 +1,5 @@
+ import User from '../models/User.js';
+ import FinancialMission from '../models/FinancialMission.js';
+-import Challenge from '../models/Challenge.js';
+ import ActivityLog from '../models/ActivityLog.js';
+ import Wallet from '../models/Wallet.js';
+ import Transaction from '../models/Transaction.js';
+@@ -8,7 +7,7 @@ import UserProgress from '../models/UserProgress.js';
+ 
+ /**
+  * Socket handler for game-related real-time interactions
+- * Enables students to interact with missions, challenges, and leaderboards
++ * Enables students to interact with missions and leaderboards
+  */
+ export const setupGameSocket = (io, socket, user) => {
+   // Student subscribe to missions
+@@ -178,58 +177,6 @@ export const setupGameSocket = (io, socket, user) => {
+     }
+   });
+ 
+-  // Student subscribe to challenges
+-  socket.on('student:challenges:subscribe', async ({ studentId }) => {
+-    try {
+-      // Verify student permissions
+-      if (user._id.toString() !== studentId || user.role !== 'student') {
+-        socket.emit('student:challenges:error', { message: 'Unauthorized access' });
+-        return;
+-      }
+-
+-      console.log(`🏆 Student ${studentId} subscribed to challenges`);
+-      
+-      // Join student-specific room for challenges
+-      socket.join(`student-challenges-${studentId}`);
+-      
+-      // Get active challenges
+-      const now = new Date();
+-      const challenges = await Challenge.find({
+-        startDate: { $lte: now },
+-        endDate: { $gte: now }
+-      }).sort({ endDate: 1 });
+-      
+-      // Get student's challenge progress
+-      const student = await User.findById(studentId).select('challengeProgress');
+-      const challengeProgress = student?.challengeProgress || {};
+-      
+-      // Add progress information to challenges
+-      const challengesWithProgress = challenges.map(challenge => {
+-        const progress = challengeProgress[challenge._id] || 0;
+-        const isCompleted = progress >= challenge.targetValue;
+-        
+-        return {
+-          _id: challenge._id,
+-          title: challenge.title,
+-          description: challenge.description,
+-          type: challenge.type,
+-          targetValue: challenge.targetValue,
+-          xpReward: challenge.xpReward,
+-          coinReward: challenge.coinReward,
+-          startDate: challenge.startDate,
+-          endDate: challenge.endDate,
+-          progress,
+-          isCompleted
+-        };
+-      });
+-      
+-      socket.emit('student:challenges:data', challengesWithProgress);
+-      
+-    } catch (err) {
+-      console.error('Error in student:challenges:subscribe:', err);
+-      socket.emit('student:challenges:error', { message: err.message });
+-    }
+-  });
+ 
+   // Student subscribe to leaderboard
+   socket.on('student:leaderboard:subscribe', async ({ period }) => {
+@@ -307,7 +254,6 @@ export const setupGameSocket = (io, socket, user) => {
+     // Leave all game-related rooms
+     if (user.role === 'student') {
+       socket.leave(`student-missions-${user._id}`);
+-      socket.leave(`student-challenges-${user._id}`);
+       
+       // Leave leaderboard rooms
+       ['daily', 'weekly', 'monthly', 'allTime'].forEach(period => {

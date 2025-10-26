@@ -1,0 +1,242 @@
+diff a/backend/routes/parentRoutes.js b/backend/routes/parentRoutes.js	(rejected hunks)
+@@ -10,6 +10,7 @@ import Transaction from "../models/Transaction.js";
+ import MoodLog from "../models/MoodLog.js";
+ import ActivityLog from "../models/ActivityLog.js";
+ import Notification from "../models/Notification.js";
++import SchoolStudent from "../models/School/SchoolStudent.js";
+ 
+ const router = express.Router();
+ 
+@@ -27,7 +28,7 @@ router.post("/link-child", async (req, res) => {
+       return res.status(400).json({ message: 'Child email is required' });
+     }
+ 
+-    // Find the child by email
++    // Find the child by email - allow both student and school_student roles
+     const child = await User.findOne({ 
+       email: childEmail.toLowerCase().trim(),
+       role: { $in: ['student', 'school_student'] }
+@@ -53,6 +54,8 @@ router.post("/link-child", async (req, res) => {
+     
+     parent.linkedIds.childIds.push(child._id);
+     await parent.save();
++    
++    console.log('Updated parent linkedIds:', parent.linkedIds);
+ 
+     // Also update child's linkedIds to include parent
+     if (!child.linkedIds) {
+@@ -64,6 +67,8 @@ router.post("/link-child", async (req, res) => {
+     
+     child.linkedIds.parentIds.push(parent._id);
+     await child.save();
++    
++    console.log('Updated child linkedIds:', child.linkedIds);
+ 
+     res.status(200).json({ 
+       message: `Successfully linked ${child.name} to your account`,
+@@ -85,22 +90,65 @@ router.get("/children", async (req, res) => {
+   try {
+     const parent = req.user;
+     
++    console.log('Parent ID:', parent._id);
++    console.log('Parent linkedIds:', parent.linkedIds);
++    console.log('Parent childEmail:', parent.childEmail);
++    console.log('Parent email:', parent.email);
++    
+     // Find children by multiple methods:
+     // 1. By childEmail field (legacy single child)
+     // 2. By linkedIds.childIds (new multi-child support)
+     // 3. By guardianEmail matching parent email
+-    const children = await User.find({
+-      role: "student",
++    
++    const query = {
++      role: { $in: ['student', 'school_student'] },
+       $or: [
+         { email: parent.childEmail },
+         { _id: { $in: parent.linkedIds?.childIds || [] } },
+         { guardianEmail: parent.email }
+       ]
+-    }).select("name email dob avatar institution city createdAt lastActive");
++    };
++    
++    console.log('Query for children:', JSON.stringify(query, null, 2));
++    
++    // Let's also check if there are any students with guardianEmail matching parent email
++    const studentsWithGuardianEmail = await User.find({
++      role: { $in: ['student', 'school_student'] },
++      guardianEmail: parent.email
++    }).select("name email guardianEmail");
++    console.log('Students with guardianEmail matching parent:', studentsWithGuardianEmail.length);
++    console.log('Students with guardianEmail data:', studentsWithGuardianEmail.map(s => ({ 
++      id: s._id, 
++      name: s.name, 
++      email: s.email, 
++      guardianEmail: s.guardianEmail 
++    })));
++    
++    const children = await User.find(query).select("name email dob avatar institution city createdAt lastActive role tenantId orgId");
++    
++    console.log('Found children:', children.length);
++    console.log('Children data:', children.map(c => ({ id: c._id, name: c.name, email: c.email, role: c.role })));
+ 
+     // Get progress and wallet data for each child
+     const childrenWithData = await Promise.all(
+       children.map(async (child) => {
++        // For school_student children, get school information from SchoolStudent model
++        let schoolInfo = null;
++        if (child.role === 'school_student') {
++          try {
++            const schoolStudent = await SchoolStudent.findOne({ 
++              userId: child._id,
++              tenantId: child.tenantId 
++            }).populate('orgId', 'name');
++            
++            if (schoolStudent && schoolStudent.orgId) {
++              schoolInfo = schoolStudent.orgId.name;
++            }
++          } catch (error) {
++            console.error('Error fetching school info for child:', child._id, error);
++          }
++        }
++
+         const [childProgress, wallet, userProgress, gameProgress] = await Promise.all([
+           ChildProgress.findOne({ parentId: parent._id, childId: child._id }),
+           Wallet.findOne({ userId: child._id }),
+@@ -113,6 +161,7 @@ router.get("/children", async (req, res) => {
+         
+         return {
+           ...child.toObject(),
++          institution: schoolInfo || child.institution || 'Not specified',
+           childProgress: childProgress || null,
+           totalCoins: wallet?.balance || 0,
+           healCoins: wallet?.balance || 0,
+@@ -159,8 +208,53 @@ router.get("/child/:childId/analytics", async (req, res) => {
+         { _id: { $in: req.user.linkedIds?.childIds || [] } },
+         { guardianEmail: req.user.email }
+       ],
+-      role: "student"
+-    }).populate('linkedIds.teacherIds', 'name email phone');
++      role: { $in: ['student', 'school_student'] }
++    }).select('name email avatar dob institution academic tenantId orgId').populate('linkedIds.teacherIds', 'name email phone');
++
++    // For school_student children, get school information and date of birth from SchoolStudent model
++    let schoolInfo = null;
++    let schoolStudentDob = null;
++    let schoolStudent = null;
++    if (child && child.role === 'school_student') {
++      try {
++        console.log('Looking for school student with userId:', child._id, 'tenantId:', child.tenantId);
++        schoolStudent = await SchoolStudent.findOne({ 
++          userId: child._id,
++          tenantId: child.tenantId 
++        }).populate('orgId', 'name').populate('classId', 'classNumber stream');
++        
++        // If not found with tenantId, try without tenantId as fallback
++        if (!schoolStudent) {
++          console.log('Not found with tenantId, trying without tenantId...');
++          schoolStudent = await SchoolStudent.findOne({ 
++            userId: child._id
++          }).populate('orgId', 'name').populate('classId', 'classNumber stream');
++        }
++        
++        console.log('Found school student:', schoolStudent ? 'Yes' : 'No');
++        if (schoolStudent) {
++          console.log('School student data:', {
++            orgId: schoolStudent.orgId,
++            personalInfo: schoolStudent.personalInfo,
++            hasOrgId: !!schoolStudent.orgId,
++            hasDateOfBirth: !!schoolStudent.personalInfo?.dateOfBirth
++          });
++          
++          if (schoolStudent.orgId) {
++            schoolInfo = schoolStudent.orgId.name;
++            console.log('School info set to:', schoolInfo);
++          }
++          if (schoolStudent.personalInfo?.dateOfBirth) {
++            schoolStudentDob = schoolStudent.personalInfo.dateOfBirth;
++            console.log('School student DOB set to:', schoolStudentDob);
++          }
++        } else {
++          console.log('No school student record found for userId:', child._id);
++        }
++      } catch (error) {
++        console.error('Error fetching school info for child analytics:', child._id, error);
++      }
++    }
+ 
+     if (!child) {
+       return res.status(404).json({ message: "Child not found or access denied" });
+@@ -483,12 +577,25 @@ router.get("/child/:childId/analytics", async (req, res) => {
+     };
+ 
+     // 11. Child Card Info
++    const effectiveDob = schoolStudentDob || child.dob;
++    
++    // For school_student children, try to get grade from classId
++    let gradeInfo = 'Not specified';
++    if (child.role === 'school_student' && schoolStudent && schoolStudent.classId) {
++      const classNumber = schoolStudent.classId.classNumber;
++      const stream = schoolStudent.classId.stream;
++      gradeInfo = `Class ${classNumber}${stream ? ` ${stream}` : ''}`;
++    } else {
++      gradeInfo = schoolInfo || child.academic?.grade || child.institution || 'Not specified';
++    }
++    
+     const childCard = {
+       name: child.name,
+       avatar: child.avatar || '/avatars/avatar1.png',
+       email: child.email,
+-      grade: child.academic?.grade || child.institution || 'Not specified',
+-      age: child.dob ? Math.floor((Date.now() - new Date(child.dob)) / (365.25 * 24 * 60 * 60 * 1000)) : null,
++      grade: gradeInfo,
++      institution: schoolInfo || child.institution || 'Not specified',
++      age: effectiveDob ? Math.floor((Date.now() - new Date(effectiveDob)) / (365.25 * 24 * 60 * 60 * 1000)) : null,
+       teacherContact: primaryTeacher ? {
+         name: primaryTeacher.name,
+         email: primaryTeacher.email,
+@@ -496,6 +603,17 @@ router.get("/child/:childId/analytics", async (req, res) => {
+       } : null
+     };
+ 
++    console.log('ChildCard created:', childCard);
++    console.log('School info:', schoolInfo);
++    console.log('School student DOB:', schoolStudentDob);
++    console.log('Child dob:', child.dob);
++    console.log('Effective DOB:', effectiveDob);
++    console.log('Child institution:', child.institution);
++    console.log('Child tenantId:', child.tenantId);
++    console.log('Parent tenantId:', req.tenantId);
++    console.log('Grade info:', gradeInfo);
++    console.log('School student classId:', schoolStudent?.classId);
++
+     // 12. Detailed Progress Report Data
+     const weeklyCoins = (transactions || [])
+       .filter(t => t.type === 'earned' && new Date(t.createdAt) >= sevenDaysAgo)
+@@ -834,7 +952,7 @@ router.get("/child", async (req, res) => {
+     // Find the child by email
+     const child = await User.findOne({ 
+       email: parent.childEmail,
+-      role: "student" 
++      role: { $in: ['student', 'school_student'] }
+     }).select("name email dob avatar level currentStreak");
+ 
+     if (!child) {
+@@ -896,7 +1014,7 @@ router.get("/child/:childId/progress", async (req, res) => {
+     const child = await User.findOne({
+       _id: childId,
+       guardianEmail: req.user.email,
+-      role: "student"
++      role: { $in: ['student', 'school_student'] }
+     });
+ 
+     if (!child) {
+@@ -928,7 +1046,7 @@ router.post("/child/:childId/report", async (req, res) => {
+     const child = await User.findOne({
+       _id: childId,
+       guardianEmail: req.user.email,
+-      role: "student"
++      role: { $in: ['student', 'school_student'] }
+     });
+ 
+     if (!child) {

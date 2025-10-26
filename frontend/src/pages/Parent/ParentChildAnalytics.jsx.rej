@@ -1,0 +1,49 @@
+diff a/frontend/src/pages/Parent/ParentChildAnalytics.jsx b/frontend/src/pages/Parent/ParentChildAnalytics.jsx	(rejected hunks)
+@@ -1,4 +1,4 @@
+-import React, { useState, useEffect } from 'react';
++import React, { useState, useEffect, useCallback } from 'react';
+ import { motion } from 'framer-motion';
+ import { useNavigate, useParams } from 'react-router-dom';
+ import { 
+@@ -16,30 +16,27 @@ const ParentChildAnalytics = () => {
+   const { childId } = useParams();
+   const [analytics, setAnalytics] = useState(null);
+   const [loading, setLoading] = useState(true);
+-  const [parentProfile, setParentProfile] = useState(null);
+ 
+-  useEffect(() => {
+-    if (childId) {
+-      fetchChildAnalytics();
+-    }
+-  }, [childId]);
+-
+-  const fetchChildAnalytics = async () => {
++  const fetchChildAnalytics = useCallback(async () => {
+     try {
+       setLoading(true);
+-      const [analyticsRes, profileRes] = await Promise.all([
+-        api.get(`/api/parent/child/${childId}/analytics`),
+-        api.get("/api/user/profile").catch(() => ({ data: null }))
+-      ]);
++      const analyticsRes = await api.get(`/api/parent/child/${childId}/analytics`);
++      console.log('Analytics response:', analyticsRes.data);
++      console.log('ChildCard data:', analyticsRes.data.childCard);
+       setAnalytics(analyticsRes.data);
+-      setParentProfile(profileRes.data);
+     } catch (error) {
+       console.error('Error fetching analytics:', error);
+       toast.error('Failed to load analytics');
+     } finally {
+       setLoading(false);
+     }
+-  };
++  }, [childId]);
++
++  useEffect(() => {
++    if (childId) {
++      fetchChildAnalytics();
++    }
++  }, [childId, fetchChildAnalytics]);
+ 
+   if (loading) {
+     return (

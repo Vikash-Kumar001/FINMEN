@@ -1,0 +1,55 @@
+diff a/backend/controllers/activityController.js b/backend/controllers/activityController.js	(rejected hunks)
+@@ -1,5 +1,14 @@
+ import ActivityLog from '../models/ActivityLog.js';
+ import User from '../models/User.js';
++import GameProgress from '../models/GameProgress.js';
++import Wallet from '../models/Wallet.js';
++import Transaction from '../models/Transaction.js';
++import Assignment from '../models/Assignment.js';
++import AssignmentAttempt from '../models/AssignmentAttempt.js';
++import Task from '../models/Task.js';
++import TeacherChallenge from '../models/TeacherChallenge.js';
++import TeacherActivity from '../models/TeacherActivity.js';
++import SchoolStudent from '../models/School/SchoolStudent.js';
+ import { ErrorResponse } from '../utils/ErrorResponse.js';
+ 
+ // Log a new activity
+@@ -35,15 +44,17 @@ export const logActivity = async (req, res, next) => {
+         },
+       });
+ 
+-      // If the student has an assigned , emit to that 's room
+-      if (req.user.Id) {
+-        io.to(`-${req.user.Id}`).emit('student-activity', {
+-          activityLog,
+-          user: {
+-            id: req.user._id,
+-            name: req.user.name,
+-            role: req.user.role,
+-          },
++      // If the student has an assigned teacher, emit to that teacher's room
++      if (req.user.linkedIds?.teacherIds?.length > 0) {
++        req.user.linkedIds.teacherIds.forEach(teacherId => {
++          io.to(`teacher-${teacherId}`).emit('student-activity', {
++            activityLog,
++            user: {
++              id: req.user._id,
++              name: req.user.name,
++              role: req.user.role,
++            },
++          });
+         });
+       }
+     }
+@@ -70,9 +81,9 @@ export const getUserActivities = async (req, res, next) => {
+     }
+ 
+     // Check if the requester has permission to view this user's activities
+-    if (req.user.role === '') {
++    if (req.user.role === 'parent') {
+       const student = await User.findById(userId);
+-      if (!student || student.Id?.toString() !== req.user._id.toString()) {
++      if (!student || !student.linkedIds?.parentIds?.includes(req.user._id)) {
+         throw new ErrorResponse('You do not have permission to view this student\'s activities', 403);
+       }
+     }

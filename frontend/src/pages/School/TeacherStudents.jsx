@@ -67,7 +67,7 @@ const TeacherStudents = () => {
     try {
       setLoading(true);
       const response = await api.get("/api/school/teacher/classes");
-      const classesData = response.data || [];
+      const classesData = response.data?.classes || [];
       setClasses(classesData);
       if (classesData.length > 0 && !selectedClass) {
         setSelectedClass(classesData[0]);
@@ -573,6 +573,13 @@ const TeacherStudents = () => {
         onClose={() => setShowInviteStudents(false)}
         classId={selectedClass?._id || selectedClass?.name}
         className={selectedClass?.name}
+        onSuccess={() => {
+          if (zoomLevel === "class" && selectedClass) {
+            fetchClassStudents(selectedClass._id || selectedClass.name);
+          } else {
+            fetchAllStudents();
+          }
+        }}
       />
 
       {/* Assign to Group Modal */}

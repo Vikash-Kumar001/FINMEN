@@ -21,10 +21,14 @@ import {
   BookOpen,
   FileText,
   TrendingUp,
+  MoreVertical,
+  X,
+  BarChart,
 } from "lucide-react";
 import api from "../../utils/api";
 import { toast } from "react-hot-toast";
 import NewAssignmentModal from "../../components/NewAssignmentModal";
+import DeleteAssignmentModal from "../../components/DeleteAssignmentModal";
 
 const TeacherTasks = () => {
   const navigate = useNavigate();
@@ -36,6 +40,12 @@ const TeacherTasks = () => {
   const [teacherProfile, setTeacherProfile] = useState(null);
   const [showNewAssignment, setShowNewAssignment] = useState(false);
   const [selectedAssignment, setSelectedAssignment] = useState(null);
+  const [showViewModal, setShowViewModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [assignmentToView, setAssignmentToView] = useState(null);
+  const [assignmentToEdit, setAssignmentToEdit] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [assignmentToDelete, setAssignmentToDelete] = useState(null);
 
   useEffect(() => {
     fetchData();
@@ -48,7 +58,7 @@ const TeacherTasks = () => {
         api.get("/api/user/profile"),
       ]);
 
-      setAssignments(assignmentsRes.data || []);
+      setAssignments(assignmentsRes.data?.data || []);
       setTeacherProfile(profileRes.data);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -58,20 +68,52 @@ const TeacherTasks = () => {
     }
   };
 
-  const handleDeleteAssignment = async (assignmentId) => {
-    if (!window.confirm("Are you sure you want to delete this assignment?")) return;
+  const handleDeleteAssignment = (assignment) => {
+    setAssignmentToDelete(assignment);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteForMe = async () => {
+    if (!assignmentToDelete) return;
 
     try {
-      await api.delete(`/api/school/teacher/assignments/${assignmentId}`);
-      toast.success("Assignment deleted successfully");
+      const response = await api.delete(`/api/school/teacher/assignments/${assignmentToDelete._id}/for-me`);
+      toast.success(response.data.message);
+      setShowDeleteModal(false);
+      setAssignmentToDelete(null);
       fetchData();
     } catch (error) {
-      console.error("Error deleting assignment:", error);
+      console.error("Error deleting assignment for me:", error);
       toast.error("Failed to delete assignment");
     }
   };
 
-  const filteredAssignments = assignments.filter(assignment => {
+  const handleDeleteForEveryone = async () => {
+    if (!assignmentToDelete) return;
+
+    try {
+      const response = await api.delete(`/api/school/teacher/assignments/${assignmentToDelete._id}/for-everyone`);
+      toast.success(response.data.message);
+      setShowDeleteModal(false);
+      setAssignmentToDelete(null);
+      fetchData();
+    } catch (error) {
+      console.error("Error deleting assignment for everyone:", error);
+      toast.error("Failed to delete assignment");
+    }
+  };
+
+  const handleViewAssignment = (assignment) => {
+    setAssignmentToView(assignment);
+    setShowViewModal(true);
+  };
+
+  const handleEditAssignment = (assignment) => {
+    setAssignmentToEdit(assignment);
+    setShowEditModal(true);
+  };
+
+  const filteredAssignments = (Array.isArray(assignments) ? assignments : []).filter(assignment => {
     const matchesSearch = assignment.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           assignment.subject?.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = filterStatus === "all" || assignment.status === filterStatus;
@@ -79,11 +121,12 @@ const TeacherTasks = () => {
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
+  const assignmentsArray = Array.isArray(assignments) ? assignments : [];
   const stats = {
-    total: assignments.length,
-    pending: assignments.filter(a => a.status === "pending").length,
-    inProgress: assignments.filter(a => a.status === "in_progress" || a.status === "published").length,
-    completed: assignments.filter(a => a.status === "completed" || a.status === "approved").length,
+    total: assignmentsArray.length,
+    pending: assignmentsArray.filter(a => a.status === "pending").length,
+    inProgress: assignmentsArray.filter(a => a.status === "in_progress" || a.status === "published").length,
+    completed: assignmentsArray.filter(a => a.status === "completed" || a.status === "approved").length,
   };
 
   if (loading) {
@@ -116,15 +159,26 @@ const TeacherTasks = () => {
                 {teacherProfile?.name}'s assignment management dashboard
               </p>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={() => setShowNewAssignment(true)}
-              className="px-6 py-3 bg-white text-purple-600 rounded-xl font-bold hover:shadow-lg transition-all flex items-center gap-2"
-            >
-              <Plus className="w-5 h-5" />
-              New Assignment
-            </motion.button>
+            <div className="flex gap-3">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => navigate('/school-teacher/tracking')}
+                className="px-6 py-3 bg-white/20 text-white rounded-xl font-bold hover:bg-white/30 transition-all flex items-center gap-2"
+              >
+                <BarChart className="w-5 h-5" />
+                Track Progress
+              </motion.button>
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowNewAssignment(true)}
+                className="px-6 py-3 bg-white text-purple-600 rounded-xl font-bold hover:shadow-lg transition-all flex items-center gap-2"
+              >
+                <Plus className="w-5 h-5" />
+                New Assignment
+              </motion.button>
+            </div>
           </motion.div>
         </div>
       </div>
@@ -360,6 +414,10 @@ const TeacherTasks = () => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleViewAssignment(assignment);
+                    }}
                     className="flex-1 px-4 py-2 bg-blue-500 text-white rounded-lg font-semibold hover:bg-blue-600 transition-all flex items-center justify-center gap-2"
                   >
                     <Eye className="w-4 h-4" />
@@ -368,6 +426,10 @@ const TeacherTasks = () => {
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditAssignment(assignment);
+                    }}
                     className="flex-1 px-4 py-2 bg-purple-500 text-white rounded-lg font-semibold hover:bg-purple-600 transition-all flex items-center justify-center gap-2"
                   >
                     <Edit className="w-4 h-4" />
@@ -378,7 +440,7 @@ const TeacherTasks = () => {
                     whileTap={{ scale: 0.95 }}
                     onClick={(e) => {
                       e.stopPropagation();
-                      handleDeleteAssignment(assignment._id);
+                      handleDeleteAssignment(assignment);
                     }}
                     className="px-4 py-2 bg-red-100 text-red-600 rounded-lg font-semibold hover:bg-red-200 transition-all flex items-center justify-center gap-2"
                   >
@@ -398,6 +460,105 @@ const TeacherTasks = () => {
         isOpen={showNewAssignment}
         onClose={() => setShowNewAssignment(false)}
         onSuccess={fetchData}
+      />
+
+      {/* View Assignment Modal */}
+      {showViewModal && assignmentToView && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowViewModal(false)} />
+          <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-white">Assignment Details</h2>
+                <button
+                  onClick={() => setShowViewModal(false)}
+                  className="p-2 hover:bg-white/20 rounded-lg transition-all"
+                >
+                  <X className="w-6 h-6 text-white" />
+                </button>
+              </div>
+            </div>
+            <div className="p-6 max-h-[70vh] overflow-y-auto">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Title</h3>
+                  <p className="text-gray-700">{assignmentToView.title}</p>
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-gray-900 mb-2">Description</h3>
+                  <p className="text-gray-700 whitespace-pre-wrap">{assignmentToView.description}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Subject</h3>
+                    <p className="text-gray-700">{assignmentToView.subject}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Type</h3>
+                    <p className="text-gray-700 capitalize">{assignmentToView.type}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Due Date</h3>
+                    <p className="text-gray-700">{new Date(assignmentToView.dueDate).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Priority</h3>
+                    <p className="text-gray-700 capitalize">{assignmentToView.priority}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Status</h3>
+                    <p className="text-gray-700 capitalize">{assignmentToView.status?.replace(/_/g, " ")}</p>
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Total Points</h3>
+                    <p className="text-gray-700">{assignmentToView.totalMarks}</p>
+                  </div>
+                </div>
+                {assignmentToView.questions && assignmentToView.questions.length > 0 && (
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-2">Questions ({assignmentToView.questions.length})</h3>
+                    <div className="space-y-2">
+                      {assignmentToView.questions.map((question, index) => (
+                        <div key={index} className="bg-gray-50 p-3 rounded-lg">
+                          <p className="font-medium text-gray-900">
+                            {index + 1}. {question.question || `${question.type.replace(/_/g, ' ')} Task`}
+                          </p>
+                          <p className="text-sm text-gray-600">Points: {question.points}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Assignment Modal */}
+      {showEditModal && assignmentToEdit && (
+        <NewAssignmentModal
+          isOpen={showEditModal}
+          onClose={() => setShowEditModal(false)}
+          onSuccess={() => {
+            setShowEditModal(false);
+            fetchData();
+          }}
+          editMode={true}
+          assignmentToEdit={assignmentToEdit}
+        />
+      )}
+
+      {/* Delete Assignment Modal */}
+      <DeleteAssignmentModal
+        isOpen={showDeleteModal}
+        onClose={() => {
+          setShowDeleteModal(false);
+          setAssignmentToDelete(null);
+        }}
+        onDeleteForMe={handleDeleteForMe}
+        onDeleteForEveryone={handleDeleteForEveryone}
+        assignment={assignmentToDelete}
       />
     </div>
   );

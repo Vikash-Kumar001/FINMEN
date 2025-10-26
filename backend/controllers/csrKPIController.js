@@ -1,6 +1,5 @@
 import CSRKPI from '../models/CSRKPI.js';
 import User from '../models/User.js';
-import Challenge from '../models/Challenge.js';
 import VoucherRedemption from '../models/VoucherRedemption.js';
 import GameProgress from '../models/GameProgress.js';
 import Wallet from '../models/Wallet.js';
@@ -89,35 +88,8 @@ const calculateFreshKPIs = async (period, region, organizationId) => {
     { $sort: { count: -1 } }
   ]);
 
-  // 2. Campaign Completion Rate
-  const campaigns = await Challenge.find({ 
-    ...baseQuery,
-    type: 'campaign'
-  });
-  
-  const campaignCompletionData = await Promise.all(campaigns.map(async (campaign) => {
-    const participants = await User.find({ 
-      role: 'student',
-      'challenges.challengeId': campaign._id 
-    });
-    
-    const completedParticipants = participants.filter(p => 
-      p.challenges.find(c => c.challengeId.toString() === campaign._id.toString())?.status === 'completed'
-    );
-    
-    return {
-      campaignId: campaign._id,
-      campaignName: campaign.title,
-      totalParticipants: participants.length,
-      completedParticipants: completedParticipants.length,
-      completionRate: participants.length > 0 ? (completedParticipants.length / participants.length) * 100 : 0,
-      startDate: campaign.startDate,
-      endDate: campaign.endDate,
-      targetAudience: campaign.targetAudience || 'All Students',
-      objectives: campaign.objectives || [],
-      status: campaign.status || 'active'
-    };
-  }));
+  // 2. Campaign Completion Rate (Disabled - Challenge model removed)
+  const campaignCompletionData = [];
 
   // 3. Engagement Lift vs Baseline
   const engagementMetrics = await calculateEngagementMetrics(baseQuery, dateRange);
@@ -257,7 +229,7 @@ const calculateBudgetMetrics = async (baseQuery, dateRange) => {
 
 // Calculate certificates data
 const calculateCertificatesData = async (baseQuery, dateRange) => {
-  // Get students who completed challenges/games (simplified certificate logic)
+  // Get students who completed games (simplified certificate logic)
   const students = await User.find({ ...baseQuery, role: 'student' });
   const gameProgress = await GameProgress.find({
     userId: { $in: students.map(s => s._id) },

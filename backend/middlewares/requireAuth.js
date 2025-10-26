@@ -90,3 +90,12 @@ export const requireSchoolRole = (req, res, next) => {
   }
   next();
 };
+
+// ✅ Middleware: School roles + regular parent access (for chat functionality)
+export const requireSchoolRoleOrParent = (req, res, next) => {
+  const allowedRoles = ['school_admin', 'school_teacher', 'school_student', 'school_parent', 'school_accountant', 'school_librarian', 'parent'];
+  if (!allowedRoles.includes(req.user?.role)) {
+    return res.status(403).json({ message: "Access denied. School users or parents only." });
+  }
+  next();
+};

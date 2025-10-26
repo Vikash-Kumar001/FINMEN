@@ -45,9 +45,7 @@ const ParentDashboard = () => {
   const { childId } = useParams();
   const [children, setChildren] = useState([]);
   const [selectedChildId, setSelectedChildId] = useState(childId || null);
-  const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showAddChildModal, setShowAddChildModal] = useState(false);
@@ -57,8 +55,11 @@ const ParentDashboard = () => {
   const fetchChildren = useCallback(async () => {
     try {
       setLoading(true);
+      console.log('Fetching children from API...');
       const response = await api.get('/api/parent/children');
+      console.log('API Response:', response.data);
       const childrenData = response.data.children || [];
+      console.log('Children data:', childrenData);
       setChildren(childrenData);
       
       // Auto-select first child if none selected
@@ -73,28 +74,11 @@ const ParentDashboard = () => {
     }
   }, [selectedChildId, childId]);
 
-  const fetchChildAnalytics = useCallback(async (id) => {
-    try {
-      setAnalyticsLoading(true);
-      const response = await api.get(`/api/parent/child/${id}/analytics`);
-      setAnalytics(response.data);
-    } catch (error) {
-      console.error('Error fetching analytics:', error);
-      toast.error('Failed to load analytics');
-    } finally {
-      setAnalyticsLoading(false);
-    }
-  }, []);
 
   useEffect(() => {
     fetchChildren();
   }, [fetchChildren]);
 
-  useEffect(() => {
-    if (selectedChildId) {
-      fetchChildAnalytics(selectedChildId);
-    }
-  }, [selectedChildId, fetchChildAnalytics]);
 
   const handleAddChild = async () => {
     if (!childEmail.trim()) {
@@ -111,10 +95,13 @@ const ParentDashboard = () => {
 
     try {
       setAddingChild(true);
+      console.log('Linking child with email:', childEmail.trim());
       const response = await api.post('/api/parent/link-child', { childEmail: childEmail.trim() });
+      console.log('Link child response:', response.data);
       toast.success(response.data.message || 'Child linked successfully!');
       setShowAddChildModal(false);
       setChildEmail('');
+      console.log('Refreshing children list...');
       fetchChildren(); // Refresh the children list
     } catch (error) {
       console.error('Error linking child:', error);
@@ -1182,6 +1169,7 @@ export const HealCoinsCard = ({ healCoins }) => {
 
 // Child Info Card Component
 export const ChildInfoCard = ({ childCard }) => {
+  console.log('ChildInfoCard received childCard:', childCard);
   if (!childCard) return null;
 
   return (
@@ -1222,26 +1210,40 @@ export const ChildInfoCard = ({ childCard }) => {
               </div>
           </div>
 
-          {/* Teacher Contact */}
-          {childCard.teacherContact && (
-            <div className="bg-white/20 backdrop-blur-md rounded-2xl p-4 border border-white/30">
-              <h3 className="text-sm font-bold mb-2 flex items-center gap-2">
-                <Users className="w-4 h-4" />
-                Primary Teacher
-              </h3>
-              <p className="font-bold mb-1">{childCard.teacherContact.name}</p>
-              <div className="space-y-1 text-sm opacity-90">
-                <div className="flex items-center gap-2">
-                  <Mail className="w-3 h-3" />
-                  <span>{childCard.teacherContact.email}</span>
+          {/* Parent Contact */}
+          {childCard.parentContact && (
+            <div className="flex items-center gap-4">
+              <motion.div
+                whileHover={{ scale: 1.1, rotate: 5 }}
+                className="w-20 h-20 rounded-full border-4 border-white shadow-2xl overflow-hidden bg-white"
+              >
+                <img
+                  src={childCard.parentContact.avatar || '/avatars/avatar1.png'}
+                  alt={childCard.parentContact.name}
+                  className="w-full h-full object-cover"
+                />
+              </motion.div>
+              <div>
+                <h2 className="text-3xl font-black mb-1">{childCard.parentContact.name}</h2>
+                <div className="flex items-center gap-4 text-sm font-semibold opacity-90">
+                  <div className="flex items-center gap-1">
+                    <Mail className="w-4 h-4" />
+                    <span>{childCard.parentContact.email}</span>
+                  </div>
                 </div>
-                {childCard.teacherContact.phone && (
-                  <div className="flex items-center gap-2">
-                    <Phone className="w-3 h-3" />
-                    <span>{childCard.teacherContact.phone}</span>
-            </div>
-          )}
               </div>
+              <motion.button
+                whileHover={{ scale: 1.05, y: -2 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => {
+                  // Navigate to chat page - we need to get the studentId from context
+                  const studentId = childCard.studentId || window.location.pathname.split('/').pop();
+                  window.location.href = `/school-teacher/student/${studentId}/chat`;
+                }}
+                className="flex items-center justify-center w-12 h-12 bg-white/20 hover:bg-white/30 rounded-xl font-bold text-sm transition-all backdrop-blur-md border border-white/30"
+              >
+                <MessageSquare className="w-5 h-5" />
+              </motion.button>
             </div>
           )}
         </div>

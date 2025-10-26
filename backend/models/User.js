@@ -68,6 +68,10 @@ const userSchema = new mongoose.Schema(
     bio: {
       type: String,
     },
+    pronouns: {
+      type: String,
+      trim: true,
+    },
     city: {
       type: String,
     },

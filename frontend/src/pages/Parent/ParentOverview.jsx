@@ -311,16 +311,18 @@ const ParentOverview = () => {
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {children.map((child, idx) => (
-                  <motion.div
-                    key={child._id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: idx * 0.1 }}
-                    whileHover={{ scale: 1.03, y: -5 }}
-                    onClick={() => navigate(`/parent/child/${child._id}/analytics`)}
-                    className="p-5 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 cursor-pointer hover:shadow-xl transition-all"
-                  >
+              {children.map((child, idx) => {
+                console.log('Child data:', { id: child._id, name: child.name, email: child.email });
+                return (
+                <motion.div
+                  key={child._id}
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: idx * 0.1 }}
+                  whileHover={{ scale: 1.03, y: -5 }}
+                  onClick={() => navigate(`/parent/child/${child._id}/analytics`)}
+                  className="p-5 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 cursor-pointer hover:shadow-xl transition-all"
+                >
                     <div className="flex items-center gap-4 mb-4">
                       <img
                         src={child.avatar || "/avatars/avatar1.png"}
@@ -354,18 +356,31 @@ const ParentOverview = () => {
                         <p className="text-xs text-green-600">Coins</p>
                       </div>
                     </div>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        navigate(`/parent/child/${child._id}/analytics`);
-                      }}
-                      className="w-full mt-4 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                    >
-                      <Eye className="w-4 h-4" />
-                      View Progress
-                    </button>
+                    <div className="flex gap-2 mt-4">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/parent/child/${child._id}/analytics`);
+                        }}
+                        className="flex-1 px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                      >
+                        <Eye className="w-4 h-4" />
+                        View Progress
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/parent/child/${child._id}/chat`);
+                        }}
+                        className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                        title="Chat with teacher"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                      </button>
+                    </div>
                   </motion.div>
-                ))}
+                );
+              })}
               </div>
             </motion.div>
 

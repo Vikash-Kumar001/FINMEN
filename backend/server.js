@@ -88,10 +88,8 @@ import journalRoutes from "./routes/journalRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
-import challengeRoutes from "./routes/challengeRoutes.js";
 import activityRoutes from './routes/activityRoutes.js';
 import userProgressRoutes from './routes/userProgressRoutes.js';
-import dailyChallengeRoutes from './routes/dailyChallengeRoutes.js';
 import userRoutes from "./routes/userRoutes.js";
 import parentRoutes from "./routes/parentRoutes.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
@@ -109,6 +107,9 @@ import campaignApprovalRoutes from "./routes/campaignApprovalRoutes.js";
 import budgetTrackingRoutes from "./routes/budgetTrackingRoutes.js";
 import csrOverviewRoutes from "./routes/csrOverviewRoutes.js";
 import avatarRoutes from "./routes/avatarRoutes.js";
+import announcementRoutes from "./routes/announcementRoutes.js";
+import assignmentAttemptRoutes from "./routes/assignmentAttemptRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 // Multi-tenant routes
 import companyRoutes from "./routes/companyRoutes.js";
@@ -226,10 +227,8 @@ app.use("/api/journal", journalRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/student", studentRoutes);
-app.use("/api/challenges", challengeRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/progress', userProgressRoutes);
-app.use('/api/daily-challenges', dailyChallengeRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/parent', parentRoutes);
 app.use('/api/seller', sellerRoutes);
@@ -247,6 +246,9 @@ app.use('/api/campaign-approvals', campaignApprovalRoutes);
 app.use('/api/budget-tracking', budgetTrackingRoutes);
 app.use('/api/csr-overview', csrOverviewRoutes);
 app.use('/api/avatar', avatarRoutes);
+app.use('/api/announcements', announcementRoutes);
+app.use('/api/assignment-attempts', assignmentAttemptRoutes);
+app.use('/api/chat', chatRoutes);
 
 // Health Check
 app.get("/", (_, res) => {

@@ -79,7 +79,9 @@ const TeacherOverview = () => {
       ]);
 
       setStats(statsRes.data);
-      setClasses(classesRes.data || []);
+      const classesData = classesRes.data?.classes || [];
+      console.log('Classes data:', classesData);
+      setClasses(classesData);
       setStudentsAtRisk(atRiskRes.data.students || []);
       setLeaderboard(leaderboardRes.data.leaderboard || []);
       setPendingTasks(pendingRes.data.tasks || []);
@@ -219,7 +221,7 @@ const TeacherOverview = () => {
           />
           <StatCard
             title="Active Classes"
-            value={classes.length}
+            value={Array.isArray(classes) ? classes.length : 0}
             icon={BookOpen}
             color="from-green-500 to-emerald-600"
             subtitle="Teaching this semester"
@@ -266,7 +268,13 @@ const TeacherOverview = () => {
                 </button>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {classes.slice(0, 4).map((cls, idx) => (
+                {(Array.isArray(classes) ? classes : []).slice(0, 4).map((cls, idx) => {
+                  // Ensure cls is an object and has the required properties
+                  if (!cls || typeof cls !== 'object') {
+                    console.warn('Invalid class object:', cls);
+                    return null;
+                  }
+                  return (
                   <motion.div
                     key={idx}
                     initial={{ opacity: 0, x: -20 }}
@@ -277,27 +285,28 @@ const TeacherOverview = () => {
                     className="p-5 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 cursor-pointer hover:shadow-lg transition-all"
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <h3 className="text-lg font-bold text-gray-900">{cls.name}</h3>
+                      <h3 className="text-lg font-bold text-gray-900">{cls.name || 'Unnamed Class'}</h3>
                       <div className="p-2 bg-purple-500 rounded-lg">
                         <Users className="w-5 h-5 text-white" />
                       </div>
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div className="text-center">
-                        <p className="text-2xl font-black text-blue-600">{cls.students || 0}</p>
-                        <p className="text-xs text-gray-600">Students</p>
-                      </div>
-                      <div className="text-center">
-                        <p className="text-2xl font-black text-green-600">{cls.sections || 0}</p>
+                        <p className="text-2xl font-black text-blue-600">{Array.isArray(cls.sections) ? cls.sections.length : 0}</p>
                         <p className="text-xs text-gray-600">Sections</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-2xl font-black text-purple-600">{cls.avg || 85}%</p>
-                        <p className="text-xs text-gray-600">Avg</p>
+                        <p className="text-2xl font-black text-green-600">{Array.isArray(cls.subjects) ? cls.subjects.length : 0}</p>
+                        <p className="text-xs text-gray-600">Subjects</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-2xl font-black text-purple-600">{cls.academicYear || '2024'}</p>
+                        <p className="text-xs text-gray-600">Year</p>
                       </div>
                     </div>
                   </motion.div>
-                ))}
+                  );
+                })}
               </div>
             </motion.div>
 

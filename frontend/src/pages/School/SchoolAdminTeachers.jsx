@@ -31,7 +31,9 @@ const SchoolAdminTeachers = () => {
     subject: '', 
     qualification: '',
     experience: '',
-    joiningDate: ''
+    joiningDate: '',
+    pronouns: '',
+    customPronouns: ''
   });
 
   const subjects = [
@@ -82,7 +84,9 @@ const SchoolAdminTeachers = () => {
         subject: '', 
         qualification: '',
         experience: '',
-        joiningDate: ''
+        joiningDate: '',
+        pronouns: '',
+        customPronouns: ''
       });
       fetchTeachersData();
     } catch (error) {

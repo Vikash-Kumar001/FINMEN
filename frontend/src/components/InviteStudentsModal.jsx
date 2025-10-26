@@ -5,7 +5,7 @@ import { QRCodeSVG } from "qrcode.react";
 import api from "../utils/api";
 import { toast } from "react-hot-toast";
 
-const InviteStudentsModal = ({ isOpen, onClose, classId, className }) => {
+const InviteStudentsModal = ({ isOpen, onClose, classId, className, onSuccess }) => {
   const [activeTab, setActiveTab] = useState("existing"); // existing, invite, bulk
   const [inviteLink, setInviteLink] = useState("");
   const [registrationLink, setRegistrationLink] = useState("");
@@ -164,6 +164,7 @@ const InviteStudentsModal = ({ isOpen, onClose, classId, className }) => {
       setSelectedStudents([]);
       setSearchQuery("");
       setSearchResults([]);
+      if (onSuccess) onSuccess();
     } catch (error) {
       console.error("Error assigning students:", error);
       toast.error("Failed to assign students");

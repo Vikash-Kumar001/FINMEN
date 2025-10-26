@@ -167,6 +167,25 @@ const AddStudentModal = ({
 
                   <div>
                     <label className="block text-sm font-bold text-gray-700 mb-2">
+                      Date of Birth *
+                    </label>
+                    <input
+                      type="date"
+                      value={newStudent.dateOfBirth}
+                      onChange={(e) =>
+                        setNewStudent((prev) => ({ ...prev, dateOfBirth: e.target.value }))
+                      }
+                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
+                      required
+                      max={new Date().toISOString().split('T')[0]} // Prevent future dates
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Student's date of birth
+                    </p>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">
                       Password *
                     </label>
                     <input

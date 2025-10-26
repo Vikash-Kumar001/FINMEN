@@ -334,6 +334,8 @@ const GameCategoryPage = () => {
         return () => {
             window.removeEventListener('gameCompleted', handleGameCompleted);
         };
+        
+        // eslint-disable-next-line
     }, [category, ageGroup]);
     // Generate mock games data
     const generateGamesData = () => {
@@ -430,6 +432,7 @@ const GameCategoryPage = () => {
             games.push(...realEHETeenGames);
         } else if (category === 'civic-responsibility' && ageGroup === 'teen') {
             // Add our real CRGC Teen games
+            const realCRGCTeenGames = getCivicTeenGames(gameCompletionStatus);
             games.push(...realCRGCTeenGames);
         } else if (category === 'civic-responsibility' && ageGroup === 'kids') {
             // Add our 20 real CRGC Kids games
@@ -571,6 +574,7 @@ const GameCategoryPage = () => {
     
     useEffect(() => {
         setGames(generateGamesData());
+    // eslint-disable-next-line
     }, [gameCompletionStatus]);
     
     useEffect(() => {

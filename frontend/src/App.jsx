@@ -475,9 +475,12 @@ import TeacherStudents from "./pages/School/TeacherStudents";
 import TeacherAnalytics from "./pages/School/TeacherAnalytics";
 import TeacherMessages from "./pages/School/TeacherMessages";
 import TeacherTasks from "./pages/School/TeacherTasks";
+import TeacherChatContacts from "./pages/School/TeacherChatContacts";
 import TeacherSettings from "./pages/School/TeacherSettings";
 import TeacherStudentProgress from "./pages/School/TeacherStudentProgress";
 import TeacherParentChat from "./pages/School/TeacherParentChat";
+import TeacherStudentChat from "./pages/School/TeacherStudentChat";
+import SchoolStudentChat from "./pages/School/SchoolStudentChat";
 import ParentChat from "./pages/Parent/ParentChat";
 import AssignmentTracking from "./pages/School/AssignmentTracking";
 import LandingPage from "./pages/LandingPage";
@@ -565,6 +568,9 @@ const App = () => {
     location.pathname.startsWith("/learn/") ||
     location.pathname === "/student/breathing";
 
+  // Hide navbar on chat pages
+  const isChatPage = location.pathname.includes('/chat');
+  
   // Hide navbar on public pages
   const isPublicPage = [
     "/about",
@@ -580,6 +586,7 @@ const App = () => {
     <div className="min-h-screen bg-gray-100">
       {!isAuthPage &&
         !isFullScreenGame &&
+        !isChatPage &&
         !isPublicPage &&
         location.pathname !== "/" &&
         location.pathname !== "/school-registration" &&
@@ -590,7 +597,9 @@ const App = () => {
         location.pathname !== "/register-seller" &&
         location.pathname !== "/register-teacher" &&
         location.pathname !== "/register-stakeholder" &&
-        location.pathname !== "/pending-approval" && (
+        location.pathname !== "/pending-approval" &&
+        !location.pathname.includes('/student-chat/') &&
+        !location.pathname.includes('/parent-chat') && (
           <Navbar />
         )}
       {!isAuthPage && user && (user.role === 'student' || user.role === 'school_student') && <Chatbot />} {/* ✅ Floating Chatbot - Only for students */}
@@ -650,18 +659,21 @@ const App = () => {
           <Route path="/school-teacher/students" element={<ProtectedRoute roles={['school_teacher']}><TeacherStudents /></ProtectedRoute>} />
           <Route path="/school-teacher/analytics" element={<ProtectedRoute roles={['school_teacher']}><TeacherAnalytics /></ProtectedRoute>} />
           <Route path="/school-teacher/messages" element={<ProtectedRoute roles={['school_teacher']}><TeacherMessages /></ProtectedRoute>} />
+          <Route path="/school-teacher/chat-contacts" element={<ProtectedRoute roles={['school_teacher']}><TeacherChatContacts /></ProtectedRoute>} />
           <Route path="/school-teacher/announcements" element={<ProtectedRoute roles={['school_teacher']}><Announcements /></ProtectedRoute>} />
           <Route path="/school-teacher/tasks" element={<ProtectedRoute roles={['school_teacher']}><TeacherTasks /></ProtectedRoute>} />
           <Route path="/school-teacher/tracking" element={<ProtectedRoute roles={['school_teacher']}><AssignmentTracking /></ProtectedRoute>} />
           <Route path="/school-teacher/settings" element={<ProtectedRoute roles={['school_teacher']}><TeacherSettings /></ProtectedRoute>} />
           <Route path="/school_teacher/settings" element={<ProtectedRoute roles={['school_teacher']}><TeacherSettings /></ProtectedRoute>} />
           <Route path="/school-teacher/student/:studentId/progress" element={<ProtectedRoute roles={['school_teacher']}><TeacherStudentProgress /></ProtectedRoute>} />
-          <Route path="/school-teacher/student/:studentId/chat" element={<ProtectedRoute roles={['school_teacher']}><TeacherParentChat /></ProtectedRoute>} />
+          <Route path="/school-teacher/student-chat/:studentId" element={<ProtectedRoute roles={['school_teacher']}><TeacherStudentChat /></ProtectedRoute>} />
+          <Route path="/school-teacher/student/:studentId/parent-chat" element={<ProtectedRoute roles={['school_teacher']}><TeacherParentChat /></ProtectedRoute>} />
           <Route path="/school-teacher/profile" element={<ProtectedRoute roles={['school_teacher']}><Profile /></ProtectedRoute>} />
           <Route path="/school_teacher/profile" element={<ProtectedRoute roles={['school_teacher']}><Profile /></ProtectedRoute>} />
           
           <Route path="/school-student/dashboard" element={<ProtectedRoute roles={['school_student']}><SchoolStudentDashboard /></ProtectedRoute>} />
           <Route path="/school-student/announcements" element={<ProtectedRoute roles={['school_student']}><Announcements /></ProtectedRoute>} />
+          <Route path="/school-student/chat" element={<ProtectedRoute roles={['school_student']}><SchoolStudentChat /></ProtectedRoute>} />
           <Route path="/school-parent/dashboard" element={<ProtectedRoute roles={['school_parent']}><SchoolParentDashboard /></ProtectedRoute>} />
           <Route path="/school-parent/announcements" element={<ProtectedRoute roles={['school_parent']}><Announcements /></ProtectedRoute>} />
           <Route path="/school-parent/student/:studentId/chat" element={<ProtectedRoute roles={['school_parent']}><ParentChat /></ProtectedRoute>} />
@@ -1091,6 +1103,7 @@ const App = () => {
           
           <Route path="/parent/profile" element={<ProtectedRoute roles={['parent']}><Profile /></ProtectedRoute>} />
           <Route path="/parent/notifications" element={<ProtectedRoute roles={['parent']}><Notifications /></ProtectedRoute>} />
+          <Route path="/parent/parent-progress" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentDashboard /></ProtectedRoute>} />
           <Route path="/parent/progress" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentDashboard /></ProtectedRoute>} />
 
           {/* Seller Routes */}

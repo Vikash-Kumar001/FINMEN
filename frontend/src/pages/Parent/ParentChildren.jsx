@@ -92,12 +92,13 @@ const ParentChildren = () => {
     }
 
     try {
-      await api.delete(`/api/parent/child/${childId}/unlink`);
-      toast.success("Child unlinked successfully");
+      const response = await api.delete(`/api/parent/child/${childId}/unlink`);
+      toast.success(response.data?.message || "Child unlinked successfully");
       fetchChildren();
     } catch (error) {
       console.error("Error unlinking child:", error);
-      toast.error("Failed to unlink child");
+      const errorMessage = error.response?.data?.message || "Failed to unlink child";
+      toast.error(errorMessage);
     }
   };
 

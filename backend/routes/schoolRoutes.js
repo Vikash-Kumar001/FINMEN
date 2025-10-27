@@ -29,6 +29,7 @@ import {
   getTeacherTimetable,
   getAllStudentsForTeacher,
   getStudentAnalyticsForTeacher,
+  getStudentParent,
   getClassMasteryByPillar,
   getStudentsAtRisk,
   getSessionEngagement,
@@ -167,6 +168,7 @@ import {
   createStudent,
   deleteStudent,
   resetStudentPassword,
+  syncStudentGender,
   getSchoolStudentDetails,
   exportStudents,
   exportAnalyticsReport,
@@ -299,6 +301,7 @@ router.get('/admin/students/available', extractTenant, requireAuth, requireSchoo
 router.post('/admin/students/create', extractTenant, requireAuth, requireSchoolAdmin, createStudent);
 router.get('/admin/students/stats', extractTenant, requireAuth, requireSchoolAdmin, getAdminStudentStats);
 router.get('/admin/students/export', extractTenant, requireAuth, requireSchoolAdmin, exportStudents);
+router.post('/admin/students/sync-gender', extractTenant, requireAuth, requireSchoolAdmin, syncStudentGender);
 router.get('/admin/students/:studentId', extractTenant, requireAuth, requireSchoolAdmin, getSchoolStudentDetails);
 router.post('/admin/students/:studentId/reset-password', requireAuth, requireSchoolAdmin, resetStudentPassword);
 router.delete('/admin/students/:studentId', requireAuth, requireSchoolAdmin, deleteStudent);
@@ -346,6 +349,7 @@ router.get('/teacher/assignments', requireAuth, requireSchoolRole, getTeacherAss
 router.get('/teacher/timetable', requireAuth, requireSchoolRole, getTeacherTimetable);
 router.get('/teacher/all-students', requireAuth, requireSchoolRole, getAllStudentsForTeacher);
 router.get('/teacher/student/:studentId/analytics', requireAuth, requireSchoolRole, getStudentAnalyticsForTeacher);
+router.get('/student/:studentId/parent', requireAuth, requireSchoolRole, getStudentParent);
 router.get('/teacher/class-mastery', requireAuth, requireSchoolRole, getClassMasteryByPillar);
 router.get('/teacher/students-at-risk', requireAuth, requireSchoolRole, getStudentsAtRisk);
 router.get('/teacher/session-engagement', requireAuth, requireSchoolRole, getSessionEngagement);

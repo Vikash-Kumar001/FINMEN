@@ -1168,8 +1168,9 @@ export const HealCoinsCard = ({ healCoins }) => {
 };
 
 // Child Info Card Component
-export const ChildInfoCard = ({ childCard }) => {
+export const ChildInfoCard = ({ childCard, studentId: propStudentId }) => {
   console.log('ChildInfoCard received childCard:', childCard);
+  console.log('ChildInfoCard received studentId prop:', propStudentId);
   if (!childCard) return null;
 
   return (
@@ -1236,9 +1237,18 @@ export const ChildInfoCard = ({ childCard }) => {
                 whileHover={{ scale: 1.05, y: -2 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => {
-                  // Navigate to chat page - we need to get the studentId from context
-                  const studentId = childCard.studentId || window.location.pathname.split('/').pop();
-                  window.location.href = `/school-teacher/student/${studentId}/chat`;
+                  // Navigate to parent chat page - use propStudentId first, then try childCard fields
+                  const studentId = propStudentId || childCard.studentId || childCard._id || childCard.id;
+                  if (!studentId) {
+                    console.error('No student ID found. childCard:', childCard, 'propStudentId:', propStudentId);
+                    return;
+                  }
+                  // Validate studentId is a valid MongoDB ObjectId (24 hex characters)
+                  if (!studentId.match(/^[0-9a-fA-F]{24}$/)) {
+                    console.error('Invalid student ID format:', studentId);
+                    return;
+                  }
+                  window.location.href = `/school-teacher/student/${studentId}/parent-chat`;
                 }}
                 className="flex items-center justify-center w-12 h-12 bg-white/20 hover:bg-white/30 rounded-xl font-bold text-sm transition-all backdrop-blur-md border border-white/30"
               >

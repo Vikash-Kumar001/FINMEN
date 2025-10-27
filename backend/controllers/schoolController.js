@@ -1311,6 +1311,54 @@ export const getAllStudentsForTeacher = async (req, res) => {
   }
 };
 
+// Get parent information for a specific student
+export const getStudentParent = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    const { tenantId, isLegacyUser } = req;
+
+    if (!studentId) {
+      return res.status(400).json({ message: 'Student ID is required' });
+    }
+
+    // Find the student
+    const student = await User.findById(studentId).select('name email linkedIds').lean();
+    if (!student) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
+    // Fetch parent information
+    let parentInfo = null;
+    if (student.linkedIds && student.linkedIds.parentIds && student.linkedIds.parentIds.length > 0) {
+      const parent = await User.findById(student.linkedIds.parentIds[0])
+        .select('name email phone avatar childEmail')
+        .lean();
+      
+      if (parent) {
+        parentInfo = {
+          name: parent.name,
+          email: parent.email,
+          phone: parent.phone,
+          avatar: parent.avatar,
+          childEmails: Array.isArray(parent.childEmail) ? parent.childEmail : [parent.childEmail].filter(Boolean)
+        };
+      }
+    }
+
+    if (!parentInfo) {
+      return res.status(404).json({ message: 'No parent linked to this student' });
+    }
+
+    res.json({
+      success: true,
+      parent: parentInfo
+    });
+  } catch (error) {
+    console.error('Error fetching parent for student:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // Get individual student analytics for teacher (EXACT copy of parent analytics logic)
 export const getStudentAnalyticsForTeacher = async (req, res) => {
   try {
@@ -8959,7 +9007,7 @@ export const getStudentsWithFilters = async (req, res) => {
     }
 
     const students = await SchoolStudent.find(filter)
-      .populate('userId', 'name email phone lastActive')
+      .populate('userId', 'name email phone gender dateOfBirth lastActive')
       .populate('classId', 'classNumber stream')
       .select('personalInfo pillars')
       .limit(100)
@@ -8971,7 +9019,7 @@ export const getStudentsWithFilters = async (req, res) => {
       name: s.userId?.name || 'N/A',
       email: s.userId?.email || 'N/A',
       phone: s.userId?.phone || 'N/A',
-      gender: s.personalInfo?.gender || 'N/A',
+      gender: s.personalInfo?.gender || s.userId?.gender || 'N/A',
       rollNumber: s.rollNumber || 'N/A',
       section: s.section || 'A',
       grade: s.classId?.classNumber || 0,
@@ -9315,6 +9363,52 @@ export const deleteStudent = async (req, res) => {
     });
   } catch (error) {
     console.error('Error deleting student:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+// Sync gender for existing students
+export const syncStudentGender = async (req, res) => {
+  try {
+    const { tenantId } = req;
+    let updated = 0;
+    let skipped = 0;
+
+    // Get all school students
+    const students = await SchoolStudent.find({ tenantId }).populate('userId');
+    
+    for (const student of students) {
+      if (student.userId) {
+        // Check if user has gender
+        if (!student.userId.gender && student.personalInfo?.gender) {
+          // Update user with gender from SchoolStudent
+          await User.findByIdAndUpdate(student.userId._id, {
+            gender: student.personalInfo.gender
+          });
+          updated++;
+        } else {
+          // Check if SchoolStudent needs gender from User
+          if (!student.personalInfo?.gender && student.userId.gender) {
+            // Update SchoolStudent with gender from User
+            student.personalInfo = student.personalInfo || {};
+            student.personalInfo.gender = student.userId.gender;
+            await student.save();
+            updated++;
+          } else if (student.userId.gender || student.personalInfo?.gender) {
+            skipped++;
+          }
+        }
+      }
+    }
+
+    res.json({
+      success: true,
+      message: `Gender synced successfully. ${updated} records updated, ${skipped} already had gender`,
+      updated,
+      skipped
+    });
+  } catch (error) {
+    console.error('Error syncing gender:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

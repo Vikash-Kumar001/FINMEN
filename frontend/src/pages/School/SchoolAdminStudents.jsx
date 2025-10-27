@@ -151,6 +151,21 @@ const SchoolAdminStudents = () => {
     }
   };
 
+  const handleSyncGender = async () => {
+    if (!window.confirm('This will sync gender data for all existing students. Continue?')) {
+      return;
+    }
+    
+    try {
+      const response = await api.post('/api/school/admin/students/sync-gender');
+      toast.success(response.data.message || 'Gender synced successfully!');
+      fetchStudentsData(); // Refresh the list
+    } catch (error) {
+      console.error('Error syncing gender:', error);
+      toast.error(error.response?.data?.message || 'Failed to sync gender');
+    }
+  };
+
   const filteredStudents = students.filter(student =>
     student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -289,6 +304,14 @@ const SchoolAdminStudents = () => {
                   <List className="w-5 h-5 text-gray-700" />
                 </button>
               </div>
+
+              <button
+                onClick={handleSyncGender}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
+              >
+                <Users className="w-4 h-4" />
+                Sync Gender
+              </button>
 
               <button
                 onClick={handleExportStudents}

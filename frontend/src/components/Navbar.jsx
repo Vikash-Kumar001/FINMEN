@@ -87,7 +87,8 @@ const Navbar = () => {
     const navigationItems = (user?.role === "student" || user?.role === "school_student") ? [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
         { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate(user?.role === "school_student" ? "/school-student/announcements" : "/student/announcements") },
-        { icon: <Activity className="w-5 h-5" />, label: "Activity", onClick: () => navigate("/student/activity") }
+        { icon: <Activity className="w-5 h-5" />, label: "Activity", onClick: () => navigate("/student/activity") },
+        { icon: <MessageSquare className="w-5 h-5" />, label: "Chat", onClick: () => navigate(user?.role === "school_student" ? "/school-student/chat" : "/student/chat") }
     ] : user?.role === "parent" ? [
         { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
         { icon: <Users className="w-5 h-5" />, label: "Children", onClick: () => navigate("/parent/children") },
@@ -136,7 +137,8 @@ const Navbar = () => {
     ];
 
     const profileMenuItems = [
-        { icon: <User className="w-5 h-5" />, label: "Profile", onClick: () => navigate(`/${user?.role}/profile`) },
+        { icon: <User className="w-5 h-5" />, label: "Profile", 
+        onClick: () => navigate((user?.role === "student" || user?.role === "school_student") ? "/student/profile" : `/${user?.role}/profile`) },
         { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate(`/${user?.role}/settings`) },
         { icon: <LogOut className="w-5 h-5" />, label: "Sign Out", onClick: logoutUser, danger: true }
     ];
@@ -322,23 +324,17 @@ const Navbar = () => {
                                             )}
                                         </motion.button>
                                     )}
-                                    {(user.role === "student" || user.role === "school_student") && (
+
+                                    {/* Chat Icon for Teachers */}
+                                    {user.role === "school_teacher" && (
                                         <motion.button
                                             className="relative p-2 sm:p-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
-                                            whileHover={{ scale: 1.08, rotate: -10 }}
+                                            whileHover={{ scale: 1.08 }}
                                             whileTap={{ scale: 0.95 }}
-                                            onClick={() => navigate(`/student/notifications`)}
+                                            onClick={() => navigate(`/school-teacher/chat-contacts`)}
+                                            title="Chat with Students and Parents"
                                         >
-                                            <Bell className="w-5 h-5" />
-                                            {unreadCount > 0 && (
-                                                <motion.span
-                                                    className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg border-2 border-white"
-                                                    animate={{ scale: [1, 1.2, 1] }}
-                                                    transition={{ duration: 2, repeat: Infinity }}
-                                                >
-                                                    {unreadCount > 9 ? '9+' : unreadCount}
-                                                </motion.span>
-                                            )}
+                                            <MessageSquare className="w-5 h-5" />
                                         </motion.button>
                                     )}
 

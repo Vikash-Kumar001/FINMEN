@@ -372,10 +372,11 @@ const ParentOverview = () => {
                           e.stopPropagation();
                           navigate(`/parent/child/${child._id}/chat`);
                         }}
-                        className="px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2 bg-gradient-to-r from-indigo-600 to-blue-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
                         title="Chat with teacher"
                       >
                         <MessageSquare className="w-4 h-4" />
+                        <span className="hidden sm:inline">Teacher Chat</span>
                       </button>
                     </div>
                   </motion.div>

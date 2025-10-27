@@ -202,6 +202,75 @@ export const getPillarMastery = async (req, res) => {
   }
 };
 
+// Get pillar mastery for a specific student (for chat sidebar)
+export const getStudentPillarMastery = async (req, res) => {
+  try {
+    const { studentId } = req.params;
+    
+    if (!studentId) {
+      return res.status(400).json({ error: "Student ID is required" });
+    }
+
+    // Define all pillars with their total game counts
+    const pillars = [
+      { key: 'finance', name: 'Financial Literacy', icon: '💰', totalGames: 42 },
+      { key: 'mental', name: 'Mental Health', icon: '🧠', totalGames: 42 },
+      { key: 'ai', name: 'AI for All', icon: '🤖', totalGames: 42 },
+      { key: 'brain', name: 'Brain Health', icon: '🎯', totalGames: 42 },
+      { key: 'uvls', name: 'Life Skills & Values', icon: '🌟', totalGames: 42 },
+      { key: 'dcos', name: 'Digital Citizenship', icon: '🔒', totalGames: 42 },
+      { key: 'moral', name: 'Moral Values', icon: '💫', totalGames: 42 },
+      { key: 'ehe', name: 'Entrepreneurship', icon: '🚀', totalGames: 42 },
+      { key: 'crgc', name: 'Global Citizenship', icon: '🌍', totalGames: 42 },
+      { key: 'educational', name: 'Education', icon: '📚', totalGames: 42 }
+    ];
+
+    // Get all game progress for the student
+    const gameProgress = await UnifiedGameProgress.find({ userId: studentId });
+
+    // Calculate mastery for each pillar
+    const pillarMastery = pillars.map(pillar => {
+      const pillarGames = gameProgress.filter(game => game.gameType === pillar.key);
+
+      if (pillarGames.length === 0) {
+        return {
+          pillar: pillar.name,
+          icon: pillar.icon,
+          mastery: 0,
+          gamesCompleted: 0,
+          totalGames: pillar.totalGames
+        };
+      }
+
+      // Calculate mastery based on games completed vs total games
+      const gamesCompleted = pillarGames.filter(g => g.fullyCompleted).length;
+      const mastery = Math.round((gamesCompleted / pillar.totalGames) * 100);
+
+      return {
+        pillar: pillar.name,
+        icon: pillar.icon,
+        mastery: mastery,
+        gamesCompleted,
+        totalGames: pillar.totalGames
+      };
+    }).filter(p => p.totalGames > 0); // Only include pillars with games
+
+    // Calculate overall mastery
+    const overallMastery = pillarMastery.length > 0
+      ? Math.round(pillarMastery.reduce((sum, p) => sum + p.mastery, 0) / pillarMastery.length)
+      : 0;
+
+    res.status(200).json({
+      overallMastery,
+      totalPillars: pillarMastery.length,
+      pillars: pillarMastery
+    });
+  } catch (err) {
+    console.error("❌ Failed to get student pillar mastery:", err);
+    res.status(500).json({ error: "Failed to fetch student pillar mastery" });
+  }
+};
+
 // Emotional Score - 7 Day Trend
 export const getEmotionalScore = async (req, res) => {
   try {

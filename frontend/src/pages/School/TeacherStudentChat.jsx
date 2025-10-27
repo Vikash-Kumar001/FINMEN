@@ -19,7 +19,7 @@ import ChatInPageSearch from '../../components/ChatInPageSearch.jsx';
 import InlineVoiceRecorder from '../../components/InlineVoiceRecorder.jsx';
 import VoiceMessagePlayer from '../../components/VoiceMessagePlayer.jsx';
 
-const TeacherParentChat = () => {
+const TeacherStudentChat = () => {
   const { studentId } = useParams();
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -49,6 +49,7 @@ const TeacherParentChat = () => {
   const [pinnedMessages, setPinnedMessages] = useState([]);
   const [currentPinnedIndex, setCurrentPinnedIndex] = useState(0);
   const [showSidebar, setShowSidebar] = useState(false);
+  const [parentDetails, setParentDetails] = useState(null);
   const messagesEndRef = useRef(null);
   const typingTimeoutRef = useRef(null);
   const chatRef = useRef(chat);
@@ -70,8 +71,8 @@ const TeacherParentChat = () => {
   const fetchChat = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('Fetching teacher-parent chat for student:', studentId);
-      const response = await api.get(`/api/chat/parent-chat/${studentId}`);
+      console.log('Fetching teacher-student chat for student:', studentId);
+      const response = await api.get(`/api/chat/student-chat/${studentId}`);
       console.log('Chat response:', response.data);
       console.log('Student details from API:', response.data.data?.studentDetails);
       if (response.data.success) {
@@ -84,6 +85,18 @@ const TeacherParentChat = () => {
         console.log('Chat object set. Student details:', chatData.studentDetails);
         console.log('Chat _id:', chatData._id);
         console.log('Chat chatId:', chatData.chatId);
+        
+        // Fetch parent details
+        try {
+          const parentResponse = await api.get(`/api/school/student/${studentId}/parent`);
+          if (parentResponse.data.success && parentResponse.data.parent) {
+            setParentDetails(parentResponse.data.parent);
+            console.log('Parent details fetched:', parentResponse.data.parent);
+          }
+        } catch (parentError) {
+          console.error('Error fetching parent details:', parentError);
+          // Not critical error, continue without parent details
+        }
       } else {
         toast.error(response.data.message || 'Failed to load chat');
       }
@@ -971,69 +984,57 @@ const TeacherParentChat = () => {
         {/* Sidebar Content */}
         <div className="flex-1 overflow-y-auto custom-scrollbar">
           <div className="p-4 space-y-4">
-            {/* Student Info */}
+            {/* Parent Info */}
             <div className="bg-gray-50 rounded-xl p-4">
-              <h3 className="font-semibold text-gray-900 mb-3">Student Details</h3>
-              <div className="space-y-3">
-                {/* Avatar and Name in same row */}
-                <div className="flex items-center gap-3">
-                  {chat.studentId?.avatar && (
-                    <img 
-                      src={chat.studentId.avatar} 
-                      alt={chat.studentId.name}
-                      className="w-12 h-12 rounded-full object-cover flex-shrink-0"
-                    />
+              <h3 className="font-semibold text-gray-900 mb-3">Parent Details</h3>
+              {parentDetails ? (
+                <div className="space-y-3">
+                  {/* Avatar and Name in same row */}
+                  <div className="flex items-center gap-3">
+                    {parentDetails.avatar && (
+                      <img 
+                        src={parentDetails.avatar} 
+                        alt={parentDetails.name}
+                        className="w-12 h-12 rounded-full object-cover flex-shrink-0"
+                      />
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-gray-500 mb-1">Name</p>
+                      <p className="text-sm font-medium text-gray-900 truncate">{parentDetails.name || 'N/A'}</p>
+                    </div>
+                  </div>
+                  
+                  {/* Email and Phone in same row */}
+                  {(parentDetails.email || parentDetails.phone) && (
+                    <div className="grid grid-cols-2 gap-2">
+                      {parentDetails.email && (
+                        <div className="min-w-0">
+                          <p className="text-xs text-gray-500 mb-1">Email</p>
+                          <p className="text-sm font-medium text-gray-900 break-words">{parentDetails.email}</p>
+                        </div>
+                      )}
+                      {parentDetails.phone && (
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Phone</p>
+                          <p className="text-sm font-medium text-gray-900">{parentDetails.phone}</p>
+                        </div>
+                      )}
+                    </div>
                   )}
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-500 mb-1">Name</p>
-                    <p className="text-sm font-medium text-gray-900 truncate">{chat.studentId?.name || 'N/A'}</p>
-                  </div>
+                  
+                  {/* Current Student Email */}
+                  {chat?.studentId?.email && (
+                    <div>
+                      <p className="text-xs text-gray-500 mb-1">Student Email</p>
+                      <p className="text-sm font-medium text-gray-900">{chat.studentId.email}</p>
+                    </div>
+                  )}
                 </div>
-                
-                {/* Age and Gender in same row */}
-                {(chat.studentDetails?.age || chat.studentDetails?.gender || chat.studentId?.gender) && (
-                  <div className="grid grid-cols-2 gap-2">
-                    {chat.studentDetails?.age && (
-            <div>
-                        <p className="text-xs text-gray-500 mb-1">Age</p>
-                        <p className="text-sm font-medium text-gray-900">{chat.studentDetails.age} years</p>
-            </div>
-                    )}
-                    {(chat.studentDetails?.gender || chat.studentId?.gender) && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Gender</p>
-                        <p className="text-sm font-medium text-gray-900">{chat.studentDetails?.gender || chat.studentId?.gender || 'N/A'}</p>
-          </div>
-                    )}
-        </div>
-                )}
-                
-                {/* Grade in separate row */}
-                {chat.studentDetails?.grade && (
-                  <div>
-                    <p className="text-xs text-gray-500 mb-1">Grade</p>
-                    <p className="text-sm font-medium text-gray-900">{chat.studentDetails.grade}</p>
-                  </div>
-                )}
-                
-                {/* Email and Phone in same row */}
-                {(chat.studentId?.email || chat.studentId?.phone) && (
-                  <div className="grid grid-cols-2 gap-2">
-                    {chat.studentId?.email && (
-                      <div className="min-w-0">
-                        <p className="text-xs text-gray-500 mb-1">Email</p>
-                        <p className="text-sm font-medium text-gray-900 break-words">{chat.studentId.email}</p>
-                      </div>
-                    )}
-                    {chat.studentId?.phone && (
-                      <div>
-                        <p className="text-xs text-gray-500 mb-1">Phone</p>
-                        <p className="text-sm font-medium text-gray-900">{chat.studentId.phone}</p>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-sm text-gray-500">No parent information available</p>
+                </div>
+              )}
             </div>
 
             {/* Message Info */}
@@ -1168,7 +1169,7 @@ const TeacherParentChat = () => {
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
-          className="bg-white text-gray-900 px-4 py-3 border-b border-gray-200 flex items-center justify-between shadow-sm group hover:bg-gray-50 transition-all cursor-pointer"
+          className="bg-white text-gray-900 px-4 py-2 border-b border-gray-200 flex items-center justify-between shadow-sm group hover:bg-gray-50 transition-all cursor-pointer"
           onClick={handleGoToPinnedMessage}
         >
           {/* Navigation arrows if multiple pinned messages */}
@@ -1715,4 +1716,4 @@ const TeacherParentChat = () => {
   );
 };
 
-export default TeacherParentChat;
+export default TeacherStudentChat;

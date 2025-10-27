@@ -582,121 +582,126 @@ const TeacherOverview = () => {
               </div>
             </motion.div>
           </div>
+        </div>
 
-          {/* Right Sidebar */}
-          <div className="space-y-6">
-            {/* Session Engagement */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6"
-            >
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                <Activity className="w-6 h-6 text-indigo-500" />
-                Engagement
-              </h2>
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-gray-700">Games</span>
-                    <span className="text-sm font-bold text-gray-900">{sessionEngagement.games || 0}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-pink-500 to-rose-600"
-                      style={{ width: `${sessionEngagement.games || 0}%` }}
-                    />
-                  </div>
+        {/* Engagement and Quick Stats Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+          {/* Engagement Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6"
+          >
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+              <Activity className="w-6 h-6 text-indigo-500" />
+              Engagement
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold text-gray-700">Games</span>
+                  <span className="text-sm font-bold text-gray-900">{sessionEngagement.games || 0}%</span>
                 </div>
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-semibold text-gray-700">Lessons</span>
-                    <span className="text-sm font-bold text-gray-900">{sessionEngagement.lessons || 0}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-600"
-                      style={{ width: `${sessionEngagement.lessons || 0}%` }}
-                    />
-                  </div>
+                <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-pink-500 to-rose-600"
+                    style={{ width: `${sessionEngagement.games || 0}%` }}
+                  />
                 </div>
               </div>
-            </motion.div>
-
-            {/* Quick Stats */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-              className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-lg p-6 text-white"
-            >
-              <h2 className="text-xl font-bold mb-6">This Week</h2>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Activity className="w-5 h-5" />
-                    <span className="font-semibold">Active Students</span>
-                  </div>
-                  <span className="text-2xl font-black">{stats.totalStudents || 0}</span>
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-semibold text-gray-700">Lessons</span>
+                  <span className="text-sm font-bold text-gray-900">{sessionEngagement.lessons || 0}%</span>
                 </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Trophy className="w-5 h-5" />
-                    <span className="font-semibold">Achievements</span>
-                  </div>
-                  <span className="text-2xl font-black">{leaderboard.length * 3}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <Zap className="w-5 h-5" />
-                    <span className="font-semibold">Avg Engagement</span>
-                  </div>
-                  <span className="text-2xl font-black">{sessionEngagement.overall || 0}%</span>
+                <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div
+                    className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-600"
+                    style={{ width: `${sessionEngagement.lessons || 0}%` }}
+                  />
                 </div>
               </div>
-            </motion.div>
+            </div>
+          </motion.div>
 
-            {/* Quick Links */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3 }}
-              className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6"
-            >
-              <h2 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h2>
-              <div className="space-y-2">
-                <button
-                  onClick={() => navigate("/school-teacher/students")}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100 border-2 border-blue-200 rounded-lg font-semibold text-gray-900 transition-all flex items-center justify-between"
-                >
-                  <span>View All Students</span>
-                  <Users className="w-5 h-5 text-blue-600" />
-                </button>
-                <button
-                  onClick={() => navigate("/school-teacher/analytics")}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border-2 border-green-200 rounded-lg font-semibold text-gray-900 transition-all flex items-center justify-between"
-                >
-                  <span>Analytics Dashboard</span>
-                  <BarChart3 className="w-5 h-5 text-green-600" />
-                </button>
-                <button
-                  onClick={() => setShowNewAssignment(true)}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border-2 border-purple-200 rounded-lg font-semibold text-gray-900 transition-all flex items-center justify-between"
-                >
-                  <span>Create Assignment</span>
-                  <Plus className="w-5 h-5 text-purple-600" />
-                </button>
-                <button
-                  onClick={() => navigate("/school-teacher/settings")}
-                  className="w-full px-4 py-3 bg-gradient-to-r from-gray-50 to-slate-50 hover:from-gray-100 hover:to-slate-100 border-2 border-gray-200 rounded-lg font-semibold text-gray-900 transition-all flex items-center justify-between"
-                >
-                  <span>Settings</span>
-                  <ArrowRight className="w-5 h-5 text-gray-600" />
-                </button>
+          {/* This Week Stats Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl shadow-lg p-6 text-white"
+          >
+            <h2 className="text-xl font-bold mb-6 flex items-center gap-3">
+              <Calendar className="w-6 h-6" />
+              This Week
+            </h2>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  <span className="font-semibold">Active Students</span>
+                </div>
+                <span className="text-2xl font-black">{stats.totalStudents || 2}</span>
               </div>
-            </motion.div>
-          </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Trophy className="w-5 h-5" />
+                  <span className="font-semibold">Achievements</span>
+                </div>
+                <span className="text-2xl font-black">{leaderboard.length * 3 || 6}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Zap className="w-5 h-5" />
+                  <span className="font-semibold">Avg Engagement</span>
+                </div>
+                <span className="text-2xl font-black">{sessionEngagement.overall || 100}%</span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Quick Actions Card */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+            className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6"
+          >
+            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+              <Zap className="w-6 h-6 text-yellow-500" />
+              Quick Actions
+            </h2>
+            <div className="space-y-3">
+              <button
+                onClick={() => navigate("/school-teacher/students")}
+                className="w-full px-4 py-3 bg-gradient-to-r from-blue-50 to-cyan-50 hover:from-blue-100 hover:to-cyan-100 border-2 border-blue-200 rounded-lg font-semibold text-gray-900 transition-all flex items-center justify-between group"
+              >
+                <span>View All Students</span>
+                <Users className="w-5 h-5 text-blue-600 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button
+                onClick={() => navigate("/school-teacher/analytics")}
+                className="w-full px-4 py-3 bg-gradient-to-r from-green-50 to-emerald-50 hover:from-green-100 hover:to-emerald-100 border-2 border-green-200 rounded-lg font-semibold text-gray-900 transition-all flex items-center justify-between group"
+              >
+                <span>Analytics Dashboard</span>
+                <BarChart3 className="w-5 h-5 text-green-600 group-hover:translate-x-1 transition-transform" />
+              </button>
+              <button
+                onClick={() => setShowNewAssignment(true)}
+                className="w-full px-4 py-3 bg-gradient-to-r from-purple-50 to-pink-50 hover:from-purple-100 hover:to-pink-100 border-2 border-purple-200 rounded-lg font-semibold text-gray-900 transition-all flex items-center justify-between group"
+              >
+                <span>Create Assignment</span>
+                <Plus className="w-5 h-5 text-purple-600 group-hover:rotate-90 transition-transform" />
+              </button>
+              <button
+                onClick={() => navigate("/school-teacher/settings")}
+                className="w-full px-4 py-3 bg-gradient-to-r from-gray-50 to-slate-50 hover:from-gray-100 hover:to-slate-100 border-2 border-gray-200 rounded-lg font-semibold text-gray-900 transition-all flex items-center justify-between group"
+              >
+                <span>Settings</span>
+                <ArrowRight className="w-5 h-5 text-gray-600 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          </motion.div>
         </div>
       </div>
 

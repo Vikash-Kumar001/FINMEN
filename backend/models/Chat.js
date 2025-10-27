@@ -13,7 +13,7 @@ const chatSchema = new mongoose.Schema({
     },
     role: {
       type: String,
-      enum: ['teacher', 'parent'],
+      enum: ['teacher', 'parent', 'student'],
       required: true
     },
     joinedAt: {
@@ -21,6 +21,11 @@ const chatSchema = new mongoose.Schema({
       default: Date.now
     }
   }],
+  chatType: {
+    type: String,
+    enum: ['teacher-parent', 'teacher-student'],
+    default: 'teacher-parent'
+  },
   studentId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -46,6 +51,10 @@ const chatSchema = new mongoose.Schema({
     parent: {
       type: Number,
       default: 0
+    },
+    student: {
+      type: Number,
+      default: 0
     }
   }
 }, {
@@ -53,7 +62,7 @@ const chatSchema = new mongoose.Schema({
 });
 
 // Indexes for efficient queries
-chatSchema.index({ tenantId: 1, studentId: 1 });
+chatSchema.index({ tenantId: 1, studentId: 1, chatType: 1 });
 chatSchema.index({ 'participants.userId': 1 });
 chatSchema.index({ lastMessageAt: -1 });
 

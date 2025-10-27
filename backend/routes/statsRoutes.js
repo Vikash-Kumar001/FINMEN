@@ -4,6 +4,7 @@ import {
   getStudentStats, 
   getXPLogs, 
   getPillarMastery,
+  getStudentPillarMastery,
   getEmotionalScore,
   getEngagementMinutes,
   getActivityHeatmap,
@@ -19,6 +20,7 @@ const router = express.Router();
 router.get("/student", requireAuth, getStudentStats);
 router.get("/xp-logs", requireAuth, getXPLogs);
 router.get("/pillar-mastery", requireAuth, getPillarMastery);
+router.get("/pillar-mastery/:studentId", requireAuth, getStudentPillarMastery);
 router.get("/emotional-score", requireAuth, getEmotionalScore);
 router.get("/engagement-minutes", requireAuth, getEngagementMinutes);
 router.get("/activity-heatmap", requireAuth, getActivityHeatmap);

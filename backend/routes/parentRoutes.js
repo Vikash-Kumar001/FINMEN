@@ -53,9 +53,26 @@ router.post("/link-child", async (req, res) => {
     }
     
     parent.linkedIds.childIds.push(child._id);
+    
+    // Add child's email to parent's childEmail array
+    if (!parent.childEmail) {
+      parent.childEmail = [];
+    }
+    
+    // Ensure childEmail is an array
+    if (!Array.isArray(parent.childEmail)) {
+      parent.childEmail = [parent.childEmail];
+    }
+    
+    // Add child's email if not already present
+    if (!parent.childEmail.includes(child.email)) {
+      parent.childEmail.push(child.email);
+    }
+    
     await parent.save();
     
     console.log('Updated parent linkedIds:', parent.linkedIds);
+    console.log('Updated parent childEmail:', parent.childEmail);
 
     // Also update child's linkedIds to include parent
     if (!child.linkedIds) {
@@ -1205,17 +1222,33 @@ router.delete("/child/:childId/unlink", async (req, res) => {
     const parent = req.user;
     const { childId } = req.params;
 
+    // Find child to get their email
+    const child = await User.findById(childId);
+    if (!child) {
+      return res.status(404).json({ message: "Child not found" });
+    }
+
     // Remove child from parent's linkedIds
     if (parent.linkedIds && parent.linkedIds.childIds) {
       parent.linkedIds.childIds = parent.linkedIds.childIds.filter(
         id => id.toString() !== childId
       );
-      await parent.save();
     }
 
+    // Remove child's email from parent's childEmail array
+    if (child.email && parent.childEmail) {
+      // Handle both array and string (legacy) formats
+      if (Array.isArray(parent.childEmail)) {
+        parent.childEmail = parent.childEmail.filter(email => email !== child.email);
+      } else if (parent.childEmail === child.email) {
+        parent.childEmail = [];
+      }
+    }
+
+    await parent.save();
+
     // Remove parent from child's linkedIds
-    const child = await User.findById(childId);
-    if (child && child.linkedIds && child.linkedIds.parentIds) {
+    if (child.linkedIds && child.linkedIds.parentIds) {
       child.linkedIds.parentIds = child.linkedIds.parentIds.filter(
         id => id.toString() !== parent._id.toString()
       );

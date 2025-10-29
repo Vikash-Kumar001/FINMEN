@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   ArrowLeft, Send, MoreVertical, Phone, Video, Search as SearchIcon, Search,
   Paperclip, Smile, Check, CheckCheck, Clock, User,
@@ -950,7 +950,7 @@ const TeacherStudentChat = () => {
           <button
             onClick={() => {
               setShowSidebar(false);
-              navigate(-1);
+              navigate('/school-teacher/chat-contacts');
             }}
               className="p-2 hover:bg-white/20 rounded-full transition-colors"
           >
@@ -1037,6 +1037,17 @@ const TeacherStudentChat = () => {
               )}
             </div>
 
+            {/* Actions */}
+            <div className="bg-white rounded-xl p-4 border border-gray-200">
+              <button
+                onClick={() => navigate(`/school-teacher/student/${studentId}/parent-chat`)}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium shadow hover:from-indigo-600 hover:to-purple-600 transition-colors"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Chat to Parent
+              </button>
+            </div>
+
             {/* Message Info */}
             <div className="bg-gray-50 rounded-xl p-4 mb-3">
               <h3 className="font-semibold text-gray-900 mb-3">Message Info</h3>
@@ -1081,7 +1092,7 @@ const TeacherStudentChat = () => {
             }}
           />
         ) : (
-          <motion.div 
+          <Motion.div 
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white shadow-[0_2px_8px_rgba(0,0,0,0.08)] border-b border-gray-100 px-4 py-2.5 sm:py-3.5 flex items-center justify-between flex-shrink-0 z-10"
@@ -1129,7 +1140,7 @@ const TeacherStudentChat = () => {
             <MoreVertical className="w-5 h-5 text-gray-600" />
           </button>
                 {showMenu && (
-              <motion.div
+              <Motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-200 py-2 z-50"
@@ -1155,17 +1166,17 @@ const TeacherStudentChat = () => {
                   <X className="w-4 h-4" />
                   Clear Chat
                 </button>
-              </motion.div>
+              </Motion.div>
                 )}
         </div>
       </div>
           </div>
-        </motion.div>
+        </Motion.div>
         )}
 
       {/* Pinned Message Bar */}
       {pinnedMessage && (
-        <motion.div
+              <Motion.div
           initial={{ opacity: 0, height: 0 }}
           animate={{ opacity: 1, height: 'auto' }}
           exit={{ opacity: 0, height: 0 }}
@@ -1225,7 +1236,7 @@ const TeacherStudentChat = () => {
               </button>
             )}
           </div>
-        </motion.div>
+        </Motion.div>
       )}
 
       {/* Messages - Scrollable */}
@@ -1246,13 +1257,13 @@ const TeacherStudentChat = () => {
           return !isDeleted;
         }).length === 0 ? (
           <div className="flex items-center justify-center h-full">
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5 }}
               className="text-center space-y-4"
             >
-              <motion.div
+              <Motion.div
                 animate={{
                   y: [0, -10, 0],
                 }}
@@ -1265,7 +1276,7 @@ const TeacherStudentChat = () => {
               >
                 <div className="relative">
                   <MessageCircle className="w-24 h-24 text-indigo-400" />
-                  <motion.div
+                  <Motion.div
                     animate={{
                       scale: [1, 1.1, 1],
                       opacity: [0.5, 1, 0.5],
@@ -1278,10 +1289,10 @@ const TeacherStudentChat = () => {
                     className="absolute inset-0 flex items-center justify-center"
                   >
                     <div className="w-16 h-16 bg-indigo-200 rounded-full opacity-20"></div>
-                  </motion.div>
+                  </Motion.div>
                 </div>
-              </motion.div>
-              <motion.div
+              </Motion.div>
+              <Motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.3 }}
@@ -1292,8 +1303,8 @@ const TeacherStudentChat = () => {
                 <p className="text-sm text-gray-500">
                   Send a message to begin chatting
                 </p>
-              </motion.div>
-            </motion.div>
+              </Motion.div>
+            </Motion.div>
           </div>
         ) : (
         <AnimatePresence>
@@ -1308,7 +1319,7 @@ const TeacherStudentChat = () => {
               return !isDeleted;
             })
             .map((message, index) => (
-            <motion.div
+            <Motion.div
               key={message._id}
               ref={(el) => { messageRefs.current[message._id] = el; }}
               initial={{ opacity: 0, y: 20 }}
@@ -1482,7 +1493,7 @@ const TeacherStudentChat = () => {
                   </div>
                 </div>
               </div>
-            </motion.div>
+            </Motion.div>
           ))}
         </AnimatePresence>
         )}
@@ -1493,7 +1504,7 @@ const TeacherStudentChat = () => {
       {/* Typing indicator - Positioned above input area */}
         {otherUserTyping && (
         <div className="px-4 py-2 flex-shrink-0 bg-transparent z-10">
-          <motion.div
+              <Motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="flex justify-start"
@@ -1510,12 +1521,12 @@ const TeacherStudentChat = () => {
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
         </div>
       )}
 
       {/* Message Input - Fixed */}
-      <motion.div 
+              <Motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="bg-white shadow-[0_-2px_8px_rgba(0,0,0,0.08)] border-t border-gray-100 p-2 sm:p-4 flex-shrink-0 relative"
@@ -1646,7 +1657,7 @@ const TeacherStudentChat = () => {
             </>
           )}
         </div>
-      </motion.div>
+      </Motion.div>
       </div>
       
       {/* Message Context Menu */}

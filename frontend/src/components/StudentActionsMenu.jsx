@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { MoreVertical, MessageSquare, FileText, Eye, Users, Flag, TrendingUp } from "lucide-react";
+import { MoreVertical, MessageSquare, FileText, Eye, Users, Flag, TrendingUp, UserMinus } from "lucide-react";
 
 const StudentActionsMenu = ({ 
   student, 
@@ -8,7 +8,8 @@ const StudentActionsMenu = ({
   onAddNote, 
   onViewDetails, 
   onAssignToGroup,
-  onViewFullProfile 
+  onViewFullProfile,
+  onRemoveFromClass 
 }) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
@@ -28,6 +29,7 @@ const StudentActionsMenu = ({
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
+
 
   const handleAction = (action) => {
     action(student);
@@ -69,6 +71,13 @@ const StudentActionsMenu = ({
       color: "text-pink-600",
       bgHover: "hover:bg-pink-50",
       action: onViewFullProfile
+    },
+    {
+      label: "Remove from Class",
+      icon: UserMinus,
+      color: "text-red-600",
+      bgHover: "hover:bg-red-50",
+      action: onRemoveFromClass
     }
   ];
 
@@ -78,10 +87,15 @@ const StudentActionsMenu = ({
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={(e) => {
+          e.preventDefault();
           e.stopPropagation();
           setIsOpen(!isOpen);
         }}
-        className="p-2 hover:bg-gray-100 rounded-lg transition-all"
+        onMouseDown={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+        }}
+        className="p-2 hover:bg-gray-100 rounded-lg transition-all cursor-pointer border border-transparent hover:border-gray-300"
       >
         <MoreVertical className="w-5 h-5 text-gray-600" />
       </motion.button>
@@ -93,7 +107,15 @@ const StudentActionsMenu = ({
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border-2 border-gray-100 overflow-hidden z-50"
+            className="absolute right-0 mt-2 w-56 bg-white rounded-xl shadow-2xl border-2 border-gray-100 overflow-hidden z-[9999]"
+            style={{
+              position: 'absolute',
+              top: '100%',
+              right: '0',
+              zIndex: 9999,
+              maxHeight: '300px',
+              overflowY: 'auto'
+            }}
           >
             {actions.map((action, index) => {
               const Icon = action.icon;

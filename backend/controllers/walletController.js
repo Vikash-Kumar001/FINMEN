@@ -1,6 +1,8 @@
 import Wallet from "../models/Wallet.js";
 import Transaction from "../models/Transaction.js";
+import Game from "../models/Game.js";
 import { ErrorResponse } from "../utils/ErrorResponse.js";
+import { getGameTitle, getGameType, getPillarLabel } from "../utils/gameIdToTitleMap.js";
 
 // 🔍 GET /api/wallet → Returns wallet info, creates one if not exists
 export const getWallet = async (req, res, next) => {
@@ -88,7 +90,54 @@ export const spendCoins = async (req, res, next) => {
 export const getTransactions = async (req, res, next) => {
   try {
     const transactions = await Transaction.find({ userId: req.user._id }).sort({ createdAt: -1 });
-    res.status(200).json(transactions);
+    
+    // Fetch all games and create a map of category -> title for efficient lookup
+    const games = await Game.find({}, 'category title');
+    const gameTitleMap = new Map();
+    games.forEach(game => {
+      if (game.category && game.title) {
+        gameTitleMap.set(game.category, game.title);
+      }
+    });
+    
+    // Enhance transaction descriptions by replacing gameId with game title
+    const enhancedTransactions = transactions.map((txn) => {
+      // Check if description matches pattern: "Reward for {gameId} game (...)"
+      const rewardPattern = /Reward for ([^ ]+) game \((.+)\)/;
+      const match = txn.description?.match(rewardPattern);
+      
+      if (match && match[1]) {
+        const gameId = match[1];
+        // We will replace the parentheses entirely with pillar label
+        
+        // Try multiple lookup methods:
+        // 1. Database Game model (by category)
+        // 2. Frontend game mapping (by gameId)
+        let gameTitle = gameTitleMap.get(gameId);
+        
+        if (!gameTitle) {
+          // Try the gameId to title mapping for frontend-defined games
+          gameTitle = getGameTitle(gameId);
+        }
+        // Determine pillar label
+        let pillarLabel = null;
+        const dbGame = games.find(g => g.category === gameId);
+        const type = dbGame?.type || getGameType(gameId);
+        pillarLabel = getPillarLabel(type);
+        
+        if (gameTitle) {
+          // Replace gameId with game title
+          return {
+            ...txn.toObject(),
+            description: `Reward for ${gameTitle} game (${pillarLabel || 'Game'})`
+          };
+        }
+      }
+      
+      return txn.toObject();
+    });
+    
+    res.status(200).json(enhancedTransactions);
   } catch (err) {
     next(err);
   }

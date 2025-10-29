@@ -403,6 +403,7 @@ router.get('/teacher/inavora-catalog', requireAuth, requireSchoolRole, getInavor
 router.get('/teacher/available-badges', requireAuth, requireSchoolRole, getAvailableBadges);
 router.post('/teacher/get-students-for-assignment', requireAuth, requireSchoolRole, getStudentsForAssignment);
 router.post('/teacher/ai-suggest-students', requireAuth, requireSchoolRole, aiSuggestStudents);
+router.delete('/teacher/class/:classId/student/:studentId', requireAuth, requireSchoolRole, removeStudentFromClass);
 
 // School Student Routes
 router.get('/student/stats', requireAuth, requireSchoolRole, getStudentStats);

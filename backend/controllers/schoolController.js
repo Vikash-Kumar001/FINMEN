@@ -701,16 +701,24 @@ export const getTeacherClasses = async (req, res) => {
         .select('classNumber stream sections subjects academicYear isActive')
         .limit(10); // Limit to 10 classes to avoid overwhelming the UI
 
-      // Transform the classes to include proper names and IDs
-      const transformedClasses = allClasses.map(cls => ({
-        _id: cls._id,
-        name: `Class ${cls.classNumber}${cls.stream ? ` ${cls.stream}` : ''}`,
-        classNumber: cls.classNumber,
-        stream: cls.stream,
-        sections: cls.sections,
-        subjects: cls.subjects,
-        academicYear: cls.academicYear,
-        isActive: cls.isActive
+      // Transform the classes to include proper names, IDs, and student counts
+      const transformedClasses = await Promise.all(allClasses.map(async (cls) => {
+        const studentCount = await SchoolStudent.countDocuments({
+          tenantId,
+          classId: cls._id
+        });
+
+        return {
+          _id: cls._id,
+          name: `Class ${cls.classNumber}${cls.stream ? ` ${cls.stream}` : ''}`,
+          classNumber: cls.classNumber,
+          stream: cls.stream,
+          sections: cls.sections,
+          subjects: cls.subjects,
+          academicYear: cls.academicYear,
+          isActive: cls.isActive,
+          studentCount: studentCount
+        };
       }));
 
       return res.json({
@@ -720,16 +728,24 @@ export const getTeacherClasses = async (req, res) => {
       });
     }
 
-    // Transform the classes to include proper names and IDs
-    const transformedClasses = classes.map(cls => ({
-      _id: cls._id,
-      name: `Class ${cls.classNumber}${cls.stream ? ` ${cls.stream}` : ''}`,
-      classNumber: cls.classNumber,
-      stream: cls.stream,
-      sections: cls.sections,
-      subjects: cls.subjects,
-      academicYear: cls.academicYear,
-      isActive: cls.isActive
+    // Transform the classes to include proper names, IDs, and student counts
+    const transformedClasses = await Promise.all(classes.map(async (cls) => {
+      const studentCount = await SchoolStudent.countDocuments({
+        tenantId,
+        classId: cls._id
+      });
+
+      return {
+        _id: cls._id,
+        name: `Class ${cls.classNumber}${cls.stream ? ` ${cls.stream}` : ''}`,
+        classNumber: cls.classNumber,
+        stream: cls.stream,
+        sections: cls.sections,
+        subjects: cls.subjects,
+        academicYear: cls.academicYear,
+        isActive: cls.isActive,
+        studentCount: studentCount
+      };
     }));
 
     res.json({
@@ -1268,13 +1284,38 @@ export const getAllStudentsForTeacher = async (req, res) => {
         
         // Get wallet data
         const wallet = await Wallet.findOne({ userId: student._id }).lean();
+        
+        // Get class/grade information from SchoolStudent
+        let classInfo = 'N/A';
+        let rollNumber = 'N/A';
+        
+        try {
+          const schoolStudent = await SchoolStudent.findOne({ userId: student._id, tenantId })
+            .populate({
+              path: 'classId',
+              select: 'classNumber',
+              allowLegacy: true  // Allow legacy query for populate
+            })
+            .lean();
+          
+          if (schoolStudent?.classId?.classNumber) {
+            classInfo = `Class ${schoolStudent.classId.classNumber}`;
+          }
+          
+          if (schoolStudent?.rollNumber) {
+            rollNumber = schoolStudent.rollNumber;
+          }
+        } catch (error) {
+          console.error(`Error fetching class info for student ${student._id}:`, error);
+          // Keep default 'N/A' values
+        }
 
         return {
           _id: student._id,
           name: student.name,
           email: student.email,
-          class: 'N/A', // TODO: Get from student profile or class assignment
-          rollNumber: 'N/A', // TODO: Get from student profile
+          class: classInfo,
+          rollNumber: rollNumber,
           level: progress?.level || 1,
           xp: progress?.xp || 0,
           healCoins: wallet?.balance || 0,
@@ -1658,14 +1699,77 @@ export const getStudentAnalyticsForTeacher = async (req, res) => {
         return supportMap[pillar] || pillar;
       });
 
-    // 10. Activity Timeline (SAME AS PARENT)
+    // 10. Activity Timeline (enriched, human-readable)
+    const humanizeActivity = (log) => {
+      const type = log.activityType || log.type;
+      const d = log.details || {};
+      const m = log.metadata || {};
+      const desc = log.description;
+
+      // If description present, prefer it
+      if (desc && typeof desc === 'string' && desc.trim()) return desc.trim();
+
+      // Common fields that can describe the action
+      const page = m.page || m.path || d.page || d.path || log.pageUrl;
+      const endpoint = d.endpoint || m.endpoint;
+      const feature = d.feature || m.feature;
+      const actionName = d.action || m.action || log.action;
+      const title = d.title || m.title;
+      const name = d.name || m.name;
+      const game = log.game || d.game || d.gameId || m.game || m.gameId;
+      const mood = d.mood || m.mood || d.emoji || m.emoji;
+      const level = d.level || m.level;
+      const amount = d.amount || d.xp || m.amount || m.xp;
+
+      switch (type) {
+        case 'login': return 'Logged in';
+        case 'logout': return 'Logged out';
+        case 'page_view': return page ? `Viewed ${page}` : 'Viewed a page';
+        case 'quiz_completed': return title ? `Completed quiz: ${title}` : 'Completed a quiz';
+        case 'challenge_started': return name ? `Started challenge: ${name}` : 'Started a challenge';
+        case 'challenge_completed': return name ? `Completed challenge: ${name}` : 'Completed a challenge';
+        case 'reward_redeemed': return (name || title) ? `Redeemed reward: ${name || title}` : 'Redeemed a reward';
+        case 'xp_earned': return amount ? `Earned ${amount} XP` : 'Earned XP';
+        case 'level_up': return level ? `Leveled up to ${level}` : 'Leveled up';
+        case 'mood_logged': return mood ? `Logged mood: ${mood}` : 'Logged a mood entry';
+        case 'journal_entry': return title ? `Added journal: ${title}` : 'Added a journal entry';
+        case 'feature_used': return feature ? `Used feature: ${feature}` : 'Used a feature';
+        case 'analytics_view': return 'Viewed analytics';
+        case 'student_interaction': return actionName ? `Interaction: ${actionName}` : 'Student interaction';
+        case 'feedback_provided': return title ? `Provided feedback: ${title}` : 'Provided feedback';
+        case 'assignment_created': return title ? `Created assignment: ${title}` : 'Created an assignment';
+        case 'assignment_graded': return title ? `Graded assignment: ${title}` : 'Graded an assignment';
+        case 'data_fetch': return endpoint ? `Fetched data: ${endpoint}` : 'Fetched data';
+        case 'navigation': return page ? `Navigated to ${page}` : (actionName ? `Navigated: ${actionName}` : 'Navigated');
+        case 'ui_interaction': return actionName ? `Interacted with ${actionName}` : (feature ? `Interacted with ${feature}` : 'UI interaction');
+        case 'error': return (title || actionName) ? `Error: ${title || actionName}` : 'Error occurred';
+        default: {
+          // Game/learning fallbacks
+          if (game) return `Played game: ${game}`;
+          if (title) return title;
+          if (actionName && actionName !== 'Activity') return actionName;
+          if (page) return `Viewed ${page}`;
+          return 'Activity';
+        }
+      }
+    };
+
+    const toDisplayType = (log) => {
+      const t = (log.activityType || '').toLowerCase();
+      if (t.includes('quiz')) return 'quiz';
+      if (t.includes('mood')) return 'mood';
+      if (t.includes('game')) return 'game';
+      if (t.includes('lesson') || t.includes('page') || t.includes('navigation')) return 'lesson';
+      return 'general';
+    };
+
     const activityTimeline = (activityLogs || []).map(log => ({
-      action: log.action || 'Activity',
-      game: log.game || 'Unknown',
-      category: log.category || 'General',
-      duration: log.duration || 5,
+      type: toDisplayType(log),
+      action: humanizeActivity(log),
+      category: log.category || log.details?.category || log.metadata?.category || 'General',
+      duration: log.duration || log.details?.duration || 5,
       timestamp: log.timestamp || log.createdAt,
-      xpEarned: log.xpEarned || 0
+      xpEarned: log.xpEarned || log.details?.xp || 0
     }));
 
     // 11. Messages (SAME AS PARENT)
@@ -2181,21 +2285,49 @@ export const getClassStudents = async (req, res) => {
           ActivityLog.find({ userId: student._id, createdAt: { $gte: sevenDaysAgo } }).lean()
         ]);
 
-        // Calculate pillar mastery
-        const pillarsData = {};
-        const pillarNames = ['Financial Literacy', 'Brain Health', 'UVLS', 'Digital Citizenship', 'Moral Values', 'AI for All'];
-        
-        pillarNames.forEach(pillar => {
-          const pillarGames = gameProgress.filter(g => g.category === pillar);
-          if (pillarGames.length > 0) {
-            const totalProgress = pillarGames.reduce((sum, g) => sum + (g.progress || 0), 0);
-            pillarsData[pillar] = Math.round(totalProgress / pillarGames.length);
-          }
-        });
+         // Calculate pillar mastery using the same logic as student dashboard
+         const pillars = [
+           { key: 'finance', name: 'Financial Literacy', totalGames: 42 },
+           { key: 'mental', name: 'Mental Health', totalGames: 42 },
+           { key: 'ai', name: 'AI for All', totalGames: 42 },
+           { key: 'brain', name: 'Brain Health', totalGames: 42 },
+           { key: 'uvls', name: 'Life Skills & Values', totalGames: 42 },
+           { key: 'dcos', name: 'Digital Citizenship', totalGames: 42 },
+           { key: 'moral', name: 'Moral Values', totalGames: 42 },
+           { key: 'ehe', name: 'Entrepreneurship', totalGames: 42 },
+           { key: 'crgc', name: 'Global Citizenship', totalGames: 42 },
+           { key: 'educational', name: 'Education', totalGames: 42 }
+         ];
 
-        const pillarMastery = Object.keys(pillarsData).length > 0
-          ? Math.round(Object.values(pillarsData).reduce((a, b) => a + b, 0) / Object.keys(pillarsData).length)
-          : 0;
+         // Calculate mastery for each pillar
+         const pillarMasteryData = pillars.map(pillar => {
+           const pillarGames = gameProgress.filter(game => game.gameType === pillar.key);
+           
+           if (pillarGames.length === 0) {
+             return {
+               pillar: pillar.name,
+               mastery: 0,
+               gamesCompleted: 0,
+               totalGames: pillar.totalGames
+             };
+           }
+
+           // Calculate mastery based on games completed vs total games
+           const gamesCompleted = pillarGames.filter(g => g.fullyCompleted).length;
+           const mastery = Math.round((gamesCompleted / pillar.totalGames) * 100);
+
+           return {
+             pillar: pillar.name,
+             mastery: mastery,
+             gamesCompleted,
+             totalGames: pillar.totalGames
+           };
+         });
+
+         // Calculate overall mastery
+         const pillarMastery = pillarMasteryData.length > 0
+           ? Math.round(pillarMasteryData.reduce((sum, p) => sum + p.mastery, 0) / pillarMasteryData.length)
+           : 0;
 
         // Get recent mood
         const latestMood = recentMoods[0];
@@ -2217,12 +2349,21 @@ export const getClassStudents = async (req, res) => {
           ? formatTimeAgo(student.lastActive)
           : 'Never';
 
+        // Generate roll number if not exists
+        let rollNumber = schoolStudent.rollNumber;
+        if (!rollNumber) {
+          // Generate roll number based on admission number or create one
+          const admissionNum = schoolStudent.admissionNumber || '';
+          const year = new Date().getFullYear().toString().slice(-2);
+          rollNumber = `ROLL${year}${String(index + 1).padStart(4, '0')}`;
+        }
+
         return {
           _id: student._id,
           name: student.name,
           email: student.email,
           avatar: student.avatar,
-          rollNumber: schoolStudent.rollNumber || `ROLL${index + 1}`,
+          rollNumber,
           level: progress?.level || 1,
           xp: progress?.xp || 0,
           coins: wallet?.balance || 0,
@@ -2231,7 +2372,11 @@ export const getClassStudents = async (req, res) => {
           moodScore,
           moodEmoji: moodEmojis[moodScore] || '😊',
           lastActive,
-          flagged
+          flagged,
+          // Additional data for better display
+          admissionNumber: schoolStudent.admissionNumber,
+          section: schoolStudent.section,
+          academicYear: schoolStudent.academicYear
         };
       })
     );
@@ -2884,12 +3029,69 @@ export const getStudentDetails = async (req, res) => {
       return res.status(404).json({ message: 'Student not found' });
     }
 
-    // Format timeline
+    // Format timeline (humanized)
+    const humanizeActivity = (log) => {
+      const type = log.activityType || log.type;
+      const d = log.details || {};
+      const m = log.metadata || {};
+      const desc = log.description;
+      if (desc && typeof desc === 'string' && desc.trim()) return desc.trim();
+      const page = m.page || m.path || d.page || d.path || log.pageUrl;
+      const endpoint = d.endpoint || m.endpoint;
+      const feature = d.feature || m.feature;
+      const actionName = d.action || m.action || log.action;
+      const title = d.title || m.title;
+      const name = d.name || m.name;
+      const game = log.game || d.game || d.gameId || m.game || m.gameId;
+      const mood = d.mood || m.mood || d.emoji || m.emoji;
+      const level = d.level || m.level;
+      const amount = d.amount || d.xp || m.amount || m.xp;
+      switch (type) {
+        case 'login': return 'Logged in';
+        case 'logout': return 'Logged out';
+        case 'page_view': return page ? `Viewed ${page}` : 'Viewed a page';
+        case 'quiz_completed': return title ? `Completed quiz: ${title}` : 'Completed a quiz';
+        case 'challenge_started': return name ? `Started challenge: ${name}` : 'Started a challenge';
+        case 'challenge_completed': return name ? `Completed challenge: ${name}` : 'Completed a challenge';
+        case 'reward_redeemed': return (name || title) ? `Redeemed reward: ${name || title}` : 'Redeemed a reward';
+        case 'xp_earned': return amount ? `Earned ${amount} XP` : 'Earned XP';
+        case 'level_up': return level ? `Leveled up to ${level}` : 'Leveled up';
+        case 'mood_logged': return mood ? `Logged mood: ${mood}` : 'Logged a mood entry';
+        case 'journal_entry': return title ? `Added journal: ${title}` : 'Added a journal entry';
+        case 'feature_used': return feature ? `Used feature: ${feature}` : 'Used a feature';
+        case 'analytics_view': return 'Viewed analytics';
+        case 'student_interaction': return actionName ? `Interaction: ${actionName}` : 'Student interaction';
+        case 'feedback_provided': return title ? `Provided feedback: ${title}` : 'Provided feedback';
+        case 'assignment_created': return title ? `Created assignment: ${title}` : 'Created an assignment';
+        case 'assignment_graded': return title ? `Graded assignment: ${title}` : 'Graded an assignment';
+        case 'data_fetch': return endpoint ? `Fetched data: ${endpoint}` : 'Fetched data';
+        case 'navigation': return page ? `Navigated to ${page}` : (actionName ? `Navigated: ${actionName}` : 'Navigated');
+        case 'ui_interaction': return actionName ? `Interacted with ${actionName}` : (feature ? `Interacted with ${feature}` : 'UI interaction');
+        case 'error': return (title || actionName) ? `Error: ${title || actionName}` : 'Error occurred';
+        default: {
+          if (game) return `Played game: ${game}`;
+          if (title) return title;
+          if (actionName && actionName !== 'Activity') return actionName;
+          if (page) return `Viewed ${page}`;
+          return 'Activity';
+        }
+      }
+    };
+
+    const normalizeType = (t) => {
+      const s = (t || '').toLowerCase();
+      if (s.includes('quiz')) return 'quiz';
+      if (s.includes('mood')) return 'mood';
+      if (s.includes('game')) return 'game';
+      if (s.includes('page') || s.includes('lesson') || s.includes('navigation')) return 'lesson';
+      return 'general';
+    };
+
     const timeline = [
       ...activityLogs.map(log => ({
-        type: log.activityType || 'activity',
-        action: log.action || 'Activity',
-        details: log.details || log.game || '',
+        type: normalizeType(log.activityType),
+        action: humanizeActivity(log),
+        details: log.details?.title || log.details?.name || log.game || log.category || '',
         time: formatTimeAgo(log.createdAt),
         timestamp: log.createdAt
       })),
@@ -3006,14 +3208,17 @@ export const sendStudentMessage = async (req, res) => {
     // Create notification for student
     await Notification.create({
       userId: studentId,
-      type: 'message',
-      title: `Message from ${req.user.name}`,
-      message: message,
-      metadata: {
-        senderName: req.user.name,
-        senderId: teacherId,
-        sentAt: new Date()
-      }
+      type: 'info',
+      message: `Message from ${req.user.name}: ${message}`,
+    });
+
+    // Log activity for timeline
+    await ActivityLog.create({
+      userId: studentId,
+      activityType: 'student_interaction',
+      description: 'Teacher sent a message',
+      details: { senderId: teacherId, senderName: req.user.name },
+      metadata: { page: '/school-teacher/students' },
     });
 
     res.json({
@@ -9007,27 +9212,62 @@ export const getStudentsWithFilters = async (req, res) => {
     }
 
     const students = await SchoolStudent.find(filter)
-      .populate('userId', 'name email phone gender dateOfBirth lastActive')
+      .populate('userId', 'name email phone gender dateOfBirth lastActive linkedIds')
       .populate('classId', 'classNumber stream')
-      .select('personalInfo pillars')
+      .populate('parentIds', 'name email phone avatar')
+      .select('userId personalInfo pillars parentIds rollNumber section classId wellbeingFlags')
       .limit(100)
       .sort({ createdAt: -1 }); // Show newest first
 
-    let filteredStudents = students.map(s => ({
-      ...s.toObject(),
-      _id: s._id,
-      name: s.userId?.name || 'N/A',
-      email: s.userId?.email || 'N/A',
-      phone: s.userId?.phone || 'N/A',
-      gender: s.personalInfo?.gender || s.userId?.gender || 'N/A',
-      rollNumber: s.rollNumber || 'N/A',
-      section: s.section || 'A',
-      grade: s.classId?.classNumber || 0,
-      lastActive: s.userId?.lastActive || null,
-      isActive: s.userId?.lastActive ? s.userId.lastActive >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) : false,
-      avgScore: Math.round(
-        ((s.pillars?.uvls || 0) + (s.pillars?.dcos || 0) + (s.pillars?.moral || 0) + (s.pillars?.ehe || 0) + (s.pillars?.crgc || 0)) / 5
-      ),
+    // Fetch parent data for all students, checking both SchoolStudent.parentIds and User.linkedIds.parentIds
+    let filteredStudents = await Promise.all(students.map(async (s) => {
+      let parents = [];
+      
+      // First, try to get parents from SchoolStudent.parentIds (if populated)
+      if (Array.isArray(s.parentIds) && s.parentIds.length > 0) {
+        parents = s.parentIds
+          .filter(p => p && typeof p === 'object' && p._id) // Check if populated
+          .map(p => ({
+            _id: p._id,
+            name: p.name || 'N/A',
+            email: p.email || 'N/A',
+            phone: p.phone || 'N/A',
+            avatar: p.avatar
+          }));
+      }
+      
+      // If no parents found in SchoolStudent, check User's linkedIds.parentIds
+      if (parents.length === 0 && s.userId?.linkedIds?.parentIds && s.userId.linkedIds.parentIds.length > 0) {
+        const parentUsers = await User.find({
+          _id: { $in: s.userId.linkedIds.parentIds }
+        }).select('name email phone avatar').lean();
+        
+        parents = parentUsers.map(p => ({
+          _id: p._id,
+          name: p.name || 'N/A',
+          email: p.email || 'N/A',
+          phone: p.phone || 'N/A',
+          avatar: p.avatar
+        }));
+      }
+      
+      return {
+        ...s.toObject(),
+        _id: s._id,
+        name: s.userId?.name || 'N/A',
+        email: s.userId?.email || 'N/A',
+        phone: s.userId?.phone || 'N/A',
+        gender: s.personalInfo?.gender || s.userId?.gender || 'N/A',
+        rollNumber: s.rollNumber || 'N/A',
+        section: s.section || 'A',
+        grade: s.classId?.classNumber || 0,
+        lastActive: s.userId?.lastActive || null,
+        isActive: s.userId?.lastActive ? s.userId.lastActive >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) : false,
+        avgScore: Math.round(
+          ((s.pillars?.uvls || 0) + (s.pillars?.dcos || 0) + (s.pillars?.moral || 0) + (s.pillars?.ehe || 0) + (s.pillars?.crgc || 0)) / 5
+        ),
+        parents: parents,
+      };
     }));
 
     if (status === 'active') {
@@ -9420,25 +9660,89 @@ export const getSchoolStudentDetails = async (req, res) => {
     const { studentId } = req.params;
 
     const student = await SchoolStudent.findOne({ _id: studentId, tenantId })
-      .populate('userId', 'name email phone lastActive')
-      .populate('classId', 'classNumber stream');
+      .populate('userId', 'name email phone gender dateOfBirth lastActive linkedIds')
+      .populate('classId', 'classNumber stream')
+      .populate('parentIds', 'name email phone avatar')
+      .lean(); // Use lean() to get plain JavaScript object
 
     if (!student) {
       return res.status(404).json({ message: 'Student not found' });
     }
 
+    // Fetch parents from both sources
+    let parents = [];
+    
+    // First, try to get parents from SchoolStudent.parentIds (if populated)
+    if (Array.isArray(student.parentIds) && student.parentIds.length > 0) {
+      parents = student.parentIds
+        .filter(p => p && typeof p === 'object' && p._id)
+        .map(p => ({
+          _id: p._id,
+          name: p.name || 'N/A',
+          email: p.email || 'N/A',
+          phone: p.phone || 'N/A',
+          avatar: p.avatar
+        }));
+    }
+    
+    // If no parents found in SchoolStudent, check User's linkedIds.parentIds
+    if (parents.length === 0 && student.userId?.linkedIds?.parentIds && student.userId.linkedIds.parentIds.length > 0) {
+      const parentUsers = await User.find({
+        _id: { $in: student.userId.linkedIds.parentIds }
+      }).select('name email phone avatar').lean();
+      
+      parents = parentUsers.map(p => ({
+        _id: p._id,
+        name: p.name || 'N/A',
+        email: p.email || 'N/A',
+        phone: p.phone || 'N/A',
+        avatar: p.avatar
+      }));
+    }
+
+    // Get pillars data directly from student document
+    const pillarsData = student.pillars || {
+      uvls: 0,
+      dcos: 0,
+      moral: 0,
+      ehe: 0,
+      crgc: 0
+    };
+
+    // Extract userId as string (important for frontend API calls)
+    const userIdString = student.userId?._id?.toString() || student.userId?.toString() || null;
+
     const studentData = {
-      ...student.toObject(),
-      name: student.userId?.name || student.name,
-      email: student.userId?.email || student.email,
-      phone: student.userId?.phone || student.phone,
-      lastActive: student.userId?.lastActive || student.lastActive,
-      isActive: student.userId?.lastActive >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      ...student,
+      _id: student._id,
+      userId: userIdString, // Include userId as string for frontend to fetch real-time data
+      name: student.userId?.name || 'N/A',
+      email: student.userId?.email || 'N/A',
+      phone: student.userId?.phone || 'N/A',
+      gender: student.personalInfo?.gender || student.userId?.gender || 'N/A',
+      rollNumber: student.rollNumber || 'N/A',
+      section: student.section || 'A',
+      lastActive: student.userId?.lastActive || null,
+      isActive: student.userId?.lastActive ? student.userId.lastActive >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) : false,
       grade: student.classId?.classNumber || 'N/A',
       class: student.classId ? `Class ${student.classId.classNumber}${student.classId.stream ? ` - ${student.classId.stream}` : ''}` : 'N/A',
+      attendance: {
+        percentage: student.attendance?.percentage || 0,
+        presentDays: student.attendance?.presentDays || 0,
+        totalDays: student.attendance?.totalDays || 0
+      },
+      pillars: {
+        uvls: pillarsData.uvls || 0,
+        dcos: pillarsData.dcos || 0,
+        moral: pillarsData.moral || 0,
+        ehe: pillarsData.ehe || 0,
+        crgc: pillarsData.crgc || 0
+      },
       avgScore: Math.round(
-        ((student.pillars?.uvls || 0) + (student.pillars?.dcos || 0) + (student.pillars?.moral || 0) + (student.pillars?.ehe || 0) + (student.pillars?.crgc || 0)) / 5
+        ((pillarsData.uvls || 0) + (pillarsData.dcos || 0) + (pillarsData.moral || 0) + (pillarsData.ehe || 0) + (pillarsData.crgc || 0)) / 5
       ),
+      wellbeingFlags: student.wellbeingFlags || [],
+      parents: parents,
     };
 
     res.json({
@@ -9447,7 +9751,7 @@ export const getSchoolStudentDetails = async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching student details:', error);
-    res.status(500).json({ message: 'Server error' });
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
 

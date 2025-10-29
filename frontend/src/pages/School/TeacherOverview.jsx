@@ -292,8 +292,8 @@ const TeacherOverview = () => {
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div className="text-center">
-                        <p className="text-2xl font-black text-blue-600">{Array.isArray(cls.sections) ? cls.sections.length : 0}</p>
-                        <p className="text-xs text-gray-600">Sections</p>
+                        <p className="text-2xl font-black text-blue-600">{cls.studentCount || 0}</p>
+                        <p className="text-xs text-gray-600">Students</p>
                       </div>
                       <div className="text-center">
                         <p className="text-2xl font-black text-green-600">{Array.isArray(cls.subjects) ? cls.subjects.length : 0}</p>

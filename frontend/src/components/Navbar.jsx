@@ -139,7 +139,7 @@ const Navbar = () => {
     const profileMenuItems = [
         { icon: <User className="w-5 h-5" />, label: "Profile", 
         onClick: () => navigate((user?.role === "student" || user?.role === "school_student") ? "/student/profile" : `/${user?.role}/profile`) },
-        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate(`/${user?.role}/settings`) },
+        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate((user?.role === "student" || user?.role === "school_student") ? "/student/settings" : `/${user?.role}/settings`) },
         { icon: <LogOut className="w-5 h-5" />, label: "Sign Out", onClick: logoutUser, danger: true }
     ];
 

@@ -90,6 +90,18 @@ schoolClassSchema.pre(/^find/, function() {
     return;
   }
   
+  // Check if this is a populate query (no _id in query)
+  // Populate queries don't include tenantId, so we allow them silently
+  const queryKeys = Object.keys(this.getQuery());
+  const isPopulateQuery = queryKeys.length === 0 || 
+    (queryKeys.length === 1 && (queryKeys[0] === '_id' || queryKeys[0] === '__v')) ||
+    (queryKeys.includes('_id') && queryKeys.length <= 2);
+  
+  if (isPopulateQuery) {
+    // This is likely a populate query, allow it silently without warning
+    return;
+  }
+  
   // For queries without tenantId or allowLegacy flag, allow them but log a warning
   console.warn('⚠️ SchoolClass query without tenantId - allowing for backward compatibility');
 });

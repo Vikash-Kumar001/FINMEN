@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion as Motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
   Users,
@@ -26,6 +26,8 @@ import {
   Plus,
   UserPlus,
   MoreVertical,
+  UserMinus,
+  ChevronRight,
 } from "lucide-react";
 import api from "../../utils/api";
 import { toast } from "react-hot-toast";
@@ -41,10 +43,10 @@ const TeacherStudents = () => {
   const [classes, setClasses] = useState([]);
   const [selectedClass, setSelectedClass] = useState(null);
   const [classStudents, setClassStudents] = useState([]);
-  const [viewMode, setViewMode] = useState("grid");
+  const [viewMode, setViewMode] = useState("list");
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterGrade, setFilterGrade] = useState("all");
-  const [filterSection, setFilterSection] = useState("all");
+  const [_filterGrade, _setFilterGrade] = useState("all");
+  const [_filterSection, _setFilterSection] = useState("all");
   const [filterFlagged, setFilterFlagged] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [showSlideoverPanel, setShowSlideoverPanel] = useState(false);
@@ -55,6 +57,7 @@ const TeacherStudents = () => {
 
   useEffect(() => {
     fetchClasses();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -100,6 +103,34 @@ const TeacherStudents = () => {
     }
   };
 
+  const handleRemoveStudentFromClass = async (student) => {
+    if (!selectedClass) {
+      toast.error("No class selected");
+      return;
+    }
+
+    const confirmed = window.confirm(
+      `Are you sure you want to remove ${student.name} from ${selectedClass.name}? This will only remove them from this class, not delete their account.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      await api.delete(`/api/school/teacher/class/${selectedClass._id || selectedClass.name}/student/${student._id}`);
+      toast.success(`${student.name} has been removed from ${selectedClass.name}`);
+      
+      // Refresh the student list
+      if (zoomLevel === "class" && selectedClass) {
+        fetchClassStudents(selectedClass._id || selectedClass.name);
+      } else {
+        fetchAllStudents();
+      }
+    } catch (error) {
+      console.error("Error removing student from class:", error);
+      toast.error("Failed to remove student from class");
+    }
+  };
+
   const handleStudentClick = (student) => {
     setSelectedStudent(student);
     setShowSlideoverPanel(true);
@@ -128,7 +159,7 @@ const TeacherStudents = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-        <motion.div
+        <Motion.div
           animate={{ rotate: 360, scale: [1, 1.2, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
           className="w-20 h-20 border-4 border-purple-500 border-t-transparent rounded-full"
@@ -142,7 +173,7 @@ const TeacherStudents = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white py-8 px-6">
         <div className="max-w-7xl mx-auto">
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
           >
@@ -153,13 +184,13 @@ const TeacherStudents = () => {
             <p className="text-lg text-white/90">
               View and manage all your students across classes
             </p>
-          </motion.div>
+          </Motion.div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 -mt-4">
         {/* Search and Filters Bar */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6 mb-6"
@@ -181,7 +212,7 @@ const TeacherStudents = () => {
             
             {/* Zoom Controls & Actions */}
             <div className="flex gap-2">
-              <motion.button
+              <Motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setShowInviteStudents(true)}
@@ -189,9 +220,9 @@ const TeacherStudents = () => {
               >
                 <UserPlus className="w-4 h-4" />
                 Invite Students
-              </motion.button>
+              </Motion.button>
               
-              <motion.button
+              <Motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={handleZoomToggle}
@@ -212,7 +243,7 @@ const TeacherStudents = () => {
                     View All Classes
                   </>
                 )}
-              </motion.button>
+              </Motion.button>
             </div>
           </div>
           
@@ -231,29 +262,8 @@ const TeacherStudents = () => {
 
             {/* Filters */}
             <div className="flex items-center gap-2">
-              <select
-                value={filterGrade}
-                onChange={(e) => setFilterGrade(e.target.value)}
-                className="px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 outline-none bg-white font-medium"
-              >
-                <option value="all">All Grades</option>
-                <option value="8">Grade 8</option>
-                <option value="9">Grade 9</option>
-                <option value="10">Grade 10</option>
-              </select>
 
-              <select
-                value={filterSection}
-                onChange={(e) => setFilterSection(e.target.value)}
-                className="px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 outline-none bg-white font-medium"
-              >
-                <option value="all">All Sections</option>
-                <option value="A">Section A</option>
-                <option value="B">Section B</option>
-                <option value="C">Section C</option>
-              </select>
-
-              <motion.button
+              <Motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={() => setFilterFlagged(!filterFlagged)}
@@ -265,7 +275,7 @@ const TeacherStudents = () => {
               >
                 <Flag className="w-4 h-4" />
                 At Risk Only
-              </motion.button>
+              </Motion.button>
 
               {/* View Mode Toggle */}
               <div className="flex gap-2 bg-gray-100 rounded-xl p-1">
@@ -292,12 +302,12 @@ const TeacherStudents = () => {
               </div>
             </div>
           </div>
-        </motion.div>
+        </Motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
           {/* Class Selection Sidebar */}
           <div className="lg:col-span-1">
-            <motion.div
+            <Motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6 sticky top-6"
@@ -308,7 +318,7 @@ const TeacherStudents = () => {
               </h3>
               <div className="space-y-2">
                 {classes.map((cls, idx) => (
-                  <motion.div
+                  <Motion.div
                     key={idx}
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -330,10 +340,10 @@ const TeacherStudents = () => {
                         {cls.avg || 85}%
                       </span>
                     </div>
-                  </motion.div>
+                  </Motion.div>
                 ))}
               </div>
-            </motion.div>
+            </Motion.div>
           </div>
 
           {/* Students Display Area */}
@@ -341,7 +351,7 @@ const TeacherStudents = () => {
             {selectedClass ? (
               <>
                 {/* Class Header */}
-                <motion.div
+                <Motion.div
                   initial={{ opacity: 0, y: -20 }}
                   animate={{ opacity: 1, y: 0 }}
                   className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 rounded-2xl p-6 text-white mb-6 relative overflow-hidden"
@@ -360,13 +370,13 @@ const TeacherStudents = () => {
                       </span>
                     </div>
                   </div>
-                </motion.div>
+                </Motion.div>
 
                 {/* Student Grid/List */}
                 {viewMode === "grid" ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                     {filteredStudents.map((student, idx) => (
-                      <motion.div
+                      <Motion.div
                         key={student._id}
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
@@ -376,20 +386,28 @@ const TeacherStudents = () => {
                         className="bg-white rounded-xl p-5 shadow-lg border-2 border-gray-100 hover:border-purple-300 hover:shadow-xl transition-all cursor-pointer"
                       >
                         <div className="flex items-center gap-3 mb-4">
-                          <img
-                            src={student.avatar || "/avatars/avatar1.png"}
-                            alt={student.name}
-                            className="w-14 h-14 rounded-full border-3 border-purple-300 shadow-md"
-                          />
+                          <div className="relative">
+                            <img
+                              src={student.avatar || `/avatars/avatar${(idx % 6) + 1}.png`}
+                              alt={student.name}
+                              className="w-14 h-14 rounded-full border-3 border-purple-300 shadow-md object-cover"
+                              onError={(e) => {
+                                e.target.src = `/avatars/avatar${(idx % 6) + 1}.png`;
+                              }}
+                            />
+                            {student.flagged && (
+                              <div className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-white"></div>
+                            )}
+                          </div>
                           <div className="flex-1">
                             <h4 className="font-bold text-gray-900 text-base">
                               {student.name}
                             </h4>
                             <p className="text-xs text-gray-500">{student.email}</p>
+                            <p className="text-xs text-purple-600 font-semibold">
+                              {student.rollNumber || `ROLL${String(idx + 1).padStart(6, '0')}`}
+                            </p>
                           </div>
-                          {student.flagged && (
-                            <Flag className="w-5 h-5 text-red-500" />
-                          )}
                         </div>
                         <div className="grid grid-cols-3 gap-2">
                           <div className="bg-blue-50 rounded-lg p-2 text-center">
@@ -398,24 +416,34 @@ const TeacherStudents = () => {
                             </p>
                             <p className="text-xs text-blue-600">Level</p>
                           </div>
-                          <div className="bg-amber-50 rounded-lg p-2 text-center">
-                            <p className="text-base font-bold text-amber-700">
-                              {student.xp || 0}
+                          <div className="bg-purple-50 rounded-lg p-2 text-center">
+                            <p className="text-base font-bold text-purple-700">
+                              {student.pillarMastery || 0}%
                             </p>
-                            <p className="text-xs text-amber-600">XP</p>
+                            <p className="text-xs text-purple-600">Mastery</p>
                           </div>
                           <div className="bg-green-50 rounded-lg p-2 text-center">
                             <p className="text-base font-bold text-green-700">
-                              {student.coins || 0}
+                              {student.streak || 0}
                             </p>
-                            <p className="text-xs text-green-600">Coins</p>
+                            <p className="text-xs text-green-600">Streak</p>
                           </div>
                         </div>
-                      </motion.div>
+                        <div className="mt-3 flex items-center justify-between">
+                          <div className="flex items-center gap-1">
+                            <span className="text-lg">{student.moodEmoji || '😊'}</span>
+                            <span className="text-xs text-gray-600">{student.moodScore || 3}/5</span>
+                          </div>
+                          <div className="flex items-center gap-1 text-xs text-gray-500">
+                            <Clock className="w-3 h-3" />
+                            <span>{student.lastActive || 'Never'}</span>
+                          </div>
+                        </div>
+                      </Motion.div>
                     ))}
                   </div>
                 ) : (
-                  <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-hidden">
+                  <div className="bg-white rounded-xl shadow-lg border-2 border-gray-100 overflow-visible relative">
                     <table className="w-full">
                       <thead className="bg-gradient-to-r from-purple-500 to-pink-600 text-white">
                         <tr>
@@ -423,14 +451,14 @@ const TeacherStudents = () => {
                           <th className="px-4 py-3 text-left font-semibold">Student</th>
                           <th className="px-4 py-3 text-center font-semibold">Level</th>
                           <th className="px-4 py-3 text-center font-semibold">Pillar Mastery %</th>
-                          <th className="px-4 py-3 text-center font-semibold">Mood</th>
+                          <th className="px-4 py-3 text-center font-semibold">Profile</th>
                           <th className="px-4 py-3 text-center font-semibold">Last Active</th>
                           <th className="px-4 py-3 text-center font-semibold">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {filteredStudents.map((student, idx) => (
-                          <motion.tr
+                          <Motion.tr
                             key={student._id}
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -440,16 +468,24 @@ const TeacherStudents = () => {
                           >
                             <td className="px-4 py-3">
                               <span className="font-bold text-gray-700">
-                                {student.rollNumber || idx + 1}
+                                {student.rollNumber || `ROLL${String(idx + 1).padStart(6, '0')}`}
                               </span>
                             </td>
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-3">
-                                <img
-                                  src={student.avatar || "/avatars/avatar1.png"}
-                                  alt={student.name}
-                                  className="w-10 h-10 rounded-full border-2 border-purple-300"
-                                />
+                                <div className="relative">
+                                  <img
+                                    src={student.avatar || `/avatars/avatar${(idx % 6) + 1}.png`}
+                                    alt={student.name}
+                                    className="w-10 h-10 rounded-full border-2 border-purple-300 object-cover"
+                                    onError={(e) => {
+                                      e.target.src = `/avatars/avatar${(idx % 6) + 1}.png`;
+                                    }}
+                                  />
+                                  {student.flagged && (
+                                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full border border-white"></div>
+                                  )}
+                                </div>
                                 <div>
                                   <p className="font-semibold text-gray-900">{student.name}</p>
                                   <p className="text-xs text-gray-500">{student.email}</p>
@@ -465,7 +501,15 @@ const TeacherStudents = () => {
                               <div className="flex items-center gap-2">
                                 <div className="flex-1 bg-gray-200 rounded-full h-2">
                                   <div
-                                    className="bg-gradient-to-r from-green-500 to-emerald-600 h-2 rounded-full"
+                                    className={`h-2 rounded-full ${
+                                      (student.pillarMastery || 0) >= 75
+                                        ? "bg-gradient-to-r from-green-500 to-emerald-600"
+                                        : (student.pillarMastery || 0) >= 50
+                                        ? "bg-gradient-to-r from-blue-500 to-cyan-600"
+                                        : (student.pillarMastery || 0) >= 25
+                                        ? "bg-gradient-to-r from-amber-500 to-orange-600"
+                                        : "bg-gradient-to-r from-red-500 to-pink-600"
+                                    }`}
                                     style={{ width: `${student.pillarMastery || 0}%` }}
                                   />
                                 </div>
@@ -475,12 +519,18 @@ const TeacherStudents = () => {
                               </div>
                             </td>
                             <td className="px-4 py-3 text-center">
-                              <div className="flex items-center justify-center gap-1">
-                                <span className="text-2xl">{student.moodEmoji || '😊'}</span>
-                                <span className="text-xs text-gray-600">
-                                  {student.moodScore || 3}/5
-                                </span>
-                              </div>
+                              <Motion.button
+                                whileHover={{ scale: 1.1 }}
+                                whileTap={{ scale: 0.9 }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigate(`/school-teacher/student/${student._id}/progress`);
+                                }}
+                                className="p-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg hover:shadow-lg transition-all flex items-center gap-2 mx-auto"
+                              >
+                                <ChevronRight className="w-4 h-4" />
+                                <span className="text-sm font-semibold">View</span>
+                              </Motion.button>
                             </td>
                             <td className="px-4 py-3 text-center">
                               <p className="text-xs text-gray-600 flex items-center justify-center gap-1">
@@ -488,8 +538,18 @@ const TeacherStudents = () => {
                                 {student.lastActive || 'Never'}
                               </p>
                             </td>
-                            <td className="px-4 py-3">
-                              <div className="flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+                            <td className="px-4 py-3 relative overflow-visible">
+                              <div 
+                                className="flex items-center justify-center" 
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }}
+                                onMouseDown={(e) => {
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }}
+                              >
                                 <StudentActionsMenu
                                   student={student}
                                   onMessage={(s) => {
@@ -511,10 +571,11 @@ const TeacherStudents = () => {
                                   onViewFullProfile={(s) => {
                                     navigate(`/school-teacher/student/${s._id}/progress`);
                                   }}
+                                  onRemoveFromClass={handleRemoveStudentFromClass}
                                 />
                               </div>
                             </td>
-                          </motion.tr>
+                          </Motion.tr>
                         ))}
                       </tbody>
                     </table>
@@ -596,16 +657,7 @@ const TeacherStudents = () => {
         }}
       />
 
-      {/* Floating New Assignment Button */}
-      <motion.button
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.9 }}
-        onClick={() => setShowNewAssignment(true)}
-        className="fixed bottom-8 right-8 p-4 bg-gradient-to-r from-purple-500 to-pink-600 text-white rounded-full shadow-2xl hover:shadow-3xl transition-all z-40 flex items-center gap-3"
-      >
-        <Plus className="w-6 h-6" />
-        <span className="font-bold pr-2">New Assignment</span>
-      </motion.button>
+      
     </div>
   );
 };

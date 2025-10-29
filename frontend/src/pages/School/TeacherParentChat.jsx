@@ -937,7 +937,7 @@ const TeacherParentChat = () => {
           <button
             onClick={() => {
               setShowSidebar(false);
-              navigate(-1);
+              navigate('/school-teacher/chat-contacts');
             }}
               className="p-2 hover:bg-white/20 rounded-full transition-colors"
           >
@@ -1034,6 +1034,17 @@ const TeacherParentChat = () => {
                   </div>
                 )}
               </div>
+            </div>
+
+            {/* Actions */}
+            <div className="bg-white rounded-xl p-4 border border-gray-200">
+              <button
+                onClick={() => navigate(`/school-teacher/student-chat/${studentId}`)}
+                className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-medium shadow hover:from-indigo-600 hover:to-purple-600 transition-colors"
+              >
+                <MessageCircle className="w-5 h-5" />
+                Chat to Student
+              </button>
             </div>
 
             {/* Message Info */}

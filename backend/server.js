@@ -123,6 +123,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import User from "./models/User.js";
 import { errorHandler } from "./middlewares/errorMiddleware.js";
 import { scheduleWeeklyReports } from "./cronJobs/reportScheduler.js";
+import { startNotificationTTL } from "./cronJobs/notificationTTL.js";
 
 // Socket Handlers
 import { setupWalletSocket } from "./socketHandlers/walletSocket.js";
@@ -272,6 +273,9 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   scheduleWeeklyReports();
+  // Start real-time notification TTL cleanup (15 days)
+  const ttlSeconds = parseInt(process.env.NOTIFICATION_TTL_SECONDS || "1296000", 10);
+  startNotificationTTL(io, { ttlSeconds, intervalSeconds: 3600 });
 });
 
 export default app;

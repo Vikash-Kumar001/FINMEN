@@ -79,19 +79,20 @@ const getNotificationIcon = (notification) => {
   let type = "info";
 
   // Determine type based on content
-  if (notification.content.toLowerCase().includes("congratulations") || 
-      notification.content.toLowerCase().includes("completed") ||
-      notification.content.toLowerCase().includes("achieved") ||
-      notification.content.toLowerCase().includes("success")) {
+  const content = (notification.content || "").toLowerCase();
+  if (content.includes("congratulations") || 
+      content.includes("completed") ||
+      content.includes("achieved") ||
+      content.includes("success")) {
     type = "success";
-  } else if (notification.content.toLowerCase().includes("warning") ||
-           notification.content.toLowerCase().includes("reminder") ||
-           notification.content.toLowerCase().includes("approaching")) {
+  } else if (content.includes("warning") ||
+           content.includes("reminder") ||
+           content.includes("approaching")) {
     type = "warning";
-  } else if (notification.content.toLowerCase().includes("failed") ||
-           notification.content.toLowerCase().includes("error") ||
-           notification.content.toLowerCase().includes("urgent") ||
-           notification.content.toLowerCase().includes("critical")) {
+  } else if (content.includes("failed") ||
+           content.includes("error") ||
+           content.includes("urgent") ||
+           content.includes("critical")) {
     type = "alert";
   }
 
@@ -154,7 +155,26 @@ const Notifications = () => {
         throw new Error("Failed to fetch notifications");
       }
 
-      setNotifications(response.data);
+      const raw = Array.isArray(response.data)
+        ? response.data
+        : (response.data.notifications || []);
+
+      const mapped = raw.map(n => ({
+        id: n._id || n.id,
+        title: n.title || 'Notification',
+        content: n.message || n.content || '',
+        timestamp: n.createdAt || n.timestamp || new Date().toISOString(),
+        read: n.isRead ?? n.read ?? false,
+        category: (() => {
+          const t = (n.type || '').toString();
+          if (t.includes('assignment_approval')) return 'report';
+          if (t.includes('policy_change')) return 'alert';
+          if ((n.message || '').startsWith('Message from')) return 'message';
+          return 'info';
+        })()
+      }));
+
+      setNotifications(mapped);
     } catch (err) {
       console.error("Error fetching notifications:", err);
       setError("Failed to load notifications. Please try again later.");
@@ -215,9 +235,36 @@ const Notifications = () => {
     fetchNotifications();
   }, []);
 
+  // Client-side auto-prune to reflect TTL deletions without refresh
+  useEffect(() => {
+    const ttlSeconds = 1296000; // 15 days
+    const prune = () => {
+      const now = Date.now();
+      setNotifications(prev => prev.filter(n => {
+        const ts = new Date(n.timestamp).getTime();
+        return now - ts < ttlSeconds * 1000;
+      }));
+    };
+    const timer = setInterval(prune, 300000); // Check every 5 minutes
+    return () => clearInterval(timer);
+  }, []);
+
+  // Realtime socket removal if server emits notification_deleted
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    // lazy import socket.io-client to avoid bundling twice if already provided by context
+    import('socket.io-client').then(({ io }) => {
+      const socket = io('/', { auth: { token } });
+      socket.on('notification_deleted', ({ id }) => {
+        setNotifications(prev => prev.filter(n => (n.id !== id && n._id !== id)));
+      });
+      return () => socket.disconnect();
+    }).catch(() => {});
+  }, []);
+
   const markAsRead = async (id) => {
     try {
-      const response = await api.put(`/api/notifications/${id}/read`);
+      const response = await api.patch(`/api/notifications/${id}/read`);
 
       if (response.status !== 200) {
         throw new Error("Failed to mark notification as read");
@@ -234,7 +281,7 @@ const Notifications = () => {
 
   const markAllAsRead = async () => {
     try {
-      const response = await api.put('/api/notifications/read-all');
+      const response = await api.patch('/api/notifications/read-all');
 
       if (response.status !== 200) {
         throw new Error("Failed to mark all notifications as read");
@@ -325,8 +372,8 @@ const Notifications = () => {
     .filter(notification => {
       if (!searchQuery) return true;
       return (
-        notification.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        notification.content.toLowerCase().includes(searchQuery.toLowerCase())
+        (notification.title || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (notification.content || '').toLowerCase().includes(searchQuery.toLowerCase())
       );
     })
     .sort((a, b) => {

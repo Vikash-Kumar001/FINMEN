@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Search, Filter, Grid, List, Flag, ChevronDown, Download, Eye,
   BookOpen, TrendingUp, Zap, Coins, Star, Activity, MessageSquare, FileText,
@@ -16,7 +16,7 @@ const SchoolAdminStudents = () => {
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState([]);
   const [selectedClass] = useState('all');
-  const [viewMode, setViewMode] = useState('grid');
+  const [viewMode, setViewMode] = useState('list');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [stats, setStats] = useState({});
@@ -76,7 +76,33 @@ const SchoolAdminStudents = () => {
   const handleViewStudent = async (student) => {
     try {
       const response = await api.get(`/api/school/admin/students/${student._id}`);
-      setSelectedStudent(response.data.student);
+      const studentData = response.data.student || {};
+
+      // Fetch real-time pillar mastery for this student using the User ID (same as student dashboard)
+      try {
+        const userId = studentData.userId;
+        
+        if (userId) {
+          // Use the same endpoint as student dashboard for real-time pillar data
+          const masteryRes = await api.get(`/api/stats/pillar-mastery/${userId}`);
+          const mastery = masteryRes.data || {};
+
+          // Store the full pillars array from real-time data (all 10 pillars from UnifiedGameProgress)
+          if (mastery.pillars && Array.isArray(mastery.pillars)) {
+            studentData.pillarMasteryArray = mastery.pillars;
+          }
+          
+          // Update avgScore from overallMastery (real-time calculation from game progress)
+          if (typeof mastery.overallMastery === 'number') {
+            studentData.avgScore = mastery.overallMastery;
+          }
+        }
+      } catch (pillarsErr) {
+        console.error('Failed to fetch real-time pillar mastery for student:', pillarsErr);
+        // Don't fail the whole request, just log the error - will use fallback static data
+      }
+
+      setSelectedStudent(studentData);
       setShowStudentDetail(true);
     } catch (error) {
       console.error('Error fetching student details:', error);
@@ -151,20 +177,7 @@ const SchoolAdminStudents = () => {
     }
   };
 
-  const handleSyncGender = async () => {
-    if (!window.confirm('This will sync gender data for all existing students. Continue?')) {
-      return;
-    }
-    
-    try {
-      const response = await api.post('/api/school/admin/students/sync-gender');
-      toast.success(response.data.message || 'Gender synced successfully!');
-      fetchStudentsData(); // Refresh the list
-    } catch (error) {
-      console.error('Error syncing gender:', error);
-      toast.error(error.response?.data?.message || 'Failed to sync gender');
-    }
-  };
+  
 
   const filteredStudents = students.filter(student =>
     student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -177,7 +190,7 @@ const SchoolAdminStudents = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white py-8 px-6">
         <div className="max-w-7xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+          <Motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="text-4xl font-black mb-2 flex items-center gap-3">
               <Users className="w-10 h-10" />
               Student Management
@@ -185,14 +198,14 @@ const SchoolAdminStudents = () => {
             <p className="text-lg text-white/90">
               {filteredStudents.length} students • {stats.active || 0} active this month
             </p>
-          </motion.div>
+          </Motion.div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 -mt-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-4"
@@ -206,9 +219,9 @@ const SchoolAdminStudents = () => {
                 <p className="text-2xl font-black text-gray-900">{stats.total || 0}</p>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
 
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
@@ -223,9 +236,9 @@ const SchoolAdminStudents = () => {
                 <p className="text-2xl font-black text-gray-900">{stats.active || 0}</p>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
 
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -240,9 +253,9 @@ const SchoolAdminStudents = () => {
                 <p className="text-2xl font-black text-gray-900">{stats.flagged || 0}</p>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
 
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
@@ -257,11 +270,11 @@ const SchoolAdminStudents = () => {
                 <p className="text-2xl font-black text-gray-900">{stats.inactive || 0}</p>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
         </div>
 
         {/* Search & Filters */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 mb-6"
@@ -306,14 +319,6 @@ const SchoolAdminStudents = () => {
               </div>
 
               <button
-                onClick={handleSyncGender}
-                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
-              >
-                <Users className="w-4 h-4" />
-                Sync Gender
-              </button>
-
-              <button
                 onClick={handleExportStudents}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all"
               >
@@ -330,13 +335,13 @@ const SchoolAdminStudents = () => {
               </button>
             </div>
           </div>
-        </motion.div>
+          </Motion.div>
 
         {/* Students Grid */}
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredStudents.map((student, idx) => (
-              <motion.div
+              <Motion.div
                 key={student._id || idx}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -373,6 +378,25 @@ const SchoolAdminStudents = () => {
                     <span className="text-gray-600">Gender:</span>
                     <span className="font-semibold text-gray-900">{student.gender || 'N/A'}</span>
                   </div>
+                  <div className="flex items-start gap-2 text-sm">
+                    <Users className="w-4 h-4 text-gray-500 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-gray-600">Linked Parent:</span>{' '}
+                      {student.parents && student.parents.length > 0 ? (
+                        <div className="mt-1 space-y-1">
+                          <div className="font-semibold text-gray-900 truncate">
+                            {student.parents[0].name || 'Parent'}
+                          </div>
+                          <div className="text-xs text-gray-600 truncate">{student.parents[0].email || 'N/A'}</div>
+                          {student.parents.length > 1 && (
+                            <div className="text-xs text-gray-500">+{student.parents.length - 1} more linked</div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="font-semibold text-gray-900">N/A</span>
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 <div className="flex gap-2">
@@ -393,7 +417,7 @@ const SchoolAdminStudents = () => {
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-              </motion.div>
+              </Motion.div>
             ))}
           </div>
         ) : (
@@ -404,13 +428,14 @@ const SchoolAdminStudents = () => {
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Student</th>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Phone</th>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Gender</th>
+                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Linked Parent</th>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Status</th>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredStudents.map((student, idx) => (
-                  <motion.tr
+                  <Motion.tr
                     key={student._id || idx}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -430,6 +455,19 @@ const SchoolAdminStudents = () => {
                     </td>
                     <td className="py-4 px-6 text-sm font-semibold text-gray-900">{student.phone || 'N/A'}</td>
                     <td className="py-4 px-6 text-sm font-bold text-gray-900">{student.gender || 'N/A'}</td>
+                    <td className="py-4 px-6">
+                      {student.parents && student.parents.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          <p className="text-sm font-semibold text-gray-900">{student.parents[0].name || 'N/A'}</p>
+                          <p className="text-xs text-gray-600">{student.parents[0].email || 'N/A'}</p>
+                          {student.parents.length > 1 && (
+                            <p className="text-xs text-gray-500">+{student.parents.length - 1} more</p>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="text-sm font-semibold text-gray-500">N/A</span>
+                      )}
+                    </td>
                     <td className="py-4 px-6">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${
                         student.wellbeingFlags?.length > 0 ? 'bg-red-100 text-red-700' :
@@ -458,7 +496,7 @@ const SchoolAdminStudents = () => {
                         </button>
                       </div>
                     </td>
-                  </motion.tr>
+                  </Motion.tr>
                 ))}
               </tbody>
             </table>
@@ -466,7 +504,7 @@ const SchoolAdminStudents = () => {
         )}
 
         {filteredStudents.length === 0 && !loading && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-12 text-center"
@@ -481,7 +519,7 @@ const SchoolAdminStudents = () => {
               <UserPlus className="w-5 h-5" />
               Add New Student
             </button>
-          </motion.div>
+            </Motion.div>
         )}
       </div>
 

@@ -1,24 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion as Motion } from 'framer-motion';
 import {
   Users,
   MessageSquare,
-  User,
-  Phone,
-  Video,
-  Send,
   Search,
   ArrowLeft,
   Circle
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
-import { useAuth } from '../../hooks/useAuth';
 
 const TeacherChatContacts = () => {
   const navigate = useNavigate();
-  const { user } = useAuth();
   const [contacts, setContacts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -75,12 +69,11 @@ const TeacherChatContacts = () => {
   });
 
   const studentsCount = contacts.filter(c => c.role === 'student').length;
-  const parentsCount = contacts.filter(c => c.role === 'parent').length;
 
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-        <motion.div
+        <Motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
           className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full"
@@ -96,14 +89,14 @@ const TeacherChatContacts = () => {
         <div className="max-w-7xl mx-auto">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <motion.button
+              <Motion.button
                 onClick={() => navigate('/school-teacher/overview')}
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
                 className="p-2 bg-white/20 hover:bg-white/30 rounded-lg transition-colors"
               >
                 <ArrowLeft className="w-6 h-6" />
-              </motion.button>
+              </Motion.button>
               <div>
                 <h1 className="text-3xl font-black">Chat Contacts</h1>
                 <p className="text-white/90 mt-1">Connect with students and parents</p>
@@ -135,19 +128,6 @@ const TeacherChatContacts = () => {
                 className="w-full pl-12 pr-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-indigo-500 transition-colors"
               />
             </div>
-            
-            {/* Filter Buttons */}
-            <div className="flex gap-2">
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-4 py-2 rounded-xl font-semibold transition-all ${
-                  filter === 'all'
-                    ? 'bg-indigo-600 text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                All ({contacts.length})
-              </button>
               <button
                 onClick={() => setFilter('students')}
                 className={`px-4 py-2 rounded-xl font-semibold transition-all ${
@@ -158,17 +138,6 @@ const TeacherChatContacts = () => {
               >
                 Students ({studentsCount})
               </button>
-              <button
-                onClick={() => setFilter('parents')}
-                className={`px-4 py-2 rounded-xl font-semibold transition-all ${
-                  filter === 'parents'
-                    ? 'bg-indigo-600 text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                Parents ({parentsCount})
-              </button>
-            </div>
           </div>
         </div>
 
@@ -182,7 +151,7 @@ const TeacherChatContacts = () => {
         ) : (
           <div className="space-y-4">
             {filteredContacts.map((contact) => (
-              <motion.div
+              <Motion.div
                 key={contact.id}
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
@@ -217,7 +186,7 @@ const TeacherChatContacts = () => {
                         </span>
                       </div>
                       <div className="flex items-center gap-3 text-sm text-gray-600">
-                        <span>Grade: {contact.grade}</span>
+                        <span> {contact.grade}</span>
                         <span>•</span>
                         <span>{contact.age}</span>
                         {contact.xp > 0 && (
@@ -238,7 +207,7 @@ const TeacherChatContacts = () => {
 
                   {/* Action Buttons */}
                   <div className="flex items-center gap-2 ml-4">
-                    <motion.button 
+                    <Motion.button 
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-colors flex items-center gap-2 shadow-md"
@@ -249,8 +218,8 @@ const TeacherChatContacts = () => {
                     >
                       <MessageSquare className="w-4 h-4" />
                       Chat to Student
-                    </motion.button>
-                    <motion.button 
+                    </Motion.button>
+                    <Motion.button 
                       whileHover={{ scale: 1.05 }}
                       whileTap={{ scale: 0.95 }}
                       className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-colors flex items-center gap-2 shadow-md"
@@ -261,28 +230,10 @@ const TeacherChatContacts = () => {
                     >
                       <MessageSquare className="w-4 h-4" />
                       Chat to Parent
-                    </motion.button>
-                    <motion.button 
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                      onClick={(e) => e.stopPropagation()}
-                      title="Call"
-                    >
-                      <Phone className="w-4 h-4 text-gray-600" />
-                    </motion.button>
-                    <motion.button 
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
-                      className="p-2 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                      onClick={(e) => e.stopPropagation()}
-                      title="Video Call"
-                    >
-                      <Video className="w-4 h-4 text-gray-600" />
-                    </motion.button>
+                    </Motion.button>
                   </div>
                 </div>
-              </motion.div>
+              </Motion.div>
             ))}
           </div>
         )}

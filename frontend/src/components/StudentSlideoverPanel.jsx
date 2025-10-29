@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   X, User, Mail, MessageSquare, Flag, Eye, 
   Activity, Heart, Trophy, Zap, Coins, Calendar,
@@ -13,7 +13,7 @@ const StudentSlideoverPanel = ({ student, isOpen, onClose, onUpdate }) => {
   const [activeTab, setActiveTab] = useState('timeline');
   const [loading, setLoading] = useState(false);
   const [studentDetails, setStudentDetails] = useState(null);
-  const [notes, setNotes] = useState('');
+  const [_notes, setNotes] = useState('');
   const [newNote, setNewNote] = useState('');
   const [isFlagged, setIsFlagged] = useState(false);
   const [messageText, setMessageText] = useState('');
@@ -22,6 +22,7 @@ const StudentSlideoverPanel = ({ student, isOpen, onClose, onUpdate }) => {
     if (isOpen && student) {
       fetchStudentDetails();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, student]);
 
   const fetchStudentDetails = async () => {
@@ -97,7 +98,7 @@ const StudentSlideoverPanel = ({ student, isOpen, onClose, onUpdate }) => {
       {isOpen && (
         <>
           {/* Backdrop */}
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -106,7 +107,7 @@ const StudentSlideoverPanel = ({ student, isOpen, onClose, onUpdate }) => {
           />
 
           {/* Slide-over Panel */}
-          <motion.div
+          <Motion.div
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -201,7 +202,7 @@ const StudentSlideoverPanel = ({ student, isOpen, onClose, onUpdate }) => {
             <div className="p-6">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <motion.div
+                  <Motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                     className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full"
@@ -217,7 +218,7 @@ const StudentSlideoverPanel = ({ student, isOpen, onClose, onUpdate }) => {
                       </h3>
                       {studentDetails?.timeline && studentDetails.timeline.length > 0 ? (
                         studentDetails.timeline.map((item, idx) => (
-                          <motion.div
+                          <Motion.div
                             key={idx}
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -239,7 +240,7 @@ const StudentSlideoverPanel = ({ student, isOpen, onClose, onUpdate }) => {
                                 </p>
                               </div>
                             </div>
-                          </motion.div>
+                          </Motion.div>
                         ))
                       ) : (
                         <div className="text-center py-8 text-gray-400">
@@ -353,7 +354,7 @@ const StudentSlideoverPanel = ({ student, isOpen, onClose, onUpdate }) => {
                       <div className="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
                         <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
                           <MessageSquare className="w-5 h-5 text-blue-600" />
-                          Send Message
+                          Notify Student
                         </h4>
                         <textarea
                           placeholder="Type your message to the student..."
@@ -367,64 +368,67 @@ const StudentSlideoverPanel = ({ student, isOpen, onClose, onUpdate }) => {
                           className="mt-3 px-4 py-2 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center gap-2"
                         >
                           <Send className="w-4 h-4" />
-                          Send Message
+                          Send Notification
                         </button>
                       </div>
 
-                      {/* Flag for Counselor */}
-                      <div className={`rounded-xl p-4 border-2 ${
-                        isFlagged 
-                          ? 'bg-red-50 border-red-200' 
-                          : 'bg-gray-50 border-gray-200'
-                      }`}>
-                        <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                          <Flag className="w-5 h-5 text-red-600" />
-                          Flag for Counselor
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-3">
-                          {isFlagged 
-                            ? 'This student is currently flagged and will be reviewed by counselor'
-                            : 'Flag this student if they need counselor attention'}
-                        </p>
-                        <button
-                          onClick={handleToggleFlag}
-                          className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
-                            isFlagged
-                              ? 'bg-gray-600 text-white hover:bg-gray-700'
-                              : 'bg-gradient-to-r from-red-600 to-pink-600 text-white hover:shadow-lg'
-                          }`}
-                        >
-                          <Flag className="w-4 h-4" />
-                          {isFlagged ? 'Remove Flag' : 'Flag Student'}
-                        </button>
-                      </div>
+                      {/* Row: Flag + Full Profile */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Flag for Counselor */}
+                        <div className={`rounded-xl p-4 border-2 h-full ${
+                          isFlagged 
+                            ? 'bg-red-50 border-red-200' 
+                            : 'bg-gray-50 border-gray-200'
+                        }`}>
+                          <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <Flag className="w-5 h-5 text-red-600" />
+                            Flag for Counselor
+                          </h4>
+                          <p className="text-sm text-gray-600 mb-3">
+                            {isFlagged 
+                              ? 'This student is currently flagged and will be reviewed by counselor'
+                              : 'Flag this student if they need counselor attention'}
+                          </p>
+                          <button
+                            onClick={handleToggleFlag}
+                            className={`px-4 py-2 rounded-lg font-semibold transition-all flex items-center gap-2 ${
+                              isFlagged
+                                ? 'bg-gray-600 text-white hover:bg-gray-700'
+                                : 'bg-gradient-to-r from-red-600 to-pink-600 text-white hover:shadow-lg'
+                            }`}
+                          >
+                            <Flag className="w-4 h-4" />
+                            {isFlagged ? 'Remove Flag' : 'Flag Student'}
+                          </button>
+                        </div>
 
-                      {/* View Full Profile */}
-                      <div className="bg-purple-50 rounded-xl p-4 border-2 border-purple-200">
-                        <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                          <Eye className="w-5 h-5 text-purple-600" />
-                          Full Profile
-                        </h4>
-                        <p className="text-sm text-gray-600 mb-3">
-                          View complete analytics and progress reports
-                        </p>
-                        <button
-                          onClick={() => {
-                            onClose();
-                            window.location.href = `/school-teacher/student/${student._id}/progress`;
-                          }}
-                          className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center gap-2"
-                        >
-                          <Eye className="w-4 h-4" />
-                          View Full Profile
-                        </button>
+                        {/* View Full Profile */}
+                        <div className="bg-purple-50 rounded-xl p-4 border-2 border-purple-200 h-full">
+                          <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                            <Eye className="w-5 h-5 text-purple-600" />
+                            Full Profile
+                          </h4>
+                          <p className="text-sm text-gray-600 mb-3">
+                            View complete analytics and progress reports
+                          </p>
+                          <button
+                            onClick={() => {
+                              onClose();
+                              window.location.href = `/school-teacher/student/${student._id}/progress`;
+                            }}
+                            className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg font-semibold hover:shadow-lg transition-all flex items-center gap-2"
+                          >
+                            <Eye className="w-4 h-4" />
+                            View Full Profile
+                          </button>
+                        </div>
                       </div>
                     </div>
                   )}
                 </>
               )}
             </div>
-          </motion.div>
+          </Motion.div>
         </>
       )}
     </AnimatePresence>

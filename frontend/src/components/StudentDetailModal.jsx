@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-  X, Mail, Phone, Calendar, Activity, Lock, Copy, AlertCircle, Target, Trash2, Key, User
+  X, Mail, Phone, Calendar, Activity, Lock, Copy, AlertCircle, Target, Trash2, Key, User, Users
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
@@ -126,7 +126,7 @@ const StudentDetailModal = ({
                     <Phone className="w-5 h-5 text-purple-600" />
                     Contact Information
                   </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
                     <div className="flex items-center gap-2">
                       <Phone className="w-4 h-4 text-gray-500" />
                       <span className="text-gray-600">Phone:</span>
@@ -154,6 +154,43 @@ const StudentDetailModal = ({
                       </span>
                     </div>
                   </div>
+
+                  {/* Linked Parents */}
+                  <div className="pt-4 border-t border-gray-300">
+                    <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                      <Users className="w-5 h-5 text-purple-600" />
+                      Linked Parent{selectedStudent.parents?.length !== 1 ? 's' : ''}
+                    </h4>
+                    {selectedStudent.parents && selectedStudent.parents.length > 0 ? (
+                      <div className="space-y-3">
+                        {selectedStudent.parents.map((parent, idx) => (
+                          <div key={parent._id || idx} className="bg-white rounded-lg p-4 border-2 border-purple-200">
+                            <div className="flex items-center gap-3 mb-2">
+                              {parent.avatar ? (
+                                <img src={parent.avatar} alt={parent.name} className="w-10 h-10 rounded-full object-cover" />
+                              ) : (
+                                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white font-bold">
+                                  {parent.name?.charAt(0) || 'P'}
+                                </div>
+                              )}
+                              <div className="flex-1">
+                                <p className="font-bold text-gray-900">{parent.name || 'N/A'}</p>
+                                <p className="text-xs text-gray-600">{parent.email || 'N/A'}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <Phone className="w-3 h-3" />
+                              <span>{parent.phone || 'N/A'}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="bg-white rounded-lg p-4 border-2 border-gray-200 text-center">
+                        <p className="text-gray-600">No parent linked to this student</p>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Pillar Mastery */}
@@ -163,24 +200,55 @@ const StudentDetailModal = ({
                     Pillar Mastery
                   </h3>
                   <div className="space-y-3">
-                    {Object.entries(selectedStudent.pillars || {}).map(([pillar, score]) => (
-                      <div key={pillar}>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-bold text-gray-700 uppercase">{pillar}</span>
-                          <span className="text-sm font-black text-gray-900">{score || 0}%</span>
+                    {/* Prefer array from real-time service if available - shows ALL pillars */}
+                    {Array.isArray(selectedStudent.pillarMasteryArray) && selectedStudent.pillarMasteryArray.length > 0 ? (
+                      selectedStudent.pillarMasteryArray.map((p, idx) => {
+                        const label = p.pillar || (p.icon ? `${p.icon} Pillar ${idx + 1}` : `Pillar ${idx + 1}`);
+                        const score = typeof p.mastery === 'number' ? p.mastery : 0;
+                        const icon = p.icon || '';
+                        return (
+                          <div key={idx}>
+                            <div className="flex items-center justify-between mb-1">
+                              <span className="text-sm font-bold text-gray-700 flex items-center gap-2">
+                                {icon && <span>{icon}</span>}
+                                {label}
+                              </span>
+                              <span className="text-sm font-black text-gray-900">{score}%</span>
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full transition-all ${
+                                  score >= 75 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
+                                  score >= 50 ? 'bg-gradient-to-r from-blue-500 to-cyan-600' :
+                                  'bg-gradient-to-r from-red-500 to-pink-600'
+                                }`}
+                                style={{ width: `${score}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })
+                    ) : (
+                      // Fallback to static pillars data if real-time data not available
+                      Object.entries(selectedStudent.pillars || {}).map(([pillar, score]) => (
+                        <div key={pillar}>
+                          <div className="flex items-center justify-between mb-1">
+                            <span className="text-sm font-bold text-gray-700 uppercase">{pillar}</span>
+                            <span className="text-sm font-black text-gray-900">{score || 0}%</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2">
+                            <div
+                              className={`h-2 rounded-full transition-all ${
+                                score >= 75 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
+                                score >= 50 ? 'bg-gradient-to-r from-blue-500 to-cyan-600' :
+                                'bg-gradient-to-r from-red-500 to-pink-600'
+                              }`}
+                              style={{ width: `${score || 0}%` }}
+                            />
+                          </div>
                         </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full transition-all ${
-                              score >= 75 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
-                              score >= 50 ? 'bg-gradient-to-r from-blue-500 to-cyan-600' :
-                              'bg-gradient-to-r from-red-500 to-pink-600'
-                            }`}
-                            style={{ width: `${score || 0}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
+                      ))
+                    )}
                   </div>
                 </div>
 

@@ -89,7 +89,7 @@ const ShareReflex = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/little-empath-badge");
+    navigate("/games/uvls/kids");
   };
 
   const accuracy = Math.round((score / actions.length) * 100);

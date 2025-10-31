@@ -70,7 +70,7 @@ const InclusionMatch = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/invite-to-play");
+    navigate("/games/uvls/kids");
   };
 
   const currentPair = matchPairs[currentMatch];

@@ -70,7 +70,7 @@ const RespectTap = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/inclusion-match");
+    navigate("/games/uvls/kids");
   };
 
   const accuracy = Math.round((score / actions.length) * 100);

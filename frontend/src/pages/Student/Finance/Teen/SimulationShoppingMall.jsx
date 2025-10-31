@@ -5,12 +5,14 @@ import { useGameFeedback } from '../../../../hooks/useGameFeedback';
 
 const SimulationShoppingMall = () => {
   const navigate = useNavigate();
-  const { feedback, triggerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [budget, setBudget] = useState(150);
   const [cart, setCart] = useState([]);
   const [currentScenario, setCurrentScenario] = useState(0);
   const [scores, setScores] = useState(Array(5).fill(0));
   const [timeLeft, setTimeLeft] = useState(120); // 2 minutes per scenario
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
   // Items available in the shopping mall
   const items = [
@@ -91,21 +93,43 @@ const SimulationShoppingMall = () => {
   }, [timeLeft]);
 
   const addToCart = (item) => {
+    resetFeedback();
     if (budget >= item.price) {
       setCart([...cart, item]);
       setBudget(budget - item.price);
-      triggerFeedback(true, "Added to cart!");
+      showCorrectAnswerFeedback(1, true);
+      setFeedbackMessage("Added to cart!");
+      setIsSuccess(true);
+      
+      // Clear feedback after delay
+      setTimeout(() => {
+        setFeedbackMessage('');
+      }, 1000);
     } else {
-      triggerFeedback(false, "Not enough budget!");
+      setFeedbackMessage("Not enough budget!");
+      setIsSuccess(false);
+      
+      // Clear feedback after delay
+      setTimeout(() => {
+        setFeedbackMessage('');
+      }, 1000);
     }
   };
 
   const removeFromCart = (itemId) => {
+    resetFeedback();
     const itemToRemove = cart.find(item => item.id === itemId);
     if (itemToRemove) {
       setCart(cart.filter(item => item.id !== itemId));
       setBudget(budget + itemToRemove.price);
-      triggerFeedback(true, "Removed from cart");
+      showCorrectAnswerFeedback(1, true);
+      setFeedbackMessage("Removed from cart");
+      setIsSuccess(true);
+      
+      // Clear feedback after delay
+      setTimeout(() => {
+        setFeedbackMessage('');
+      }, 1000);
     }
   };
 
@@ -138,16 +162,22 @@ const SimulationShoppingMall = () => {
     newScores[currentScenario] = score;
     setScores(newScores);
     
-    triggerFeedback(
-      score > 0, 
-      score > 0 
-        ? `Great job! You scored ${score}/3 points.` 
-        : "Try again to improve your shopping strategy."
-    );
+    const message = score > 0 
+      ? `Great job! You scored ${score}/3 points.` 
+      : "Try again to improve your shopping strategy.";
+      
+    setFeedbackMessage(message);
+    setIsSuccess(score > 0);
     
     setTimeout(() => {
+      setFeedbackMessage('');
       if (currentScenario < scenarios.length - 1) {
         setCurrentScenario(currentScenario + 1);
+      } else {
+        // For the last scenario, navigate after a delay
+        setTimeout(() => {
+          navigate('/games/financial-literacy/teen');
+        }, 3000);
       }
     }, 2000);
   };
@@ -157,7 +187,7 @@ const SimulationShoppingMall = () => {
   };
 
   const handleGameComplete = () => {
-    navigate('/student/finance');
+    navigate('/games/financial-literacy/teen');
   };
 
   const formatTime = (seconds) => {
@@ -175,7 +205,6 @@ const SimulationShoppingMall = () => {
       score={calculateTotalScore()}
       totalScore={scenarios.length * 3} // Max 3 points per scenario
       onGameComplete={handleGameComplete}
-      feedback={feedback}
     >
       <div className="game-content">
         <h3 className="text-xl font-bold mb-6 text-indigo-700">Shopping Mall Simulation</h3>
@@ -198,6 +227,14 @@ const SimulationShoppingMall = () => {
               </p>
             )}
           </div>
+          
+          {feedbackMessage && (
+            <div className={`p-4 rounded-lg mb-4 ${
+              isSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}>
+              <p className="font-medium">{feedbackMessage}</p>
+            </div>
+          )}
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
             {items.map((item) => (

@@ -70,7 +70,7 @@ const MatchFaces = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/spot-help");
+    navigate("/games/uvls/kids");
   };
 
   const currentFace = faceMatches[currentMatch];
@@ -86,8 +86,8 @@ const MatchFaces = () => {
       score={coins}
       gameId="uvls-kids-4"
       gameType="uvls"
-      totalLevels={10}
-      currentLevel={4}
+      // totalLevels={10}
+      // currentLevel={4}
       showConfetti={showResult && correctMatches >= 8}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}

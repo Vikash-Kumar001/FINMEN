@@ -70,7 +70,7 @@ const MiniJournal = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/comfort-roleplay");
+    navigate("/games/uvls/kids");
   };
 
   const currentPrompt = prompts[selectedPrompt];

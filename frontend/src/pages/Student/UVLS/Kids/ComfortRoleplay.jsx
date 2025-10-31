@@ -118,7 +118,7 @@ const ComfortRoleplay = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/share-reflex");
+    navigate("/games/uvls/kids");
   };
 
   const vignette = vignettes[currentVignette];

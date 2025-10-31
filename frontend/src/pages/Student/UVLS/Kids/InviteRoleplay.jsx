@@ -97,7 +97,7 @@ const InviteRoleplay = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/respect-signals");
+    navigate("/games/uvls/kids");
   };
 
   const scene = scenes[currentScene];

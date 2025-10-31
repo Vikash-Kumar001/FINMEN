@@ -104,7 +104,7 @@ const GreetTheNewKid = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/polite-words-quiz");
+    navigate("/games/uvls/kids");
   };
 
   const friendlyCount = choices.filter(c => c.isFriendly).length;

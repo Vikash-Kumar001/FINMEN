@@ -5,9 +5,13 @@ import { useGameFeedback } from '../../../../hooks/useGameFeedback';
 
 const PartyStory = () => {
   const navigate = useNavigate();
-  const { feedback, triggerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [scores, setScores] = useState(Array(5).fill(0));
+  const [selectedChoice, setSelectedChoice] = useState(null);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [explanation, setExplanation] = useState('');
+  const [showCompletionPopup, setShowCompletionPopup] = useState(false);
 
   const questions = [
     {
@@ -68,20 +72,34 @@ const PartyStory = () => {
   ];
 
   const handleChoiceSelect = (choiceId) => {
+    resetFeedback();
+    setSelectedChoice(choiceId);
     const isCorrect = choiceId === questions[currentQuestion].correct;
-    triggerFeedback(isCorrect);
     
     if (isCorrect) {
+      showCorrectAnswerFeedback(1, true);
       const newScores = [...scores];
       newScores[currentQuestion] = 1;
       setScores(newScores);
     }
+    
+    // Find the explanation for the selected choice
+    const selectedChoiceObj = questions[currentQuestion].choices.find(choice => choice.id === choiceId);
+    setExplanation(selectedChoiceObj?.explanation || '');
+    setShowExplanation(true);
 
     setTimeout(() => {
+      setShowExplanation(false);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
+        setSelectedChoice(null);
+      } else {
+        // For the last question, show completion popup
+        setTimeout(() => {
+          setShowCompletionPopup(true);
+        }, 2000);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const calculateTotalScore = () => {
@@ -101,9 +119,37 @@ const PartyStory = () => {
       score={calculateTotalScore()}
       totalScore={questions.length}
       onGameComplete={handleGameComplete}
-      feedback={feedback}
     >
       <div className="game-content">
+        {/* Completion Popup */}
+        {showCompletionPopup && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-xl shadow-xl p-8 max-w-md w-full mx-4">
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-indigo-700 mb-4">Congratulations!</h3>
+                <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                  <span className="text-2xl">💰</span>
+                </div>
+                <p className="text-lg text-gray-700 mb-2">You've completed the Party Planning Challenge!</p>
+                <p className="text-xl font-bold text-indigo-700 mb-6">
+                  Total HealCoins Earned: {calculateTotalScore()}
+                </p>
+                <button
+                  onClick={() => {
+                    setShowCompletionPopup(false);
+                    setTimeout(() => {
+                      navigate('/games/financial-literacy/kids');
+                    }, 500);
+                  }}
+                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200"
+                >
+                  OK
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
         <h3 className="text-xl font-bold mb-6 text-indigo-700">Party Planning Financial Decisions</h3>
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <h4 className="text-lg font-semibold mb-4 text-gray-800">{questions[currentQuestion].text}</h4>
@@ -112,25 +158,34 @@ const PartyStory = () => {
               <button
                 key={choice.id}
                 onClick={() => handleChoiceSelect(choice.id)}
-                className="w-full text-left p-4 bg-blue-50 hover:bg-blue-100 rounded-lg transition duration-200 border border-blue-200 hover:border-blue-300"
+                className={`w-full text-left p-4 rounded-lg transition duration-200 border ${
+                  selectedChoice === choice.id 
+                    ? (choice.id === questions[currentQuestion].correct 
+                        ? 'bg-green-100 border-green-300' 
+                        : 'bg-red-100 border-red-300')
+                    : 'bg-blue-50 hover:bg-blue-100 border-blue-200 hover:border-blue-300'
+                }`}
+                disabled={showExplanation || showCompletionPopup}
               >
                 {choice.text}
               </button>
             ))}
           </div>
         </div>
-        
-        {feedback && (
+      
+        {showExplanation && (
           <div className={`p-4 rounded-lg mb-4 ${
-            feedback.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            selectedChoice === questions[currentQuestion].correct 
+              ? 'bg-green-100 text-green-800' 
+              : 'bg-red-100 text-red-800'
           }`}>
-            <p className="font-medium">{feedback.message}</p>
-            {feedback.explanation && (
-              <p className="mt-2 text-sm">{feedback.explanation}</p>
-            )}
+            <p className="font-medium">
+              {selectedChoice === questions[currentQuestion].correct ? 'Correct!' : 'Incorrect!'}
+            </p>
+            <p className="mt-2 text-sm">{explanation}</p>
           </div>
         )}
-        
+      
         <div className="flex justify-between items-center mt-6">
           <span className="text-gray-600">
             Question {currentQuestion + 1} of {questions.length}

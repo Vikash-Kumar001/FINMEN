@@ -163,6 +163,7 @@ const Register = () => {
 
     return (
         // Changed from min-h-screen to h-screen to ensure exact screen height
+        // Added responsive padding and mobile-friendly layout
         <div className="h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
             {/* Animated Background Elements */}
             <motion.div
@@ -220,14 +221,16 @@ const Register = () => {
             </motion.div>
 
             {/* Main Content - Changed to use flex to fill entire screen */}
-            <div className="relative z-10 h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
-                {/* Back to Homepage Button */}
+            {/* Added responsive padding and mobile-friendly positioning */}
+            <div className="relative z-10 h-full flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+                {/* Back to Homepage Button - Adjusted positioning for mobile */}
                 <button
                     onClick={() => navigate("/")}
-                    className="absolute top-6 left-6 bg-white/10 backdrop-blur-xl border border-white/20 text-white px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 text-sm flex items-center gap-2"
+                    className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-white/10 backdrop-blur-xl border border-white/20 text-white px-3 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 text-xs sm:text-sm flex items-center gap-1 sm:gap-2 z-50"
                 >
-                    <ArrowRight className="w-4 h-4 rotate-180" />
-                    Back to Homepage
+                    <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
+                    <span className="hidden xs:inline">Back to Homepage</span>
+                    <span className="xs:hidden">Home</span>
                 </button>
 
                 <motion.div
@@ -236,30 +239,30 @@ const Register = () => {
                     initial="hidden"
                     animate="visible"
                 >
-                    {/* Register Card */}
+                    {/* Register Card - Adjusted padding for mobile */}
                     <motion.div
-                        className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-8 sm:p-10 shadow-2xl"
+                        className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl"
                         variants={itemVariants}
                         whileHover={{ y: -5 }}
                         transition={{ type: "spring", stiffness: 300 }}
                     >
-                        {/* Header */}
+                        {/* Header - Adjusted text sizes for mobile */}
                         <motion.div
-                            className="text-center mb-8"
+                            className="text-center mb-6 sm:mb-8"
                             variants={itemVariants}
                         >
                             <motion.div
-                                className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl mb-4"
+                                className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-2xl mb-3 sm:mb-4"
                                 variants={floatingVariants}
                                 animate="animate"
                             >
-                                <UserPlus className="w-8 h-8 text-white" />
+                                <UserPlus className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                             </motion.div>
 
-                            <h1 className="text-3xl sm:text-4xl font-bold text-white mb-2">
+                            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-1 sm:mb-2">
                                 Create Account
                             </h1>
-                            <p className="text-gray-300 text-sm sm:text-base">
+                            <p className="text-gray-300 text-xs sm:text-sm md:text-base">
                                 Join the gamified learning experience
                             </p>
                         </motion.div>
@@ -268,13 +271,13 @@ const Register = () => {
                         <AnimatePresence>
                             {error && (
                                 <motion.div
-                                    className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 mb-6"
+                                    className="bg-red-500/10 border border-red-500/20 rounded-xl p-2 sm:p-3 mb-4 sm:mb-6"
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.95 }}
                                     transition={{ duration: 0.3 }}
                                 >
-                                    <p className="text-red-300 text-sm text-center">{error}</p>
+                                    <p className="text-red-300 text-xs sm:text-sm text-center">{error}</p>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -282,18 +285,18 @@ const Register = () => {
                         {/* Register Form */}
                         <motion.form
                             onSubmit={handleSubmit}
-                            className="space-y-6"
+                            className="space-y-4 sm:space-y-6"
                             variants={itemVariants}
                         >
-                            {/* Full Name and Date of Birth Fields - Side by side */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Full Name and Date of Birth Fields - Responsive grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                 {/* Full Name Field */}
                                 <motion.div
                                     className="relative"
                                     whileFocus={{ scale: 1.02 }}
                                 >
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <User className="h-5 w-5 text-gray-400" />
+                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                        <User className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                     </div>
                                     <input
                                         type="text"
@@ -301,7 +304,7 @@ const Register = () => {
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
                                         required
-                                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm sm:text-base"
                                     />
                                 </motion.div>
 
@@ -310,8 +313,8 @@ const Register = () => {
                                     className="relative"
                                     whileFocus={{ scale: 1.02 }}
                                 >
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <Calendar className="h-5 w-5 text-gray-400" />
+                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                        <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                     </div>
                                     <input
                                         type="date"
@@ -319,7 +322,7 @@ const Register = () => {
                                         value={dob}
                                         onChange={(e) => setDob(e.target.value)}
                                         required
-                                        className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm sm:text-base"
                                     />
                                 </motion.div>
                             </div>
@@ -329,8 +332,8 @@ const Register = () => {
                                 className="relative"
                                 whileFocus={{ scale: 1.02 }}
                             >
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                    <Mail className="h-5 w-5 text-gray-400" />
+                                <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                    <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                 </div>
                                 <input
                                     type="email"
@@ -338,19 +341,19 @@ const Register = () => {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required
-                                    className="w-full pl-12 pr-4 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                                    className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm sm:text-base"
                                 />
                             </motion.div>
 
-                            {/* Password and Confirm Password Fields - Side by side */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* Password and Confirm Password Fields - Responsive grid */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                 {/* Password Field */}
                                 <motion.div
                                     className="relative"
                                     whileFocus={{ scale: 1.02 }}
                                 >
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <Lock className="h-5 w-5 text-gray-400" />
+                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                        <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                     </div>
                                     <input
                                         type={showPassword ? 'text' : 'password'}
@@ -358,14 +361,14 @@ const Register = () => {
                                         value={password}
                                         onChange={handlePasswordChange}
                                         required
-                                        className="w-full pl-12 pr-12 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                                        className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm sm:text-base"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
+                                        className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
                                     >
-                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                                     </button>
                                 </motion.div>
 
@@ -374,8 +377,8 @@ const Register = () => {
                                     className="relative"
                                     whileFocus={{ scale: 1.02 }}
                                 >
-                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                                        <Shield className="h-5 w-5 text-gray-400" />
+                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                        <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                     </div>
                                     <input
                                         type={showConfirmPassword ? 'text' : 'password'}
@@ -383,14 +386,14 @@ const Register = () => {
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         required
-                                        className="w-full pl-12 pr-12 py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm"
+                                        className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm sm:text-base"
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
+                                        className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
                                     >
-                                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                        {showConfirmPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                                     </button>
                                 </motion.div>
                             </div>
@@ -406,14 +409,14 @@ const Register = () => {
                                         transition={{ duration: 0.3 }}
                                     >
                                         <div className="flex items-center justify-between">
-                                            <span className="text-sm text-gray-400">Password Strength</span>
-                                            <span className={`text-sm font-medium bg-gradient-to-r ${getPasswordStrengthColor()} bg-clip-text text-transparent`}>
+                                            <span className="text-xs sm:text-sm text-gray-400">Password Strength</span>
+                                            <span className={`text-xs sm:text-sm font-medium bg-gradient-to-r ${getPasswordStrengthColor()} bg-clip-text text-transparent`}>
                                                 {getPasswordStrengthText()}
                                             </span>
                                         </div>
-                                        <div className="w-full bg-white/10 rounded-full h-2">
+                                        <div className="w-full bg-white/10 rounded-full h-1.5 sm:h-2">
                                             <motion.div
-                                                className={`h-2 rounded-full bg-gradient-to-r ${getPasswordStrengthColor()}`}
+                                                className={`h-1.5 sm:h-2 rounded-full bg-gradient-to-r ${getPasswordStrengthColor()}`}
                                                 initial={{ width: 0 }}
                                                 animate={{ width: `${(passwordStrength / 5) * 100}%` }}
                                                 transition={{ duration: 0.3 }}
@@ -433,8 +436,8 @@ const Register = () => {
                                         exit={{ opacity: 0, y: -10 }}
                                         transition={{ duration: 0.3 }}
                                     >
-                                        <div className={`w-2 h-2 rounded-full ${password === confirmPassword ? 'bg-green-500' : 'bg-red-500'}`} />
-                                        <span className={`text-sm ${password === confirmPassword ? 'text-green-400' : 'text-red-400'}`}>
+                                        <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${password === confirmPassword ? 'bg-green-500' : 'bg-red-500'}`} />
+                                        <span className={`text-xs sm:text-sm ${password === confirmPassword ? 'text-green-400' : 'text-red-400'}`}>
                                             {password === confirmPassword ? 'Passwords match' : 'Passwords do not match'}
                                         </span>
                                     </motion.div>
@@ -445,22 +448,22 @@ const Register = () => {
                             <motion.button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl relative overflow-hidden group"
+                                className="w-full py-3 sm:py-4 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl relative overflow-hidden group text-sm sm:text-base"
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
                             >
                                 <span className="relative z-10 flex items-center justify-center">
                                     {isLoading ? (
                                         <motion.div
-                                            className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                                            className="w-4 h-4 sm:w-5 sm:h-5 border-2 border-white/30 border-t-white rounded-full"
                                             animate={{ rotate: 360 }}
                                             transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
                                         />
                                     ) : (
                                         <>
-                                            <Zap className="mr-2 h-4 w-4" />
+                                            <Zap className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                                             Create Account
-                                            <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                                            <ArrowRight className="ml-2 h-3 w-3 sm:h-4 sm:w-4 group-hover:translate-x-1 transition-transform" />
                                         </>
                                     )}
                                 </span>
@@ -475,10 +478,10 @@ const Register = () => {
 
                         {/* Login Link */}
                         <motion.div
-                            className="text-center mt-8 pt-6 border-t border-white/10"
+                            className="text-center mt-6 pt-5 border-t border-white/10"
                             variants={itemVariants}
                         >
-                            <p className="text-gray-300 text-sm">
+                            <p className="text-gray-300 text-xs sm:text-sm">
                                 Already have a Student account?{' '}
                                 <motion.button
                                     onClick={() => navigate('/login')}

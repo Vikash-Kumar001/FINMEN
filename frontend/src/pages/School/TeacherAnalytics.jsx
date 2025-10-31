@@ -73,7 +73,7 @@ const TeacherAnalytics = () => {
       setSessionEngagement(engagementRes.data || {});
       setLeaderboard(leaderboardRes.data.leaderboard || []);
       setTeacherProfile(profileRes.data);
-      setClasses(classesRes.data || []);
+      setClasses(classesRes.data?.classes || []);
     } catch (error) {
       console.error("Error fetching analytics:", error);
       toast.error("Failed to load analytics");

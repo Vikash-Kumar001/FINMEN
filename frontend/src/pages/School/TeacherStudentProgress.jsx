@@ -115,7 +115,7 @@ const TeacherStudentProgress = () => {
 
         {/* Student Info Card */}
         <div className="mb-6">
-          <ChildInfoCard childCard={analytics?.childCard || student} />
+          <ChildInfoCard childCard={analytics?.childCard || student} studentId={studentId} />
         </div>
 
         {/* KPIs Strip */}

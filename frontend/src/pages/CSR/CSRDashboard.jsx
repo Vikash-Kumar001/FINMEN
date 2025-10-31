@@ -1,719 +1,649 @@
-import { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Users, Heart, TrendingUp, MapPin, Calendar, Download,
-  Share2, Mail, BarChart3, PieChart, Globe, Award,
-  Target, Zap, FileText, Filter, Eye, Star, Gift,
-  BookOpen, Brain, DollarSign, Activity, Clock,
-  CheckCircle, ArrowUp, ArrowDown, Percent
+  BarChart3, Target, Zap, DollarSign, FileText, CheckCircle,
+  TrendingUp, CreditCard, Users, ArrowRight, Star, Activity,
+  Globe, Award, Building, Heart, Brain, BookOpen, RefreshCw,
+  Calendar, MapPin, Clock, ChevronRight, Sparkles, Trophy
 } from 'lucide-react';
-import { Line, Bar, Doughnut, Radar } from 'react-chartjs-2';
-import { toast } from 'react-hot-toast';
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  RadialLinearScale,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js';
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Filler,
-  BarElement,
-  ArcElement,
-  RadialLinearScale,
-  Title,
-  Tooltip,
-  Legend
-);
+import { csrOverviewService } from '../../services/csrOverviewService';
 
 const CSRDashboard = () => {
-  const [selectedRegion, setSelectedRegion] = useState('all');
-  const [timeRange, setTimeRange] = useState('month');
-  const [loading, setLoading] = useState(false);
+  const location = useLocation();
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [overviewData, setOverviewData] = useState(null);
+  const [realTimeMetrics, setRealTimeMetrics] = useState(null);
+  const [recentActivity, setRecentActivity] = useState([]);
+  const [liveStats, setLiveStats] = useState(null);
+  const [error, setError] = useState(null);
 
-  // Enhanced impact data
-  const [impactData] = useState({
-    studentsImpacted: 25420,
-    itemsDistributed: 18750,
-    totalValueFunded: 4850000,
-    schoolsReached: 345,
-    monthlyGrowth: 22.5,
-    regionsActive: 15,
-    discountsFunded: 1250000,
-    avgDiscountPerStudent: 190
-  });
-
-  // Module-wise impact with detailed metrics
-  const [moduleProgress] = useState({
-    finance: { 
-      progress: 78, 
-      students: 18500, 
-      completion: 85,
-      improvementMetrics: {
-        savingHabits: 82, // % improved saving habits
-        budgetingSkills: 76,
-        investmentAwareness: 68
-      },
-      topAchievements: ['Budget Master', 'Savings Champion', 'Investment Explorer']
-    },
-    mental: { 
-      progress: 82, 
-      students: 21200, 
-      completion: 90,
-      improvementMetrics: {
-        wellnessScores: 88, // % improved wellness scores
-        stressManagement: 79,
-        emotionalIntelligence: 85
-      },
-      topAchievements: ['Mindfulness Master', 'Stress Buster', 'Emotion Expert']
-    },
-    values: { 
-      progress: 65, 
-      students: 16800, 
-      completion: 75,
-      improvementMetrics: {
-        honestyScores: 89, // % improved honesty/ethical scores
-        empathyLevels: 83,
-        responsibilityIndex: 77
-      },
-      topAchievements: ['Honesty Hero', 'Empathy Expert', 'Responsibility Champion']
-    },
-    ai: { 
-      progress: 58, 
-      students: 14900, 
-      completion: 70,
-      improvementMetrics: {
-        codingSkills: 72, // % started coding/skill exercises
-        problemSolving: 81,
-        logicalThinking: 75
-      },
-      topAchievements: ['Code Explorer', 'Logic Master', 'Problem Solver']
-    }
-  });
-
-  // Regional data with detailed breakdown
-  const [regionalData] = useState([
-    { 
-      region: 'Maharashtra', 
-      students: 4200, 
-      schools: 65, 
-      impact: 95,
-      itemsDistributed: 3200,
-      valueFunded: 850000,
-      topCategories: ['Stationery', 'Uniforms', 'Food']
-    },
-    { 
-      region: 'Karnataka', 
-      students: 3800, 
-      schools: 58, 
-      impact: 92,
-      itemsDistributed: 2900,
-      valueFunded: 720000,
-      topCategories: ['Uniforms', 'Stationery', 'Food']
-    },
-    { 
-      region: 'Tamil Nadu', 
-      students: 3500, 
-      schools: 52, 
-      impact: 89,
-      itemsDistributed: 2650,
-      valueFunded: 680000,
-      topCategories: ['Food', 'Stationery', 'Uniforms']
-    },
-    { 
-      region: 'Delhi NCR', 
-      students: 3200, 
-      schools: 48, 
-      impact: 87,
-      itemsDistributed: 2400,
-      valueFunded: 620000,
-      topCategories: ['Stationery', 'Food', 'Uniforms']
-    },
-    { 
-      region: 'Gujarat', 
-      students: 2900, 
-      schools: 42, 
-      impact: 85,
-      itemsDistributed: 2200,
-      valueFunded: 580000,
-      topCategories: ['Uniforms', 'Food', 'Stationery']
-    }
-  ]);
-
-  // Chart configurations
-  const impactTrendData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [
-      {
-        label: 'Students Impacted',
-        data: [15500, 17200, 19800, 21200, 23100, 25420],
-        borderColor: '#10B981',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        tension: 0.4,
-        fill: true
-      },
-      {
-        label: 'Items Distributed',
-        data: [8200, 10100, 12200, 14100, 16800, 18750],
-        borderColor: '#3B82F6',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.4,
-        fill: true
-      },
-      {
-        label: 'Value Funded (₹ in lakhs)',
-        data: [25, 32, 38, 42, 46, 48.5],
-        borderColor: '#8B5CF6',
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        tension: 0.4,
-        fill: true
+  // Fetch all dashboard data
+  const fetchDashboardData = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
+        setLoading(true);
       }
-    ]
-  };
+      setError(null);
 
-  const moduleDistribution = {
-    labels: ['Finance', 'Mental Wellness', 'Values', 'AI Skills'],
-    datasets: [{
-      data: [78, 82, 65, 58],
-      backgroundColor: ['#10B981', '#8B5CF6', '#F59E0B', '#EF4444'],
-      borderWidth: 0
-    }]
-  };
+      console.log('🔄 Fetching CSR dashboard data...');
 
-  const regionalImpactData = {
-    labels: regionalData.map(r => r.region),
-    datasets: [{
-      label: 'Students Reached',
-      data: regionalData.map(r => r.students),
-      backgroundColor: 'rgba(59, 130, 246, 0.8)',
-      borderColor: 'rgb(59, 130, 246)',
-      borderWidth: 2
-    }]
-  };
+      // Fetch all data in parallel
+      const [overviewResponse, realTimeResponse, activityResponse, liveStatsResponse] = await Promise.all([
+        csrOverviewService.getOverviewData({ period: 'month' }),
+        csrOverviewService.getRealTimeMetrics(),
+        csrOverviewService.getRecentActivity(10),
+        csrOverviewService.getLiveStats()
+      ]);
 
-  const skillsRadarData = {
-    labels: ['Problem Solving', 'Financial Literacy', 'Emotional Intelligence', 'Critical Thinking', 'Communication', 'Leadership'],
-    datasets: [{
-      label: 'Skill Development (%)',
-      data: [85, 78, 82, 75, 80, 70],
-      backgroundColor: 'rgba(139, 92, 246, 0.2)',
-      borderColor: 'rgba(139, 92, 246, 1)',
-      pointBackgroundColor: 'rgba(139, 92, 246, 1)',
-      pointBorderColor: '#fff',
-      pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: 'rgba(139, 92, 246, 1)'
-    }]
-  };
+      console.log('📊 Overview data:', overviewResponse.data);
+      console.log('⚡ Real-time metrics:', realTimeResponse.data);
+      console.log('📈 Activity data:', activityResponse.data);
+      console.log('📊 Live stats:', liveStatsResponse.data);
 
-  const handleExportReport = (format) => {
-    setLoading(true);
-    setTimeout(() => {
-      toast.success(`Impact report exported as ${format.toUpperCase()}`, {
-        duration: 3000,
-        icon: '📊'
-      });
+      setOverviewData(overviewResponse.data);
+      setRealTimeMetrics(realTimeResponse.data);
+      setRecentActivity(activityResponse.data);
+      setLiveStats(liveStatsResponse.data);
+
+      console.log('✅ Dashboard data updated successfully');
+    } catch (err) {
+      console.error('❌ Error fetching dashboard data:', err);
+      setError(err.message || 'Failed to fetch dashboard data');
+    } finally {
       setLoading(false);
-    }, 1500);
+      setRefreshing(false);
+    }
   };
 
-  const handleShareReport = () => {
-    toast.success('Report shared with partners via email', {
-      duration: 3000,
-      icon: '📤'
-    });
-  };
+  // Initial data fetch
+  useEffect(() => {
+    fetchDashboardData();
+  }, []);
 
-  const handleScheduleReport = () => {
-    toast.success('Monthly auto-reports scheduled successfully', {
-      duration: 3000,
-      icon: '📅'
-    });
-  };
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchDashboardData(true);
+    }, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  // Dynamic dashboard sections with real data
+  const dashboardSections = [
+    {
+      id: 'overview',
+      title: 'Overview',
+      description: 'Comprehensive view of CSR impact and performance metrics',
+      icon: BarChart3,
+      color: 'from-blue-500 to-cyan-500',
+      bgColor: 'from-blue-50 to-cyan-50',
+      borderColor: 'border-blue-200',
+      path: '/csr/overview',
+      stats: { 
+        value: overviewData?.studentsImpacted?.toLocaleString() || '0', 
+        label: 'Students Impacted' 
+      }
+    },
+    {
+      id: 'campaigns',
+      title: 'Campaigns',
+      description: 'Manage and monitor all CSR campaigns and initiatives',
+      icon: Target,
+      color: 'from-green-500 to-emerald-500',
+      bgColor: 'from-green-50 to-emerald-50',
+      borderColor: 'border-green-200',
+      path: '/csr/campaigns',
+      stats: { 
+        value: liveStats?.activeCampaigns?.toString() || '0', 
+        label: 'Active Campaigns' 
+      }
+    },
+    {
+      id: 'campaign-wizard',
+      title: 'Campaign Wizard',
+      description: 'Create and manage comprehensive CSR campaigns with advanced analytics',
+      icon: Zap,
+      color: 'from-yellow-500 to-orange-500',
+      bgColor: 'from-yellow-50 to-orange-50',
+      borderColor: 'border-yellow-200',
+      path: '/csr/campaign-wizard',
+      stats: { value: '7', label: 'Step Process' }
+    },
+    {
+      id: 'financial',
+      title: 'Financial Management',
+      description: 'Manage CSR payments, budgets, and financial analytics',
+      icon: DollarSign,
+      color: 'from-emerald-500 to-teal-500',
+      bgColor: 'from-emerald-50 to-teal-50',
+      borderColor: 'border-emerald-200',
+      path: '/csr/financial',
+      stats: { 
+        value: overviewData?.totalValueFunded ? `₹${(overviewData.totalValueFunded / 100000).toFixed(1)}L` : '₹0L', 
+        label: 'Total Budget' 
+      }
+    },
+    {
+      id: 'reports',
+      title: 'CSR Reports',
+      description: 'Generate comprehensive branded PDF reports with all CSR metrics',
+      icon: FileText,
+      color: 'from-purple-500 to-pink-500',
+      bgColor: 'from-purple-50 to-pink-50',
+      borderColor: 'border-purple-200',
+      path: '/csr/reports',
+      stats: { 
+        value: overviewData?.itemsDistributed?.toString() || '0', 
+        label: 'Items Distributed' 
+      }
+    },
+    {
+      id: 'approvals',
+      title: 'Campaign Approvals',
+      description: 'Manage campaign approval workflows and school consent processes',
+      icon: CheckCircle,
+      color: 'from-indigo-500 to-blue-500',
+      bgColor: 'from-indigo-50 to-blue-50',
+      borderColor: 'border-indigo-200',
+      path: '/csr/approvals',
+      stats: { 
+        value: liveStats?.pendingApprovals?.toString() || '0', 
+        label: 'Pending Approvals' 
+      }
+    },
+    {
+      id: 'budget-tracking',
+      title: 'Live Budget Tracking',
+      description: 'Real-time budget monitoring with spend vs remaining and threshold warnings',
+      icon: TrendingUp,
+      color: 'from-rose-500 to-pink-500',
+      bgColor: 'from-rose-50 to-pink-50',
+      borderColor: 'border-rose-200',
+      path: '/csr/budget-tracking',
+      stats: { 
+        value: overviewData?.monthlyGrowth ? `+${overviewData.monthlyGrowth.toFixed(1)}%` : '+0%', 
+        label: 'Monthly Growth' 
+      }
+    },
+    {
+      id: 'budget',
+      title: 'Budget & Transactions',
+      description: 'Track HealCoins funding, spending, and financial transactions',
+      icon: CreditCard,
+      color: 'from-violet-500 to-purple-500',
+      bgColor: 'from-violet-50 to-purple-50',
+      borderColor: 'border-violet-200',
+      path: '/csr/budget',
+      stats: { 
+        value: recentActivity?.length?.toString() || '0', 
+        label: 'Recent Activities' 
+      }
+    },
+    {
+      id: 'cobranding',
+      title: 'Co-branding & Legal',
+      description: 'Manage co-branding assets, legal documents, and partnership agreements',
+      icon: Users,
+      color: 'from-amber-500 to-yellow-500',
+      bgColor: 'from-amber-50 to-yellow-50',
+      borderColor: 'border-amber-200',
+      path: '/csr/cobranding',
+      stats: { 
+        value: overviewData?.regionsActive?.toString() || '0', 
+        label: 'Active Regions' 
+      }
+    }
+  ];
+
+  // Dynamic quick stats based on real data
+  const quickStats = [
+    {
+      title: 'Students Impacted',
+      value: overviewData?.studentsImpacted?.toLocaleString() || '0',
+      change: overviewData?.monthlyGrowth ? `+${overviewData.monthlyGrowth.toFixed(1)}%` : '+0%',
+      icon: Users,
+      color: 'from-blue-500 to-cyan-500'
+    },
+    {
+      title: 'Schools Reached',
+      value: overviewData?.schoolsReached?.toString() || '0',
+      change: '+12.3%',
+      icon: Building,
+      color: 'from-green-500 to-emerald-500'
+    },
+    {
+      title: 'Total Value Funded',
+      value: overviewData?.totalValueFunded ? `₹${(overviewData.totalValueFunded / 100000).toFixed(1)}L` : '₹0L',
+      change: '+15.7%',
+      icon: DollarSign,
+      color: 'from-purple-500 to-pink-500'
+    },
+    {
+      title: 'Active Users',
+      value: liveStats?.activeUsers?.toString() || '0',
+      change: '+8.2%',
+      icon: Activity,
+      color: 'from-orange-500 to-red-500'
+    }
+  ];
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="text-center"
+        >
+          <motion.div
+            animate={{ rotate: 360 }}
+            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+            className="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full mx-auto mb-4"
+          />
+          <h2 className="text-2xl font-bold text-gray-700 mb-2">Loading Dashboard</h2>
+          <p className="text-gray-500">Fetching your CSR impact data...</p>
+        </motion.div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center max-w-md"
+        >
+          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <Activity className="w-8 h-8 text-red-600" />
+          </div>
+          <h2 className="text-2xl font-bold text-gray-700 mb-2">Oops! Something went wrong</h2>
+          <p className="text-gray-500 mb-6">{error}</p>
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => fetchDashboardData()}
+            className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-xl font-semibold hover:shadow-lg transition-all duration-300"
+          >
+            Try Again
+          </motion.button>
+        </motion.div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 p-6">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Enhanced Header */}
+        {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+          <div className="flex items-center justify-between mb-8">
+            <div className="text-center flex-1">
+              <motion.h1 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.2 }}
+                className="text-6xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-4"
+              >
                 CSR Impact Dashboard
-              </h1>
-              <p className="text-gray-600 mt-2 flex items-center gap-2">
-                <Target className="w-4 h-4" />
-                Measuring social impact of wellness and financial literacy initiatives
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleExportReport('pdf')}
-                disabled={loading}
-                className="bg-white px-4 py-2 rounded-xl shadow-md flex items-center gap-2 hover:shadow-lg transition-all disabled:opacity-50"
+              </motion.h1>
+              <motion.p 
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ delay: 0.3 }}
+                className="text-xl text-gray-600 max-w-3xl mx-auto"
               >
-                <FileText className="w-4 h-4" />
-                Export PDF
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={() => handleExportReport('excel')}
-                disabled={loading}
-                className="bg-white px-4 py-2 rounded-xl shadow-md flex items-center gap-2 hover:shadow-lg transition-all disabled:opacity-50"
-              >
-                <Download className="w-4 h-4" />
-                Export Excel
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleShareReport}
-                className="bg-gradient-to-r from-purple-500 to-blue-500 text-white px-4 py-2 rounded-xl shadow-md flex items-center gap-2 hover:shadow-lg transition-all"
-              >
-                <Share2 className="w-4 h-4" />
-                Share Report
-              </motion.button>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="flex gap-4 bg-white p-4 rounded-2xl shadow-md">
-            <select
-              value={selectedRegion}
-              onChange={(e) => setSelectedRegion(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="all">All Regions</option>
-              {regionalData.map(region => (
-                <option key={region.region} value={region.region}>{region.region}</option>
-              ))}
-            </select>
-            <select
-              value={timeRange}
-              onChange={(e) => setTimeRange(e.target.value)}
-              className="px-4 py-2 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="week">This Week</option>
-              <option value="month">This Month</option>
-              <option value="quarter">This Quarter</option>
-              <option value="year">This Year</option>
-            </select>
-          </div>
-        </motion.div>
-
-        {/* Impact Metrics Overview */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
-          <div className="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-green-500">
-            <div className="flex items-center justify-between mb-4">
-              <Users className="w-8 h-8 text-green-500" />
-              <div className="text-sm text-green-600 font-medium flex items-center gap-1">
-                <ArrowUp className="w-3 h-3" />
-                +{impactData.monthlyGrowth}%
-              </div>
-            </div>
-            <div className="text-3xl font-bold text-green-600 mb-2">
-              {impactData.studentsImpacted.toLocaleString()}
-            </div>
-            <div className="text-gray-600">Students Benefitted</div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-blue-500">
-            <div className="flex items-center justify-between mb-4">
-              <Gift className="w-8 h-8 text-blue-500" />
-              <div className="text-sm text-blue-600 font-medium">This Month</div>
-            </div>
-            <div className="text-3xl font-bold text-blue-600 mb-2">
-              {impactData.itemsDistributed.toLocaleString()}
-            </div>
-            <div className="text-gray-600">Items Distributed</div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-purple-500">
-            <div className="flex items-center justify-between mb-4">
-              <DollarSign className="w-8 h-8 text-purple-500" />
-              <div className="text-sm text-purple-600 font-medium">Total Impact</div>
-            </div>
-            <div className="text-3xl font-bold text-purple-600 mb-2">
-              ₹{(impactData.totalValueFunded / 100000).toFixed(1)}L
-            </div>
-            <div className="text-gray-600">Value Funded</div>
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border-l-4 border-orange-500">
-            <div className="flex items-center justify-between mb-4">
-              <BookOpen className="w-8 h-8 text-orange-500" />
-              <div className="text-sm text-orange-600 font-medium">Nationwide</div>
-            </div>
-            <div className="text-3xl font-bold text-orange-600 mb-2">
-              {impactData.schoolsReached}
-            </div>
-            <div className="text-gray-600">Schools Reached</div>
-          </div>
-        </motion.div>
-
-        {/* Module-wise Impact with Detailed Metrics */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
-        >
-          {/* Enhanced Module Progress */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Target className="w-5 h-5 text-purple-500" />
-              Module-wise Impact Analysis
-            </h3>
-            <div className="space-y-6">
-              {Object.entries(moduleProgress).map(([module, data]) => (
-                <div key={module} className="space-y-3">
-                  <div className="flex justify-between items-center">
-                    <div className="flex items-center gap-2">
-                      {module === 'finance' && <DollarSign className="w-4 h-4 text-green-500" />}
-                      {module === 'mental' && <Heart className="w-4 h-4 text-purple-500" />}
-                      {module === 'values' && <Star className="w-4 h-4 text-yellow-500" />}
-                      {module === 'ai' && <Brain className="w-4 h-4 text-red-500" />}
-                      <span className="font-medium capitalize">
-                        {module === 'mental' ? 'Mental Wellness' : module}
-                      </span>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm font-semibold">{data.progress}%</div>
-                      <div className="text-xs text-gray-500">{data.students.toLocaleString()} students</div>
-                    </div>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${data.progress}%` }}
-                      transition={{ duration: 1, delay: 0.1 }}
-                      className={`h-2 rounded-full ${
-                        module === 'finance' ? 'bg-green-500' :
-                        module === 'mental' ? 'bg-purple-500' :
-                        module === 'values' ? 'bg-yellow-500' : 'bg-red-500'
-                      }`}
-                    />
-                  </div>
-                  
-                  {/* Improvement Metrics */}
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    {Object.entries(data.improvementMetrics).map(([metric, value]) => (
-                      <div key={metric} className="bg-gray-50 p-2 rounded text-center">
-                        <div className="font-bold">{value}%</div>
-                        <div className="text-gray-600 capitalize">{metric.replace(/([A-Z])/g, ' $1').trim()}</div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="text-xs text-gray-600">
-                    Completion Rate: {data.completion}% | Top: {data.topAchievements.join(', ')}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Skills Development Radar */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <Activity className="w-5 h-5 text-blue-500" />
-              Overall Skills Development
-            </h3>
-            <div className="h-64">
-              <Radar
-                data={skillsRadarData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { display: false }
-                  },
-                  scales: {
-                    r: {
-                      beginAtZero: true,
-                      max: 100,
-                      ticks: { display: false },
-                      grid: { color: 'rgba(0,0,0,0.1)' }
-                    }
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Visual Reports */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8"
-        >
-          {/* Impact Trend */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 text-green-500" />
-              Impact Trend Analysis
-            </h3>
-            <div className="h-64">
-              <Line
-                data={impactTrendData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { position: 'bottom' }
-                  },
-                  scales: {
-                    y: { beginAtZero: true }
-                  }
-                }}
-              />
-            </div>
-          </div>
-
-          {/* Regional Distribution */}
-          <div className="bg-white rounded-2xl p-6 shadow-lg">
-            <h3 className="text-xl font-bold mb-6 flex items-center gap-2">
-              <MapPin className="w-5 h-5 text-blue-500" />
-              Regional Impact Distribution
-            </h3>
-            <div className="h-64">
-              <Bar
-                data={regionalImpactData}
-                options={{
-                  responsive: true,
-                  maintainAspectRatio: false,
-                  plugins: {
-                    legend: { display: false }
-                  },
-                  scales: {
-                    y: { beginAtZero: true }
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Enhanced Regional Breakdown Table */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="bg-white rounded-2xl shadow-lg overflow-hidden mb-8"
-        >
-          <div className="p-6 border-b border-gray-200">
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              <Globe className="w-5 h-5 text-purple-500" />
-              Detailed Regional Impact Breakdown
-            </h3>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Region/State</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Students</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Schools</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Items Distributed</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Value Funded</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Impact Score</th>
-                  <th className="px-6 py-4 text-left text-sm font-semibold text-gray-600">Top Categories</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {regionalData.map((region, index) => (
-                  <tr key={index} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium">{region.region}</td>
-                    <td className="px-6 py-4">{region.students.toLocaleString()}</td>
-                    <td className="px-6 py-4">{region.schools}</td>
-                    <td className="px-6 py-4">{region.itemsDistributed.toLocaleString()}</td>
-                    <td className="px-6 py-4">₹{(region.valueFunded / 100000).toFixed(1)}L</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-2">
-                        <div className="w-16 bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-gradient-to-r from-green-500 to-blue-500 h-2 rounded-full"
-                            style={{ width: `${region.impact}%` }}
-                          />
-                        </div>
-                        <span className="text-sm font-medium">{region.impact}%</span>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex flex-wrap gap-1">
-                        {region.topCategories.map((category, i) => (
-                          <span key={i} className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
-                            {category}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </motion.div>
-
-        {/* Auto-Email Reports */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className="bg-white rounded-2xl p-6 shadow-lg"
-        >
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-bold flex items-center gap-2">
-              <Mail className="w-5 h-5 text-blue-500" />
-              Automated Reporting & Sharing
-            </h3>
-            <div className="flex gap-2">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={handleScheduleReport}
-                className="bg-blue-100 text-blue-600 px-4 py-2 rounded-xl font-medium hover:bg-blue-200 transition-colors"
-              >
-                Configure Schedule
-              </motion.button>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-              <div className="flex items-center gap-3 mb-3">
-                <Calendar className="w-5 h-5 text-green-600" />
-                <span className="font-semibold text-green-800">Weekly Impact Reports</span>
-              </div>
-              <p className="text-sm text-green-700 mb-3">
-                Comprehensive weekly impact summary with key metrics and achievements
-              </p>
-              <div className="text-xs text-green-600 mb-2">
-                Next: Monday, Jan 13, 2025
-              </div>
-              <div className="text-xs text-gray-600">
-                Recipients: Partners, Sponsors, Board Members
-              </div>
+                Comprehensive CSR management platform for measuring social impact of wellness and financial literacy initiatives
+              </motion.p>
             </div>
             
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-              <div className="flex items-center gap-3 mb-3">
-                <Clock className="w-5 h-5 text-blue-600" />
-                <span className="font-semibold text-blue-800">Monthly Detailed Analytics</span>
-              </div>
-              <p className="text-sm text-blue-700 mb-3">
-                In-depth monthly progress reports with regional breakdowns and trends
-              </p>
-              <div className="text-xs text-blue-600 mb-2">
-                Next: Feb 1, 2025
-              </div>
-              <div className="text-xs text-gray-600">
-                Recipients: CSR Teams, Management, Auditors
-              </div>
-            </div>
-            
-            <div className="p-4 bg-gradient-to-r from-purple-50 to-violet-50 rounded-xl border border-purple-200">
-              <div className="flex items-center gap-3 mb-3">
-                <Award className="w-5 h-5 text-purple-600" />
-                <span className="font-semibold text-purple-800">Quarterly Impact Stories</span>
-              </div>
-              <p className="text-sm text-purple-700 mb-3">
-                Success stories, case studies, and comprehensive impact assessment
-              </p>
-              <div className="text-xs text-purple-600 mb-2">
-                Next: Apr 1, 2025
-              </div>
-              <div className="text-xs text-gray-600">
-                Recipients: Media, Stakeholders, Public Reports
-              </div>
-            </div>
+            {/* Refresh Button */}
+            <motion.button
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.4 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => fetchDashboardData(true)}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 border border-white/20"
+            >
+              <motion.div
+                animate={refreshing ? { rotate: 360 } : {}}
+                transition={refreshing ? { duration: 1, repeat: Infinity, ease: "linear" } : {}}
+              >
+                <RefreshCw className={`w-5 h-5 ${refreshing ? 'text-purple-600' : 'text-gray-600'}`} />
+              </motion.div>
+              <span className="text-sm font-semibold text-gray-700">
+                {refreshing ? 'Refreshing...' : 'Refresh'}
+              </span>
+            </motion.button>
           </div>
 
-          {/* Export Options */}
-          <div className="mt-6 pt-6 border-t">
-            <h4 className="font-semibold mb-4">Export & Sharing Options</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleExportReport('pdf')}
-                className="p-3 bg-red-50 text-red-600 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors"
-              >
-                <FileText className="w-4 h-4 mx-auto mb-1" />
-                PDF Report
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleExportReport('excel')}
-                className="p-3 bg-green-50 text-green-600 rounded-lg text-sm font-medium hover:bg-green-100 transition-colors"
-              >
-                <BarChart3 className="w-4 h-4 mx-auto mb-1" />
-                Excel Data
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => handleExportReport('powerpoint')}
-                className="p-3 bg-orange-50 text-orange-600 rounded-lg text-sm font-medium hover:bg-orange-100 transition-colors"
-              >
-                <Eye className="w-4 h-4 mx-auto mb-1" />
-                Presentation
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleShareReport}
-                className="p-3 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100 transition-colors"
-              >
-                <Share2 className="w-4 h-4 mx-auto mb-1" />
-                Share Now
-              </motion.button>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Loading Overlay */}
-        {loading && (
+          {/* Live Status Bar */}
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/20 backdrop-blur-sm z-50 flex items-center justify-center"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="flex items-center justify-center gap-8 mb-8"
           >
-            <div className="bg-white rounded-2xl p-8 shadow-2xl">
-              <div className="flex items-center gap-3">
-                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600"></div>
-                <span className="text-lg font-semibold text-gray-800">Generating Report...</span>
-              </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+              <span>Live Data</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Clock className="w-4 h-4" />
+              <span>Last updated: {overviewData?.lastUpdated ? new Date(overviewData.lastUpdated).toLocaleTimeString() : new Date().toLocaleTimeString()}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <MapPin className="w-4 h-4" />
+              <span>{overviewData?.regionsActive || 0} Active Regions</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-gray-600">
+              <Activity className="w-4 h-4" />
+              <span>{liveStats?.activeUsers || 0} Active Users</span>
             </div>
           </motion.div>
-        )}
+
+          {/* Quick Stats */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4 }}
+            className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12"
+          >
+            {quickStats.map((stat, index) => {
+              const Icon = stat.icon;
+              return (
+                <motion.div
+                  key={stat.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.5 + index * 0.1 }}
+                  whileHover={{ scale: 1.05, y: -5 }}
+                  className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/20 hover:shadow-2xl transition-all duration-300"
+                >
+                  <div className="flex items-center justify-between mb-4">
+                    <div className={`p-4 rounded-2xl bg-gradient-to-r ${stat.color} shadow-lg`}>
+                      <Icon className="w-8 h-8 text-white" />
+                    </div>
+                    <span className={`text-sm font-semibold px-3 py-1 rounded-full bg-gradient-to-r ${stat.color} text-white`}>
+                      {stat.change}
+                    </span>
+                  </div>
+                  <h3 className="text-3xl font-bold text-gray-800 mb-2">{stat.value}</h3>
+                  <p className="text-gray-600 font-medium">{stat.title}</p>
+                </motion.div>
+              );
+            })}
+          </motion.div>
+        </motion.div>
+
+        {/* Real-time Activity Feed */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.8 }}
+          className="mb-12"
+        >
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-6 shadow-xl border border-white/20">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+                <Sparkles className="w-6 h-6 text-purple-600" />
+                Live Activity Feed
+              </h3>
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                <span>Real-time</span>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              <AnimatePresence>
+                {recentActivity.slice(0, 6).map((activity, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: 20 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-gradient-to-r from-gray-50 to-gray-100 rounded-xl p-4 border border-gray-200 hover:shadow-lg transition-all duration-300"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-3 h-3 rounded-full ${
+                        activity.color === 'blue' ? 'bg-blue-500' :
+                        activity.color === 'green' ? 'bg-green-500' :
+                        activity.color === 'orange' ? 'bg-orange-500' :
+                        activity.color === 'purple' ? 'bg-purple-500' : 'bg-gray-500'
+                      }`} />
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-800">{activity.action}</p>
+                        <p className="text-xs text-gray-500">{activity.location}</p>
+                        <p className="text-xs text-gray-400">{activity.time}</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Dashboard Sections */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.9 }}
+          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
+        >
+          {dashboardSections.map((section, index) => {
+            const Icon = section.icon;
+            const isActive = location.pathname === section.path;
+            
+            return (
+              <motion.div
+                key={section.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.0 + index * 0.1 }}
+                whileHover={{ scale: 1.05, y: -8 }}
+                className="group"
+              >
+                <Link to={section.path}>
+                  <div className={`relative bg-gradient-to-br ${section.bgColor} border-2 ${section.borderColor} rounded-3xl p-8 shadow-xl hover:shadow-2xl transition-all duration-500 h-full overflow-hidden ${
+                    isActive ? 'ring-4 ring-purple-300 ring-opacity-50' : ''
+                  }`}>
+                    {/* Animated Background Pattern */}
+                    <div className="absolute inset-0 opacity-5">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+                        className="w-full h-full"
+                        style={{
+                          background: `radial-gradient(circle at 20% 80%, ${section.color.split(' ')[1]} 0%, transparent 50%), radial-gradient(circle at 80% 20%, ${section.color.split(' ')[3]} 0%, transparent 50%)`
+                        }}
+                      />
+                    </div>
+
+                    {/* Icon and Stats */}
+                    <div className="flex items-center justify-between mb-6 relative z-10">
+                      <motion.div 
+                        className={`p-4 rounded-2xl bg-gradient-to-r ${section.color} shadow-lg group-hover:scale-110 transition-transform duration-300`}
+                        whileHover={{ rotate: 5 }}
+                      >
+                        <Icon className="w-8 h-8 text-white" />
+                      </motion.div>
+                      <div className="text-right">
+                        <motion.div 
+                          className="text-2xl font-bold text-gray-800"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ delay: 1.2 + index * 0.1 }}
+                        >
+                          {section.stats.value}
+                        </motion.div>
+                        <div className="text-sm text-gray-600">{section.stats.label}</div>
+                      </div>
+                    </div>
+
+                    {/* Content */}
+                    <div className="mb-6 relative z-10">
+                      <h3 className="text-2xl font-bold text-gray-800 mb-3 group-hover:text-purple-600 transition-colors duration-300">
+                        {section.title}
+                      </h3>
+                      <p className="text-gray-600 leading-relaxed">
+                        {section.description}
+                      </p>
+                    </div>
+
+                    {/* Arrow */}
+                    <div className="flex items-center justify-between relative z-10">
+                      <span className="text-sm font-semibold text-gray-500 group-hover:text-purple-600 transition-colors duration-300">
+                        Explore Section
+                      </span>
+                      <motion.div
+                        whileHover={{ x: 5 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                      >
+                        <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600 transition-all duration-300" />
+                      </motion.div>
+                    </div>
+
+                    {/* Active Indicator */}
+                    {isActive && (
+                      <motion.div 
+                        className="absolute top-4 right-4"
+                        initial={{ scale: 0 }}
+                        animate={{ scale: 1 }}
+                        transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                      >
+                        <div className="w-3 h-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse" />
+                      </motion.div>
+                    )}
+
+                    {/* Hover Effect Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-3xl" />
+                  </div>
+                </Link>
+              </motion.div>
+            );
+          })}
+        </motion.div>
+
+        {/* Bottom CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 1.5 }}
+          className="mt-16 text-center"
+        >
+          <div className="bg-white/80 backdrop-blur-sm rounded-3xl p-8 shadow-xl border border-white/20 relative overflow-hidden">
+            {/* Background Animation */}
+            <div className="absolute inset-0 opacity-10">
+              <motion.div
+                animate={{ 
+                  backgroundPosition: ["0% 0%", "100% 100%"],
+                }}
+                transition={{ duration: 10, repeat: Infinity, repeatType: "reverse" }}
+                className="w-full h-full"
+                style={{
+                  background: "linear-gradient(45deg, #8b5cf6, #ec4899, #06b6d4, #10b981)",
+                  backgroundSize: "400% 400%"
+                }}
+              />
+            </div>
+
+            <div className="relative z-10">
+              <motion.h3 
+                className="text-3xl font-bold text-gray-800 mb-4 flex items-center justify-center gap-3"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.6 }}
+              >
+                <motion.div
+                  animate={{ rotate: [0, 10, -10, 0] }}
+                  transition={{ duration: 2, repeat: Infinity }}
+                >
+                  <Trophy className="w-8 h-8 text-yellow-500" />
+                </motion.div>
+                Ready to Make an Impact?
+              </motion.h3>
+              
+              <motion.p 
+                className="text-gray-600 mb-8 max-w-2xl mx-auto text-lg"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.7 }}
+              >
+                Transform lives through comprehensive CSR initiatives. Start your journey with powerful analytics and seamless campaign management.
+              </motion.p>
+
+              <motion.div 
+                className="flex flex-col sm:flex-row gap-4 justify-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.8 }}
+              >
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    to="/csr/campaign-wizard"
+                    className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-2xl font-semibold hover:shadow-xl transition-all duration-300"
+                  >
+                    <Zap className="w-5 h-5" />
+                    Create Campaign
+                  </Link>
+                </motion.div>
+                
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Link
+                    to="/csr/overview"
+                    className="inline-flex items-center gap-2 px-8 py-4 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-2xl font-semibold hover:shadow-xl transition-all duration-300"
+                  >
+                    <BarChart3 className="w-5 h-5" />
+                    View Analytics
+                  </Link>
+                </motion.div>
+              </motion.div>
+
+              {/* Success Metrics */}
+              <motion.div 
+                className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 1.9 }}
+              >
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-purple-600">{overviewData?.studentsImpacted?.toLocaleString() || '0'}</div>
+                  <div className="text-sm text-gray-500">Students Impacted</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-green-600">{overviewData?.schoolsReached || '0'}</div>
+                  <div className="text-sm text-gray-500">Schools Reached</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-blue-600">{overviewData?.itemsDistributed || '0'}</div>
+                  <div className="text-sm text-gray-500">Items Distributed</div>
+                </div>
+                <div className="text-center">
+                  <div className="text-2xl font-bold text-orange-600">{overviewData?.regionsActive || '0'}</div>
+                  <div className="text-sm text-gray-500">Active Regions</div>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

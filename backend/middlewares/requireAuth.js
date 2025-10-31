@@ -25,15 +25,6 @@ export const requireAuth = async (req, res, next) => {
   }
 };
 
-// ✅ Middleware: Admin-only access
-export const requireAdmin = (req, res, next) => {
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ message: "Access denied. Admins only." });
-  }
-  next();
-};
-
-
 // ✅ Middleware: Student-only access
 export const requireStudent = (req, res, next) => {
   if (req.user?.role !== "student") {
@@ -87,6 +78,15 @@ export const requireSchoolRole = (req, res, next) => {
   const schoolRoles = ['school_admin', 'school_teacher', 'school_student', 'school_parent', 'school_accountant', 'school_librarian'];
   if (!schoolRoles.includes(req.user?.role)) {
     return res.status(403).json({ message: "Access denied. School users only." });
+  }
+  next();
+};
+
+// ✅ Middleware: School roles + regular parent access (for chat functionality)
+export const requireSchoolRoleOrParent = (req, res, next) => {
+  const allowedRoles = ['school_admin', 'school_teacher', 'school_student', 'school_parent', 'school_accountant', 'school_librarian', 'parent'];
+  if (!allowedRoles.includes(req.user?.role)) {
+    return res.status(403).json({ message: "Access denied. School users or parents only." });
   }
   next();
 };

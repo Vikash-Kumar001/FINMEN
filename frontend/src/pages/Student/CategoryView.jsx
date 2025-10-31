@@ -97,7 +97,14 @@ export default function CategoryView() {
                 setFeatureCards(sustainabilityCards);
             } else {
                 // Filter cards by category for other categories
-                const filtered = mockFeatures.filter((card) => card.category === category.key);
+                let filtered = mockFeatures.filter((card) => card.category === category.key);
+                
+                // Special handling for Digital Citizenship & Online Safety category
+                // Remove the "Financial Literacy" card to ensure game cards appear first
+                if (category.key === 'education' && categorySlug === 'digital-citizenship-online-safety') {
+                    filtered = filtered.filter((card) => card.title !== "Financial Literacy");
+                }
+                
                 setFeatureCards(filtered);
             }
         } else {
@@ -360,4 +367,3 @@ export default function CategoryView() {
         </div>
     );
 }
-

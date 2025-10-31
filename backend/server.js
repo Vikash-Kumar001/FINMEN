@@ -22,8 +22,6 @@ const allowedOrigins = process.env.CLIENT_URL
   : [
       "http://localhost:5173",
       "http://localhost:3000",
-      "http://localhost:3001",
-      "https://finmen.vercel.app"
     ];
 
 // Initialize app and server
@@ -78,30 +76,48 @@ import authRoutes from "./routes/authRoutes.js";
 import moodRoutes from "./routes/moodRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
 import rewardsRoutes from "./routes/rewardsRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
-import adminRedemptionRoutes from "./routes/adminRedemptionRoutes.js";
 import journalRoutes from "./routes/journalRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
 import studentRoutes from "./routes/studentRoutes.js";
-import challengeRoutes from "./routes/challengeRoutes.js";
 import activityRoutes from './routes/activityRoutes.js';
 import userProgressRoutes from './routes/userProgressRoutes.js';
-import dailyChallengeRoutes from './routes/dailyChallengeRoutes.js';
 import userRoutes from "./routes/userRoutes.js";
 import parentRoutes from "./routes/parentRoutes.js";
 import sellerRoutes from "./routes/sellerRoutes.js";
 import csrRoutes from "./routes/csrRoutes.js";
+import csrKPIRoutes from "./routes/csrKPIRoutes.js";
+import campaignRoutes from "./routes/campaignRoutes.js";
+import budgetTransactionRoutes from "./routes/budgetTransactionRoutes.js";
+import impactReportRoutes from "./routes/impactReportRoutes.js";
+import cobrandingLegalRoutes from "./routes/cobrandingLegalRoutes.js";
+import campaignWizardRoutes from "./routes/campaignWizardRoutes.js";
+import csrPaymentRoutes from "./routes/csrPaymentRoutes.js";
+import invoiceRoutes from "./routes/invoiceRoutes.js";
+import csrReportRoutes from "./routes/csrReportRoutes.js";
+import campaignApprovalRoutes from "./routes/campaignApprovalRoutes.js";
+import budgetTrackingRoutes from "./routes/budgetTrackingRoutes.js";
+import csrOverviewRoutes from "./routes/csrOverviewRoutes.js";
 import avatarRoutes from "./routes/avatarRoutes.js";
+import announcementRoutes from "./routes/announcementRoutes.js";
+import assignmentAttemptRoutes from "./routes/assignmentAttemptRoutes.js";
+import chatRoutes from "./routes/chatRoutes.js";
 
 // Multi-tenant routes
 import companyRoutes from "./routes/companyRoutes.js";
 import organizationRoutes from "./routes/organizationRoutes.js";
 import schoolRoutes from "./routes/schoolRoutes.js";
+import globalStatsRoutes from "./routes/globalStatsRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import adminApprovalRoutes from "./routes/adminApprovalRoutes.js";
+import incidentRoutes from "./routes/incidentRoutes.js";
+import marketplaceRoutes from "./routes/marketplaceRoutes.js";
+import adminPaymentTrackerRoutes from "./routes/adminPaymentTrackerRoutes.js";
+import adminTrackingRoutes from "./routes/adminTrackingRoutes.js";
 
 import paymentRoutes from "./routes/paymentRoutes.js";
 
@@ -109,15 +125,15 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import User from "./models/User.js";
 import { errorHandler } from "./middlewares/errorMiddleware.js";
 import { scheduleWeeklyReports } from "./cronJobs/reportScheduler.js";
+import { startNotificationTTL } from "./cronJobs/notificationTTL.js";
 
 // Socket Handlers
 import { setupWalletSocket } from "./socketHandlers/walletSocket.js";
-import { setupStudentSocket } from "./socketHandlers/studentSocket.js";
-import { setupStatsSocket } from "./socketHandlers/statsSocket.js";
 import { setupFeedbackSocket } from "./socketHandlers/feedbackSocket.js";
 import { setupGameSocket } from "./socketHandlers/gameSocket.js";
 import { setupJournalSocket } from "./socketHandlers/journalSocket.js";
 import { setupChatSocket } from "./socketHandlers/chatSocket.js";
+import { setupCSROverviewSocket } from "./socketHandlers/csrOverviewSocket.js";
 
 // Socket.IO Authentication and Events
 io.on("connection", async (socket) => {
@@ -152,23 +168,19 @@ io.on("connection", async (socket) => {
 
 
     socket.join(user._id.toString());
-    if (user.role === "admin") {
-      socket.join("admins");
-      socket.join("admin-room");
-    }
 
     console.log(`👤 User ${user._id} (${user.role}) joined their room`);
-
-    if (user.role === "admin") {
-      setupStudentSocket(io, socket, user);
-      setupStatsSocket(io, socket, user);
-    }
 
     setupWalletSocket(io, socket, user);
     setupFeedbackSocket(io, socket, user);
     setupGameSocket(io, socket, user);
     setupJournalSocket(io, socket, user);
     setupChatSocket(io, socket, user);
+    
+    // Setup CSR-specific sockets
+    if (user.role === "csr") {
+      setupCSROverviewSocket(io, socket, user);
+    }
 
   } catch (err) {
     console.error("❌ Socket auth error:", err.message);
@@ -189,32 +201,50 @@ app.use("/api/auth", authRoutes);
 app.use("/api/mood", moodRoutes);
 app.use("/api/game", gameRoutes);
 app.use("/api/rewards", rewardsRoutes);
-app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
 // Multi-tenant Routes
 app.use("/api/company", companyRoutes);
 app.use("/api/organization", organizationRoutes);
 app.use("/api/school", schoolRoutes);
+app.use("/api/global", globalStatsRoutes);
 
 app.use("/api/payment", paymentRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/transactions", transactionRoutes);
-app.use("/api/admin/redemptions", adminRedemptionRoutes);
 app.use("/api/journal", journalRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/stats", statsRoutes);
 app.use("/api/student", studentRoutes);
-app.use("/api/challenges", challengeRoutes);
 app.use('/api/activity', activityRoutes);
 app.use('/api/progress', userProgressRoutes);
-app.use('/api/daily-challenges', dailyChallengeRoutes);
 app.use('/api/user', userRoutes);
 app.use('/api/parent', parentRoutes);
 app.use('/api/seller', sellerRoutes);
 app.use('/api/csr', csrRoutes);
+app.use('/api/csr-kpis', csrKPIRoutes);
+app.use('/api/csr', campaignRoutes);
+app.use('/api/budget', budgetTransactionRoutes);
+app.use('/api/csr', impactReportRoutes);
+app.use('/api/csr', cobrandingLegalRoutes);
+app.use('/api/campaign-wizard', campaignWizardRoutes);
+app.use('/api/csr-financial', csrPaymentRoutes);
+app.use('/api/csr-financial', invoiceRoutes);
+app.use('/api/csr-reports', csrReportRoutes);
+app.use('/api/campaign-approvals', campaignApprovalRoutes);
+app.use('/api/budget-tracking', budgetTrackingRoutes);
+app.use('/api/csr-overview', csrOverviewRoutes);
 app.use('/api/avatar', avatarRoutes);
+app.use('/api/announcements', announcementRoutes);
+app.use('/api/assignment-attempts', assignmentAttemptRoutes);
+app.use('/api/chat', chatRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/admin/approvals', adminApprovalRoutes);
+app.use('/api/admin/payment-tracker', adminPaymentTrackerRoutes);
+app.use('/api/admin/tracking', adminTrackingRoutes);
+app.use('/api/incidents', incidentRoutes);
+app.use('/api/marketplace', marketplaceRoutes);
 
 // Health Check
 app.get("/", (_, res) => {
@@ -238,6 +268,9 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   scheduleWeeklyReports();
+  // Start real-time notification TTL cleanup (15 days)
+  const ttlSeconds = parseInt(process.env.NOTIFICATION_TTL_SECONDS || "1296000", 10);
+  startNotificationTTL(io, { ttlSeconds, intervalSeconds: 3600 });
 });
 
 export default app;

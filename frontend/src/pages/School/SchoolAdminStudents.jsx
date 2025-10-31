@@ -1,25 +1,23 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { motion as Motion, AnimatePresence } from 'framer-motion';
 import {
   Users, Search, Filter, Grid, List, Flag, ChevronDown, Download, Eye,
   BookOpen, TrendingUp, Zap, Coins, Star, Activity, MessageSquare, FileText,
   Heart, Clock, Plus, UserPlus, MoreVertical, AlertCircle, CheckCircle, Award,
-  X, Mail, Phone, Calendar, MapPin, Shield, Target, Brain, Trophy, Trash2, Key, Copy, Lock
+  X, Mail, Phone, Calendar, MapPin, Shield, Target, Brain, Trophy, Trash2, Key, Copy, Lock, User
 } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
+import AddStudentModal from '../../components/AddStudentModal';
+import StudentDetailModal from '../../components/StudentDetailModal';
+import ResetPasswordModal from '../../components/ResetPasswordModal';
 
 const SchoolAdminStudents = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [students, setStudents] = useState([]);
-  const [classes, setClasses] = useState([]);
-  const [selectedClass, setSelectedClass] = useState('all');
-  const [viewMode, setViewMode] = useState('grid');
+  const [selectedClass] = useState('all');
+  const [viewMode, setViewMode] = useState('list');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterGrade, setFilterGrade] = useState('all');
-  const [filterSection, setFilterSection] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [stats, setStats] = useState({});
   const [selectedStudent, setSelectedStudent] = useState(null);
@@ -32,7 +30,7 @@ const SchoolAdminStudents = () => {
     newPassword: ''
   });
   const [newStudent, setNewStudent] = useState({
-    name: '', email: '', rollNumber: '', grade: '', section: 'A', phone: '', gender: '', password: ''
+    name: '', email: '', phone: '', gender: '', password: '', dateOfBirth: ''
   });
 
   const fetchStudentsData = useCallback(async () => {
@@ -40,18 +38,14 @@ const SchoolAdminStudents = () => {
       setLoading(true);
       const params = new URLSearchParams();
       if (selectedClass !== 'all') params.append('classId', selectedClass);
-      if (filterGrade !== 'all') params.append('grade', filterGrade);
-      if (filterSection !== 'all') params.append('section', filterSection);
       if (filterStatus !== 'all') params.append('status', filterStatus);
 
-      const [studentsRes, classesRes, statsRes] = await Promise.all([
+      const [studentsRes, statsRes] = await Promise.all([
         api.get(`/api/school/admin/students?${params}`),
-        api.get('/api/school/admin/classes'),
         api.get('/api/school/admin/students/stats'),
       ]);
 
       setStudents(studentsRes.data.students || []);
-      setClasses(classesRes.data.classes || []);
       setStats(statsRes.data || {});
     } catch (error) {
       console.error('Error fetching students:', error);
@@ -59,7 +53,7 @@ const SchoolAdminStudents = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedClass, filterGrade, filterSection, filterStatus]);
+  }, [selectedClass, filterStatus]);
 
   useEffect(() => {
     fetchStudentsData();
@@ -71,7 +65,7 @@ const SchoolAdminStudents = () => {
       await api.post('/api/school/admin/students/create', newStudent);
       toast.success('Student added successfully! Login credentials have been created.');
       setShowAddStudentModal(false);
-      setNewStudent({ name: '', email: '', rollNumber: '', grade: '', section: 'A', phone: '', gender: '', password: '' });
+      setNewStudent({ name: '', email: '', phone: '', gender: '', password: '', dateOfBirth: '' });
       fetchStudentsData();
     } catch (error) {
       console.error('Error adding student:', error);
@@ -82,7 +76,33 @@ const SchoolAdminStudents = () => {
   const handleViewStudent = async (student) => {
     try {
       const response = await api.get(`/api/school/admin/students/${student._id}`);
-      setSelectedStudent(response.data.student);
+      const studentData = response.data.student || {};
+
+      // Fetch real-time pillar mastery for this student using the User ID (same as student dashboard)
+      try {
+        const userId = studentData.userId;
+        
+        if (userId) {
+          // Use the same endpoint as student dashboard for real-time pillar data
+          const masteryRes = await api.get(`/api/stats/pillar-mastery/${userId}`);
+          const mastery = masteryRes.data || {};
+
+          // Store the full pillars array from real-time data (all 10 pillars from UnifiedGameProgress)
+          if (mastery.pillars && Array.isArray(mastery.pillars)) {
+            studentData.pillarMasteryArray = mastery.pillars;
+          }
+          
+          // Update avgScore from overallMastery (real-time calculation from game progress)
+          if (typeof mastery.overallMastery === 'number') {
+            studentData.avgScore = mastery.overallMastery;
+          }
+        }
+      } catch (pillarsErr) {
+        console.error('Failed to fetch real-time pillar mastery for student:', pillarsErr);
+        // Don't fail the whole request, just log the error - will use fallback static data
+      }
+
+      setSelectedStudent(studentData);
       setShowStudentDetail(true);
     } catch (error) {
       console.error('Error fetching student details:', error);
@@ -137,8 +157,6 @@ const SchoolAdminStudents = () => {
   const handleExportStudents = async () => {
     try {
       const params = new URLSearchParams();
-      if (filterGrade !== 'all') params.append('grade', filterGrade);
-      if (filterSection !== 'all') params.append('section', filterSection);
       if (filterStatus !== 'all') params.append('status', filterStatus);
 
       const response = await api.get(`/api/school/admin/students/export?format=csv&${params}`, {
@@ -159,594 +177,20 @@ const SchoolAdminStudents = () => {
     }
   };
 
+  
+
   const filteredStudents = students.filter(student =>
     student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     student.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.rollNumber?.toLowerCase().includes(searchTerm.toLowerCase())
+    student.phone?.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  // Add Student Modal
-const AddStudentModal = ({
-  showAddStudentModal,
-  setShowAddStudentModal,
-  newStudent,
-  setNewStudent,
-  handleAddStudent
-}) => (
-  <AnimatePresence>
-    {showAddStudentModal && (
-      <>
-        <motion.div
-          key="add-student-backdrop"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          onClick={() => setShowAddStudentModal(false)}
-          className="fixed inset-0 bg-black bg-opacity-50 z-40"
-        />
-        <motion.div
-          key="add-student-modal"
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          transition={{ duration: 0.2 }}
-          className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto"
-          >
-          <div className="sticky top-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-t-2xl">
-            <div className="flex items-center justify-between">
-              <div>
-                <h2 className="text-2xl font-black mb-1">Add New Student</h2>
-                <p className="text-sm text-white/80">
-                  Fill in the student details below
-                </p>
-              </div>
-              <button
-                onClick={() => setShowAddStudentModal(false)}
-                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-          </div>
-
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleAddStudent(e);
-            }}
-            className="p-6 space-y-4"
-          >
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Full Name *
-                </label>
-                <input
-                  type="text"
-                  value={newStudent.name}
-                  onChange={(e) =>
-                    setNewStudent((prev) => ({ ...prev, name: e.target.value }))
-                  }
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
-                  placeholder="Enter student name"
-                  required
-                  autoComplete="off"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  value={newStudent.email}
-                  onChange={(e) =>
-                    setNewStudent((prev) => ({ ...prev, email: e.target.value }))
-                  }
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
-                  placeholder="student@example.com"
-                  required
-                  autoComplete="off"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Roll Number *
-                </label>
-                <input
-                  type="text"
-                  value={newStudent.rollNumber}
-                  onChange={(e) =>
-                    setNewStudent((prev) => ({
-                      ...prev,
-                      rollNumber: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
-                  placeholder="ROLL-001"
-                  required
-                  autoComplete="off"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Phone
-                </label>
-                <input
-                  type="tel"
-                  value={newStudent.phone}
-                  onChange={(e) =>
-                    setNewStudent((prev) => ({ ...prev, phone: e.target.value }))
-                  }
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
-                  placeholder="+91 98765 43210"
-                  autoComplete="off"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Grade *
-                </label>
-                <select
-                  value={newStudent.grade}
-                  onChange={(e) =>
-                    setNewStudent((prev) => ({ ...prev, grade: e.target.value }))
-                  }
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
-                  required
-                >
-                  <option value="">Select Grade</option>
-                  {[6, 7, 8, 9, 10, 11, 12].map((g) => (
-                    <option key={g} value={g}>
-                      Grade {g}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Section *
-                </label>
-                <select
-                  value={newStudent.section}
-                  onChange={(e) =>
-                    setNewStudent((prev) => ({
-                      ...prev,
-                      section: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
-                  required
-                >
-                  {['A', 'B', 'C', 'D', 'E'].map((sec) => (
-                    <option key={sec} value={sec}>
-                      Section {sec}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Gender *
-                </label>
-                <select
-                  value={newStudent.gender}
-                  onChange={(e) =>
-                    setNewStudent((prev) => ({
-                      ...prev,
-                      gender: e.target.value,
-                    }))
-                  }
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
-                  required
-                >
-                  <option value="">Select Gender</option>
-                  <option value="Male">Male</option>
-                  <option value="Female">Female</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-bold text-gray-700 mb-2">
-                  Password *
-                </label>
-                <input
-                  type="password"
-                  value={newStudent.password}
-                  onChange={(e) =>
-                    setNewStudent((prev) => ({ ...prev, password: e.target.value }))
-                  }
-                  className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
-                  placeholder="Enter login password"
-                  required
-                  autoComplete="new-password"
-                  minLength="6"
-                />
-                <p className="text-xs text-gray-500 mt-1">
-                  Student will use this password to login (min. 6 characters)
-                </p>
-              </div>
-            </div>
-
-            <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-blue-500 rounded-lg">
-                  <Shield className="w-5 h-5 text-white" />
-                </div>
-                <div className="flex-1">
-                  <h4 className="font-bold text-gray-900 mb-1">Login Credentials</h4>
-                  <p className="text-sm text-gray-600">
-                    The student can login using their email and the password you set here. 
-                    They can change their password later from their profile.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-              <button
-                type="button"
-                onClick={() => setShowAddStudentModal(false)}
-                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-lg font-bold hover:shadow-lg transition-all"
-              >
-                Add Student
-              </button>
-            </div>
-          </form>
-          </div>
-        </motion.div>
-      </>
-    )}
-  </AnimatePresence>
-);
-
-  // Student Detail Modal
-  const StudentDetailModal = () => (
-    <AnimatePresence>
-      {showStudentDetail && selectedStudent && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowStudentDetail(false)}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed inset-0 flex items-center justify-center z-50 p-4"
-          >
-            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-gradient-to-r from-purple-500 to-pink-500 text-white p-6 rounded-t-2xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white font-black text-2xl shadow-lg">
-                      {selectedStudent.name?.charAt(0) || 'S'}
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-black mb-1">{selectedStudent.name || 'Student'}</h2>
-                      <p className="text-sm text-white/80">Roll No: {selectedStudent.rollNumber || 'N/A'}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowStudentDetail(false)}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-6">
-                {/* Basic Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
-                    <p className="text-xs text-gray-600 mb-1">Grade</p>
-                    <p className="text-2xl font-black text-blue-600">{selectedStudent.grade || 'N/A'}</p>
-                  </div>
-                  <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
-                    <p className="text-xs text-gray-600 mb-1">Section</p>
-                    <p className="text-2xl font-black text-green-600">{selectedStudent.section || 'A'}</p>
-                  </div>
-                  <div className="bg-purple-50 rounded-xl p-4 border-2 border-purple-200">
-                    <p className="text-xs text-gray-600 mb-1">Avg Score</p>
-                    <p className="text-2xl font-black text-purple-600">{selectedStudent.avgScore || 0}%</p>
-                  </div>
-                  <div className="bg-orange-50 rounded-xl p-4 border-2 border-orange-200">
-                    <p className="text-xs text-gray-600 mb-1">Attendance</p>
-                    <p className="text-2xl font-black text-orange-600">{selectedStudent.attendance?.percentage || 0}%</p>
-                  </div>
-                </div>
-
-                {/* Login Credentials */}
-                <div className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-xl p-6 mb-6 border-2 border-blue-200">
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Lock className="w-5 h-5 text-blue-600" />
-                    Login Credentials
-                  </h3>
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3 bg-white rounded-lg border border-blue-200">
-                      <div className="flex items-center gap-3">
-                        <Mail className="w-5 h-5 text-blue-600" />
-                        <div>
-                          <p className="text-xs text-gray-600">Login Email</p>
-                          <p className="font-bold text-gray-900">{selectedStudent.email || 'N/A'}</p>
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(selectedStudent.email);
-                          toast.success('Email copied to clipboard!');
-                        }}
-                        className="p-2 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors"
-                        title="Copy Email"
-                      >
-                        <Copy className="w-4 h-4" />
-                      </button>
-                    </div>
-                    <div className="flex items-center gap-2 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                      <AlertCircle className="w-5 h-5 text-yellow-600" />
-                      <p className="text-sm text-gray-700">
-                        Student can login using this email and their password
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Contact Info */}
-                <div className="bg-gray-50 rounded-xl p-6 mb-6 border-2 border-gray-200">
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Phone className="w-5 h-5 text-purple-600" />
-                    Contact Information
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-600">Phone:</span>
-                      <span className="font-semibold text-gray-900">{selectedStudent.phone || 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-600">Last Active:</span>
-                      <span className="font-semibold text-gray-900">
-                        {selectedStudent.lastActive ? new Date(selectedStudent.lastActive).toLocaleDateString() : 'Never'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-600">Status:</span>
-                      <span className={`px-2 py-1 rounded-lg text-xs font-bold ${
-                        selectedStudent.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {selectedStudent.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Pillar Mastery */}
-                <div className="bg-white rounded-xl border-2 border-gray-200 p-6 mb-6">
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Target className="w-5 h-5 text-purple-600" />
-                    Pillar Mastery
-                  </h3>
-                  <div className="space-y-3">
-                    {Object.entries(selectedStudent.pillars || {}).map(([pillar, score]) => (
-                      <div key={pillar}>
-                        <div className="flex items-center justify-between mb-1">
-                          <span className="text-sm font-bold text-gray-700 uppercase">{pillar}</span>
-                          <span className="text-sm font-black text-gray-900">{score || 0}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div
-                            className={`h-2 rounded-full transition-all ${
-                              score >= 75 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
-                              score >= 50 ? 'bg-gradient-to-r from-blue-500 to-cyan-600' :
-                              'bg-gradient-to-r from-red-500 to-pink-600'
-                            }`}
-                            style={{ width: `${score || 0}%` }}
-                          />
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Wellbeing Flags */}
-                {selectedStudent.wellbeingFlags?.length > 0 && (
-                  <div className="bg-red-50 rounded-xl border-2 border-red-200 p-6">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <AlertCircle className="w-5 h-5 text-red-600" />
-                      Wellbeing Flags ({selectedStudent.wellbeingFlags.length})
-                    </h3>
-                    <div className="space-y-2">
-                      {selectedStudent.wellbeingFlags.map((flag, idx) => (
-                        <div key={idx} className="p-3 bg-white rounded-lg border border-red-200">
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="font-bold text-gray-900">{flag.type || 'Flag'}</span>
-                            <span className={`px-2 py-1 rounded text-xs font-bold ${
-                              flag.severity === 'high' ? 'bg-red-100 text-red-700' :
-                              flag.severity === 'medium' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-gray-100 text-gray-700'
-                            }`}>
-                              {flag.severity || 'Low'}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600">{flag.description || 'No description'}</p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 pt-6 border-t border-gray-200">
-                  <button
-                    onClick={() => setShowStudentDetail(false)}
-                    className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition-colors"
-                  >
-                    Close
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowStudentDetail(false);
-                      openResetPasswordModal(selectedStudent);
-                    }}
-                    className="px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-lg font-bold hover:shadow-lg transition-all flex items-center gap-2"
-                  >
-                    <Key className="w-5 h-5" />
-                    Reset Password
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowStudentDetail(false);
-                      handleDeleteStudent(selectedStudent._id, selectedStudent.name);
-                    }}
-                    className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg font-bold hover:shadow-lg transition-all flex items-center gap-2"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                    Delete Student
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-
-  // Reset Password Modal
-  const ResetPasswordModal = () => (
-    <AnimatePresence>
-      {showResetPasswordModal && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowResetPasswordModal(false)}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none"
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-2xl max-w-md w-full pointer-events-auto"
-            >
-              <div className="bg-gradient-to-r from-orange-500 to-amber-500 text-white p-6 rounded-t-2xl">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-black mb-1">Reset Password</h2>
-                    <p className="text-sm text-white/80">
-                      {resetPasswordData.studentName}
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowResetPasswordModal(false)}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-
-              <form onSubmit={handleResetPassword} className="p-6 space-y-4">
-                <div className="bg-blue-50 border-2 border-blue-200 rounded-xl p-4 mb-4">
-                  <div className="flex items-start gap-3">
-                    <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-700 font-semibold">
-                        Set a new password for this student. They can login immediately with the new password.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-bold text-gray-700 mb-2">
-                    New Password *
-                  </label>
-                  <input
-                    type="password"
-                    value={resetPasswordData.newPassword}
-                    onChange={(e) => setResetPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
-                    className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-orange-500 focus:outline-none font-semibold"
-                    placeholder="Enter new password"
-                    required
-                    minLength="6"
-                    autoComplete="new-password"
-                  />
-                  <p className="text-xs text-gray-500 mt-1">
-                    Minimum 6 characters
-                  </p>
-                </div>
-
-                <div className="flex gap-3 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowResetPasswordModal(false)}
-                    className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-amber-600 text-white rounded-lg font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2"
-                  >
-                    <Key className="w-5 h-5" />
-                    Reset Password
-                  </button>
-                </div>
-              </form>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-        <motion.div
-          animate={{ rotate: 360, scale: [1, 1.2, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          className="w-20 h-20 border-4 border-purple-500 border-t-transparent rounded-full"
-        />
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 pb-12">
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white py-8 px-6">
         <div className="max-w-7xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+          <Motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="text-4xl font-black mb-2 flex items-center gap-3">
               <Users className="w-10 h-10" />
               Student Management
@@ -754,14 +198,14 @@ const AddStudentModal = ({
             <p className="text-lg text-white/90">
               {filteredStudents.length} students • {stats.active || 0} active this month
             </p>
-          </motion.div>
+          </Motion.div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 -mt-6">
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="bg-white rounded-xl shadow-lg border-2 border-gray-100 p-4"
@@ -775,9 +219,9 @@ const AddStudentModal = ({
                 <p className="text-2xl font-black text-gray-900">{stats.total || 0}</p>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
 
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.05 }}
@@ -792,9 +236,9 @@ const AddStudentModal = ({
                 <p className="text-2xl font-black text-gray-900">{stats.active || 0}</p>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
 
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
@@ -809,9 +253,9 @@ const AddStudentModal = ({
                 <p className="text-2xl font-black text-gray-900">{stats.flagged || 0}</p>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
 
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.15 }}
@@ -826,11 +270,11 @@ const AddStudentModal = ({
                 <p className="text-2xl font-black text-gray-900">{stats.inactive || 0}</p>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
         </div>
 
         {/* Search & Filters */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 mb-6"
@@ -840,7 +284,7 @@ const AddStudentModal = ({
               <Search className="w-5 h-5 text-gray-500" />
               <input
                 type="text"
-                placeholder="Search students by name, email, or roll number..."
+                placeholder="Search students by name, email, or phone number..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
@@ -848,28 +292,6 @@ const AddStudentModal = ({
             </div>
 
             <div className="flex items-center gap-3 flex-wrap">
-              <select
-                value={filterGrade}
-                onChange={(e) => setFilterGrade(e.target.value)}
-                className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none bg-white font-semibold"
-              >
-                <option value="all">All Grades</option>
-                {[6, 7, 8, 9, 10, 11, 12].map(grade => (
-                  <option key={grade} value={grade}>Grade {grade}</option>
-                ))}
-              </select>
-
-              <select
-                value={filterSection}
-                onChange={(e) => setFilterSection(e.target.value)}
-                className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none bg-white font-semibold"
-              >
-                <option value="all">All Sections</option>
-                {['A', 'B', 'C', 'D', 'E'].map(sec => (
-                  <option key={sec} value={sec}>Section {sec}</option>
-                ))}
-              </select>
-
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
@@ -913,13 +335,13 @@ const AddStudentModal = ({
               </button>
             </div>
           </div>
-        </motion.div>
+          </Motion.div>
 
         {/* Students Grid */}
         {viewMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredStudents.map((student, idx) => (
-              <motion.div
+              <Motion.div
                 key={student._id || idx}
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
@@ -933,42 +355,47 @@ const AddStudentModal = ({
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-gray-900 truncate">{student.name || 'Student'}</h3>
-                    <p className="text-xs text-gray-600">{student.rollNumber || 'N/A'}</p>
+                    <p className="text-xs text-gray-600">{student.email || 'N/A'}</p>
                   </div>
                   {student.wellbeingFlags?.length > 0 && (
                     <Flag className="w-5 h-5 text-red-500" />
                   )}
                 </div>
 
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  <div className="text-center p-2 rounded-lg bg-blue-50">
-                    <p className="text-xs text-gray-600">Grade</p>
-                    <p className="text-lg font-black text-blue-600">{student.grade || 'N/A'}</p>
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Mail className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-600">Email:</span>
+                    <span className="font-semibold text-gray-900 truncate">{student.email || 'N/A'}</span>
                   </div>
-                  <div className="text-center p-2 rounded-lg bg-green-50">
-                    <p className="text-xs text-gray-600">Section</p>
-                    <p className="text-lg font-black text-green-600">{student.section || 'A'}</p>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Phone className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-600">Phone:</span>
+                    <span className="font-semibold text-gray-900">{student.phone || 'N/A'}</span>
                   </div>
-                  <div className="text-center p-2 rounded-lg bg-purple-50">
-                    <p className="text-xs text-gray-600">Score</p>
-                    <p className="text-lg font-black text-purple-600">{student.avgScore || 0}%</p>
+                  <div className="flex items-center gap-2 text-sm">
+                    <User className="w-4 h-4 text-gray-500" />
+                    <span className="text-gray-600">Gender:</span>
+                    <span className="font-semibold text-gray-900">{student.gender || 'N/A'}</span>
                   </div>
-                </div>
-
-                <div className="space-y-2 mb-4">
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Overall Progress</span>
-                    <span className="font-bold text-gray-900">{student.avgScore || 0}%</span>
-                  </div>
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all ${
-                        (student.avgScore || 0) >= 75 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
-                        (student.avgScore || 0) >= 50 ? 'bg-gradient-to-r from-yellow-500 to-orange-600' :
-                        'bg-gradient-to-r from-red-500 to-pink-600'
-                      }`}
-                      style={{ width: `${student.avgScore || 0}%` }}
-                    />
+                  <div className="flex items-start gap-2 text-sm">
+                    <Users className="w-4 h-4 text-gray-500 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <span className="text-gray-600">Linked Parent:</span>{' '}
+                      {student.parents && student.parents.length > 0 ? (
+                        <div className="mt-1 space-y-1">
+                          <div className="font-semibold text-gray-900 truncate">
+                            {student.parents[0].name || 'Parent'}
+                          </div>
+                          <div className="text-xs text-gray-600 truncate">{student.parents[0].email || 'N/A'}</div>
+                          {student.parents.length > 1 && (
+                            <div className="text-xs text-gray-500">+{student.parents.length - 1} more linked</div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className="font-semibold text-gray-900">N/A</span>
+                      )}
+                    </div>
                   </div>
                 </div>
 
@@ -990,7 +417,7 @@ const AddStudentModal = ({
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
-              </motion.div>
+              </Motion.div>
             ))}
           </div>
         ) : (
@@ -999,17 +426,16 @@ const AddStudentModal = ({
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                 <tr>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Student</th>
-                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Roll No</th>
-                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Grade</th>
-                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Section</th>
-                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Avg Score</th>
+                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Phone</th>
+                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Gender</th>
+                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Linked Parent</th>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Status</th>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredStudents.map((student, idx) => (
-                  <motion.tr
+                  <Motion.tr
                     key={student._id || idx}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -1027,19 +453,20 @@ const AddStudentModal = ({
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-sm font-semibold text-gray-900">{student.rollNumber || 'N/A'}</td>
-                    <td className="py-4 px-6 text-sm font-bold text-gray-900">{student.grade || 'N/A'}</td>
-                    <td className="py-4 px-6 text-sm font-semibold text-gray-900">{student.section || 'A'}</td>
+                    <td className="py-4 px-6 text-sm font-semibold text-gray-900">{student.phone || 'N/A'}</td>
+                    <td className="py-4 px-6 text-sm font-bold text-gray-900">{student.gender || 'N/A'}</td>
                     <td className="py-4 px-6">
-                      <div className="flex items-center gap-2">
-                        <div className="w-20 bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full"
-                            style={{ width: `${student.avgScore || 0}%` }}
-                          />
+                      {student.parents && student.parents.length > 0 ? (
+                        <div className="flex flex-col gap-1">
+                          <p className="text-sm font-semibold text-gray-900">{student.parents[0].name || 'N/A'}</p>
+                          <p className="text-xs text-gray-600">{student.parents[0].email || 'N/A'}</p>
+                          {student.parents.length > 1 && (
+                            <p className="text-xs text-gray-500">+{student.parents.length - 1} more</p>
+                          )}
                         </div>
-                        <span className="text-sm font-black text-gray-900">{student.avgScore || 0}%</span>
-                      </div>
+                      ) : (
+                        <span className="text-sm font-semibold text-gray-500">N/A</span>
+                      )}
                     </td>
                     <td className="py-4 px-6">
                       <span className={`px-3 py-1 rounded-full text-xs font-bold ${
@@ -1069,7 +496,7 @@ const AddStudentModal = ({
                         </button>
                       </div>
                     </td>
-                  </motion.tr>
+                  </Motion.tr>
                 ))}
               </tbody>
             </table>
@@ -1077,7 +504,7 @@ const AddStudentModal = ({
         )}
 
         {filteredStudents.length === 0 && !loading && (
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-12 text-center"
@@ -1092,7 +519,7 @@ const AddStudentModal = ({
               <UserPlus className="w-5 h-5" />
               Add New Student
             </button>
-          </motion.div>
+            </Motion.div>
         )}
       </div>
 
@@ -1104,8 +531,20 @@ const AddStudentModal = ({
         setNewStudent={setNewStudent}
         handleAddStudent={handleAddStudent}
       />
-      <StudentDetailModal />
-      <ResetPasswordModal />
+      <StudentDetailModal
+        showStudentDetail={showStudentDetail}
+        setShowStudentDetail={setShowStudentDetail}
+        selectedStudent={selectedStudent}
+        openResetPasswordModal={openResetPasswordModal}
+        handleDeleteStudent={handleDeleteStudent}
+      />
+      <ResetPasswordModal
+        showResetPasswordModal={showResetPasswordModal}
+        setShowResetPasswordModal={setShowResetPasswordModal}
+        resetPasswordData={resetPasswordData}
+        setResetPasswordData={setResetPasswordData}
+        handleResetPassword={handleResetPassword}
+      />
     </div>
   );
 };

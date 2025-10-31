@@ -26,7 +26,11 @@ import {
     Users,
     Mail,
     CheckCircle,
-    FileText
+    FileText,
+    Target,
+    DollarSign,
+    Activity,
+    CreditCard
 } from "lucide-react";
 
 
@@ -71,51 +75,90 @@ const Navbar = () => {
             admin: "/admin/dashboard",
             parent: "/parent/overview",
             seller: "/seller/dashboard",
-            csr: "/csr/dashboard",
+            csr: "/csr/overview",
             school_admin: "/school/admin/dashboard",
             school_teacher: "/school-teacher/overview",
-            school_student: "/school-student/dashboard",
+            school_student: "/student/dashboard",
             school_parent: "/school-parent/dashboard",
             student: "/student/dashboard"
         };
         navigate(paths[user.role] || paths.student);
     };
 
-    const navigationItems = user?.role === "student" ? [
+    const navigationItems = (user?.role === "student" || user?.role === "school_student") ? [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
-        { icon: <TrendingUp className="w-5 h-5" />, label: "Challenges", onClick: () => navigate("/student/challenge") },
-        { icon: <Zap className="w-5 h-5" />, label: "Daily Challenges", onClick: () => navigate("/student/daily-challenges") }
+        { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate(user?.role === "school_student" ? "/school-student/announcements" : "/student/announcements") },
+        { icon: <Activity className="w-5 h-5" />, label: "Activity", onClick: () => navigate("/student/activity") },
+        { icon: <MessageSquare className="w-5 h-5" />, label: "Chat", onClick: () => navigate(user?.role === "school_student" ? "/school-student/chat" : "/student/chat") }
     ] : user?.role === "parent" ? [
         { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
         { icon: <Users className="w-5 h-5" />, label: "Children", onClick: () => navigate("/parent/children") },
+        { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/parent/announcements") },
         { icon: <Mail className="w-5 h-5" />, label: "Messages", onClick: () => navigate("/parent/messages") },
-        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate("/parent/settings") }
+        { icon: <CreditCard className="w-5 h-5" />, label: "Payment Tracker", onClick: () => navigate("/parent/payment-tracker") }
     ] : user?.role === "admin" ? [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
-        { icon: <User className="w-5 h-5" />, label: "Users", onClick: () => navigate("/admin/users") },
-        { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => navigate("/admin/analytics") },
-        { icon: <AlertCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/admin/pending-approvals") }
+        { icon: <CheckCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/admin/approvals") },
+        { icon: <AlertCircle className="w-5 h-5" />, label: "Incidents", onClick: () => navigate("/admin/incidents") },
+        { icon: <Activity className="w-5 h-5" />, label: "Tracker", onClick: () => navigate("/admin/tracking") },
+        { icon: <Gift className="w-5 h-5" />, label: "Marketplace", onClick: () => navigate("/admin/marketplace") },
+        { icon: <CreditCard className="w-5 h-5" />, label: "Payment Tracker", onClick: () => navigate("/admin/payment-tracker") }
     ] : user?.role === "school_admin" ? [
         { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
         { icon: <Users className="w-5 h-5" />, label: "Students", onClick: () => navigate("/school/admin/students") },
         { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => navigate("/school/admin/analytics") },
+        { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/school/admin/announcements") },
         { icon: <CheckCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/school/admin/approvals") },
         { icon: <FileText className="w-5 h-5" />, label: "Templates", onClick: () => navigate("/school/admin/templates") },
-        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate("/school/admin/settings") }
+        { icon: <CreditCard className="w-5 h-5" />, label: "Payment Tracker", onClick: () => navigate("/school/admin/payment-tracker") }
     ] : user?.role === "school_teacher" ? [
         { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
         { icon: <Users className="w-5 h-5" />, label: "Students", onClick: () => navigate("/school-teacher/students") },
         { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => navigate("/school-teacher/analytics") },
+        { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/school-teacher/announcements") },
         { icon: <Mail className="w-5 h-5" />, label: "Messages", onClick: () => navigate("/school-teacher/messages") },
         { icon: <CheckCircle className="w-5 h-5" />, label: "Tasks", onClick: () => navigate("/school-teacher/tasks") },
-        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate("/school-teacher/settings") }
+        
+    ] : user?.role === "school_parent" ? [
+        { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
+        { icon: <Users className="w-5 h-5" />, label: "Children", onClick: () => navigate("/school-parent/children") },
+        { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/school-parent/announcements") },
+        { icon: <Mail className="w-5 h-5" />, label: "Messages", onClick: () => navigate("/school-parent/messages") },
+        { icon: <CreditCard className="w-5 h-5" />, label: "Payment Tracker", onClick: () => navigate("/school-parent/payment-tracker") }
+    ] : user?.role === "csr" ? [
+        { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: () => navigate("/csr/overview") },
+        { icon: <Target className="w-5 h-5" />, label: "Campaigns", onClick: () => navigate("/csr/campaigns") },
+        { icon: <Zap className="w-5 h-5" />, label: "Wizard", onClick: () => navigate("/csr/campaign-wizard") },
+        { icon: <DollarSign className="w-5 h-5" />, label: "Financial", onClick: () => navigate("/csr/financial") },
+        { icon: <FileText className="w-5 h-5" />, label: "Reports", onClick: () => navigate("/csr/reports") },
+        { icon: <CheckCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/csr/approvals") },
+        { icon: <TrendingUp className="w-5 h-5" />, label: "Tracking", onClick: () => navigate("/csr/budget-tracking") },
+        { icon: <Gift className="w-5 h-5" />, label: "Budget", onClick: () => navigate("/csr/budget") },
+        { icon: <Users className="w-5 h-5" />, label: "Legal", onClick: () => navigate("/csr/cobranding") }
     ] : [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect }
     ];
 
     const profileMenuItems = [
-        { icon: <User className="w-5 h-5" />, label: "Profile", onClick: () => navigate(`/${user?.role}/profile`) },
-        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate(`/${user?.role}/settings`) },
+        { icon: <User className="w-5 h-5" />, label: "Profile", 
+        onClick: () => {
+            if (user?.role === "student" || user?.role === "school_student") {
+                navigate("/student/profile");
+            } else if (user?.role === "admin") {
+                navigate("/admin/profile");
+            } else {
+                navigate(`/${user?.role}/profile`);
+            }
+        }},
+        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => {
+            if (user?.role === "student" || user?.role === "school_student") {
+                navigate("/student/settings");
+            } else if (user?.role === "admin") {
+                navigate("/admin/settings");
+            } else {
+                navigate(`/${user?.role}/settings`);
+            }
+        }},
         { icon: <LogOut className="w-5 h-5" />, label: "Sign Out", onClick: logoutUser, danger: true }
     ];
 
@@ -173,7 +216,7 @@ const Navbar = () => {
                 {/* Subtle gradient border at bottom */}
                 <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"></div>
 
-                <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 relative">
+                <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 relative">
                     <div className="flex items-center justify-between sm:gap-4 gap-0 h-16 sm:h-20">
                         {/* Logo/Brand */}
                         <motion.div
@@ -202,19 +245,46 @@ const Navbar = () => {
                         </motion.div>
 
                         {/* Desktop Navigation */}
-                        <nav className="hidden md:flex items-center gap-1.5 lg:gap-2 flex-1 justify-center max-w-3xl">
+                        <nav className="hidden lg:flex items-center gap-2 xl:gap-3 flex-1 justify-center max-w-6xl overflow-x-auto scrollbar-hide">
                             {navigationItems.map((item, index) => (
                                 <motion.button
                                     key={index}
                                     onClick={item.onClick}
-                                    className="flex items-center gap-1.5 px-2.5 lg:px-3 xl:px-4 py-2 rounded-lg text-xs lg:text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 duration-200 shadow-md hover:shadow-lg cursor-pointer"
-                                    whileHover={{ scale: 1.03 }}
-                                    whileTap={{ scale: 0.97 }}
+                                    className="flex items-center gap-2 px-3 xl:px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 duration-200 shadow-md hover:shadow-lg cursor-pointer whitespace-nowrap flex-shrink-0"
+                                    whileHover={{ scale: 1.02, y: -1 }}
+                                    whileTap={{ scale: 0.98 }}
                                 >
-                                    <div className="w-4 h-4 lg:w-4.5 lg:h-4.5">{item.icon}</div>
-                                    <span className="hidden lg:inline whitespace-nowrap">{item.label}</span>
+                                    <div className="w-4 h-4">{item.icon}</div>
+                                    <span className="whitespace-nowrap">{item.label}</span>
                                 </motion.button>
                             ))}
+                        </nav>
+
+                        {/* Tablet Navigation (md to lg) */}
+                        <nav className="hidden md:flex lg:hidden items-center gap-1.5 flex-1 justify-center max-w-4xl overflow-x-auto scrollbar-hide">
+                            {navigationItems.slice(0, 6).map((item, index) => (
+                                <motion.button
+                                    key={index}
+                                    onClick={item.onClick}
+                                    className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 duration-200 shadow-md hover:shadow-lg cursor-pointer whitespace-nowrap flex-shrink-0"
+                                    whileHover={{ scale: 1.02, y: -1 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    <div className="w-3.5 h-3.5">{item.icon}</div>
+                                    <span className="whitespace-nowrap">{item.label}</span>
+                                </motion.button>
+                            ))}
+                            {navigationItems.length > 6 && (
+                                <motion.button
+                                    onClick={() => setShowMobileMenu(true)}
+                                    className="flex items-center gap-1.5 px-2.5 py-2 rounded-lg text-xs font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-200 duration-200 shadow-md hover:shadow-lg cursor-pointer whitespace-nowrap flex-shrink-0"
+                                    whileHover={{ scale: 1.02, y: -1 }}
+                                    whileTap={{ scale: 0.98 }}
+                                >
+                                    <div className="w-3.5 h-3.5">⋯</div>
+                                    <span className="whitespace-nowrap">More</span>
+                                </motion.button>
+                            )}
                         </nav>
 
                         {/* Right Side */}
@@ -222,9 +292,9 @@ const Navbar = () => {
 
                             {user && (
                                 <>
-                                    {user.role === "student" && (
+                                    {(user.role === "student" || user.role === "school_student") && (
                                         <motion.button
-                                            className="flex items-center gap-1.5 px-3 sm:px-4 py-2 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 border-2 border-yellow-500 cursor-pointer"
+                                            className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 border-2 border-yellow-500 cursor-pointer"
                                             whileHover={{ scale: 1.03 }}
                                             whileTap={{ scale: 0.97 }}
                                             onClick={() => navigate("/student/wallet")}
@@ -235,7 +305,7 @@ const Navbar = () => {
                                         </motion.button>
                                     )}
 
-                                    {(user.role === "student" || user.role === "admin") && (
+                                    {( user.role === "admin") && (
                                         <motion.button
                                             className="relative p-2 sm:p-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
                                             whileHover={{ scale: 1.08, rotate: -10 }}
@@ -254,6 +324,38 @@ const Navbar = () => {
                                             )}
                                         </motion.button>
                                     )}
+                                    {(user.role === "student" || user.role === "school_student") && (
+                                        <motion.button
+                                            className="relative p-2 sm:p-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
+                                            whileHover={{ scale: 1.08, rotate: -10 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => navigate(`/student/notifications`)}
+                                        >
+                                            <Bell className="w-5 h-5" />
+                                            {unreadCount > 0 && (
+                                                <motion.span
+                                                    className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold shadow-lg border-2 border-white"
+                                                    animate={{ scale: [1, 1.2, 1] }}
+                                                    transition={{ duration: 2, repeat: Infinity }}
+                                                >
+                                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                                </motion.span>
+                                            )}
+                                        </motion.button>
+                                    )}
+
+                                    {/* Chat Icon for Teachers */}
+                                    {user.role === "school_teacher" && (
+                                        <motion.button
+                                            className="relative p-2 sm:p-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
+                                            whileHover={{ scale: 1.08 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => navigate(`/school-teacher/chat-contacts`)}
+                                            title="Chat with Students and Parents"
+                                        >
+                                            <MessageSquare className="w-5 h-5" />
+                                        </motion.button>
+                                    )}
 
                                     {/* Profile Menu */}
                                     <div className="relative" ref={profileMenuRef}>
@@ -269,7 +371,7 @@ const Navbar = () => {
                                             <div className="relative">
                                                 <Avatar
                                                     user={user}
-                                                    size="small"
+                                                    size="xsmall"
                                                     className=""
                                                 />
                                                 <motion.div
@@ -368,26 +470,28 @@ const Navbar = () => {
                             animate={{ opacity: 1, height: "auto" }}
                             exit={{ opacity: 0, height: 0 }}
                             transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="md:hidden border-t-2 border-gray-200 bg-white shadow-lg"
+                            className="md:hidden border-t-2 border-gray-200 bg-white shadow-lg max-h-96 overflow-y-auto"
                         >
-                            <div className="px-4 py-4 space-y-2">
-                                {navigationItems.map((item, index) => (
-                                    <motion.button
-                                        key={index}
-                                        onClick={() => {
-                                            item.onClick();
-                                            setShowMobileMenu(false);
-                                        }}
-                                        className="flex items-center gap-3 w-full px-4 py-3 text-sm font-bold text-gray-700 hover:text-white bg-gray-100 hover:bg-gradient-to-r hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 border-2 border-gray-200 hover:border-transparent rounded-xl transition-all duration-200 shadow-sm hover:shadow-lg"
-                                        whileHover={{ x: 5, scale: 1.02 }}
-                                        initial={{ x: -20, opacity: 0 }}
-                                        animate={{ x: 0, opacity: 1 }}
-                                        transition={{ delay: index * 0.05 }}
-                                    >
-                                        {item.icon}
-                                        <span>{item.label}</span>
-                                    </motion.button>
-                                ))}
+                            <div className="px-4 py-4">
+                                <div className="grid grid-cols-2 gap-2 mb-4">
+                                    {navigationItems.map((item, index) => (
+                                        <motion.button
+                                            key={index}
+                                            onClick={() => {
+                                                item.onClick();
+                                                setShowMobileMenu(false);
+                                            }}
+                                            className="flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-gray-700 hover:text-white bg-gray-100 hover:bg-gradient-to-r hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 border-2 border-gray-200 hover:border-transparent rounded-lg transition-all duration-200 shadow-sm hover:shadow-lg"
+                                            whileHover={{ scale: 1.02 }}
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: index * 0.03 }}
+                                        >
+                                            <div className="w-4 h-4">{item.icon}</div>
+                                            <span className="truncate">{item.label}</span>
+                                        </motion.button>
+                                    ))}
+                                </div>
                             </div>
                         </motion.div>
                     )}

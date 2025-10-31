@@ -11,6 +11,78 @@ export const mockFeatures = [
     category: "education",
     xpReward: 50
   },
+  // Digital Citizenship & Online Safety Game Cards - Moved to the beginning of education category
+  {
+    id: 21,
+    title: "Kids Games",
+    description: "Fun and educational digital citizenship games for children",
+    icon: "🧸",
+    path: "/games/digital-citizenship/kids",
+    color: "bg-yellow-400",
+    category: "education",
+    xpReward: 30
+  },
+  {
+    id: 22,
+    title: "Teen Games",
+    description: "Engaging digital citizenship games designed for teenagers",
+    icon: "📱",
+    path: "/games/digital-citizenship/teens",
+    color: "bg-blue-500",
+    category: "education",
+    xpReward: 35
+  },
+  {
+    id: 23,
+    title: "Adult Games",
+    description: "Challenging digital citizenship games for adults",
+    icon: "🧩",
+    path: "/games/digital-citizenship/adults",
+    color: "bg-purple-500",
+    category: "education",
+    xpReward: 40
+  },
+  {
+    id: 5,
+    title: "Financial Quiz",
+    description: "Test your financial knowledge",
+    icon: "❓",
+    path: "/learn/financial-quiz",
+    color: "bg-red-500",
+    category: "education",
+    xpReward: 55
+  },
+  // Financial Literacy Game Cards - Moved to the beginning of finance category
+  {
+    id: 12,
+    title: "Kids Games",
+    description: "Fun and educational financial games for children",
+    icon: "🧸",
+    path: "/games/financial-literacy/kids",
+    color: "bg-yellow-400",
+    category: "finance",
+    xpReward: 30
+  },
+  {
+    id: 13,
+    title: "Teen Games",
+    description: "Engaging financial games designed for teenagers",
+    icon: "📱",
+    path: "/games/financial-literacy/teens",
+    color: "bg-blue-500",
+    category: "finance",
+    xpReward: 35
+  },
+  {
+    id: 14,
+    title: "Adult Games",
+    description: "Challenging financial games for adults",
+    icon: "🧩",
+    path: "/games/financial-literacy/adults",
+    color: "bg-purple-500",
+    category: "finance",
+    xpReward: 40
+  },
   // Swapped positions: place Leaderboard where Investment Simulator was
   {
     id: 11,
@@ -33,16 +105,6 @@ export const mockFeatures = [
     xpReward: 45
   },
   {
-    id: 5,
-    title: "Financial Quiz",
-    description: "Test your financial knowledge",
-    icon: "❓",
-    path: "/learn/financial-quiz",
-    color: "bg-red-500",
-    category: "education",
-    xpReward: 55
-  },
-  {
     id: 6,
     title: "Expense Tracker",
     description: "Track your daily expenses",
@@ -51,6 +113,37 @@ export const mockFeatures = [
     color: "bg-indigo-500",
     category: "finance",
     xpReward: 35
+  },
+  // Brain Health Game Cards - Moved to the beginning of wellness category
+  {
+    id: 15,
+    title: "Kids Games",
+    description: "Fun and educational brain health games for children",
+    icon: "🧸",
+    path: "/games/brain-health/kids",
+    color: "bg-yellow-400",
+    category: "wellness",
+    xpReward: 30
+  },
+  {
+    id: 16,
+    title: "Teen Games",
+    description: "Engaging brain health games designed for teenagers",
+    icon: "📱",
+    path: "/games/brain-health/teens",
+    color: "bg-blue-500",
+    category: "wellness",
+    xpReward: 35
+  },
+  {
+    id: 17,
+    title: "Adult Games",
+    description: "Challenging brain health games for adults",
+    icon: "🧩",
+    path: "/games/brain-health/adults",
+    color: "bg-purple-500",
+    category: "wellness",
+    xpReward: 40
   },
   {
     id: 7,
@@ -61,6 +154,37 @@ export const mockFeatures = [
     color: "bg-pink-500",
     category: "wellness",
     xpReward: 30
+  },
+  // UVLS (Life Skills & Values) Game Cards - Moved to the beginning of personal category
+  {
+    id: 18,
+    title: "Kids Games",
+    description: "Fun and educational life skills games for children",
+    icon: "🧸",
+    path: "/games/uvls/kids",
+    color: "bg-yellow-400",
+    category: "personal",
+    xpReward: 30
+  },
+  {
+    id: 19,
+    title: "Teen Games",
+    description: "Engaging life skills games designed for teenagers",
+    icon: "📱",
+    path: "/games/uvls/teens",
+    color: "bg-blue-500",
+    category: "personal",
+    xpReward: 35
+  },
+  {
+    id: 20,
+    title: "Adult Games",
+    description: "Challenging life skills games for adults",
+    icon: "🧩",
+    path: "/games/uvls/adults",
+    color: "bg-purple-500",
+    category: "personal",
+    xpReward: 40
   },
   {
     id: 8,
@@ -103,130 +227,6 @@ export const mockFeatures = [
     color: "bg-purple-500",
     category: "finance",
     xpReward: 60
-  },
-  // Financial Literacy Game Cards
-  {
-    id: 12,
-    title: "Kids Games",
-    description: "Fun and educational financial games for children",
-    icon: "🧸",
-    path: "/games/financial-literacy/kids",
-    color: "bg-yellow-400",
-    category: "finance",
-    xpReward: 30
-  },
-  {
-    id: 13,
-    title: "Teen Games",
-    description: "Engaging financial games designed for teenagers",
-    icon: "📱",
-    path: "/games/financial-literacy/teens",
-    color: "bg-blue-500",
-    category: "finance",
-    xpReward: 35
-  },
-  {
-    id: 14,
-    title: "Adult Games",
-    description: "Challenging financial games for adults",
-    icon: "🧩",
-    path: "/games/financial-literacy/adults",
-    color: "bg-purple-500",
-    category: "finance",
-    xpReward: 40
-  },
-  // Brain Health Game Cards
-  {
-    id: 15,
-    title: "Kids Games",
-    description: "Fun and educational brain health games for children",
-    icon: "🧸",
-    path: "/games/brain-health/kids",
-    color: "bg-yellow-400",
-    category: "wellness",
-    xpReward: 30
-  },
-  {
-    id: 16,
-    title: "Teen Games",
-    description: "Engaging brain health games designed for teenagers",
-    icon: "📱",
-    path: "/games/brain-health/teens",
-    color: "bg-blue-500",
-    category: "wellness",
-    xpReward: 35
-  },
-  {
-    id: 17,
-    title: "Adult Games",
-    description: "Challenging brain health games for adults",
-    icon: "🧩",
-    path: "/games/brain-health/adults",
-    color: "bg-purple-500",
-    category: "wellness",
-    xpReward: 40
-  },
-  // UVLS (Life Skills & Values) Game Cards
-  {
-    id: 18,
-    title: "Kids Games",
-    description: "Fun and educational life skills games for children",
-    icon: "🧸",
-    path: "/games/uvls/kids",
-    color: "bg-yellow-400",
-    category: "personal",
-    xpReward: 30
-  },
-  {
-    id: 19,
-    title: "Teen Games",
-    description: "Engaging life skills games designed for teenagers",
-    icon: "📱",
-    path: "/games/uvls/teens",
-    color: "bg-blue-500",
-    category: "personal",
-    xpReward: 35
-  },
-  {
-    id: 20,
-    title: "Adult Games",
-    description: "Challenging life skills games for adults",
-    icon: "🧩",
-    path: "/games/uvls/adults",
-    color: "bg-purple-500",
-    category: "personal",
-    xpReward: 40
-  },
-  // Digital Citizenship & Online Safety Game Cards
-  {
-    id: 21,
-    title: "Kids Games",
-    description: "Fun and educational digital citizenship games for children",
-    icon: "🧸",
-    path: "/games/digital-citizenship/kids",
-    color: "bg-yellow-400",
-    category: "education",
-    xpReward: 30
-  },
-  {
-    id: 22,
-    title: "Teen Games",
-    description: "Engaging digital citizenship games designed for teenagers",
-    icon: "📱",
-    path: "/games/digital-citizenship/teens",
-    color: "bg-blue-500",
-    category: "education",
-    xpReward: 35
-  },
-  {
-    id: 23,
-    title: "Adult Games",
-    description: "Challenging digital citizenship games for adults",
-    icon: "🧩",
-    path: "/games/digital-citizenship/adults",
-    color: "bg-purple-500",
-    category: "education",
-    xpReward: 40
   },
   // Moral Values Game Cards
   {

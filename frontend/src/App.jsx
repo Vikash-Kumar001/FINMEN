@@ -21,6 +21,8 @@ import AccountTypeSelection from "./pages/Auth/AccountTypeSelection";
 
 // Student Pages
 import StudentDashboard from "./pages/Student/StudentDashboard";
+import StudentActivity from "./pages/Student/StudentActivity";
+import AssignmentAttempt from "./pages/Student/AssignmentAttempt";
 import CategoryView from "./pages/Student/CategoryView";
 import QuickQuiz from "./pages/Student/QuickQuiz";
 import MoodTracker from "./pages/Student/MoodTracker";
@@ -36,8 +38,6 @@ import Notifications from "./components/Notifications";
 import Profile from "./components/Profile";
 import Setting from "./components/Settings";
 import BreathingExercise from "./pages/Student/BreathingExercise";
-import DailyChallenges from "./pages/Student/DailyChallenges";
-import Challenge from "./pages/Student/Challenge";
 import FinancialLiteracy from "./pages/Student/FinancialLiteracy";
 import BudgetPlanner from "./pages/Student/BudgetPlanner";
 import InvestmentSimulator from "./pages/Student/InvestmentSimulator";
@@ -914,11 +914,22 @@ import SellerDashboard from "./pages/Seller/SellerDashboard";
 
 // CSR Pages
 import CSRDashboard from "./pages/CSR/CSRDashboard";
+import CSROverview from "./pages/CSR/CSROverview";
+import CSRCampaigns from "./pages/CSR/CSRCampaigns";
+import CSRCampaignWizard from "./pages/CSR/CSRCampaignWizard";
+import CSRFinancial from "./pages/CSR/CSRFinancial";
+import CSRReports from "./pages/CSR/CSRReports";
+import CSRApprovals from "./pages/CSR/CSRApprovals";
+import CSRBudgetTracking from "./pages/CSR/CSRBudgetTracking";
+import CSRBudget from "./pages/CSR/CSRBudget";
+import CSRCobranding from "./pages/CSR/CSRCobranding";
 
 // Multi-Tenant Pages
 import CompanySignup from "./pages/MultiTenant/CompanySignup";
 import CreateOrganization from "./pages/MultiTenant/CreateOrganization";
 import SchoolAdminDashboard from "./pages/School/SchoolAdminDashboard";
+import AnnouncementManagement from "./pages/School/AnnouncementManagement";
+import Announcements from "./pages/School/Announcements";
 import SchoolAdminAnalytics from "./pages/School/SchoolAdminAnalytics";
 import SchoolAdminStudents from "./pages/School/SchoolAdminStudents";
 import SchoolAdminTeachers from "./pages/School/SchoolAdminTeachers";
@@ -942,8 +953,14 @@ import TeacherStudents from "./pages/School/TeacherStudents";
 import TeacherAnalytics from "./pages/School/TeacherAnalytics";
 import TeacherMessages from "./pages/School/TeacherMessages";
 import TeacherTasks from "./pages/School/TeacherTasks";
+import TeacherChatContacts from "./pages/School/TeacherChatContacts";
 import TeacherSettings from "./pages/School/TeacherSettings";
 import TeacherStudentProgress from "./pages/School/TeacherStudentProgress";
+import TeacherParentChat from "./pages/School/TeacherParentChat";
+import TeacherStudentChat from "./pages/School/TeacherStudentChat";
+import SchoolStudentChat from "./pages/School/SchoolStudentChat";
+import ParentChat from "./pages/Parent/ParentChat";
+import AssignmentTracking from "./pages/School/AssignmentTracking";
 import LandingPage from "./pages/LandingPage";
 import IndividualAccountSelection from "./pages/IndividualAccountSelection";
 
@@ -996,7 +1013,7 @@ const App = () => {
     if (user.role === "school_teacher")
       return <Navigate to="/school-teacher/overview" replace />;
     if (user.role === "school_student")
-      return <Navigate to="/school-student/dashboard" replace />;
+      return <Navigate to="/student/dashboard" replace />;
     if (user.role === "school_parent")
       return <Navigate to="/school-parent/dashboard" replace />;
 
@@ -1037,6 +1054,9 @@ const App = () => {
     location.pathname.startsWith("/learn/") ||
     location.pathname === "/student/breathing";
 
+  // Hide navbar on chat pages
+  const isChatPage = location.pathname.includes("/chat");
+
   // Hide navbar on public pages
   const isPublicPage = [
     "/about",
@@ -1052,6 +1072,7 @@ const App = () => {
     <div className="min-h-screen bg-gray-100">
       {!isAuthPage &&
         !isFullScreenGame &&
+        !isChatPage &&
         !isPublicPage &&
         location.pathname !== "/" &&
         location.pathname !== "/school-registration" &&
@@ -1061,7 +1082,10 @@ const App = () => {
         location.pathname !== "/register-parent" &&
         location.pathname !== "/register-seller" &&
         location.pathname !== "/register-teacher" &&
-        location.pathname !== "/pending-approval" && <Navbar />}
+        location.pathname !== "/register-stakeholder" &&
+        location.pathname !== "/pending-approval" &&
+        !location.pathname.includes("/student-chat/") &&
+        !location.pathname.includes("/parent-chat") && <Navbar />}
       {!isAuthPage &&
         user &&
         (user.role === "student" || user.role === "school_student") && (
@@ -1154,6 +1178,14 @@ const App = () => {
             element={
               <ProtectedRoute roles={["school_admin"]}>
                 <SchoolAdminStaff />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/school/admin/announcements"
+            element={
+              <ProtectedRoute roles={["school_admin"]}>
+                <AnnouncementManagement />
               </ProtectedRoute>
             }
           />
@@ -1282,10 +1314,34 @@ const App = () => {
             }
           />
           <Route
+            path="/school-teacher/chat-contacts"
+            element={
+              <ProtectedRoute roles={["school_teacher"]}>
+                <TeacherChatContacts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/school-teacher/announcements"
+            element={
+              <ProtectedRoute roles={["school_teacher"]}>
+                <Announcements />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/school-teacher/tasks"
             element={
               <ProtectedRoute roles={["school_teacher"]}>
                 <TeacherTasks />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/school-teacher/tracking"
+            element={
+              <ProtectedRoute roles={["school_teacher"]}>
+                <AssignmentTracking />
               </ProtectedRoute>
             }
           />
@@ -1310,6 +1366,22 @@ const App = () => {
             element={
               <ProtectedRoute roles={["school_teacher"]}>
                 <TeacherStudentProgress />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/school-teacher/student-chat/:studentId"
+            element={
+              <ProtectedRoute roles={["school_teacher"]}>
+                <TeacherStudentChat />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/school-teacher/student/:studentId/parent-chat"
+            element={
+              <ProtectedRoute roles={["school_teacher"]}>
+                <TeacherParentChat />
               </ProtectedRoute>
             }
           />
@@ -1339,10 +1411,42 @@ const App = () => {
             }
           />
           <Route
+            path="/school-student/announcements"
+            element={
+              <ProtectedRoute roles={["school_student"]}>
+                <Announcements />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/school-student/chat"
+            element={
+              <ProtectedRoute roles={["school_student"]}>
+                <SchoolStudentChat />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/school-parent/dashboard"
             element={
               <ProtectedRoute roles={["school_parent"]}>
                 <SchoolParentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/school-parent/announcements"
+            element={
+              <ProtectedRoute roles={["school_parent"]}>
+                <Announcements />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/school-parent/student/:studentId/chat"
+            element={
+              <ProtectedRoute roles={["school_parent"]}>
+                <ParentChat />
               </ProtectedRoute>
             }
           />
@@ -1351,15 +1455,39 @@ const App = () => {
           <Route
             path="/student/dashboard"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <StudentDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/activity"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <StudentActivity />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/assignment/:assignmentId/attempt"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <AssignmentAttempt />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/announcements"
+            element={
+              <ProtectedRoute roles={["student"]}>
+                <Announcements />
               </ProtectedRoute>
             }
           />
           <Route
             path="/student/dashboard/quick-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <QuickQuiz />
               </ProtectedRoute>
             }
@@ -1367,7 +1495,7 @@ const App = () => {
           <Route
             path="/student/dashboard/:categorySlug"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <CategoryView />
               </ProtectedRoute>
             }
@@ -1375,7 +1503,7 @@ const App = () => {
           <Route
             path="/student/mindfull-break"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <MindfulnessBreak />
               </ProtectedRoute>
             }
@@ -1383,7 +1511,7 @@ const App = () => {
           <Route
             path="/student/mood-tracker"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <MoodTracker />
               </ProtectedRoute>
             }
@@ -1391,7 +1519,7 @@ const App = () => {
           <Route
             path="/student/journal"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <Journal />
               </ProtectedRoute>
             }
@@ -1399,7 +1527,7 @@ const App = () => {
           <Route
             path="/student/rewards"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RewardsPage />
               </ProtectedRoute>
             }
@@ -1407,7 +1535,7 @@ const App = () => {
           <Route
             path="/student/redeem"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RedeemPage />
               </ProtectedRoute>
             }
@@ -1415,7 +1543,7 @@ const App = () => {
           <Route
             path="/student/wallet"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <WalletPage />
               </ProtectedRoute>
             }
@@ -1423,7 +1551,7 @@ const App = () => {
           <Route
             path="/student/leaderboard"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <Leaderboard />
               </ProtectedRoute>
             }
@@ -1431,7 +1559,7 @@ const App = () => {
           <Route
             path="/student/game"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <StudentGame />
               </ProtectedRoute>
             }
@@ -1439,7 +1567,7 @@ const App = () => {
           <Route
             path="/student/notifications"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <Notifications />
               </ProtectedRoute>
             }
@@ -1447,7 +1575,7 @@ const App = () => {
           <Route
             path="/student/profile"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <Profile />
               </ProtectedRoute>
             }
@@ -1455,7 +1583,7 @@ const App = () => {
           <Route
             path="/student/settings"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <Setting />
               </ProtectedRoute>
             }
@@ -1463,31 +1591,15 @@ const App = () => {
           <Route
             path="/student/breathing"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <MindfulnessBreak />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/student/daily-challenges"
-            element={
-              <ProtectedRoute roles={["student"]}>
-                <DailyChallenges />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/student/challenge"
-            element={
-              <ProtectedRoute roles={["student"]}>
-                <Challenge />
               </ProtectedRoute>
             }
           />
           <Route
             path="/learn/financial-literacy"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <FinancialLiteracy />
               </ProtectedRoute>
             }
@@ -1495,7 +1607,7 @@ const App = () => {
           <Route
             path="/tools/budget-planner"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BudgetPlanner />
               </ProtectedRoute>
             }
@@ -1503,7 +1615,7 @@ const App = () => {
           <Route
             path="/games/investment-simulator"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <InvestmentSimulator />
               </ProtectedRoute>
             }
@@ -1512,7 +1624,7 @@ const App = () => {
           <Route
             path="/tools/savings-goals"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SavingsGoals />
               </ProtectedRoute>
             }
@@ -1520,7 +1632,7 @@ const App = () => {
           <Route
             path="/learn/financial-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <FinancialQuiz />
               </ProtectedRoute>
             }
@@ -1528,7 +1640,7 @@ const App = () => {
           <Route
             path="/tools/expense-tracker"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ExpenseTracker />
               </ProtectedRoute>
             }
@@ -1538,7 +1650,7 @@ const App = () => {
           <Route
             path="/games/dcos"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DCOSGames />
               </ProtectedRoute>
             }
@@ -1546,7 +1658,7 @@ const App = () => {
           <Route
             path="/games/brain-teaser"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BrainTeaserGames />
               </ProtectedRoute>
             }
@@ -1554,7 +1666,7 @@ const App = () => {
           <Route
             path="/games/brain-teaser/:gameId"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BrainTeaserPlay />
               </ProtectedRoute>
             }
@@ -1562,7 +1674,7 @@ const App = () => {
           <Route
             path="/games/:category/:ageGroup"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <GameCategoryPage />
               </ProtectedRoute>
             }
@@ -3173,7 +3285,7 @@ const App = () => {
           />
 
           {/* Brain Health Games for Kids */}
-          <Route
+           <Route
             path="/student/brain/kids/water-story"
             element={
               <ProtectedRoute roles={["student"]}>
@@ -5599,7 +5711,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/student/uvls/kids/goal-steps"
             element={
@@ -5608,7 +5719,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/student/uvls/kids/smart-poster"
             element={
@@ -5617,7 +5727,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/student/uvls/kids/weekly-plan-journal"
             element={
@@ -5626,7 +5735,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/student/uvls/kids/time-budget-simulation"
             element={
@@ -5635,7 +5743,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/student/uvls/kids/safety-reflexx"
             element={
@@ -5644,7 +5751,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/student/uvls/kids/life-skills-starter-badge"
             element={
@@ -6489,7 +6595,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/strong-password-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <StrongPasswordReflex />
               </ProtectedRoute>
             }
@@ -6497,7 +6603,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/stranger-chat-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <StrangerChatStory />
               </ProtectedRoute>
             }
@@ -6505,7 +6611,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/photo-share-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PhotoShareQuiz />
               </ProtectedRoute>
             }
@@ -6513,7 +6619,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/personal-info-puzzle"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PersonalInfoPuzzle />
               </ProtectedRoute>
             }
@@ -6521,7 +6627,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/game-invite-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <GameInviteReflex />
               </ProtectedRoute>
             }
@@ -6529,7 +6635,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/safety-poster"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SafetyPoster />
               </ProtectedRoute>
             }
@@ -6537,7 +6643,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/family-rules-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <FamilyRulesStory />
               </ProtectedRoute>
             }
@@ -6545,7 +6651,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/device-sharing-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DeviceSharingQuiz />
               </ProtectedRoute>
             }
@@ -6553,7 +6659,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/online-friend-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <OnlineFriendReflex />
               </ProtectedRoute>
             }
@@ -6561,7 +6667,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/safe-user-badge"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SafeUserBadge />
               </ProtectedRoute>
             }
@@ -6569,7 +6675,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/spot-bully-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SpotBullyQuiz />
               </ProtectedRoute>
             }
@@ -6577,7 +6683,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/kind-words-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <KindWordsReflex />
               </ProtectedRoute>
             }
@@ -6585,7 +6691,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/smile-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SmileStory />
               </ProtectedRoute>
             }
@@ -6593,7 +6699,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/gossip-puzzle"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <GossipPuzzle />
               </ProtectedRoute>
             }
@@ -6601,7 +6707,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/playground-bystander"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PlaygroundBystander />
               </ProtectedRoute>
             }
@@ -6609,7 +6715,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/cyberbully-report"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <CyberBullyReport />
               </ProtectedRoute>
             }
@@ -6617,7 +6723,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/role-swap"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RoleSwap />
               </ProtectedRoute>
             }
@@ -6625,7 +6731,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/kindness-journal"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <KindnessJournal />
               </ProtectedRoute>
             }
@@ -6633,7 +6739,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/friendship-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <FriendshipReflex />
               </ProtectedRoute>
             }
@@ -6641,7 +6747,7 @@ const App = () => {
           <Route
             path="/student/dcos/kids/kind-friend-badge"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <KindFriendBadge />
               </ProtectedRoute>
             }
@@ -6651,7 +6757,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/password-sharing-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PasswordSharingStory />
               </ProtectedRoute>
             }
@@ -6659,7 +6765,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/privacy-settings-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PrivacySettingsQuiz />
               </ProtectedRoute>
             }
@@ -6667,7 +6773,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/otp-fraud-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <OTPFraudReflex />
               </ProtectedRoute>
             }
@@ -6675,7 +6781,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/profile-picture-simulation"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ProfilePictureSimulation />
               </ProtectedRoute>
             }
@@ -6683,7 +6789,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/social-media-journal"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SocialMediaJournal />
               </ProtectedRoute>
             }
@@ -6691,7 +6797,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/data-consent-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DataConsentQuiz />
               </ProtectedRoute>
             }
@@ -6699,7 +6805,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/fake-friend-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <FakeFriendStory />
               </ProtectedRoute>
             }
@@ -6707,7 +6813,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/safety-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SafetyReflex />
               </ProtectedRoute>
             }
@@ -6715,7 +6821,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/debate-stage-online-friends"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DebateStageOnlineFriends />
               </ProtectedRoute>
             }
@@ -6723,7 +6829,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/online-safety-badge"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <OnlineSafetyBadge />
               </ProtectedRoute>
             }
@@ -6731,7 +6837,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/cyberbully-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <CyberBullyReflex />
               </ProtectedRoute>
             }
@@ -6739,7 +6845,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/peer-pressure-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PeerPressureStory />
               </ProtectedRoute>
             }
@@ -6747,7 +6853,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/gossip-chain-simulation"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <GossipChainSimulation />
               </ProtectedRoute>
             }
@@ -6755,7 +6861,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/debate-stage-trolling"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DebateStageTrolling />
               </ProtectedRoute>
             }
@@ -6763,7 +6869,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/diversity-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DiversityQuiz />
               </ProtectedRoute>
             }
@@ -6771,7 +6877,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/encourage-roleplay"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <EncourageRoleplay />
               </ProtectedRoute>
             }
@@ -6779,7 +6885,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/empathy-journal"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <EmpathyJournal />
               </ProtectedRoute>
             }
@@ -6787,7 +6893,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/anti-bully-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <AntiBullyReflex />
               </ProtectedRoute>
             }
@@ -6795,7 +6901,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/upstander-simulation"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <UpstanderSimulation />
               </ProtectedRoute>
             }
@@ -6803,7 +6909,7 @@ const App = () => {
           <Route
             path="/student/dcos/teen/courage-badge"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <CourageBadge />
               </ProtectedRoute>
             }
@@ -6813,7 +6919,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/lost-pencil-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <LostPencilStory />
               </ProtectedRoute>
             }
@@ -6821,7 +6927,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/homework-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <HomeworkQuiz />
               </ProtectedRoute>
             }
@@ -6829,7 +6935,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/truth-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <TruthReflex />
               </ProtectedRoute>
             }
@@ -6837,7 +6943,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/puzzle-of-trust"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PuzzleOfTrust />
               </ProtectedRoute>
             }
@@ -6845,7 +6951,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/cheating-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <CheatingStory />
               </ProtectedRoute>
             }
@@ -6853,7 +6959,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/poster-of-honesty"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PosterOfHonesty />
               </ProtectedRoute>
             }
@@ -6861,7 +6967,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/journal-of-truth"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <JournalOfTruth />
               </ProtectedRoute>
             }
@@ -6869,7 +6975,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/candy-shop-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <CandyShopStory />
               </ProtectedRoute>
             }
@@ -6877,7 +6983,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/reflex-quick-choice"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexQuickChoice />
               </ProtectedRoute>
             }
@@ -6885,7 +6991,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/badge-truthful-kid"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BadgeTruthfulKid />
               </ProtectedRoute>
             }
@@ -6893,7 +6999,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/respect-elders-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RespectEldersStory />
               </ProtectedRoute>
             }
@@ -6901,7 +7007,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/polite-words-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PoliteWordsQuiz2 />
               </ProtectedRoute>
             }
@@ -6909,7 +7015,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/reflex-respect"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexRespect />
               </ProtectedRoute>
             }
@@ -6917,7 +7023,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/puzzle-respect-match"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PuzzleRespectMatch />
               </ProtectedRoute>
             }
@@ -6925,7 +7031,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/teacher-greeting-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <TeacherGreetingStory />
               </ProtectedRoute>
             }
@@ -6933,7 +7039,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/gratitude-poster"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <GratitudePoster />
               </ProtectedRoute>
             }
@@ -6941,7 +7047,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/journal-of-gratitude"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <JournalOfGratitude />
               </ProtectedRoute>
             }
@@ -6949,7 +7055,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/playground-respect-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PlaygroundRespectStory />
               </ProtectedRoute>
             }
@@ -6957,7 +7063,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/reflex-help"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexHelp />
               </ProtectedRoute>
             }
@@ -6965,7 +7071,7 @@ const App = () => {
           <Route
             path="/student/moral-values/kids/badge-respect-kid"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BadgeRespectKid />
               </ProtectedRoute>
             }
@@ -6975,7 +7081,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/friend-lie-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <FriendLieStory />
               </ProtectedRoute>
             }
@@ -6983,7 +7089,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/white-lie-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <WhiteLieQuiz />
               </ProtectedRoute>
             }
@@ -6991,7 +7097,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/reflex-spot-fake"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexSpotFake />
               </ProtectedRoute>
             }
@@ -6999,7 +7105,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/puzzle-of-integrity"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PuzzleOfIntegrity />
               </ProtectedRoute>
             }
@@ -7007,7 +7113,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/bribe-simulation"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BribeSimulation />
               </ProtectedRoute>
             }
@@ -7015,7 +7121,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/debate-lying-for-friend"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DebateLyingForFriend />
               </ProtectedRoute>
             }
@@ -7023,7 +7129,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/integrity-journal"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <IntegrityJournal />
               </ProtectedRoute>
             }
@@ -7031,7 +7137,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/exam-cheating-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ExamCheatingStory />
               </ProtectedRoute>
             }
@@ -7039,7 +7145,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/roleplay-truthful-leader"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RoleplayTruthfulLeader />
               </ProtectedRoute>
             }
@@ -7047,7 +7153,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/badge-integrity-hero"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BadgeIntegrityHero />
               </ProtectedRoute>
             }
@@ -7055,7 +7161,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/debate-obey-or-question"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DebateObeyOrQuestion />
               </ProtectedRoute>
             }
@@ -7063,7 +7169,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/gratitude-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <GratitudeStory />
               </ProtectedRoute>
             }
@@ -7071,7 +7177,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/reflex-politeness"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexPoliteness />
               </ProtectedRoute>
             }
@@ -7079,7 +7185,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/puzzle-of-gratitude"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PuzzleOfGratitude />
               </ProtectedRoute>
             }
@@ -7087,7 +7193,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/service-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ServiceStory />
               </ProtectedRoute>
             }
@@ -7095,7 +7201,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/respect-journal"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RespectJournal />
               </ProtectedRoute>
             }
@@ -7103,7 +7209,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/debate-respect-teachers"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DebateRespectTeachers />
               </ProtectedRoute>
             }
@@ -7111,7 +7217,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/roleplay-respect-leader"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RoleplayRespectLeader />
               </ProtectedRoute>
             }
@@ -7119,7 +7225,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/reflex-gratitude"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexGratitude />
               </ProtectedRoute>
             }
@@ -7127,7 +7233,7 @@ const App = () => {
           <Route
             path="/student/moral-values/teen/badge-gratitude-hero"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BadgeGratitudeHero />
               </ProtectedRoute>
             }
@@ -7137,7 +7243,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/spot-the-pattern"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SpotThePattern />
               </ProtectedRoute>
             }
@@ -7145,7 +7251,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/cat-or-dog-game"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <CatOrDogGame />
               </ProtectedRoute>
             }
@@ -7153,7 +7259,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/sorting-colors"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SortingColors />
               </ProtectedRoute>
             }
@@ -7161,7 +7267,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/true-false-ai-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <TrueFalseAIQuiz />
               </ProtectedRoute>
             }
@@ -7169,7 +7275,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/emoji-classifier"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <EmojiClassifier />
               </ProtectedRoute>
             }
@@ -7177,7 +7283,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/self-driving-car"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SelfDrivingCar />
               </ProtectedRoute>
             }
@@ -7185,7 +7291,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/pattern-finder-puzzle"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PatternFinderPuzzle />
               </ProtectedRoute>
             }
@@ -7193,7 +7299,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/robot-helper-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RobotHelperStory />
               </ProtectedRoute>
             }
@@ -7201,7 +7307,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/spam-vs-not-spam"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SpamVsNotSpam />
               </ProtectedRoute>
             }
@@ -7209,7 +7315,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/siri-alexa-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SiriAlexaQuiz />
               </ProtectedRoute>
             }
@@ -7217,7 +7323,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/ai-in-games"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <AIInGames />
               </ProtectedRoute>
             }
@@ -7225,7 +7331,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/match-ai-tools"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <MatchAITools />
               </ProtectedRoute>
             }
@@ -7233,7 +7339,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/pattern-music-game"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PatternMusicGame />
               </ProtectedRoute>
             }
@@ -7241,7 +7347,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/robot-vision-game"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RobotVisionGame />
               </ProtectedRoute>
             }
@@ -7249,7 +7355,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/smart-home-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SmartHomeStory />
               </ProtectedRoute>
             }
@@ -7257,7 +7363,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/train-the-robot"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <TrainTheRobot />
               </ProtectedRoute>
             }
@@ -7265,7 +7371,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/prediction-puzzle"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PredictionPuzzle />
               </ProtectedRoute>
             }
@@ -7273,7 +7379,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/friendly-ai-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <FriendlyAIQuiz />
               </ProtectedRoute>
             }
@@ -7281,7 +7387,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/robot-emotion-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RobotEmotionStory />
               </ProtectedRoute>
             }
@@ -7289,7 +7395,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/kids/recommendation-game"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RecommendationGame />
               </ProtectedRoute>
             }
@@ -7299,7 +7405,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/what-is-ai-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <WhatIsAIQuiz />
               </ProtectedRoute>
             }
@@ -7307,7 +7413,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/pattern-prediction-puzzle"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PatternPredictionPuzzle />
               </ProtectedRoute>
             }
@@ -7315,7 +7421,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/image-classifier-game"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ImageClassifierGame />
               </ProtectedRoute>
             }
@@ -7323,7 +7429,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/human-vs-ai-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <HumanVsAIQuiz />
               </ProtectedRoute>
             }
@@ -7331,7 +7437,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/predict-next-word"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PredictNextWord />
               </ProtectedRoute>
             }
@@ -7339,7 +7445,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/self-driving-car-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SelfDrivingCarReflex />
               </ProtectedRoute>
             }
@@ -7347,7 +7453,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/sorting-emotions-game"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SortingEmotionsGame />
               </ProtectedRoute>
             }
@@ -7355,7 +7461,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/true-false-ai-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <TrueFalseAIQuizTeen />
               </ProtectedRoute>
             }
@@ -7363,7 +7469,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/chatbot-simulation"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ChatbotSimulation />
               </ProtectedRoute>
             }
@@ -7371,7 +7477,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/ai-in-gaming-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <AIInGamingStory />
               </ProtectedRoute>
             }
@@ -7379,7 +7485,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/pattern-music-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PatternMusicReflexTeen />
               </ProtectedRoute>
             }
@@ -7387,7 +7493,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/computer-vision-basics"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ComputerVisionBasics />
               </ProtectedRoute>
             }
@@ -7395,7 +7501,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/ai-in-smartphones-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <AIInSmartphonesQuiz />
               </ProtectedRoute>
             }
@@ -7403,7 +7509,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/prediction-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PredictionStory />
               </ProtectedRoute>
             }
@@ -7411,7 +7517,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/machine-vs-human-reflex"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <MachineVsHumanReflex />
               </ProtectedRoute>
             }
@@ -7419,7 +7525,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/language-ai-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <LanguageAIQuiz />
               </ProtectedRoute>
             }
@@ -7427,7 +7533,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/simple-algorithm-puzzle"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SimpleAlgorithmPuzzle />
               </ProtectedRoute>
             }
@@ -7435,7 +7541,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/smart-home-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SmartHomeStoryTeen />
               </ProtectedRoute>
             }
@@ -7443,7 +7549,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/recommendation-simulation"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RecommendationSimulation />
               </ProtectedRoute>
             }
@@ -7451,7 +7557,7 @@ const App = () => {
           <Route
             path="/student/ai-for-all/teen/ai-everywhere-quiz"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <AIEverywhereQuiz />
               </ProtectedRoute>
             }
@@ -7461,7 +7567,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/doctor-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DoctorStory />
               </ProtectedRoute>
             }
@@ -7469,7 +7575,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/quiz-on-jobs"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <QuizOnJobs />
               </ProtectedRoute>
             }
@@ -7477,7 +7583,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/reflex-job-match"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexJobMatch />
               </ProtectedRoute>
             }
@@ -7485,7 +7591,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/puzzle-who-does-what"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PuzzleWhoDoesWhat />
               </ProtectedRoute>
             }
@@ -7493,7 +7599,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/dream-job-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DreamJobStory />
               </ProtectedRoute>
             }
@@ -7501,7 +7607,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/poster-my-dream-job"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PosterMyDreamJob />
               </ProtectedRoute>
             }
@@ -7509,7 +7615,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/journal-of-jobs"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <JournalOfJobs />
               </ProtectedRoute>
             }
@@ -7517,7 +7623,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/school-helper-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SchoolHelperStory />
               </ProtectedRoute>
             }
@@ -7525,7 +7631,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/reflex-career-check"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexCareerCheck />
               </ProtectedRoute>
             }
@@ -7533,7 +7639,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/badge-career-explorer"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BadgeCareerExplorer />
               </ProtectedRoute>
             }
@@ -7541,7 +7647,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/idea-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <IdeaStory />
               </ProtectedRoute>
             }
@@ -7549,7 +7655,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/quiz-on-skills"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <QuizOnSkills />
               </ProtectedRoute>
             }
@@ -7557,7 +7663,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/reflex-skill-check"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexSkillCheck />
               </ProtectedRoute>
             }
@@ -7565,7 +7671,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/puzzle-match-skills"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PuzzleMatchSkills />
               </ProtectedRoute>
             }
@@ -7573,7 +7679,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/teamwork-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <TeamworkStory />
               </ProtectedRoute>
             }
@@ -7581,7 +7687,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/poster-skills-for-success"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PosterSkillsForSuccess />
               </ProtectedRoute>
             }
@@ -7589,7 +7695,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/journal-of-skills"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <JournalOfSkills />
               </ProtectedRoute>
             }
@@ -7597,7 +7703,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/risk-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RiskStory />
               </ProtectedRoute>
             }
@@ -7605,7 +7711,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/reflex-innovation"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexInnovation />
               </ProtectedRoute>
             }
@@ -7613,7 +7719,7 @@ const App = () => {
           <Route
             path="/student/ehe/kids/badge-young-innovator"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BadgeYoungInnovator />
               </ProtectedRoute>
             }
@@ -7623,7 +7729,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/career-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <CareerStory />
               </ProtectedRoute>
             }
@@ -7631,7 +7737,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/quiz-on-careers"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <QuizOnCareers />
               </ProtectedRoute>
             }
@@ -7639,7 +7745,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/reflex-teen-career"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexTeenCareer />
               </ProtectedRoute>
             }
@@ -7647,7 +7753,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/puzzle-career-match"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PuzzleCareerMatch />
               </ProtectedRoute>
             }
@@ -7655,7 +7761,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/passion-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PassionStory />
               </ProtectedRoute>
             }
@@ -7663,7 +7769,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/debate-one-career-or-many"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DebateOneCareerOrMany />
               </ProtectedRoute>
             }
@@ -7671,7 +7777,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/journal-of-career-choice"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <JournalOfCareerChoice />
               </ProtectedRoute>
             }
@@ -7679,7 +7785,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/simulation-career-fair"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SimulationCareerFair />
               </ProtectedRoute>
             }
@@ -7687,7 +7793,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/reflex-future-check"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexFutureCheck />
               </ProtectedRoute>
             }
@@ -7695,7 +7801,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/badge-career-aware-teen"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BadgeCareerAwareTeen />
               </ProtectedRoute>
             }
@@ -7703,7 +7809,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/opportunity-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <OpportunityStory />
               </ProtectedRoute>
             }
@@ -7711,7 +7817,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/quiz-on-entrepreneur-traits"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <QuizOnEntrepreneurTraits />
               </ProtectedRoute>
             }
@@ -7719,7 +7825,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/reflex-teen-skills"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexTeenSkills />
               </ProtectedRoute>
             }
@@ -7727,7 +7833,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/puzzle-match-traits"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PuzzleMatchTraits />
               </ProtectedRoute>
             }
@@ -7735,7 +7841,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/failure-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <FailureStory />
               </ProtectedRoute>
             }
@@ -7743,7 +7849,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/debate-born-or-made"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DebateBornOrMade />
               </ProtectedRoute>
             }
@@ -7751,7 +7857,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/journal-of-strengths"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <JournalOfStrengths />
               </ProtectedRoute>
             }
@@ -7759,7 +7865,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/simulation-team-project"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SimulationTeamProject />
               </ProtectedRoute>
             }
@@ -7767,7 +7873,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/reflex-teen-innovator"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexTeenInnovator />
               </ProtectedRoute>
             }
@@ -7775,7 +7881,7 @@ const App = () => {
           <Route
             path="/student/ehe/teen/badge-future-entrepreneur"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BadgeFutureEntrepreneur />
               </ProtectedRoute>
             }
@@ -7785,7 +7891,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/friends-sad-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <FriendsSadStory />
               </ProtectedRoute>
             }
@@ -7793,7 +7899,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/quiz-on-empathy"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <QuizOnEmpathy />
               </ProtectedRoute>
             }
@@ -7801,7 +7907,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/reflex-kindness"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexKindness />
               </ProtectedRoute>
             }
@@ -7809,7 +7915,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/puzzle-match-feelings"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PuzzleMatchFeelings />
               </ProtectedRoute>
             }
@@ -7817,7 +7923,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/animal-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <AnimalStory />
               </ProtectedRoute>
             }
@@ -7825,7 +7931,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/poster-be-kind-always"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PosterBeKindAlways />
               </ProtectedRoute>
             }
@@ -7833,7 +7939,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/journal-of-empathy"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <JournalOfEmpathy />
               </ProtectedRoute>
             }
@@ -7841,7 +7947,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/bully-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BullyStory />
               </ProtectedRoute>
             }
@@ -7849,7 +7955,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/reflex-help-alert"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexHelpAlert />
               </ProtectedRoute>
             }
@@ -7857,7 +7963,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/badge-kind-kid"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BadgeKindKid />
               </ProtectedRoute>
             }
@@ -7865,7 +7971,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/classroom-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ClassroomStoryCRGC />
               </ProtectedRoute>
             }
@@ -7873,7 +7979,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/quiz-on-respect"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <QuizOnRespect />
               </ProtectedRoute>
             }
@@ -7881,7 +7987,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/reflex-respect"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexRespectCRGC />
               </ProtectedRoute>
             }
@@ -7889,7 +7995,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/puzzle-respect-match"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PuzzleRespectMatchCRGC />
               </ProtectedRoute>
             }
@@ -7897,7 +8003,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/gender-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <GenderStory />
               </ProtectedRoute>
             }
@@ -7905,7 +8011,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/poster-respect-all"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PosterRespectAll />
               </ProtectedRoute>
             }
@@ -7913,7 +8019,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/journal-of-respect"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <JournalOfRespect />
               </ProtectedRoute>
             }
@@ -7921,7 +8027,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/disability-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DisabilityStory />
               </ProtectedRoute>
             }
@@ -7929,7 +8035,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/reflex-inclusion"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexInclusion />
               </ProtectedRoute>
             }
@@ -7937,7 +8043,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/kids/badge-respect-kid"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BadgeRespectKidCRGC />
               </ProtectedRoute>
             }
@@ -7947,7 +8053,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/stranger-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <StrangerStory />
               </ProtectedRoute>
             }
@@ -7955,7 +8061,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/quiz-on-compassion"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <QuizOnCompassionTeen />
               </ProtectedRoute>
             }
@@ -7963,7 +8069,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/reflex-teen-compassion"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexTeenCompassion />
               </ProtectedRoute>
             }
@@ -7971,7 +8077,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/puzzle-kind-acts"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PuzzleKindActs />
               </ProtectedRoute>
             }
@@ -7979,7 +8085,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/refugee-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <RefugeeStory />
               </ProtectedRoute>
             }
@@ -7987,7 +8093,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/debate-kindness-weakness"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DebateKindnessWeakness />
               </ProtectedRoute>
             }
@@ -7995,7 +8101,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/journal-of-compassion"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <JournalOfCompassionTeen />
               </ProtectedRoute>
             }
@@ -8003,7 +8109,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/simulation-hospital-visit"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SimulationHospitalVisit />
               </ProtectedRoute>
             }
@@ -8011,7 +8117,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/reflex-global-empathy"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexGlobalEmpathy />
               </ProtectedRoute>
             }
@@ -8019,7 +8125,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/badge-compassion-leader"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BadgeCompassionLeader />
               </ProtectedRoute>
             }
@@ -8027,7 +8133,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/cultural-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <CulturalStory />
               </ProtectedRoute>
             }
@@ -8035,7 +8141,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/quiz-on-inclusion"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <QuizOnInclusionTeen />
               </ProtectedRoute>
             }
@@ -8043,7 +8149,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/reflex-teen-respect"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexTeenRespect />
               </ProtectedRoute>
             }
@@ -8051,7 +8157,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/puzzle-inclusion-acts"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <PuzzleInclusionActs />
               </ProtectedRoute>
             }
@@ -8059,7 +8165,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/religion-story"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReligionStory />
               </ProtectedRoute>
             }
@@ -8067,7 +8173,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/debate-equality-for-all"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <DebateEqualityForAll />
               </ProtectedRoute>
             }
@@ -8075,7 +8181,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/journal-of-inclusion"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <JournalOfInclusionTeen />
               </ProtectedRoute>
             }
@@ -8083,7 +8189,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/simulation-school-event"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <SimulationSchoolEvent />
               </ProtectedRoute>
             }
@@ -8091,7 +8197,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/reflex-teen-inclusion"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <ReflexTeenInclusionCRGC />
               </ProtectedRoute>
             }
@@ -8099,7 +8205,7 @@ const App = () => {
           <Route
             path="/student/civic-responsibility/teen/badge-inclusion-leader"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <BadgeInclusionLeader />
               </ProtectedRoute>
             }
@@ -8109,7 +8215,7 @@ const App = () => {
           <Route
             path="/student/sustainability/solar-and-city/test-solar-game"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <TestSolarGame />
               </ProtectedRoute>
             }
@@ -8117,7 +8223,7 @@ const App = () => {
           <Route
             path="/student/sustainability/water-and-recycle/test-water-recycle-game"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <TestWaterRecycleGame />
               </ProtectedRoute>
             }
@@ -8125,7 +8231,7 @@ const App = () => {
           <Route
             path="/student/sustainability/carbon-and-climate/test-carbon-game"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <TestCarbonGame />
               </ProtectedRoute>
             }
@@ -8133,7 +8239,7 @@ const App = () => {
           <Route
             path="/student/sustainability/water-and-energy/test-water-energy-game"
             element={
-              <ProtectedRoute roles={["student"]}>
+              <ProtectedRoute roles={["student", "school_student"]}>
                 <TestWaterEnergyGame />
               </ProtectedRoute>
             }
@@ -8255,6 +8361,14 @@ const App = () => {
             }
           />
           <Route
+            path="/parent/announcements"
+            element={
+              <ProtectedRoute roles={["parent"]} requireApproved={true}>
+                <Announcements />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/parent/children"
             element={
               <ProtectedRoute roles={["parent"]} requireApproved={true}>
@@ -8320,6 +8434,14 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/parent/child/:childId/chat"
+            element={
+              <ProtectedRoute roles={["parent"]} requireApproved={true}>
+                <ParentChat />
+              </ProtectedRoute>
+            }
+          />
 
           <Route
             path="/parent/profile"
@@ -8334,6 +8456,14 @@ const App = () => {
             element={
               <ProtectedRoute roles={["parent"]}>
                 <Notifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parent/parent-progress"
+            element={
+              <ProtectedRoute roles={["parent"]} requireApproved={true}>
+                <ParentDashboard />
               </ProtectedRoute>
             }
           />
@@ -8358,10 +8488,86 @@ const App = () => {
 
           {/* CSR Routes */}
           <Route
+            path="/csr"
+            element={<Navigate to="/csr/overview" replace />}
+          />
+          <Route
             path="/csr/dashboard"
             element={
-              <ProtectedRoute roles={["csr"]} requireApproved={true}>
+              <ProtectedRoute roles={["csr"]}>
                 <CSRDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/csr/overview"
+            element={
+              <ProtectedRoute roles={["csr"]}>
+                <CSROverview />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/csr/campaigns"
+            element={
+              <ProtectedRoute roles={["csr"]}>
+                <CSRCampaigns />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/csr/campaign-wizard"
+            element={
+              <ProtectedRoute roles={["csr"]}>
+                <CSRCampaignWizard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/csr/financial"
+            element={
+              <ProtectedRoute roles={["csr"]}>
+                <CSRFinancial />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/csr/reports"
+            element={
+              <ProtectedRoute roles={["csr"]}>
+                <CSRReports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/csr/approvals"
+            element={
+              <ProtectedRoute roles={["csr"]}>
+                <CSRApprovals />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/csr/budget-tracking"
+            element={
+              <ProtectedRoute roles={["csr"]}>
+                <CSRBudgetTracking />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/csr/budget"
+            element={
+              <ProtectedRoute roles={["csr"]}>
+                <CSRBudget />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/csr/cobranding"
+            element={
+              <ProtectedRoute roles={["csr"]}>
+                <CSRCobranding />
               </ProtectedRoute>
             }
           />

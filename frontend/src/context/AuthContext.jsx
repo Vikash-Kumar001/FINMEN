@@ -79,6 +79,9 @@ export const AuthProvider = ({ children }) => {
                 case "school_admin":
                     navigate("/school/admin/dashboard");
                     break;
+                case "school_teacher":
+                    navigate("/school-teacher/overview");
+                    break;
                 case "parent":
                     // Parents are auto-approved; route directly to dashboard
                     navigate("/parent/dashboard");
@@ -96,18 +99,11 @@ export const AuthProvider = ({ children }) => {
                     }
                     break;
                 case "csr":
-                    if (!enhancedUser.isApproved) {
-                        navigate("/pending-approval", {
-                            state: {
-                                message: "Your CSR account is currently under review. You will be notified once approved.",
-                                user: { email: enhancedUser.email },
-                            },
-                        });
-                    } else {
-                        navigate("/csr/dashboard");
-                    }
+                    // Removed approval check for CSR users - they should go directly to dashboard
+                    navigate("/csr/dashboard");
                     break;
                 case "student":
+                case "school_student":
                 default:
                     navigate("/student/dashboard");
                     break;

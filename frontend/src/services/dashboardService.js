@@ -8,18 +8,17 @@ import api from "../utils/api";
 // ================== STUDENT DASHBOARD APIs ==================
 export const fetchStudentDashboardData = async () => {
   try {
-    const [stats, achievements, activities, challenges] = await Promise.all([
+    const [stats, achievements, activities] = await Promise.all([
       api.get("/api/stats/student"),
       api.get("/api/student/achievements"), 
-      api.get("/api/activity/my-activities?limit=5"),
-      api.get("/api/daily-challenges")
+      api.get("/api/activity/my-activities?limit=5")
     ]);
 
     return {
       stats: stats.data,
       achievements: achievements.data,
       activities: activities.data,
-      challenges: challenges.data.challenges || challenges.data
+      challenges: [] // Challenges removed - return empty array
     };
   } catch (error) {
     console.error("Error fetching student dashboard data:", error);
@@ -58,15 +57,7 @@ export const fetchStudentActivities = async (limit = 10) => {
   }
 };
 
-export const fetchStudentChallenges = async () => {
-  try {
-    const response = await api.get("/api/daily-challenges");
-    return response.data.challenges || response.data;
-  } catch (error) {
-    console.error("Error fetching student challenges:", error);
-    return [];
-  }
-};
+// fetchStudentChallenges removed - daily challenges functionality removed
 
 // New Analytics Metrics
 export const fetchPillarMastery = async () => {

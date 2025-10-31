@@ -151,6 +151,7 @@ const Profile = () => {
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [errors, setErrors] = useState({});
     const [selectedPreset, setSelectedPreset] = useState(null);
+    const [avatarFile, setAvatarFile] = useState(null);
 
     const calculateAge = useCallback((dobValue) => {
         if (!dobValue) return "";

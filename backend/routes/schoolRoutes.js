@@ -5,6 +5,7 @@ import {
   getSchoolClasses,
   getSchoolStudents,
   getSchoolTeachers,
+  getAvailableTeachers,
   getAdminTeacherStats,
   getTeacherDetailsById,
   createTeacher,
@@ -14,7 +15,12 @@ import {
   getClassStats,
   getClassDetails,
   createClass,
+  createSequentialClass,
   addStudentsToClass,
+  addStudentsByEmailToClass,
+  addTeachersToClass,
+  removeTeacherFromClass,
+  removeStudentFromClass,
   updateClass,
   deleteClass,
   getTeacherStats,
@@ -23,6 +29,7 @@ import {
   getTeacherTimetable,
   getAllStudentsForTeacher,
   getStudentAnalyticsForTeacher,
+  getStudentParent,
   getClassMasteryByPillar,
   getStudentsAtRisk,
   getSessionEngagement,
@@ -46,7 +53,10 @@ import {
   createSchoolParent,
   createAssignment,
   updateAssignment,
-  deleteAssignment,
+  deleteAssignmentForTeacher,
+  deleteAssignmentForEveryone,
+  deleteAssignmentForStudent,
+  getAssignmentById,
   markMessageAsRead,
   createSampleData,
   getTeacherSettings,
@@ -64,13 +74,10 @@ import {
   assignStudentsToClass,
   generateRegistrationLink,
   bulkUploadStudents,
-  getAssignmentTemplates,
-  getQuestionBank,
   getInavoraCatalog,
   getAvailableBadges,
   getStudentsForAssignment,
   aiSuggestStudents,
-  createAdvancedAssignment,
   // New analytics endpoints
   getStudentAdoption,
   getSchoolPillarMastery,
@@ -155,11 +162,13 @@ import {
   getPerformanceByGrade,
   getEngagementTrend,
   getStudentsWithFilters,
+  getAvailableStudents,
   getAdminStudentStats,
   getStaffStats,
   createStudent,
   deleteStudent,
   resetStudentPassword,
+  syncStudentGender,
   getSchoolStudentDetails,
   exportStudents,
   exportAnalyticsReport,
@@ -286,19 +295,22 @@ router.get('/admin/weekly-trend', requireAuth, requireSchoolAdmin, getWeeklyTren
 router.get('/admin/analytics/performance-by-grade', requireAuth, requireSchoolAdmin, getPerformanceByGrade);
 router.get('/admin/analytics/engagement-trend', requireAuth, requireSchoolAdmin, getEngagementTrend);
 router.get('/admin/analytics/export', requireAuth, requireSchoolAdmin, exportAnalyticsReport);
-router.get('/admin/classes', requireAuth, requireSchoolAdmin, getAllClasses);
-router.get('/admin/students', requireAuth, requireSchoolAdmin, getStudentsWithFilters);
-router.post('/admin/students/create', requireAuth, requireSchoolAdmin, createStudent);
-router.get('/admin/students/stats', requireAuth, requireSchoolAdmin, getAdminStudentStats);
-router.get('/admin/students/export', requireAuth, requireSchoolAdmin, exportStudents);
-router.get('/admin/students/:studentId', requireAuth, requireSchoolAdmin, getSchoolStudentDetails);
+router.get('/admin/classes', extractTenant, requireAuth, requireSchoolAdmin, getAllClasses);
+router.get('/admin/students', extractTenant, requireAuth, requireSchoolAdmin, getStudentsWithFilters);
+router.get('/admin/students/available', extractTenant, requireAuth, requireSchoolAdmin, getAvailableStudents);
+router.post('/admin/students/create', extractTenant, requireAuth, requireSchoolAdmin, createStudent);
+router.get('/admin/students/stats', extractTenant, requireAuth, requireSchoolAdmin, getAdminStudentStats);
+router.get('/admin/students/export', extractTenant, requireAuth, requireSchoolAdmin, exportStudents);
+router.post('/admin/students/sync-gender', extractTenant, requireAuth, requireSchoolAdmin, syncStudentGender);
+router.get('/admin/students/:studentId', extractTenant, requireAuth, requireSchoolAdmin, getSchoolStudentDetails);
 router.post('/admin/students/:studentId/reset-password', requireAuth, requireSchoolAdmin, resetStudentPassword);
 router.delete('/admin/students/:studentId', requireAuth, requireSchoolAdmin, deleteStudent);
 router.get('/admin/staff/stats', requireAuth, requireSchoolAdmin, getStaffStats);
 
 // Teacher Management Routes (Admin only)
-router.get('/admin/teachers', requireAuth, requireSchoolAdmin, getSchoolTeachers);
-router.post('/admin/teachers/create', requireAuth, requireSchoolAdmin, createTeacher);
+router.get('/admin/teachers', extractTenant, requireAuth, requireSchoolAdmin, getSchoolTeachers);
+router.get('/admin/teachers/available', extractTenant, requireAuth, requireSchoolAdmin, getAvailableTeachers);
+router.post('/admin/teachers/create', extractTenant, requireAuth, requireSchoolAdmin, createTeacher);
 router.get('/admin/teachers/stats', requireAuth, requireSchoolAdmin, getAdminTeacherStats);
 router.get('/admin/teachers/export', requireAuth, requireSchoolAdmin, exportTeachers);
 router.get('/admin/teachers/:teacherId', requireAuth, requireSchoolAdmin, getTeacherDetailsById);
@@ -306,12 +318,17 @@ router.delete('/admin/teachers/:teacherId', requireAuth, requireSchoolAdmin, del
 
 // Class Management Routes (Admin only)
 router.get('/admin/classes', requireAuth, requireSchoolAdmin, getAllClasses);
-router.post('/admin/classes/create', requireAuth, requireSchoolAdmin, createClass);
-router.get('/admin/classes/stats', requireAuth, requireSchoolAdmin, getClassStats);
-router.get('/admin/classes/:classId', requireAuth, requireSchoolAdmin, getClassDetails);
-router.post('/admin/classes/:classId/students', requireAuth, requireSchoolAdmin, addStudentsToClass);
-router.put('/admin/classes/:classId', requireAuth, requireSchoolAdmin, updateClass);
-router.delete('/admin/classes/:classId', requireAuth, requireSchoolAdmin, deleteClass);
+router.post('/admin/classes/create', extractTenant, requireAuth, requireSchoolAdmin, createClass);
+router.post('/admin/classes/create-sequential', extractTenant, requireAuth, requireSchoolAdmin, createSequentialClass);
+router.get('/admin/classes/stats', extractTenant, requireAuth, requireSchoolAdmin, getClassStats);
+router.get('/admin/classes/:classId', extractTenant, requireAuth, requireSchoolAdmin, getClassDetails);
+router.post('/admin/classes/:classId/students', extractTenant, requireAuth, requireSchoolAdmin, addStudentsToClass);
+router.post('/admin/classes/:classId/students-by-email', extractTenant, requireAuth, requireSchoolAdmin, addStudentsByEmailToClass);
+router.post('/admin/classes/:classId/teachers', extractTenant, requireAuth, requireSchoolAdmin, addTeachersToClass);
+router.delete('/admin/classes/:classId/teachers/:teacherId', extractTenant, requireAuth, requireSchoolAdmin, removeTeacherFromClass);
+router.delete('/admin/classes/:classId/students/:studentId', extractTenant, requireAuth, requireSchoolAdmin, removeStudentFromClass);
+router.put('/admin/classes/:classId', extractTenant, requireAuth, requireSchoolAdmin, updateClass);
+router.delete('/admin/classes/:classId', extractTenant, requireAuth, requireSchoolAdmin, deleteClass);
 
 // NEP Competency Tracking & Export Routes (Admin only)
 router.get('/admin/nep/competencies', requireAuth, requireSchoolAdmin, getNEPCompetencies);
@@ -332,6 +349,7 @@ router.get('/teacher/assignments', requireAuth, requireSchoolRole, getTeacherAss
 router.get('/teacher/timetable', requireAuth, requireSchoolRole, getTeacherTimetable);
 router.get('/teacher/all-students', requireAuth, requireSchoolRole, getAllStudentsForTeacher);
 router.get('/teacher/student/:studentId/analytics', requireAuth, requireSchoolRole, getStudentAnalyticsForTeacher);
+router.get('/student/:studentId/parent', requireAuth, requireSchoolRole, getStudentParent);
 router.get('/teacher/class-mastery', requireAuth, requireSchoolRole, getClassMasteryByPillar);
 router.get('/teacher/students-at-risk', requireAuth, requireSchoolRole, getStudentsAtRisk);
 router.get('/teacher/session-engagement', requireAuth, requireSchoolRole, getSessionEngagement);
@@ -344,7 +362,11 @@ router.get('/teacher/class-missions', requireAuth, requireSchoolRole, getClassMi
 // Assignment/Task CRUD
 router.post('/teacher/assignments', requireAuth, requireSchoolRole, createAssignment);
 router.put('/teacher/assignments/:assignmentId', requireAuth, requireSchoolRole, updateAssignment);
-router.delete('/teacher/assignments/:assignmentId', requireAuth, requireSchoolRole, deleteAssignment);
+router.delete('/teacher/assignments/:assignmentId/for-me', requireAuth, requireSchoolRole, deleteAssignmentForTeacher);
+router.delete('/teacher/assignments/:assignmentId/for-everyone', requireAuth, requireSchoolRole, deleteAssignmentForEveryone);
+
+// Student delete assignment
+router.delete('/student/assignments/:assignmentId/for-me', requireAuth, requireSchoolRole, deleteAssignmentForStudent);
 
 // Message operations
 router.put('/teacher/messages/:messageId/read', requireAuth, requireSchoolRole, markMessageAsRead);
@@ -377,18 +399,16 @@ router.post('/teacher/bulk-upload-students', requireAuth, requireSchoolRole, upl
 router.get('/teacher/groups', requireAuth, requireSchoolRole, getTeacherGroups);
 router.post('/teacher/groups', requireAuth, requireSchoolRole, createStudentGroup);
 
-// Assignment Wizard endpoints
-router.get('/teacher/assignment-templates', requireAuth, requireSchoolRole, getAssignmentTemplates);
-router.get('/teacher/question-bank', requireAuth, requireSchoolRole, getQuestionBank);
 router.get('/teacher/inavora-catalog', requireAuth, requireSchoolRole, getInavoraCatalog);
 router.get('/teacher/available-badges', requireAuth, requireSchoolRole, getAvailableBadges);
 router.post('/teacher/get-students-for-assignment', requireAuth, requireSchoolRole, getStudentsForAssignment);
 router.post('/teacher/ai-suggest-students', requireAuth, requireSchoolRole, aiSuggestStudents);
-router.post('/teacher/assignments/create-advanced', requireAuth, requireSchoolRole, createAdvancedAssignment);
+router.delete('/teacher/class/:classId/student/:studentId', requireAuth, requireSchoolRole, removeStudentFromClass);
 
 // School Student Routes
 router.get('/student/stats', requireAuth, requireSchoolRole, getStudentStats);
 router.get('/student/assignments', requireAuth, requireSchoolRole, getStudentAssignments);
+router.get('/assignments/:assignmentId', requireAuth, requireSchoolRole, getAssignmentById);
 router.get('/student/timetable', requireAuth, requireSchoolRole, getStudentTimetable);
 router.get('/student/grades', requireAuth, requireSchoolRole, getStudentGrades);
 router.get('/student/announcements', requireAuth, requireSchoolRole, getStudentAnnouncements);

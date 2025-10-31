@@ -767,6 +767,12 @@ export const completeUnifiedGame = async (req, res) => {
     const defaultCoinsPerLevel = coinsPerLevel || (gameDefinition?.coinsPerLevel) || 5;
     const defaultTotalCoins = gameDefinition?.rewardCoins || (defaultCoinsPerLevel * totalLevels);
 
+    // Import mapping utilities for titles and pillar labels
+    const { getGameTitle, getGameType, getPillarLabel } = await import('../utils/gameIdToTitleMap.js');
+    const resolvedTitle = gameDefinition?.title || getGameTitle(gameId) || gameId;
+    const resolvedType = gameDefinition?.type || gameType || getGameType(gameId);
+    const pillarLabel = getPillarLabel(resolvedType);
+
     if (coinsPerLevel) {
       // Award coins per level
       coinsToAward = newLevelsCompleted * coinsPerLevel;
@@ -889,12 +895,13 @@ export const completeUnifiedGame = async (req, res) => {
       await wallet.save();
       newBalance = wallet.balance;
       
-      // Record transaction
+      // Record transaction with game title and pillar label instead of levels
+      const gameTitle = resolvedTitle;
       await Transaction.create({
         userId,
         type: 'credit',
         amount: coinsToAward,
-        description: `Reward for ${gameId} game (${newLevelsCompleted} new levels)`
+        description: `Reward for ${gameTitle} game (${pillarLabel || 'Game'})`
       });
       
       // Track coins in game progress

@@ -1313,6 +1313,35 @@ const GameCategoryPage = () => {
       window.removeEventListener("gameCompleted", handleGameCompleted);
     };
   }, [category, ageGroup]);
+  
+  const [games, setGames] = useState([]);
+  
+  useEffect(() => {
+    setGames(generateGamesData());
+  }, [gameCompletionStatus]);
+  
+  useEffect(() => {
+    if (user?.dateOfBirth) {
+      const age = calculateUserAge(user.dateOfBirth);
+      setUserAge(age);
+    }
+  }, [user]);
+  
+  // Check if this age group is accessible
+  const isAccessible = canAccessGame(ageGroup, userAge);
+  const isLocked = !isAccessible;
+  
+  // Check if unlock requirements are met
+  const unlockRequirements = () => {
+    if (ageGroup === 'teens' && userAge < 13) {
+      return "Complete all 20 finance related games from Kids section first.";
+    } else if (ageGroup === 'adults' && userAge < 18) {
+      return `Available at age 18. You are ${userAge} years old.`;
+    }
+    // Additional adult unlocking requirements can be added here
+    return "";
+  };
+  
   // Generate mock games data
   const generateGamesData = () => {
     const games = [];

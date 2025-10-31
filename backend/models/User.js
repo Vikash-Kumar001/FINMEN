@@ -68,6 +68,10 @@ const userSchema = new mongoose.Schema(
     bio: {
       type: String,
     },
+    pronouns: {
+      type: String,
+      trim: true,
+    },
     city: {
       type: String,
     },
@@ -92,8 +96,10 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: [
+        // Admin role
+        "admin",
         // Legacy roles
-        "student", "admin", "parent", "seller", "csr",
+        "student", "parent", "seller", "csr",
         // School roles
         "school_admin", "school_teacher", "school_student", "school_parent", 
         "school_accountant", "school_librarian", "school_transport_staff"
@@ -134,15 +140,20 @@ const userSchema = new mongoose.Schema(
     },
     // Parent-specific fields
     childEmail: {
-      type: String,
+      type: [String],
+      default: [],
       required: function () {
         return this.role === "parent";
       },
       validate: {
-        validator: function(email) {
-          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+        validator: function(emails) {
+          // If it's an array, check each email; if it's a string (legacy), check that
+          if (Array.isArray(emails)) {
+            return emails.every(email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || emails.length === 0;
+          }
+          return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emails);
         },
-        message: 'Please enter a valid child email address'
+        message: 'Please enter valid child email addresses'
       }
     },
     // Seller-specific fields

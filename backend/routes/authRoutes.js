@@ -8,7 +8,7 @@ import {
   checkVerificationStatus,
   login
 } from "../controllers/authController.js";
-import { requireAuth, requireAdmin } from "../middlewares/requireAuth.js";
+import { requireAuth } from "../middlewares/requireAuth.js";
 import { generateToken } from "../utils/generateToken.js";
 import User from "../models/User.js";
 import bcrypt from "bcrypt";
@@ -240,8 +240,7 @@ router.post("/register-stakeholder", async (req, res) => {
   }
 });
 
-// ✅ Admin-only: Register admin
-router.post("/admin-register", requireAuth, requireAdmin, registerByAdmin);
+// ✅ Removed admin-only registration route
 
 // ✅ Get Logged-in User
 router.get("/me", requireAuth, (req, res) => {

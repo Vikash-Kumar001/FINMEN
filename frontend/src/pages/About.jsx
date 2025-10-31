@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, Users, Target, Star, BookOpen, Award } from "lucide-react";
 import MainNavbar from "../components/MainNavbar";
+import NationalAlignments from "../components/NationalAlignments";
 import { useNavigate } from "react-router-dom";
 
 const About = () => {
@@ -130,10 +131,6 @@ const About = () => {
                             with timeless values. Our platform integrates financial literacy, mental wellness, life skills, and civic responsibility
                             into a cohesive learning experience that nurtures the whole child.
                         </p>
-                        <p className="text-lg text-gray-600">
-                            Today, we're proud to serve over 50,000 students across 500+ schools, helping them become confident, compassionate,
-                            and capable individuals ready to make a positive impact in the world.
-                        </p>
                     </motion.div>
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
@@ -218,53 +215,8 @@ const About = () => {
                     ))}
                 </div>
             </div>
-
-            {/* Stats Section */}
-            <div className="py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-8 text-center">
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            className="p-6"
-                        >
-                            <div className="text-5xl font-bold mb-2">50K+</div>
-                            <div className="text-xl">Students Empowered</div>
-                        </motion.div>
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.1 }}
-                            className="p-6"
-                        >
-                            <div className="text-5xl font-bold mb-2">500+</div>
-                            <div className="text-xl">Schools Partnered</div>
-                        </motion.div>
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.2 }}
-                            className="p-6"
-                        >
-                            <div className="text-5xl font-bold mb-2">10+</div>
-                            <div className="text-xl">Years of Impact</div>
-                        </motion.div>
-                        <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ delay: 0.3 }}
-                            className="p-6"
-                        >
-                            <div className="text-5xl font-bold mb-2">100%</div>
-                            <div className="text-xl">Holistic Growth</div>
-                        </motion.div>
-                    </div>
-                </div>
-            </div>
+            {/* National Alignments (shared) */}
+            <NationalAlignments />
         </MotionDiv>
     );
 };

@@ -1,116 +1,230 @@
-import api from "../utils/api";
+import api from '../utils/api';
 
-// Fetch analytics data for AdminAnalytics
-export const fetchAnalyticsData = async (filters = {}) => {
-    try {
-        const response = await api.get("/api/admin/analytics", { params: filters });
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching analytics data:', error);
-        throw new Error(error.response?.data?.message || 'Failed to fetch analytics data');
-    }
+/**
+ * Admin Service - API calls for admin dashboard
+ */
+
+export const fetchAdminDashboard = async () => {
+  try {
+    const response = await api.get('/api/admin/dashboard');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching admin dashboard:', error);
+    throw error;
+  }
 };
 
-
-// Students
-export const fetchAllStudents = () => api.get("/api/admin/students");
-export const updateStudentStatus = (studentId, status) =>
-    api.put(`/api/admin/students/${studentId}/status`, { status });
-export const deleteStudent = (studentId) =>
-    api.delete(`/api/admin/students/${studentId}`);
-export const exportStudentData = () =>
-    api.get("/api/admin/students/export/csv", {
-        responseType: "blob",
-    });
-export const fetchStudentStats = () =>
-    api.get("/api/admin/students/stats");
-export const sendBulkMessage = ({ recipients, subject, message }) =>
-    api.post("/api/admin/students/bulk-message", { recipients, subject, message });
-export const createStudentAccount = (studentData) =>
-    api.post("/api/admin/students/create", studentData);
-
-// Users
-export const fetchUsers = async (filters = {}) => {
-    try {
-        const response = await api.get("/api/admin/users", { params: filters });
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching users:', error);
-        throw new Error(error.response?.data?.message || 'Failed to fetch users');
-    }
+export const fetchSchoolsByRegion = async () => {
+  try {
+    const response = await api.get('/api/admin/schools-by-region');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching schools by region:', error);
+    throw error;
+  }
 };
 
-// CSV Export for Users
-export const exportUsersToCSV = () =>
-    api.get("/api/admin/export/csv", {
-        responseType: "blob",
-    });
-
-// System Settings
-export const updateSettings = async (settingsData) => {
-    try {
-        const response = await api.patch("/api/admin/settings", settingsData);
-        return response.data;
-    } catch (error) {
-        console.error('Error updating settings:', error);
-        throw new Error(error.response?.data?.message || 'Failed to update settings');
-    }
+export const fetchStudentActiveRate = async () => {
+  try {
+    const response = await api.get('/api/admin/student-active-rate');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching student active rate:', error);
+    throw error;
+  }
 };
 
-// Audit Logs
-export const fetchAuditLogs = async (filters = {}) => {
-    try {
-        const response = await api.get("/api/admin/audit-logs", { params: filters });
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching audit logs:', error);
-        throw new Error(error.response?.data?.message || 'Failed to fetch audit logs');
-    }
+export const fetchPillarPerformance = async (region = null) => {
+  try {
+    const params = region ? { region } : {};
+    const response = await api.get('/api/admin/pillar-performance', { params });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching pillar performance:', error);
+    throw error;
+  }
 };
 
-// Security Metrics
-export const fetchSecurityMetrics = async () => {
-    try {
-        const response = await api.get("/api/admin/security-metrics");
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching security metrics:', error);
-        throw new Error(error.response?.data?.message || 'Failed to fetch security metrics');
-    }
+export const fetchPlatformHealth = async () => {
+  try {
+    const response = await api.get('/api/admin/platform-health');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching platform health:', error);
+    throw error;
+  }
 };
 
-// Data Management
-export const fetchDataManagementStatus = async () => {
-    try {
-        const response = await api.get("/api/admin/data-management");
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching data management status:', error);
-        throw new Error(error.response?.data?.message || 'Failed to fetch data management status');
-    }
+export const fetchPrivacyCompliance = async () => {
+  try {
+    const response = await api.get('/api/admin/privacy-compliance');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching privacy compliance:', error);
+    throw error;
+  }
 };
 
-// Reports
-export const generateReport = async (reportConfig) => {
-    try {
-        const response = await api.post("/api/admin/reports", reportConfig);
-        return response.data;
-    } catch (error) {
-        console.error('Error generating report:', error);
-        throw new Error(error.response?.data?.message || 'Failed to generate report');
-    }
+export const fetchNetworkMap = async () => {
+  try {
+    const response = await api.get('/api/admin/network-map');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching network map:', error);
+    throw error;
+  }
 };
 
-// Redemptions
-export const fetchRedemptions = async (filters = {}) => {
-    try {
-        const response = await api.get("/api/admin/redemptions", { params: filters });
-        return response.data;
-    } catch (error) {
-        console.error('Error fetching redemptions:', error);
-        throw new Error(error.response?.data?.message || 'Failed to fetch redemptions');
-    }
+export const fetchBenchmarksPanel = async () => {
+  try {
+    const response = await api.get('/api/admin/benchmarks-panel');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching benchmarks panel:', error);
+    throw error;
+  }
 };
 
+export const fetchPlatformTelemetry = async () => {
+  try {
+    const response = await api.get('/api/admin/platform-telemetry');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching platform telemetry:', error);
+    throw error;
+  }
+};
 
-export default api;
+export const fetchMarketplaceManagement = async () => {
+  try {
+    const response = await api.get('/api/admin/marketplace');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching marketplace:', error);
+    throw error;
+  }
+};
+
+export const fetchDataExportSandbox = async () => {
+  try {
+    const response = await api.get('/api/admin/data-export');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching data export sandbox:', error);
+    throw error;
+  }
+};
+
+export const fetchPolicyLegal = async () => {
+  try {
+    const response = await api.get('/api/admin/policy-legal');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching policy legal:', error);
+    throw error;
+  }
+};
+
+export const fetchSchoolOnboarding = async () => {
+  try {
+    const response = await api.get('/api/admin/school-onboarding');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching school onboarding:', error);
+    throw error;
+  }
+};
+
+export const createTenant = async (tenantData) => {
+  try {
+    const response = await api.post('/api/admin/create-tenant', tenantData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating tenant:', error);
+    throw error;
+  }
+};
+
+export const fetchMarketplaceGovernance = async () => {
+  try {
+    const response = await api.get('/api/admin/marketplace-governance');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching marketplace governance:', error);
+    throw error;
+  }
+};
+
+export const approveModule = async (moduleData) => {
+  try {
+    const response = await api.post('/api/admin/approve-module', moduleData);
+    return response.data;
+  } catch (error) {
+    console.error('Error approving module:', error);
+    throw error;
+  }
+};
+
+export const fetchResearchSandbox = async () => {
+  try {
+    const response = await api.get('/api/admin/research-sandbox');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching research sandbox:', error);
+    throw error;
+  }
+};
+
+export const createResearchAgreement = async (agreementData) => {
+  try {
+    const response = await api.post('/api/admin/create-research-agreement', agreementData);
+    return response.data;
+  } catch (error) {
+    console.error('Error creating research agreement:', error);
+    throw error;
+  }
+};
+
+export const fetchComplianceDashboard = async () => {
+  try {
+    const response = await api.get('/api/admin/compliance-dashboard');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching compliance dashboard:', error);
+    throw error;
+  }
+};
+
+export const processDeletionRequest = async (requestData) => {
+  try {
+    const response = await api.post('/api/admin/process-deletion', requestData);
+    return response.data;
+  } catch (error) {
+    console.error('Error processing deletion request:', error);
+    throw error;
+  }
+};
+
+export default {
+  fetchAdminDashboard,
+  fetchSchoolsByRegion,
+  fetchStudentActiveRate,
+  fetchPillarPerformance,
+  fetchPlatformHealth,
+  fetchPrivacyCompliance,
+  fetchNetworkMap,
+  fetchBenchmarksPanel,
+  fetchPlatformTelemetry,
+  fetchMarketplaceManagement,
+  fetchDataExportSandbox,
+  fetchPolicyLegal,
+  fetchSchoolOnboarding,
+  createTenant,
+  fetchMarketplaceGovernance,
+  approveModule,
+  fetchResearchSandbox,
+  createResearchAgreement,
+  fetchComplianceDashboard,
+  processDeletionRequest
+};
+

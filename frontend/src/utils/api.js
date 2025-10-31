@@ -59,6 +59,14 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("finmen_token");
 
+    // ✅ Added from stash (api.js.rej)
+    console.log('🔐 API Request interceptor:', {
+      url: config.url,
+      method: config.method,
+      hasToken: !!token,
+      tokenLength: token ? token.length : 0
+    });
+
     if (token) {
       try {
         const parts = token.split(".");
@@ -78,6 +86,9 @@ api.interceptors.request.use(
           }
           
           config.headers.Authorization = `Bearer ${token}`;
+          
+          // ✅ Added from stash
+          console.log('✅ Token added to request headers');
         } else {
           console.warn("⚠️ Malformed token found. Removing...");
           localStorage.removeItem("finmen_token");
@@ -86,6 +97,9 @@ api.interceptors.request.use(
         console.error("❌ Token parsing error:", err.message);
         localStorage.removeItem("finmen_token");
       }
+    } else {
+      // ✅ Added from stash
+      console.warn("⚠️ No token found in localStorage");
     }
 
     return config;

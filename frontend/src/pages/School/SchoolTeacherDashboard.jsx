@@ -138,12 +138,12 @@ const SchoolTeacherDashboard = () => {
       ]);
 
       setStats(statsRes.data);
-      const classesData = classesRes.data || [];
+      const classesData = classesRes.data?.classes || [];
       setClasses(classesData);
       if (classesData.length > 0 && !selectedClass) {
         setSelectedClass(classesData[0]);
       }
-      setRecentAssignments(assignmentsRes.data);
+      setRecentAssignments(assignmentsRes.data?.data || []);
       setTimetable(timetableRes.data);
       setClassMastery(masteryRes.data);
       setStudentsAtRisk(atRiskRes.data.students || []);
@@ -343,6 +343,11 @@ const SchoolTeacherDashboard = () => {
                     <p className="text-sm opacity-90">
                       {teacherProfile?.email || ""}
                     </p>
+                    {teacherProfile?.subject && (
+                      <p className="text-xs opacity-75 mt-1">
+                        Subject: {teacherProfile.subject}
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-2 mt-4">

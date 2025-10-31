@@ -31,7 +31,7 @@ export default function AccountTypeSelection() {
       {/* Back to Homepage Button */}
       <button
         onClick={() => navigate('/')}
-        className="absolute top-6 left-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-lg hover:shadow-xl transition-all"
+        className="absolute top-6 left-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-lg hover:shadow-xl transition-all z-50"
       >
         ← Back to Homepage
       </button>

@@ -16,6 +16,7 @@ export const getUserProfile = async (req, res) => {
       avatar: user.avatar || '',
       dateOfBirth: user.dateOfBirth || user.dob || null,
       dob: user.dob || null,
+      subject: user.subject || '', // Include subject for school teachers
       academic: user.academic || {},
       professional: user.professional || {},
       preferences: user.preferences || {

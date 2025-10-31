@@ -9,6 +9,8 @@ import {
 } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
+import CreateTeacherModal from '../../components/CreateTeacherModal';
+import TeacherDetailModal from '../../components/TeacherDetailModal';
 
 const SchoolAdminTeachers = () => {
   const navigate = useNavigate();
@@ -29,7 +31,9 @@ const SchoolAdminTeachers = () => {
     subject: '', 
     qualification: '',
     experience: '',
-    joiningDate: ''
+    joiningDate: '',
+    pronouns: '',
+    customPronouns: ''
   });
 
   const subjects = [
@@ -67,8 +71,11 @@ const SchoolAdminTeachers = () => {
   const handleAddTeacher = async (e) => {
     e.preventDefault();
     try {
-      await api.post('/api/school/admin/teachers/create', newTeacher);
-      toast.success('Teacher added successfully!');
+      const response = await api.post('/api/school/admin/teachers/create', newTeacher);
+      toast.success(`Teacher added successfully! Login credentials: Email: ${newTeacher.email}, Password: teacher123`, {
+        duration: 8000,
+        icon: '✅'
+      });
       setShowAddTeacherModal(false);
       setNewTeacher({ 
         name: '', 
@@ -77,7 +84,9 @@ const SchoolAdminTeachers = () => {
         subject: '', 
         qualification: '',
         experience: '',
-        joiningDate: ''
+        joiningDate: '',
+        pronouns: '',
+        customPronouns: ''
       });
       fetchTeachersData();
     } catch (error) {
@@ -112,6 +121,14 @@ const SchoolAdminTeachers = () => {
     }
   };
 
+  const handleViewClass = (classId) => {
+    // Navigate to the classes page and open the specific class detail
+    navigate('/school/admin/classes');
+    // The class detail will be opened by the parent component
+    // We can pass the classId through URL params or state
+    window.location.href = `/school/admin/classes?openClass=${classId}`;
+  };
+
   const handleExportTeachers = async () => {
     try {
       const params = new URLSearchParams();
@@ -142,389 +159,6 @@ const SchoolAdminTeachers = () => {
     teacher.subject?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Add Teacher Modal
-  const AddTeacherModal = ({
-    showAddTeacherModal,
-    setShowAddTeacherModal,
-    newTeacher,
-    setNewTeacher,
-    handleAddTeacher
-  }) => (
-    <AnimatePresence>
-      {showAddTeacherModal && (
-        <>
-          <motion.div
-            key="add-teacher-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowAddTeacherModal(false)}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          />
-          <motion.div
-            key="add-teacher-modal"
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ duration: 0.2 }}
-            className="fixed inset-0 flex items-center justify-center z-50 p-4 pointer-events-none"
-          >
-            <div
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto pointer-events-auto"
-            >
-              <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-t-2xl">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-2xl font-black mb-1">Add New Teacher</h2>
-                    <p className="text-sm text-white/80">
-                      Fill in the teacher details below
-                    </p>
-                  </div>
-                  <button
-                    onClick={() => setShowAddTeacherModal(false)}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-
-              <form
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  handleAddTeacher(e);
-                }}
-                className="p-6 space-y-4"
-              >
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Full Name *
-                    </label>
-                    <input
-                      type="text"
-                      value={newTeacher.name}
-                      onChange={(e) =>
-                        setNewTeacher((prev) => ({ ...prev, name: e.target.value }))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                      placeholder="Enter teacher name"
-                      required
-                      autoComplete="off"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Email *
-                    </label>
-                    <input
-                      type="email"
-                      value={newTeacher.email}
-                      onChange={(e) =>
-                        setNewTeacher((prev) => ({ ...prev, email: e.target.value }))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                      placeholder="teacher@example.com"
-                      required
-                      autoComplete="off"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Phone
-                    </label>
-                    <input
-                      type="tel"
-                      value={newTeacher.phone}
-                      onChange={(e) =>
-                        setNewTeacher((prev) => ({ ...prev, phone: e.target.value }))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                      placeholder="+91 98765 43210"
-                      autoComplete="off"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Subject *
-                    </label>
-                    <select
-                      value={newTeacher.subject}
-                      onChange={(e) =>
-                        setNewTeacher((prev) => ({ ...prev, subject: e.target.value }))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                      required
-                    >
-                      <option value="">Select Subject</option>
-                      {subjects.map((sub) => (
-                        <option key={sub} value={sub}>
-                          {sub}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Qualification
-                    </label>
-                    <input
-                      type="text"
-                      value={newTeacher.qualification}
-                      onChange={(e) =>
-                        setNewTeacher((prev) => ({ ...prev, qualification: e.target.value }))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                      placeholder="B.Ed, M.A., etc."
-                      autoComplete="off"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Experience (Years)
-                    </label>
-                    <input
-                      type="number"
-                      value={newTeacher.experience}
-                      onChange={(e) =>
-                        setNewTeacher((prev) => ({ ...prev, experience: e.target.value }))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                      placeholder="5"
-                      min="0"
-                      autoComplete="off"
-                    />
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">
-                      Joining Date
-                    </label>
-                    <input
-                      type="date"
-                      value={newTeacher.joiningDate}
-                      onChange={(e) =>
-                        setNewTeacher((prev) => ({ ...prev, joiningDate: e.target.value }))
-                      }
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                      autoComplete="off"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
-                  <button
-                    type="button"
-                    onClick={() => setShowAddTeacherModal(false)}
-                    className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-6 py-3 bg-gradient-to-r from-blue-500 to-cyan-500 text-white rounded-lg font-bold hover:shadow-lg transition-all"
-                  >
-                    Add Teacher
-                  </button>
-                </div>
-              </form>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
-
-  // Teacher Detail Modal
-  const TeacherDetailModal = () => (
-    <AnimatePresence>
-      {showTeacherDetail && selectedTeacher && (
-        <>
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setShowTeacherDetail(false)}
-            className="fixed inset-0 bg-black bg-opacity-50 z-40"
-          />
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed inset-0 flex items-center justify-center z-50 p-4"
-          >
-            <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-              <div className="sticky top-0 bg-gradient-to-r from-blue-500 to-cyan-500 text-white p-6 rounded-t-2xl">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white font-black text-2xl shadow-lg">
-                      {selectedTeacher.name?.charAt(0) || 'T'}
-                    </div>
-                    <div>
-                      <h2 className="text-2xl font-black mb-1">{selectedTeacher.name || 'Teacher'}</h2>
-                      <p className="text-sm text-white/80">{selectedTeacher.subject || 'N/A'}</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowTeacherDetail(false)}
-                    className="p-2 hover:bg-white/20 rounded-lg transition-colors"
-                  >
-                    <X className="w-6 h-6" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-6">
-                {/* Basic Info */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                  <div className="bg-blue-50 rounded-xl p-4 border-2 border-blue-200">
-                    <p className="text-xs text-gray-600 mb-1">Classes</p>
-                    <p className="text-2xl font-black text-blue-600">{selectedTeacher.totalClasses || 0}</p>
-                  </div>
-                  <div className="bg-green-50 rounded-xl p-4 border-2 border-green-200">
-                    <p className="text-xs text-gray-600 mb-1">Students</p>
-                    <p className="text-2xl font-black text-green-600">{selectedTeacher.totalStudents || 0}</p>
-                  </div>
-                  <div className="bg-purple-50 rounded-xl p-4 border-2 border-purple-200">
-                    <p className="text-xs text-gray-600 mb-1">Experience</p>
-                    <p className="text-2xl font-black text-purple-600">{selectedTeacher.experience || 0} yrs</p>
-                  </div>
-                  <div className="bg-orange-50 rounded-xl p-4 border-2 border-orange-200">
-                    <p className="text-xs text-gray-600 mb-1">Attendance</p>
-                    <p className="text-2xl font-black text-orange-600">{selectedTeacher.attendance || 0}%</p>
-                  </div>
-                </div>
-
-                {/* Contact Info */}
-                <div className="bg-gray-50 rounded-xl p-6 mb-6 border-2 border-gray-200">
-                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                    <Mail className="w-5 h-5 text-blue-600" />
-                    Contact Information
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Mail className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-600">Email:</span>
-                      <span className="font-semibold text-gray-900">{selectedTeacher.email || 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-600">Phone:</span>
-                      <span className="font-semibold text-gray-900">{selectedTeacher.phone || 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <GraduationCap className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-600">Qualification:</span>
-                      <span className="font-semibold text-gray-900">{selectedTeacher.qualification || 'N/A'}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-600">Joining Date:</span>
-                      <span className="font-semibold text-gray-900">
-                        {selectedTeacher.joiningDate ? new Date(selectedTeacher.joiningDate).toLocaleDateString() : 'N/A'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-600">Last Active:</span>
-                      <span className="font-semibold text-gray-900">
-                        {selectedTeacher.lastActive ? new Date(selectedTeacher.lastActive).toLocaleDateString() : 'Never'}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Activity className="w-4 h-4 text-gray-500" />
-                      <span className="text-gray-600">Status:</span>
-                      <span className={`px-2 py-1 rounded-lg text-xs font-bold ${
-                        selectedTeacher.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {selectedTeacher.isActive ? 'Active' : 'Inactive'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Classes Assigned */}
-                {selectedTeacher.assignedClasses && selectedTeacher.assignedClasses.length > 0 && (
-                  <div className="bg-white rounded-xl border-2 border-gray-200 p-6 mb-6">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <BookOpen className="w-5 h-5 text-blue-600" />
-                      Assigned Classes
-                    </h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {selectedTeacher.assignedClasses.map((cls, idx) => (
-                        <div key={idx} className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                          <div className="font-bold text-gray-900">{cls.name || `Class ${cls.grade}-${cls.section}`}</div>
-                          <div className="text-sm text-gray-600">{cls.students || 0} students</div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Performance Metrics */}
-                {selectedTeacher.metrics && (
-                  <div className="bg-white rounded-xl border-2 border-gray-200 p-6">
-                    <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                      <Target className="w-5 h-5 text-blue-600" />
-                      Performance Metrics
-                    </h3>
-                    <div className="space-y-3">
-                      {Object.entries(selectedTeacher.metrics).map(([metric, value]) => (
-                        <div key={metric}>
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-sm font-bold text-gray-700 capitalize">
-                              {metric.replace(/_/g, ' ')}
-                            </span>
-                            <span className="text-sm font-black text-gray-900">{value}%</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div
-                              className={`h-2 rounded-full transition-all ${
-                                value >= 75 ? 'bg-gradient-to-r from-green-500 to-emerald-600' :
-                                value >= 50 ? 'bg-gradient-to-r from-blue-500 to-cyan-600' :
-                                'bg-gradient-to-r from-red-500 to-pink-600'
-                              }`}
-                              style={{ width: `${value}%` }}
-                            />
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                <div className="flex gap-3 pt-6 border-t border-gray-200">
-                  <button
-                    onClick={() => setShowTeacherDetail(false)}
-                    className="flex-1 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-bold hover:bg-gray-300 transition-colors"
-                  >
-                    Close
-                  </button>
-                  <button
-                    onClick={() => {
-                      setShowTeacherDetail(false);
-                      handleDeleteTeacher(selectedTeacher._id, selectedTeacher.name);
-                    }}
-                    className="px-6 py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-lg font-bold hover:shadow-lg transition-all flex items-center gap-2"
-                  >
-                    <Trash2 className="w-5 h-5" />
-                    Delete Teacher
-                  </button>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>
-  );
 
   if (loading) {
     return (
@@ -810,10 +444,8 @@ const SchoolAdminTeachers = () => {
                     <td className="py-4 px-6 text-sm font-semibold text-gray-900">{teacher.totalStudents || 0}</td>
                     <td className="py-4 px-6 text-sm font-semibold text-gray-900">{teacher.experience || 0} yrs</td>
                     <td className="py-4 px-6">
-                      <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-                        teacher.isActive ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-700'
-                      }`}>
-                        {teacher.isActive ? 'Active' : 'Inactive'}
+                      <span className="px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700">
+                        Active
                       </span>
                     </td>
                     <td className="py-4 px-6">
@@ -862,14 +494,21 @@ const SchoolAdminTeachers = () => {
       </div>
 
       {/* Modals */}
-      <AddTeacherModal
+      <CreateTeacherModal
         showAddTeacherModal={showAddTeacherModal}
         setShowAddTeacherModal={setShowAddTeacherModal}
         newTeacher={newTeacher}
         setNewTeacher={setNewTeacher}
         handleAddTeacher={handleAddTeacher}
+        subjects={subjects}
       />
-      <TeacherDetailModal />
+      <TeacherDetailModal
+        showTeacherDetail={showTeacherDetail}
+        setShowTeacherDetail={setShowTeacherDetail}
+        selectedTeacher={selectedTeacher}
+        handleDeleteTeacher={handleDeleteTeacher}
+        onViewClass={handleViewClass}
+      />
     </div>
   );
 };

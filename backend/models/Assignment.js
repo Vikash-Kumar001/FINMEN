@@ -27,6 +27,10 @@ const assignmentSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  assignedToClasses: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'SchoolClass',
+  }],
   section: {
     type: String,
   },
@@ -54,7 +58,7 @@ const assignmentSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['grading', 'approval', 'review', 'homework', 'project', 'test'],
+    enum: ['grading', 'approval', 'review', 'homework', 'project', 'test', 'quiz', 'classwork'],
     default: 'homework',
   },
   status: {
@@ -99,88 +103,125 @@ const assignmentSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  
-  // Advanced Wizard Fields
-  scope: {
-    type: String,
-    enum: ['single_class', 'multiple_classes', 'whole_school', 'csr', 'state'],
-    default: 'single_class'
-  },
-  scopeClasses: [{
-    id: String,
-    name: String
-  }],
-  approvalRequired: {
+  // Soft delete fields for teacher-specific deletion
+  hiddenFromTeacher: {
     type: Boolean,
-    default: false
+    default: false,
   },
-  approvedBy: {
+  hiddenFromStudents: {
+    type: Boolean,
+    default: false,
+  },
+  deletedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
   },
-  approvedAt: Date,
-  
-  // Template
-  templateType: {
+  deletedAt: {
+    type: Date,
+  },
+  deleteType: {
     type: String,
-    enum: ['blank', 'template']
+    enum: ['soft_teacher', 'soft_students', 'hard'],
+    default: null,
   },
-  templateId: String,
+  // List of students who have hidden this assignment from their view
+  hiddenFromStudentsList: [{
+    type: String, // Student IDs as strings
+  }],
   
-  // Modules
-  modules: [{
+  // Template-based assignment fields
+  questions: [{
     type: {
       type: String,
-      enum: ['question_bank', 'inavora']
+      enum: [
+        'multiple_choice',
+        'true_false',
+        'short_answer',
+        'essay',
+        'fill_in_blank',
+        'matching',
+        'problem_solving',
+        'word_problem',
+        'research_question',
+        'presentation',
+        'reflection'
+      ],
+      required: true
     },
-    id: String,
-    title: String,
-    module_id: String,
-    questionCount: Number,
-    duration: Number
+    question: {
+      type: String,
+      required: function() {
+        // For project assignments, question field is not required if it's a task type
+        return !['research_question', 'presentation', 'reflection'].includes(this.type);
+      }
+    },
+    options: [mongoose.Schema.Types.Mixed], // Can be strings for multiple choice or objects for matching
+    correctAnswer: mongoose.Schema.Types.Mixed, // Can be string, number, boolean, or array
+    points: {
+      type: Number,
+      default: 1
+    },
+    explanation: String,
+    required: {
+      type: Boolean,
+      default: true
+    },
+    timeLimit: {
+      type: Number,
+      default: 0 // in minutes, 0 = no limit
+    }
   }],
-  
-  // Rules
-  startTime: Date,
-  endTime: Date,
-  maxAttempts: Number,
-  randomizeQuestions: Boolean,
+  questionCount: {
+    type: Number,
+    default: 0
+  },
+  instructions: {
+    type: String,
+    default: "Complete all questions carefully."
+  },
   gradingType: {
     type: String,
-    enum: ['auto', 'manual'],
+    enum: ['auto', 'manual', 'mixed'],
     default: 'auto'
   },
-  accessibility: {
-    allowScreenReader: Boolean,
-    extraTime: Boolean,
-    textToSpeech: Boolean
+  allowRetake: {
+    type: Boolean,
+    default: true
+  },
+  maxAttempts: {
+    type: Number,
+    default: 3
+  },
+  duration: {
+    type: Number, // in minutes
+    default: 60
   },
   
-  // Participants
-  participantMode: {
+  // Project-specific fields
+  projectMode: {
     type: String,
-    enum: ['all', 'filtered', 'manual', 'ai_suggested']
+    enum: ['instructions', 'virtual'],
+    default: 'instructions'
   },
-  selectedStudents: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
-  }],
-  filterTags: [String],
-  aiSuggestions: [{
-    studentId: mongoose.Schema.Types.ObjectId,
-    studentName: String,
-    weakPillars: [String],
-    confidence: Number
-  }],
+  projectData: {
+    mode: {
+      type: String,
+      enum: ['instructions', 'virtual'],
+      default: 'instructions'
+    },
+    instructions: String,
+    deliverables: String,
+    resources: String,
+    deadline: Date,
+    duration: Number, // in days
+    groupSize: {
+      type: String,
+      enum: ['individual', 'pairs', 'small', 'large'],
+      default: 'individual'
+    },
+    submissionRequirements: String
+  },
   
-  // Rewards
-  healCoinsReward: Number,
-  badges: [{
-    _id: String,
-    name: String,
-    description: String
-  }],
-  certificate: Boolean,
 }, {
   timestamps: true,
 });

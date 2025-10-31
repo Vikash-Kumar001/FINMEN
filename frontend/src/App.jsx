@@ -408,18 +408,6 @@ import TestWaterRecycleGame from "./pages/Student/Sustainability/WaterAndRecycle
 import TestCarbonGame from "./pages/Student/Sustainability/CarbonAndClimate/TestCarbonGame";
 import TestWaterEnergyGame from "./pages/Student/Sustainability/WaterAndEnergy/TestWaterEnergyGame";
 
-// Admin Pages
-import AdminPanel from "./pages/Admin/AdminPanel";
-import AdminDashboard from "./pages/Admin/AdminDashboard";
-import AdminAnalytics from "./pages/Admin/AdminAnalytics";
-import AllStudents from "./pages/Admin/AllStudents";
-import AdminRedemptions from "./pages/Admin/AdminRedemptions";
-import FeedbackHistoryModal from "./pages/Admin/FeedbackHistoryModal";
-import AllRedemptions from "./pages/Admin/AllRedemptions";
-import AdminStatsPanel from "./pages/Admin/AdminStatsPanel";
-import AdminUsersPanel from "./pages/Admin/AdminUsersPanel";
-import AdminSettings from "./pages/Admin/AdminSettings";
-
 // Parent Pages
 import ParentDashboard from "./pages/Parent/ParentDashboard";
 import ParentOverview from "./pages/Parent/ParentOverview";
@@ -445,6 +433,14 @@ import CSRApprovals from "./pages/CSR/CSRApprovals";
 import CSRBudgetTracking from "./pages/CSR/CSRBudgetTracking";
 import CSRBudget from "./pages/CSR/CSRBudget";
 import CSRCobranding from "./pages/CSR/CSRCobranding";
+
+// Admin Pages
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminApprovalManagement from "./pages/Admin/AdminApprovalManagement";
+import IncidentManagement from "./pages/Admin/IncidentManagement";
+import AdminPaymentTracker from "./pages/Admin/AdminPaymentTracker";
+import AdminTrackingDashboard from "./pages/Admin/AdminTrackingDashboard";
+import TemplateCatalog from "./pages/Marketplace/TemplateCatalog";
 
 // Multi-Tenant Pages
 import CompanySignup from "./pages/MultiTenant/CompanySignup";
@@ -520,8 +516,10 @@ const App = () => {
   const RootRedirect = () => {
     if (!user) return <Navigate to="/login" replace />;
     
-    // Legacy roles
+    // Admin role
     if (user.role === "admin") return <Navigate to="/admin/dashboard" replace />;
+    
+    // Legacy roles
     if (user.role === "parent") return <Navigate to="/parent/overview" replace />;
     if (user.role === "seller") return <Navigate to="/seller/dashboard" replace />;
     if (user.role === "csr") return <Navigate to="/csr/dashboard" replace />;
@@ -1071,20 +1069,6 @@ const App = () => {
           <Route path="/student/sustainability/carbon-and-climate/test-carbon-game" element={<ProtectedRoute roles={['student', 'school_student']}><TestCarbonGame /></ProtectedRoute>} />
           <Route path="/student/sustainability/water-and-energy/test-water-energy-game" element={<ProtectedRoute roles={['student', 'school_student']}><TestWaterEnergyGame /></ProtectedRoute>} />
 
-          {/* Admin Routes */}
-          <Route path="/admin/panel" element={<ProtectedRoute roles={['admin']}><AdminPanel /></ProtectedRoute>} />
-          <Route path="/admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
-          <Route path="/admin/analytics" element={<ProtectedRoute roles={['admin']}><AdminAnalytics /></ProtectedRoute>} />
-          <Route path="/admin/students" element={<ProtectedRoute roles={['admin']}><AllStudents /></ProtectedRoute>} />
-          <Route path="/admin/redemptions" element={<ProtectedRoute roles={['admin']}><AdminRedemptions /></ProtectedRoute>} />
-          <Route path="/admin/feedback" element={<ProtectedRoute roles={['admin']}><FeedbackHistoryModal /></ProtectedRoute>} />
-          <Route path="/admin/all-redemptions" element={<ProtectedRoute roles={['admin']}><AllRedemptions /></ProtectedRoute>} />
-          <Route path="/admin/stats" element={<ProtectedRoute roles={['admin']}><AdminStatsPanel /></ProtectedRoute>} />
-          <Route path="/admin/users" element={<ProtectedRoute roles={['admin']}><AdminUsersPanel /></ProtectedRoute>} />
-          <Route path="/admin/profile" element={<ProtectedRoute roles={['admin']}><Profile /></ProtectedRoute>} />
-          <Route path="/admin/settings" element={<ProtectedRoute roles={['admin']}><AdminSettings /></ProtectedRoute>} />
-          <Route path="/admin/notifications" element={<ProtectedRoute roles={['admin']}><Notifications /></ProtectedRoute>} />
-
           {/* Parent Routes */}
           <Route path="/parent/overview" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentOverview /></ProtectedRoute>} />
           <Route path="/parent/dashboard" element={<ProtectedRoute roles={['parent']} requireApproved={true}><ParentDashboard /></ProtectedRoute>} />
@@ -1121,6 +1105,17 @@ const App = () => {
           <Route path="/csr/budget-tracking" element={<ProtectedRoute roles={['csr']}><CSRBudgetTracking /></ProtectedRoute>} />
           <Route path="/csr/budget" element={<ProtectedRoute roles={['csr']}><CSRBudget /></ProtectedRoute>} />
           <Route path="/csr/cobranding" element={<ProtectedRoute roles={['csr']}><CSRCobranding /></ProtectedRoute>} />
+
+          {/* Admin Routes */}
+          <Route path="/admin/dashboard" element={<ProtectedRoute roles={['admin']}><AdminDashboard /></ProtectedRoute>} />
+          <Route path="/admin/approvals" element={<ProtectedRoute roles={['admin']}><AdminApprovalManagement /></ProtectedRoute>} />
+          <Route path="/admin/incidents" element={<ProtectedRoute roles={['admin']}><IncidentManagement /></ProtectedRoute>} />
+          <Route path="/admin/incidents/:ticketNumber" element={<ProtectedRoute roles={['admin']}><IncidentManagement /></ProtectedRoute>} />
+          <Route path="/admin/payment-tracker" element={<ProtectedRoute roles={['admin']}><AdminPaymentTracker /></ProtectedRoute>} />
+          <Route path="/admin/tracking" element={<ProtectedRoute roles={['admin']}><AdminTrackingDashboard /></ProtectedRoute>} />
+          <Route path="/admin/marketplace" element={<ProtectedRoute roles={['admin']}><TemplateCatalog /></ProtectedRoute>} />
+          <Route path="/admin/profile" element={<ProtectedRoute roles={['admin']}><Profile /></ProtectedRoute>} />
+          <Route path="/admin/settings" element={<ProtectedRoute roles={['admin']}><Setting /></ProtectedRoute>} />
 
           {/* Public Pages */}
           <Route path="/about" element={<About />} />

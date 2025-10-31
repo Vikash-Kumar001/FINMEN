@@ -31,19 +31,9 @@ export const logActivity = async (req, res, next) => {
       pageUrl: pageUrl || req.headers.referer,
     });
 
-    // Emit real-time notification to admin and s
+    // Emit real-time notification to teacher if student has an assigned teacher
     const io = req.app.get('io');
     if (io) {
-      // Emit to admin room
-      io.to('admin-room').emit('student-activity', {
-        activityLog,
-        user: {
-          id: req.user._id,
-          name: req.user.name,
-          role: req.user.role,
-        },
-      });
-
       // If the student has an assigned teacher, emit to that teacher's room
       if (req.user.linkedIds?.teacherIds?.length > 0) {
         req.user.linkedIds.teacherIds.forEach(teacherId => {

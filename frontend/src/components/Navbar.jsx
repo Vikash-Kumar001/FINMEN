@@ -29,7 +29,8 @@ import {
     FileText,
     Target,
     DollarSign,
-    Activity
+    Activity,
+    CreditCard
 } from "lucide-react";
 
 
@@ -94,12 +95,14 @@ const Navbar = () => {
         { icon: <Users className="w-5 h-5" />, label: "Children", onClick: () => navigate("/parent/children") },
         { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/parent/announcements") },
         { icon: <Mail className="w-5 h-5" />, label: "Messages", onClick: () => navigate("/parent/messages") },
-        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate("/parent/settings") }
+        { icon: <CreditCard className="w-5 h-5" />, label: "Payment Tracker", onClick: () => navigate("/parent/payment-tracker") }
     ] : user?.role === "admin" ? [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
-        { icon: <User className="w-5 h-5" />, label: "Users", onClick: () => navigate("/admin/users") },
-        { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => navigate("/admin/analytics") },
-        { icon: <AlertCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/admin/pending-approvals") }
+        { icon: <CheckCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/admin/approvals") },
+        { icon: <AlertCircle className="w-5 h-5" />, label: "Incidents", onClick: () => navigate("/admin/incidents") },
+        { icon: <Activity className="w-5 h-5" />, label: "Tracker", onClick: () => navigate("/admin/tracking") },
+        { icon: <Gift className="w-5 h-5" />, label: "Marketplace", onClick: () => navigate("/admin/marketplace") },
+        { icon: <CreditCard className="w-5 h-5" />, label: "Payment Tracker", onClick: () => navigate("/admin/payment-tracker") }
     ] : user?.role === "school_admin" ? [
         { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
         { icon: <Users className="w-5 h-5" />, label: "Students", onClick: () => navigate("/school/admin/students") },
@@ -107,7 +110,7 @@ const Navbar = () => {
         { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/school/admin/announcements") },
         { icon: <CheckCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/school/admin/approvals") },
         { icon: <FileText className="w-5 h-5" />, label: "Templates", onClick: () => navigate("/school/admin/templates") },
-        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate("/school/admin/settings") }
+        { icon: <CreditCard className="w-5 h-5" />, label: "Payment Tracker", onClick: () => navigate("/school/admin/payment-tracker") }
     ] : user?.role === "school_teacher" ? [
         { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
         { icon: <Users className="w-5 h-5" />, label: "Students", onClick: () => navigate("/school-teacher/students") },
@@ -121,7 +124,7 @@ const Navbar = () => {
         { icon: <Users className="w-5 h-5" />, label: "Children", onClick: () => navigate("/school-parent/children") },
         { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/school-parent/announcements") },
         { icon: <Mail className="w-5 h-5" />, label: "Messages", onClick: () => navigate("/school-parent/messages") },
-        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate("/school-parent/settings") }
+        { icon: <CreditCard className="w-5 h-5" />, label: "Payment Tracker", onClick: () => navigate("/school-parent/payment-tracker") }
     ] : user?.role === "csr" ? [
         { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: () => navigate("/csr/overview") },
         { icon: <Target className="w-5 h-5" />, label: "Campaigns", onClick: () => navigate("/csr/campaigns") },
@@ -138,8 +141,24 @@ const Navbar = () => {
 
     const profileMenuItems = [
         { icon: <User className="w-5 h-5" />, label: "Profile", 
-        onClick: () => navigate((user?.role === "student" || user?.role === "school_student") ? "/student/profile" : `/${user?.role}/profile`) },
-        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => navigate((user?.role === "student" || user?.role === "school_student") ? "/student/settings" : `/${user?.role}/settings`) },
+        onClick: () => {
+            if (user?.role === "student" || user?.role === "school_student") {
+                navigate("/student/profile");
+            } else if (user?.role === "admin") {
+                navigate("/admin/profile");
+            } else {
+                navigate(`/${user?.role}/profile`);
+            }
+        }},
+        { icon: <Settings className="w-5 h-5" />, label: "Settings", onClick: () => {
+            if (user?.role === "student" || user?.role === "school_student") {
+                navigate("/student/settings");
+            } else if (user?.role === "admin") {
+                navigate("/admin/settings");
+            } else {
+                navigate(`/${user?.role}/settings`);
+            }
+        }},
         { icon: <LogOut className="w-5 h-5" />, label: "Sign Out", onClick: logoutUser, danger: true }
     ];
 

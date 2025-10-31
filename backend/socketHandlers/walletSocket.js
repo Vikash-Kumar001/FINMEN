@@ -104,11 +104,7 @@ export const setupWalletSocket = (io, socket, user) => {
         transactions: updatedTransactions
       });
 
-      // Notify all admins about the new redemption request
-      io.to('admins').emit('admin:redemptions:new', {
-        message: `New redemption request from ${user.name}`,
-        redemption: transaction
-      });
+
 
       socket.emit('student:wallet:redeem:success', { 
         message: 'Redemption request submitted successfully',
@@ -121,185 +117,11 @@ export const setupWalletSocket = (io, socket, user) => {
     }
   });
 
-  // Admin redemption subscription
-  socket.on('admin:redemptions:subscribe', async ({ adminId }) => {
-    try {
-      // Verify admin permissions
-      if (user._id.toString() !== adminId || user.role !== 'admin') {
-        socket.emit('admin:redemptions:error', { message: 'Unauthorized access' });
-        return;
-      }
-
-      console.log(`👁️ Admin ${adminId} subscribed to redemption requests`);
-      
-      // Join admin-specific room for redemption updates
-      socket.join(`admin-redemptions-${adminId}`);
-      
-      // Send initial redemption data
-      const redemptions = await Transaction.find({ type: 'redeem' })
-        .populate('userId', 'name email')
-        .sort({ createdAt: -1 });
-      
-      socket.emit('admin:redemptions:data', redemptions);
-      
-    } catch (err) {
-      console.error('Error in admin:redemptions:subscribe:', err);
-      socket.emit('admin:redemptions:error', { message: err.message });
-    }
-  });
-
-  // Admin approve redemption
-  socket.on('admin:redemptions:approve', async ({ adminId, redemptionId }) => {
-    try {
-      // Verify admin permissions
-      if (user._id.toString() !== adminId || user.role !== 'admin') {
-        socket.emit('admin:redemptions:error', { message: 'Unauthorized access' });
-        return;
-      }
-
-      const transaction = await Transaction.findById(redemptionId);
-      
-      if (!transaction || transaction.type !== 'redeem' || transaction.status !== 'pending') {
-        socket.emit('admin:redemptions:error', { message: 'Invalid redemption request' });
-        return;
-      }
-
-      // Update transaction status
-      transaction.status = 'approved';
-      transaction.approvedBy = adminId;
-      transaction.approvedAt = new Date();
-      await transaction.save();
-
-      // Log activity
-      await ActivityLog.create({
-        userId: adminId,
-        activityType: 'admin_action',
-        details: {
-          action: 'approve_redemption',
-          redemptionId: transaction._id,
-          studentId: transaction.userId,
-          amount: transaction.amount
-        },
-        timestamp: new Date()
-      });
-
-      // Get updated redemptions list
-      const updatedRedemptions = await Transaction.find({ type: 'redeem' })
-        .populate('userId', 'name email')
-        .sort({ createdAt: -1 });
-
-      // Notify all admins about the updated redemptions
-      io.to('admins').emit('admin:redemptions:update', updatedRedemptions);
-
-      // Notify the student about the approved redemption
-      io.to(transaction.userId.toString()).emit('student:wallet:redemption:approved', {
-        message: 'Your redemption request has been approved',
-        transaction
-      });
-
-      socket.emit('admin:redemptions:approve:success', { 
-        message: 'Redemption request approved successfully',
-        transaction
-      });
-
-    } catch (err) {
-      console.error('Error in admin:redemptions:approve:', err);
-      socket.emit('admin:redemptions:error', { message: err.message });
-    }
-  });
-
-  // Admin reject redemption
-  socket.on('admin:redemptions:reject', async ({ adminId, redemptionId }) => {
-    try {
-      // Verify admin permissions
-      if (user._id.toString() !== adminId || user.role !== 'admin') {
-        socket.emit('admin:redemptions:error', { message: 'Unauthorized access' });
-        return;
-      }
-
-      const transaction = await Transaction.findById(redemptionId);
-      
-      if (!transaction || transaction.type !== 'redeem' || transaction.status !== 'pending') {
-        socket.emit('admin:redemptions:error', { message: 'Invalid redemption request' });
-        return;
-      }
-
-      // Find student wallet to refund the amount
-      const wallet = await Wallet.findOne({ userId: transaction.userId });
-      
-      if (!wallet) {
-        socket.emit('admin:redemptions:error', { message: 'Student wallet not found' });
-        return;
-      }
-
-      // Refund the amount to student wallet
-      wallet.balance += transaction.amount;
-      wallet.lastUpdated = new Date();
-      await wallet.save();
-
-      // Update transaction status
-      transaction.status = 'rejected';
-      transaction.description += ' (Rejected & refunded)';
-      transaction.rejectedBy = adminId;
-      transaction.rejectedAt = new Date();
-      await transaction.save();
-
-      // Log activity
-      await ActivityLog.create({
-        userId: adminId,
-        activityType: 'admin_action',
-        details: {
-          action: 'reject_redemption',
-          redemptionId: transaction._id,
-          studentId: transaction.userId,
-          amount: transaction.amount
-        },
-        timestamp: new Date()
-      });
-
-      // Get updated redemptions list
-      const updatedRedemptions = await Transaction.find({ type: 'redeem' })
-        .populate('userId', 'name email')
-        .sort({ createdAt: -1 });
-
-      // Notify all admins about the updated redemptions
-      io.to('admins').emit('admin:redemptions:update', updatedRedemptions);
-
-      // Get updated wallet data for the student
-      const updatedTransactions = await Transaction.find({ userId: transaction.userId })
-        .sort({ createdAt: -1 })
-        .limit(10);
-
-      // Notify the student about the rejected redemption and updated wallet
-      io.to(transaction.userId.toString()).emit('student:wallet:data', { 
-        wallet,
-        transactions: updatedTransactions
-      });
-
-      io.to(transaction.userId.toString()).emit('student:wallet:redemption:rejected', {
-        message: 'Your redemption request has been rejected and the amount has been refunded to your wallet',
-        transaction
-      });
-
-      socket.emit('admin:redemptions:reject:success', { 
-        message: 'Redemption request rejected and refunded successfully',
-        transaction
-      });
-
-    } catch (err) {
-      console.error('Error in admin:redemptions:reject:', err);
-      socket.emit('admin:redemptions:error', { message: err.message });
-    }
-  });
-
   // Cleanup when socket disconnects
   socket.on('disconnect', () => {
     // Leave all rooms related to wallet and redemptions
     if (user.role === 'student') {
       socket.leave(`student-wallet-${user._id}`);
-    }
-    if (user.role === 'admin') {
-      socket.leave(`admin-redemptions-${user._id}`);
     }
   });
 };

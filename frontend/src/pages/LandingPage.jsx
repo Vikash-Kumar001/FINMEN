@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import MainNavbar from "../components/MainNavbar";
 import MainFooter from "../components/MainFooter";
+import NationalAlignments from "../components/NationalAlignments";
 import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import {
   School,
@@ -1013,10 +1014,10 @@ const LandingPage = () => {
               <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-emerald-400 to-green-400 rounded-full opacity-5 group-hover:opacity-15 transition-opacity duration-500"></div>
 
               <div className="relative z-10 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-6 h-44">
+                <div className="flex justify-between items-start mb-6 h-48">
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Free Plan</h3>
-                    <p className="text-sm text-gray-600 mb-5">Start your WiseStudent journey free — 5 games in every pillar, full growth unlocked when you're ready.</p>
+                    <p className="text-sm text-gray-600 mb-6">Start your WiseStudent journey free — 5 games in every pillar, full growth unlocked when you're ready.</p>
                     <div className="flex items-baseline gap-2">
                       <span className="text-3xl font-bold text-green-600">₹0</span>
                     </div>
@@ -1088,17 +1089,19 @@ const LandingPage = () => {
               <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-cyan-400 to-blue-400 rounded-full opacity-5 group-hover:opacity-15 transition-opacity duration-500"></div>
 
               <div className="relative z-10 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-6 h-44">
+                <div className="flex justify-between items-start mb-6 h-48">
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Students Premium Plan</h3>
                     <p className="text-sm text-gray-600 mb-5">Perfect for self-driven students who aspire to grow emotionally, mentally, ethically as well as academically.</p>
                     <div className="flex items-baseline">
-                      <span className="text-3xl font-bold text-blue-600">₹4,499</span>
-                      <span className="text-gray-500">/year</span>
-                      <span className="text-sm text-gray-500 line-through ml-1 sm:ml-2">₹9,999</span>
-                      <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full ml-1 sm:ml-2">
-                        Save ₹5,500
-                      </span>
+                      <span className="text-3xl font-bold text-blue-400">₹4,499</span>
+                      <span className="text-gray-500 ml-1 sm:ml-2">•</span>
+                      <span className="text-sm text-gray-500 ml-1 sm:ml-2">For 1st Year Only</span>
+                    </div>
+                    <div className="flex items-baseline">
+                      <span className="text-2xl font-bold text-blue-700">₹999</span>
+                      <span className="text-gray-500 ml-1 sm:ml-2">•</span>
+                      <span className="text-sm text-gray-500 ml-1 sm:ml-2">For 2nd Year and Beyond</span>
                     </div>
                   </div>
                   <div className=" bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white text-blue-500 p-2 shadow-lg">
@@ -1172,17 +1175,19 @@ const LandingPage = () => {
               <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full opacity-5 group-hover:opacity-15 transition-opacity duration-500"></div>
 
               <div className="relative z-10 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-6 h-44">
+                <div className="flex justify-between items-start mb-6 h-48">
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Student + Parent Premium Pro Plan</h3>
                     <p className="text-sm text-gray-600 mb-3">For families who want a complete emotional and value-based learning ecosystem.</p>
                     <div className="flex items-baseline">
-                      <span className="text-3xl font-bold text-purple-600">₹4,999</span>
-                      <span className="text-gray-500">/year</span>
-                      <span className="text-sm text-gray-500 line-through ml-1 sm:ml-2">₹12,999</span>
-                      <span className="bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full ml-1 sm:ml-2">
-                        Save ₹8,000
-                      </span>
+                      <span className="text-3xl font-bold text-purple-400">₹4,999</span>
+                      <span className="text-gray-500 ml-1 sm:ml-2">•</span>
+                      <span className="text-sm text-gray-500 ml-1 sm:ml-2">For 1st Year Only</span>
+                    </div>
+                    <div className="flex items-baseline">
+                      <span className="text-2xl font-bold text-purple-700">₹1,499</span>
+                      <span className="text-gray-500 ml-1 sm:ml-2">•</span>
+                      <span className="text-sm text-gray-500 ml-1 sm:ml-2">For 2nd Year and Beyond</span>
                     </div>
                   </div>
                   <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-purple-500 shadow-lg">
@@ -1198,10 +1203,13 @@ const LandingPage = () => {
 
 
                   <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                      <CheckCircle className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
-                      <span className="text-gray-700 text-sm">Includes everything in the Students Premium Plan, along with:</span>
+                  <div className="relative flex items-center gap-3 p-3 rounded-xl border-2 border-blue-400 bg-blue-50 shadow-sm overflow-hidden group">
+                    <div className="absolute -top-10 -right-10 w-20 h-20 bg-blue-400 rounded-full"></div>
+                    <div className="absolute inset-0 rounded-xl pointer-events-none" style={{ boxShadow: "inset 0 0 0 1px rgba(147, 51, 234, 0.08)" }}></div>
+                    <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between w-full gap-2">
+                      <span className="text-blue-500 text-sm font-semibold">Everything in the Students Premium Plan, plus:</span>
                     </div>
+                  </div>
                     <div className="flex items-start gap-3">
                       <CheckCircle className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
                       <span className="text-gray-700 text-sm">Exclusive Parent dashboard with clear, concise snapshot of their child's learning progress, wellbeing, engagement, and suggested at-home activities to support growth</span>
@@ -1262,90 +1270,8 @@ const LandingPage = () => {
         </div>
       </div>
 
-      {/* Student Services Section */}
-      <div ref={studentServicesRef} className="py-16 bg-gradient-to-r from-blue-600 to-purple-600">
-        <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
-            initial={{ opacity: 0, x: -20 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            className="text-left"
-          >
-            <h2 className="text-4xl font-bold text-white mb-10 text-center">
-              National Alignments
-            </h2>
-
-            <div className="relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm p-12">
-              <motion.div
-                animate={{
-                  x: [0, -100 * services.length * 12], // Dynamic width calculation for variable content
-                }}
-                transition={{
-                  duration: 500,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-                className="flex gap-8 whitespace-nowrap"
-                style={{ width: "max-content" }}
-              >
-                {/* First set of services */}
-                {services.map((service, index) => (
-                  <div
-                    key={`first-${index}`}
-                    className="flex items-center gap-3 flex-shrink-0 px-4 py-2"
-                  >
-                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
-                      <span className="text-lg">{service.logo}</span>
-                    </div>
-                    <div className="whitespace-nowrap">
-                      <h3 className="text-lg font-semibold text-white">
-                        {service.title}
-                      </h3>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Second set of services for seamless loop */}
-                {services.map((service, index) => (
-                  <div
-                    key={`second-${index}`}
-                    className="flex items-center gap-3 flex-shrink-0 px-4 py-2"
-                  >
-                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
-                      <span className="text-lg">{service.logo}</span>
-                    </div>
-                    <div className="whitespace-nowrap">
-                      <h3 className="text-lg font-semibold text-white">
-                        {service.title}
-                      </h3>
-                    </div>
-                  </div>
-                ))}
-
-                {/* Third set of services for seamless loop */}
-                {services.map((service, index) => (
-                  <div
-                    key={`third-${index}`}
-                    className="flex items-center gap-3 flex-shrink-0 px-4 py-2"
-                  >
-                    <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg">
-                      <span className="text-lg">{service.logo}</span>
-                    </div>
-                    <div className="whitespace-nowrap">
-                      <h3 className="text-lg font-semibold text-white">
-                        {service.title}
-                      </h3>
-                    </div>
-                  </div>
-                ))}
-              </motion.div>
-
-              <div className="absolute top-0 left-0 bottom-0 w-12 bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
-              <div className="absolute top-0 right-0 bottom-0 w-12 bg-gradient-to-l from-white/10 to-transparent pointer-events-none"></div>
-            </div>
-          </motion.div>
-        </div>
-      </div>
+      {/* National Alignments Section */}
+      <NationalAlignments services={services} sectionRef={studentServicesRef} />
 
       {/* Main Footer */}
       <MainFooter />

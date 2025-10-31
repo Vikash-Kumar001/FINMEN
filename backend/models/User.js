@@ -96,8 +96,10 @@ const userSchema = new mongoose.Schema(
     role: {
       type: String,
       enum: [
+        // Admin role
+        "admin",
         // Legacy roles
-        "student", "admin", "parent", "seller", "csr",
+        "student", "parent", "seller", "csr",
         // School roles
         "school_admin", "school_teacher", "school_student", "school_parent", 
         "school_accountant", "school_librarian", "school_transport_staff"

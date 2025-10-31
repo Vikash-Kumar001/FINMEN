@@ -4,9 +4,6 @@ import {
   Mail,
   Phone,
   MapPin,
-  Facebook,
-  Twitter,
-  Instagram,
   Linkedin,
   ArrowUp,
 } from "lucide-react";
@@ -25,32 +22,32 @@ const MainFooter = () => {
 
   const quickLinks = [
     { name: "Home", href: "/" },
-    { name: "Features", href: "/#features" },
+    { name: "Pillars", href: "/#features" },
     { name: "About Us", href: "/about" },
     { name: "Contact", href: "/contact" },
-    { name: "Blog", href: "/blog" },
+    // { name: "Blog", href: "/blog" },
     { name: "Careers", href: "/careers" },
   ];
 
   const socialLinks = [
-    {
-      name: "Facebook",
-      href: "https://facebook.com",
-      icon: Facebook,
-      color: "hover:bg-blue-600",
-    },
-    {
-      name: "Twitter",
-      href: "https://twitter.com",
-      icon: Twitter,
-      color: "hover:bg-sky-500",
-    },
-    {
-      name: "Instagram",
-      href: "https://instagram.com",
-      icon: Instagram,
-      color: "hover:bg-pink-600",
-    },
+    // {
+    //   name: "Facebook",
+    //   href: "https://facebook.com",
+    //   icon: Facebook,
+    //   color: "hover:bg-blue-600",
+    // },
+    // {
+    //   name: "Twitter",
+    //   href: "https://twitter.com",
+    //   icon: Twitter,
+    //   color: "hover:bg-sky-500",
+    // },
+    // {
+    //   name: "Instagram",
+    //   href: "https://instagram.com",
+    //   icon: Instagram,
+    //   color: "hover:bg-pink-600",
+    // },
     {
       name: "LinkedIn",
       href: "https://linkedin.com",
@@ -265,7 +262,8 @@ const MainFooter = () => {
                 ))}
               </div>
 
-              <div className="mt-8 pt-6 border-t border-gray-200">
+              {/* Do not Delete this, We will use it later */}
+              {/* <div className="mt-8 pt-6 border-t border-gray-200">
                 <p className="text-xs text-gray-500 mb-3">Trusted by</p>
                 <div className="flex items-center gap-3">
                   <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg text-xs font-semibold text-blue-600 border border-blue-100">
@@ -283,7 +281,7 @@ const MainFooter = () => {
                     )}
                   </div>
                 </div>
-              </div>
+              </div> */}
             </div>
           </div>
 

@@ -22,8 +22,6 @@ const allowedOrigins = process.env.CLIENT_URL
   : [
       "http://localhost:5173",
       "http://localhost:3000",
-      "http://localhost:3001",
-      "https://finmen.vercel.app"
     ];
 
 // Initialize app and server
@@ -78,12 +76,10 @@ import authRoutes from "./routes/authRoutes.js";
 import moodRoutes from "./routes/moodRoutes.js";
 import gameRoutes from "./routes/gameRoutes.js";
 import rewardsRoutes from "./routes/rewardsRoutes.js";
-import adminRoutes from "./routes/adminRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import reportRoutes from "./routes/reportRoutes.js";
 import transactionRoutes from "./routes/transactionRoutes.js";
-import adminRedemptionRoutes from "./routes/adminRedemptionRoutes.js";
 import journalRoutes from "./routes/journalRoutes.js";
 import walletRoutes from "./routes/walletRoutes.js";
 import statsRoutes from "./routes/statsRoutes.js";
@@ -116,6 +112,12 @@ import companyRoutes from "./routes/companyRoutes.js";
 import organizationRoutes from "./routes/organizationRoutes.js";
 import schoolRoutes from "./routes/schoolRoutes.js";
 import globalStatsRoutes from "./routes/globalStatsRoutes.js";
+import adminRoutes from "./routes/adminRoutes.js";
+import adminApprovalRoutes from "./routes/adminApprovalRoutes.js";
+import incidentRoutes from "./routes/incidentRoutes.js";
+import marketplaceRoutes from "./routes/marketplaceRoutes.js";
+import adminPaymentTrackerRoutes from "./routes/adminPaymentTrackerRoutes.js";
+import adminTrackingRoutes from "./routes/adminTrackingRoutes.js";
 
 import paymentRoutes from "./routes/paymentRoutes.js";
 
@@ -127,8 +129,6 @@ import { startNotificationTTL } from "./cronJobs/notificationTTL.js";
 
 // Socket Handlers
 import { setupWalletSocket } from "./socketHandlers/walletSocket.js";
-import { setupStudentSocket } from "./socketHandlers/studentSocket.js";
-import { setupStatsSocket } from "./socketHandlers/statsSocket.js";
 import { setupFeedbackSocket } from "./socketHandlers/feedbackSocket.js";
 import { setupGameSocket } from "./socketHandlers/gameSocket.js";
 import { setupJournalSocket } from "./socketHandlers/journalSocket.js";
@@ -168,17 +168,8 @@ io.on("connection", async (socket) => {
 
 
     socket.join(user._id.toString());
-    if (user.role === "admin") {
-      socket.join("admins");
-      socket.join("admin-room");
-    }
 
     console.log(`👤 User ${user._id} (${user.role}) joined their room`);
-
-    if (user.role === "admin") {
-      setupStudentSocket(io, socket, user);
-      setupStatsSocket(io, socket, user);
-    }
 
     setupWalletSocket(io, socket, user);
     setupFeedbackSocket(io, socket, user);
@@ -210,7 +201,6 @@ app.use("/api/auth", authRoutes);
 app.use("/api/mood", moodRoutes);
 app.use("/api/game", gameRoutes);
 app.use("/api/rewards", rewardsRoutes);
-app.use("/api/admin", adminRoutes);
 app.use("/api/analytics", analyticsRoutes);
 
 // Multi-tenant Routes
@@ -223,7 +213,6 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/transactions", transactionRoutes);
-app.use("/api/admin/redemptions", adminRedemptionRoutes);
 app.use("/api/journal", journalRoutes);
 app.use("/api/wallet", walletRoutes);
 app.use("/api/stats", statsRoutes);
@@ -250,6 +239,12 @@ app.use('/api/avatar', avatarRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/assignment-attempts', assignmentAttemptRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/admin/approvals', adminApprovalRoutes);
+app.use('/api/admin/payment-tracker', adminPaymentTrackerRoutes);
+app.use('/api/admin/tracking', adminTrackingRoutes);
+app.use('/api/incidents', incidentRoutes);
+app.use('/api/marketplace', marketplaceRoutes);
 
 // Health Check
 app.get("/", (_, res) => {

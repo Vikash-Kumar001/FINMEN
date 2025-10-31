@@ -71,22 +71,7 @@ export const setupFeedbackSocket = (io, socket, user) => {
         });
       }
 
-      // Notify all admins about the new feedback
-      io.to('admins').emit('admin:feedback:new', {
-        message: `New feedback from ${user.name}`,
-        feedback: {
-          _id: feedback._id,
-          userId: {
-            _id: user._id,
-            name: user.name
-          },
-          message: feedback.message,
-          rating: feedback.rating,
-          category: feedback.category,
-          status: feedback.status,
-          createdAt: feedback.createdAt
-        }
-      });
+
 
       socket.emit('student:feedback:success', { 
         message: 'Feedback submitted successfully',
@@ -99,130 +84,8 @@ export const setupFeedbackSocket = (io, socket, user) => {
     }
   });
 
-  // Admin subscribe to feedback history for a specific student
-  socket.on('admin:feedback:history:subscribe', async ({ adminId, studentId }) => {
-    try {
-      // Verify admin permissions
-      if (user._id.toString() !== adminId || user.role !== 'admin') {
-        socket.emit('admin:feedback:history:error', { message: 'Unauthorized access' });
-        return;
-      }
-
-      console.log(`👁️ Admin ${adminId} subscribed to feedback history for student ${studentId}`);
-      
-      // Join room for this specific student's feedback history
-      socket.join(`admin-feedback-history-${studentId}`);
-      
-      // Get student info
-      const student = await User.findById(studentId).select('name email');
-      
-      if (!student) {
-        socket.emit('admin:feedback:history:error', { message: 'Student not found' });
-        return;
-      }
-      
-      // Get feedback history
-      const feedbackHistory = await Feedback.find({ userId: studentId })
-        .sort({ createdAt: -1 });
-      
-      socket.emit('admin:feedback:history:data', {
-        student: {
-          _id: student._id,
-          name: student.name,
-          email: student.email
-        },
-        feedback: feedbackHistory
-      });
-      
-    } catch (err) {
-      console.error('Error in admin:feedback:history:subscribe:', err);
-      socket.emit('admin:feedback:history:error', { message: err.message });
-    }
-  });
-
-  // Admin respond to feedback
-  socket.on('admin:feedback:respond', async ({ adminId, feedbackId, response }) => {
-    try {
-      // Verify admin permissions
-      if (user._id.toString() !== adminId || user.role !== 'admin') {
-        socket.emit('admin:feedback:error', { message: 'Unauthorized access' });
-        return;
-      }
-
-      if (!response) {
-        socket.emit('admin:feedback:error', { message: 'Response is required' });
-        return;
-      }
-
-      // Update feedback with admin response
-      const feedback = await Feedback.findById(feedbackId);
-      
-      if (!feedback) {
-        socket.emit('admin:feedback:error', { message: 'Feedback not found' });
-        return;
-      }
-
-      feedback.adminResponse = response;
-      feedback.respondedBy = adminId;
-      feedback.respondedAt = new Date();
-      feedback.status = 'responded';
-      await feedback.save();
-
-      // Log activity
-      await ActivityLog.create({
-        userId: adminId,
-        activityType: 'admin_action',
-        details: {
-          action: 'respond_to_feedback',
-          feedbackId: feedback._id,
-          studentId: feedback.userId
-        },
-        timestamp: new Date()
-      });
-
-      // Notify the student about the response
-      io.to(feedback.userId.toString()).emit('student:feedback:response', {
-        message: 'An admin has responded to your feedback',
-        feedback: {
-          _id: feedback._id,
-          message: feedback.message,
-          rating: feedback.rating,
-          category: feedback.category,
-          adminResponse: feedback.adminResponse,
-          status: feedback.status,
-          createdAt: feedback.createdAt,
-          respondedAt: feedback.respondedAt
-        }
-      });
-
-      // Update feedback history for all admins viewing this student's history
-      const updatedFeedbackHistory = await Feedback.find({ userId: feedback.userId })
-        .sort({ createdAt: -1 });
-      
-      io.to(`admin-feedback-history-${feedback.userId}`).emit('admin:feedback:history:update', updatedFeedbackHistory);
-
-      socket.emit('admin:feedback:respond:success', { 
-        message: 'Response sent successfully',
-        feedback
-      });
-
-    } catch (err) {
-      console.error('Error in admin:feedback:respond:', err);
-      socket.emit('admin:feedback:error', { message: err.message });
-    }
-  });
-
   // Cleanup when socket disconnects
   socket.on('disconnect', () => {
-    // Leave all rooms related to feedback
-    if (user.role === 'admin') {
-      // Find all rooms this socket is in that match the pattern
-      const rooms = Object.keys(socket.rooms).filter(room => 
-        room.startsWith('admin-feedback-history-')
-      );
-      
-      // Leave each room
-      rooms.forEach(room => socket.leave(room));
-    }
+    // No admin rooms to leave
   });
 };

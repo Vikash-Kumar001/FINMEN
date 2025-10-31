@@ -423,14 +423,14 @@ const SchoolAdminApprovals = () => {
     <AnimatePresence>
       {showTemplateModal && selectedTemplate && (
         <>
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             onClick={() => setShowTemplateModal(false)}
             className="fixed inset-0 bg-black bg-opacity-50 z-40"
           />
-          <motion.div
+          <Motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
@@ -498,7 +498,7 @@ const SchoolAdminApprovals = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </Motion.div>
         </>
       )}
     </AnimatePresence>
@@ -507,7 +507,7 @@ const SchoolAdminApprovals = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-        <motion.div
+        <Motion.div
           animate={{ rotate: 360, scale: [1, 1.2, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
           className="w-20 h-20 border-4 border-purple-500 border-t-transparent rounded-full"
@@ -521,7 +521,7 @@ const SchoolAdminApprovals = () => {
       {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white py-12 px-6">
         <div className="max-w-7xl mx-auto">
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
+          <Motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
             <h1 className="text-4xl font-black mb-2 flex items-center gap-3">
               <CheckCircle className="w-10 h-10" />
               Pending Approvals
@@ -529,13 +529,13 @@ const SchoolAdminApprovals = () => {
             <p className="text-lg text-white/90">
               {pendingAssignments.length} assignments • {pendingTemplates.length} templates awaiting review
             </p>
-          </motion.div>
+          </Motion.div>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 -mt-8">
         {/* Tabs */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-2 mb-6 flex gap-2"
@@ -560,10 +560,10 @@ const SchoolAdminApprovals = () => {
           >
             Templates ({pendingTemplates.length})
           </button>
-        </motion.div>
+        </Motion.div>
 
         {/* Search & Refresh */}
-        <motion.div
+        <Motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 mb-6 flex items-center justify-between gap-4 flex-wrap"
@@ -586,7 +586,7 @@ const SchoolAdminApprovals = () => {
             <RefreshCw className="w-4 h-4" />
             Refresh
           </button>
-        </motion.div>
+        </Motion.div>
 
         {/* Assignments Tab */}
         {activeTab === 'assignments' && (
@@ -594,7 +594,7 @@ const SchoolAdminApprovals = () => {
             {filteredAssignments.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredAssignments.map((assignment, idx) => (
-                  <motion.div
+                  <Motion.div
                     key={assignment.id || idx}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -649,11 +649,11 @@ const SchoolAdminApprovals = () => {
                         {processingId === assignment.id ? '...' : 'Approve'}
                       </button>
                     </div>
-                  </motion.div>
+                  </Motion.div>
                 ))}
               </div>
             ) : (
-              <motion.div
+              <Motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-12 text-center"
@@ -661,7 +661,7 @@ const SchoolAdminApprovals = () => {
                 <CheckCircle className="w-20 h-20 mx-auto mb-4 text-green-500" />
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">All Caught Up!</h3>
                 <p className="text-gray-600">No pending assignments to review</p>
-              </motion.div>
+              </Motion.div>
             )}
           </>
         )}
@@ -672,7 +672,7 @@ const SchoolAdminApprovals = () => {
             {filteredTemplates.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredTemplates.map((template, idx) => (
-                  <motion.div
+                  <Motion.div
                     key={template.id || idx}
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -716,11 +716,11 @@ const SchoolAdminApprovals = () => {
                         {processingId === template.id ? '...' : 'Approve'}
                       </button>
                     </div>
-                  </motion.div>
+                  </Motion.div>
                 ))}
               </div>
             ) : (
-              <motion.div
+              <Motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-12 text-center"
@@ -728,7 +728,7 @@ const SchoolAdminApprovals = () => {
                 <CheckCircle className="w-20 h-20 mx-auto mb-4 text-green-500" />
                 <h3 className="text-2xl font-bold text-gray-900 mb-2">All Caught Up!</h3>
                 <p className="text-gray-600">No pending templates to review</p>
-              </motion.div>
+              </Motion.div>
             )}
           </>
         )}

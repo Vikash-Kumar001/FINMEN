@@ -25,15 +25,6 @@ export const requireAuth = async (req, res, next) => {
   }
 };
 
-// ✅ Middleware: Admin-only access
-export const requireAdmin = (req, res, next) => {
-  if (req.user?.role !== "admin") {
-    return res.status(403).json({ message: "Access denied. Admins only." });
-  }
-  next();
-};
-
-
 // ✅ Middleware: Student-only access
 export const requireStudent = (req, res, next) => {
   if (req.user?.role !== "student") {

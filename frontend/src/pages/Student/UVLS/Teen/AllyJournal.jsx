@@ -1,0 +1,150 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+
+const AllyJournal = () => {
+  const navigate = useNavigate();
+  const [action, setAction] = useState("");
+  const [steps, setSteps] = useState(["", "", "", "", ""]);
+  const [currentStep, setCurrentStep] = useState(0);
+  const [date, setDate] = useState("");
+  const [showResult, setShowResult] = useState(false);
+  const [coins, setCoins] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(30);
+  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+
+  useEffect(() => {
+    if (timeLeft > 0 && !showResult) {
+      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+      return () => clearTimeout(timerId);
+    } else if (timeLeft === 0) {
+      handleSubmit();
+    }
+  }, [timeLeft, showResult]);
+
+  const handleActionChange = (e) => {
+    setAction(e.target.value);
+  };
+
+  const handleStepChange = (e) => {
+    const newSteps = [...steps];
+    newSteps[currentStep] = e.target.value;
+    setSteps(newSteps);
+  };
+
+  const handleDateChange = (e) => {
+    setDate(e.target.value);
+  };
+
+  const handleSubmit = () => {
+    if (currentStep < 4 && steps[currentStep].trim() === "") return;
+    if (currentStep === 4 && date.trim() === "") return;
+    showCorrectAnswerFeedback(1, false);
+    if (currentStep < 4) {
+      setTimeout(() => {
+        setCurrentStep(prev => prev + 1);
+        setTimeLeft(30);
+      }, 1500);
+    } else {
+      setShowResult(true);
+      if (action.trim() !== "" && steps.every(s => s.trim() !== "") && date.trim() !== "") {
+        setCoins(5);
+      }
+    }
+  };
+
+  const handleNext = () => {
+    navigate("/games/uvls/teens");
+  };
+
+  const isComplete = action.trim() !== "" && steps.every(s => s.trim() !== "") && date.trim() !== "";
+
+  return (
+    <GameShell
+      title="Ally Journal"
+      subtitle={`Question ${currentStep + 1} of 5`}
+      onNext={handleNext}
+      nextEnabled={showResult && isComplete}
+      showGameOver={showResult && isComplete}
+      score={coins}
+      gameId="gender-127"
+      gameType="gender"
+      totalLevels={10}
+      currentLevel={7}
+      showConfetti={showResult && isComplete}
+      flashPoints={flashPoints}
+      backPath="/games/uvls/teens"
+    >
+      <div className="space-y-8">
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <p className="text-white mb-2">Time left: {timeLeft}s</p>
+              {currentStep === 0 && (
+                <>
+                  <p className="text-white text-xl mb-6">Plan ally action:</p>
+                  <textarea
+                    value={action}
+                    onChange={handleActionChange}
+                    className="w-full h-32 p-4 bg-white/20 border-2 border-white/40 rounded-xl text-white"
+                    placeholder="Action..."
+                  />
+                </>
+              )}
+              {currentStep < 4 ? (
+                <>
+                  <p className="text-white text-xl mb-6">Action step {currentStep + 1}:</p>
+                  <textarea
+                    value={steps[currentStep]}
+                    onChange={handleStepChange}
+                    className="w-full h-32 p-4 bg-white/20 border-2 border-white/40 rounded-xl text-white"
+                    placeholder="Step..."
+                  />
+                </>
+              ) : (
+                <>
+                  <p className="text-white text-xl mb-6">Set date:</p>
+                  <input
+                    type="date"
+                    value={date}
+                    onChange={handleDateChange}
+                    className="w-full p-4 bg-white/20 border-2 border-white/40 rounded-xl text-white"
+                  />
+                </>
+              )}
+              <button
+                onClick={handleSubmit}
+                disabled={(currentStep < 4 ? steps[currentStep].trim() === "" : date.trim() === "") && timeLeft > 0}
+                className={`w-full py-3 rounded-xl font-bold text-white transition ${
+                  (currentStep < 4 ? steps[currentStep].trim() !== "" : date.trim() !== "") || timeLeft === 0
+                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
+                    : 'bg-gray-500/50 cursor-not-allowed'
+                }`}
+              >
+                Plan
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              Journal Complete!
+            </h2>
+            <p className="text-white/90 text-xl mb-4">
+              Your ally plan is ready.
+            </p>
+            <p className="text-yellow-400 text-2xl font-bold mb-6">
+              {isComplete ? "Earned 5 Coins!" : "Complete for coins."}
+            </p>
+            <p className="text-white/70 text-sm">
+              Teacher Note: Assign follow-up check-in.
+            </p>
+          </div>
+        )}
+      </div>
+    </GameShell>
+  );
+};
+
+export default AllyJournal;

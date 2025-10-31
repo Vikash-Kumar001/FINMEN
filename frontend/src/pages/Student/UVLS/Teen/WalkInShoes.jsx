@@ -102,7 +102,7 @@ const WalkInShoes = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/teen/empathy-debate");
+    navigate("/games/uvls/teens");
   };
 
   const helpfulCount = choices.filter(c => c.isHelpful).length;

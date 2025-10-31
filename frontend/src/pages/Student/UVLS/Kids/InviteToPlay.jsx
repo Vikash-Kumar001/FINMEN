@@ -104,7 +104,7 @@ const InviteToPlay = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/inclusion-poster");
+    navigate("/games/uvls/kids");
   };
 
   const invitingCount = invitations.filter(inv => inv.isInviting).length;

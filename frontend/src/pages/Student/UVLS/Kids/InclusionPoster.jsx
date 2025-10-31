@@ -56,7 +56,7 @@ const InclusionPoster = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/inclusion-journal");
+    navigate("/games/uvls/kids");
   };
 
   const selectedThemeObj = themes.find(t => t.id === selectedTheme);

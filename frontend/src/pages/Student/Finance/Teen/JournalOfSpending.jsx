@@ -5,10 +5,12 @@ import { useGameFeedback } from '../../../../hooks/useGameFeedback';
 
 const JournalOfSpending = () => {
   const navigate = useNavigate();
-  const { feedback, triggerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentEntry, setCurrentEntry] = useState(0);
   const [scores, setScores] = useState(Array(5).fill(0));
   const [journalEntries, setJournalEntries] = useState(Array(5).fill(''));
+  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [isSuccess, setIsSuccess] = useState(false);
 
   const journalPrompts = [
     {
@@ -45,19 +47,34 @@ const JournalOfSpending = () => {
   };
 
   const handleSubmitEntry = () => {
+    resetFeedback();
     if (journalEntries[currentEntry].trim().length > 20) {
-      triggerFeedback(true);
+      showCorrectAnswerFeedback(1, true);
       const newScores = [...scores];
       newScores[currentEntry] = 1;
       setScores(newScores);
       
+      setFeedbackMessage('Great reflection! Keep up the good work.');
+      setIsSuccess(true);
+      
       setTimeout(() => {
+        setFeedbackMessage('');
         if (currentEntry < journalPrompts.length - 1) {
           setCurrentEntry(currentEntry + 1);
+        } else {
+          // For the last entry, navigate after a delay
+          setTimeout(() => {
+            navigate('/games/financial-literacy/teen');
+          }, 3000);
         }
-      }, 1500);
+      }, 2000);
     } else {
-      triggerFeedback(false, "Please write a more detailed reflection (at least 20 words)");
+      setFeedbackMessage('Please write a more detailed reflection (at least 20 words)');
+      setIsSuccess(false);
+      
+      setTimeout(() => {
+        setFeedbackMessage('');
+      }, 2000);
     }
   };
 
@@ -66,7 +83,7 @@ const JournalOfSpending = () => {
   };
 
   const handleGameComplete = () => {
-    navigate('/student/finance');
+    navigate('/games/financial-literacy/teen');
   };
 
   return (
@@ -78,7 +95,6 @@ const JournalOfSpending = () => {
       score={calculateTotalScore()}
       totalScore={journalPrompts.length}
       onGameComplete={handleGameComplete}
-      feedback={feedback}
     >
       <div className="game-content">
         <h3 className="text-xl font-bold mb-6 text-indigo-700">Spending Habits Journal</h3>
@@ -111,11 +127,11 @@ const JournalOfSpending = () => {
           </button>
         </div>
         
-        {feedback && (
+        {feedbackMessage && (
           <div className={`p-4 rounded-lg mb-4 ${
-            feedback.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            isSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
           }`}>
-            <p className="font-medium">{feedback.message}</p>
+            <p className="font-medium">{feedbackMessage}</p>
           </div>
         )}
         

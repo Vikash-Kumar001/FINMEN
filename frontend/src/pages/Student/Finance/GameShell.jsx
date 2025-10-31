@@ -37,31 +37,28 @@ export const ScoreFlash = ({ points }) => (
       +{points}
     </div>
 
-    {/* Global keyframes for score flash */
-    }
-    <style>
-      {`
-        @keyframes score-flash {
-          0% { opacity: 0; transform: scale(0.5); }
-          30% { opacity: 1; transform: scale(1.2); }
-          60% { opacity: 1; transform: scale(1); }
-          100% { opacity: 0; transform: scale(1.5); }
-        }
-      `}
-    </style>
+    {/* Global keyframes for score flash */}
+    <style>{`
+      @keyframes score-flash {
+        0% { opacity: 0; transform: scale(0.5); }
+        30% { opacity: 1; transform: scale(1.2); }
+        60% { opacity: 1; transform: scale(1); }
+        100% { opacity: 0; transform: scale(1.5); }
+      }
+    `}</style>
   </div>
 );
 
 /* --------------------- Confetti --------------------- */
 export const Confetti = ({ duration = 3000 }) => {
   const [isVisible, setIsVisible] = useState(true);
-  
+
   useEffect(() => {
     if (duration > 0) {
       const timer = setTimeout(() => {
         setIsVisible(false);
       }, duration);
-      
+
       return () => clearTimeout(timer);
     }
   }, [duration]);
@@ -91,24 +88,24 @@ export const Confetti = ({ duration = 3000 }) => {
 };
 
 /* --------------------- Level Complete Component with Instant Coins --------------------- */
-export const LevelCompleteHandler = ({ 
-  gameId, 
-  gameType = 'ai', 
-  levelNumber, 
-  levelScore, 
+export const LevelCompleteHandler = ({
+  gameId,
+  gameType = 'ai',
+  levelNumber,
+  levelScore,
   maxLevelScore = 20,
   onComplete,
-  children 
+  children
 }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
   const handleLevelComplete = async () => {
     if (hasSubmitted || !gameId) return;
-    
+
     setIsSubmitting(true);
     setHasSubmitted(true);
-    
+
     try {
       const result = await gameCompletionService.completeLevel(gameId, {
         levelNumber,
@@ -116,12 +113,11 @@ export const LevelCompleteHandler = ({
         maxLevelScore,
         coinsForLevel: 5 // Default coins per level
       });
-      
+
       if (result.success && result.coinsEarned > 0) {
-        // Show coin notification for this level
         toast.success(`🎯 Level ${levelNumber} complete! +${result.coinsEarned} HealCoins`);
       }
-      
+
       if (onComplete) {
         onComplete(result);
       }
@@ -132,7 +128,6 @@ export const LevelCompleteHandler = ({
     }
   };
 
-  // Auto-submit when level is completed
   useEffect(() => {
     if (levelScore > 0 && !hasSubmitted) {
       handleLevelComplete();
@@ -207,8 +202,8 @@ export const FeedbackBubble = ({ message, type }) => (
   </div>
 );
 
-/* --------------------- Game Over Modal with Heal Coins --------------------- */
-export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 5, onClose }) => {
+/* --------------------- Game Over Modal --------------------- */
+export const GameOverModal = ({ score, gameId, gameType = 'ai',  onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coinsEarned, setCoinsEarned] = useState(0);
   const [submissionComplete, setSubmissionComplete] = useState(false);
@@ -216,35 +211,31 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 5,
   useEffect(() => {
     const submitGameCompletion = async () => {
       if (submissionComplete || !gameId) return;
-      
+
       setIsSubmitting(true);
       try {
-        // First check if game is already fully completed
         const progress = await gameCompletionService.getGameProgress(gameId);
-        
+
         if (progress?.fullyCompleted) {
-          // Game already completed, don't submit again
           setCoinsEarned(0);
           setSubmissionComplete(true);
           return;
         }
-        
+
         const result = await gameCompletionService.completeGame({
           gameId,
           gameType,
           score,
-          maxScore: totalLevels * 20, // Assuming 20 points max per level
+          maxScore: totalLevels * 20,
           levelsCompleted: totalLevels,
           totalLevels,
-          timePlayed: 0, // Can be enhanced to track actual time
+          timePlayed: 0,
           isFullCompletion: true
         });
-        
+
         if (result.success) {
           setCoinsEarned(result.coinsEarned);
           setSubmissionComplete(true);
-          
-          // Emit custom event to notify other components
           window.dispatchEvent(new CustomEvent('gameCompleted', { detail: { gameId, fullyCompleted: true } }));
         }
       } catch (error) {
@@ -256,7 +247,7 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 5,
     };
 
     submitGameCompletion();
-  }, [gameId, gameType, score, totalLevels, submissionComplete]);
+  }, [gameId, gameType, score, submissionComplete]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -268,7 +259,7 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 5,
           You finished the game with a score of{" "}
           <span className="font-bold text-gray-900">{score}</span> ⭐
         </p>
-        
+
         {isSubmitting ? (
           <div className="mb-6">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500 mx-auto mb-2"></div>
@@ -287,7 +278,7 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 5,
             </div>
           </div>
         )}
-        
+
         <button
           onClick={onClose}
           disabled={isSubmitting}
@@ -297,7 +288,8 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 5,
         </button>
       </div>
 
-      <style jsx>{`
+      {/* Animations */}
+      <style>{`
         .animate-pop {
           animation: pop-in 0.4s ease-out forwards;
         }
@@ -322,20 +314,18 @@ const GameShell = ({
   nextLabel = "Next Level",
   showGameOver = false,
   score,
-  gameId, // New prop for game identification
-  gameType = 'ai', // New prop for game type
-  totalLevels = 5, // New prop for total levels
-  currentLevel = 1, // New prop for current level
-  showConfetti = false, // New prop to control confetti display
-  // New props for flash messages
+  gameId,
+  gameType = 'ai',
+  // totalLevels = 5,
+  // currentLevel = 1,
+  showConfetti = false,
   flashPoints = null,
   showAnswerConfetti = false,
-  backPath = "/games/financial-literacy/kids", // New prop for back navigation path
+  backPath = "/games/financial-literacy/kids",
 }) => {
   const navigate = useNavigate();
 
   const handleGameOverClose = () => {
-    // Use the backPath prop for navigation
     navigate(backPath);
   };
 
@@ -348,18 +338,11 @@ const GameShell = ({
         <div className="absolute bottom-20 left-20 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl animate-blob animation-delay-4000"></div>
       </div>
 
-      {/* Floating Particles */}
       <FloatingParticles />
-      
-      {/* Score Flash */}
       {flashPoints !== null && <ScoreFlash points={flashPoints} />}
-      
-      {/* Confetti effect for correct answers */}
       {showAnswerConfetti && <Confetti duration={1000} />}
-      
-      {/* End of game confetti */}
       {showConfetti && <Confetti />}
-      
+
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 relative z-30">
         <button
@@ -368,14 +351,11 @@ const GameShell = ({
         >
           ← Back
         </button>
-        {/* Added score and level display */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full">
             <span className="text-white font-medium">Score: {score || 0}</span>
           </div>
-          <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full">
-            <span className="text-white font-medium">Level {currentLevel}/{totalLevels}</span>
-          </div>
+          
         </div>
         {rightSlot || <div />}
       </div>
@@ -396,11 +376,10 @@ const GameShell = ({
             )}
           </div>
         )}
-
         {children}
       </div>
 
-      {/* Next Level Button */}
+      {/* Next Level Button
       {onNext && (
         <div className="flex justify-center py-6 z-10">
           <button
@@ -415,25 +394,23 @@ const GameShell = ({
             }}
           >
             <span>{nextLabel.split(" ")[0]}</span>
-            {nextLabel.split(" ")[1] && <span>{nextLabel.split(" ")[1]}</span>
-            }
+            {nextLabel.split(" ")[1] && <span>{nextLabel.split(" ")[1]}</span>}
           </button>
         </div>
-      )}
+      )} */}
 
-      {/* Centralized Game Over Modal with HealCoins */}
       {showGameOver && (
-        <GameOverModal 
-          score={score} 
+        <GameOverModal
+          score={score}
           gameId={gameId}
           gameType={gameType}
-          totalLevels={totalLevels}
-          onClose={handleGameOverClose} 
+         
+          onClose={handleGameOverClose}
         />
       )}
 
       {/* Animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes blob {
           0%, 100% { transform: translate(0px, 0px) scale(1); }
           33% { transform: translate(30px, -50px) scale(1.1); }

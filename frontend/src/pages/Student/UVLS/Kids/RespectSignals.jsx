@@ -65,7 +65,7 @@ const RespectSignals = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/inclusive-kid-badge");
+    navigate("/games/uvls/kids");
   };
 
   const accuracy = Math.round((score / signals.length) * 100);

@@ -116,7 +116,7 @@ const SpotHelp = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/kind-poster");
+    navigate("/games/uvls/kids");
   };
 
   const scenario = scenarios[currentScenario];

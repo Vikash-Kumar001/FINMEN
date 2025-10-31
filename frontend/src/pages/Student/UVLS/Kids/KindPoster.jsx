@@ -56,7 +56,7 @@ const KindPoster = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/mini-journal");
+    navigate("/games/uvls/kids");
   };
 
   const selectedBg = backgrounds.find(bg => bg.id === selectedBackground);

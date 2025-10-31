@@ -70,7 +70,7 @@ const InclusionJournal = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/invite-roleplay");
+    navigate("/games/uvls/kids");
   };
 
   const currentPrompt = prompts[selectedPrompt];

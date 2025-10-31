@@ -125,7 +125,7 @@ const PoliteWordsQuiz = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/respect-tap");
+    navigate("/games/uvls/kids");
   };
 
   const correctCount = answers.filter(a => a.isCorrect).length;

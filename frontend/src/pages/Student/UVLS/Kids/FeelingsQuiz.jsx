@@ -113,7 +113,7 @@ const FeelingsQuiz = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/kind-reflex");
+    navigate("/games/uvls/kids");
   };
 
   const getCurrentVignette = () => vignettes[currentQuestion];

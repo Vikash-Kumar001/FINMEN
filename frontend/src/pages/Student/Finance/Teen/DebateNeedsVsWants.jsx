@@ -5,10 +5,11 @@ import { useGameFeedback } from '../../../../hooks/useGameFeedback';
 
 const DebateNeedsVsWants = () => {
   const navigate = useNavigate();
-  const { feedback, triggerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentRound, setCurrentRound] = useState(0);
   const [scores, setScores] = useState(Array(5).fill(0));
   const [selectedPosition, setSelectedPosition] = useState(null);
+  const [showReflection, setShowReflection] = useState(false);
 
   const debateTopics = [
     {
@@ -99,21 +100,35 @@ const DebateNeedsVsWants = () => {
   ];
 
   const handlePositionSelect = (positionId) => {
+    resetFeedback();
     setSelectedPosition(positionId);
     // In a debate game, either position can demonstrate understanding
     // We'll give credit for engaging with either side thoughtfully
-    triggerFeedback(true);
+    showCorrectAnswerFeedback(1, true);
     
     const newScores = [...scores];
     newScores[currentRound] = 1;
     setScores(newScores);
+    
+    setShowReflection(true);
 
     setTimeout(() => {
+      setShowReflection(false);
       if (currentRound < debateTopics.length - 1) {
         setCurrentRound(currentRound + 1);
         setSelectedPosition(null);
+      } else {
+        // Show completion popup for the last round
+        setTimeout(() => {
+          const totalScore = calculateTotalScore();
+          // You can implement a completion popup here if needed
+          // For now, we'll just navigate after a delay
+          setTimeout(() => {
+            navigate('/games/financial-literacy/teen');
+          }, 3000);
+        }, 2000);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const calculateTotalScore = () => {
@@ -121,7 +136,7 @@ const DebateNeedsVsWants = () => {
   };
 
   const handleGameComplete = () => {
-    navigate('/student/finance');
+    navigate('/games/financial-literacy/teen');
   };
 
   return (
@@ -133,7 +148,6 @@ const DebateNeedsVsWants = () => {
       score={calculateTotalScore()}
       totalScore={debateTopics.length}
       onGameComplete={handleGameComplete}
-      feedback={feedback}
     >
       <div className="game-content">
         <h3 className="text-xl font-bold mb-6 text-indigo-700">Needs vs Wants Debate</h3>
@@ -164,21 +178,13 @@ const DebateNeedsVsWants = () => {
             ))}
           </div>
           
-          {selectedPosition && (
+          {showReflection && (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
               <h4 className="font-semibold text-yellow-800 mb-2">Reflection:</h4>
               <p className="text-yellow-700">{debateTopics[currentRound].reflection}</p>
             </div>
           )}
         </div>
-        
-        {feedback && (
-          <div className={`p-4 rounded-lg mb-4 ${
-            feedback.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-          }`}>
-            <p className="font-medium">{feedback.message}</p>
-          </div>
-        )}
         
         <div className="flex justify-between items-center mt-6">
           <span className="text-gray-600">

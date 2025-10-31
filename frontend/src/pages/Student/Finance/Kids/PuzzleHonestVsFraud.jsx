@@ -1,0 +1,124 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { Puzzle } from "lucide-react";
+import GameShell from "../GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+
+const PuzzleHonestVsFraud = () => {
+  const navigate = useNavigate();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+
+  const stages = [
+    {
+      question: "Match: Fair Shop → Trust",
+      choices: [
+        { text: "Fair Shop = Trust 🤝", correct: true },
+        { text: "Fair Shop = Loss 😞", correct: false },
+        { text: "Fair Shop = Scam 🚨", correct: false },
+      ],
+    },
+    {
+      question: "Match: Cheat Shop → Loss",
+      choices: [
+        { text: "Cheat Shop = Loss 😞", correct: true },
+        { text: "Cheat Shop = Trust 🤝", correct: false },
+        { text: "Cheat Shop = Gain 💰", correct: false },
+      ],
+    },
+    {
+      question: "Match: Honest Seller → Fair Price",
+      choices: [
+        { text: "Honest Seller = Fair Price 💸", correct: true },
+        { text: "Honest Seller = Overcharge 📈", correct: false },
+        { text: "Honest Seller = No Sale 🛑", correct: false },
+      ],
+    },
+    {
+      question: "Match: Fraud Shop → Scam",
+      choices: [
+        { text: "Fraud Shop = Scam 🚨", correct: true },
+        { text: "Fraud Shop = Trust 🤝", correct: false },
+        { text: "Fraud Shop = Savings 💰", correct: false },
+      ],
+    },
+    {
+      question: "Why is it important to shop at honest stores?",
+      choices: [
+        { text: "Builds trust and saves money 📚", correct: true },
+        { text: "Gets you more toys 🧸", correct: false },
+        { text: "Makes shopping fun 🎉", correct: false },
+      ],
+    },
+  ];
+
+  const handleSelect = (isCorrect) => {
+    resetFeedback();
+    if (isCorrect) {
+      setCoins((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    if (currentStage < stages.length - 1) {
+      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    } else {
+      setTimeout(() => setShowResult(true), 800);
+    }
+  };
+
+  const handleFinish = () => navigate("/games/financial-literacy/kids");
+
+  return (
+    <GameShell
+      title="Puzzle: Honest vs Fraud"
+      subtitle="Match shop types to their outcomes!"
+      coins={coins}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
+      onNext={showResult ? handleFinish : null}
+      nextEnabled={showResult}
+      nextLabel="Finish"
+      showConfetti={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={coins}
+      gameId="finance-kids-164"
+      gameType="finance"
+    >
+      <div className="text-center text-white space-y-8">
+        {!showResult ? (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <Puzzle className="mx-auto w-10 h-10 text-purple-500 mb-4" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {stages[currentStage].choices.map((choice, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSelect(choice.correct)}
+                  className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-blue-500 transition-transform hover:scale-105"
+                >
+                  <div className="text-lg font-semibold">{choice.text}</div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <Puzzle className="mx-auto w-16 h-16 text-purple-500 mb-3" />
+            <h3 className="text-3xl font-bold mb-4">Honesty Puzzle Master!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              You earned {coins} out of 5 for spotting honest shops!
+            </p>
+            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
+              +{coins} Coins
+            </div>
+            <p className="text-white/80">Lesson: Honest shops build trust!</p>
+          </div>
+        )}
+      </div>
+    </GameShell>
+  );
+};
+
+export default PuzzleHonestVsFraud;

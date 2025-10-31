@@ -73,7 +73,7 @@ const KindReflex = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/match-faces");
+    navigate("/games/uvls/kids");
   };
 
   const accuracy = Math.round((score / actions.length) * 100);

@@ -160,7 +160,7 @@ const ShareYourToy = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/kids/feelings-quiz");
+    navigate("/games/uvls/kids");
   };
 
   const getCurrentScenario = () => scenarios[currentQuestion];

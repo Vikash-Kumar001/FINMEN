@@ -1,0 +1,437 @@
+import React, { useState, useEffect, useRef } from 'react';
+import { motion as Motion } from 'framer-motion';
+import {
+  Settings, Save, Globe, Shield, Bell, Database, Server, Lock,
+  Mail, Phone, MapPin, CheckCircle, AlertCircle, RefreshCw,
+  MessageSquare
+} from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import api from '../../utils/api';
+import { toast } from 'react-hot-toast';
+import AdminJobPositions from '../../components/admin/AdminJobPositions.jsx';
+
+const COMMUNICATIONS_PASSWORD = 'Magorix@wise@110';
+
+const AdminSettings = () => {
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [activeTab, setActiveTab] = useState('general');
+  const navigate = useNavigate();
+  const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+  const [passwordInput, setPasswordInput] = useState('');
+  const [passwordError, setPasswordError] = useState('');
+  const passwordInputRef = useRef(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [settings, setSettings] = useState({
+    general: {
+      platformName: 'Wise Student',
+      supportEmail: 'support@wisestudent.org',
+      supportPhone: '+91 9043411110',
+      timezone: 'Asia/Kolkata',
+      language: 'en'
+    },
+    security: {
+      requireEmailVerification: true,
+      requireTwoFactor: false,
+      sessionTimeout: 30,
+      passwordMinLength: 8,
+      enableAuditLog: true
+    },
+    notifications: {
+      emailNotifications: true,
+      smsNotifications: false,
+      pushNotifications: true,
+      adminAlerts: true
+    },
+    system: {
+      maintenanceMode: false,
+      maxUploadSize: 10,
+      enableAnalytics: true,
+      enableCookies: true
+    }
+  });
+
+  useEffect(() => {
+    const loadSettings = async () => {
+      try {
+        setLoading(true);
+        const res = await api.get('/api/admin/settings').catch(() => ({ data: { data: settings } }));
+        if (res.data.data) {
+          setSettings(res.data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching settings:', error);
+        toast.error('Failed to load settings');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      setSaving(true);
+      await api.put('/api/admin/settings', settings);
+      toast.success('Settings saved successfully!');
+    } catch (error) {
+      console.error('Error saving settings:', error);
+      toast.error('Failed to save settings');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const updateSetting = (category, key, value) => {
+    setSettings(prev => ({
+      ...prev,
+      [category]: {
+        ...prev[category],
+        [key]: value
+      }
+    }));
+  };
+
+  useEffect(() => {
+    if (showPasswordPrompt) {
+      setPasswordInput('');
+      setPasswordError('');
+      const timeout = setTimeout(() => {
+        passwordInputRef.current?.focus();
+      }, 150);
+      return () => clearTimeout(timeout);
+    }
+  }, [showPasswordPrompt]);
+
+  useEffect(() => {
+    if (showPasswordPrompt) {
+      const previousOverflow = document.body.style.overflow;
+      document.body.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = previousOverflow;
+      };
+    }
+    return () => {};
+  }, [showPasswordPrompt]);
+
+  const handleOpenCommunications = () => {
+    setShowPasswordPrompt(true);
+    setShowPassword(false);
+  };
+
+  const handlePasswordSubmit = (e) => {
+    e?.preventDefault();
+    if (passwordInput === COMMUNICATIONS_PASSWORD) {
+      setShowPasswordPrompt(false);
+      setPasswordInput('');
+      setPasswordError('');
+      setShowPassword(false);
+      navigate('/admin/settings/communications');
+    } else {
+      setPasswordError('Incorrect password. Please try again.');
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        <Motion.div
+          animate={{ rotate: 360, scale: [1, 1.2, 1] }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+          className="w-20 h-20 border-4 border-purple-500 border-t-transparent rounded-full"
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 pb-12">
+      {/* Header */}
+      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white py-12 px-6">
+        <div className="max-w-7xl mx-auto">
+          <Motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h1 className="text-4xl font-black mb-2">Platform Settings ⚙️</h1>
+            <p className="text-lg text-white/90">Configure platform-wide settings and preferences</p>
+          </Motion.div>
+        </div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-6 -mt-8">
+        {/* Tabs Navigation */}
+        <div className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-4 mb-6">
+          <div className="flex flex-wrap gap-2">
+            {['general', 'security', 'notifications', 'system', 'positions'].map(tab => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab)}
+                className={`px-6 py-3 rounded-xl font-semibold transition-all ${
+                  activeTab === tab
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                    : 'text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                <span className="capitalize">{tab}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Content */}
+        <Motion.div
+          key={activeTab}
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6"
+        >
+              {/* General Settings */}
+              {activeTab === 'general' && (
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">General Settings</h2>
+                  <div className="space-y-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Platform Name</label>
+                      <input
+                        type="text"
+                        value={settings.general.platformName}
+                        onChange={(e) => updateSetting('general', 'platformName', e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Support Email</label>
+                      <input
+                        type="email"
+                        value={settings.general.supportEmail}
+                        onChange={(e) => updateSetting('general', 'supportEmail', e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Support Phone</label>
+                      <input
+                        type="text"
+                        value={settings.general.supportPhone}
+                        onChange={(e) => updateSetting('general', 'supportPhone', e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Timezone</label>
+                      <select
+                        value={settings.general.timezone}
+                        onChange={(e) => updateSetting('general', 'timezone', e.target.value)}
+                        className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      >
+                        <option value="Asia/Kolkata">Asia/Kolkata</option>
+                        <option value="UTC">UTC</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Security Settings */}
+              {activeTab === 'security' && (
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Security Settings</h2>
+                  <div className="space-y-4">
+                    {Object.entries(settings.security).map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div>
+                          <p className="font-semibold text-gray-900">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                          <p className="text-sm text-gray-600">Enable {key.replace(/([A-Z])/g, ' $1').toLowerCase()}</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={value}
+                            onChange={(e) => updateSetting('security', key, e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Notifications Settings */}
+              {activeTab === 'notifications' && (
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Notification Settings</h2>
+                  <div className="space-y-4">
+                    {Object.entries(settings.notifications).map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div>
+                          <p className="font-semibold text-gray-900">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                        </div>
+                        <label className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={value}
+                            onChange={(e) => updateSetting('notifications', key, e.target.checked)}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* System Settings */}
+              {activeTab === 'system' && (
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">System Settings</h2>
+                  <div className="space-y-4">
+                    {Object.entries(settings.system).map(([key, value]) => (
+                      <div key={key} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+                        <div>
+                          <p className="font-semibold text-gray-900">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                        </div>
+                        {typeof value === 'boolean' ? (
+                          <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={value}
+                              onChange={(e) => updateSetting('system', key, e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-indigo-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                          </label>
+                        ) : (
+                          <input
+                            type="number"
+                            value={value}
+                            onChange={(e) => updateSetting('system', key, e.target.value)}
+                            className="w-24 px-3 py-2 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Positions */}
+              {activeTab === 'positions' && (
+                <div className="space-y-6">
+                  <h2 className="text-2xl font-bold text-gray-900 mb-6">Career Positions</h2>
+                  <AdminJobPositions />
+                </div>
+              )}
+
+              {/* Save Button */}
+              <div className="mt-8 pt-6 border-t border-gray-200">
+                <div className="flex flex-col md:flex-row gap-4">
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex-1 px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {saving ? (
+                      <>
+                        <RefreshCw className="w-5 h-5 animate-spin" />
+                        Saving...
+                      </>
+                    ) : (
+                      <>
+                        <Save className="w-5 h-5" />
+                        Save Settings
+                      </>
+                    )}
+                  </button>
+                  <button
+                    onClick={handleOpenCommunications}
+                    className="flex-1 px-6 py-4 bg-white border-2 border-indigo-200 text-indigo-700 rounded-xl font-bold hover:shadow-lg hover:border-indigo-300 transition-all flex items-center justify-center gap-2"
+                  >
+                    <MessageSquare className="w-5 h-5" />
+                    Communications
+                  </button>
+                </div>
+              </div>
+        </Motion.div>
+      </div>
+      {showPasswordPrompt && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 px-4">
+          <Motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden"
+          >
+            <div className="px-6 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex items-center gap-3">
+              <div className="p-3 bg-white/20 rounded-xl">
+                <Lock className="w-6 h-6" />
+              </div>
+              <div>
+                <h2 className="text-xl font-black">Verify Access</h2>
+                <p className="text-sm text-white/80">Enter the communications access password</p>
+              </div>
+            </div>
+            <form onSubmit={handlePasswordSubmit} className="px-6 py-6 space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Access Password
+                </label>
+                <div className="relative">
+                  <input
+                    ref={passwordInputRef}
+                    type={showPassword ? 'text' : 'password'}
+                    value={passwordInput}
+                    onChange={(e) => {
+                      setPasswordInput(e.target.value);
+                      setPasswordError('');
+                    }}
+                    className={`w-full px-4 py-3 rounded-xl border ${
+                      passwordError ? 'border-red-400' : 'border-gray-300'
+                    } focus:outline-none focus:ring-2 focus:ring-indigo-500 pr-12`}
+                    placeholder="Enter password"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-3 flex items-center text-sm font-semibold text-indigo-600 hover:text-indigo-700"
+                  >
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
+                {passwordError && (
+                  <p className="mt-2 text-sm text-red-500 font-semibold">{passwordError}</p>
+                )}
+              </div>
+              <div className="flex items-center justify-end gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowPasswordPrompt(false);
+                    setPasswordInput('');
+                    setPasswordError('');
+                    setShowPassword(false);
+                  }}
+                  className="px-4 py-2 rounded-lg font-semibold text-gray-600 hover:bg-gray-100 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2 rounded-lg font-semibold text-white bg-gradient-to-r from-indigo-600 to-purple-600 hover:shadow-lg transition-all"
+                >
+                  Continue
+                </button>
+              </div>
+            </form>
+          </Motion.div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default AdminSettings;

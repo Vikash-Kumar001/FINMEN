@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Trophy, Coins, PiggyBank, Wallet, ShoppingCart, Home, Car, GraduationCap, Heart } from "lucide-react";
 import GameShell from "../GameShell";
 import { useGameFeedback } from "../../../../hooks/useGameFeedback";
 
 const BadgeBudgetHero = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [gameState, setGameState] = useState('intro'); // intro, challenge, completed
   const [currentChallenge, setCurrentChallenge] = useState(0);
@@ -217,6 +220,7 @@ const BadgeBudgetHero = () => {
       gameId="finance-teens-60"
       gameType="achievement"
       totalLevels={challenges.length}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={currentChallenge + 1}
       score={totalScore}
       totalScore={500} // Max possible score

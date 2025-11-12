@@ -1,11 +1,14 @@
 // File: LostMatchStory.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
 import { Brain, Trophy, Check, X, BookOpenCheck, Bike, Paintbrush, Goal } from 'lucide-react';
 
 const LostMatchStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [currentLevel, setCurrentLevel] = useState(1);
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -106,6 +109,7 @@ const LostMatchStory = () => {
       score={score}
       currentLevel={currentLevel}
       totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
       gameId="brain-kids-105"
       gameType="brain-health"
       showGameOver={levelCompleted}

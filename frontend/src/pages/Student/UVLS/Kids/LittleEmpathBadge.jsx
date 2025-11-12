@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const LittleEmpathBadge = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [completedTasks, setCompletedTasks] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [earnedBadge, setEarnedBadge] = useState(false);
@@ -97,6 +100,7 @@ const LittleEmpathBadge = () => {
       gameId="uvls-kids-10"
       gameType="uvls"
       totalLevels={10}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={10}
       showConfetti={showResult}
       backPath="/games/uvls/kids"

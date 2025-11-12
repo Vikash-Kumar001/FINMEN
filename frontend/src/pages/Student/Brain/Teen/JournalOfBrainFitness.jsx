@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
 
 const JournalOfBrainFitness = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [currentPrompt, setCurrentPrompt] = useState(0);
   const [journalEntries, setJournalEntries] = useState({});
   const [currentEntry, setCurrentEntry] = useState('');
@@ -106,6 +109,7 @@ const JournalOfBrainFitness = () => {
       score={score}
       currentLevel={currentPrompt + 1}
       totalLevels={prompts.length}
+      coinsPerLevel={coinsPerLevel}
       gameId="brain-teens-7"
       gameType="brain-health"
       showGameOver={levelCompleted}

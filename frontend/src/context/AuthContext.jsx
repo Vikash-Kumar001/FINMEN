@@ -20,10 +20,18 @@ export const AuthProvider = ({ children }) => {
                 console.warn("⚠️ Invalid or missing token");
                 setUser(null);
                 localStorage.removeItem("finmen_token");
+                setLoading(false);
                 return null;
             }
 
-            const res = await api.get("/api/auth/me");
+            // Add timeout to prevent hanging requests
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error('Request timeout')), 10000)
+            );
+
+            const apiPromise = api.get("/api/auth/me");
+            const res = await Promise.race([apiPromise, timeoutPromise]);
+            
             const fetchedUser = res.data;
 
             const enhancedUser = {
@@ -32,19 +40,19 @@ export const AuthProvider = ({ children }) => {
             };
 
             setUser(enhancedUser);
+            setLoading(false);
             return enhancedUser;
         } catch (err) {
             console.error("❌ Failed to fetch user:", err?.response?.data || err.message);
 
             // If it's an auth error, clear the token
-            if (err.response?.status === 401) {
+            if (err.response?.status === 401 || err.message === 'Request timeout') {
                 localStorage.removeItem("finmen_token");
             }
 
             setUser(null);
-            return null;
-        } finally {
             setLoading(false);
+            return null;
         }
     };
 
@@ -124,6 +132,14 @@ export const AuthProvider = ({ children }) => {
             // Clear all auth-related storage
             localStorage.removeItem("finmen_token");
 
+            if (user?._id) {
+                try {
+                    sessionStorage.removeItem(`finmen_student_welcome_${user._id}`);
+                } catch (storageError) {
+                    console.error("Error clearing welcome toast state:", storageError);
+                }
+            }
+
             // Clear any other auth-related items
             try {
                 // Clear any session cookies if present
@@ -145,7 +161,11 @@ export const AuthProvider = ({ children }) => {
     useEffect(() => {
         const token = localStorage.getItem("finmen_token");
         if (token) {
-            fetchUser();
+            fetchUser().catch((err) => {
+                console.error("❌ Error in fetchUser:", err);
+                setLoading(false);
+                setUser(null);
+            });
         } else {
             setLoading(false);
         }

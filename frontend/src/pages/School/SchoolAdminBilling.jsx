@@ -1,15 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { CreditCard, Download, Clock, Check, X, DollarSign, Calendar, Award, TrendingUp } from 'lucide-react';
+import { CreditCard, Check, X } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
 
 const SchoolAdminBilling = () => {
   const [loading, setLoading] = useState(true);
   const [subscription, setSubscription] = useState(null);
-  const [supportTickets, setSupportTickets] = useState([]);
-  const [showExtensionModal, setShowExtensionModal] = useState(false);
-  const [extensionForm, setExtensionForm] = useState({ requestedDays: 30, reason: '' });
 
   useEffect(() => {
     fetchBillingData();
@@ -18,29 +15,13 @@ const SchoolAdminBilling = () => {
   const fetchBillingData = async () => {
     try {
       setLoading(true);
-      const [subRes, ticketsRes] = await Promise.all([
-        api.get('/api/school/admin/subscription/enhanced'),
-        api.get('/api/school/admin/support/tickets?type=trial_extension'),
-      ]);
+      const subRes = await api.get('/api/school/admin/subscription/enhanced');
       setSubscription(subRes.data);
-      setSupportTickets(ticketsRes.data.tickets || []);
     } catch (error) {
       console.error('Error fetching billing:', error);
       toast.error('Failed to load billing data');
     } finally {
       setLoading(false);
-    }
-  };
-
-  const requestExtension = async (e) => {
-    e.preventDefault();
-    try {
-      await api.post('/api/school/admin/support/trial-extension', extensionForm);
-      toast.success('Trial extension request submitted!');
-      setShowExtensionModal(false);
-      fetchBillingData();
-    } catch (error) {
-      toast.error('Failed to submit request');
     }
   };
 
@@ -94,9 +75,6 @@ const SchoolAdminBilling = () => {
               <h2 className="text-3xl font-black mb-2">{enhancedDetails?.planName}</h2>
               <p className="text-2xl font-bold">{enhancedDetails?.price > 0 ? `₹${enhancedDetails.price.toLocaleString()}` : 'Free'} {enhancedDetails?.billingCycle && `/ ${enhancedDetails.billingCycle}`}</p>
             </div>
-            {enhancedDetails?.isTrial && (
-              <button onClick={() => setShowExtensionModal(true)} className="px-6 py-3 bg-white text-purple-600 rounded-xl font-black hover:bg-white/90 transition-all shadow-lg">Request Extension</button>
-            )}
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {Object.entries(enhancedDetails?.features || {}).slice(0, 4).map(([feature, enabled]) => (

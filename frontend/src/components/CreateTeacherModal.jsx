@@ -7,8 +7,7 @@ const CreateTeacherModal = ({
   setShowAddTeacherModal,
   newTeacher,
   setNewTeacher,
-  handleAddTeacher,
-  subjects
+  handleAddTeacher
 }) => {
   const [loading, setLoading] = useState(false);
 
@@ -42,7 +41,6 @@ const CreateTeacherModal = ({
       name: '',
       email: '',
       phone: '',
-      subject: '',
       qualification: '',
       experience: '',
       joiningDate: '',
@@ -85,178 +83,137 @@ const CreateTeacherModal = ({
               </div>
 
               <form onSubmit={handleSubmit} className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Column 1 - Basic Information */}
-                  <div className="space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <User className="w-5 h-5 text-blue-600" />
-                        Basic Information
-                      </h3>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
-                            Full Name *
-                          </label>
+                <div className="space-y-6">
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2 mb-4">
+                      <User className="w-5 h-5 text-blue-600" />
+                      Teacher Details
+                    </h3>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                          Full Name *
+                        </label>
+                        <input
+                          type="text"
+                          value={newTeacher.name}
+                          onChange={(e) => setNewTeacher(prev => ({ ...prev, name: e.target.value }))}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
+                          placeholder="Enter teacher's full name"
+                          required
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                          Phone Number
+                        </label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                          <input
+                            type="tel"
+                            value={newTeacher.phone}
+                            onChange={(e) => setNewTeacher(prev => ({ ...prev, phone: e.target.value }))}
+                            className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
+                            placeholder="+91 98765 43210"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                          Qualification
+                        </label>
+                        <div className="relative">
+                          <Award className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
                           <input
                             type="text"
-                            value={newTeacher.name}
-                            onChange={(e) => setNewTeacher(prev => ({ ...prev, name: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                            placeholder="Enter teacher's full name"
-                            required
+                            value={newTeacher.qualification}
+                            onChange={(e) => setNewTeacher(prev => ({ ...prev, qualification: e.target.value }))}
+                            className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
+                            placeholder="B.Ed, M.A, Ph.D, etc."
                           />
                         </div>
-
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
-                            Pronouns
-                          </label>
-                          <select
-                            value={newTeacher.pronouns || ''}
-                            onChange={(e) => setNewTeacher(prev => ({ ...prev, pronouns: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                          >
-                            <option value="">Select Pronouns (Optional)</option>
-                            <option value="he/him">he/him</option>
-                            <option value="she/her">she/her</option>
-                            <option value="they/them">they/them</option>
-                            <option value="ze/hir">ze/hir</option>
-                            <option value="ze/zir">ze/zir</option>
-                            <option value="xe/xem">xe/xem</option>
-                            <option value="other">Other</option>
-                          </select>
-                          {newTeacher.pronouns === 'other' && (
-                            <input
-                              type="text"
-                              value={newTeacher.customPronouns || ''}
-                              onChange={(e) => setNewTeacher(prev => ({ ...prev, customPronouns: e.target.value }))}
-                              className="w-full mt-2 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                              placeholder="Enter custom pronouns (e.g., they/them/their)"
-                            />
-                          )}
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
-                            Email Address *
-                          </label>
-                          <div className="relative">
-                            <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                            <input
-                              type="email"
-                              value={newTeacher.email}
-                              onChange={(e) => setNewTeacher(prev => ({ ...prev, email: e.target.value }))}
-                              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                              placeholder="teacher@school.com"
-                              required
-                            />
-                          </div>
-                        </div>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Column 2 - Contact & Subject */}
-                  <div className="space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <Phone className="w-5 h-5 text-blue-600" />
-                        Contact & Subject
-                      </h3>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
-                            Phone Number
-                          </label>
-                          <div className="relative">
-                            <Phone className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                            <input
-                              type="tel"
-                              value={newTeacher.phone}
-                              onChange={(e) => setNewTeacher(prev => ({ ...prev, phone: e.target.value }))}
-                              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                              placeholder="+91 98765 43210"
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
-                            Subject *
-                          </label>
-                          <select
-                            value={newTeacher.subject}
-                            onChange={(e) => setNewTeacher(prev => ({ ...prev, subject: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                            required
-                          >
-                            <option value="">Select Subject</option>
-                            {subjects.map(subject => (
-                              <option key={subject} value={subject}>{subject}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Column 3 - Professional Information */}
-                  <div className="space-y-6">
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
-                        <GraduationCap className="w-5 h-5 text-blue-600" />
-                        Professional Info
-                      </h3>
-                      <div className="space-y-4">
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
-                            Qualification
-                          </label>
-                          <div className="relative">
-                            <Award className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                            <input
-                              type="text"
-                              value={newTeacher.qualification}
-                              onChange={(e) => setNewTeacher(prev => ({ ...prev, qualification: e.target.value }))}
-                              className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                              placeholder="B.Ed, M.A, Ph.D, etc."
-                            />
-                          </div>
-                        </div>
-
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
-                            Experience (Years)
-                          </label>
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                          Pronouns
+                        </label>
+                        <select
+                          value={newTeacher.pronouns || ''}
+                          onChange={(e) => setNewTeacher(prev => ({ ...prev, pronouns: e.target.value }))}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
+                        >
+                          <option value="">Select Pronouns (Optional)</option>
+                          <option value="he/him">he/him</option>
+                          <option value="she/her">she/her</option>
+                          <option value="they/them">they/them</option>
+                          <option value="ze/hir">ze/hir</option>
+                          <option value="ze/zir">ze/zir</option>
+                          <option value="xe/xem">xe/xem</option>
+                          <option value="other">Other</option>
+                        </select>
+                        {newTeacher.pronouns === 'other' && (
                           <input
-                            type="number"
-                            min="0"
-                            value={newTeacher.experience}
-                            onChange={(e) => setNewTeacher(prev => ({ ...prev, experience: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
-                            placeholder="0"
+                            type="text"
+                            value={newTeacher.customPronouns || ''}
+                            onChange={(e) => setNewTeacher(prev => ({ ...prev, customPronouns: e.target.value }))}
+                            className="w-full mt-2 px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
+                            placeholder="Enter custom pronouns (e.g., they/them/their)"
+                          />
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                          Email Address *
+                        </label>
+                        <div className="relative">
+                          <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                          <input
+                            type="email"
+                            value={newTeacher.email}
+                            onChange={(e) => setNewTeacher(prev => ({ ...prev, email: e.target.value }))}
+                            className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
+                            placeholder="teacher@school.com"
+                            required
                           />
                         </div>
                       </div>
+
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 mb-2">
+                          Experience (Years)
+                        </label>
+                        <input
+                          type="number"
+                          min="0"
+                          value={newTeacher.experience}
+                          onChange={(e) => setNewTeacher(prev => ({ ...prev, experience: e.target.value }))}
+                          className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
+                          placeholder="0"
+                        />
+                      </div>
                     </div>
                   </div>
-                  
-                  {/* Login Credentials - spanning across first two columns */}
-                  <div className="md:col-span-2 space-y-4">
+
+                  {/* Login Credentials */}
+                  <div className="space-y-4">
                     <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                       <BookOpen className="w-5 h-5 text-blue-600" />
                       Login Credentials
                     </h3>
                     <div className="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
-                      <div className="space-y-1 text-xs text-blue-900">
-                        <div className="flex justify-start items-center gap-4">
+                      <div className="flex flex-wrap items-center gap-6 text-xs text-blue-900">
+                        <div className="flex items-center gap-3">
                           <span className="font-medium">Email:</span>
                           <span className="font-mono bg-white px-2 py-1 rounded text-xs">
                             {newTeacher.email || 'teacher@example.com'}
                           </span>
                         </div>
-                        <div className="flex justify-start items-center gap-4">
+                        <div className="flex items-center gap-3">
                           <span className="font-medium">Password:</span>
                           <span className="font-mono bg-white px-2 py-1 rounded text-xs">teacher123</span>
                         </div>

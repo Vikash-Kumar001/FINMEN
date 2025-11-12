@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-  Shield, TrendingUp, Users, Building, Activity, Database,
+  Shield, ShieldCheck, TrendingUp, Users, Building, Activity, Database,
   AlertTriangle, CheckCircle, Globe, BarChart3, Zap,
-  FileText, Settings, Eye, Award, Network, Store, Scale,
+  FileText, Settings, Award, Network, Store, Scale,
   MapPin, Clock, Server, Lock, Download, Plus, Bell,
-  ArrowRight, Trophy, Target, Flame, Sparkles, Star, TrendingDown
+  ArrowRight, Trophy, Target, Flame, Sparkles, Star, TrendingDown,
+  Brain, DollarSign, Headphones, History, MessageSquare, Wrench, Key
 } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
@@ -15,7 +16,6 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState(null);
-  const [pendingApprovals, setPendingApprovals] = useState([]);
   const [activeIncidents, setActiveIncidents] = useState([]);
 
   useEffect(() => {
@@ -26,14 +26,12 @@ const AdminDashboard = () => {
     try {
       setLoading(true);
       
-      const [dashboardRes, approvalsRes, incidentsRes] = await Promise.all([
+      const [dashboardRes, incidentsRes] = await Promise.all([
         api.get('/api/admin/dashboard').catch(() => ({ data: { data: null } })),
-        api.get('/api/admin/approvals/requests?status=pending').catch(() => ({ data: { data: [] } })),
         api.get('/api/incidents?status=open').catch(() => ({ data: { data: [] } }))
       ]);
 
       setStats(dashboardRes.data.data);
-      setPendingApprovals(approvalsRes.data.data || []);
       setActiveIncidents(incidentsRes.data.data || []);
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
@@ -132,36 +130,96 @@ const AdminDashboard = () => {
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8"
+          className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-6 gap-4 mb-8"
         >
           <QuickActionButton
-            label="Approvals"
-            icon={CheckCircle}
-            color="from-green-500 to-emerald-600"
+            label="Behavior Analytics"
+            icon={Activity}
+            color="from-indigo-500 to-purple-600"
+            onClick={() => navigate('/admin/behavior-analytics')}
+          />
+          <QuickActionButton
+            label="Smart Insights"
+            icon={Brain}
+            color="from-pink-500 to-rose-600"
+            onClick={() => navigate('/admin/smart-insights')}
+          />
+          <QuickActionButton
+            label="School Approvals"
+            icon={ShieldCheck}
+            color="from-purple-500 to-indigo-600"
             onClick={() => navigate('/admin/approvals')}
           />
           <QuickActionButton
-            label="Incidents"
-            icon={AlertTriangle}
-            color="from-red-500 to-pink-600"
-            onClick={() => navigate('/admin/incidents')}
+            label="Financial Console"
+            icon={DollarSign}
+            color="from-green-500 to-emerald-600"
+            onClick={() => navigate('/admin/financial-console')}
           />
           <QuickActionButton
-            label="Marketplace"
-            icon={Store}
+            label="Support Desk"
+            icon={Headphones}
             color="from-blue-500 to-cyan-600"
-            onClick={() => navigate('/admin/marketplace')}
+            onClick={() => navigate('/admin/support-desk')}
           />
           <QuickActionButton
-            label="Reports"
-            icon={FileText}
+            label="Lifecycle"
+            icon={Users}
+            color="from-indigo-500 to-purple-600"
+            onClick={() => navigate('/admin/lifecycle')}
+          />
+          <QuickActionButton
+            label="Content Governance"
+            icon={Shield}
             color="from-purple-500 to-pink-600"
-            onClick={() => toast('Reports coming soon')}
+            onClick={() => navigate('/admin/content-governance')}
+          />
+          <QuickActionButton
+            label="Audit Timeline"
+            icon={History}
+            color="from-gray-500 to-slate-600"
+            onClick={() => navigate('/admin/audit-timeline')}
+          />
+          <QuickActionButton
+            label="Configuration"
+            icon={Settings}
+            color="from-indigo-500 to-purple-600"
+            onClick={() => navigate('/admin/configuration')}
+          />
+          <QuickActionButton
+            label="Communication"
+            icon={MessageSquare}
+            color="from-blue-500 to-cyan-600"
+            onClick={() => navigate('/admin/communication')}
+          />
+          <QuickActionButton
+            label="Operational"
+            icon={Wrench}
+            color="from-orange-500 to-amber-600"
+            onClick={() => navigate('/admin/operational')}
+          />
+          <QuickActionButton
+            label="Predictive"
+            icon={Brain}
+            color="from-purple-500 to-pink-600"
+            onClick={() => navigate('/admin/predictive')}
+          />
+          <QuickActionButton
+            label="API Control"
+            icon={Key}
+            color="from-teal-500 to-cyan-600"
+            onClick={() => navigate('/admin/api-control')}
+          />
+          <QuickActionButton
+            label="Platform"
+            icon={Globe}
+            color="from-indigo-500 to-purple-600"
+            onClick={() => navigate('/admin/platform')}
           />
         </motion.div>
 
         {/* Key Metrics */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <StatCard
             title="Total Schools"
             value={stats?.schoolsByRegion?.reduce((sum, r) => sum + (r.totalSchools || 0), 0) || 0}
@@ -179,14 +237,6 @@ const AdminDashboard = () => {
             trend="+12%"
             subtitle="Across platform"
             onClick={() => navigate('/admin/dashboard')}
-          />
-          <StatCard
-            title="Pending Approvals"
-            value={pendingApprovals.length}
-            icon={Eye}
-            color="from-amber-500 to-orange-600"
-            subtitle="Awaiting action"
-            onClick={() => navigate('/admin/approvals')}
           />
           <StatCard
             title="Active Incidents"
@@ -310,41 +360,6 @@ const AdminDashboard = () => {
 
           {/* Right Column */}
           <div className="space-y-6">
-            {/* Pending Approvals */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6"
-            >
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-3">
-                  <Eye className="w-7 h-7 text-amber-600" />
-                  Pending Approvals
-                </h2>
-              </div>
-              <div className="space-y-3">
-                {pendingApprovals.length > 0 ? pendingApprovals.slice(0, 5).map((approval, idx) => (
-                  <div key={idx} className="p-3 rounded-lg bg-amber-50 border border-amber-200 hover:bg-amber-100 transition-all cursor-pointer" onClick={() => navigate('/admin/approvals')}>
-                    <div className="flex items-center justify-between">
-                      <span className="font-medium text-gray-900 capitalize">{approval.approvalType?.replace(/_/g, ' ') || 'Request'}</span>
-                      <span className="text-xs text-amber-600 font-bold">New</span>
-                    </div>
-                    <p className="text-xs text-gray-600 mt-1 line-clamp-1">{approval.justification || 'No description'}</p>
-                  </div>
-                )) : (
-                  <p className="text-gray-500 text-center py-4">No pending approvals</p>
-                )}
-              </div>
-              {pendingApprovals.length > 0 && (
-                <button
-                  onClick={() => navigate('/admin/approvals')}
-                  className="w-full mt-4 py-2 bg-amber-500 text-white rounded-lg hover:bg-amber-600 transition-colors font-semibold"
-                >
-                  View All Approvals
-                </button>
-              )}
-            </motion.div>
-
             {/* Active Incidents */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}

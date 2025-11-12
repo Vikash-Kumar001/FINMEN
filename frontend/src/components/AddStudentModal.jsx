@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Shield } from 'lucide-react';
+import { X, Shield, Eye, EyeOff, CheckCircle2 } from 'lucide-react';
 
 const AddStudentModal = ({
   showAddStudentModal,
@@ -11,6 +11,14 @@ const AddStudentModal = ({
 }) => {
   const [confirmPassword, setConfirmPassword] = React.useState('');
   const [passwordError, setPasswordError] = React.useState('');
+  const [showPassword, setShowPassword] = React.useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
+  const passwordsMatch =
+    !passwordError &&
+    newStudent.password &&
+    confirmPassword &&
+    newStudent.password === confirmPassword;
+
 
   // Reset form when modal is closed
   React.useEffect(() => {
@@ -188,19 +196,29 @@ const AddStudentModal = ({
                     <label className="block text-sm font-bold text-gray-700 mb-2">
                       Password *
                     </label>
-                    <input
-                      type="password"
-                      value={newStudent.password}
-                      onChange={(e) => {
-                        setNewStudent((prev) => ({ ...prev, password: e.target.value }));
-                        if (passwordError) setPasswordError('');
-                      }}
-                      className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold"
-                      placeholder="Enter login password"
-                      required
-                      autoComplete="new-password"
-                      minLength="6"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={newStudent.password}
+                        onChange={(e) => {
+                          setNewStudent((prev) => ({ ...prev, password: e.target.value }));
+                          if (passwordError) setPasswordError('');
+                        }}
+                        className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none font-semibold pr-12"
+                        placeholder="Enter login password"
+                        required
+                        autoComplete="new-password"
+                        minLength="6"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((prev) => !prev)}
+                        className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-purple-500 focus:outline-none"
+                        aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
                     <p className="text-xs text-gray-500 mt-1">
                       Student will use this password to login (min. 6 characters)
                     </p>
@@ -210,22 +228,38 @@ const AddStudentModal = ({
                     <label className="block text-sm font-bold text-gray-700 mb-2">
                       Confirm Password *
                     </label>
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => {
-                        setConfirmPassword(e.target.value);
-                        if (passwordError) setPasswordError('');
-                      }}
-                      className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none font-semibold ${
-                        passwordError ? 'border-red-500' : 'border-gray-200 focus:border-purple-500'
-                      }`}
-                      placeholder="Confirm password"
-                      required
-                      autoComplete="new-password"
-                    />
+                    <div className="relative">
+                      <input
+                        type={showConfirmPassword ? 'text' : 'password'}
+                        value={confirmPassword}
+                        onChange={(e) => {
+                          setConfirmPassword(e.target.value);
+                          if (passwordError) setPasswordError('');
+                        }}
+                        className={`w-full px-4 py-3 border-2 rounded-lg focus:outline-none font-semibold pr-12 ${
+                          passwordError ? 'border-red-500' : 'border-gray-200 focus:border-purple-500'
+                        }`}
+                        placeholder="Confirm password"
+                        required
+                        autoComplete="new-password"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowConfirmPassword((prev) => !prev)}
+                        className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-purple-500 focus:outline-none"
+                        aria-label={showConfirmPassword ? 'Hide confirm password' : 'Show confirm password'}
+                      >
+                        {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                      </button>
+                    </div>
                     {passwordError && (
                       <p className="text-xs text-red-500 mt-1">{passwordError}</p>
+                    )}
+                    {passwordsMatch && (
+                      <p className="flex items-center gap-1 text-xs text-emerald-600 mt-1 font-semibold">
+                        <CheckCircle2 className="w-4 h-4" />
+                        Passwords match
+                      </p>
                     )}
                   </div>
                 </div>

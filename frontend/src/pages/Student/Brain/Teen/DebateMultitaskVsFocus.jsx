@@ -1,9 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, OptionButton, FeedbackBubble, LevelCompleteHandler } from '../../Finance/GameShell';
 
 const DebateMultitaskVsFocus = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -120,6 +123,7 @@ const DebateMultitaskVsFocus = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={debateTopics.length}
+      coinsPerLevel={coinsPerLevel}
       gameId="brain-teens-16"
       gameType="brain-health"
       showGameOver={levelCompleted}

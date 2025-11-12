@@ -63,8 +63,7 @@ const AddClassModal = ({
 
   const filteredTeachers = teachers.filter(teacher =>
     teacher.name?.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
-    teacher.email?.toLowerCase().includes(teacherSearchTerm.toLowerCase()) ||
-    teacher.subject?.toLowerCase().includes(teacherSearchTerm.toLowerCase())
+    teacher.email?.toLowerCase().includes(teacherSearchTerm.toLowerCase())
   );
   return (
     <AnimatePresence>
@@ -304,7 +303,7 @@ const AddClassModal = ({
                                   <div>
                                     <div className="font-bold text-gray-900 text-sm">{teacher.name}</div>
                                     <div className="text-xs text-gray-600">
-                                      {teacher.email} • {teacher.subject || 'No subject'}
+                                      {teacher.email}
                                     </div>
                                   </div>
                                 </div>

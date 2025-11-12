@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PiggyBankStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
@@ -116,16 +119,26 @@ const PiggyBankStory = () => {
   ];
 
   const handleChoice = (selectedChoice) => {
+    // Safety check: ensure current question exists
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
     const newChoices = [...choices, { 
-      questionId: questions[currentQuestion].id, 
+      questionId: currentQ.id, 
       choice: selectedChoice,
-      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
     }];
     
     setChoices(newChoices);
     
     // If the choice is correct, add coins and show flash/confetti
-    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
@@ -157,7 +170,31 @@ const PiggyBankStory = () => {
     navigate("/student/finance/kids/quiz-on-saving");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
+
+  // If no current question, show loading or return early
+  if (!currentQuestionData && !showResult) {
+    return (
+      <GameShell
+        title="Piggy Bank Story"
+        subtitle="Loading..."
+        score={coins}
+        gameId="finance-kids-1"
+        gameType="finance"
+        totalLevels={questions.length}
+        coinsPerLevel={coinsPerLevel}
+      >
+        <div className="text-white text-center">Loading question...</div>
+      </GameShell>
+    );
+  }
 
   return (
     <GameShell
@@ -169,14 +206,15 @@ const PiggyBankStory = () => {
       score={coins}
       gameId="finance-kids-1"
       gameType="finance"
-      totalLevels={10}
-      currentLevel={1}
+      totalLevels={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      currentLevel={currentQuestion + 1}
       showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
@@ -185,11 +223,11 @@ const PiggyBankStory = () => {
               </div>
               
               <p className="text-white text-lg mb-6">
-                {getCurrentQuestion().text}
+                {currentQuestionData.text}
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {getCurrentQuestion().options.map(option => (
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}
                     onClick={() => handleChoice(option.id)}

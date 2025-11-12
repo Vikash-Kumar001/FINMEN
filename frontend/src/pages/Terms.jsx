@@ -136,9 +136,9 @@ const Terms = () => {
               <p className="text-gray-700 mb-4">
                 If you have any questions about these Terms, please contact us at:
                 <br />
-                Email: support@wisestudent.com
+                Email: support@wisestudent.org
                 <br />
-                Address: [Company Address]
+                Address: Chennai, India
               </p>
             </section>
           </div>

@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
 
 const organizationSchema = new mongoose.Schema(
   {
@@ -139,6 +140,15 @@ const organizationSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Subscription',
     },
+    linkingCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
+    linkingCodeIssuedAt: {
+      type: Date,
+    },
   },
   {
     timestamps: true,
@@ -150,11 +160,43 @@ organizationSchema.index({ companyId: 1 });
 organizationSchema.index({ type: 1, tenantId: 1 });
 
 // Generate unique tenantId before saving
-organizationSchema.pre("save", function (next) {
+organizationSchema.statics.generateUniqueLinkingCode = async function(prefix = "SC", length = 6) {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const characters = alphabet.length;
+  let attempts = 0;
+
+  while (attempts < 10) {
+    let randomPart = "";
+    const randomBytes = crypto.randomBytes(length);
+    for (let i = 0; i < length; i += 1) {
+      randomPart += alphabet[randomBytes[i] % characters];
+    }
+    const code = `${prefix}-${randomPart}`;
+    const existing = await this.findOne({ linkingCode: code });
+    if (!existing) {
+      return code;
+    }
+    attempts += 1;
+  }
+
+  throw new Error("Unable to generate unique organization linking code");
+};
+
+organizationSchema.pre("save", async function (next) {
   if (!this.tenantId) {
     this.tenantId = `${this.type}_${this._id.toString()}`;
   }
-  next();
+
+  if (!this.linkingCode) {
+    try {
+      this.linkingCode = await this.constructor.generateUniqueLinkingCode("SC");
+      this.linkingCodeIssuedAt = new Date();
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  return next();
 });
 
 const Organization = mongoose.model("Organization", organizationSchema);

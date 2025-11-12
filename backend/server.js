@@ -1,3 +1,4 @@
+import { scheduleSubscriptionReminders } from './cronJobs/subscriptionReminders.js';
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -113,13 +114,35 @@ import organizationRoutes from "./routes/organizationRoutes.js";
 import schoolRoutes from "./routes/schoolRoutes.js";
 import globalStatsRoutes from "./routes/globalStatsRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
-import adminApprovalRoutes from "./routes/adminApprovalRoutes.js";
+import adminSchoolApprovalRoutes from "./routes/adminSchoolApprovalRoutes.js";
 import incidentRoutes from "./routes/incidentRoutes.js";
 import marketplaceRoutes from "./routes/marketplaceRoutes.js";
 import adminPaymentTrackerRoutes from "./routes/adminPaymentTrackerRoutes.js";
 import adminTrackingRoutes from "./routes/adminTrackingRoutes.js";
+import adminManagementRoutes from "./routes/adminManagementRoutes.js";
+import adminReportsRoutes from "./routes/adminReportsRoutes.js";
+import behaviorAnalyticsRoutes from "./routes/behaviorAnalyticsRoutes.js";
+import smartInsightsRoutes from "./routes/smartInsightsRoutes.js";
+import financialConsoleRoutes from "./routes/financialConsoleRoutes.js";
+import adminSchoolsRoutes from "./routes/adminSchoolsRoutes.js";
+import supportDeskRoutes from "./routes/supportDeskRoutes.js";
+import userLifecycleRoutes from "./routes/userLifecycleRoutes.js";
+import contentGovernanceRoutes from "./routes/contentGovernanceRoutes.js";
+import auditTimelineRoutes from "./routes/auditTimelineRoutes.js";
+import configurationControlRoutes from "./routes/configurationControlRoutes.js";
+import communicationRoutes from "./routes/communicationRoutes.js";
+import operationalToolsRoutes from "./routes/operationalToolsRoutes.js";
+import predictiveModelsRoutes from "./routes/predictiveModelsRoutes.js";
+import apiControlPlaneRoutes from "./routes/apiControlPlaneRoutes.js";
+import adminPlatformRoutes from "./routes/adminPlatformRoutes.js";
+import adminJobOpeningRoutes from "./routes/adminJobOpeningRoutes.js";
+import careerRoutes from "./routes/careerRoutes.js";
 
 import paymentRoutes from "./routes/paymentRoutes.js";
+import userSubscriptionRoutes from "./routes/userSubscriptionRoutes.js";
+import presentationRoutes from "./routes/presentationRoutes.js";
+import slideElementRoutes from "./routes/slideElementRoutes.js";
+import presentationTemplateRoutes from "./routes/presentationTemplateRoutes.js";
 
 // Import models and other logic
 import User from "./models/User.js";
@@ -134,6 +157,7 @@ import { setupGameSocket } from "./socketHandlers/gameSocket.js";
 import { setupJournalSocket } from "./socketHandlers/journalSocket.js";
 import { setupChatSocket } from "./socketHandlers/chatSocket.js";
 import { setupCSROverviewSocket } from "./socketHandlers/csrOverviewSocket.js";
+import { setupPresentationSocket } from "./socketHandlers/presentationSocket.js";
 
 // Socket.IO Authentication and Events
 io.on("connection", async (socket) => {
@@ -176,6 +200,7 @@ io.on("connection", async (socket) => {
     setupGameSocket(io, socket, user);
     setupJournalSocket(io, socket, user);
     setupChatSocket(io, socket, user);
+    setupPresentationSocket(io, socket, user);
     
     // Setup CSR-specific sockets
     if (user.role === "csr") {
@@ -210,6 +235,10 @@ app.use("/api/school", schoolRoutes);
 app.use("/api/global", globalStatsRoutes);
 
 app.use("/api/payment", paymentRoutes);
+app.use("/api/subscription", userSubscriptionRoutes);
+app.use("/api/presentations", presentationRoutes);
+app.use("/api/presentations", slideElementRoutes);
+app.use("/api/presentation-templates", presentationTemplateRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/reports", reportRoutes);
 app.use("/api/transactions", transactionRoutes);
@@ -239,10 +268,28 @@ app.use('/api/avatar', avatarRoutes);
 app.use('/api/announcements', announcementRoutes);
 app.use('/api/assignment-attempts', assignmentAttemptRoutes);
 app.use('/api/chat', chatRoutes);
+app.use('/api/careers', careerRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/admin/approvals', adminApprovalRoutes);
+app.use('/api/admin/school-approvals', adminSchoolApprovalRoutes);
+app.use('/api/admin', adminManagementRoutes);
 app.use('/api/admin/payment-tracker', adminPaymentTrackerRoutes);
+app.use('/api/admin/job-openings', adminJobOpeningRoutes);
 app.use('/api/admin/tracking', adminTrackingRoutes);
+app.use('/api/admin/reports', adminReportsRoutes);
+app.use('/api/admin/behavior-analytics', behaviorAnalyticsRoutes);
+app.use('/api/admin/smart-insights', smartInsightsRoutes);
+app.use('/api/admin/financial-console', financialConsoleRoutes);
+app.use('/api/admin/schools', adminSchoolsRoutes);
+app.use('/api/admin/support-desk', supportDeskRoutes);
+app.use('/api/admin/lifecycle', userLifecycleRoutes);
+app.use('/api/admin/content-governance', contentGovernanceRoutes);
+app.use('/api/admin/audit-timeline', auditTimelineRoutes);
+app.use('/api/admin/configuration', configurationControlRoutes);
+app.use('/api/admin/communication', communicationRoutes);
+app.use('/api/admin/operational', operationalToolsRoutes);
+app.use('/api/admin/predictive', predictiveModelsRoutes);
+app.use('/api/admin/api-control', apiControlPlaneRoutes);
+app.use('/api/admin/platform', adminPlatformRoutes);
 app.use('/api/incidents', incidentRoutes);
 app.use('/api/marketplace', marketplaceRoutes);
 
@@ -268,6 +315,7 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   scheduleWeeklyReports();
+scheduleSubscriptionReminders();
   // Start real-time notification TTL cleanup (15 days)
   const ttlSeconds = parseInt(process.env.NOTIFICATION_TTL_SECONDS || "1296000", 10);
   startNotificationTTL(io, { ttlSeconds, intervalSeconds: 3600 });

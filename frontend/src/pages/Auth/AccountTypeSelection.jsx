@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { GraduationCap, Users } from "lucide-react";
+import { GraduationCap, Users, ArrowRight } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 export default function AccountTypeSelection() {
@@ -33,12 +33,13 @@ export default function AccountTypeSelection() {
         onClick={() => navigate('/')}
         className="absolute top-6 left-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-lg hover:shadow-xl transition-all z-50"
       >
-        ← Back to Homepage
+        <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
+        <span className="sm:block hidden">Home</span>
       </button>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
         <section className="text-center mb-10">
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">Choose Your Account Type</h1>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2 sm:mt-0 mt-10">Choose Your Account Type</h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Select whether you're registering as a Parent or Teacher to get started with the option that fits you best.
           </p>

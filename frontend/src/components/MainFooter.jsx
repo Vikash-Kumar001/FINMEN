@@ -1,15 +1,17 @@
 import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 // Remove unused motion import
 import {
   Mail,
   Phone,
   MapPin,
-  Linkedin,
   ArrowUp,
 } from "lucide-react";
 import { globalStatsService } from "../services/globalStatsService";
 
 const MainFooter = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = React.useState("");
   const [isVisible, setIsVisible] = React.useState(false);
   const [globalStats, setGlobalStats] = React.useState({
@@ -29,7 +31,50 @@ const MainFooter = () => {
     { name: "Careers", href: "/careers" },
   ];
 
-  const socialLinks = [
+  // Handle smooth scrolling for Home link
+  const handleHomeClick = (e) => {
+    e.preventDefault();
+    if (location.pathname === "/") {
+      // Already on home page, scroll to top smoothly
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } else {
+      // Navigate to home page then scroll to top
+      navigate("/");
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 100);
+    }
+  };
+
+  // Handle smooth scrolling for Pillars link
+  const handlePillarsClick = (e) => {
+    e.preventDefault();
+    if (location.pathname === "/") {
+      // Already on home page, scroll to features section smoothly
+      const featuresElement = document.getElementById("features");
+      if (featuresElement) {
+        featuresElement.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    } else {
+      // Navigate to home page, then scroll after page loads
+      navigate("/");
+      // Wait for navigation and DOM to be ready
+      setTimeout(() => {
+        const scrollToFeatures = () => {
+          const featuresElement = document.getElementById("features");
+          if (featuresElement) {
+            featuresElement.scrollIntoView({ behavior: "smooth", block: "start" });
+          } else {
+            // Retry if element not found yet
+            setTimeout(scrollToFeatures, 100);
+          }
+        };
+        scrollToFeatures();
+      }, 100);
+    }
+  };
+
+  // const socialLinks = [
     // {
     //   name: "Facebook",
     //   href: "https://facebook.com",
@@ -48,13 +93,13 @@ const MainFooter = () => {
     //   icon: Instagram,
     //   color: "hover:bg-pink-600",
     // },
-    {
-      name: "LinkedIn",
-      href: "https://linkedin.com",
-      icon: Linkedin,
-      color: "hover:bg-blue-700",
-    },
-  ];
+    // {
+    //   name: "LinkedIn",
+    //   href: "https://linkedin.com",
+    //   icon: Linkedin,
+    //   color: "hover:bg-blue-700",
+    // },
+  // ];
 
   const handleSubscribe = () => {
     if (email) {
@@ -138,8 +183,9 @@ const MainFooter = () => {
         ></div>
 
         <div className="relative max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16 sm:mt-20 mt-0">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
-            <div className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 lg:gap-12 mb-12">
+            {/* Company Info & Newsletter */}
+            <div className="space-y-6 lg:col-span-1">
               <div className="group">
                 <div className="w-16 h-16 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 rounded-2xl flex items-center justify-center mb-4 shadow-lg group-hover:shadow-xl transition-all duration-300 group-hover:scale-110">
                   <span className="text-white font-bold text-2xl">WS</span>
@@ -147,14 +193,14 @@ const MainFooter = () => {
                 <h3 className="text-2xl font-bold text-gray-900 mb-3 bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                   Wise Student
                 </h3>
-                <p className="text-gray-600 leading-relaxed text-sm">
+                <p className="text-gray-600 leading-relaxed text-sm mb-8">
                   Empowering education with innovative management and wellness
                   solutions for the next generation.
                 </p>
               </div>
 
-              <div className="space-y-3">
-                <p className="text-sm font-semibold text-gray-700">
+              <div className="space-y-3 pt-2">
+                <p className="text-sm font-semibold text-gray-700 mb-1">
                   Stay Updated
                 </p>
                 <div className="relative group">
@@ -175,32 +221,47 @@ const MainFooter = () => {
               </div>
             </div>
 
-            <div className="space-y-4">
+            {/* Quick Links */}
+            <div className="space-y-4 lg:col-span-1">
               <h3 className="text-lg font-bold text-gray-900 mb-6">
                 Quick Links
               </h3>
-              <ul className="space-y-3">
-                {quickLinks.map((link, index) => (
-                  <li key={index}>
-                    <a
-                      href={link.href}
-                      className="text-gray-600 hover:text-blue-600 transition-all duration-300 text-sm flex items-center gap-2 group"
-                    >
-                      <span className="w-0 h-0.5 bg-blue-600 group-hover:w-4 transition-all duration-300"></span>
-                      <span className="group-hover:translate-x-1 transition-transform duration-300">
-                        {link.name}
-                      </span>
-                    </a>
-                  </li>
-                ))}
+              <ul className="space-y-3.5">
+                {quickLinks.map((link, index) => {
+                  // Use smooth scroll handlers for Home and Pillars
+                  const handleClick = (e) => {
+                    if (link.name === "Home") {
+                      handleHomeClick(e);
+                    } else if (link.name === "Pillars") {
+                      handlePillarsClick(e);
+                    }
+                    // Other links will use default navigation
+                  };
+
+                  return (
+                    <li key={index}>
+                      <a
+                        href={link.href}
+                        onClick={link.name === "Home" || link.name === "Pillars" ? handleClick : undefined}
+                        className="text-gray-600 hover:text-blue-600 transition-all duration-300 text-sm flex items-center gap-2 group"
+                      >
+                        <span className="w-0 h-0.5 bg-blue-600 group-hover:w-4 transition-all duration-300"></span>
+                        <span className="group-hover:translate-x-1 transition-transform duration-300">
+                          {link.name}
+                        </span>
+                      </a>
+                    </li>
+                  );
+                })}
               </ul>
             </div>
 
-            <div className="space-y-4">
+            {/* Contact Us */}
+            <div className="space-y-4 lg:col-span-1">
               <h3 className="text-lg font-bold text-gray-900 mb-6">
                 Contact Us
               </h3>
-              <div className="space-y-4">
+              <div className="space-y-4.5">
                 <a
                   href="mailto:support@wisestudent.org"
                   className="flex items-start gap-3 text-gray-600 hover:text-blue-600 transition-all duration-300 group"
@@ -209,7 +270,7 @@ const MainFooter = () => {
                     <Mail className="w-5 h-5 text-blue-600 group-hover:text-white transition-colors" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">Email</p>
+                    <p className="text-xs text-gray-500 mb-1 font-medium">Email</p>
                     <p className="text-sm font-medium">
                       support@wisestudent.org
                     </p>
@@ -224,8 +285,8 @@ const MainFooter = () => {
                     <Phone className="w-5 h-5 text-purple-600 group-hover:text-white transition-colors" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">Phone</p>
-                    <p className="text-sm font-medium">+91-904-341-1110</p>
+                    <p className="text-xs text-gray-500 mb-1 font-medium">Phone</p>
+                    <p className="text-sm font-medium">+91 9043411110</p>
                   </div>
                 </a>
 
@@ -234,58 +295,16 @@ const MainFooter = () => {
                     <MapPin className="w-5 h-5 text-pink-600" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-500 mb-1">Location</p>
-                    <p className="text-sm font-medium">Delhi | Bangalore | Chennai</p>
+                    <p className="text-xs text-gray-500 mb-1 font-medium">Location</p>
+                    <p className="text-sm font-medium">Chennai</p>
                   </div>
                 </div>
               </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-lg font-bold text-gray-900 mb-6">
-                Follow Us
-              </h3>
-              <p className="text-sm text-gray-600 mb-6 leading-relaxed">
-                Join our community and stay connected with the latest updates
-                and educational insights.
-              </p>
-              <div className="flex flex-wrap gap-3">
-                {socialLinks.map((social, index) => (
-                  <a
-                    key={index}
-                    href={social.href}
-                    className={`w-12 h-12 bg-white border border-gray-200 rounded-xl flex items-center justify-center text-gray-600 hover:text-white transition-all duration-300 hover:border-transparent hover:shadow-lg hover:scale-110 ${social.color}`}
-                    aria-label={social.name}
-                  >
-                    <social.icon className="w-5 h-5" />
-                  </a>
-                ))}
-              </div>
-
-              {/* Do not Delete this, We will use it later */}
-              {/* <div className="mt-8 pt-6 border-t border-gray-200">
-                <p className="text-xs text-gray-500 mb-3">Trusted by</p>
-                <div className="flex items-center gap-3">
-                  <div className="px-4 py-2 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg text-xs font-semibold text-blue-600 border border-blue-100">
-                    {globalStats.loading ? (
-                      <span className="animate-pulse">Loading...</span>
-                    ) : (
-                      `${globalStats.totalSchools}+ Schools`
-                    )}
-                  </div>
-                  <div className="px-4 py-2 bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg text-xs font-semibold text-purple-600 border border-purple-100">
-                    {globalStats.loading ? (
-                      <span className="animate-pulse">Loading...</span>
-                    ) : (
-                      `${formatNumber(globalStats.totalStudents)}+ Students`
-                    )}
-                  </div>
-                </div>
-              </div> */}
             </div>
           </div>
 
-          <div className="pt-8 border-t border-gray-200">
+          {/* Copyright Section */}
+          <div className="pt-8 border-t border-gray-200 mt-8">
             <div className="flex flex-col md:flex-row justify-between items-center gap-4">
               <p className="text-sm text-gray-600">
                 © {new Date().getFullYear()} Wise Student. All rights reserved.

@@ -11,6 +11,8 @@ import { toast } from 'react-hot-toast';
 import AddStudentModal from '../../components/AddStudentModal';
 import StudentDetailModal from '../../components/StudentDetailModal';
 import ResetPasswordModal from '../../components/ResetPasswordModal';
+import LimitReachedModal from '../../components/LimitReachedModal';
+import { useSocket } from '../../context/SocketContext';
 
 const SchoolAdminStudents = () => {
   const [loading, setLoading] = useState(true);
@@ -32,6 +34,8 @@ const SchoolAdminStudents = () => {
   const [newStudent, setNewStudent] = useState({
     name: '', email: '', phone: '', gender: '', password: '', dateOfBirth: ''
   });
+  const [limitModal, setLimitModal] = useState({ open: false, message: '', type: 'student' });
+  const { socket } = useSocket();
 
   const fetchStudentsData = useCallback(async () => {
     try {
@@ -59,6 +63,17 @@ const SchoolAdminStudents = () => {
     fetchStudentsData();
   }, [fetchStudentsData]);
 
+  useEffect(() => {
+    if (!socket) return;
+    const handleRealtimeStudentUpdate = () => {
+      fetchStudentsData();
+    };
+    socket.on('school:students:updated', handleRealtimeStudentUpdate);
+    return () => {
+      socket.off('school:students:updated', handleRealtimeStudentUpdate);
+    };
+  }, [socket, fetchStudentsData]);
+
   const handleAddStudent = async (e) => {
     e.preventDefault();
     try {
@@ -69,7 +84,12 @@ const SchoolAdminStudents = () => {
       fetchStudentsData();
     } catch (error) {
       console.error('Error adding student:', error);
-      toast.error(error.response?.data?.message || 'Failed to add student');
+      const errorMessage = error.response?.data?.message || 'Failed to add student';
+      if (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes('student limit reached')) {
+        setLimitModal({ open: true, message: errorMessage, type: 'student' });
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -544,6 +564,15 @@ const SchoolAdminStudents = () => {
         resetPasswordData={resetPasswordData}
         setResetPasswordData={setResetPasswordData}
         handleResetPassword={handleResetPassword}
+      />
+      <LimitReachedModal
+        open={limitModal.open}
+        message={limitModal.message}
+        type={limitModal.type}
+        onClose={() => setLimitModal((prev) => ({ ...prev, open: false }))}
+        onRequest={() => {
+          setLimitModal((prev) => ({ ...prev, open: false }));
+        }}
       />
     </div>
   );

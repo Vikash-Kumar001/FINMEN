@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
 
 const HomeworkStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 3; // Default 3 for this game
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -132,6 +135,7 @@ const HomeworkStory = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
+      coinsPerLevel={coinsPerLevel}
       gameId="brain-kids-15"
       gameType="brain-health"
       showGameOver={levelCompleted}

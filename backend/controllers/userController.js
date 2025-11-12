@@ -1,11 +1,287 @@
 import User from '../models/User.js';
+import Organization from '../models/Organization.js';
+import SchoolStudent from '../models/School/SchoolStudent.js';
+import SchoolClass from '../models/School/SchoolClass.js';
 import bcrypt from 'bcrypt';
+
+const isStudentRole = (role) => role === 'student' || role === 'school_student';
+
+const mapOrganizationToSchoolProfile = (organization) => {
+  if (!organization) return null;
+  return {
+    id: organization._id,
+    name: organization.name,
+    tenantId: organization.tenantId,
+    linkingCode: organization.linkingCode,
+    linkingCodeIssuedAt: organization.linkingCodeIssuedAt,
+    contactInfo: organization.settings?.contactInfo || {},
+  };
+};
+
+const buildStudentSchoolDetails = async (user, organization) => {
+  const baseDetails = {
+    schoolName: organization?.name || null,
+    teacherName: null,
+    teacherId: null,
+    classGrade: null,
+    classNumber: null,
+    section: null,
+    stream: null,
+    academicYear: null,
+    admissionNumber: null,
+    rollNumber: null,
+  };
+
+  if (
+    !user ||
+    !isStudentRole(user.role) ||
+    !user.orgId ||
+    !user.tenantId
+  ) {
+    return baseDetails;
+  }
+
+  try {
+    const studentRecord = await SchoolStudent.findOne({
+      tenantId: user.tenantId,
+      userId: user._id,
+      orgId: user.orgId,
+    })
+      .select('admissionNumber rollNumber classId section academicYear')
+      .lean();
+
+    if (!studentRecord) {
+      return baseDetails;
+    }
+
+    let classDoc = null;
+    if (studentRecord.classId) {
+      classDoc = await SchoolClass.findById(studentRecord.classId)
+        .populate({
+          path: 'sections.classTeacher',
+          select: 'name fullName email',
+        })
+        .lean();
+    }
+
+    const details = { ...baseDetails };
+    details.admissionNumber = studentRecord.admissionNumber || null;
+    details.rollNumber = studentRecord.rollNumber || null;
+    details.section = studentRecord.section || null;
+    details.academicYear = studentRecord.academicYear || null;
+
+    if (classDoc) {
+      details.classNumber = classDoc.classNumber ?? null;
+      details.stream = classDoc.stream ?? null;
+      if (!details.academicYear) {
+        details.academicYear = classDoc.academicYear ?? null;
+      }
+
+      if (Array.isArray(classDoc.sections) && details.section) {
+        const matchingSection = classDoc.sections.find(
+          (section) =>
+            section.name?.toString() === details.section?.toString()
+        );
+
+        if (matchingSection) {
+          const teacher = matchingSection.classTeacher;
+          if (teacher) {
+            details.teacherName =
+              teacher.fullName || teacher.name || teacher.email || null;
+            details.teacherId =
+              teacher._id?.toString?.() ||
+              (typeof teacher === 'string' ? teacher : null);
+          }
+        }
+      }
+
+      const parts = [];
+      if (details.classNumber !== null && details.classNumber !== undefined) {
+        parts.push(`Class ${details.classNumber}`);
+      }
+      if (details.stream) {
+        parts.push(details.stream);
+      }
+      if (details.section) {
+        parts.push(`Section ${details.section}`);
+      }
+
+      details.classGrade = parts.length ? parts.join(' · ') : null;
+    }
+
+    return details;
+  } catch (error) {
+    console.error('Failed to build student school details:', error);
+    return baseDetails;
+  }
+};
+
+const buildTeacherSchoolDetails = async (user, organization) => {
+  const baseDetails = {
+    schoolName: organization?.name || null,
+    totalClasses: 0,
+    totalSections: 0,
+    totalStudents: 0,
+    totalSubjects: 0,
+    subjects: [],
+    classes: [],
+    lastUpdated: new Date(),
+  };
+
+  if (
+    !user ||
+    user.role !== 'school_teacher' ||
+    !user.orgId ||
+    !user.tenantId
+  ) {
+    return baseDetails;
+  }
+
+  try {
+    const classQuery = {
+      tenantId: user.tenantId,
+      orgId: user.orgId,
+      isActive: true,
+      $or: [
+        { 'sections.classTeacher': user._id },
+        { 'subjects.teachers': user._id },
+      ],
+    };
+
+    const classDocs = await SchoolClass.find(classQuery)
+      .select(
+        'classNumber stream sections subjects academicYear orgId tenantId isActive'
+      )
+      .lean();
+
+    if (!classDocs?.length) {
+      return baseDetails;
+    }
+
+    const subjectsSet = new Set();
+    const classesEnriched = await Promise.all(
+      classDocs.map(async (classDoc) => {
+        const classLabelParts = [];
+        if (classDoc.classNumber !== undefined && classDoc.classNumber !== null) {
+          classLabelParts.push(`Class ${classDoc.classNumber}`);
+        }
+        if (classDoc.stream) {
+          classLabelParts.push(classDoc.stream);
+        }
+
+        const sections = Array.isArray(classDoc.sections)
+          ? classDoc.sections
+          : [];
+
+        const relevantSections = sections.filter((section) =>
+          section?.classTeacher?.toString?.() === user._id.toString()
+        );
+
+        const subjects = Array.isArray(classDoc.subjects)
+          ? classDoc.subjects.filter((subject) =>
+              Array.isArray(subject?.teachers)
+                ? subject.teachers.some(
+                    (teacherId) => teacherId?.toString?.() === user._id.toString()
+                  )
+                : false
+            )
+          : [];
+
+        subjects.forEach((subject) => {
+          if (subject?.name) {
+            subjectsSet.add(subject.name);
+          }
+        });
+
+        let sectionSummaries = await Promise.all(
+          relevantSections.map(async (section) => {
+            const studentCount = await SchoolStudent.countDocuments({
+              tenantId: user.tenantId,
+              orgId: user.orgId,
+              classId: classDoc._id,
+              section: section.name,
+            }).catch(() => 0);
+
+            return {
+              name: section.name,
+              studentCount,
+              capacity: section.capacity ?? null,
+              role: 'Class Teacher',
+              currentStrength: section.currentStrength ?? null,
+            };
+          })
+        );
+
+        if (!sectionSummaries.length) {
+          const totalStudents = await SchoolStudent.countDocuments({
+            tenantId: user.tenantId,
+            orgId: user.orgId,
+            classId: classDoc._id,
+          }).catch(() => 0);
+
+          sectionSummaries = [
+            {
+              name: 'All Sections',
+              studentCount: totalStudents,
+              capacity: null,
+              role: 'Subject Teacher',
+              currentStrength: null,
+            },
+          ];
+        }
+
+        const subjectSummaries = subjects.map((subject) => ({
+          name: subject.name,
+          code: subject.code || null,
+          isOptional: Boolean(subject.isOptional),
+        }));
+
+        return {
+          id: classDoc._id,
+          label: classLabelParts.join(' · ') || 'Class Assignment',
+          academicYear: classDoc.academicYear || null,
+          sections: sectionSummaries,
+          subjects: subjectSummaries,
+        };
+      })
+    );
+
+    const totals = classesEnriched.reduce(
+      (acc, classInfo) => {
+        acc.totalClasses += 1;
+        acc.totalSections += classInfo.sections.length;
+        acc.totalStudents += classInfo.sections.reduce(
+          (sectionTotal, section) => sectionTotal + (section.studentCount || 0),
+          0
+        );
+        return acc;
+      },
+      { totalClasses: 0, totalSections: 0, totalStudents: 0 }
+    );
+
+    return {
+      ...baseDetails,
+      schoolName: baseDetails.schoolName,
+      totalClasses: totals.totalClasses,
+      totalSections: totals.totalSections,
+      totalStudents: totals.totalStudents,
+      totalSubjects: subjectsSet.size,
+      subjects: Array.from(subjectsSet),
+      classes: classesEnriched,
+      lastUpdated: new Date(),
+    };
+  } catch (error) {
+    console.error('Failed to build teacher school details:', error);
+    return baseDetails;
+  }
+};
 
 export const getUserProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id).select('-password -otp -otpExpiresAt -otpType');
     if (!user) return res.status(404).json({ message: 'User not found' });
-    res.status(200).json({
+    
+    const baseProfile = {
       fullName: user.fullName || user.name,
       name: user.name,
       email: user.email,
@@ -16,15 +292,72 @@ export const getUserProfile = async (req, res) => {
       avatar: user.avatar || '',
       dateOfBirth: user.dateOfBirth || user.dob || null,
       dob: user.dob || null,
+      role: user.role || '',
+      createdAt: user.createdAt || null,
       subject: user.subject || '', // Include subject for school teachers
       academic: user.academic || {},
-      professional: user.professional || {},
       preferences: user.preferences || {
         language: 'en',
         notifications: { email: true, push: true, sms: false },
         privacy: { profileVisibility: 'friends', contactInfo: 'friends', academicInfo: 'private' },
         sound: { effects: true, music: true, volume: 75 }
       },
+    };
+
+    const profileData = {
+      ...baseProfile,
+      ...(!isStudentRole(user.role)
+        ? { professional: user.professional || {} }
+        : {}),
+      metadata: user.metadata || {},
+    };
+
+    // Include admin-specific fields
+    if (user.role === 'admin') {
+      profileData.adminLevel = user.adminLevel || 'standard';
+      profileData.permissions = user.permissions || [];
+    }
+
+    let organization = null;
+    if (user.orgId) {
+      try {
+        organization = await Organization.findById(user.orgId);
+        if (organization) {
+          if (!organization.linkingCode) {
+            organization.linkingCode = await Organization.generateUniqueLinkingCode("SC");
+            organization.linkingCodeIssuedAt = new Date();
+            await organization.save();
+          }
+
+          const schoolProfile = mapOrganizationToSchoolProfile(organization);
+          if (schoolProfile) {
+            profileData.school = schoolProfile;
+            profileData.schoolLinkingCode = schoolProfile.linkingCode;
+            profileData.schoolLinkingCodeIssuedAt = schoolProfile.linkingCodeIssuedAt;
+          }
+        }
+      } catch (orgError) {
+        console.error('Failed to load organization for profile:', orgError);
+      }
+    }
+
+    if (isStudentRole(user.role)) {
+      const schoolDetails = await buildStudentSchoolDetails(
+        user,
+        organization || profileData.school
+      );
+      profileData.schoolDetails = schoolDetails;
+    } else if (user.role === 'school_teacher') {
+      const teacherDetails = await buildTeacherSchoolDetails(
+        user,
+        organization || profileData.school
+      );
+      profileData.teacherDetails = teacherDetails;
+    }
+
+    res.status(200).json({
+      data: profileData,
+      ...profileData,
     });
   } catch (err) {
     console.error('❌ Get profile error:', err);
@@ -46,13 +379,65 @@ export const updateUserProfile = async (req, res) => {
         if (body[field] !== undefined) user[field] = body[field];
       });
 
+    // Handle dateOfBirth - convert string to Date if provided
+    if (body.dateOfBirth !== undefined) {
+      if (body.dateOfBirth === '' || body.dateOfBirth === null) {
+        user.dateOfBirth = null;
+        user.dob = null;
+      } else {
+        const dobDate = new Date(body.dateOfBirth);
+        if (!isNaN(dobDate.getTime())) {
+          user.dateOfBirth = dobDate;
+          user.dob = body.dateOfBirth; // Keep string format for backward compatibility
+        }
+      }
+    }
+
     // Nested objects from tabs
     if (body.personal) Object.assign(user, body.personal);
     if (body.academic) user.academic = { ...(user.academic || {}), ...body.academic };
-    if (body.professional) user.professional = { ...(user.professional || {}), ...body.professional };
+
+    if (user.role !== 'student' && user.role !== 'school_student') {
+      if (body.professional) {
+        user.professional = { ...(user.professional || {}), ...body.professional };
+      }
+    } else if (user.professional !== undefined && Object.keys(user.professional || {}).length > 0) {
+      user.professional = undefined;
+      user.markModified?.('professional');
+    }
     if (body.preferences) user.preferences = { ...(user.preferences || {}), ...body.preferences };
 
     await user.save();
+
+    let organization = null;
+    try {
+      if (user.orgId) {
+        organization = await Organization.findById(user.orgId);
+        if (organization && !organization.linkingCode) {
+          organization.linkingCode = await Organization.generateUniqueLinkingCode("SC");
+          organization.linkingCodeIssuedAt = new Date();
+          await organization.save();
+        }
+      }
+    } catch (orgError) {
+      console.error('Failed to refresh organization for profile update:', orgError);
+    }
+
+    const schoolProfile = mapOrganizationToSchoolProfile(organization);
+    let schoolDetails = null;
+    let teacherDetails = null;
+
+    if (isStudentRole(user.role)) {
+      schoolDetails = await buildStudentSchoolDetails(
+        user,
+        organization || schoolProfile
+      );
+    } else if (user.role === 'school_teacher') {
+      teacherDetails = await buildTeacherSchoolDetails(
+        user,
+        organization || schoolProfile
+      );
+    }
 
     const payload = {
       userId: user._id,
@@ -73,14 +458,21 @@ export const updateUserProfile = async (req, res) => {
       website: user.website,
       bio: user.bio,
       academic: user.academic,
-      professional: user.professional,
+      ...(user.role !== 'student' && user.role !== 'school_student'
+        ? { professional: user.professional }
+        : {}),
       preferences: user.preferences,
       updatedAt: user.updatedAt,
+      ...(schoolProfile ? { school: schoolProfile } : {}),
+      ...(schoolDetails ? { schoolDetails } : {}),
+      ...(teacherDetails ? { teacherDetails } : {}),
     };
 
-    if (req.io) {
-      req.io.to('admin').emit('student:profile:updated', payload);
-      req.io.to(user._id.toString()).emit('user:profile:updated', payload);
+    // Emit real-time updates via Socket.IO
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin').emit('admin:profile:update', payload);
+      io.to(user._id.toString()).emit('user:profile:updated', payload);
     }
 
     res.status(200).json({ 
@@ -95,9 +487,11 @@ export const updateUserProfile = async (req, res) => {
         website: user.website,
         bio: user.bio,
         academic: user.academic,
-        professional: user.professional,
-        preferences: user.preferences
-      }
+        preferences: user.preferences,
+        ...(schoolProfile ? { school: schoolProfile } : {}),
+        ...(schoolDetails ? { schoolDetails } : {}),
+        ...(teacherDetails ? { teacherDetails } : {}),
+      },
     });
   } catch (err) {
     console.error('❌ Profile update error:', err);
@@ -116,6 +510,20 @@ export const updateUserAvatar = async (req, res) => {
       const publicPath = `/uploads/avatars/${req.file.filename}`;
       user.avatar = publicPath;
       await user.save();
+      
+      // Emit real-time update
+      const io = req.app.get('io');
+      if (io) {
+        io.to('admin').emit('admin:profile:update', {
+          userId: user._id,
+          avatar: user.avatar
+        });
+        io.to(user._id.toString()).emit('user:profile:updated', {
+          userId: user._id,
+          avatar: user.avatar
+        });
+      }
+      
       return res.status(200).json({ message: 'Avatar updated', avatar: user.avatar });
     }
 
@@ -125,6 +533,19 @@ export const updateUserAvatar = async (req, res) => {
 
     user.avatar = avatar;
     await user.save();
+
+    // Emit real-time update
+    const io = req.app.get('io');
+    if (io) {
+      io.to('admin').emit('admin:profile:update', {
+        userId: user._id,
+        avatar: user.avatar
+      });
+      io.to(user._id.toString()).emit('user:profile:updated', {
+        userId: user._id,
+        avatar: user.avatar
+      });
+    }
 
     res.status(200).json({ message: 'Avatar updated', avatar: user.avatar });
   } catch (err) {

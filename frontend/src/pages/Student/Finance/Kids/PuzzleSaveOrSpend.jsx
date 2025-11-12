@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PuzzleSaveOrSpend = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [coins, setCoins] = useState(0);
   const [draggedItem, setDraggedItem] = useState(null);
   const [droppedItems, setDroppedItems] = useState([]);
@@ -88,6 +91,7 @@ const PuzzleSaveOrSpend = () => {
       coins={coins}
       currentLevel={4}
       totalLevels={10}
+      coinsPerLevel={coinsPerLevel}
       onNext={handleNext}
       nextEnabled={showResult}
       showGameOver={showResult}

@@ -17,7 +17,7 @@ const paymentGatewaySchema = new mongoose.Schema({
   // Gateway Configuration
   gatewayName: {
     type: String,
-    enum: ["razorpay", "stripe", "payu", "ccavenue", "instamojo", "phonepe", "paytm"],
+    enum: ["razorpay", "stripe", "phonepe", "paytm"],
     required: true,
   },
   displayName: {

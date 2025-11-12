@@ -333,17 +333,17 @@ export const login = async (req, res) => {
     // We allow login regardless of verification status.
 
     // Approval status checks for parent and seller only (CSR users don't need approval)
-    if (["parent", "seller"].includes(user.role)) {
+    if (["parent", "seller", "school_admin"].includes(user.role)) {
       if (user.approvalStatus === "pending") {
         return res.status(403).json({
-          message: `Your ${user.role} account is currently under review. You will be notified once approved.`,
+          message: `Your ${user.role === "school_admin" ? "school" : user.role} account is currently under review. You will be notified once approved.`,
           approvalStatus: "pending",
         });
       }
 
       if (user.approvalStatus === "rejected") {
         return res.status(403).json({
-          message: `Your ${user.role} account has been rejected. Please contact administration.`,
+          message: `Your ${user.role === "school_admin" ? "school" : user.role} account has been rejected. Please contact administration.`,
           approvalStatus: "rejected",
         });
       }

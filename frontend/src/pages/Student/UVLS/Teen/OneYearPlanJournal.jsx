@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const OneYearPlanJournal = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [goal, setGoal] = useState("");
   const [milestones, setMilestones] = useState(["", "", "", "", ""]);
   const [currentMilestone, setCurrentMilestone] = useState(0);
@@ -54,6 +57,7 @@ const OneYearPlanJournal = () => {
       gameId="life-193"
       gameType="life"
       totalLevels={10}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={3}
       showConfetti={showResult && isComplete}
       flashPoints={flashPoints}

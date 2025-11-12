@@ -15,7 +15,7 @@ const subscriptionSchema = new mongoose.Schema({
   plan: {
     name: {
       type: String,
-      enum: ['free', 'basic', 'standard', 'premium', 'enterprise'],
+      enum: ['free', 'student_premium', 'student_parent_premium_pro', 'educational_institutions_premium'],
       default: 'free',
     },
     displayName: String,
@@ -25,8 +25,8 @@ const subscriptionSchema = new mongoose.Schema({
     },
     billingCycle: {
       type: String,
-      enum: ['monthly', 'quarterly', 'yearly'],
-      default: 'monthly',
+      enum: ['yearly'],
+      default: 'yearly',
     },
   },
   
@@ -115,8 +115,8 @@ const subscriptionSchema = new mongoose.Schema({
   // Subscription status
   status: {
     type: String,
-    enum: ['active', 'past_due', 'cancelled', 'expired', 'trial'],
-    default: 'trial',
+    enum: ['active', 'past_due', 'cancelled', 'expired', 'pending'],
+    default: 'pending',
   },
   
   // Dates
@@ -125,9 +125,6 @@ const subscriptionSchema = new mongoose.Schema({
     default: Date.now,
   },
   endDate: {
-    type: Date,
-  },
-  trialEndDate: {
     type: Date,
   },
   cancelledAt: Date,
@@ -168,6 +165,11 @@ const subscriptionSchema = new mongoose.Schema({
     quantity: Number,
     active: Boolean,
   }],
+
+  metadata: {
+    type: mongoose.Schema.Types.Mixed,
+    default: {},
+  },
   
   // Auto-renewal
   autoRenew: {

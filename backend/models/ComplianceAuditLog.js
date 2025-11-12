@@ -52,6 +52,8 @@ const complianceAuditLogSchema = new mongoose.Schema({
       'class_deleted',
       'class_updated',
       'students_added_to_class',
+      'students_assigned_to_class_by_teacher',
+      'student_removed_from_class',
       // Policy changes
       'policy_created',
       'policy_updated',

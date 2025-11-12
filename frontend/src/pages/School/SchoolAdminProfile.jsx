@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   User, Mail, Phone, Calendar, MapPin, Edit, Save, X, Camera, Shield,
   Award, Activity, TrendingUp, Clock, CheckCircle, AlertCircle, Key,
-  Upload, Eye, EyeOff, Building2, Briefcase, Globe, Lock
+  Upload, Eye, EyeOff, Building2, Briefcase, Globe, Lock, Copy
 } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
@@ -46,10 +46,14 @@ const SchoolAdminProfile = () => {
     assignmentsApproved: 0,
     daysActive: 0
   });
+  const [schoolCodeCopied, setSchoolCodeCopied] = useState(false);
+  const [subscriptionInfo, setSubscriptionInfo] = useState({ subscription: null, enhanced: null });
+  const [subscriptionLoading, setSubscriptionLoading] = useState(false);
 
   useEffect(() => {
     fetchProfile();
     fetchAdminStats();
+    fetchSubscriptionDetails();
   }, []);
 
   const fetchProfile = async () => {
@@ -72,6 +76,21 @@ const SchoolAdminProfile = () => {
       setStats(response.data.stats || {});
     } catch (error) {
       console.error('Error fetching stats:', error);
+    }
+  };
+
+  const fetchSubscriptionDetails = async () => {
+    try {
+      setSubscriptionLoading(true);
+      const response = await api.get('/api/school/admin/subscription/enhanced');
+      setSubscriptionInfo({
+        subscription: response.data?.subscription || null,
+        enhanced: response.data?.enhancedDetails || null,
+      });
+    } catch (error) {
+      console.error('Error fetching subscription details:', error);
+    } finally {
+      setSubscriptionLoading(false);
     }
   };
 
@@ -140,6 +159,43 @@ const SchoolAdminProfile = () => {
     } catch (error) {
       console.error('Error uploading avatar:', error);
       toast.error('Failed to upload avatar');
+    }
+  };
+
+  const schoolLinkingCode = profile?.schoolLinkingCode || profile?.school?.linkingCode;
+  const schoolLinkingIssuedAt = profile?.schoolLinkingCodeIssuedAt || profile?.school?.linkingCodeIssuedAt;
+  const formatDate = (value) => {
+    if (!value) return 'N/A';
+    try {
+      return new Date(value).toLocaleDateString(undefined, {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      });
+    } catch (error) {
+      return 'N/A';
+    }
+  };
+
+  const subscription = subscriptionInfo.subscription;
+  const enhancedDetails = subscriptionInfo.enhanced;
+  const planExpiryDate = enhancedDetails?.nextBillingDate || subscription?.endDate || null;
+  const planName = enhancedDetails?.planName || subscription?.plan?.displayName || 'Premium Plan';
+  const planStatus = enhancedDetails?.status || subscription?.status || 'active';
+  const daysRemaining = enhancedDetails?.daysRemaining ??
+    (planExpiryDate ? Math.max(0, Math.ceil((new Date(planExpiryDate) - new Date()) / (1000 * 60 * 60 * 24))) : null);
+
+
+  const handleCopySchoolCode = async () => {
+    if (!schoolLinkingCode) return;
+    try {
+      await navigator.clipboard.writeText(schoolLinkingCode);
+      setSchoolCodeCopied(true);
+      toast.success('School linking code copied!');
+      setTimeout(() => setSchoolCodeCopied(false), 2000);
+    } catch (error) {
+      console.error('Failed to copy school linking code', error);
+      toast.error('Unable to copy right now');
     }
   };
 
@@ -311,6 +367,61 @@ const SchoolAdminProfile = () => {
 
             {/* Quick Stats */}
             <div className="space-y-3">
+              {schoolLinkingCode && (
+                <div className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-purple-200">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-5 h-5 text-purple-600" />
+                        <span className="text-sm font-semibold text-gray-700">School linking code</span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Share with students to connect them to {profile?.school?.name || 'your school'} instantly.
+                      </p>
+                      {schoolLinkingIssuedAt && (
+                        <p className="text-[11px] text-gray-400">
+                          Issued {new Date(schoolLinkingIssuedAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleCopySchoolCode}
+                      className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-semibold text-purple-600 bg-white border border-purple-100 hover:bg-purple-50 transition"
+                    >
+                      <Copy className="w-4 h-4" />
+                      {schoolCodeCopied ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                  <div className="mt-3 px-4 py-3 rounded-xl bg-white text-lg font-mono tracking-[0.4em] text-purple-700 border border-purple-100 select-all text-center">
+                    {schoolLinkingCode}
+                  </div>
+                </div>
+              )}
+
+              {(subscriptionLoading || subscription || enhancedDetails) && (
+                <div className="p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200">
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <Calendar className="w-5 h-5 text-emerald-600" />
+                        <span className="text-sm font-semibold text-gray-700">Plan status</span>
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        {planName} • {planStatus === 'active' ? 'Active' : planStatus}
+                      </p>
+                    </div>
+                    <span className="text-sm font-semibold text-emerald-600">
+                      {subscriptionLoading ? 'Loading…' : daysRemaining != null ? `${daysRemaining} days left` : '---'}
+                    </span>
+                  </div>
+                  <div className="mt-3 px-4 py-3 rounded-xl bg-white text-sm font-semibold text-gray-700 border border-emerald-100 flex items-center justify-between">
+                    <span>Plan expires on</span>
+                    <span className="text-base font-bold text-emerald-600">{formatDate(planExpiryDate)}</span>
+                  </div>
+                </div>
+              )}
+
               <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">

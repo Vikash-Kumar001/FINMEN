@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const BadgeSmartSaver = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [challenge, setChallenge] = useState(0);
   const [decisions, setDecisions] = useState([]);
   const [showResult, setShowResult] = useState(false);
@@ -175,6 +178,7 @@ const BadgeSmartSaver = () => {
       gameId="finance-teens-10"
       gameType="finance"
       totalLevels={20}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={10}
       showConfetti={showResult && finalScore >= 4}
       flashPoints={flashPoints}

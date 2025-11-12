@@ -8,6 +8,7 @@ import Wallet from '../models/Wallet.js';
 import Transaction from '../models/Transaction.js';
 import UserProgress from '../models/UserProgress.js';
 import { ErrorResponse } from '../utils/ErrorResponse.js';
+import { canAccessGame, getUserSubscription } from '../utils/subscriptionUtils.js';
 
 // 📥 GET /api/game/missions/:level
 export const getMissionsByLevel = async (req, res) => {
@@ -90,7 +91,50 @@ export const getUserProgress = async (req, res) => {
 // 🎮 GET /api/game/games
 export const getAllGames = async (req, res) => {
   try {
+    const userId = req.user?._id;
     const games = await Game.find({});
+    
+    // Get user subscription to add access info
+    if (userId) {
+      const subscription = await getUserSubscription(userId);
+      const features = subscription.features || {};
+      
+      // Add subscription info to each game
+      const gamesWithAccess = games.map((game, index) => {
+        const gameObj = game.toObject ? game.toObject() : game;
+        
+        // Check if user can access this game
+        if (features.fullAccess) {
+          gameObj.locked = false;
+          gameObj.accessMode = 'full';
+        } else {
+          // For free users, check games per pillar limit
+          const pillarName = game.category || game.pillar || 'default';
+          const gamesPerPillar = features.gamesPerPillar || 5;
+          
+          // Get games played in this pillar (simplified - should query UserProgress)
+          // For now, we'll mark games beyond the limit as locked
+          const gameIndex = games.filter(g => 
+            (g.category || g.pillar || 'default') === pillarName
+          ).indexOf(game);
+          
+          gameObj.locked = gameIndex >= gamesPerPillar;
+          gameObj.accessMode = gameObj.locked ? 'locked' : 'preview';
+          gameObj.gamesAllowed = gamesPerPillar;
+        }
+        
+        return gameObj;
+      });
+      
+      return res.status(200).json({
+        games: gamesWithAccess,
+        subscription: {
+          planType: subscription.planType,
+          features: subscription.features,
+        },
+      });
+    }
+    
     res.status(200).json(games);
   } catch (err) {
     console.error('❌ Failed to fetch games:', err);
@@ -152,6 +196,20 @@ export const completeGame = async (req, res) => {
     // Change from findById to findOne with category filter
     const game = await Game.findOne({ category: gameId });
     if (!game) return res.status(404).json({ error: 'Game not found' });
+
+    // Check subscription access
+    if (userId) {
+      const pillarName = game.category || game.pillar || 'default';
+      const accessCheck = await canAccessGame(userId, pillarName, 0); // TODO: Get actual game index
+      
+      if (!accessCheck.allowed) {
+        return res.status(403).json({ 
+          error: accessCheck.reason || 'This game is locked. Upgrade to access all games.',
+          locked: true,
+          upgradeRequired: true,
+        });
+      }
+    }
 
     // Find or create game progress
     let gameProgress = await GameProgress.findOne({ userId, gameId: game._id });
@@ -742,7 +800,8 @@ export const completeUnifiedGame = async (req, res) => {
     achievements = [],
     isFullCompletion = true,
     coinsPerLevel = null,
-    previousProgress = {}
+    previousProgress = {},
+    isReplay = false
   } = req.body;
 
   try {
@@ -759,13 +818,77 @@ export const completeUnifiedGame = async (req, res) => {
       });
     }
 
-    // Calculate coins to award based on new levels completed
+    // Check if this is a replay attempt
+    // A replay is when: isReplay flag is true OR game is fully completed AND replay is unlocked
+    const isReplayAttempt = isReplay === true || (gameProgress.fullyCompleted && gameProgress.replayUnlocked === true);
+    
+    console.log('🎮 Game completion check:', {
+      gameId,
+      isReplay: isReplay,
+      fullyCompleted: gameProgress.fullyCompleted,
+      replayUnlocked: gameProgress.replayUnlocked,
+      isReplayAttempt: isReplayAttempt
+    });
+    
+    // If it's a replay, don't award coins and lock the game again
+    if (isReplayAttempt && gameProgress.fullyCompleted) {
+      console.log('🔄 Processing replay completion - will lock game after replay');
+      // Update progress but don't award coins
+      gameProgress.levelsCompleted = Math.max(gameProgress.levelsCompleted, levelsCompleted);
+      gameProgress.totalLevels = Math.max(gameProgress.totalLevels, totalLevels);
+      gameProgress.highestScore = Math.max(gameProgress.highestScore, score);
+      gameProgress.maxScore = Math.max(gameProgress.maxScore, maxScore);
+      gameProgress.totalTimePlayed += timePlayed;
+      gameProgress.lastPlayedAt = new Date();
+      
+      // Lock the game again after replay (user needs to pay 10 HealCoins again to replay)
+      gameProgress.replayUnlocked = false;
+      gameProgress.replayUnlockedAt = null;
+      
+      await gameProgress.save();
+      
+      // Verify the save was successful
+      const savedProgress = await UnifiedGameProgress.findOne({ userId, gameId });
+      console.log('🔒 Game locked after replay - verification:', {
+        gameId,
+        replayUnlocked: savedProgress?.replayUnlocked,
+        fullyCompleted: savedProgress?.fullyCompleted
+      });
+
+      // Emit socket event for replay completion (no coins, game locked again)
+      const io = req.app.get('io');
+      if (io) {
+        io.to(userId.toString()).emit('game-replayed', {
+          gameId,
+          message: 'Game replayed! No coins awarded for replays. Game is now locked again.',
+          replayUnlocked: false
+        });
+      }
+
+      return res.status(200).json({
+        message: '🎮 Game replayed! No coins awarded for replays. Pay 10 HealCoins to unlock replay again.',
+        coinsEarned: 0,
+        xpEarned: 0,
+        totalCoinsEarned: gameProgress.totalCoinsEarned,
+        newLevelsCompleted: 0,
+        totalLevelsCompleted: gameProgress.levelsCompleted,
+        fullyCompleted: gameProgress.fullyCompleted,
+        isReplay: true,
+        replayUnlocked: false, // Game is locked again
+        newBalance: (await Wallet.findOne({ userId }))?.balance || 0
+      });
+    }
+
+    // Calculate coins to award based on new levels completed (only for first-time completion)
     let coinsToAward = 0;
     
     // Get game definition for default coin values
     const gameDefinition = await Game.findOne({ category: gameId });
     const defaultCoinsPerLevel = coinsPerLevel || (gameDefinition?.coinsPerLevel) || 5;
-    const defaultTotalCoins = gameDefinition?.rewardCoins || (defaultCoinsPerLevel * totalLevels);
+    
+    // Use formula: totalLevels × coinsPerLevel for full completion
+    // If coinsPerLevel is provided, use it; otherwise fall back to game definition or default
+    const coinsPerQuestion = coinsPerLevel || (gameDefinition?.coinsPerLevel) || 5;
 
     // Import mapping utilities for titles and pillar labels
     const { getGameTitle, getGameType, getPillarLabel } = await import('../utils/gameIdToTitleMap.js');
@@ -773,14 +896,14 @@ export const completeUnifiedGame = async (req, res) => {
     const resolvedType = gameDefinition?.type || gameType || getGameType(gameId);
     const pillarLabel = getPillarLabel(resolvedType);
 
-    if (coinsPerLevel) {
-      // Award coins per level
+    if (isFullCompletion && !gameProgress.fullyCompleted) {
+      // Award full completion: totalLevels × coinsPerLevel (coins per question)
+      coinsToAward = totalLevels * coinsPerQuestion;
+    } else if (coinsPerLevel && newLevelsCompleted > 0) {
+      // Award coins for new levels completed: newLevelsCompleted × coinsPerLevel
       coinsToAward = newLevelsCompleted * coinsPerLevel;
-    } else if (isFullCompletion && !gameProgress.fullyCompleted) {
-      // Award full completion bonus only once
-      coinsToAward = defaultTotalCoins;
     } else if (newLevelsCompleted > 0) {
-      // Award coins for new levels completed
+      // Fallback: award coins for new levels completed
       coinsToAward = newLevelsCompleted * defaultCoinsPerLevel;
     }
 
@@ -963,6 +1086,109 @@ export const completeUnifiedGame = async (req, res) => {
   }
 };
 
+// 🔄 POST /api/game/unlock-replay/:gameId - Unlock replay for a completed game (costs 10 HealCoins)
+export const unlockGameReplay = async (req, res) => {
+  const userId = req.user?._id;
+  const { gameId } = req.params;
+  const REPLAY_COST = 10;
+
+  try {
+    console.log('🔓 Unlock replay request:', { userId, gameId });
+    
+    // Check if game progress exists and is completed
+    const gameProgress = await UnifiedGameProgress.findOne({ userId, gameId });
+    
+    console.log('📊 Game progress found:', {
+      exists: !!gameProgress,
+      fullyCompleted: gameProgress?.fullyCompleted,
+      replayUnlocked: gameProgress?.replayUnlocked
+    });
+    
+    if (!gameProgress) {
+      return res.status(400).json({ 
+        error: `Game progress not found. Please complete the game first. (Game ID: ${gameId})` 
+      });
+    }
+    
+    if (!gameProgress.fullyCompleted) {
+      return res.status(400).json({ 
+        error: 'Game must be completed before it can be replayed' 
+      });
+    }
+
+    // Check if already unlocked for replay
+    if (gameProgress.replayUnlocked) {
+      return res.status(200).json({ 
+        message: 'Game is already unlocked for replay',
+        replayUnlocked: true,
+        newBalance: (await Wallet.findOne({ userId }))?.balance || 0
+      });
+    }
+
+    // Check wallet balance
+    let wallet = await Wallet.findOne({ userId });
+    
+    if (!wallet) {
+      wallet = new Wallet({
+        userId,
+        balance: 0
+      });
+    }
+
+    if (wallet.balance < REPLAY_COST) {
+      return res.status(400).json({ 
+        error: `Insufficient balance. You need ${REPLAY_COST} HealCoins to unlock replay.`,
+        required: REPLAY_COST,
+        currentBalance: wallet.balance
+      });
+    }
+
+    // Deduct coins from wallet
+    wallet.balance -= REPLAY_COST;
+    await wallet.save();
+
+    // Record transaction
+    const { getGameTitle } = await import('../utils/gameIdToTitleMap.js');
+    const gameTitle = getGameTitle(gameId) || gameId;
+    
+    await Transaction.create({
+      userId,
+      type: 'debit',
+      amount: REPLAY_COST,
+      description: `Unlock replay for ${gameTitle} game`
+    });
+
+    // Unlock replay
+    gameProgress.replayUnlocked = true;
+    gameProgress.replayUnlockedAt = new Date();
+    await gameProgress.save();
+
+    // Emit socket event for real-time wallet update
+    const io = req.app.get('io');
+    if (io) {
+      io.to(userId.toString()).emit('wallet:updated', {
+        newBalance: wallet.balance,
+        change: -REPLAY_COST,
+        reason: 'replay_unlock'
+      });
+    }
+
+    res.status(200).json({
+      message: '🎮 Replay unlocked! You can now play this game again (no coins will be awarded).',
+      replayUnlocked: true,
+      newBalance: wallet.balance,
+      coinsSpent: REPLAY_COST
+    });
+  } catch (err) {
+    console.error('❌ Failed to unlock replay:', err);
+    console.error('Error stack:', err.stack);
+    res.status(500).json({ 
+      error: 'Failed to unlock replay',
+      details: err.message 
+    });
+  }
+};
+
 // 📊 GET /api/game/progress/:gameId - Get specific game progress
 export const getUnifiedGameProgress = async (req, res) => {
   const userId = req.user?._id;
@@ -977,11 +1203,17 @@ export const getUnifiedGameProgress = async (req, res) => {
         totalCoinsEarned: 0,
         fullyCompleted: false,
         totalLevels: 1,
-        maxScore: 100
+        maxScore: 100,
+        replayUnlocked: false
       });
     }
     
-    res.status(200).json(progress);
+    // Return progress with all fields including replayUnlocked
+    const progressObj = progress.toObject ? progress.toObject() : progress;
+    res.status(200).json({
+      ...progressObj,
+      replayUnlocked: progress.replayUnlocked || false
+    });
   } catch (err) {
     console.error('❌ Failed to fetch game progress:', err);
     res.status(500).json({ error: 'Failed to fetch game progress' });

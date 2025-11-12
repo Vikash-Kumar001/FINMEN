@@ -1,11 +1,14 @@
 // File: PositivityQuiz.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
 import { Brain, Sun, Check, X, Smile, Heart, Sparkles, ThumbsUp } from 'lucide-react';
 
 const PositivityQuiz = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [currentLevel, setCurrentLevel] = useState(1);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -106,6 +109,7 @@ const PositivityQuiz = () => {
       score={score}
       currentLevel={currentLevel}
       totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
       gameId="brain-kids-102"
       gameType="brain-health"
       showGameOver={levelCompleted}

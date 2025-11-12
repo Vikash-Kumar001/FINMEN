@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ImpactJournal = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [baseline, setBaseline] = useState("");
   const [action, setAction] = useState("");
   const [result, setResult] = useState("");
@@ -59,6 +62,7 @@ const ImpactJournal = () => {
       gameId="civic-186"
       gameType="civic"
       totalLevels={10}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={6}
       showConfetti={showResult && isComplete}
       flashPoints={flashPoints}

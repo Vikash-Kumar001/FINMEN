@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-  Users, Search, Filter, Grid, List, ChevronDown, Download, Eye,
+  Users, Search, Grid, List, Download, Eye,
   BookOpen, TrendingUp, Zap, Coins, Star, Activity, MessageSquare, FileText,
   Heart, Clock, Plus, UserPlus, MoreVertical, AlertCircle, CheckCircle, Award,
   X, Mail, Phone, Calendar, MapPin, Shield, Target, Brain, Trophy, GraduationCap, Trash2
@@ -11,6 +11,7 @@ import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
 import CreateTeacherModal from '../../components/CreateTeacherModal';
 import TeacherDetailModal from '../../components/TeacherDetailModal';
+import LimitReachedModal from '../../components/LimitReachedModal';
 
 const SchoolAdminTeachers = () => {
   const navigate = useNavigate();
@@ -18,7 +19,6 @@ const SchoolAdminTeachers = () => {
   const [teachers, setTeachers] = useState([]);
   const [viewMode, setViewMode] = useState('grid');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filterSubject, setFilterSubject] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
   const [stats, setStats] = useState({});
   const [selectedTeacher, setSelectedTeacher] = useState(null);
@@ -28,25 +28,18 @@ const SchoolAdminTeachers = () => {
     name: '', 
     email: '', 
     phone: '', 
-    subject: '', 
     qualification: '',
     experience: '',
     joiningDate: '',
     pronouns: '',
     customPronouns: ''
   });
-
-  const subjects = [
-    'Mathematics', 'Science', 'English', 'Hindi', 'Social Studies', 
-    'Physics', 'Chemistry', 'Biology', 'Computer Science', 'Physical Education',
-    'Arts', 'Music', 'Other'
-  ];
+  const [limitModal, setLimitModal] = useState({ open: false, message: '', type: 'teacher' });
 
   const fetchTeachersData = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (filterSubject !== 'all') params.append('subject', filterSubject);
       if (filterStatus !== 'all') params.append('status', filterStatus);
 
       const [teachersRes, statsRes] = await Promise.all([
@@ -62,7 +55,7 @@ const SchoolAdminTeachers = () => {
     } finally {
       setLoading(false);
     }
-  }, [filterSubject, filterStatus]);
+  }, [filterStatus]);
 
   useEffect(() => {
     fetchTeachersData();
@@ -81,7 +74,6 @@ const SchoolAdminTeachers = () => {
         name: '', 
         email: '', 
         phone: '', 
-        subject: '', 
         qualification: '',
         experience: '',
         joiningDate: '',
@@ -91,7 +83,12 @@ const SchoolAdminTeachers = () => {
       fetchTeachersData();
     } catch (error) {
       console.error('Error adding teacher:', error);
-      toast.error(error.response?.data?.message || 'Failed to add teacher');
+      const errorMessage = error.response?.data?.message || 'Failed to add teacher';
+      if (typeof errorMessage === 'string' && errorMessage.toLowerCase().includes('teacher limit reached')) {
+        setLimitModal({ open: true, message: errorMessage, type: 'teacher' });
+      } else {
+        toast.error(errorMessage);
+      }
     }
   };
 
@@ -132,7 +129,6 @@ const SchoolAdminTeachers = () => {
   const handleExportTeachers = async () => {
     try {
       const params = new URLSearchParams();
-      if (filterSubject !== 'all') params.append('subject', filterSubject);
       if (filterStatus !== 'all') params.append('status', filterStatus);
 
       const response = await api.get(`/api/school/admin/teachers/export?format=csv&${params}`, {
@@ -155,8 +151,7 @@ const SchoolAdminTeachers = () => {
 
   const filteredTeachers = teachers.filter(teacher =>
     teacher.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    teacher.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    teacher.subject?.toLowerCase().includes(searchTerm.toLowerCase())
+    teacher.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
 
@@ -271,7 +266,7 @@ const SchoolAdminTeachers = () => {
               <Search className="w-5 h-5 text-gray-500" />
               <input
                 type="text"
-                placeholder="Search teachers by name, email, or subject..."
+                placeholder="Search teachers by name or email..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none font-semibold"
@@ -279,17 +274,6 @@ const SchoolAdminTeachers = () => {
             </div>
 
             <div className="flex items-center gap-3 flex-wrap">
-              <select
-                value={filterSubject}
-                onChange={(e) => setFilterSubject(e.target.value)}
-                className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none bg-white font-semibold"
-              >
-                <option value="all">All Subjects</option>
-                {subjects.map(subject => (
-                  <option key={subject} value={subject}>{subject}</option>
-                ))}
-              </select>
-
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
@@ -352,7 +336,7 @@ const SchoolAdminTeachers = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-bold text-gray-900 truncate">{teacher.name || 'Teacher'}</h3>
-                    <p className="text-xs text-gray-600">{teacher.subject || 'N/A'}</p>
+                    <p className="text-xs text-gray-600">{teacher.email || ''}</p>
                   </div>
                 </div>
 
@@ -411,7 +395,6 @@ const SchoolAdminTeachers = () => {
               <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
                 <tr>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Teacher</th>
-                  <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Subject</th>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Classes</th>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Students</th>
                   <th className="text-left py-4 px-6 text-sm font-bold text-gray-700">Experience</th>
@@ -439,7 +422,6 @@ const SchoolAdminTeachers = () => {
                         </div>
                       </div>
                     </td>
-                    <td className="py-4 px-6 text-sm font-semibold text-gray-900">{teacher.subject || 'N/A'}</td>
                     <td className="py-4 px-6 text-sm font-bold text-gray-900">{teacher.totalClasses || 0}</td>
                     <td className="py-4 px-6 text-sm font-semibold text-gray-900">{teacher.totalStudents || 0}</td>
                     <td className="py-4 px-6 text-sm font-semibold text-gray-900">{teacher.experience || 0} yrs</td>
@@ -500,7 +482,6 @@ const SchoolAdminTeachers = () => {
         newTeacher={newTeacher}
         setNewTeacher={setNewTeacher}
         handleAddTeacher={handleAddTeacher}
-        subjects={subjects}
       />
       <TeacherDetailModal
         showTeacherDetail={showTeacherDetail}
@@ -508,6 +489,15 @@ const SchoolAdminTeachers = () => {
         selectedTeacher={selectedTeacher}
         handleDeleteTeacher={handleDeleteTeacher}
         onViewClass={handleViewClass}
+      />
+      <LimitReachedModal
+        open={limitModal.open}
+        message={limitModal.message}
+        type={limitModal.type}
+        onClose={() => setLimitModal((prev) => ({ ...prev, open: false }))}
+        onRequest={() => {
+          setLimitModal((prev) => ({ ...prev, open: false }));
+        }}
       />
     </div>
   );

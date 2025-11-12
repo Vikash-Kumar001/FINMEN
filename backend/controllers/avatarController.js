@@ -32,17 +32,30 @@ export const generateUserAvatar = async (req, res) => {
     });
 
     // Update user with avatar data
-    await User.findByIdAndUpdate(userId, {
-      avatar: avatarData.url,
-      avatarData: {
-        type: 'generated',
-        ...avatarData
-      }
-    });
+    user.avatar = avatarData.url;
+    user.avatarData = {
+      type: 'generated',
+      ...avatarData
+    };
+
+    await user.save();
+
+    const io = req.app.get('io');
+    if (io) {
+      const payload = {
+        userId: user._id,
+        avatar: user.avatar
+      };
+      io.to('admin').emit('admin:profile:update', payload);
+      io.to(user._id.toString()).emit('user:profile:updated', payload);
+    }
 
     res.status(200).json({
       message: 'Avatar generated successfully',
-      avatar: avatarData
+      avatar: {
+        ...avatarData,
+        url: user.avatar
+      }
     });
   } catch (error) {
     console.error('Generate avatar error:', error);
@@ -108,24 +121,34 @@ export const updateUserAvatar = async (req, res) => {
     }
 
     // Update avatar with new option
-    await User.findByIdAndUpdate(userId, {
-      avatar: avatarOption.url,
-      avatarData: {
-        type: 'generated',
-        url: avatarOption.url,
-        initials: avatarOption.initials,
-        colors: avatarOption.colors,
-        icon: avatarOption.icon,
-        role: avatarOption.role,
-        isGenerated: true,
-        updatedAt: new Date().toISOString()
-      }
-    });
+    user.avatar = avatarOption.url;
+    user.avatarData = {
+      type: 'generated',
+      url: avatarOption.url,
+      initials: avatarOption.initials,
+      colors: avatarOption.colors,
+      icon: avatarOption.icon,
+      role: avatarOption.role,
+      isGenerated: true,
+      updatedAt: new Date().toISOString()
+    };
+
+    await user.save();
+
+    const io = req.app.get('io');
+    if (io) {
+      const payload = {
+        userId: user._id,
+        avatar: user.avatar
+      };
+      io.to('admin').emit('admin:profile:update', payload);
+      io.to(user._id.toString()).emit('user:profile:updated', payload);
+    }
 
     res.status(200).json({
       message: 'Avatar updated successfully',
       avatar: {
-        url: avatarOption.url,
+        url: user.avatar,
         initials: avatarOption.initials,
         colors: avatarOption.colors,
         icon: avatarOption.icon,
@@ -167,20 +190,30 @@ export const uploadCustomAvatar = async (req, res) => {
     const customAvatarUrl = `${apiBaseUrl}/uploads/avatars/${req.file.filename}`;
 
     // Update user with custom avatar
-    await User.findByIdAndUpdate(userId, {
-      avatar: customAvatarUrl,
-      avatarData: {
-        type: 'uploaded',
-        url: customAvatarUrl,
-        isGenerated: false,
-        updatedAt: new Date().toISOString()
-      }
-    });
+    user.avatar = customAvatarUrl;
+    user.avatarData = {
+      type: 'uploaded',
+      url: customAvatarUrl,
+      isGenerated: false,
+      updatedAt: new Date().toISOString()
+    };
+
+    await user.save();
+
+    const io = req.app.get('io');
+    if (io) {
+      const payload = {
+        userId: user._id,
+        avatar: user.avatar
+      };
+      io.to('admin').emit('admin:profile:update', payload);
+      io.to(user._id.toString()).emit('user:profile:updated', payload);
+    }
 
     res.status(200).json({
       message: 'Custom avatar uploaded successfully',
       avatar: {
-        url: customAvatarUrl,
+        url: user.avatar,
         type: 'uploaded',
         isGenerated: false
       }
@@ -212,17 +245,30 @@ export const resetAvatarToGenerated = async (req, res) => {
     });
 
     // Update user with generated avatar
-    await User.findByIdAndUpdate(userId, {
-      avatar: avatarData.url,
-      avatarData: {
-        type: 'generated',
-        ...avatarData
-      }
-    });
+    user.avatar = avatarData.url;
+    user.avatarData = {
+      type: 'generated',
+      ...avatarData
+    };
+
+    await user.save();
+
+    const io = req.app.get('io');
+    if (io) {
+      const payload = {
+        userId: user._id,
+        avatar: user.avatar
+      };
+      io.to('admin').emit('admin:profile:update', payload);
+      io.to(user._id.toString()).emit('user:profile:updated', payload);
+    }
 
     res.status(200).json({
       message: 'Avatar reset to generated version successfully',
-      avatar: avatarData
+      avatar: {
+        ...avatarData,
+        url: user.avatar
+      }
     });
   } catch (error) {
     console.error('Reset avatar error:', error);

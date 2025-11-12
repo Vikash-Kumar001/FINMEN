@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const HabitChangeJournal = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [habit, setHabit] = useState("");
   const [steps, setSteps] = useState(["", "", "", "", ""]);
   const [currentStep, setCurrentStep] = useState(0);
@@ -54,6 +57,7 @@ const HabitChangeJournal = () => {
       gameId="life-198"
       gameType="life"
       totalLevels={10}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={8}
       showConfetti={showResult && isComplete}
       flashPoints={flashPoints}

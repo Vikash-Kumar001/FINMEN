@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
+import { useSocket } from '../../context/SocketContext';
 
 const IncidentManagement = () => {
   const { ticketNumber } = useParams();
@@ -18,15 +19,17 @@ const IncidentManagement = () => {
   const [filterStatus, setFilterStatus] = useState('all');
   const [filterSeverity, setFilterSeverity] = useState('all');
   const [expandedIncident, setExpandedIncident] = useState(null);
+  const socket = useSocket();
 
   const fetchIncidents = useCallback(async () => {
     try {
+      setLoading(true);
       const params = {};
       if (filterStatus !== 'all') params.status = filterStatus;
       if (filterSeverity !== 'all') params.severity = filterSeverity;
 
-      const response = await api.get('/api/incidents', { params });
-      setIncidents(response.data.data);
+      const response = await api.get('/api/incidents', { params }).catch(() => ({ data: { data: [] } }));
+      setIncidents(response.data.data || []);
 
       // Auto-expand if viewing specific ticket
       if (ticketNumber) {
@@ -35,7 +38,9 @@ const IncidentManagement = () => {
       }
     } catch (error) {
       console.error('Error fetching incidents:', error);
-      toast.error('Failed to load incidents');
+      if (error.response?.status !== 404) {
+        toast.error('Failed to load incidents');
+      }
     } finally {
       setLoading(false);
     }
@@ -43,12 +48,14 @@ const IncidentManagement = () => {
 
   useEffect(() => {
     fetchIncidents();
+    const interval = setInterval(fetchIncidents, 30000); // Auto-refresh every 30 seconds
+    return () => clearInterval(interval);
   }, [fetchIncidents]);
 
   const fetchStats = async () => {
     try {
-      const response = await api.get('/api/incidents/stats');
-      setStats(response.data.data);
+      const response = await api.get('/api/incidents/stats').catch(() => ({ data: { data: null } }));
+      setStats(response.data.data || null);
     } catch (error) {
       console.error('Error fetching stats:', error);
     }
@@ -56,7 +63,36 @@ const IncidentManagement = () => {
 
   useEffect(() => {
     fetchStats();
+    const interval = setInterval(fetchStats, 30000);
+    return () => clearInterval(interval);
   }, []);
+
+  // Real-time Socket.IO updates
+  useEffect(() => {
+    if (socket?.socket) {
+      const handleIncidentUpdate = (data) => {
+        setIncidents(prev => prev.map(i =>
+          i._id === data.incidentId
+            ? { ...i, ...data }
+            : i
+        ));
+        fetchStats(); // Refresh stats
+      };
+
+      const handleNewIncident = (data) => {
+        setIncidents(prev => [data, ...prev]);
+        fetchStats();
+        toast.success(`New ${data.severity} incident: ${data.ticketNumber}`);
+      };
+
+      socket.socket.on('admin:incident:update', handleIncidentUpdate);
+      socket.socket.on('admin:incident:new', handleNewIncident);
+      return () => {
+        socket.socket.off('admin:incident:update', handleIncidentUpdate);
+        socket.socket.off('admin:incident:new', handleNewIncident);
+      };
+    }
+  }, [socket, fetchStats]);
 
   const handleResolveIncident = async (incidentId) => {
     const notes = prompt('Enter resolution notes:');

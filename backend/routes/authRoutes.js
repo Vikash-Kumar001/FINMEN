@@ -8,9 +8,18 @@ import {
   checkVerificationStatus,
   login
 } from "../controllers/authController.js";
+import {
+  initiateParentRegistration,
+  confirmParentRegistration,
+  linkStudentToParent,
+  verifyParentLinkCode,
+  initiateStudentRegistration,
+  finalizeStudentRegistration,
+} from '../controllers/parentRegistrationController.js';
 import { requireAuth } from "../middlewares/requireAuth.js";
 import { generateToken } from "../utils/generateToken.js";
 import User from "../models/User.js";
+import UserSubscription from "../models/UserSubscription.js";
 import bcrypt from "bcrypt";
 
 const router = express.Router();
@@ -52,6 +61,35 @@ router.post("/register", async (req, res) => {
       role: "student",
       isVerified: false,
     });
+
+    // Automatically create freemium subscription for new student
+    try {
+      await UserSubscription.create({
+        userId: newUser._id,
+        planType: 'free',
+        planName: 'Free Plan',
+        amount: 0,
+        firstYearAmount: 0,
+        renewalAmount: 0,
+        isFirstYear: true,
+        status: 'active',
+        startDate: new Date(),
+        features: {
+          fullAccess: false,
+          parentDashboard: false,
+          advancedAnalytics: false,
+          certificates: false,
+          wiseClubAccess: false,
+          inavoraAccess: false,
+          gamesPerPillar: 5,
+          totalGames: 50,
+        },
+      });
+      console.log(`✅ Created freemium subscription for student: ${newUser._id}`);
+    } catch (subError) {
+      console.error('Error creating freemium subscription:', subError);
+      // Don't fail registration if subscription creation fails
+    }
 
     const otpResult = await sendOTP(newUser.email, "verify");
 
@@ -163,10 +201,6 @@ router.post("/register-stakeholder", async (req, res) => {
     }
 
     // Role-specific validation
-    if (role === "parent" && !childEmail) {
-      return res.status(400).json({ message: "Child email is required for parent role" });
-    }
-    
     if (role === "seller" && (!businessName || !shopType)) {
       return res.status(400).json({ message: "Business name and shop type are required for seller role" });
     }
@@ -195,9 +229,7 @@ router.post("/register-stakeholder", async (req, res) => {
     };
 
     // Add role-specific fields
-    if (role === "parent") {
-      userData.childEmail = childEmail;
-    } else if (role === "seller") {
+    if (role === "seller") {
       userData.businessName = businessName;
       userData.shopType = shopType;
     } else if (role === "csr") {
@@ -239,6 +271,14 @@ router.post("/register-stakeholder", async (req, res) => {
     res.status(500).json({ message: "Registration failed" });
   }
 });
+
+router.post('/parent-registration/initiate', initiateParentRegistration);
+router.post('/parent-registration/confirm', confirmParentRegistration);
+router.post('/parent-registration/link-student', linkStudentToParent);
+router.post('/parent-registration/verify-parent-code', verifyParentLinkCode);
+
+router.post('/student-registration/initiate', initiateStudentRegistration);
+router.post('/student-registration/finalize', finalizeStudentRegistration);
 
 // ✅ Removed admin-only registration route
 

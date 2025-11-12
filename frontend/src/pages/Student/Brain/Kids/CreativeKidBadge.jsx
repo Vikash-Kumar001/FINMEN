@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
 import { Brain, Award, Check, X, Zap, Trophy, Star, RotateCcw, Play, Lightbulb, BookOpenCheck, Clock, Puzzle, Users } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const CreativeKidBadge = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [currentLevel, setCurrentLevel] = useState(1);
   const [progress, setProgress] = useState(0);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -159,6 +162,7 @@ const CreativeKidBadge = () => {
       score={score}
       currentLevel={currentLevel}
       totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
       gameId="brain-kids-170"
       gameType="brain-health"
       showGameOver={levelCompleted}

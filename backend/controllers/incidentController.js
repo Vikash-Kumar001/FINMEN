@@ -77,6 +77,17 @@ export const createIncident = async (req, res) => {
       }]
     });
 
+    // Emit real-time update
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('admin:incident:new', {
+        incidentId: incident._id,
+        ticketNumber: incident.ticketNumber,
+        severity: incident.severity,
+        status: incident.status
+      });
+    }
+
     res.json({
       success: true,
       message: 'Incident created successfully',
@@ -122,6 +133,16 @@ export const updateIncident = async (req, res) => {
 
     await incident.save();
 
+    // Emit real-time update
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('admin:incident:update', {
+        incidentId: incident._id,
+        status: incident.status,
+        severity: incident.severity
+      });
+    }
+
     res.json({
       success: true,
       message: 'Incident updated successfully',
@@ -159,6 +180,22 @@ export const assignIncident = async (req, res) => {
     });
 
     await incident.save();
+
+    // Emit real-time update
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('admin:incident:update', {
+        incidentId: incident._id,
+        assignedTo: incident.assignedTo,
+        status: incident.status
+      });
+      if (assignedTo) {
+        io.to(assignedTo.toString()).emit('incident:assigned', {
+          incidentId: incident._id,
+          ticketNumber: incident.ticketNumber
+        });
+      }
+    }
 
     res.json({
       success: true,
@@ -201,6 +238,17 @@ export const resolveIncident = async (req, res) => {
     });
 
     await incident.save();
+
+    // Emit real-time update
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('admin:incident:update', {
+        incidentId: incident._id,
+        status: incident.status,
+        resolvedAt: incident.resolvedAt,
+        resolvedBy: incident.resolvedBy
+      });
+    }
 
     res.json({
       success: true,

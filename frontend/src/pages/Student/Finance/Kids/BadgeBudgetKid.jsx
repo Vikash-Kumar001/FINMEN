@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const BadgeBudgetKid = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti } = useGameFeedback();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -50,6 +53,7 @@ const BadgeBudgetKid = () => {
       coins={0}
       currentLevel={budgets.length + 1}
       totalLevels={3}
+      coinsPerLevel={coinsPerLevel}
       onNext={showBadge ? handleFinish : null}
       nextEnabled={showBadge}
       nextLabel="Finish"

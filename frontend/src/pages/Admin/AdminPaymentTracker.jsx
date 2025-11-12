@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
+import { useSocket } from '../../context/SocketContext';
 
 const AdminPaymentTracker = () => {
   const [loading, setLoading] = useState(true);
@@ -22,6 +23,7 @@ const AdminPaymentTracker = () => {
   });
   const [expandedTransaction, setExpandedTransaction] = useState(null);
   const [pagination, setPagination] = useState({ page: 1, limit: 20, total: 0, pages: 0 });
+  const socket = useSocket();
 
   const fetchData = useCallback(async () => {
     try {
@@ -33,21 +35,23 @@ const AdminPaymentTracker = () => {
       };
 
       const [transactionsRes, statsRes] = await Promise.all([
-        api.get('/api/admin/payment-tracker/transactions', { params }),
+        api.get('/api/admin/payment-tracker/transactions', { params }).catch(() => ({ data: { data: [], pagination: pagination } })),
         api.get('/api/admin/payment-tracker/statistics', { 
           params: filters.startDate || filters.endDate ? {
             startDate: filters.startDate,
             endDate: filters.endDate
           } : {}
-        })
+        }).catch(() => ({ data: { data: null } }))
       ]);
 
-      setTransactions(transactionsRes.data.data);
-      setPagination(transactionsRes.data.pagination);
-      setStats(statsRes.data.data);
+      setTransactions(transactionsRes.data.data || []);
+      setPagination(transactionsRes.data.pagination || pagination);
+      setStats(statsRes.data.data || null);
     } catch (error) {
       console.error('Error fetching payment data:', error);
-      toast.error('Failed to load payment data');
+      if (error.response?.status !== 404) {
+        toast.error('Failed to load payment data');
+      }
     } finally {
       setLoading(false);
     }
@@ -55,7 +59,35 @@ const AdminPaymentTracker = () => {
 
   useEffect(() => {
     fetchData();
+    const interval = setInterval(fetchData, 30000); // Auto-refresh every 30 seconds
+    return () => clearInterval(interval);
   }, [fetchData]);
+
+  // Real-time Socket.IO updates
+  useEffect(() => {
+    if (socket?.socket) {
+      const handleTransactionUpdate = (data) => {
+        setTransactions(prev => prev.map(t =>
+          t._id === data.transactionId
+            ? { ...t, status: data.status, ...data }
+            : t
+        ));
+        fetchData(); // Refresh stats
+      };
+
+      const handleNewTransaction = (data) => {
+        setTransactions(prev => [data, ...prev].slice(0, pagination.limit));
+        fetchData(); // Refresh stats
+      };
+
+      socket.socket.on('admin:payment:update', handleTransactionUpdate);
+      socket.socket.on('admin:payment:new', handleNewTransaction);
+      return () => {
+        socket.socket.off('admin:payment:update', handleTransactionUpdate);
+        socket.socket.off('admin:payment:new', handleNewTransaction);
+      };
+    }
+  }, [socket, fetchData, pagination.limit]);
 
   const handleFilterChange = (key, value) => {
     setFilters(prev => ({ ...prev, [key]: value }));

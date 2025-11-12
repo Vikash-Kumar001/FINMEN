@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ReflexSavings = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [coins, setCoins] = useState(0);
   const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
@@ -83,6 +86,7 @@ const ReflexSavings = () => {
       coins={coins}
       currentLevel={3}
       totalLevels={10}
+      coinsPerLevel={coinsPerLevel}
       onNext={handleNext}
       nextEnabled={gameState === "finished"}
       showGameOver={gameState === "finished"}

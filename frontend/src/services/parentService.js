@@ -144,3 +144,16 @@ export const updateEmailNotifications = async (enabled) => {
     throw error;
   }
 };
+
+/**
+ * Fetch rich parent profile overview with children insights
+ */
+export const fetchParentProfileOverview = async () => {
+  try {
+    const response = await api.get("/api/parent/profile/overview");
+    return response.data;
+  } catch (error) {
+    console.error("Error fetching parent profile overview:", error);
+    throw error;
+  }
+};

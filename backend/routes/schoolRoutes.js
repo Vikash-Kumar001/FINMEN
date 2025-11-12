@@ -100,6 +100,7 @@ import {
   exportTemplates,
   getSubscriptionDetails,
   upgradeSubscription,
+  renewSubscription,
   // Compliance endpoints
   getConsentRecords,
   createConsentRecord,
@@ -148,9 +149,7 @@ import {
   getNEPDashboard,
   // Enhanced billing & support
   getEnhancedSubscriptionDetails,
-  requestTrialExtension,
   getSupportTickets,
-  approveTrialExtension,
   getInvoiceDetails,
   updatePaymentMethod,
   getPlanComparison,
@@ -233,14 +232,13 @@ router.post('/admin/templates/:templateId/reject', requireAuth, requireSchoolAdm
 router.get('/admin/subscription', requireAuth, requireSchoolAdmin, getSubscriptionDetails);
 router.get('/admin/subscription/enhanced', requireAuth, requireSchoolAdmin, getEnhancedSubscriptionDetails);
 router.post('/admin/subscription/upgrade', requireAuth, requireSchoolAdmin, upgradeSubscription);
+router.post('/admin/subscription/renew', requireAuth, requireSchoolAdmin, renewSubscription);
 router.get('/admin/subscription/plans', requireAuth, requireSchoolAdmin, getPlanComparison);
 router.get('/admin/invoices/:invoiceId', requireAuth, requireSchoolAdmin, getInvoiceDetails);
 router.put('/admin/subscription/payment-method', requireAuth, requireSchoolAdmin, updatePaymentMethod);
 
 // Support & Trial Extension Routes (Admin only)
-router.post('/admin/support/trial-extension', requireAuth, requireSchoolAdmin, requestTrialExtension);
 router.get('/admin/support/tickets', requireAuth, requireSchoolAdmin, getSupportTickets);
-router.post('/admin/support/tickets/:ticketId/approve-extension', requireAuth, requireSchoolAdmin, approveTrialExtension);
 
 // Policy & Compliance Routes (Admin only)
 router.get('/admin/compliance/dashboard', requireAuth, requireSchoolAdmin, getComplianceDashboard);

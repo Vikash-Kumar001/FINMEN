@@ -53,6 +53,7 @@ const TeacherStudents = () => {
   const [zoomLevel, setZoomLevel] = useState("class"); // "class" or "all"
   const [showNewAssignment, setShowNewAssignment] = useState(false);
   const [showInviteStudents, setShowInviteStudents] = useState(false);
+  const [inviteTargetClass, setInviteTargetClass] = useState(null);
   const [showAssignToGroup, setShowAssignToGroup] = useState(false);
 
   useEffect(() => {
@@ -116,7 +117,10 @@ const TeacherStudents = () => {
     if (!confirmed) return;
 
     try {
-      await api.delete(`/api/school/teacher/class/${selectedClass._id || selectedClass.name}/student/${student._id}`);
+      const schoolStudentId = student.schoolStudentId || student._id;
+      await api.delete(
+        `/api/school/teacher/class/${selectedClass._id || selectedClass.name}/student/${schoolStudentId}`
+      );
       toast.success(`${student.name} has been removed from ${selectedClass.name}`);
       
       // Refresh the student list
@@ -146,6 +150,21 @@ const TeacherStudents = () => {
         fetchClassStudents(selectedClass._id || selectedClass.name);
       }
     }
+  };
+
+  const handleInviteStudentsClick = () => {
+    const targetClass = selectedClass || classes[0];
+    if (!targetClass) {
+      toast.error("No classes available. Please create a class or ask your school admin to assign one to you.");
+      return;
+    }
+
+    if (!selectedClass) {
+      setSelectedClass(targetClass);
+    }
+
+    setInviteTargetClass(targetClass);
+    setShowInviteStudents(true);
   };
 
   const filteredStudents = classStudents.filter((student) => {
@@ -631,9 +650,12 @@ const TeacherStudents = () => {
       {/* Invite Students Modal */}
       <InviteStudentsModal
         isOpen={showInviteStudents}
-        onClose={() => setShowInviteStudents(false)}
-        classId={selectedClass?._id || selectedClass?.name}
-        className={selectedClass?.name}
+        onClose={() => {
+          setShowInviteStudents(false);
+          setInviteTargetClass(null);
+        }}
+        classId={inviteTargetClass?._id || inviteTargetClass?.name}
+        className={inviteTargetClass?.name}
         onSuccess={() => {
           if (zoomLevel === "class" && selectedClass) {
             fetchClassStudents(selectedClass._id || selectedClass.name);

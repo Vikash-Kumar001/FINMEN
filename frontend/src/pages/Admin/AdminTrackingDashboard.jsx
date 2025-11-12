@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import {
-  Activity, Users, User, MessageSquare, BarChart3, TrendingUp, Eye,
+  Activity, Users, User, BarChart3, TrendingUp, Eye,
   Filter, Calendar, Download, RefreshCw, UserPlus, Mail,
   Building, Target, Zap, Clock, Search, ArrowRight, FileText,
   Shield, School, TrendingDown, DollarSign, Award, FileEdit
 } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../../utils/api';
+import { useSocket } from '../../context/SocketContext';
 
 const AdminTrackingDashboard = () => {
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
   const [loading, setLoading] = useState(true);
   const [overview, setOverview] = useState(null);
-  const [activities, setActivities] = useState([]);
   const [activityPage, setActivityPage] = useState(1);
   const [activityLimit, setActivityLimit] = useState(20);
   const [activityTotalPages, setActivityTotalPages] = useState(0);
@@ -35,23 +37,15 @@ const AdminTrackingDashboard = () => {
     activityType: 'all',
     sourceDashboard: 'all'
   });
-
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, 30000); // Refresh every 30 seconds
-    return () => clearInterval(interval);
-  }, [activeTab]);
+  const socket = useSocket();
 
   const fetchData = async () => {
     try {
       setLoading(true);
       
       if (activeTab === 'overview') {
-        const res = await api.get('/api/admin/tracking/overview');
-        setOverview(res.data.data);
-      } else if (activeTab === 'communications') {
-        const res = await api.get('/api/admin/tracking/communication-flow');
-        setActivities(res.data.data.recentChatMessages || res.data.data.communications || res.data.data || []);
+        const res = await api.get('/api/admin/tracking/overview').catch(() => ({ data: { data: null } }));
+        setOverview(res.data.data || null);
       } else if (activeTab === 'activities') {
         const params = {
           page: activityPage,
@@ -61,25 +55,50 @@ const AdminTrackingDashboard = () => {
           startDate: activityFilters.startDate || undefined,
           endDate: activityFilters.endDate || undefined
         };
-        const res = await api.get('/api/admin/tracking/activity-feed', { params });
-        setRealtimeActivity(res.data.data.activities || res.data.data || []);
+        const res = await api.get('/api/admin/tracking/activity-feed', { params }).catch(() => ({ data: { data: [] } }));
+        setRealtimeActivity(res.data.data?.activities || res.data.data || []);
         if (res.data.data?.pagination) {
           setActivityTotalPages(res.data.data.pagination.pages || 0);
         }
       } else if (activeTab === 'users') {
-        const res = await api.get('/api/admin/tracking/student-distribution');
+        const res = await api.get('/api/admin/tracking/student-distribution').catch(() => ({ data: { data: [] } }));
         setUsers(res.data.data || []);
       } else if (activeTab === 'analytics') {
-        const res = await api.get('/api/admin/tracking/analytics');
-        setAnalytics(res.data.data);
+        const res = await api.get('/api/admin/tracking/analytics').catch(() => ({ data: { data: null } }));
+        setAnalytics(res.data.data || null);
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-      toast.error('Failed to load data');
+      if (error.response?.status !== 404) {
+        toast.error('Failed to load data');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchData();
+    const interval = setInterval(fetchData, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, [activeTab, activityPage, activityLimit, activityFilters]);
+
+  // Real-time Socket.IO updates
+  useEffect(() => {
+    if (socket?.socket) {
+      const handleActivityUpdate = (data) => {
+        if (activeTab === 'activities') {
+          setRealtimeActivity(prev => [data, ...prev].slice(0, 100)); // Keep last 100
+          fetchData(); // Refresh full list
+        }
+      };
+
+      socket.socket.on('admin:activity:new', handleActivityUpdate);
+      return () => {
+        socket.socket.off('admin:activity:new', handleActivityUpdate);
+      };
+    }
+  }, [socket, activeTab]);
 
   const fetchUsersByRole = async (role) => {
     try {
@@ -128,7 +147,6 @@ const AdminTrackingDashboard = () => {
   const sidebarItems = [
     { id: 'overview', label: 'Platform Overview', icon: BarChart3 },
     { id: 'users', label: 'User Management', icon: Users },
-    { id: 'communications', label: 'Communications', icon: MessageSquare },
     { id: 'activities', label: 'Activity Feed', icon: Activity },
     { id: 'analytics', label: 'Analytics', icon: TrendingUp }
   ];
@@ -146,31 +164,43 @@ const AdminTrackingDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex">
-      {/* Sidebar */}
-      <aside className="w-80 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 text-white p-6 shadow-2xl">
-        <h2 className="text-2xl font-black mb-8">📊 Admin Tracking</h2>
-        <nav className="space-y-2">
-          {sidebarItems.map((item) => (
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+      {/* Header with Tabs */}
+      <div className="bg-white shadow-lg border-b-2 border-gray-100">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <h1 className="text-3xl font-black bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">
+              📊 Admin Tracking Dashboard
+            </h1>
             <button
-              key={item.id}
-              onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-4 px-4 py-4 rounded-xl font-bold transition-all ${
-                activeTab === item.id
-                  ? 'bg-white text-indigo-600 shadow-lg'
-                  : 'bg-white/10 hover:bg-white/20 text-white'
-              }`}
+              onClick={() => navigate('/admin/payment-tracker')}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl font-semibold bg-green-500 text-white hover:bg-green-600 transition-all shadow-md"
             >
-              <item.icon className="w-6 h-6" />
-              {item.label}
+              <DollarSign className="w-5 h-5" />
+              Payment Tracker
             </button>
-          ))}
-        </nav>
-      </aside>
+          </div>
+          <nav className="mt-4 flex flex-wrap gap-2">
+            {sidebarItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => setActiveTab(item.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-xl font-semibold transition-all ${
+                  activeTab === item.id
+                    ? 'bg-gradient-to-r from-indigo-600 to-purple-600 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
+                <item.icon className="w-5 h-5" />
+                {item.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+      </div>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <div className="p-8">
+      <main className="max-w-7xl mx-auto px-6 py-8">
           {/* Overview Tab */}
           {activeTab === 'overview' && overview && (
             <div>
@@ -415,64 +445,6 @@ const AdminTrackingDashboard = () => {
                   </div>
                 </>
               )}
-            </div>
-          )}
-
-          {/* Communications Tab */}
-          {activeTab === 'communications' && (
-            <div>
-              <div className="flex items-center justify-between mb-8">
-                <h1 className="text-4xl font-black bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">
-                  All Chat Messages
-                </h1>
-                <button
-                  onClick={fetchData}
-                  className="px-6 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg font-bold hover:shadow-lg transition-all"
-                >
-                  <RefreshCw className="w-5 h-5" />
-                </button>
-              </div>
-              
-              <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-                {activities.length === 0 ? (
-                  <div className="p-12 text-center">
-                    <MessageSquare className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600">No messages found</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-gray-200">
-                    {activities.map((msg, idx) => (
-                      <div key={idx} className="p-6 hover:bg-gray-50 transition-colors">
-                        <div className="flex items-start gap-4">
-                          <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-500 rounded-full flex items-center justify-center text-white font-black flex-shrink-0">
-                            {msg.from?.[0]?.toUpperCase() || 'U'}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-3 mb-2">
-                              <span className="font-bold text-gray-900">{msg.from || 'Unknown'}</span>
-                              <span className="text-xs px-2 py-1 bg-blue-100 text-blue-600 rounded-full font-semibold">{msg.fromRole}</span>
-                              <ArrowRight className="w-4 h-4 text-gray-400" />
-                              <span className="font-semibold text-gray-700">{msg.to}</span>
-                              <span className="text-xs px-2 py-1 bg-purple-100 text-purple-600 rounded-full font-semibold">{msg.toRole}</span>
-                            </div>
-                            <p className="text-sm text-gray-800 bg-gray-50 p-3 rounded-lg mb-2 whitespace-pre-wrap break-words">{msg.message || msg.content}</p>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <Clock className="w-3 h-3" />
-                              {new Date(msg.timestamp).toLocaleString()}
-                              <span className="ml-2 px-2 py-0.5 bg-indigo-100 text-indigo-600 rounded">ID: {msg._id.toString().substring(0, 8)}</span>
-                            </div>
-                            {msg.fromEmail && (
-                              <div className="text-xs text-gray-500 mt-1">
-                                📧 {msg.fromEmail}
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
             </div>
           )}
 
@@ -790,7 +762,6 @@ const AdminTrackingDashboard = () => {
               )}
             </div>
           )}
-        </div>
       </main>
     </div>
   );

@@ -64,13 +64,13 @@ const Contact = () => {
     {
       icon: <Phone className="w-6 h-6" />,
       title: "Call Us",
-      content: "+91-904-341-1110",
+      content: "+91 9043411110",
       description: "Mon-Fri from 9 AM to 6 PM"
     },
     {
       icon: <MapPin className="w-6 h-6" />,
       title: "Visit Us",
-      content: "Delhi | Bangalore | Chennai, India",
+      content: "Chennai, India",
       description: "Our headquarters and innovation center"
     },
     {
@@ -159,17 +159,6 @@ const Contact = () => {
                 </motion.div>
               ))}
             </div>
-
-            {/* Map Placeholder */}
-            <div className="mt-12">
-              <h3 className="text-xl font-bold text-gray-900 mb-4">Our Location</h3>
-              <div className="bg-gray-200 border-2 border-dashed rounded-xl w-full h-64 flex items-center justify-center">
-                <div className="text-center">
-                  <MapPin className="w-12 h-12 text-gray-400 mx-auto mb-2" />
-                  <p className="text-gray-500">Delhi, India</p>
-                </div>
-              </div>
-            </div>
           </motion.div>
 
           {/* Contact Form */}
@@ -177,7 +166,7 @@ const Contact = () => {
             initial={{ opacity: 0, x: 20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
-            className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100"
+            className="self-start bg-white rounded-2xl shadow-xl p-8 border border-gray-100"
           >
             <h2 className="text-2xl font-bold text-gray-900 mb-6">Send us a Message</h2>
             <form onSubmit={handleSubmit} className="space-y-6">
@@ -275,10 +264,32 @@ const Contact = () => {
             </form>
           </motion.div>
         </div>
+
+        {/* Map Section - Full Width */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-16"
+        >
+          <h3 className="text-xl font-bold text-gray-900 mb-4">Our Location</h3>
+          <div className="rounded-xl overflow-hidden w-full h-[450px]">
+            <iframe 
+              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3887.68594894256!2d80.2437199!3d12.991927500000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a525d7d6641728d%3A0xddfdb15c6538d927!2sIIT%20Madras%20Research%20Park!5e0!3m2!1sen!2sin!4v1761973206960!5m2!1sen!2sin" 
+              width="100%" 
+              height="450" 
+              style={{border:0}} 
+              allowFullScreen 
+              loading="lazy" 
+              referrerPolicy="no-referrer-when-downgrade"
+              className="w-full h-full"
+            ></iframe>
+          </div>
+        </motion.div>
       </div>
 
       {/* FAQ Section */}
-      <div className="py-16 bg-gradient-to-r from-blue-600 to-purple-600">
+      {/* <div className="py-16 bg-gradient-to-r from-blue-600 to-purple-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -349,7 +360,7 @@ const Contact = () => {
             </motion.div>
           </div>
         </div>
-      </div>
+      </div> */}
     </MotionDiv>
   );
 };

@@ -28,7 +28,7 @@ const companySchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ['school'],
+      enum: ['company', 'school'],
       default: 'company'
     },
     academicInfo: {
@@ -50,12 +50,54 @@ const companySchema = new mongoose.Schema(
     },
     subscriptionPlan: {
       type: String,
-      enum: ["basic", "premium", "enterprise"],
-      default: "basic",
+      enum: ["free", "student_premium", "student_parent_premium_pro", "educational_institutions_premium"],
+      default: "free",
+    },
+    subscriptionStart: {
+      type: Date,
     },
     subscriptionExpiry: {
       type: Date,
-      default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+    },
+    approvalStatus: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending"
+    },
+    approvedAt: {
+      type: Date,
+    },
+    approvedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
+    rejectionReason: {
+      type: String,
+    },
+    approvalNotes: {
+      type: String,
+    },
+    reviewHistory: {
+      type: [{
+        reviewer: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        action: {
+          type: String,
+          enum: ["submitted", "approved", "rejected", "commented"],
+          required: true,
+        },
+        note: String,
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        }
+      }],
+      default: []
+    },
+    lastReviewedAt: {
+      type: Date,
     },
   },
   {

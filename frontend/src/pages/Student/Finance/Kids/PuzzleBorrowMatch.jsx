@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
@@ -7,6 +7,9 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PuzzleBorrowMatch = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
   const [currentStage, setCurrentStage] = useState(0);
@@ -112,6 +115,7 @@ const PuzzleBorrowMatch = () => {
       coins={coins}
       currentLevel={currentStage + 1}
       totalLevels={stages.length}
+      coinsPerLevel={coinsPerLevel}
       onNext={showResult ? handleFinish : null}
       nextEnabled={showResult}
       nextLabel="Finish"

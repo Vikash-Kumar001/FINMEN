@@ -125,9 +125,14 @@ const InviteStudentsModal = ({ isOpen, onClose, classId, className, onSuccess })
       const response = await api.get("/api/school/teacher/search-students", {
         params: { query: searchQuery }
       });
-      setSearchResults(response.data.students || []);
-      if (response.data.students.length === 0) {
-        toast.info("No students found");
+      const students = response.data.students || [];
+      const mappedResults = students.map((student) => ({
+        ...student,
+        className: className || student.classes?.[0]?.name || student.metadata?.schoolEnrollment?.className || 'Unassigned',
+      }));
+      setSearchResults(mappedResults);
+      if (students.length === 0) {
+        toast("No students found", { icon: "ℹ️" });
       }
     } catch (error) {
       console.error("Error searching students:", error);
@@ -330,7 +335,7 @@ const InviteStudentsModal = ({ isOpen, onClose, classId, className, onSuccess })
                 <div>
                   <h2 className="text-2xl font-bold text-white">Add Students</h2>
                   <p className="text-blue-100 text-sm">
-                    {className ? `to ${className}` : "Add students to your class"}
+                {className ? `to ${className}` : "Add students to your class"}
                   </p>
                 </div>
               </div>

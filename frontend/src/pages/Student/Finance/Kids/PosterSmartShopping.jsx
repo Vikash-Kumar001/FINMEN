@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PosterSmartShopping = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [selectedPoster, setSelectedPoster] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
@@ -97,6 +100,7 @@ const PosterSmartShopping = () => {
       gameId="finance-kids-16"
       gameType="finance"
       totalLevels={10}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={6}
       showConfetti={showResult && selectedPoster?.isCorrect}
       flashPoints={flashPoints}

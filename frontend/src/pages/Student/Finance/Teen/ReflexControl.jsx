@@ -1,10 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from '../GameShell';
 import { useGameFeedback } from '../../../../hooks/useGameFeedback';
 
 const ReflexControl = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [gameState, setGameState] = useState('waiting'); // waiting, active, finished
   const [score, setScore] = useState(0);
@@ -233,6 +236,7 @@ const ReflexControl = () => {
       gameId="finance-teens-19"
       gameType="reflex"
       totalLevels={1}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={1}
       score={calculateTotalScore()}
       totalScore={500} // Adjust based on max possible score

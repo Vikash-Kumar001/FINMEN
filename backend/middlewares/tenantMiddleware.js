@@ -35,6 +35,11 @@ export const extractTenant = async (req, res, next) => {
       return res.status(403).json({ message: "Organization not found or inactive" });
     }
 
+    if (organization.tenantId && user.tenantId !== organization.tenantId) {
+      user.tenantId = organization.tenantId;
+      await user.save();
+    }
+
     // Attach tenant information to request
     req.user = user;
     req.tenantId = user.tenantId;

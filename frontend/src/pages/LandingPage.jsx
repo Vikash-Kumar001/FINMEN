@@ -1,8 +1,12 @@
 import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import MainNavbar from "../components/MainNavbar";
 import MainFooter from "../components/MainFooter";
 import NationalAlignments from "../components/NationalAlignments";
+import CheckoutModal from "../components/Payment/CheckoutModal";
+import { useAuth } from "../context/AuthUtils";
+import api from "../utils/api";
+import { toast } from "react-hot-toast";
 import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 import {
   School,
@@ -184,10 +188,14 @@ const AutoSlidingCards = () => {
 
 const LandingPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  const { user } = useAuth();
   const userTypesRef = useRef(null);
   const featuresRef = useRef(null);
   const pricingRef = useRef(null);
   const whyChooseRef = useRef(null);
+  const [showCheckout, setShowCheckout] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
   const studentServicesRef = useRef(null);
   const footerRef = useRef(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
@@ -595,8 +603,8 @@ const LandingPage = () => {
       description: "Parents, Teachers, and Mentors supporting student growth",
       icon: <Users className="w-12 h-12" />,
       color: "from-green-500 to-emerald-500",
-      action: () => navigate("/choose-account-type"),
-      buttonText: "Choose Type",
+      action: () => navigate("/register-parent"),
+      buttonText: "Join as Parent",
     },
     {
       title: "Educational Institution",
@@ -642,6 +650,173 @@ const LandingPage = () => {
     footerRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+  // Handle plan selection
+  const handlePlanSelect = async (planType, planName, firstYearAmount, isFirstYear) => {
+    // Always open the modal - let it handle auth internally
+    // For free plan, open modal that will handle activation
+    if (planType === 'free') {
+      setSelectedPlan({
+        planType,
+        planName,
+        amount: 0,
+        isFirstYear: true,
+      });
+      setShowCheckout(true);
+      return;
+    }
+
+    // For paid plans, open checkout modal
+    // Try to check existing subscription to determine if it's first year
+    // But don't block if user is not logged in
+    const token = localStorage.getItem("finmen_token");
+    
+    if (token) {
+      try {
+        const subResponse = await api.get('/api/subscription/current');
+        const currentSub = subResponse.data.subscription;
+        
+        let amount = firstYearAmount;
+        let isFirstYearPayment = isFirstYear;
+        
+        // If user has a previous subscription, use renewal amount
+        if (currentSub && currentSub.planType !== 'free') {
+          const renewalAmounts = {
+            student_premium: 999,
+            student_parent_premium_pro: 1499,
+          };
+          amount = renewalAmounts[planType] || firstYearAmount;
+          isFirstYearPayment = false;
+        }
+
+        setSelectedPlan({
+          planType,
+          planName,
+          amount,
+          isFirstYear: isFirstYearPayment,
+        });
+        setShowCheckout(true);
+      } catch (error) {
+        // If error (including auth), assume first year and proceed
+        // The modal will handle auth check
+        setSelectedPlan({
+          planType,
+          planName,
+          amount: firstYearAmount,
+          isFirstYear: true,
+        });
+        setShowCheckout(true);
+      }
+    } else {
+      // No token, but still open modal - it will prompt for login
+      setSelectedPlan({
+        planType,
+        planName,
+        amount: firstYearAmount,
+        isFirstYear: true,
+      });
+      setShowCheckout(true);
+    }
+  };
+
+  // Check for pending subscription after login redirect
+  useEffect(() => {
+    const pendingSubscription = location.state?.pendingSubscription || 
+      (() => {
+        const stored = localStorage.getItem('pending_subscription');
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            localStorage.removeItem('pending_subscription');
+            return parsed;
+          } catch (e) {
+            localStorage.removeItem('pending_subscription');
+            return null;
+          }
+        }
+        return null;
+      })();
+    
+    if (pendingSubscription && (user || localStorage.getItem("finmen_token"))) {
+      // Scroll to pricing section
+      setTimeout(() => {
+        if (pricingRef.current) {
+          pricingRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 100);
+      
+      // Small delay to ensure modal can render
+      setTimeout(() => {
+        toast.success('Welcome back! Completing your subscription...');
+        const planType = pendingSubscription.planType;
+        const planName = pendingSubscription.planName;
+        const firstYearAmount = pendingSubscription.firstYearAmount || pendingSubscription.amount || 0;
+        const isFirstYear = pendingSubscription.isFirstYear !== false;
+        
+        // For free plan, open modal that will handle activation
+        if (planType === 'free') {
+          setSelectedPlan({
+            planType,
+            planName,
+            amount: 0,
+            isFirstYear: true,
+          });
+          setShowCheckout(true);
+          return;
+        }
+
+        // For paid plans, open checkout modal
+        const token = localStorage.getItem("finmen_token");
+        
+        if (token) {
+          api.get('/api/subscription/current')
+            .then(subResponse => {
+              const currentSub = subResponse.data.subscription;
+              
+              let amount = firstYearAmount;
+              let isFirstYearPayment = isFirstYear;
+              
+              // If user has a previous subscription, use renewal amount
+              if (currentSub && currentSub.planType !== 'free') {
+                const renewalAmounts = {
+                  student_premium: 999,
+            student_parent_premium_pro: 1499,
+                };
+                amount = renewalAmounts[planType] || firstYearAmount;
+                isFirstYearPayment = false;
+              }
+
+              setSelectedPlan({
+                planType,
+                planName,
+                amount,
+                isFirstYear: isFirstYearPayment,
+              });
+              setShowCheckout(true);
+            })
+            .catch(() => {
+              // If error, assume first year and proceed
+              setSelectedPlan({
+                planType,
+                planName,
+                amount: firstYearAmount,
+                isFirstYear: true,
+              });
+              setShowCheckout(true);
+            });
+        } else {
+          // No token, but still open modal - it will prompt for login
+          setSelectedPlan({
+            planType,
+            planName,
+            amount: firstYearAmount,
+            isFirstYear: true,
+          });
+          setShowCheckout(true);
+        }
+      }, 800);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, location.state]);
 
   useEffect(() => {
     // Add CSS for animations
@@ -993,7 +1168,7 @@ const LandingPage = () => {
             className="text-center mb-12"
           >
             <h2 className="text-4xl font-bold text-gray-900 mb-4">
-              Final Pricing & Inclusions
+              Pricing & Inclusions
             </h2>
             <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
               Choose the plan that best fits your needs with comprehensive features for holistic education
@@ -1027,7 +1202,10 @@ const LandingPage = () => {
                   </div>
                 </div>
 
-                <button className="w-full mb-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <button 
+                  onClick={() => handlePlanSelect('free', 'Free Plan', 0, true)}
+                  className="w-full mb-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                >
                   Get Free Plan
                 </button>
 
@@ -1109,7 +1287,10 @@ const LandingPage = () => {
                   </div>
                 </div>
 
-                <button className="w-full mb-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
+                <button 
+                  onClick={() => handlePlanSelect('student_premium', 'Students Premium Plan', 4499, true)}
+                  className="w-full mb-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                >
                   Get Students Premium Plan
                 </button>
 
@@ -1195,8 +1376,11 @@ const LandingPage = () => {
                   </div>
                 </div>
 
-                <button className="w-full mb-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg">
-                  Get Student + Parent Pro Plan
+                <button 
+                  onClick={() => handlePlanSelect('student_parent_premium_pro', 'Student + Parent Premium Pro Plan', 4999, true)}
+                  className="w-full mb-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                >
+                  Get Student + Parent Premium Pro Plan
                 </button>
 
                 <div className="space-y-4 flex-1">
@@ -1275,6 +1459,21 @@ const LandingPage = () => {
 
       {/* Main Footer */}
       <MainFooter />
+
+      {/* Checkout Modal */}
+      {selectedPlan && (
+        <CheckoutModal
+          isOpen={showCheckout}
+          onClose={() => {
+            setShowCheckout(false);
+            setSelectedPlan(null);
+          }}
+          planType={selectedPlan.planType}
+          planName={selectedPlan.planName}
+          amount={selectedPlan.amount}
+          isFirstYear={selectedPlan.isFirstYear}
+        />
+      )}
     </div>
   );
 };

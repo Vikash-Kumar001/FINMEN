@@ -48,6 +48,7 @@ const TeacherOverview = () => {
   const [sessionEngagement, setSessionEngagement] = useState({});
   const [showNewAssignment, setShowNewAssignment] = useState(false);
   const [showInviteStudents, setShowInviteStudents] = useState(false);
+  const [selectedClassForInvite, setSelectedClassForInvite] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
@@ -136,6 +137,37 @@ const TeacherOverview = () => {
     </motion.button>
   );
 
+  const handleOpenInviteStudents = (classInfo) => {
+    const fallbackClass = classInfo || classes[0];
+    if (!fallbackClass) {
+      toast.error("No classes available. Please create a class or contact your school admin.");
+      return;
+    }
+
+    const resolvedClassId =
+      fallbackClass._id ||
+      fallbackClass.id ||
+      fallbackClass.classId ||
+      null;
+
+    const resolvedClassName =
+      fallbackClass.name ||
+      (fallbackClass.classNumber
+        ? `Class ${fallbackClass.classNumber}${fallbackClass.stream ? ` ${fallbackClass.stream}` : ""}`
+        : undefined);
+
+    if (!resolvedClassId) {
+      toast.error("Unable to determine class details. Please try again or refresh the page.");
+      return;
+    }
+
+    setSelectedClassForInvite({
+      id: resolvedClassId,
+      name: resolvedClassName || "My Class",
+    });
+    setShowInviteStudents(true);
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
@@ -198,7 +230,7 @@ const TeacherOverview = () => {
             label="Invite Students"
             icon={UserPlus}
             color="from-blue-500 to-cyan-600"
-            onClick={() => setShowInviteStudents(true)}
+            onClick={() => handleOpenInviteStudents()}
           />
           <QuickActionButton
             label="View Messages"
@@ -714,7 +746,12 @@ const TeacherOverview = () => {
 
       <InviteStudentsModal
         isOpen={showInviteStudents}
-        onClose={() => setShowInviteStudents(false)}
+        onClose={() => {
+          setShowInviteStudents(false);
+          setSelectedClassForInvite(null);
+        }}
+        classId={selectedClassForInvite?.id}
+        className={selectedClassForInvite?.name}
       />
     </div>
   );

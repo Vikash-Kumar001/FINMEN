@@ -51,14 +51,18 @@ class GameCompletionService {
       const currentProgress = progressResponse.data || {
         levelsCompleted: 0,
         totalCoinsEarned: 0,
-        fullyCompleted: false
+        fullyCompleted: false,
+        replayUnlocked: false
       };
+
+      // Check if this is a replay attempt
+      const isReplayAttempt = gameData.isReplay === true || (currentProgress.fullyCompleted && currentProgress.replayUnlocked === true);
 
       // Calculate new levels completed (only count new ones)
       const newLevelsCompleted = Math.max(0, levelsCompleted - currentProgress.levelsCompleted);
       
-      // If no new progress, don't award coins but allow replay
-      if (newLevelsCompleted === 0 && !currentProgress.fullyCompleted && isFullCompletion) {
+      // If no new progress and not a replay, don't award coins but allow replay
+      if (newLevelsCompleted === 0 && !currentProgress.fullyCompleted && isFullCompletion && !isReplayAttempt) {
         // Mark as fully completed for first time
         await this.updateGameProgress(gameId, {
           ...gameData,
@@ -77,7 +81,9 @@ class GameCompletionService {
         };
       }
 
-      if (newLevelsCompleted === 0 && currentProgress.fullyCompleted) {
+      // If game is fully completed and it's NOT a replay attempt, return early
+      // BUT if it IS a replay attempt, we MUST call the backend to lock it again
+      if (newLevelsCompleted === 0 && currentProgress.fullyCompleted && !isReplayAttempt) {
         return {
           success: true,
           coinsEarned: 0,
@@ -89,6 +95,15 @@ class GameCompletionService {
       }
 
       // Send completion data to backend
+      // IMPORTANT: For replay attempts, we MUST call the backend to lock the game again
+      console.log('📤 Sending game completion to backend:', {
+        gameId,
+        isReplayAttempt: isReplayAttempt,
+        isReplayFlag: gameData.isReplay,
+        currentReplayUnlocked: currentProgress.replayUnlocked,
+        fullyCompleted: currentProgress.fullyCompleted
+      });
+      
       const response = await api.post(`/api/game/complete-unified/${gameId}`, {
         gameType,
         score,
@@ -100,7 +115,8 @@ class GameCompletionService {
         achievements,
         isFullCompletion,
         coinsPerLevel,
-        previousProgress: currentProgress
+        previousProgress: currentProgress,
+        isReplay: isReplayAttempt // Use the computed isReplayAttempt value, not gameData.isReplay
       });
 
       const result = response.data;
@@ -110,12 +126,18 @@ class GameCompletionService {
         levelsCompleted: result.totalLevelsCompleted,
         fullyCompleted: result.fullyCompleted,
         totalCoinsEarned: result.totalCoinsEarned,
-        lastCompletedAt: new Date()
+        lastCompletedAt: new Date(),
+        replayUnlocked: result.replayUnlocked !== undefined ? result.replayUnlocked : false
       });
 
       // Show success notification
       if (result.coinsEarned > 0) {
         toast.success(`🎮 +${result.coinsEarned} HealCoins earned!`);
+      } else if (result.isReplay) {
+        // Show message for replay completion
+        toast.success(result.message || 'Game replayed! Pay 10 HealCoins to unlock replay again.', {
+          duration: 4000
+        });
       }
 
       return {
@@ -127,7 +149,9 @@ class GameCompletionService {
         newBalance: result.newBalance,
         streak: result.streak || 1,
         achievements: result.achievements || [],
-        canReplay: true,
+        canReplay: result.replayUnlocked !== undefined ? result.replayUnlocked : false,
+        isReplay: result.isReplay || false,
+        replayUnlocked: result.replayUnlocked !== undefined ? result.replayUnlocked : false,
         message: result.message || 'Game completed successfully!'
       };
 

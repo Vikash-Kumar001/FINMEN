@@ -5,6 +5,12 @@ import { useNavigate } from "react-router-dom";
 import {
     Smile,
     Gamepad2,
+    HandHeart,
+    Cpu,
+    ArrowRight,
+    HeartHandshake,
+    Globe,
+    Leaf,
     Book,
     Wallet,
     Gift,
@@ -51,8 +57,10 @@ import {
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { useWallet } from "../../context/WalletContext";
+import { useSubscription } from "../../context/SubscriptionContext";
 import { fetchStudentAchievements } from "../../services/studentService";
 import { logActivity } from "../../services/activityService";
+import UpgradePrompt from "../../components/UpgradePrompt";
 import { 
     fetchStudentDashboardData, 
     fetchNotifications,
@@ -76,6 +84,9 @@ export default function StudentDashboard() {
     const navigate = useNavigate();
     const { user } = useAuth();
     const { wallet } = useWallet();
+    const { subscription, canAccessPillar, hasFeature } = useSubscription();
+    const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+    const [upgradeFeature, setUpgradeFeature] = useState(null);
     const [featureCards, setFeatureCards] = useState([]);
     const [achievements, setAchievements] = useState([]);
     const [recentActivities, setRecentActivities] = useState([]);
@@ -186,12 +197,19 @@ export default function StudentDashboard() {
         });
         
         // Welcome toast for returning users
-        if (user?.name) {
-            toast.success(`Welcome back, ${user.name}! 🎮`, {
-                duration: 3000,
-                position: "top-center",
-                icon: "👋"
-            });
+        if (user?.name && user?._id) {
+            const welcomeToastKey = `finmen_student_welcome_${user._id}`;
+            const hasShownWelcomeToast = sessionStorage.getItem(welcomeToastKey);
+
+            if (!hasShownWelcomeToast) {
+                toast.success(`Welcome back, ${user.name}! 🎮`, {
+                    duration: 3000,
+                    position: "top-center",
+                    icon: "👋"
+                });
+
+                sessionStorage.setItem(welcomeToastKey, "true");
+            }
         }
     }, [user]);
     
@@ -402,6 +420,40 @@ export default function StudentDashboard() {
         loadNotifications();
         loadAnalyticsData();
     }, [loadDashboardData, loadNotifications, loadAnalyticsData]);
+
+    // Real-time subscription updates
+    useEffect(() => {
+        if (!socket?.socket) return;
+
+        const handleSubscriptionUpdate = (data) => {
+            if (data && data.subscription) {
+                console.log('🔄 Subscription updated:', data.subscription);
+                // Refresh subscription context
+                if (refreshSubscription) {
+                    refreshSubscription();
+                }
+                // Refresh pillar mastery to reflect new access
+                loadAnalyticsData();
+                toast.success('Subscription updated! Access refreshed.', {
+                    duration: 3000,
+                    position: 'bottom-center',
+                    icon: '🎉'
+                });
+            }
+        };
+
+        socket.socket.on('subscription:activated', handleSubscriptionUpdate);
+        socket.socket.on('subscription:updated', handleSubscriptionUpdate);
+        socket.socket.on('subscription:cancelled', handleSubscriptionUpdate);
+
+        return () => {
+            if (socket?.socket) {
+                socket.socket.off('subscription:activated', handleSubscriptionUpdate);
+                socket.socket.off('subscription:updated', handleSubscriptionUpdate);
+                socket.socket.off('subscription:cancelled', handleSubscriptionUpdate);
+            }
+        };
+    }, [socket, subscription, loadAnalyticsData]);
 
     useEffect(() => {
         if (!socket) return;
@@ -617,9 +669,9 @@ export default function StudentDashboard() {
                                     .replace(/\s+/g, '-')
                                     .replace(/[()&]/g, '')
                                     .replace(/--+/g, '-');
-                                
+
                                 return (
-                        <motion.button
+                                    <motion.button
                                         key={category.key}
                                         onClick={() => {
                                             // Log category navigation
@@ -633,12 +685,12 @@ export default function StudentDashboard() {
                                                 },
                                                 pageUrl: window.location.pathname
                                             });
-                                            
+
                                             // Navigate to category page
                                             navigate(`/student/dashboard/${categorySlug}`);
                                         }}
                                         whileHover={{ scale: 1.08 }}
-                            whileTap={{ scale: 0.95 }}
+                                        whileTap={{ scale: 0.95 }}
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         className={`bg-gradient-to-r ${gradientColors} cursor-pointer text-white px-6 py-4 rounded-full font-bold text-sm shadow-lg hover:shadow-2xl transition-all duration-300 relative overflow-hidden group`}
@@ -651,7 +703,7 @@ export default function StudentDashboard() {
                                         />
                                         
                                         {/* Pulse animation */}
-                        <motion.div
+                                        <motion.div
                                             className="absolute inset-0 bg-white/20"
                                             animate={{
                                                 scale: [1, 1.2, 1],
@@ -1498,13 +1550,78 @@ export default function StudentDashboard() {
                                             {/* Label with gradient background */}
                                             <motion.div
                                                 whileHover={{ scale: 1.05 }}
-                                                className={`mt-4 bg-gradient-to-r ${colorScheme.gradient} rounded-2xl px-4 py-3 shadow-lg`}
+                                                onClick={() => {
+                                                    // Check if pillar is locked
+                                                    if (pillar.locked || pillar.accessMode === 'locked' || pillar.upgradeRequired) {
+                                                        setUpgradeFeature('pillar');
+                                                        setShowUpgradeModal(true);
+                                                        toast.error('Upgrade to premium to access this pillar!', {
+                                                            duration: 3000,
+                                                            position: 'bottom-center',
+                                                            icon: '🔒'
+                                                        });
+                                                        return;
+                                                    }
+
+                                                    // Check access using subscription context
+                                                    const accessCheck = canAccessPillar(pillar.pillar || pillar.pillarKey);
+                                                    if (!accessCheck.allowed) {
+                                                        setUpgradeFeature('pillar');
+                                                        setShowUpgradeModal(true);
+                                                        toast.error(accessCheck.message || 'Upgrade to premium to access this pillar!', {
+                                                            duration: 3000,
+                                                            position: 'bottom-center',
+                                                            icon: '🔒'
+                                                        });
+                                                        return;
+                                                    }
+
+                                                    // Map pillar keys to route paths
+                                                    const pillarRouteMap = {
+                                                        'finance': '/games/financial-literacy',
+                                                        'brain': '/games/brain-health',
+                                                        'uvls': '/games/uvls',
+                                                        'dcos': '/games/digital-citizenship',
+                                                        'moral': '/games/moral-values',
+                                                        'ai': '/games/ai-for-all',
+                                                        'ehe': '/games/entrepreneurship',
+                                                        'crgc': '/games/civic-responsibility',
+                                                        'mental': '/games/mental-health',
+                                                        'educational': '/games/education'
+                                                    };
+
+                                                    const routeBase = pillarRouteMap[pillar.pillarKey] || `/games/${pillar.pillarKey}`;
+                                                    
+                                                    // Navigate to kids games by default (can be changed based on user age)
+                                                    const userAge = calculateUserAge(user?.dateOfBirth || user?.dob);
+                                                    const ageGroup = userAge && userAge < 13 ? 'kids' : userAge && userAge < 18 ? 'teens' : 'adults';
+                                                    
+                                                    navigate(`${routeBase}/${ageGroup}`);
+                                                }}
+                                                className={`mt-4 bg-gradient-to-r ${colorScheme.gradient} rounded-2xl px-4 py-3 shadow-lg ${pillar.locked || pillar.accessMode === 'locked' || pillar.upgradeRequired ? 'cursor-pointer opacity-75' : 'cursor-pointer'}`}
                                             >
-                                                <p className="text-sm font-bold text-white text-center leading-tight drop-shadow">
-                                                    {pillar.pillar}
-                                                </p>
+                                                <div className="flex items-center justify-center gap-2">
+                                                    <p className="text-sm font-bold text-white text-center leading-tight drop-shadow">
+                                                        {pillar.pillar}
+                                                    </p>
+                                                    {(pillar.locked || pillar.accessMode === 'locked' || pillar.upgradeRequired) && (
+                                                        <Lock className="w-4 h-4 text-white" />
+                                                    )}
+                                                    {pillar.accessMode === 'preview' && !pillar.locked && !pillar.upgradeRequired && (
+                                                        <Eye className="w-4 h-4 text-white/80" />
+                                                    )}
+                                                </div>
                                                 <p className="text-xs text-white/90 text-center mt-1">
-                                                    {pillar.gamesCompleted}/{pillar.totalGames} games
+                                                    {pillar.upgradeRequired ? (
+                                                        <span className="block text-white/70 text-[10px]">Upgrade Required</span>
+                                                    ) : (
+                                                        <>
+                                                            {pillar.gamesCompleted}/{pillar.totalGames} games
+                                                            {pillar.accessMode === 'preview' && !hasFeature('fullAccess') && (
+                                                                <span className="block text-white/70 text-[10px] mt-0.5">Preview Mode</span>
+                                                            )}
+                                                        </>
+                                                    )}
                                                 </p>
                                             </motion.div>
                                             
@@ -2087,6 +2204,23 @@ export default function StudentDashboard() {
                     )}
                 </div>
             </div>
+
+            {/* Upgrade Modal */}
+            {showUpgradeModal && (
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-white rounded-xl p-6 max-w-md w-full">
+                        <UpgradePrompt
+                            feature={upgradeFeature || 'game'}
+                            gamesPlayed={pillarMastery?.pillars?.find(p => p.locked)?.gamesCompleted || 0}
+                            gamesAllowed={pillarMastery?.pillars?.find(p => p.locked)?.gamesAllowed || 5}
+                            onClose={() => {
+                                setShowUpgradeModal(false);
+                                setUpgradeFeature(null);
+                            }}
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

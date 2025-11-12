@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Trophy, ShoppingCart, Home, Car, GraduationCap, Heart, Utensils, Phone, Gamepad2, Watch, Laptop, Shirt, Plane, Dumbbell, Music, Camera } from "lucide-react";
 import GameShell from "../GameShell";
 import { useGameFeedback } from "../../../../hooks/useGameFeedback";
 
 const BadgeWiseChooser = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [gameState, setGameState] = useState('intro'); // intro, challenge, completed
   const [currentDilemma, setCurrentDilemma] = useState(0);
@@ -188,6 +191,7 @@ const BadgeWiseChooser = () => {
       gameId="finance-teens-80"
       gameType="achievement"
       totalLevels={dilemmas.length}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={currentDilemma + 1}
       score={totalScore}
       totalScore={800} // Max possible score

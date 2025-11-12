@@ -29,7 +29,6 @@ const SequentialClassCreationModal = ({
     name: '',
     email: '',
     phone: '',
-    subject: '',
     qualification: '',
     experience: '',
     joiningDate: ''
@@ -51,12 +50,6 @@ const SequentialClassCreationModal = ({
   });
 
   const streams = ['Science', 'Commerce', 'Arts'];
-  const subjects = [
-    'Mathematics', 'Science', 'English', 'Hindi', 'Social Studies', 
-    'Physics', 'Chemistry', 'Biology', 'Computer Science', 'Physical Education',
-    'Arts', 'Music', 'Other'
-  ];
-
   const grades = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12'];
   const genders = ['Male', 'Female', 'Other'];
 
@@ -96,8 +89,8 @@ const SequentialClassCreationModal = ({
   };
 
   const handleAddTeacher = () => {
-    if (!newTeacher.name || !newTeacher.email || !newTeacher.subject) {
-      toast.error('Please fill in all required teacher fields');
+    if (!newTeacher.name || !newTeacher.email) {
+      toast.error('Please fill in the required teacher fields');
       return;
     }
     setSelectedTeachers(prev => [...prev, { ...newTeacher, id: Date.now() }]);
@@ -105,7 +98,6 @@ const SequentialClassCreationModal = ({
       name: '',
       email: '',
       phone: '',
-      subject: '',
       qualification: '',
       experience: '',
       joiningDate: ''
@@ -205,7 +197,6 @@ const SequentialClassCreationModal = ({
       name: '',
       email: '',
       phone: '',
-      subject: '',
       qualification: '',
       experience: '',
       joiningDate: ''
@@ -491,21 +482,6 @@ const SequentialClassCreationModal = ({
                         </div>
                         <div>
                           <label className="block text-sm font-bold text-gray-700 mb-2">
-                            Subject *
-                          </label>
-                          <select
-                            value={newTeacher.subject}
-                            onChange={(e) => setNewTeacher(prev => ({ ...prev, subject: e.target.value }))}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-indigo-500 focus:outline-none font-semibold"
-                          >
-                            <option value="">Select Subject</option>
-                            {subjects.map(subject => (
-                              <option key={subject} value={subject}>{subject}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-bold text-gray-700 mb-2">
                             Qualification
                           </label>
                           <input
@@ -555,7 +531,7 @@ const SequentialClassCreationModal = ({
                                 </div>
                                 <div>
                                   <div className="font-bold text-gray-900">{teacher.name}</div>
-                                  <div className="text-sm text-gray-600">{teacher.subject} • {teacher.email}</div>
+                                  <div className="text-sm text-gray-600">{teacher.email}</div>
                                 </div>
                               </div>
                               <button

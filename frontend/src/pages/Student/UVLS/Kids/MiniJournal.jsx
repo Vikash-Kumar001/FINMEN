@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const MiniJournal = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [selectedPrompt, setSelectedPrompt] = useState(0);
   const [journalEntry, setJournalEntry] = useState("");
   const [selectedSentence, setSelectedSentence] = useState("");
@@ -86,6 +89,7 @@ const MiniJournal = () => {
       gameId="uvls-kids-7"
       gameType="uvls"
       totalLevels={10}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={7}
       showConfetti={showResult}
       backPath="/games/uvls/kids"

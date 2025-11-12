@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
 import { Zap, VolumeX, Brain, Coffee, Ear, Book } from 'lucide-react';
 
 const PuzzleOfFocus = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [currentPair, setCurrentPair] = useState(0);
   const [matchedPairs, setMatchedPairs] = useState([]);
   const [selectedConcept, setSelectedConcept] = useState(null);
@@ -99,6 +102,7 @@ const PuzzleOfFocus = () => {
       score={Math.round(score)}
       currentLevel={matchedPairs.length + 1}
       totalLevels={concepts.length}
+      coinsPerLevel={coinsPerLevel}
       gameId="brain-kids-14"
       gameType="brain-health"
       showGameOver={levelCompleted}

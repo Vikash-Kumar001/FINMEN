@@ -42,6 +42,15 @@ const unifiedGameProgressSchema = new mongoose.Schema(
       type: Date,
       default: null
     },
+    // Replay tracking
+    replayUnlocked: {
+      type: Boolean,
+      default: false
+    },
+    replayUnlockedAt: {
+      type: Date,
+      default: null
+    },
     lastPlayedAt: {
       type: Date,
       default: Date.now

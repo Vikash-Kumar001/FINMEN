@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
 
 const userSchema = new mongoose.Schema(
   {
@@ -72,6 +73,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       trim: true,
     },
+    gender: {
+      type: String,
+      enum: ['male', 'female', 'non_binary', 'prefer_not_to_say', 'other'],
+      lowercase: true,
+      trim: true,
+    },
     city: {
       type: String,
     },
@@ -142,19 +149,25 @@ const userSchema = new mongoose.Schema(
     childEmail: {
       type: [String],
       default: [],
-      required: function () {
-        return this.role === "parent";
-      },
       validate: {
         validator: function(emails) {
-          // If it's an array, check each email; if it's a string (legacy), check that
+          if (!emails) return true;
           if (Array.isArray(emails)) {
-            return emails.every(email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) || emails.length === 0;
+            return emails.every(email => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email));
           }
           return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emails);
         },
         message: 'Please enter valid child email addresses'
       }
+    },
+    linkingCode: {
+      type: String,
+      unique: true,
+      sparse: true,
+      index: true,
+    },
+    linkingCodeIssuedAt: {
+      type: Date,
     },
     // Seller-specific fields
     businessName: {
@@ -189,7 +202,10 @@ const userSchema = new mongoose.Schema(
       default: function () {
         // Auto-approve parent accounts; others may require admin approval
         if (this.role === "parent") return "approved";
-        return ["seller", "csr"].includes(this.role) ? "pending" : "approved";
+        if (["seller", "csr", "school_admin"].includes(this.role)) {
+          return "pending";
+        }
+        return "approved";
       },
     },
     otp: {
@@ -288,11 +304,42 @@ const userSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-userSchema.pre("save", function (next) {
+userSchema.statics.generateUniqueLinkingCode = async function(prefix = "LN", length = 6) {
+  const alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  const characters = alphabet.length;
+  let attempts = 0;
+  while (attempts < 5) {
+    let randomPart = "";
+    for (let i = 0; i < length; i += 1) {
+      const randomByte = crypto.randomBytes(1)[0];
+      randomPart += alphabet[randomByte % characters];
+    }
+    const code = `${prefix}-${randomPart}`;
+    const existing = await this.findOne({ linkingCode: code });
+    if (!existing) {
+      return code;
+    }
+    attempts += 1;
+  }
+  throw new Error("Unable to generate unique linking code");
+};
+
+userSchema.pre("save", async function (next) {
   if (this.role === "admin" && !this.password) {
     return next(new Error("Password is required for admin accounts"));
   }
-  next();
+
+  if (this.isNew && ["student", "parent"].includes(this.role) && !this.linkingCode) {
+    try {
+      const prefix = this.role === "parent" ? "PR" : "ST";
+      this.linkingCode = await this.constructor.generateUniqueLinkingCode(prefix);
+      this.linkingCodeIssuedAt = new Date();
+    } catch (err) {
+      return next(err);
+    }
+  }
+
+  return next();
 });
 
 userSchema.virtual("canUseGoogleLogin").get(function () {

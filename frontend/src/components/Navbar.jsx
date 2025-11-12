@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthUtils";
@@ -8,29 +8,7 @@ import { useNavigate } from "react-router-dom";
 import api from "../utils/api";
 import Avatar from "./Avatar";
 import {
-    Bell,
-    Wallet,
-    ChevronDown,
-    Settings,
-    User,
-    LogOut,
-    Menu,
-    X,
-    Home,
-    BarChart3,
-    TrendingUp,
-    Gift,
-    MessageSquare,
-    AlertCircle,
-    Zap,
-    Users,
-    Mail,
-    CheckCircle,
-    FileText,
-    Target,
-    DollarSign,
-    Activity,
-    CreditCard
+    Bell, Wallet, ChevronDown, Settings, User, LogOut, Menu, X, Home, BarChart3, TrendingUp, Gift, MessageSquare, AlertCircle, Zap, Users, Mail, CheckCircle, FileText, Target, DollarSign, Activity, CreditCard, Presentation, Building2
 } from "lucide-react";
 
 
@@ -72,7 +50,6 @@ const Navbar = () => {
     const handleDashboardRedirect = () => {
         if (!user) return;
         const paths = {
-            admin: "/admin/dashboard",
             parent: "/parent/overview",
             seller: "/seller/dashboard",
             csr: "/csr/overview",
@@ -85,26 +62,29 @@ const Navbar = () => {
         navigate(paths[user.role] || paths.student);
     };
 
-    const navigationItems = (user?.role === "student" || user?.role === "school_student") ? [
-        { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
-        { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate(user?.role === "school_student" ? "/school-student/announcements" : "/student/announcements") },
+    const navigationItems = user?.role === "student" ? [
+        { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/student/announcements") },
         { icon: <Activity className="w-5 h-5" />, label: "Activity", onClick: () => navigate("/student/activity") },
-        { icon: <MessageSquare className="w-5 h-5" />, label: "Chat", onClick: () => navigate(user?.role === "school_student" ? "/school-student/chat" : "/student/chat") }
+        { icon: <CreditCard className="w-5 h-5" />, label: "Upgrade", onClick: () => navigate("/student/payment") },
+        { icon: <Presentation className="w-5 h-5" />, label: "Presentation", onClick: () => navigate("/student/presentation") }
+    ] : user?.role === "school_student" ? [
+        { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/school-student/announcements") },
+        { icon: <Activity className="w-5 h-5" />, label: "Activity", onClick: () => navigate("/student/activity") },
+        { icon: <MessageSquare className="w-5 h-5" />, label: "Chat", onClick: () => navigate("/school-student/chat") },
+        { icon: <Presentation className="w-5 h-5" />, label: "Presentation", onClick: () => navigate("/student/presentation") }
     ] : user?.role === "parent" ? [
-        { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
         { icon: <Users className="w-5 h-5" />, label: "Children", onClick: () => navigate("/parent/children") },
         { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/parent/announcements") },
         { icon: <Mail className="w-5 h-5" />, label: "Messages", onClick: () => navigate("/parent/messages") },
-        { icon: <CreditCard className="w-5 h-5" />, label: "Payment Tracker", onClick: () => navigate("/parent/payment-tracker") }
+        { icon: <CreditCard className="w-5 h-5" />, label: "Upgrade", onClick: () => navigate("/parent/upgrade") }
     ] : user?.role === "admin" ? [
-        { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect },
         { icon: <CheckCircle className="w-5 h-5" />, label: "Approvals", onClick: () => navigate("/admin/approvals") },
+        { icon: <Building2 className="w-5 h-5" />, label: "Schools", onClick: () => navigate("/admin/schools") },
         { icon: <AlertCircle className="w-5 h-5" />, label: "Incidents", onClick: () => navigate("/admin/incidents") },
         { icon: <Activity className="w-5 h-5" />, label: "Tracker", onClick: () => navigate("/admin/tracking") },
-        { icon: <Gift className="w-5 h-5" />, label: "Marketplace", onClick: () => navigate("/admin/marketplace") },
-        { icon: <CreditCard className="w-5 h-5" />, label: "Payment Tracker", onClick: () => navigate("/admin/payment-tracker") }
+        { icon: <BarChart3 className="w-5 h-5" />, label: "Marketplace", onClick: () => navigate("/admin/marketplace") },
+        { icon: <FileText className="w-5 h-5" />, label: "Reports", onClick: () => navigate("/admin/reports") }
     ] : user?.role === "school_admin" ? [
-        { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
         { icon: <Users className="w-5 h-5" />, label: "Students", onClick: () => navigate("/school/admin/students") },
         { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => navigate("/school/admin/analytics") },
         { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/school/admin/announcements") },
@@ -112,7 +92,6 @@ const Navbar = () => {
         { icon: <FileText className="w-5 h-5" />, label: "Templates", onClick: () => navigate("/school/admin/templates") },
         { icon: <CreditCard className="w-5 h-5" />, label: "Payment Tracker", onClick: () => navigate("/school/admin/payment-tracker") }
     ] : user?.role === "school_teacher" ? [
-        { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
         { icon: <Users className="w-5 h-5" />, label: "Students", onClick: () => navigate("/school-teacher/students") },
         { icon: <BarChart3 className="w-5 h-5" />, label: "Analytics", onClick: () => navigate("/school-teacher/analytics") },
         { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/school-teacher/announcements") },
@@ -120,7 +99,6 @@ const Navbar = () => {
         { icon: <CheckCircle className="w-5 h-5" />, label: "Tasks", onClick: () => navigate("/school-teacher/tasks") },
         
     ] : user?.role === "school_parent" ? [
-        { icon: <Home className="w-5 h-5" />, label: "Overview", onClick: handleDashboardRedirect },
         { icon: <Users className="w-5 h-5" />, label: "Children", onClick: () => navigate("/school-parent/children") },
         { icon: <Bell className="w-5 h-5" />, label: "Announcements", onClick: () => navigate("/school-parent/announcements") },
         { icon: <Mail className="w-5 h-5" />, label: "Messages", onClick: () => navigate("/school-parent/messages") },
@@ -138,6 +116,30 @@ const Navbar = () => {
     ] : [
         { icon: <Home className="w-5 h-5" />, label: "Dashboard", onClick: handleDashboardRedirect }
     ];
+
+    const displayName = useMemo(() => {
+        const nameSources = [
+            user?.fullName,
+            user?.name,
+            user?.profile?.fullName,
+            user?.profile?.name,
+        ].filter(Boolean);
+        if (nameSources.length) {
+            const trimmed = nameSources[0].toString().trim();
+            if (trimmed) return trimmed;
+        }
+        if (user?.email) {
+            const emailName = user.email.split("@")[0];
+            if (emailName) return emailName;
+        }
+        return "User";
+    }, [user]);
+
+    const shortDisplayName = useMemo(() => {
+        if (!displayName) return "User";
+        const parts = displayName.trim().split(/\s+/);
+        return parts[0] || displayName;
+    }, [displayName]);
 
     const profileMenuItems = [
         { icon: <User className="w-5 h-5" />, label: "Profile", 
@@ -381,7 +383,7 @@ const Navbar = () => {
                                                 />
                                             </div>
                                             <div className="hidden xl:block text-left">
-                                                <p className="text-xs font-bold text-gray-900 leading-tight">{user.name?.split(' ')[0] || "User"}</p>
+                                                <p className="text-xs font-bold text-gray-900 leading-tight">{shortDisplayName}</p>
                                                 <p className="text-xs text-gray-600 font-medium capitalize leading-tight">{user.role?.replace('_', ' ')}</p>
                                             </div>
                                             <ChevronDown className={`w-4 h-4 text-gray-600 transition-transform ${showProfileMenu ? 'rotate-180' : ''}`} />
@@ -403,7 +405,7 @@ const Navbar = () => {
                                                                 className="border-2 rounded-full border-white shadow-xl ring-4 ring-indigo-100"
                                                             />
                                                             <div>
-                                                                <p className="text-sm sm:text-base font-bold text-gray-900">{user.name}</p>
+                                                                <p className="text-sm sm:text-base font-bold text-gray-900">{displayName}</p>
                                                                 <p className="text-xs text-gray-600 truncate">{user.email}</p>
                                                             </div>
                                                         </div>

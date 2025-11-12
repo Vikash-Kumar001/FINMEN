@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import gameCompletionService from "../../../services/gameCompletionService";
 import { toast } from "react-toastify";
 
@@ -203,7 +203,7 @@ export const FeedbackBubble = ({ message, type }) => (
 );
 
 /* --------------------- Game Over Modal --------------------- */
-export const GameOverModal = ({ score, gameId, gameType = 'ai',  onClose }) => {
+export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1, coinsPerLevel = null, isReplay = false, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coinsEarned, setCoinsEarned] = useState(0);
   const [submissionComplete, setSubmissionComplete] = useState(false);
@@ -216,12 +216,18 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai',  onClose }) => {
       try {
         const progress = await gameCompletionService.getGameProgress(gameId);
 
-        if (progress?.fullyCompleted) {
+        // Check if this is a replay attempt
+        const isReplayAttempt = isReplay || (progress?.fullyCompleted && progress?.replayUnlocked === true);
+        
+        // If game is fully completed but replay is not unlocked, don't allow playing
+        if (progress?.fullyCompleted && !progress?.replayUnlocked && !isReplay) {
           setCoinsEarned(0);
           setSubmissionComplete(true);
           return;
         }
 
+        // Always call the backend to save progress, even for replays
+        // The backend will handle locking the game after replay
         const result = await gameCompletionService.completeGame({
           gameId,
           gameType,
@@ -230,13 +236,45 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai',  onClose }) => {
           levelsCompleted: totalLevels,
           totalLevels,
           timePlayed: 0,
-          isFullCompletion: true
+          isFullCompletion: true,
+          coinsPerLevel: coinsPerLevel, // Pass coins per question/level
+          isReplay: isReplayAttempt // Pass replay flag - this is important!
         });
 
         if (result.success) {
           setCoinsEarned(result.coinsEarned);
           setSubmissionComplete(true);
-          window.dispatchEvent(new CustomEvent('gameCompleted', { detail: { gameId, fullyCompleted: true } }));
+          
+          console.log('✅ Game completion result:', {
+            gameId,
+            isReplay: result.isReplay,
+            replayUnlocked: result.replayUnlocked,
+            coinsEarned: result.coinsEarned
+          });
+          
+          // Dispatch event with replay status
+          window.dispatchEvent(new CustomEvent('gameCompleted', { 
+            detail: { 
+              gameId, 
+              fullyCompleted: true,
+              isReplay: result.isReplay === true,
+              replayUnlocked: result.replayUnlocked === true
+            } 
+          }));
+          
+          // If it was a replay, also dispatch a specific replay event
+          if (result.isReplay === true) {
+            console.log('🎮 Dispatching gameReplayed event:', { 
+              gameId, 
+              replayUnlocked: result.replayUnlocked === true 
+            });
+            window.dispatchEvent(new CustomEvent('gameReplayed', { 
+              detail: { 
+                gameId,
+                replayUnlocked: result.replayUnlocked === true // Explicitly check for true
+              } 
+            }));
+          }
         }
       } catch (error) {
         console.error('Failed to submit game completion:', error);
@@ -247,7 +285,7 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai',  onClose }) => {
     };
 
     submitGameCompletion();
-  }, [gameId, gameType, score, submissionComplete]);
+  }, [gameId, gameType, score, totalLevels, coinsPerLevel, isReplay, submissionComplete]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -316,17 +354,73 @@ const GameShell = ({
   score,
   gameId,
   gameType = 'ai',
-  // totalLevels = 5,
+  totalLevels = 1,
+  coinsPerLevel = null, // Coins per question/level (from game card)
   // currentLevel = 1,
   showConfetti = false,
   flashPoints = null,
   showAnswerConfetti = false,
-  backPath = "/games/financial-literacy/kids",
+  backPath: backPathProp,
 }) => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const resolvedBackPath = useMemo(() => {
+    if (backPathProp) {
+      return backPathProp;
+    }
+
+    if (location.state?.returnPath) {
+      return location.state.returnPath;
+    }
+
+    const pathSegments = location.pathname.split("/").filter(Boolean);
+
+    if (pathSegments[0] === "student" && pathSegments.length >= 3) {
+      const categoryKey = pathSegments[1];
+      const ageKey = pathSegments[2];
+
+      const categorySlugMap = {
+        finance: "financial-literacy",
+        "financial-literacy": "financial-literacy",
+        brain: "brain-health",
+        "brain-health": "brain-health",
+        uvls: "uvls",
+        dcos: "digital-citizenship",
+        "digital-citizenship": "digital-citizenship",
+        "moral-values": "moral-values",
+        "ai-for-all": "ai-for-all",
+        entrepreneurship: "entrepreneurship",
+        "entrepreneurship-higher-education": "entrepreneurship",
+        civic: "civic-responsibility",
+        "civic-responsibility": "civic-responsibility",
+        sustainability: "sustainability",
+      };
+
+      const ageSlugMap = {
+        kid: "kids",
+        kids: "kids",
+        teen: "teens",
+        teens: "teens",
+        adult: "adults",
+        adults: "adults",
+        "solar-and-city": "solar-and-city",
+        "water-and-recycle": "water-and-recycle",
+        "carbon-and-climate": "carbon-and-climate",
+        "water-and-energy": "water-and-energy",
+      };
+
+      const mappedCategory = categorySlugMap[categoryKey] || categoryKey;
+      const mappedAge = ageSlugMap[ageKey] || ageKey;
+
+      return `/games/${mappedCategory}/${mappedAge}`;
+    }
+
+    return "/games";
+  }, [backPathProp, location.pathname, location.state]);
 
   const handleGameOverClose = () => {
-    navigate(backPath);
+    navigate(resolvedBackPath);
   };
 
   return (
@@ -346,7 +440,7 @@ const GameShell = ({
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 relative z-30">
         <button
-          onClick={() => navigate(backPath)}
+          onClick={() => navigate(resolvedBackPath)}
           className="bg-white/10 hover:bg-white/20 text-white px-4 py-2 rounded-full border border-white/20 backdrop-blur-md transition-all cursor-pointer"
         >
           ← Back
@@ -404,7 +498,9 @@ const GameShell = ({
           score={score}
           gameId={gameId}
           gameType={gameType}
-         
+          totalLevels={totalLevels}
+          coinsPerLevel={coinsPerLevel}
+          isReplay={location?.state?.isReplay || false}
           onClose={handleGameOverClose}
         />
       )}

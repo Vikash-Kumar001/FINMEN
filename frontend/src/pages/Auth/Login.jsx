@@ -19,6 +19,8 @@ import {
     AlertCircle,
     ArrowLeft,
     Target,
+    Clock,
+    ShieldAlert,
 } from "lucide-react";
 
 const Login = () => {
@@ -27,6 +29,8 @@ const Login = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+    const [pendingModal, setPendingModal] = useState(null);
+    const [showTeacherModal, setShowTeacherModal] = useState(false);
 
     const navigate = useNavigate();
     const { fetchUser } = useAuth();
@@ -50,7 +54,28 @@ const Login = () => {
 
             await fetchUser();
 
-            // Navigate based on user role
+            // Check for pending subscription from pricing page
+            const pendingSubscription = localStorage.getItem('pending_subscription');
+            if (pendingSubscription) {
+                try {
+                    const subscriptionData = JSON.parse(pendingSubscription);
+                    localStorage.removeItem('pending_subscription');
+                    
+                    // Redirect to landing page with subscription data to auto-open modal
+                    navigate("/", { 
+                        state: { 
+                            pendingSubscription: subscriptionData,
+                            autoOpenModal: true
+                        } 
+                    });
+                    return;
+                } catch (e) {
+                    console.error('Error parsing pending subscription:', e);
+                    localStorage.removeItem('pending_subscription');
+                }
+            }
+
+            // Navigate based on user role (only if no pending subscription)
             switch (user.role) {
                 case "admin":
                     navigate("/admin/dashboard");
@@ -84,11 +109,9 @@ const Login = () => {
                 localStorage.setItem("verificationEmail", email);
                 navigate("/verify-email");
             } else if (err.response?.data?.approvalStatus === "pending") {
-                navigate("/pending-approval", {
-                    state: {
-                        message: err.response.data.message,
-                        user: { email },
-                    },
+                setPendingModal({
+                    message: err.response?.data?.message || "Your account is currently under review. You will be able to log in once the admin approves it.",
+                    email,
                 });
             } else {
                 setError(err.response?.data?.message || "Something went wrong.");
@@ -104,35 +127,41 @@ const Login = () => {
             icon: GraduationCap,
             path: "/register",
             gradient: "from-purple-500 to-pink-500",
+            description: "Begin your personalized learning experience.",
         },
         {
             label: "Parent",
             icon: Users,
             path: "/register-parent",
             gradient: "from-green-500 to-emerald-500",
+            description: "Stay connected with your child's academic journey.",
+        },
+        {
+            label: "Teacher",
+            icon: BookOpen,
+            gradient: "from-amber-500 to-orange-500",
+            description: "Teacher access is provisioned directly by verified schools.",
+            onClick: () => setShowTeacherModal(true),
         },
         {
             label: "School",
             icon: Building2,
             path: "/school-registration",
             gradient: "from-blue-500 to-cyan-500",
-        },
-        {
-            label: "Teacher",
-            icon: BookOpen,
-            path: "/register-teacher",
-            gradient: "from-orange-500 to-red-500",
+            description: "Bring transformative wellbeing tools to your campus.",
         },
         {
             label: "CSR Partner",
             icon: Target,
             path: "/register-stakeholder",
-            gradient: "from-amber-500 to-orange-500",
+            gradient: "from-rose-500 to-red-500",
+            description: "Collaborate on impact programs with measurable outcomes.",
         },
     ];
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950 relative overflow-hidden">
+        <>
+            <div className="min-h-screen bg-gradient-to-br from-indigo-950 via-purple-950 to-slate-950 relative overflow-hidden">
             {/* Animated Background Elements */}
             <div className="absolute inset-0 overflow-hidden">
                 <div className="absolute -top-40 -left-40 w-80 h-80 bg-gradient-to-r from-purple-600/30 to-pink-600/30 rounded-full blur-3xl animate-pulse"></div>
@@ -173,7 +202,7 @@ const Login = () => {
                                         Welcome Back
                                     </h1>
                                     <p className="text-gray-300 text-xs sm:text-sm">
-                                        Sign in to continue your financial journey
+                                        Sign in to continue your journey with Wise Student
                                     </p>
                                 </div>
 
@@ -301,10 +330,19 @@ const Login = () => {
                                     <div className="space-y-2 sm:space-y-2.5">
                                         {registrationOptions.map((option) => {
                                             const Icon = option.icon;
+                                            const handleOptionSelect = () => {
+                                                if (option.onClick) {
+                                                    option.onClick();
+                                                    return;
+                                                }
+                                                if (option.path) {
+                                                    navigate(option.path);
+                                                }
+                                            };
                                             return (
                                                 <button
                                                     key={option.label}
-                                                    onClick={() => navigate(option.path)}
+                                                    onClick={handleOptionSelect}
                                                     className="group w-full bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl p-2.5 sm:p-3 transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] hover:shadow-lg cursor-pointer"
                                                 >
                                                     <div className="flex items-center gap-2.5 sm:gap-3">
@@ -318,7 +356,7 @@ const Login = () => {
                                                                 Register as {option.label}
                                                             </p>
                                                             <p className="text-gray-400 text-xs">
-                                                                Create a {option.label.toLowerCase()} account
+                                                                {option.description || `Create a ${option.label.toLowerCase()} account`}
                                                             </p>
                                                         </div>
                                                         <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400 group-hover:text-white group-hover:translate-x-1 transition-all duration-300" />
@@ -369,6 +407,60 @@ const Login = () => {
                 }}
             />
         </div>
+            {showTeacherModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-sm px-4">
+                    <div className="w-full max-w-md rounded-3xl border border-amber-200 bg-white shadow-2xl">
+                        <div className="flex flex-col items-center gap-4 px-8 pt-8 text-center">
+                            <div className="flex h-20 w-20 items-center justify-center rounded-2xl bg-amber-100 text-amber-600 shadow-inner">
+                                <ShieldAlert className="h-10 w-10" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold text-slate-900">For Security Reasons</h2>
+                                <p className="mt-3 text-sm leading-relaxed text-slate-600">
+                                    Teacher credentials are issued directly by accredited schools to safeguard student data
+                                    and maintain compliance with our safety standards. Please contact your school administrator
+                                    to receive an official invitation to the platform.
+                                </p>
+                            </div>
+                        </div>
+                        <div className="mt-6 border-t border-amber-100 bg-amber-50 px-8 py-4 text-sm text-amber-800">
+                            Only verified institutions can provision teacher accounts.
+                        </div>
+                        <div className="px-8 pb-8 pt-4">
+                            <button
+                                onClick={() => setShowTeacherModal(false)}
+                                className="w-full rounded-xl bg-amber-500 py-3 text-sm font-semibold text-white shadow-lg shadow-amber-200 transition hover:bg-amber-600"
+                            >
+                                Understood
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {pendingModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 px-4">
+                    <div className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 text-center border border-purple-100">
+                        <div className="w-20 h-20 rounded-full bg-gradient-to-r from-amber-400 to-orange-400 flex items-center justify-center mx-auto mb-6 shadow-lg shadow-amber-200/40">
+                            <Clock className="w-10 h-10 text-white" />
+                        </div>
+                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Account Under Review</h2>
+                        <p className="text-gray-600 text-sm leading-relaxed mb-5">
+                            {pendingModal.message}
+                        </p>
+                        <div className="bg-purple-50 text-purple-700 rounded-xl px-4 py-3 mb-6 text-sm font-medium">
+                            <span className="block text-xs uppercase tracking-wide text-purple-500 mb-1">Registered Email</span>
+                            <span className="break-words">{pendingModal.email}</span>
+                        </div>
+                        <button
+                            onClick={() => setPendingModal(null)}
+                            className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl hover:shadow-lg transition-all font-semibold"
+                        >
+                            Got it, thanks
+                        </button>
+                    </div>
+                </div>
+            )}
+        </>
     );
 };
 

@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const LifeSkillsChampionBadge = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [challenges, setChallenges] = useState([false, false, false, false, false]);
   const [showResult, setShowResult] = useState(false);
   const [badge, setBadge] = useState(false);
@@ -36,6 +39,7 @@ const LifeSkillsChampionBadge = () => {
       gameId="life-200"
       gameType="life"
       totalLevels={10}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={10}
       showConfetti={showResult && badge}
       flashPoints={flashPoints}

@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Trophy, Shield, Wifi, Key, CreditCard, Smartphone, Lock, AlertTriangle, CheckCircle, XCircle, Eye, EyeOff, User, Mail } from "lucide-react";
 import GameShell from "../GameShell";
 import { useGameFeedback } from "../../../../hooks/useGameFeedback";
 
 const BadgeDigitalMoneySmart = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [gameState, setGameState] = useState('intro'); // intro, challenge, completed
   const [currentScenario, setCurrentScenario] = useState(0);
@@ -200,6 +203,7 @@ const BadgeDigitalMoneySmart = () => {
       gameId="finance-teens-100"
       gameType="achievement"
       totalLevels={scenarios.length}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={currentScenario + 1}
       score={totalScore}
       totalScore={800} // Max possible score

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from '../GameShell';
 import { useGameFeedback } from '../../../../hooks/useGameFeedback';
 
 const PartyStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [scores, setScores] = useState(Array(5).fill(0));
@@ -115,6 +118,7 @@ const PartyStory = () => {
       gameId="finance-teens-15"
       gameType="story"
       totalLevels={questions.length}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={currentQuestion + 1}
       score={calculateTotalScore()}
       totalScore={questions.length}

@@ -1,10 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
 import { Brain, Moon, Apple, Book, Dumbbell, Zap } from 'lucide-react';
 
 const PosterBrainHealth = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [selectedPoster, setSelectedPoster] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -96,6 +99,7 @@ const PosterBrainHealth = () => {
       score={score}
       currentLevel={1}
       totalLevels={1}
+      coinsPerLevel={coinsPerLevel}
       gameId="brain-kids-6"
       gameType="brain-health"
       showGameOver={levelCompleted}

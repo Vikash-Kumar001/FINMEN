@@ -1,7 +1,10 @@
+import mongoose from 'mongoose';
+import crypto from 'crypto';
 import SchoolStudent from '../models/School/SchoolStudent.js';
 import SchoolClass from '../models/School/SchoolClass.js';
 import User from '../models/User.js';
 import Organization from '../models/Organization.js';
+import Company from '../models/Company.js';
 import UserProgress from '../models/UserProgress.js';
 import Wallet from '../models/Wallet.js';
 import Transaction from '../models/Transaction.js';
@@ -26,6 +29,155 @@ import NEPCoverageLog from '../models/NEPCoverageLog.js';
 import SupportTicket from '../models/SupportTicket.js';
 import AnalyticsEvent from '../models/AnalyticsEvent.js';
 import { ErrorResponse } from '../utils/ErrorResponse.js';
+import assignUserSubscription from '../utils/subscriptionAssignments.js';
+
+const BILLING_CYCLE_MONTHS = {
+  yearly: 12
+};
+
+const BILLING_MULTIPLIER = {
+  yearly: 12
+};
+
+const EXTRA_USAGE_RATES = {
+  student: 40,
+  teacher: 120
+};
+
+const PLAN_DISPLAY_NAMES = {
+  free: 'Free Plan',
+  student_premium: 'Student Premium Plan',
+  student_parent_premium_pro: 'Student + Parent Premium Pro Plan',
+  educational_institutions_premium: 'Educational Institutions Premium Plan'
+};
+
+const PLAN_LIMITS = {
+  free: {
+    price: 0,
+    maxStudents: 100,
+    maxTeachers: 10,
+    maxClasses: 10,
+    maxCampuses: 1,
+    maxStorage: 5,
+    maxTemplates: 50
+  },
+  student_premium: {
+    price: 4499,
+    maxStudents: 1000,
+    maxTeachers: 100,
+    maxClasses: 100,
+    maxCampuses: 3,
+    maxStorage: 200,
+    maxTemplates: 200
+  },
+  student_parent_premium_pro: {
+    price: 4999,
+    maxStudents: 1000,
+    maxTeachers: 100,
+    maxClasses: 100,
+    maxCampuses: 3,
+    maxStorage: 200,
+    maxTemplates: 200
+  },
+  educational_institutions_premium: {
+    price: 0,
+    maxStudents: 10000,
+    maxTeachers: 1000,
+    maxClasses: 1000,
+    maxCampuses: 20,
+    maxStorage: 1000,
+    maxTemplates: 2000
+  }
+};
+
+const PLAN_FEATURES = {
+  free: {
+    advancedAnalytics: false,
+    aiAssistant: false,
+    customBranding: false,
+    apiAccess: false,
+    prioritySupport: false,
+    whiteLabel: false,
+    premiumTemplates: false
+  },
+  student_premium: {
+    advancedAnalytics: true,
+    aiAssistant: false,
+    customBranding: false,
+    apiAccess: false,
+    prioritySupport: false,
+    whiteLabel: false,
+    premiumTemplates: true
+  },
+  student_parent_premium_pro: {
+    advancedAnalytics: true,
+    aiAssistant: true,
+    customBranding: false,
+    apiAccess: false,
+    prioritySupport: true,
+    whiteLabel: false,
+    premiumTemplates: true
+  },
+  educational_institutions_premium: {
+    advancedAnalytics: true,
+    aiAssistant: true,
+    customBranding: true,
+    apiAccess: true,
+    prioritySupport: true,
+    whiteLabel: false,
+    premiumTemplates: true
+  }
+};
+
+const EDUCATIONAL_PLAN_TYPE = 'educational_institutions_premium';
+const EDUCATIONAL_PLAN_NAME = 'Educational Institutions Premium Plan';
+const EDUCATIONAL_PLAN_FEATURES = {
+  fullAccess: true,
+  parentDashboard: true,
+  advancedAnalytics: true,
+  certificates: true,
+  wiseClubAccess: true,
+  inavoraAccess: true,
+  gamesPerPillar: -1,
+  totalGames: 2200,
+};
+
+const capitalize = (value = '') => value.charAt(0).toUpperCase() + value.slice(1);
+
+const resolvePlanFeatures = (planName) => {
+  const base = PLAN_FEATURES[planName] || PLAN_FEATURES.free;
+  return { ...base };
+};
+
+const resolvePlanLimits = (planName) => {
+  const base = PLAN_LIMITS[planName] || PLAN_LIMITS.free;
+  const { price, ...limits } = base;
+  return { ...limits };
+};
+
+const determinePlanFromUsage = (students = 0, teachers = 0) => {
+  if (students <= 100 && teachers <= 10) return 'free';
+  return 'educational_institutions_premium';
+};
+
+const computeBillingAmount = (planName, billingCycle, students = 0, teachers = 0) => {
+  const plan = PLAN_LIMITS[planName] || PLAN_LIMITS.free;
+  const cycle = billingCycle || 'yearly';
+  const multiplier = BILLING_MULTIPLIER[cycle] || BILLING_MULTIPLIER.yearly;
+
+  let amount = plan.price * multiplier;
+
+  const extraStudents = plan.maxStudents === -1 ? 0 : Math.max(0, students - plan.maxStudents);
+  const extraTeachers = plan.maxTeachers === -1 ? 0 : Math.max(0, teachers - plan.maxTeachers);
+
+  amount += (extraStudents * EXTRA_USAGE_RATES.student + extraTeachers * EXTRA_USAGE_RATES.teacher) * multiplier;
+
+  return {
+    amount,
+    extraStudents,
+    extraTeachers
+  };
+};
 
 // School Admin Dashboard Stats
 export const getSchoolStats = async (req, res) => {
@@ -197,8 +349,8 @@ export const createSchoolTeacher = async (req, res) => {
     if (req.user.role !== 'school_admin') {
       return res.status(403).json({ message: 'Not authorized' });
     }
-    const { name, email, password, subject } = req.body;
-    if (!name || !email || !password || !subject) {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
     // Hash password
@@ -210,7 +362,6 @@ export const createSchoolTeacher = async (req, res) => {
       email,
       password: hashedPassword,
       role: 'school_teacher',
-      subject,
       tenantId: req.tenantId
     });
     res.status(201).json({ user });
@@ -222,14 +373,13 @@ export const createSchoolTeacher = async (req, res) => {
 export const getSchoolTeachers = async (req, res) => {
   try {
     const { tenantId } = req;
-    const { subject, status } = req.query;
+    const { status } = req.query;
 
     const query = { tenantId, role: 'school_teacher' };
-    if (subject) query.subject = subject;
     // Note: isActive field doesn't exist in User model, so we'll skip status filtering for now
 
     const teachers = await User.find(query)
-      .select('name email avatar phone subject createdAt metadata')
+      .select('name email avatar phone createdAt metadata')
       .lean();
 
     // Enhance with additional data
@@ -269,7 +419,7 @@ export const getAvailableTeachers = async (req, res) => {
 
     // Get all teachers
     const allTeachers = await User.find({ tenantId, role: 'school_teacher' })
-      .select('name email avatar phone subject createdAt metadata')
+      .select('name email avatar phone createdAt metadata')
       .lean();
 
     // Get all assigned teachers
@@ -367,7 +517,7 @@ export const getTeacherDetailsById = async (req, res) => {
     const { teacherId } = req.params;
 
     const teacher = await User.findOne({ _id: teacherId, tenantId, role: 'school_teacher' })
-      .select('name email phone avatar subject isActive createdAt lastActive metadata')
+      .select('name email phone avatar isActive createdAt lastActive metadata')
       .lean();
 
     if (!teacher) {
@@ -435,16 +585,31 @@ export const createTeacher = async (req, res) => {
   try {
     const { tenantId } = req;
     const orgId = req.user?.orgId;
-    const { name, email, phone, subject, qualification, experience, joiningDate, password, pronouns, customPronouns } = req.body;
+    const { name, email, phone, qualification, experience, joiningDate, password, pronouns, customPronouns } = req.body;
 
-    if (!name || !email || !subject) {
-      return res.status(400).json({ message: 'Missing required fields: name, email, and subject are required' });
+    if (!name || !email) {
+      return res.status(400).json({ message: 'Missing required fields: name and email are required' });
     }
 
     // Check if teacher already exists
     const existingTeacher = await User.findOne({ email });
     if (existingTeacher) {
       return res.status(400).json({ message: 'Teacher with this email already exists' });
+    }
+
+    // Enforce teacher quota based on company academic info
+    if (orgId) {
+      const company = await Company.findOne({ organizations: orgId }).lean();
+      const teacherLimit = Number(company?.academicInfo?.totalTeachers) || 0;
+      if (teacherLimit > 0) {
+        const currentTeachers = await User.countDocuments({ orgId, role: 'school_teacher' });
+        if (currentTeachers >= teacherLimit) {
+          return res.status(403).json({
+            success: false,
+            message: `Teacher limit reached. You can onboard up to ${teacherLimit} teachers as per the approved registration details.`
+          });
+        }
+      }
     }
 
     // Create user account
@@ -464,7 +629,6 @@ export const createTeacher = async (req, res) => {
       tenantId,
       orgId,
       phone,
-      subject,
       pronouns: finalPronouns || '',
       metadata: {
         qualification: qualification || '',
@@ -484,10 +648,50 @@ export const createTeacher = async (req, res) => {
       targetType: 'teacher',
       targetId: teacher._id,
       targetName: name,
-      description: `New teacher ${name} added for subject ${subject}`,
+      description: `New teacher ${name} added`,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
+
+    if (orgId && tenantId) {
+      try {
+        const subscription = await Subscription.findOne({ orgId, tenantId });
+        const planName = subscription?.plan?.name || subscription?.plan?.planType || null;
+        if (subscription && subscription.status === 'active' && planName === EDUCATIONAL_PLAN_TYPE) {
+          const assignedSubscription = await assignUserSubscription({
+            userId: teacher._id,
+            planType: EDUCATIONAL_PLAN_TYPE,
+            planName: EDUCATIONAL_PLAN_NAME,
+            features: EDUCATIONAL_PLAN_FEATURES,
+            amount: 0,
+            startDate: new Date(),
+            endDate: subscription.endDate ? new Date(subscription.endDate) : undefined,
+            metadata: {
+              orgId: orgId?.toString?.() ?? null,
+              tenantId,
+              source: 'school_teacher_creation',
+            },
+            initiator: {
+              userId: req.user?._id || null,
+              role: req.user?.role || 'school_admin',
+              name: req.user?.name || 'School Admin',
+              email: req.user?.email || null,
+              context: 'school_admin',
+            },
+          });
+          const io = req.app && typeof req.app.get === 'function' ? req.app.get('io') : null;
+          if (io && assignedSubscription) {
+            const payload = assignedSubscription.toObject ? assignedSubscription.toObject() : assignedSubscription;
+            io.to(teacher._id.toString()).emit('subscription:activated', {
+              userId: teacher._id.toString(),
+              subscription: payload,
+            });
+          }
+        }
+      } catch (assignmentError) {
+        console.error('Error assigning subscription to teacher:', assignmentError);
+      }
+    }
 
     res.status(201).json({
       success: true,
@@ -496,7 +700,6 @@ export const createTeacher = async (req, res) => {
         _id: teacher._id,
         name: teacher.name,
         email: teacher.email,
-        subject: teacher.subject,
         phone: teacher.phone,
         pronouns: teacher.pronouns
       }
@@ -573,23 +776,22 @@ export const deleteTeacher = async (req, res) => {
 export const exportTeachers = async (req, res) => {
   try {
     const { tenantId } = req;
-    const { subject, status, format = 'csv' } = req.query;
+    const { status, format = 'csv' } = req.query;
 
     const query = { tenantId, role: 'school_teacher' };
-    if (subject) query.subject = subject;
     if (status === 'active') query.isActive = true;
     if (status === 'inactive') query.isActive = false;
 
     const teachers = await User.find(query)
-      .select('name email phone subject isActive createdAt metadata')
+      .select('name email phone isActive createdAt metadata')
       .lean();
 
     if (format === 'csv') {
       // Create CSV content
-      let csv = 'Name,Email,Phone,Subject,Qualification,Experience,Joining Date,Status\n';
+      let csv = 'Name,Email,Phone,Qualification,Experience,Joining Date,Status\n';
       
       teachers.forEach(teacher => {
-        csv += `"${teacher.name}","${teacher.email}","${teacher.phone || 'N/A'}","${teacher.subject || 'N/A'}","${teacher.metadata?.qualification || 'N/A'}","${teacher.metadata?.experience || 0}","${teacher.metadata?.joiningDate ? new Date(teacher.metadata.joiningDate).toLocaleDateString() : 'N/A'}","${teacher.isActive ? 'Active' : 'Inactive'}"\n`;
+        csv += `"${teacher.name}","${teacher.email}","${teacher.phone || 'N/A'}","${teacher.metadata?.qualification || 'N/A'}","${teacher.metadata?.experience || 0}","${teacher.metadata?.joiningDate ? new Date(teacher.metadata.joiningDate).toLocaleDateString() : 'N/A'}","${teacher.isActive ? 'Active' : 'Inactive'}"\n`;
       });
 
       res.setHeader('Content-Type', 'text/csv');
@@ -757,7 +959,6 @@ export const getTeacherClasses = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 // Teacher Assignments
 export const getTeacherAssignments = async (req, res) => {
   try {
@@ -1399,7 +1600,6 @@ export const getStudentParent = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 // Get individual student analytics for teacher (EXACT copy of parent analytics logic)
 export const getStudentAnalyticsForTeacher = async (req, res) => {
   try {
@@ -2189,7 +2389,6 @@ export const getPendingTasks = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 // Get top 5 students leaderboard
 export const getLeaderboard = async (req, res) => {
   try {
@@ -2268,8 +2467,6 @@ export const getClassStudents = async (req, res) => {
     }
 
     // Extract user data from populated SchoolStudent records
-    const students = schoolStudents.map(ss => ss.userId).filter(Boolean);
-
     // Enrich with progress data
     const enrichedStudents = await Promise.all(
       schoolStudents.map(async (schoolStudent, index) => {
@@ -2360,6 +2557,7 @@ export const getClassStudents = async (req, res) => {
 
         return {
           _id: student._id,
+          schoolStudentId: schoolStudent._id,
           name: student.name,
           email: student.email,
           avatar: student.avatar,
@@ -2983,7 +3181,6 @@ export const getTeacherSettings = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch settings', error: error.message });
   }
 };
-
 // Update teacher settings
 export const updateTeacherSettings = async (req, res) => {
   try {
@@ -3416,86 +3613,242 @@ export const searchStudents = async (req, res) => {
 // Assign existing students to class
 export const assignStudentsToClass = async (req, res) => {
   try {
-    const { classId, className, studentIds } = req.body;
+    const { classId, className, studentIds = [] } = req.body;
     const teacherId = req.user._id;
     const { tenantId } = req;
 
-    if (!studentIds || studentIds.length === 0) {
+    if (!Array.isArray(studentIds) || studentIds.length === 0) {
       return res.status(400).json({ message: 'No students selected' });
     }
 
-    // Get class details
-    const classData = await SchoolClass.findOne({ _id: classId, tenantId });
+    let classData = await SchoolClass.findOne({ _id: classId, tenantId });
     if (!classData) {
-      return res.status(404).json({ message: 'Class not found' });
+      const fallbackClass = await SchoolClass.findById(classId);
+      if (!fallbackClass) {
+        return res.status(404).json({ message: 'Class not found' });
+      }
+      if (fallbackClass.tenantId && tenantId && fallbackClass.tenantId.toString() !== tenantId.toString()) {
+        return res.status(403).json({ message: 'You are not authorised to modify this class' });
+      }
+      classData = fallbackClass;
     }
 
-    // Determine section - use first available section
-    const targetSection = classData.sections[0]?.name;
+    const targetSection = classData.sections?.[0]?.name;
     if (!targetSection) {
       return res.status(400).json({ message: 'No sections available in this class' });
     }
 
-    // Check for students already assigned to other classes
+    const io = req.app && typeof req.app.get === 'function' ? req.app.get('io') : null;
+    const derivedClassName =
+      className || `Class ${classData.classNumber}${classData.stream ? ` - ${classData.stream}` : ''}`;
+
+    // Prevent assigning students who are already in another class
     const studentsAlreadyAssigned = await SchoolStudent.find({
       userId: { $in: studentIds },
       tenantId,
-      classId: { $ne: classId, $ne: null }
-    }).populate('classId', 'classNumber');
+      classId: { $nin: [null, classId] },
+    })
+      .populate('userId', 'name email')
+      .populate('classId', 'classNumber');
 
     if (studentsAlreadyAssigned.length > 0) {
-      const errorMessages = studentsAlreadyAssigned.map(student => 
-        `${student.name || 'Student'} is already assigned to Class ${student.classId?.classNumber || 'Unknown'}`
-      );
-      return res.status(400).json({ 
+      return res.status(409).json({
         message: 'Some students are already assigned to other classes',
-        errors: errorMessages,
-        studentsAlreadyAssigned: studentsAlreadyAssigned.map(s => s.userId)
+        conflicts: studentsAlreadyAssigned.map((student) => ({
+          studentId: student.userId?._id,
+          name: student.userId?.name,
+          email: student.userId?.email,
+          classNumber: student.classId?.classNumber,
+        })),
       });
     }
 
-    // Update both User and SchoolStudent models
-    await Promise.all(
-      studentIds.map(async (studentId) => {
-        // Update User model
-        await User.findByIdAndUpdate(studentId, {
-          $addToSet: {
-            'metadata.classes': {
-              classId,
-              className,
-              teacherId,
-              assignedAt: new Date()
-            }
-          }
-        });
+    const ensureUniqueIdentifier = async (prefix, field) => {
+      const maxAttempts = 6;
+      const year = new Date().getFullYear();
 
-        // Update or create SchoolStudent record
-        await SchoolStudent.findOneAndUpdate(
-          { userId: studentId, tenantId },
-          {
-            classId: classId,
-            grade: classData.classNumber,
-            section: targetSection,
-            academicYear: classData.academicYear
-          },
-          { upsert: true, new: true }
+      for (let attempt = 0; attempt < maxAttempts; attempt += 1) {
+        const suffix = crypto.randomBytes(3).toString('hex').toUpperCase();
+        const candidate = `${prefix}${year}${suffix}`;
+
+        const exists = await SchoolStudent.exists({ tenantId, [field]: candidate });
+        if (!exists) {
+          return candidate;
+        }
+      }
+
+      return `${prefix}${Date.now()}${crypto.randomBytes(2).toString('hex').toUpperCase()}`;
+    };
+
+    const normalizeGender = (value) => {
+      if (!value) return undefined;
+      const normalized = String(value).toLowerCase();
+      if (normalized === 'male') return 'Male';
+      if (normalized === 'female') return 'Female';
+      return 'Other';
+    };
+
+    const assignmentTimestamp = new Date();
+    const academicYear =
+      classData.academicYear ||
+      `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`;
+
+    const assignedStudentIds = [];
+    const assignmentResults = [];
+
+    for (const studentId of studentIds) {
+      try {
+        const studentUser = await User.findById(studentId).select(
+          'name email role tenantId orgId linkedIds metadata dateOfBirth gender'
         );
-      })
-    );
 
-    // Update section strength
-    const sectionIndex = classData.sections.findIndex(s => s.name === targetSection);
-    if (sectionIndex !== -1) {
-      const currentCount = await SchoolStudent.countDocuments({
-        tenantId,
-        classId,
-        section: targetSection
-      });
-      classData.sections[sectionIndex].currentStrength = currentCount;
-      await classData.save();
+        if (!studentUser) {
+          assignmentResults.push({
+            studentId,
+            status: 'error',
+            message: 'Student not found in the system',
+          });
+          continue;
+        }
+
+        if (!['student', 'school_student'].includes(studentUser.role)) {
+          assignmentResults.push({
+            studentId,
+            status: 'error',
+            message: 'User is not a student',
+          });
+          continue;
+        }
+
+        if (
+          tenantId &&
+          studentUser.tenantId &&
+          studentUser.tenantId.toString() !== tenantId.toString()
+        ) {
+          assignmentResults.push({
+            studentId,
+            status: 'error',
+            message: 'Student belongs to a different tenant',
+          });
+          continue;
+        }
+
+        const studentOrgId =
+          studentUser.orgId || classData.orgId || req.user?.orgId || null;
+
+        let schoolStudent = await SchoolStudent.findOne({ userId: studentId, tenantId });
+
+        if (!schoolStudent) {
+          const admissionNumber = await ensureUniqueIdentifier('ADM', 'admissionNumber');
+          const rollNumber = await ensureUniqueIdentifier('ROLL', 'rollNumber');
+
+          schoolStudent = new SchoolStudent({
+            tenantId,
+            orgId: studentOrgId,
+            userId: studentId,
+            admissionNumber,
+            rollNumber,
+            classId,
+            section: targetSection,
+            academicYear,
+            grade: classData.classNumber,
+            parentIds: Array.isArray(studentUser.linkedIds?.parentIds)
+              ? studentUser.linkedIds.parentIds
+              : [],
+            personalInfo: {
+              dateOfBirth: studentUser.dateOfBirth || null,
+              gender: normalizeGender(studentUser.gender),
+            },
+            academicInfo: {
+              admissionDate: assignmentTimestamp,
+            },
+            attendance: {
+              totalDays: 0,
+              presentDays: 0,
+              percentage: 0,
+            },
+            isActive: true,
+          });
+        } else {
+          schoolStudent.classId = classId;
+          schoolStudent.section = targetSection;
+          schoolStudent.academicYear = academicYear;
+          schoolStudent.grade = classData.classNumber;
+          schoolStudent.orgId = schoolStudent.orgId || studentOrgId;
+          schoolStudent.isActive = true;
+
+          if (!schoolStudent.admissionNumber) {
+            schoolStudent.admissionNumber = await ensureUniqueIdentifier('ADM', 'admissionNumber');
+          }
+          if (!schoolStudent.rollNumber) {
+            schoolStudent.rollNumber = await ensureUniqueIdentifier('ROLL', 'rollNumber');
+          }
+        }
+
+        await schoolStudent.save();
+
+        const classMetadataEntry = {
+          classId,
+          className: derivedClassName,
+          classNumber: classData.classNumber,
+          teacherId,
+          section: targetSection,
+          assignedAt: assignmentTimestamp,
+        };
+
+        await User.updateOne(
+          { _id: studentId },
+          {
+            $set: {
+              orgId: studentOrgId ?? studentUser.orgId ?? null,
+              tenantId: studentUser.tenantId || tenantId,
+              'metadata.schoolEnrollment': {
+                classId,
+                className: derivedClassName,
+                classNumber: classData.classNumber,
+                section: targetSection,
+                academicYear,
+                assignedBy: teacherId,
+                assignedAt: assignmentTimestamp,
+              },
+            },
+            $addToSet: {
+              'metadata.classes': classMetadataEntry,
+            },
+          }
+        );
+
+        assignedStudentIds.push(studentId);
+        assignmentResults.push({
+          studentId,
+          status: 'assigned',
+          studentName: studentUser.name,
+          studentEmail: studentUser.email,
+          section: targetSection,
+        });
+      } catch (assignmentError) {
+        console.error(`Error assigning student ${studentId} to class ${classId}:`, assignmentError);
+        assignmentResults.push({
+          studentId,
+          status: 'error',
+          message: assignmentError.message || 'Failed to assign student',
+        });
+      }
     }
 
-    // Log audit
+    if (assignedStudentIds.length > 0) {
+      const sectionIndex = classData.sections.findIndex((section) => section.name === targetSection);
+      if (sectionIndex !== -1) {
+        const currentCount = await SchoolStudent.countDocuments({
+          tenantId,
+          classId,
+          section: targetSection,
+        });
+        classData.sections[sectionIndex].currentStrength = currentCount;
+        await classData.save();
+      }
+    }
+
     await ComplianceAuditLog.logAction({
       tenantId,
       orgId: req.user?.orgId,
@@ -3506,15 +3859,31 @@ export const assignStudentsToClass = async (req, res) => {
       targetType: 'class',
       targetId: classId,
       targetName: `Class ${classData.classNumber}`,
-      description: `${studentIds.length} student(s) assigned to Class ${classData.classNumber} - Section ${targetSection} by teacher`,
+      description: `${assignedStudentIds.length} student(s) assigned to Class ${classData.classNumber} - Section ${targetSection} by teacher`,
       ipAddress: req.ip,
       userAgent: req.headers['user-agent'],
     });
 
+    if (io && assignedStudentIds.length > 0) {
+      const payload = {
+        tenantId,
+        orgId: classData.orgId ? classData.orgId.toString() : null,
+        classId: classId.toString(),
+        studentIds: assignedStudentIds.map((id) => id.toString()),
+        section: targetSection,
+        count: assignedStudentIds.length,
+        updatedAt: new Date().toISOString(),
+      };
+
+      io.emit('school:students:updated', payload);
+      io.emit('school:class-roster:updated', payload);
+    }
+
     res.json({
       success: true,
-      message: `${studentIds.length} student(s) assigned to ${className}`,
-      count: studentIds.length
+      message: `${assignedStudentIds.length} student(s) assigned to ${derivedClassName}`,
+      count: assignedStudentIds.length,
+      results: assignmentResults,
     });
   } catch (error) {
     console.error('Error assigning students:', error);
@@ -3776,7 +4145,6 @@ export const getStudentsForAssignment = async (req, res) => {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
-
 // AI suggest students based on weak pillars
 export const aiSuggestStudents = async (req, res) => {
   try {
@@ -4569,7 +4937,6 @@ export const getHeatmapData = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 // 5. Get pending approvals queue
 export const getPendingApprovals = async (req, res) => {
   try {
@@ -5168,33 +5535,33 @@ export const getSubscriptionDetails = async (req, res) => {
 
     // Create default subscription if not exists
     if (!subscription) {
+    const owningCompany = await Company.findOne({ organizations: normalizedOrgId }).select(
+      'subscriptionPlan subscriptionStart subscriptionExpiry academicInfo'
+    );
+
+      const resolvedPlanName =
+        owningCompany?.subscriptionPlan || determinePlanFromUsage();
+      const resolvedLimits = resolvePlanLimits(resolvedPlanName);
+      const resolvedFeatures = resolvePlanFeatures(resolvedPlanName);
+      const planPrice = PLAN_LIMITS[resolvedPlanName]?.price || 0;
+
       subscription = await Subscription.create({
         tenantId,
-        orgId,
+        orgId: normalizedOrgId,
         plan: {
-          name: 'free',
-          displayName: 'Free Plan',
-          price: 0,
-          billingCycle: 'monthly',
+          name: resolvedPlanName,
+          displayName: PLAN_DISPLAY_NAMES[resolvedPlanName] || `${capitalize(resolvedPlanName)} Plan`,
+          price: planPrice,
+          billingCycle: 'yearly',
         },
         limits: {
-          maxStudents: 100,
-          maxTeachers: 10,
-          maxClasses: 10,
-          maxCampuses: 1,
-          maxStorage: 5,
-          maxTemplates: 50,
-          features: {
-            advancedAnalytics: false,
-            aiAssistant: false,
-            customBranding: false,
-            apiAccess: false,
-            prioritySupport: false,
-            whiteLabel: false,
-          },
+          ...resolvedLimits,
+          features: resolvedFeatures,
         },
-        status: 'trial',
-        trialEndDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days
+        status: 'active',
+        startDate: owningCompany?.subscriptionStart || new Date(),
+        endDate: owningCompany?.subscriptionExpiry || null,
+        autoRenew: true,
       });
     }
 
@@ -5241,7 +5608,7 @@ export const upgradeSubscription = async (req, res) => {
   try {
     const { tenantId } = req;
     const orgId = req.user?.orgId;
-    const { plan, billingCycle } = req.body;
+    const { plan } = req.body;
 
     if (!orgId) {
       return res.status(400).json({ message: 'Organization ID required' });
@@ -5252,95 +5619,111 @@ export const upgradeSubscription = async (req, res) => {
       return res.status(404).json({ message: 'Subscription not found' });
     }
 
-    // Define plan limits
-    const planLimits = {
-      free: {
-        maxStudents: 100,
-        maxTeachers: 10,
-        maxClasses: 10,
-        maxCampuses: 1,
-        maxStorage: 5,
-        maxTemplates: 50,
-        price: 0,
-      },
-      basic: {
-        maxStudents: 500,
-        maxTeachers: 50,
-        maxClasses: 50,
-        maxCampuses: 2,
-        maxStorage: 50,
-        maxTemplates: 200,
-        price: 4999,
-      },
-      standard: {
-        maxStudents: 2000,
-        maxTeachers: 200,
-        maxClasses: 200,
-        maxCampuses: 5,
-        maxStorage: 200,
-        maxTemplates: 500,
-        price: 14999,
-      },
-      premium: {
-        maxStudents: 10000,
-        maxTeachers: 1000,
-        maxClasses: 1000,
-        maxCampuses: 20,
-        maxStorage: 1000,
-        maxTemplates: 2000,
-        price: 49999,
-      },
-      enterprise: {
-        maxStudents: -1, // Unlimited
-        maxTeachers: -1,
-        maxClasses: -1,
-        maxCampuses: -1,
-        maxStorage: -1,
-        maxTemplates: -1,
-        price: 0, // Custom pricing
-      },
-    };
-
-    const limits = planLimits[plan];
-    if (!limits) {
+    const planConfig = PLAN_LIMITS[plan];
+    if (!planConfig) {
       return res.status(400).json({ message: 'Invalid plan' });
     }
 
+    const resolvedLimits = resolvePlanLimits(plan);
+    const features = resolvePlanFeatures(plan);
+    const cycle = 'yearly';
+    const now = new Date();
+    const cycleMonths = BILLING_CYCLE_MONTHS[cycle] || BILLING_CYCLE_MONTHS.yearly;
+    const multiplier = BILLING_MULTIPLIER[cycle] || BILLING_MULTIPLIER.yearly;
+
     subscription.plan.name = plan;
-    subscription.plan.displayName = plan.charAt(0).toUpperCase() + plan.slice(1) + ' Plan';
-    subscription.plan.price = limits.price;
-    subscription.plan.billingCycle = billingCycle || 'monthly';
+    subscription.plan.displayName = PLAN_DISPLAY_NAMES[plan] || `${capitalize(plan)} Plan`;
+    subscription.plan.price = planConfig.price;
+    subscription.plan.billingCycle = cycle;
     subscription.limits = {
-      ...limits,
-      features: {
-        advancedAnalytics: ['standard', 'premium', 'enterprise'].includes(plan),
-        aiAssistant: ['premium', 'enterprise'].includes(plan),
-        customBranding: ['standard', 'premium', 'enterprise'].includes(plan),
-        apiAccess: ['premium', 'enterprise'].includes(plan),
-        prioritySupport: ['premium', 'enterprise'].includes(plan),
-        whiteLabel: plan === 'enterprise',
-      },
+      ...resolvedLimits,
+      features
     };
 
     subscription.status = 'active';
-    subscription.endDate = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days for monthly
+    subscription.startDate = subscription.startDate || now;
+
+    const previousEndDate = subscription.endDate ? new Date(subscription.endDate) : null;
+    const renewalBase = previousEndDate && previousEndDate > now ? previousEndDate : now;
+    const nextEndDate = new Date(renewalBase);
+    nextEndDate.setMonth(nextEndDate.getMonth() + cycleMonths);
+    subscription.endDate = nextEndDate;
+
+    const currentUsageStudents = subscription.usage?.students || 0;
+    const currentUsageTeachers = subscription.usage?.teachers || 0;
+    const { amount, extraStudents, extraTeachers } = computeBillingAmount(
+      plan,
+      cycle,
+      currentUsageStudents,
+      currentUsageTeachers
+    );
+
+    const addOns = (subscription.addOns || []).filter(addOn => !['extra_students', 'extra_teachers'].includes(addOn.name));
+
+    if (extraStudents > 0) {
+      addOns.push({
+        name: 'extra_students',
+        description: `${extraStudents} additional students`,
+        price: EXTRA_USAGE_RATES.student * multiplier,
+        quantity: extraStudents,
+        active: true
+      });
+    }
+
+    if (extraTeachers > 0) {
+      addOns.push({
+        name: 'extra_teachers',
+        description: `${extraTeachers} additional teachers`,
+        price: EXTRA_USAGE_RATES.teacher * multiplier,
+        quantity: extraTeachers,
+        active: true
+      });
+    }
+
+    subscription.addOns = addOns;
 
     // Create invoice
     subscription.invoices.push({
       invoiceId: `INV-${Date.now()}`,
-      amount: limits.price,
+      amount,
       currency: 'INR',
       status: 'paid',
-      paidAt: new Date(),
-      description: `${plan.charAt(0).toUpperCase() + plan.slice(1)} Plan - ${billingCycle}`,
+      paidAt: now,
+      dueDate: nextEndDate,
+      description: `${PLAN_DISPLAY_NAMES[plan] || capitalize(plan)} Plan - ${capitalize(cycle)}`
     });
 
     await subscription.save();
 
+    const io = req.app.get('io');
+    const payload = subscription.toObject ? subscription.toObject() : subscription;
+
+    if (io) {
+      const userRoom = req.user?._id ? req.user._id.toString() : null;
+      if (userRoom) {
+        io.to(userRoom).emit('school:subscription:updated', {
+          subscription: payload,
+          tenantId,
+          orgId: orgId.toString(),
+        });
+      }
+      io.emit('school:subscription:updated', {
+        subscription: payload,
+        tenantId,
+        orgId: orgId.toString(),
+      });
+    }
+
     res.json({
       success: true,
       message: 'Subscription upgraded successfully',
-      subscription,
+      subscription: payload,
+      billing: {
+        amount,
+        cycle,
+        extraStudents,
+        extraTeachers,
+      },
     });
   } catch (error) {
     console.error('Error upgrading subscription:', error);
@@ -5348,8 +5731,169 @@ export const upgradeSubscription = async (req, res) => {
   }
 };
 
-// ============= POLICY & COMPLIANCE ENDPOINTS =============
+export const renewSubscription = async (req, res) => {
+  try {
+    const { tenantId } = req;
+    const orgId = req.user?.orgId;
+    const {
+      students,
+      teachers,
+      plan: preferredPlan,
+    } = req.body || {};
 
+    if (!orgId) {
+      return res.status(400).json({ message: 'Organization ID required' });
+    }
+
+    const subscription = await Subscription.findOne({ tenantId, orgId });
+    if (!subscription) {
+      return res.status(404).json({ message: 'Subscription not found' });
+    }
+
+    const parseCount = (value, fallback) => {
+      if (value === undefined || value === null || value === '') {
+        return fallback;
+      }
+      const parsed = Number(value);
+      if (Number.isNaN(parsed) || parsed < 0) {
+        return fallback;
+      }
+      return Math.floor(parsed);
+    };
+
+    const desiredStudents = parseCount(students, subscription.usage?.students || 0);
+    const desiredTeachers = parseCount(teachers, subscription.usage?.teachers || 0);
+
+    const targetPlanName = preferredPlan && PLAN_LIMITS[preferredPlan]
+      ? preferredPlan
+      : determinePlanFromUsage(desiredStudents, desiredTeachers);
+
+    const planConfig = PLAN_LIMITS[targetPlanName];
+    const resolvedLimits = resolvePlanLimits(targetPlanName);
+    const features = resolvePlanFeatures(targetPlanName);
+    const cycle = 'yearly';
+    const now = new Date();
+    const cycleMonths = BILLING_CYCLE_MONTHS[cycle] || BILLING_CYCLE_MONTHS.yearly;
+    const multiplier = BILLING_MULTIPLIER[cycle] || BILLING_MULTIPLIER.yearly;
+
+    const updatedLimits = {
+      ...resolvedLimits,
+      maxStudents: resolvedLimits.maxStudents === -1
+        ? -1
+        : Math.max(resolvedLimits.maxStudents, desiredStudents),
+      maxTeachers: resolvedLimits.maxTeachers === -1
+        ? -1
+        : Math.max(resolvedLimits.maxTeachers, desiredTeachers),
+      features,
+    };
+
+    subscription.plan = {
+      name: targetPlanName,
+      displayName: PLAN_DISPLAY_NAMES[targetPlanName] || `${capitalize(targetPlanName)} Plan`,
+      price: planConfig.price,
+      billingCycle: cycle,
+    };
+
+    subscription.limits = updatedLimits;
+    subscription.status = 'active';
+    subscription.autoRenew = true;
+    subscription.startDate = subscription.startDate || now;
+
+    const previousEnd = subscription.endDate ? new Date(subscription.endDate) : null;
+    const renewalBase = previousEnd && previousEnd > now ? previousEnd : now;
+    const nextEndDate = new Date(renewalBase);
+    nextEndDate.setMonth(nextEndDate.getMonth() + cycleMonths);
+    subscription.endDate = nextEndDate;
+    const { amount, extraStudents, extraTeachers } = computeBillingAmount(
+      targetPlanName,
+      cycle,
+      desiredStudents,
+      desiredTeachers
+    );
+
+    const addOns = (subscription.addOns || []).filter(addOn => !['extra_students', 'extra_teachers'].includes(addOn.name));
+
+    if (extraStudents > 0) {
+      addOns.push({
+        name: 'extra_students',
+        description: `${extraStudents} additional students`,
+        price: EXTRA_USAGE_RATES.student * multiplier,
+        quantity: extraStudents,
+        active: true,
+      });
+    }
+
+    if (extraTeachers > 0) {
+      addOns.push({
+        name: 'extra_teachers',
+        description: `${extraTeachers} additional teachers`,
+        price: EXTRA_USAGE_RATES.teacher * multiplier,
+        quantity: extraTeachers,
+        active: true,
+      });
+    }
+
+    subscription.addOns = addOns;
+
+    subscription.invoices = subscription.invoices || [];
+    subscription.invoices.push({
+      invoiceId: `INV-${Date.now()}`,
+      amount,
+      currency: 'INR',
+      status: 'paid',
+      paidAt: now,
+      dueDate: nextEndDate,
+      description: `${PLAN_DISPLAY_NAMES[targetPlanName] || capitalize(targetPlanName)} Renewal - ${capitalize(cycle)} • ${desiredStudents} students / ${desiredTeachers} teachers`,
+    });
+
+    const previousNotes = subscription.notes ? `\n${subscription.notes}` : '';
+    subscription.notes = `Renewed on ${now.toISOString()} by ${req.user?.name || 'School Admin'} for ${desiredStudents} students and ${desiredTeachers} teachers.${previousNotes}`;
+
+    await subscription.save();
+
+    const payload = subscription.toObject ? subscription.toObject() : subscription;
+    const io = req.app.get('io');
+
+    if (io) {
+      const userRoom = req.user?._id ? req.user._id.toString() : null;
+      if (userRoom) {
+        io.to(userRoom).emit('school:subscription:updated', {
+          subscription: payload,
+          tenantId,
+          orgId: orgId.toString(),
+        });
+      }
+      io.emit('school:subscription:updated', {
+        subscription: payload,
+        tenantId,
+        orgId: orgId.toString(),
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Subscription renewed successfully',
+      subscription: payload,
+      billing: {
+        plan: targetPlanName,
+        amount,
+        cycle,
+        students: desiredStudents,
+        teachers: desiredTeachers,
+        extraStudents,
+        extraTeachers,
+      },
+      renewalWindow: {
+        endDate: nextEndDate,
+        daysRemaining: subscription.daysUntilExpiry ? subscription.daysUntilExpiry() : null,
+      },
+    });
+  } catch (error) {
+    console.error('Error renewing subscription:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+// ============= POLICY & COMPLIANCE ENDPOINTS =============
 // 1. Get consent records
 export const getConsentRecords = async (req, res) => {
   try {
@@ -6071,7 +6615,6 @@ export const getUserConsentStatus = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 // 13. Generate compliance report
 export const generateComplianceReport = async (req, res) => {
   try {
@@ -6815,7 +7358,6 @@ export const updateEscalationChain = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 // 14. Trigger escalation
 export const triggerEscalation = async (req, res) => {
   try {
@@ -7553,7 +8095,6 @@ export const updateTemplateNEPCompetencies = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
 // 9. Update assignment with NEP competencies
 export const updateAssignmentNEPCompetencies = async (req, res) => {
   try {
@@ -8258,7 +8799,6 @@ export const createClass = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 // Add students to class
 export const addStudentsToClass = async (req, res) => {
   try {
@@ -8709,38 +9249,63 @@ export const removeStudentFromClass = async (req, res) => {
     const { tenantId } = req;
     const { classId, studentId } = req.params;
 
-    // Get class details
     const classData = await SchoolClass.findOne({ _id: classId, tenantId });
     if (!classData) {
       return res.status(404).json({ message: 'Class not found' });
     }
 
-    // Find student
-    const student = await SchoolStudent.findOne({ _id: studentId, tenantId, classId });
-    if (!student) {
+    const schoolStudent = await SchoolStudent.findOne({
+      _id: studentId,
+      tenantId,
+      classId,
+    }).populate('userId', 'name email metadata tenantId orgId');
+
+    if (!schoolStudent) {
       return res.status(404).json({ message: 'Student not found in this class' });
     }
 
-    // Remove student from class (set classId, grade, section to null)
-    await SchoolStudent.findByIdAndUpdate(studentId, {
-      classId: null,
-      grade: null,
-      section: null
-    });
+    await SchoolStudent.updateOne(
+      { _id: schoolStudent._id, tenantId },
+      {
+        $set: {
+          classId: null,
+          grade: null,
+          section: null,
+          academicYear: null,
+        },
+      }
+    );
 
-    // Update section strength
-    const sectionIndex = classData.sections.findIndex(s => s.name === student.section);
-    if (sectionIndex !== -1) {
-      const currentCount = await SchoolStudent.countDocuments({
-        tenantId,
-        classId,
-        section: student.section
-      });
-      classData.sections[sectionIndex].currentStrength = currentCount;
-      await classData.save();
+    if (schoolStudent.section) {
+      const sectionIndex = classData.sections.findIndex((section) => section.name === schoolStudent.section);
+      if (sectionIndex !== -1) {
+        const currentCount = await SchoolStudent.countDocuments({
+          tenantId,
+          classId,
+          section: schoolStudent.section,
+        });
+        classData.sections[sectionIndex].currentStrength = currentCount;
+        await classData.save();
+      }
     }
 
-    // Log audit
+    if (schoolStudent.userId) {
+      const metadataClasses = schoolStudent.userId.metadata?.classes || [];
+      const filteredClasses = metadataClasses.filter(
+        (entry) => entry.classId?.toString() !== classId.toString()
+      );
+
+      await User.updateOne(
+        { _id: schoolStudent.userId._id },
+        {
+          $set: {
+            'metadata.classes': filteredClasses,
+            'metadata.schoolEnrollment': null,
+          },
+        }
+      );
+    }
+
     await ComplianceAuditLog.logAction({
       tenantId,
       orgId: req.user?.orgId,
@@ -8750,20 +9315,33 @@ export const removeStudentFromClass = async (req, res) => {
       action: 'student_removed_from_class',
       targetType: 'class',
       targetId: classId,
-      description: `Student ${student.name || 'Unknown'} removed from Class ${classData.classNumber}`,
-      metadata: { studentId }
+      targetName: `Class ${classData.classNumber}`,
+      description: `Student ${schoolStudent.userId?.name || 'Unknown'} removed from Class ${classData.classNumber}`,
+      metadata: { studentId },
     });
+
+    const io = req.app && typeof req.app.get === 'function' ? req.app.get('io') : null;
+    if (io) {
+      const payload = {
+        tenantId,
+        orgId: classData.orgId ? classData.orgId.toString() : null,
+        classId: classId.toString(),
+        studentId: schoolStudent.userId?._id?.toString() || studentId,
+        removedAt: new Date().toISOString(),
+      };
+      io.emit('school:students:removed', payload);
+      io.emit('school:class-roster:updated', payload);
+    }
 
     res.json({
       success: true,
-      message: 'Student removed from class successfully'
+      message: 'Student removed from class successfully',
     });
   } catch (error) {
     console.error('Error removing student from class:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 // Create class with teachers and students sequentially
 export const createSequentialClass = async (req, res) => {
   try {
@@ -9337,6 +9915,21 @@ export const createStudent = async (req, res) => {
       return res.status(400).json({ message: 'Email already exists' });
     }
 
+    // Enforce student quota based on company academic info
+    if (orgId) {
+      const company = await Company.findOne({ organizations: orgId }).lean();
+      const studentLimit = Number(company?.academicInfo?.totalStudents) || 0;
+      if (studentLimit > 0) {
+        const currentStudents = await SchoolStudent.countDocuments({ orgId });
+        if (currentStudents >= studentLimit) {
+          return res.status(403).json({
+            success: false,
+            message: `Student limit reached. You can onboard up to ${studentLimit} students as per the approved registration details.`
+          });
+        }
+      }
+    }
+
     // Generate admission number (unique)
     const currentYear = new Date().getFullYear();
     const admissionNumber = `ADM${currentYear}${Date.now().toString().slice(-6)}`;
@@ -9433,6 +10026,47 @@ export const createStudent = async (req, res) => {
         crgc: 0,
       },
     });
+
+    if (orgId && tenantId) {
+      try {
+        const subscription = await Subscription.findOne({ orgId, tenantId });
+        const planName = subscription?.plan?.name || subscription?.plan?.planType || null;
+        if (subscription && subscription.status === 'active' && planName === EDUCATIONAL_PLAN_TYPE) {
+          const assignedSubscription = await assignUserSubscription({
+            userId: user._id,
+            planType: EDUCATIONAL_PLAN_TYPE,
+            planName: EDUCATIONAL_PLAN_NAME,
+            features: EDUCATIONAL_PLAN_FEATURES,
+            amount: 0,
+            startDate: new Date(),
+            endDate: subscription.endDate ? new Date(subscription.endDate) : undefined,
+            metadata: {
+              orgId: orgId?.toString?.() ?? null,
+              tenantId,
+              source: 'school_student_creation',
+              studentRecordId: student?._id?.toString?.() ?? null,
+            },
+            initiator: {
+              userId: req.user?._id || null,
+              role: req.user?.role || 'school_admin',
+              name: req.user?.name || 'School Admin',
+              email: req.user?.email || null,
+              context: 'school_admin',
+            },
+          });
+          const io = req.app && typeof req.app.get === 'function' ? req.app.get('io') : null;
+          if (io && assignedSubscription) {
+            const payload = assignedSubscription.toObject ? assignedSubscription.toObject() : assignedSubscription;
+            io.to(user._id.toString()).emit('subscription:activated', {
+              userId: user._id.toString(),
+              subscription: payload,
+            });
+          }
+        }
+      } catch (assignmentError) {
+        console.error('Error assigning subscription to student:', assignmentError);
+      }
+    }
 
     // Log audit
     await ComplianceAuditLog.logAction({
@@ -9543,7 +10177,6 @@ export const resetStudentPassword = async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 };
-
 // Delete student
 export const deleteStudent = async (req, res) => {
   try {
@@ -10074,42 +10707,41 @@ export const getEnhancedSubscriptionDetails = async (req, res) => {
       return res.status(400).json({ message: 'Organization ID required' });
     }
 
-    let subscription = await Subscription.findOne({ tenantId, orgId });
+    const normalizedOrgId = mongoose.Types.ObjectId.isValid(orgId)
+      ? new mongoose.Types.ObjectId(orgId)
+      : orgId;
 
-    // Create default trial subscription if not exists
+    const owningCompany = await Company.findOne({ organizations: normalizedOrgId }).select(
+      'subscriptionPlan subscriptionStart subscriptionExpiry academicInfo'
+    );
+
+    let subscription = await Subscription.findOne({ tenantId, orgId: normalizedOrgId });
+
+    // Create default subscription if not exists
     if (!subscription) {
-      const trialEndDate = new Date();
-      trialEndDate.setDate(trialEndDate.getDate() + 30);
-      
+      const resolvedPlanName =
+        owningCompany?.subscriptionPlan || determinePlanFromUsage();
+      const resolvedLimits = resolvePlanLimits(resolvedPlanName);
+      const resolvedFeatures = resolvePlanFeatures(resolvedPlanName);
+      const planPrice = PLAN_LIMITS[resolvedPlanName]?.price || 0;
+
       subscription = await Subscription.create({
         tenantId,
-        orgId,
+        orgId: normalizedOrgId,
         plan: {
-          name: 'trial',
-          displayName: 'Trial Plan',
-          price: 0,
-          billingCycle: 'monthly',
+          name: resolvedPlanName,
+          displayName: PLAN_DISPLAY_NAMES[resolvedPlanName] || `${capitalize(resolvedPlanName)} Plan`,
+          price: planPrice,
+          billingCycle: 'yearly',
         },
         limits: {
-          maxStudents: 100,
-          maxTeachers: 10,
-          maxClasses: 10,
-          maxCampuses: 1,
-          maxStorage: 5,
-          maxTemplates: 50,
-          features: {
-            advancedAnalytics: true, // Trial gets all features
-            aiAssistant: true,
-            customBranding: false,
-            apiAccess: false,
-            prioritySupport: false,
-            whiteLabel: false,
-            premiumTemplates: true,
-          },
+          ...resolvedLimits,
+          features: resolvedFeatures,
         },
-        status: 'trial',
-        trialEndDate,
-        startDate: new Date(),
+        status: 'active',
+        startDate: owningCompany?.subscriptionStart || new Date(),
+        endDate: owningCompany?.subscriptionExpiry || null,
+        autoRenew: true,
       });
     }
 
@@ -10118,7 +10750,7 @@ export const getEnhancedSubscriptionDetails = async (req, res) => {
       SchoolStudent.countDocuments({ tenantId }),
       User.countDocuments({ tenantId, role: 'school_teacher' }),
       SchoolClass.countDocuments({ tenantId }),
-      Organization.findOne({ _id: orgId, tenantId }).then(org => org?.campuses?.length || 1),
+      Organization.findOne({ _id: normalizedOrgId, tenantId }).then(org => org?.campuses?.length || 1),
       Template.countDocuments({ tenantId }),
       SchoolStudent.find({ tenantId }).populate('userId').then(students => 
         students.filter(s => s.userId && s.userId.lastActive >= new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)).length
@@ -10137,12 +10769,7 @@ export const getEnhancedSubscriptionDetails = async (req, res) => {
     await subscription.save();
 
     // Calculate next billing date
-    let nextBillingDate = null;
-    if (subscription.status === 'active' && subscription.endDate) {
-      nextBillingDate = subscription.endDate;
-    } else if (subscription.status === 'trial' && subscription.trialEndDate) {
-      nextBillingDate = subscription.trialEndDate;
-    }
+    const nextBillingDate = subscription.endDate || null;
 
     // Get payment status
     const lastInvoice = subscription.invoices?.length > 0 
@@ -10157,6 +10784,22 @@ export const getEnhancedSubscriptionDetails = async (req, res) => {
       ? premiumTemplatesCount 
       : 0;
 
+    const allowedStudentCount = owningCompany?.academicInfo?.totalStudents ?? subscription.limits?.maxStudents ?? 0;
+    const allowedTeacherCount = owningCompany?.academicInfo?.totalTeachers ?? subscription.limits?.maxTeachers ?? 0;
+    const allowedClassCount = subscription.limits?.maxClasses ?? 0;
+    const allowedCampusCount = subscription.limits?.maxCampuses ?? 0;
+
+    const normalizeLimit = (value, fallback) => {
+      const numeric = Number(value);
+      if (!Number.isFinite(numeric) || numeric <= 0) return fallback;
+      return numeric;
+    };
+
+    const studentLimitForPercent = normalizeLimit(allowedStudentCount, normalizeLimit(subscription.limits?.maxStudents, 1));
+    const teacherLimitForPercent = normalizeLimit(allowedTeacherCount, normalizeLimit(subscription.limits?.maxTeachers, 1));
+    const classLimitForPercent = normalizeLimit(allowedClassCount, normalizeLimit(subscription.limits?.maxClasses, 1));
+    const campusLimitForPercent = normalizeLimit(allowedCampusCount, normalizeLimit(subscription.limits?.maxCampuses, 1));
+
     res.json({
       subscription,
       enhancedDetails: {
@@ -10167,113 +10810,32 @@ export const getEnhancedSubscriptionDetails = async (req, res) => {
         status: subscription.status,
         nextBillingDate,
         daysRemaining,
-        isTrial: subscription.status === 'trial',
-        trialEndDate: subscription.trialEndDate,
-        
-        // Active counts
         activeStudentCount: activeStudents,
         totalStudentCount: students,
         activeTeacherCount: teachers,
-        
-        // Features
         features: subscription.limits.features,
         availablePremiumTemplates,
-        
-        // Usage percentages
         usagePercentages: {
-          students: (students / subscription.limits.maxStudents * 100).toFixed(2),
-          teachers: (teachers / subscription.limits.maxTeachers * 100).toFixed(2),
-          classes: (classes / subscription.limits.maxClasses * 100).toFixed(2),
-          campuses: (campuses / subscription.limits.maxCampuses * 100).toFixed(2),
-          templates: (templates / subscription.limits.maxTemplates * 100).toFixed(2),
+          students: ((students / studentLimitForPercent) * 100).toFixed(2),
+          teachers: ((teachers / teacherLimitForPercent) * 100).toFixed(2),
+          classes: ((classes / classLimitForPercent) * 100).toFixed(2),
+          campuses: ((campuses / campusLimitForPercent) * 100).toFixed(2),
+          templates: (subscription.limits.maxTemplates
+            ? (templates / subscription.limits.maxTemplates * 100).toFixed(2)
+            : '0.00'),
         },
-        
-        // Invoices
         invoices: subscription.invoices || [],
         lastPaymentStatus: lastInvoice?.status || 'none',
         lastPaymentDate: lastInvoice?.paidAt || null,
         lastPaymentAmount: lastInvoice?.amount || 0,
+        allowedStudentCount,
+        allowedTeacherCount,
+        allowedClassCount,
+        allowedCampusCount,
       },
     });
   } catch (error) {
     console.error('Error fetching enhanced subscription:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
-// 2. Request trial extension
-export const requestTrialExtension = async (req, res) => {
-  try {
-    const { tenantId } = req;
-    const orgId = req.user?.orgId;
-    const { requestedDays, reason } = req.body;
-
-    const subscription = await Subscription.findOne({ tenantId, orgId });
-    if (!subscription) {
-      return res.status(404).json({ message: 'Subscription not found' });
-    }
-
-    if (subscription.status !== 'trial') {
-      return res.status(400).json({ message: 'Trial extension only available for trial accounts' });
-    }
-
-    // Get current usage
-    const currentUsage = {
-      students: subscription.usage.students,
-      teachers: subscription.usage.teachers,
-      classes: subscription.usage.classes,
-    };
-
-    // Create support ticket for trial extension
-    const ticket = await SupportTicket.create({
-      tenantId,
-      orgId,
-      type: 'trial_extension',
-      subject: `Trial Extension Request - ${requestedDays} days`,
-      description: reason,
-      priority: 'high',
-      trialExtensionDetails: {
-        currentTrialEndDate: subscription.trialEndDate,
-        requestedExtensionDays: requestedDays,
-        reason,
-        currentUsage,
-      },
-      createdBy: req.user._id,
-      creatorName: req.user.name,
-      creatorEmail: req.user.email,
-      approvalRequired: true,
-      messages: [{
-        sender: req.user._id,
-        senderName: req.user.name,
-        senderRole: req.user.role,
-        message: `Trial extension request: ${reason}`,
-        timestamp: new Date(),
-      }],
-    });
-
-    // Log audit
-    await ComplianceAuditLog.logAction({
-      tenantId,
-      orgId,
-      userId: req.user._id,
-      userRole: req.user.role,
-      userName: req.user.name,
-      action: 'trial_extension_requested',
-      targetType: 'system',
-      targetId: ticket._id,
-      description: `Trial extension requested for ${requestedDays} days`,
-      metadata: { ticketId: ticket.ticketId, requestedDays, reason },
-      ipAddress: req.ip,
-      userAgent: req.headers['user-agent'],
-    });
-
-    res.json({
-      success: true,
-      message: 'Trial extension request submitted successfully',
-      ticket,
-    });
-  } catch (error) {
-    console.error('Error requesting trial extension:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -10312,72 +10874,6 @@ export const getSupportTickets = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
-
-// 4. Approve trial extension (admin action)
-export const approveTrialExtension = async (req, res) => {
-  try {
-    const { ticketId } = req.params;
-    const { tenantId } = req;
-    const { extensionDays, comments } = req.body;
-
-    const ticket = await SupportTicket.findOne({ _id: ticketId, tenantId, type: 'trial_extension' });
-    if (!ticket) {
-      return res.status(404).json({ message: 'Trial extension request not found' });
-    }
-
-    const subscription = await Subscription.findOne({ tenantId, orgId: ticket.orgId });
-    if (!subscription) {
-      return res.status(404).json({ message: 'Subscription not found' });
-    }
-
-    // Extend trial
-    const currentEndDate = new Date(subscription.trialEndDate);
-    currentEndDate.setDate(currentEndDate.getDate() + (extensionDays || ticket.trialExtensionDetails.requestedExtensionDays));
-    subscription.trialEndDate = currentEndDate;
-    await subscription.save();
-
-    // Update ticket
-    ticket.status = 'resolved';
-    ticket.approvedBy = req.user._id;
-    ticket.approvedAt = new Date();
-    ticket.resolvedBy = req.user._id;
-    ticket.resolvedAt = new Date();
-    ticket.resolution = `Trial extended by ${extensionDays} days. ${comments || ''}`;
-    ticket.messages.push({
-      sender: req.user._id,
-      senderName: req.user.name,
-      senderRole: req.user.role,
-      message: `Trial extension approved. Extended by ${extensionDays} days. ${comments || ''}`,
-      timestamp: new Date(),
-      isInternal: false,
-    });
-    await ticket.save();
-
-    // Send notification to requester
-    await Notification.create({
-      userId: ticket.createdBy,
-      type: 'trial_extension_approved',
-      title: 'Trial Extension Approved',
-      message: `Your trial has been extended by ${extensionDays} days. New end date: ${currentEndDate.toLocaleDateString()}`,
-      metadata: {
-        ticketId: ticket.ticketId,
-        extensionDays,
-        newEndDate: currentEndDate,
-      },
-    });
-
-    res.json({
-      success: true,
-      message: 'Trial extension approved',
-      ticket,
-      newTrialEndDate: currentEndDate,
-    });
-  } catch (error) {
-    console.error('Error approving trial extension:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-};
-
 // 5. Get invoice details
 export const getInvoiceDetails = async (req, res) => {
   try {
@@ -10446,135 +10942,71 @@ export const getPlanComparison = async (req, res) => {
   try {
     const plans = [
       {
-        name: 'trial',
-        displayName: 'Trial Plan',
+        name: 'free',
+        displayName: PLAN_DISPLAY_NAMES.free,
         price: 0,
-        duration: '30 days',
+        duration: 'Yearly',
         limits: {
-          maxStudents: 100,
-          maxTeachers: 10,
-          maxClasses: 10,
-          maxCampuses: 1,
-          maxStorage: 5,
-          maxTemplates: 50,
+          maxStudents: PLAN_LIMITS.free.maxStudents,
+          maxTeachers: PLAN_LIMITS.free.maxTeachers,
+          maxClasses: PLAN_LIMITS.free.maxClasses,
+          maxCampuses: PLAN_LIMITS.free.maxCampuses,
+          maxStorage: PLAN_LIMITS.free.maxStorage,
+          maxTemplates: PLAN_LIMITS.free.maxTemplates,
         },
         features: {
-          advancedAnalytics: true,
-          aiAssistant: true,
-          customBranding: false,
-          apiAccess: false,
-          prioritySupport: false,
-          whiteLabel: false,
-          premiumTemplates: true,
-          nepTracking: true,
-          complianceTools: true,
-          escalationChains: true,
+          ...PLAN_FEATURES.free,
         },
       },
       {
-        name: 'basic',
-        displayName: 'Basic Plan',
-        price: 4999,
-        priceAnnual: 49990,
+        name: 'student_premium',
+        displayName: PLAN_DISPLAY_NAMES.student_premium,
+        price: PLAN_LIMITS.student_premium.price,
+        duration: 'Yearly',
         limits: {
-          maxStudents: 500,
-          maxTeachers: 50,
-          maxClasses: 50,
-          maxCampuses: 2,
-          maxStorage: 50,
-          maxTemplates: 200,
+          maxStudents: PLAN_LIMITS.student_premium.maxStudents,
+          maxTeachers: PLAN_LIMITS.student_premium.maxTeachers,
+          maxClasses: PLAN_LIMITS.student_premium.maxClasses,
+          maxCampuses: PLAN_LIMITS.student_premium.maxCampuses,
+          maxStorage: PLAN_LIMITS.student_premium.maxStorage,
+          maxTemplates: PLAN_LIMITS.student_premium.maxTemplates,
         },
         features: {
-          advancedAnalytics: true,
-          aiAssistant: false,
-          customBranding: false,
-          apiAccess: false,
-          prioritySupport: false,
-          whiteLabel: false,
-          premiumTemplates: true,
-          nepTracking: true,
-          complianceTools: true,
-          escalationChains: true,
+          ...PLAN_FEATURES.student_premium,
         },
       },
       {
-        name: 'standard',
-        displayName: 'Standard Plan',
-        price: 14999,
-        priceAnnual: 149990,
+        name: 'student_parent_premium_pro',
+        displayName: PLAN_DISPLAY_NAMES.student_parent_premium_pro,
+        price: PLAN_LIMITS.student_parent_premium_pro.price,
+        duration: 'Yearly',
         limits: {
-          maxStudents: 2000,
-          maxTeachers: 200,
-          maxClasses: 200,
-          maxCampuses: 5,
-          maxStorage: 200,
-          maxTemplates: 500,
+          maxStudents: PLAN_LIMITS.student_parent_premium_pro.maxStudents,
+          maxTeachers: PLAN_LIMITS.student_parent_premium_pro.maxTeachers,
+          maxClasses: PLAN_LIMITS.student_parent_premium_pro.maxClasses,
+          maxCampuses: PLAN_LIMITS.student_parent_premium_pro.maxCampuses,
+          maxStorage: PLAN_LIMITS.student_parent_premium_pro.maxStorage,
+          maxTemplates: PLAN_LIMITS.student_parent_premium_pro.maxTemplates,
         },
         features: {
-          advancedAnalytics: true,
-          aiAssistant: true,
-          customBranding: true,
-          apiAccess: false,
-          prioritySupport: true,
-          whiteLabel: false,
-          premiumTemplates: true,
-          nepTracking: true,
-          complianceTools: true,
-          escalationChains: true,
+          ...PLAN_FEATURES.student_parent_premium_pro,
         },
       },
       {
-        name: 'premium',
-        displayName: 'Premium Plan',
-        price: 49999,
-        priceAnnual: 499990,
+        name: 'educational_institutions_premium',
+        displayName: PLAN_DISPLAY_NAMES.educational_institutions_premium,
+        price: PLAN_LIMITS.educational_institutions_premium.price,
+        duration: 'Yearly',
         limits: {
-          maxStudents: 10000,
-          maxTeachers: 1000,
-          maxClasses: 1000,
-          maxCampuses: 20,
-          maxStorage: 1000,
-          maxTemplates: 2000,
+          maxStudents: PLAN_LIMITS.educational_institutions_premium.maxStudents,
+          maxTeachers: PLAN_LIMITS.educational_institutions_premium.maxTeachers,
+          maxClasses: PLAN_LIMITS.educational_institutions_premium.maxClasses,
+          maxCampuses: PLAN_LIMITS.educational_institutions_premium.maxCampuses,
+          maxStorage: PLAN_LIMITS.educational_institutions_premium.maxStorage,
+          maxTemplates: PLAN_LIMITS.educational_institutions_premium.maxTemplates,
         },
         features: {
-          advancedAnalytics: true,
-          aiAssistant: true,
-          customBranding: true,
-          apiAccess: true,
-          prioritySupport: true,
-          whiteLabel: false,
-          premiumTemplates: true,
-          nepTracking: true,
-          complianceTools: true,
-          escalationChains: true,
-        },
-      },
-      {
-        name: 'enterprise',
-        displayName: 'Enterprise Plan',
-        price: 0,
-        priceText: 'Custom Pricing',
-        limits: {
-          maxStudents: -1,
-          maxTeachers: -1,
-          maxClasses: -1,
-          maxCampuses: -1,
-          maxStorage: -1,
-          maxTemplates: -1,
-        },
-        features: {
-          advancedAnalytics: true,
-          aiAssistant: true,
-          customBranding: true,
-          apiAccess: true,
-          prioritySupport: true,
-          whiteLabel: true,
-          premiumTemplates: true,
-          nepTracking: true,
-          complianceTools: true,
-          escalationChains: true,
-          dedicatedSupport: true,
-          customIntegrations: true,
+          ...PLAN_FEATURES.educational_institutions_premium,
         },
       },
     ];

@@ -51,7 +51,7 @@ const TeacherDetailModal = ({
                     </div>
                     <div>
                       <h2 className="text-2xl font-black mb-1">{selectedTeacher.name || 'Teacher'}</h2>
-                      <p className="text-sm text-white/80">{selectedTeacher.subject || 'N/A'}</p>
+                      <p className="text-sm text-white/80">{selectedTeacher.email || ''}</p>
                     </div>
                   </div>
                   <button

@@ -91,8 +91,6 @@ const NotificationCenter = ({ isOpen, onClose }) => {
       case 'policy_change':
       case 'policy_change_parent':
         return <Shield className="w-5 h-5 text-blue-500" />;
-      case 'trial_extension_approved':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
       case 'assignment_approved':
         return <UserCheck className="w-5 h-5 text-green-500" />;
       default:

@@ -170,9 +170,9 @@ const Cookies = () => {
               <p className="text-gray-700 mb-4">
                 If you have any questions about this Cookie Policy, please contact us at:
                 <br />
-                Email: cookies@wisestudent.com
+                Email: support@wisestudent.com
                 <br />
-                Address: [Company Address]
+                Address: Chennai, India
               </p>
             </section>
           </div>

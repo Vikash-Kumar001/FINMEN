@@ -999,7 +999,8 @@ export const createTenant = async (req, res) => {
         schoolId: organization._id,
         tenantId: organization.tenantId,
         name: organization.name,
-        companyId: company._id
+        companyId: company._id,
+        linkingCode: organization.linkingCode,
       }
     });
   } catch (error) {

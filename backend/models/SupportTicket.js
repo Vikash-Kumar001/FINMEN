@@ -3,24 +3,29 @@ import mongoose from 'mongoose';
 const supportTicketSchema = new mongoose.Schema({
   tenantId: {
     type: String,
-    required: true,
+    required: false, // Optional for admin-created tickets
   },
   orgId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Organization',
-    required: true,
+    required: false, // Optional for admin-created tickets
   },
   
   // Ticket details
   ticketId: {
     type: String,
-    required: true,
+    required: false, // Will be auto-generated
     unique: true,
+    sparse: true,
+  },
+  ticketNumber: {
+    type: String,
+    unique: true,
+    sparse: true,
   },
   type: {
     type: String,
     enum: [
-      'trial_extension',
       'plan_upgrade',
       'technical_support',
       'billing_issue',
@@ -42,18 +47,56 @@ const supportTicketSchema = new mongoose.Schema({
     enum: ['low', 'medium', 'high', 'urgent'],
     default: 'medium',
   },
-  
-  // Trial extension specific
-  trialExtensionDetails: {
-    currentTrialEndDate: Date,
-    requestedExtensionDays: Number,
-    reason: String,
-    currentUsage: {
-      students: Number,
-      teachers: Number,
-      classes: Number,
+  severity: {
+    type: String,
+    enum: ['low', 'medium', 'high', 'critical'],
+    default: 'medium',
+  },
+  sourceDashboard: {
+    type: String,
+    enum: ['student', 'parent', 'teacher', 'school_admin', 'csr', 'admin'],
+    default: 'student',
+  },
+  assignedToDepartment: {
+    type: String,
+    enum: ['general', 'billing', 'security', 'technical', 'product', 'support', 'education'],
+  },
+  priorityScore: {
+    type: Number,
+    default: 0,
+  },
+  escalated: {
+    type: Boolean,
+    default: false,
+  },
+  sla: {
+    targetHours: Number,
+    breachTime: Date,
+    status: {
+      type: String,
+      enum: ['on_time', 'warning', 'at_risk', 'breached'],
+      default: 'on_time',
     },
   },
+  auditTrail: [{
+    action: String,
+    performedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+    },
+    performedAt: {
+      type: Date,
+      default: Date.now,
+    },
+    changes: mongoose.Schema.Types.Mixed,
+  }],
+  organizationId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Organization',
+  },
+  title: String, // Alias for subject
+  message: String, // Alias for description
+  category: String,
   
   // Status
   status: {
@@ -110,7 +153,7 @@ const supportTicketSchema = new mongoose.Schema({
   resolution: String,
   resolutionTime: Number, // in hours
   
-  // Approval (for trial extensions)
+  // Approval workflow
   approvalRequired: {
     type: Boolean,
     default: false,

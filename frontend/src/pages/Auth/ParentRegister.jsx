@@ -1,68 +1,492 @@
-import { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { motion } from "framer-motion";
-import { Eye, EyeOff, Mail, Lock, User, ArrowRight } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  User,
+  ArrowRight,
+  ShieldCheck,
+  Link2,
+  Loader2,
+  CheckCircle2,
+  X,
+} from "lucide-react";
 import api from "../../utils/api";
 import { toast } from "react-hot-toast";
+import { useAuth } from "../../context/AuthUtils";
+
+const loadStripeClient = async () => {
+  if (window.Stripe) {
+    return window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
+  }
+
+  const script = document.createElement("script");
+  script.src = "https://js.stripe.com/v3/";
+  script.async = true;
+
+  return new Promise((resolve, reject) => {
+    script.onload = () => {
+      if (window.Stripe) {
+        resolve(window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ""));
+      } else {
+        reject(new Error("Stripe.js failed to load"));
+      }
+    };
+    script.onerror = () => reject(new Error("Unable to load Stripe.js"));
+    document.body.appendChild(script);
+  });
+};
 
 const ParentRegister = () => {
+  const navigate = useNavigate();
+  const { fetchUser } = useAuth();
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
-    role: "parent",
-    childEmail: "",
   });
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [modalView, setModalView] = useState("choose");
+  const [selectedFlow, setSelectedFlow] = useState(null);
+  const [childLinkCode, setChildLinkCode] = useState("");
+  const [intentId, setIntentId] = useState(null);
+  const [intentAmount, setIntentAmount] = useState(0);
+  const [clientSecret, setClientSecret] = useState(null);
+  const [stripeInstance, setStripeInstance] = useState(null);
+  const [stripeElements, setStripeElements] = useState(null);
+  const [paymentError, setPaymentError] = useState(null);
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const paymentElementRef = useRef(null);
 
+  useEffect(() => {
+    if (modalView !== "payment" || !stripeElements) {
+      return undefined;
+    }
+
+    const paymentElement = stripeElements.create("payment");
+    paymentElement.mount("#parent-payment-element");
+    paymentElementRef.current = paymentElement;
+
+    return () => {
+      if (paymentElementRef.current) {
+        paymentElementRef.current.unmount();
+        paymentElementRef.current = null;
+      }
+    };
+  }, [modalView, stripeElements]);
+
+  const resetFlowState = () => {
+    setSelectedFlow(null);
+    setChildLinkCode("");
+    setIntentId(null);
+    setIntentAmount(0);
+    setClientSecret(null);
+    setStripeElements(null);
+    setStripeInstance(null);
+    setPaymentError(null);
+    setIsPaymentLoading(false);
+  };
+
+  const openFlowModal = () => {
+    setModalOpen(true);
+    setModalView("choose");
+    resetFlowState();
+  };
+
+  const closeFlowModal = () => {
+    setModalOpen(false);
+    resetFlowState();
+  };
+
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const validateForm = () => {
+    if (!formData.name.trim()) {
+      toast.error("Please enter your full name");
+      return false;
+    }
+    if (!formData.email.trim()) {
+      toast.error("Please enter an email address");
+      return false;
+    }
+    if (!formData.password || formData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return false;
+    }
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match");
-      return;
+      return false;
     }
+    return true;
+  };
 
-    if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters");
-      return;
-    }
+  const handleSubmit = (event) => {
+    event.preventDefault();
+    if (!validateForm()) return;
+    openFlowModal();
+  };
 
-    if (!formData.childEmail) {
-      toast.error("Child email is required for parent role");
-      return;
-    }
-
-    setIsLoading(true);
+  const initializeStripeElements = async (secret) => {
     try {
-      const requestData = {
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        role: "parent",
-        childEmail: formData.childEmail,
-      };
-
-      await api.post(`/api/auth/register-stakeholder?t=${Date.now()}`, requestData);
-      toast.success("Parent account created successfully! Pending admin approval.");
-      navigate("/login");
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Registration failed");
-    } finally {
-      setIsLoading(false);
+      const stripe = await loadStripeClient();
+      if (!stripe) {
+        throw new Error("Payment gateway not available right now.");
+      }
+      const elements = stripe.elements({
+        clientSecret: secret,
+        appearance: { theme: "stripe" },
+      });
+      setStripeInstance(stripe);
+      setStripeElements(elements);
+      setModalView("payment");
+    } catch (error) {
+      console.error(error);
+      toast.error(error.message || "Unable to initialize payment.");
+      setIsSubmitting(false);
     }
   };
 
-  const handleInputChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
+  const finalizeParentRegistration = async (intent, paymentIntentId = null, fromPayment = false) => {
+    if (fromPayment) {
+      setIsPaymentLoading(true);
+    } else {
+      setIsSubmitting(true);
+    }
+
+    try {
+      const response = await api.post("/api/auth/parent-registration/confirm", {
+        intentId: intent,
+        paymentIntentId,
+      });
+
+      const { token } = response.data || {};
+      if (token) {
+        localStorage.setItem("finmen_token", token);
+      }
+
+      await fetchUser();
+      toast.success("Parent account created successfully!");
+      closeFlowModal();
+      navigate("/parent/dashboard");
+    } catch (error) {
+      console.error("Parent registration confirm error:", error);
+      toast.error(error.response?.data?.message || "Failed to complete registration");
+    } finally {
+      if (fromPayment) {
+        setIsPaymentLoading(false);
+      } else {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  const initiateParentRegistration = async (flow, linkingCode) => {
+    setIsSubmitting(true);
+    setPaymentError(null);
+    try {
+      const response = await api.post("/api/auth/parent-registration/initiate", {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        password: formData.password,
+        flow,
+        childLinkingCode: linkingCode ? linkingCode.trim().toUpperCase() : undefined,
+      });
+
+      const data = response.data;
+      setIntentId(data.intentId);
+      setIntentAmount(data.amount || 0);
+
+      if (data.requiresPayment) {
+        setClientSecret(data.clientSecret);
+        await initializeStripeElements(data.clientSecret);
+        setIsSubmitting(false);
+      } else {
+        await finalizeParentRegistration(data.intentId, null, false);
+      }
+    } catch (error) {
+      console.error("Parent registration initiate error:", error);
+      toast.error(error.response?.data?.message || "Failed to start registration");
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleFlowSelection = (flow) => {
+    setSelectedFlow(flow);
+    if (flow === "child_not_created") {
+      initiateParentRegistration("child_not_created");
+    } else {
+      setModalView("child-code");
+    }
+  };
+
+  const handleChildCodeSubmit = async () => {
+    if (!childLinkCode.trim()) {
+      toast.error("Please enter your child’s secret linking code");
+      return;
+    }
+    await initiateParentRegistration("child_existing", childLinkCode);
+  };
+
+  const handleConfirmPayment = async () => {
+    if (!stripeInstance || !stripeElements || !intentId) {
+      return;
+    }
+
+    setPaymentError(null);
+    setIsPaymentLoading(true);
+
+    try {
+      const { error: submitError } = await stripeElements.submit();
+      if (submitError) {
+        setPaymentError(submitError.message || "Unable to process payment details.");
+        setIsPaymentLoading(false);
+        return;
+      }
+
+      const { error: confirmError, paymentIntent } = await stripeInstance.confirmPayment({
+        elements: stripeElements,
+        clientSecret,
+        confirmParams: {
+          payment_method_data: {
+            billing_details: {
+              name: formData.name,
+              email: formData.email,
+            },
+          },
+        },
+        redirect: "if_required",
+      });
+
+      if (confirmError) {
+        setPaymentError(confirmError.message || "Payment confirmation failed.");
+        setIsPaymentLoading(false);
+        return;
+      }
+
+      await finalizeParentRegistration(intentId, paymentIntent?.id || null, true);
+    } catch (error) {
+      console.error("Payment confirmation error:", error);
+      setPaymentError(error.message || "Unexpected error while confirming payment");
+      setIsPaymentLoading(false);
+    }
+  };
+
+  const formatAmount = (amount) =>
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount || 0);
+
+  const renderModalContent = () => {
+    if (modalView === "child-code") {
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-5"
+        >
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">Link with your child</h3>
+            <p className="text-sm text-gray-600 mt-2">
+              Enter your child’s secret linking code. We will verify their current plan and handle the rest.
+            </p>
+          </div>
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-gray-700 flex items-center gap-2">
+              <Link2 className="w-4 h-4 text-purple-500" />
+              Child's secret linking code
+            </label>
+            <input
+              type="text"
+              value={childLinkCode}
+              onChange={(event) => setChildLinkCode(event.target.value.toUpperCase())}
+              placeholder="e.g. ST-ABC123"
+              className="w-full px-4 py-3 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent uppercase tracking-widest"
+            />
+          </div>
+          <div className="flex justify-between gap-3 pt-2">
+            <button
+              type="button"
+              onClick={() => {
+                setSelectedFlow(null);
+                setModalView("choose");
+                setChildLinkCode("");
+              }}
+              className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition"
+              disabled={isSubmitting}
+            >
+              Back
+            </button>
+            <button
+              type="button"
+              onClick={handleChildCodeSubmit}
+              disabled={isSubmitting}
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition disabled:opacity-60"
+            >
+              {isSubmitting ? (
+                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+              ) : (
+                "Link & Continue"
+              )}
+            </button>
+          </div>
+        </motion.div>
+      );
+    }
+
+    if (modalView === "payment") {
+      return (
+        <motion.div
+          key="payment"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="space-y-5"
+        >
+          <div className="space-y-2">
+            <h3 className="text-xl font-bold text-gray-900">Complete payment</h3>
+            <p className="text-sm text-gray-600">
+              We’ll finalize your parent dashboard as soon as the payment succeeds.
+            </p>
+            <div className="flex items-center gap-3 bg-purple-50 border border-purple-100 rounded-xl px-4 py-3">
+              <ShieldCheck className="w-5 h-5 text-purple-600" />
+              <div>
+                <p className="text-xs uppercase tracking-wide text-purple-500 font-semibold">
+                  Amount due
+                </p>
+                <p className="text-lg font-bold text-purple-700">
+                  {formatAmount(intentAmount)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="border border-gray-200 rounded-xl p-4 bg-white">
+            <div id="parent-payment-element" />
+          </div>
+
+          {paymentError && (
+            <div className="bg-rose-50 border border-rose-200 text-rose-600 rounded-xl px-4 py-3 text-sm">
+              {paymentError}
+            </div>
+          )}
+
+          <div className="flex gap-3">
+            <button
+              type="button"
+              onClick={closeFlowModal}
+              disabled={isPaymentLoading}
+              className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition disabled:opacity-60"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirmPayment}
+              disabled={isPaymentLoading}
+              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition disabled:opacity-60"
+            >
+              {isPaymentLoading ? (
+                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
+              ) : (
+                "Pay & Create Account"
+              )}
+            </button>
+          </div>
+        </motion.div>
+      );
+    }
+
+    return (
+      <motion.div
+        key="choose"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="space-y-6"
+      >
+        <div>
+          <h3 className="text-xl font-bold text-gray-900 text-center">
+            How would you like to continue?
+          </h3>
+          <p className="text-sm text-gray-600 text-center mt-2">
+            We’ll tailor the setup based on whether your child’s account already exists.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <button
+            type="button"
+            onClick={() => handleFlowSelection("child_existing")}
+            className={`group rounded-2xl border-2 transition-all p-5 text-left ${
+              selectedFlow === "child_existing"
+                ? "border-purple-500 bg-purple-50"
+                : "border-gray-200 hover:border-purple-200 hover:bg-purple-50/50"
+            }`}
+            disabled={isSubmitting}
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
+                <Link2 className="w-5 h-5" />
+              </div>
+              {selectedFlow === "child_existing" && (
+                <CheckCircle2 className="w-5 h-5 text-purple-600" />
+              )}
+            </div>
+            <h4 className="mt-4 text-lg font-semibold text-gray-900">
+              My child’s account is already created
+            </h4>
+            <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+              Link using their secret code. We’ll keep their current progress and upgrade the family plan if needed.
+            </p>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => handleFlowSelection("child_not_created")}
+            className={`group rounded-2xl border-2 transition-all p-5 text-left ${
+              selectedFlow === "child_not_created"
+                ? "border-pink-500 bg-pink-50"
+                : "border-gray-200 hover:border-pink-200 hover:bg-pink-50/50"
+            }`}
+            disabled={isSubmitting}
+          >
+            <div className="flex items-center justify-between">
+              <div className="w-10 h-10 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              {selectedFlow === "child_not_created" && (
+                <CheckCircle2 className="w-5 h-5 text-pink-600" />
+              )}
+            </div>
+            <h4 className="mt-4 text-lg font-semibold text-gray-900">
+              My child’s account is not yet created
+            </h4>
+            <p className="mt-2 text-sm text-gray-600 leading-relaxed">
+              Purchase the Student + Parent Premium Pro plan now. We’ll generate a secret linking code instantly.
+            </p>
+          </button>
+        </div>
+
+        <button
+          type="button"
+          onClick={closeFlowModal}
+          disabled={isSubmitting}
+          className="w-full py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition disabled:opacity-60"
+        >
+          Cancel
+        </button>
+      </motion.div>
+    );
   };
 
   return (
@@ -85,17 +509,14 @@ const ParentRegister = () => {
         />
       </motion.div>
 
-      {/* Added responsive padding and mobile-friendly layout */}
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-8 sm:px-6 lg:px-8">
-        {/* Back Buttons - Adjusted for mobile */}
         <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-50">
           <button
-            onClick={() => navigate("/choose-account-type")}
+            onClick={() => navigate("/")}
             className="bg-white/10 backdrop-blur-xl border border-white/20 text-white px-3 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2"
           >
             <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
-            <span className="hidden xs:inline">Back to Account Type</span>
-            <span className="xs:hidden">Back</span>
+            <span className="xs:hidden">Home</span>
           </button>
         </div>
 
@@ -105,7 +526,6 @@ const ParentRegister = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
         >
-          {/* Adjusted padding for mobile */}
           <motion.div
             className="bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl p-5 sm:p-6 md:p-8 shadow-2xl"
             initial={{ scale: 0.98 }}
@@ -125,16 +545,14 @@ const ParentRegister = () => {
                 Parent Registration
               </h1>
               <p className="text-gray-300 text-xs sm:text-sm">
-                Create your parent account
+                Create your parent account and unlock the premium family dashboard.
               </p>
             </motion.div>
 
-            {/* Adjusted spacing for mobile */}
             <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4 md:space-y-6">
-              {/* Name */}
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
-                  <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
+                  <User className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-300" />
                 </div>
                 <input
                   type="text"
@@ -147,10 +565,9 @@ const ParentRegister = () => {
                 />
               </div>
 
-              {/* Email */}
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
-                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
+                  <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-300" />
                 </div>
                 <input
                   type="email"
@@ -163,12 +580,10 @@ const ParentRegister = () => {
                 />
               </div>
 
-              {/* Password and Confirm Password - Responsive grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                {/* Password */}
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
+                    <Lock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-300" />
                   </div>
                   <input
                     type={showPassword ? "text" : "password"}
@@ -181,21 +596,16 @@ const ParentRegister = () => {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center text-gray-400 hover:text-white"
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center text-gray-300 hover:text-white"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    ) : (
-                      <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    )}
+                    {showPassword ? <EyeOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                   </button>
                 </div>
 
-                {/* Confirm Password */}
                 <div className="relative">
                   <div className="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
-                    <Lock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
+                    <Lock className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-300" />
                   </div>
                   <input
                     type={showConfirmPassword ? "text" : "password"}
@@ -208,54 +618,26 @@ const ParentRegister = () => {
                   />
                   <button
                     type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center text-gray-400 hover:text-white"
+                    onClick={() => setShowConfirmPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-0 pr-2.5 sm:pr-3 flex items-center text-gray-300 hover:text-white"
                   >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    ) : (
-                      <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                    )}
+                    {showConfirmPassword ? <EyeOff className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> : <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />}
                   </button>
                 </div>
               </div>
 
-              {/* Child Email - Adjusted padding and text sizes */}
-              <div className="space-y-1.5 sm:space-y-2">
-                <label className="block text-xs sm:text-sm font-medium text-gray-300">Child Email Address *</label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-2.5 sm:pl-3 flex items-center pointer-events-none">
-                    <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-gray-400" />
-                  </div>
-                  <input
-                    type="email"
-                    name="childEmail"
-                    value={formData.childEmail}
-                    onChange={handleInputChange}
-                    placeholder="Enter your child's email address"
-                    required
-                    className="w-full pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 md:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 text-xs sm:text-sm"
-                  />
-                </div>
-                <p className="text-xs text-gray-400">This links your parent account to your child's student account</p>
-              </div>
-
-              {/* Adjusted button padding and text sizes */}
               <button
                 type="submit"
-                disabled={isLoading}
-                className="w-full py-2.5 sm:py-3 md:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl transition-all duration-300 text-xs sm:text-sm disabled:opacity-50"
+                disabled={isSubmitting}
+                className="w-full py-2.5 sm:py-3 md:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl transition-all duration-300 text-xs sm:text-sm disabled:opacity-60"
               >
-                <span className="flex items-center justify-center">
-                  {isLoading ? (
-                    <motion.div
-                      className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full"
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-                    />
+                <span className="flex items-center justify-center gap-2">
+                  {isSubmitting ? (
+                    <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
                   ) : (
                     <>
-                      Create Parent Account <ArrowRight className="ml-1 h-3 w-3 sm:h-3.5 sm:w-3.5" />
+                      Create Parent Account
+                      <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
                     </>
                   )}
                 </span>
@@ -263,13 +645,41 @@ const ParentRegister = () => {
             </form>
 
             <div className="text-center mt-3 sm:mt-4">
-              <button onClick={() => navigate("/login")} className="text-purple-400 hover:underline text-xs sm:text-sm">
-                Already have a Parent account? Sign in
+              <button onClick={() => navigate("/login")} className="text-purple-300 hover:underline text-xs sm:text-sm">
+                Already have a parent account? Sign in
               </button>
             </div>
           </motion.div>
         </motion.div>
       </div>
+
+      <AnimatePresence>
+        {modalOpen && (
+          <motion.div
+            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 px-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <motion.div
+              className="max-w-2xl w-full bg-white rounded-3xl shadow-2xl p-6 sm:p-8 relative"
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+            >
+              <button
+                type="button"
+                onClick={closeFlowModal}
+                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition"
+                aria-label="Close"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              {renderModalContent()}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };

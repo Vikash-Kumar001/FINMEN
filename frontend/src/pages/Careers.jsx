@@ -1,12 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { Heart, Users, Target, Star, Award, MapPin, Clock, DollarSign } from "lucide-react";
 import MainNavbar from "../components/MainNavbar";
 import { useNavigate } from "react-router-dom";
+import api from "../utils/api";
 
 const Careers = () => {
   const navigate = useNavigate();
   const [showMobileMenu, setShowMobileMenu] = useState(false);
+  const [positions, setPositions] = useState([]);
+  const [loadingPositions, setLoadingPositions] = useState(true);
+  const [positionsError, setPositionsError] = useState("");
 
   const handlePillarsClick = () => {
     navigate("/");
@@ -28,64 +32,69 @@ const Careers = () => {
     navigate("/");
   };
 
-  const positions = [
-    {
-      id: 1,
-      title: "Senior Frontend Developer",
-      department: "Engineering",
-      location: "Remote",
-      type: "Full-time",
-      description: "Build and maintain our cutting-edge educational platform using React, TypeScript, and modern web technologies.",
-      requirements: [
-        "5+ years of experience with React and modern JavaScript",
-        "Strong understanding of state management (Redux, Context API)",
-        "Experience with testing frameworks (Jest, Cypress)",
-        "Passion for education technology"
-      ]
-    },
-    {
-      id: 2,
-      title: "Educational Content Specialist",
-      department: "Content",
-      location: "Delhi, India",
-      type: "Full-time",
-      description: "Create engaging, curriculum-aligned educational content for students across different age groups.",
-      requirements: [
-        "Bachelor's degree in Education or related field",
-        "3+ years of experience in curriculum development",
-        "Strong understanding of child psychology and learning theories",
-        "Excellent writing and communication skills"
-      ]
-    },
-    {
-      id: 3,
-      title: "UX/UI Designer",
-      department: "Design",
-      location: "Remote",
-      type: "Full-time",
-      description: "Design intuitive and engaging user experiences for students, parents, and educators.",
-      requirements: [
-        "Portfolio demonstrating strong UI/UX design skills",
-        "Proficiency in Figma, Sketch, or Adobe XD",
-        "Understanding of accessibility standards",
-        "Experience designing for educational platforms"
-      ]
-    },
-    {
-      id: 4,
-      title: "Customer Success Manager",
-      department: "Customer Success",
-      location: "Mumbai, India",
-      type: "Full-time",
-      description: "Support our school partners and ensure successful implementation of our platform.",
-      requirements: [
-        "2+ years in customer success or account management",
-        "Experience with educational institutions",
-        "Excellent communication and problem-solving skills",
-        "Ability to manage multiple accounts simultaneously"
-      ]
+  const fetchPositions = async () => {
+    try {
+      const res = await api.get("/api/careers/openings");
+      setPositions(res.data?.data || []);
+      setPositionsError("");
+    } catch (error) {
+      console.error("Error fetching job openings:", error);
+      setPositionsError("Unable to load openings right now. Please try again later.");
+    } finally {
+      setLoadingPositions(false);
     }
-  ];
+  };
+
+  useEffect(() => {
+    fetchPositions();
+
+    let eventSource;
+    const baseURL = api.defaults.baseURL?.replace(/\/$/, "");
+
+    if (baseURL && typeof EventSource !== "undefined") {
+      try {
+        eventSource = new EventSource(`${baseURL}/api/careers/openings/stream`, {
+          withCredentials: true
+        });
+
+        eventSource.onmessage = (event) => {
+          if (!event.data) return;
+          try {
+            const data = JSON.parse(event.data);
+            setPositions(Array.isArray(data) ? data : []);
+            setPositionsError("");
+            setLoadingPositions(false);
+          } catch (err) {
+            console.error("Error parsing job openings stream payload:", err);
+          }
+        };
+
+        eventSource.onerror = (event) => {
+          console.error("Job openings stream error:", event);
+          setPositionsError((prev) =>
+            prev || "Live updates temporarily unavailable. Showing the latest data."
+          );
+        };
+      } catch (error) {
+        console.error("Error connecting to job openings stream:", error);
+      }
+    }
+
+    return () => {
+      eventSource?.close();
+    };
+  }, []);
+
+  const sortedPositions = useMemo(() => {
+    return [...positions].sort((a, b) => {
+      if (a.status === b.status) {
+        return new Date(b.createdAt || 0) - new Date(a.createdAt || 0);
+      }
+      return a.status === "open" ? -1 : 1;
+    });
+  }, [positions]);
+
+  const displayWorkMode = (mode) => (mode === "Remote" ? "Work From Home" : mode || "Work From Home");
 
   const benefits = [
     {
@@ -201,52 +210,122 @@ const Careers = () => {
             </p>
           </motion.div>
 
-          <div className="space-y-6">
-            {positions.map((position, index) => (
-              <motion.div
-                key={position.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                className="bg-gradient-to-br from-white to-blue-50 rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all"
-              >
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
-                  <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">{position.title}</h3>
-                    <div className="flex flex-wrap gap-2">
-                      <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                        {position.department}
-                      </span>
-                      <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
-                        {position.location}
-                      </span>
-                      <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
-                        {position.type}
-                      </span>
+          {loadingPositions ? (
+            <div className="py-16 flex flex-col items-center justify-center text-gray-500 gap-4">
+              <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+              <p className="text-lg font-semibold">Loading open positions...</p>
+            </div>
+          ) : positionsError ? (
+            <div className="py-16 text-center text-red-500 font-semibold">
+              {positionsError}
+            </div>
+          ) : sortedPositions.length === 0 ? (
+            <div className="py-16 text-center text-gray-600">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-blue-50 flex items-center justify-center text-blue-500">
+                <Target className="w-8 h-8" />
+              </div>
+              <p className="text-xl font-semibold">We’re not hiring at the moment.</p>
+              <p className="text-sm text-gray-500 mt-2">
+                Check back soon or follow us on social to hear about new opportunities first.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {sortedPositions.map((position, index) => {
+                const isOpen = position.status !== "closed";
+                const buttonLabel = isOpen ? "Apply Now" : "Applications Closed";
+                const hasExternalLink = Boolean(position.applyUrl);
+                const buttonDisabled = !isOpen;
+
+                return (
+                  <motion.div
+                    key={position.id || index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: index * 0.1 }}
+                    className="bg-gradient-to-br from-white to-blue-50 rounded-2xl p-6 shadow-lg border border-gray-100 hover:shadow-xl transition-all"
+                  >
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                      <div>
+                        <h3 className="text-2xl font-bold text-gray-900 mb-2">{position.title}</h3>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+                            {position.department}
+                          </span>
+                          <span className="px-3 py-1 bg-purple-100 text-purple-800 text-sm font-medium rounded-full">
+                            {position.location}
+                          </span>
+                          {position.workMode && (
+                            <span className="px-3 py-1 bg-indigo-100 text-indigo-800 text-sm font-medium rounded-full">
+                          {displayWorkMode(position.workMode)}
+                            </span>
+                          )}
+                          <span className="px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-full">
+                            {position.employmentType || "Full-time"}
+                          </span>
+                        </div>
+                      </div>
+                      <button
+                        className={`px-6 py-2 rounded-lg font-semibold transition-all ${
+                          buttonDisabled
+                            ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                            : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-lg"
+                        }`}
+                        disabled={buttonDisabled}
+                        onClick={() => {
+                          if (!isOpen) return;
+                          if (hasExternalLink) {
+                            window.open(position.applyUrl, "_blank", "noopener,noreferrer");
+                          } else {
+                            navigate(`/careers/apply/${position.id}`);
+                          }
+                        }}
+                      >
+                        {buttonLabel}
+                      </button>
                     </div>
-                  </div>
-                  <button className="mt-4 md:mt-0 px-6 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-medium rounded-lg hover:shadow-lg transition-all">
-                    Apply Now
-                  </button>
-                </div>
-                
-                <p className="text-gray-600 mb-4">{position.description}</p>
-                
-                <div>
-                  <h4 className="font-bold text-gray-900 mb-2">Requirements:</h4>
-                  <ul className="space-y-1">
-                    {position.requirements.map((req, reqIndex) => (
-                      <li key={reqIndex} className="flex items-start">
-                        <span className="text-blue-500 mr-2">•</span>
-                        <span className="text-gray-600">{req}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </motion.div>
-            ))}
-          </div>
+
+                    <p className="text-gray-600 mb-4">{position.description}</p>
+
+                    {position.status === "closed" && position.statusMessage && (
+                      <div className="mb-4 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-700">
+                        {position.statusMessage}
+                      </div>
+                    )}
+
+                    {(position.responsibilities || []).length > 0 && (
+                      <div className="mb-4">
+                        <h4 className="font-bold text-gray-900 mb-2">Responsibilities:</h4>
+                        <ul className="space-y-1">
+                          {position.responsibilities.map((item, itemIndex) => (
+                            <li key={itemIndex} className="flex items-start">
+                              <span className="text-purple-500 mr-2">•</span>
+                              <span className="text-gray-600">{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+
+                    {(position.requirements || []).length > 0 && (
+                      <div>
+                        <h4 className="font-bold text-gray-900 mb-2">Requirements:</h4>
+                        <ul className="space-y-1">
+                          {position.requirements.map((req, reqIndex) => (
+                            <li key={reqIndex} className="flex items-start">
+                              <span className="text-blue-500 mr-2">•</span>
+                              <span className="text-gray-600">{req}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 

@@ -31,8 +31,12 @@ const ProtectedRoute = ({ children, roles, requireApproved = false, otpOnly = fa
 
     // 🔐 Role-based access control
     if (roles && !roles.includes(user.role)) {
-        console.warn(`⚠️ Access denied. Role '${user.role}' not permitted for this route.`);
-        return <Navigate to="/" replace />;
+        const isStudentEquivalent = user.role === "school_student" && roles.includes("student");
+
+        if (!isStudentEquivalent) {
+            console.warn(`⚠️ Access denied. Role '${user.role}' not permitted for this route.`);
+            return <Navigate to="/" replace />;
+        }
     }
 
     // ⛔ Stakeholder not approved (seller, csr). Parents are auto-approved.

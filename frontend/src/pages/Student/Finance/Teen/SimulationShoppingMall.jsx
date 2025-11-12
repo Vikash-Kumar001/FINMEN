@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from '../GameShell';
 import { useGameFeedback } from '../../../../hooks/useGameFeedback';
 
 const SimulationShoppingMall = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [budget, setBudget] = useState(150);
   const [cart, setCart] = useState([]);
@@ -201,6 +204,7 @@ const SimulationShoppingMall = () => {
       gameId="finance-teens-18"
       gameType="simulation"
       totalLevels={scenarios.length}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={currentScenario + 1}
       score={calculateTotalScore()}
       totalScore={scenarios.length * 3} // Max 3 points per scenario

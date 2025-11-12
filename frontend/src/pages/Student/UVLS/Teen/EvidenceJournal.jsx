@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const EvidenceJournal = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [decision, setDecision] = useState("");
   const [evidenceList, setEvidenceList] = useState(["", "", "", "", ""]);
   const [currentEvidence, setCurrentEvidence] = useState(0);
@@ -59,6 +62,7 @@ const EvidenceJournal = () => {
       gameId="decision-157"
       gameType="decision"
       totalLevels={10}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={7}
       showConfetti={showResult && isComplete}
       flashPoints={flashPoints}

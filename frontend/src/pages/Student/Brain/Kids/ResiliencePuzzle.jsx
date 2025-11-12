@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
 import { Brain, ArrowUp, RefreshCw, XCircle, Trophy, RotateCcw, Timer } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const ResiliencePuzzle = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [currentLevel, setCurrentLevel] = useState(1);
   const [cards, setCards] = useState([]);
   const [flipped, setFlipped] = useState([]);
@@ -231,6 +234,7 @@ const ResiliencePuzzle = () => {
       score={score}
       currentLevel={currentLevel}
       totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
       gameId="brain-kids-184"
       gameType="brain-health"
       showGameOver={levelCompleted}

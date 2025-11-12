@@ -7,7 +7,7 @@ const MainNavbar = ({
     handlePillarsClick,
     handleWhyChooseClick,
     handlePricingClick,
-    handleStudentServicesClick,
+    handleFooterClick,
     showMobileMenu,
     setShowMobileMenu
 }) => {
@@ -47,13 +47,6 @@ const MainNavbar = ({
                             className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
                         >
                             Pricing
-                        </button>
-
-                        <button
-                            onClick={handleStudentServicesClick}
-                            className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
-                        >
-                            Services
                         </button>
 
                         <button
@@ -163,17 +156,6 @@ const MainNavbar = ({
                                             whileTap={{ scale: 0.98 }}
                                         >
                                             Pricing
-                                        </motion.button>
-
-                                        <motion.button
-                                            onClick={() => {
-                                                handleStudentServicesClick();
-                                                setShowMobileMenu(false);
-                                            }}
-                                            className="text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
-                                            whileTap={{ scale: 0.98 }}
-                                        >
-                                            Services
                                         </motion.button>
 
                                         <motion.button

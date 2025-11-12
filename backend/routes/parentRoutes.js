@@ -18,6 +18,300 @@ const router = express.Router();
 router.use(requireAuth);
 router.use(requireParent);
 
+// Parent profile overview with real-time ready snapshot
+router.get("/profile/overview", async (req, res) => {
+  try {
+    const parentId = req.user._id;
+
+    const parent = await User.findById(parentId)
+      .select("name fullName email phone location bio avatar preferences subscription childEmail linkedIds createdAt updatedAt lastLoginAt linkingCode");
+
+    if (!parent) {
+      return res.status(404).json({ message: "Parent account not found" });
+    }
+
+    // Resolve primary contact fields
+    const parentProfile = {
+      id: parent._id,
+      name: parent.fullName || parent.name,
+      email: parent.email,
+      phone: parent.phone || "",
+      location: parent.location || parent.city || "",
+      bio: parent.bio || "",
+      avatar: parent.avatar || "/avatars/avatar1.png",
+      preferences: parent.preferences || {},
+      subscription: parent.subscription || null,
+      linkedChildEmails: Array.isArray(parent.childEmail) ? parent.childEmail : parent.childEmail ? [parent.childEmail] : [],
+      linkedChildIds: parent.linkedIds?.childIds?.map((id) => id.toString()) || [],
+      joinedAt: parent.createdAt,
+      lastUpdatedAt: parent.updatedAt,
+      lastLoginAt: parent.lastLoginAt || parent.updatedAt,
+      linkingCode: parent.linkingCode || null,
+    };
+
+    // Build child query consistent with /children endpoint
+    const childQuery = {
+      role: { $in: ["student", "school_student"] },
+      $or: [
+        { email: { $in: parentProfile.linkedChildEmails } },
+        { _id: { $in: parent.linkedIds?.childIds || [] } },
+        { guardianEmail: parent.email },
+      ],
+    };
+
+    const children = await User.find(childQuery)
+      .select("name fullName email avatar institution city createdAt lastActive role tenantId orgId dob dateOfBirth academic")
+      .lean();
+
+    const childIds = children.map((child) => child._id);
+
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const childrenSummaries = await Promise.all(
+      children.map(async (child) => {
+        const [wallet, userProgress, gameProgress, moodLogs, activityLogs, schoolStudent] = await Promise.all([
+          Wallet.findOne({ userId: child._id }).lean(),
+          UserProgress.findOne({ userId: child._id }).lean(),
+          UnifiedGameProgress.find({ userId: child._id }).limit(20).lean(),
+          MoodLog.find({ userId: child._id }).sort({ createdAt: -1 }).limit(7).lean(),
+          ActivityLog.find({ userId: child._id, createdAt: { $gte: sevenDaysAgo } })
+            .sort({ createdAt: -1 })
+            .limit(20)
+            .lean(),
+          child.role === "school_student"
+            ? SchoolStudent.findOne({ userId: child._id, tenantId: child.tenantId }).populate("orgId", "name").populate("classId", "classNumber stream")
+            : null,
+        ]);
+
+        const healCoins = wallet?.balance || 0;
+        const level = userProgress?.level || 1;
+        const xp = userProgress?.xp || 0;
+        const streak = userProgress?.streak || 0;
+
+        // Aggregate mastery
+        const pillars = {};
+        (gameProgress || []).forEach((game) => {
+          if (!game.category) return;
+          const key = game.category;
+          const progress = game.progress || 0;
+          if (!pillars[key]) {
+            pillars[key] = { progress: 0, count: 0 };
+          }
+          pillars[key].progress += progress;
+          pillars[key].count += 1;
+        });
+        const pillarEntries = Object.entries(pillars).map(([key, value]) => ({
+          name: key,
+          percentage: value.count > 0 ? Math.round(value.progress / value.count) : 0,
+        }));
+        const overallMastery =
+          pillarEntries.length > 0
+            ? Math.round(pillarEntries.reduce((sum, pillar) => sum + pillar.percentage, 0) / pillarEntries.length)
+            : 0;
+        const topPillars = pillarEntries.sort((a, b) => b.percentage - a.percentage).slice(0, 2);
+
+        // Mood insights
+        const averageMoodScore =
+          moodLogs && moodLogs.length > 0
+            ? Number(
+                (
+                  moodLogs.reduce((sum, log) => sum + (log.score ?? 3), 0) /
+                  moodLogs.length
+                ).toFixed(1)
+              )
+            : null;
+        const latestMood = moodLogs?.[0] || null;
+
+        // Engagement
+        const engagementMinutes = (activityLogs || []).reduce((sum, log) => sum + (log.duration || 5), 0);
+        const sessionsCount = activityLogs?.length || 0;
+
+        const alerts = [];
+        if (averageMoodScore !== null && averageMoodScore < 2.5) {
+          alerts.push({
+            type: "mood",
+            level: "high",
+            message: "Consistently low mood this week",
+          });
+        } else if (averageMoodScore !== null && averageMoodScore < 3) {
+          alerts.push({
+            type: "mood",
+            level: "medium",
+            message: "Mood trending lower than usual",
+          });
+        }
+
+        if (engagementMinutes < 60) {
+          alerts.push({
+            type: "engagement",
+            level: "medium",
+            message: "Less than 60 mins of learning this week",
+          });
+        }
+
+        const institution =
+          schoolStudent?.orgId?.name ||
+          schoolStudent?.institution ||
+          child.institution ||
+          child.city ||
+          "Not specified";
+
+        const grade =
+          child.academic?.grade ||
+          (schoolStudent?.classId
+            ? `Class ${schoolStudent.classId.classNumber}${schoolStudent.classId.stream ? ` ${schoolStudent.classId.stream}` : ""}`
+            : "Not specified");
+
+        return {
+          id: child._id,
+          name: child.fullName || child.name,
+          email: child.email,
+          avatar: child.avatar || "/avatars/avatar1.png",
+          institution,
+          grade,
+          level,
+          xp,
+          streak,
+          healCoins,
+          overallMastery,
+          topPillars,
+          averageMoodScore,
+          latestMood: latestMood
+            ? {
+                mood: latestMood.mood,
+                emoji: latestMood.emoji || "😊",
+                loggedAt: latestMood.createdAt,
+              }
+            : null,
+          engagement: {
+            minutes: engagementMinutes,
+            sessions: sessionsCount,
+          },
+          totalGamesPlayed: (gameProgress || []).reduce((sum, game) => sum + (game.timesPlayed || 0), 0),
+          lastActive: child.lastActive || (activityLogs?.[0]?.createdAt ?? child.createdAt),
+          alerts,
+        };
+      })
+    );
+
+    const totalCoins = childrenSummaries.reduce((sum, child) => sum + (child.healCoins || 0), 0);
+    const avgEngagementMinutes =
+      childrenSummaries.length > 0
+        ? Math.round(
+            childrenSummaries.reduce((sum, child) => sum + (child.engagement?.minutes || 0), 0) /
+              childrenSummaries.length
+          )
+        : 0;
+    const lowMoodChildren = childrenSummaries.filter(
+      (child) => child.averageMoodScore !== null && child.averageMoodScore < 3
+    ).length;
+    const activeChildren = childrenSummaries.filter((child) => (child.engagement?.sessions || 0) > 0).length;
+
+    const rawNotifications = await Notification.find({ userId: parentId })
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .lean();
+
+    const notifications = rawNotifications.map((notification) => ({
+      id: notification._id,
+      title: notification.title || "Notification",
+      message: notification.message || "",
+      type: notification.type || "general",
+      read: notification.read || false,
+      timestamp: notification.createdAt,
+      metadata: notification.metadata || {},
+    }));
+
+    const activityLookup = new Map(
+      childrenSummaries.map((child) => [child.id.toString(), child.name])
+    );
+
+    const timelineLogs = await ActivityLog.find({
+      userId: { $in: childIds },
+    })
+      .sort({ createdAt: -1 })
+      .limit(25)
+      .lean();
+
+    const activityTimeline = timelineLogs.map((log) => ({
+      id: log._id,
+      childId: log.userId,
+      childName: activityLookup.get(log.userId?.toString()) || "Child",
+      type: log.activityType || "activity",
+      title: log.action || "Learning Activity",
+      description: log.details?.description || log.details?.summary || "",
+      duration: log.duration || 5,
+      timestamp: log.createdAt,
+      category: log.category || "general",
+    }));
+
+    const upcomingRenewalDate = parentProfile.subscription?.nextBilling
+      ? new Date(parentProfile.subscription.nextBilling)
+      : null;
+
+    const nextActions = [];
+    if (lowMoodChildren > 0) {
+      nextActions.push({
+        title: "Check in on mood",
+        description: `${lowMoodChildren} ${
+          lowMoodChildren === 1 ? "child needs" : "children need"
+        } emotional support this week`,
+        priority: "high",
+        category: "wellbeing",
+      });
+    }
+    if (childrenSummaries.some((child) => (child.healCoins || 0) > 2000)) {
+      nextActions.push({
+        title: "Plan a reward celebration",
+        description: "One or more children have earned over 2000 HealCoins",
+        priority: "medium",
+        category: "rewards",
+      });
+    }
+    if (upcomingRenewalDate) {
+      const daysToRenewal = Math.round(
+        (upcomingRenewalDate.getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      );
+      if (daysToRenewal <= 14) {
+        nextActions.push({
+          title: "Subscription renewal",
+          description: `Your plan renews in ${Math.max(daysToRenewal, 0)} day${daysToRenewal === 1 ? "" : "s"}`,
+          priority: "medium",
+          category: "subscription",
+        });
+      }
+    }
+    if (nextActions.length === 0) {
+      nextActions.push({
+        title: "Keep the momentum",
+        description: "Review weekly progress together and celebrate wins",
+        priority: "low",
+        category: "engagement",
+      });
+    }
+
+    res.json({
+      parent: parentProfile,
+      insights: {
+        totalChildren: childrenSummaries.length,
+        activeChildren,
+        totalHealCoins: totalCoins,
+        avgWeeklyEngagementMinutes: avgEngagementMinutes,
+        lowMoodChildren,
+        subscriptionStatus: parentProfile.subscription?.status || "unknown",
+        nextBilling: parentProfile.subscription?.nextBilling || null,
+      },
+      children: childrenSummaries,
+      notifications,
+      activityTimeline,
+      nextActions,
+    });
+  } catch (error) {
+    console.error("Error fetching parent profile overview:", error);
+    res.status(500).json({ message: "Failed to fetch parent profile overview" });
+  }
+});
+
 // Link a child to parent account
 router.post("/link-child", async (req, res) => {
   try {
@@ -36,6 +330,18 @@ router.post("/link-child", async (req, res) => {
 
     if (!child) {
       return res.status(404).json({ message: 'Student not found with this email address' });
+    }
+
+    // Check if student has student_parent_premium_pro subscription for parent linking
+    const { getUserSubscription } = await import('../utils/subscriptionUtils.js');
+    const studentSubscription = await getUserSubscription(child._id);
+    
+    if (studentSubscription.planType !== 'student_parent_premium_pro' || studentSubscription.status !== 'active') {
+      return res.status(403).json({ 
+        message: 'Parent linking is only available with Student + Parent Premium Pro Plan. Please upgrade to link your child.',
+        upgradeRequired: true,
+        feature: 'parentDashboard'
+      });
     }
 
     // Check if child is already linked to this parent
@@ -727,10 +1033,10 @@ router.get("/child/:childId/analytics", async (req, res) => {
       currentPlan: {
         name: 'Premium Family',
         status: 'Active',
-        nextBilling: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // 30 days from now
+        nextBilling: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
         price: 499,
         currency: '₹',
-        billingCycle: 'month',
+        billingCycle: 'year',
         features: [
           'Unlimited Access to All Games',
           'Detailed Progress Reports',
@@ -743,7 +1049,7 @@ router.get("/child/:childId/analytics", async (req, res) => {
         name: 'Premium Plus',
         price: 799,
         currency: '₹',
-        billingCycle: 'month',
+        billingCycle: 'year',
         features: [
           'Get 1-on-1 Counseling Sessions',
           'Custom Learning Paths',

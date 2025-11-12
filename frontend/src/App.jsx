@@ -36,9 +36,13 @@ import Leaderboard from "./pages/Student/Leaderboard";
 import StudentGame from "./pages/Student/StudentGame";
 import Notifications from "./components/Notifications";
 import Profile from "./components/Profile";
+import TeacherProfile from "./pages/School/TeacherProfile";
 import Setting from "./components/Settings";
 import BreathingExercise from "./pages/Student/BreathingExercise";
 import FinancialLiteracy from "./pages/Student/FinancialLiteracy";
+import PaymentPage from "./pages/Student/PaymentPage";
+import SubscriptionCheckout from "./pages/Student/SubscriptionCheckout";
+import PresentationPage from "./pages/Student/PresentationPage";
 import BudgetPlanner from "./pages/Student/BudgetPlanner";
 import InvestmentSimulator from "./pages/Student/InvestmentSimulator";
 import SavingsGoals from "./pages/Student/SavingsGoals";
@@ -152,106 +156,106 @@ import ReflexMoneyTruthGame from "./pages/Student/Finance/Kids/ReflexMoneyTruthG
 import HonestKidBadgeGame from "./pages/Student/Finance/Kids/HonestKidBadgeGame";
 
 // Teen Finance Game Levels
-import PocketMoneyStory from "./pages/Student/Finance/teen/PocketMoneyStory";
-import ReflexSmartSaver from "./pages/Student/Finance/teen/ReflexSmartSaver";
-import PuzzleOfSavingGoals from "./pages/Student/Finance/teen/PuzzleOfSavingGoals";
-import SalaryStory from "./pages/Student/Finance/teen/SalaryStory";
-import DebateSaveVsSpend from "./pages/Student/Finance/teen/DebateSaveVsSpend";
-import JournalOfSavingGoal from "./pages/Student/Finance/teen/JournalOfSavingGoal";
-import SimulationMonthlyMoney from "./pages/Student/Finance/teen/SimulationMonthlyMoney";
-import ReflexWiseUse from "./pages/Student/Finance/teen/ReflexWiseUse";
-import BadgeSmartSaver from "./pages/Student/Finance/teen/BadgeSmartSaver";
-import AllowanceStory from "./pages/Student/Finance/teen/AllowanceStory";
-import SpendingQuiz from "./pages/Student/Finance/teen/SpendingQuiz";
-import ReflexWiseChoices from "./pages/Student/Finance/teen/ReflexWiseChoices";
-import PuzzleSmartSpending from "./pages/Student/Finance/teen/PuzzleSmartSpending";
-import PartyStory from "./pages/Student/Finance/teen/PartyStory";
-import DebateNeedsVsWants from "./pages/Student/Finance/teen/DebateNeedsVsWants";
-import JournalOfSpending from "./pages/Student/Finance/teen/JournalOfSpending";
-import SimulationShoppingMall from "./pages/Student/Finance/teen/SimulationShoppingMall";
-import ReflexControl from "./pages/Student/Finance/teen/ReflexControl";
-import BadgeSmartSpenderTeen from "./pages/Student/Finance/teen/BadgeSmartSpenderTeen";
-import Allowance from "./pages/Student/Finance/teen/Allowance";
-import BudgetQuiz from "./pages/Student/Finance/teen/BudgetQuiz";
-import ReflexBudgett from "./pages/Student/Finance/teen/ReflexBudgett";
-import QuizOnSavingsRate from "./pages/Student/Finance/teen/QuizOnSavingsRate";
-import PuzzlePriorities from "./pages/Student/Finance/teen/PuzzlePriorities";
-import CollegeStory from "./pages/Student/Finance/teen/CollegeStory";
-import DebateBudgetFreedom from "./pages/Student/Finance/teen/DebateBudgetFreedom";
-import JournalMonthlyBudget from "./pages/Student/Finance/teen/JournalMonthlyBudget";
-import SimulationMonthlyAllowance from "./pages/Student/Finance/teen/SimulationMonthlyAllowance";
-import ReflexBudgetSmarts from "./pages/Student/Finance/teen/ReflexBudgetSmarts";
-import BadgeBudgetHero from "./pages/Student/Finance/teen/BadgeBudgetHero";
-import MovieVsBusFareStory from "./pages/Student/Finance/teen/MovieVsBusFareStory";
-import NeedsVsWantsQuiz from "./pages/Student/Finance/teen/NeedsVsWantsQuiz";
-import ReflexDecision from "./pages/Student/Finance/teen/ReflexDecision";
-import PuzzleRealPriorities from "./pages/Student/Finance/teen/PuzzleRealPriorities";
-import ExamPrepStory from "./pages/Student/Finance/teen/ExamPrepStory";
-import DebateWantsMatter from "./pages/Student/Finance/teen/DebateWantsMatter";
-import JournalOfBalance from "./pages/Student/Finance/teen/JournalOfBalance";
-import SimulationMonthlyBudget from "./pages/Student/Finance/teen/SimulationMonthlyBudget";
-import ReflexSmartSpend from "./pages/Student/Finance/teen/ReflexSmartSpend";
-import BadgeWiseChooser from "./pages/Student/Finance/teen/BadgeWiseChooser";
-import OnlinePaymentStory from "./pages/Student/Finance/teen/OnlinePaymentStory";
-import QuizOnDigitalMoney from "./pages/Student/Finance/teen/QuizOnDigitalMoney";
-import ReflexSecureUse from "./pages/Student/Finance/teen/ReflexSecureUse";
-import PuzzleOfDigitalTools from "./pages/Student/Finance/teen/PuzzleOfDigitalTools";
-import OnlineFraudStory from "./pages/Student/Finance/teen/OnlineFraudStory";
-import DebateCashVsDigital from "./pages/Student/Finance/teen/DebateCashVsDigital";
-import JournalOfDigitalUse from "./pages/Student/Finance/teen/JournalOfDigitalUse";
-import SimulationDigitalSpend from "./pages/Student/Finance/teen/SimulationDigitalSpend";
-import ReflexFraudAlert from "./pages/Student/Finance/teen/ReflexFraudAlert";
-import BadgeDigitalMoneySmart from "./pages/Student/Finance/teen/BadgeDigitalMoneySmart";
-import MoneyBorrowStory from "./pages/Student/Finance/teen/MoneyBorrowStory";
-import DebtQuiz from "./pages/Student/Finance/teen/DebtQuiz";
-import ReflexDebtDangers from "./pages/Student/Finance/teen/ReflexDebtDangers";
-import PuzzleLoanBasics from "./pages/Student/Finance/teen/PuzzleLoanBasics";
-import BorrowingStory from "./pages/Student/Finance/teen/BorrowingStory";
-import DebateBorrowGoodOrBad from "./pages/Student/Finance/teen/DebateBorrowGoodOrBad";
-import JournalOfBorrowing from "./pages/Student/Finance/teen/JournalOfBorrowing";
-import SimulationLoanRepayment from "./pages/Student/Finance/teen/SimulationLoanRepayment";
-import ReflexDebtControl from "./pages/Student/Finance/teen/ReflexDebtControl";
-import BadgeDebtSmart from "./pages/Student/Finance/teen/BadgeDebtSmart";
-import SavingsAccountStory from "./pages/Student/Finance/teen/SavingsAccountStory";
-import InvestmentQuiz from "./pages/Student/Finance/teen/InvestmentQuiz";
-import ReflexInvestorSmartness from "./pages/Student/Finance/teen/ReflexInvestorSmartness";
-import PuzzleInvestmentTypes from "./pages/Student/Finance/teen/PuzzleInvestmentTypes";
-import StartupStory from "./pages/Student/Finance/teen/StartupStory";
-import DebateSaveVsInvest from "./pages/Student/Finance/teen/DebateSaveVsInvest";
-import JournalFutureInvesting from "./pages/Student/Finance/teen/JournalFutureInvesting";
-import SimulationChoice1000 from "./pages/Student/Finance/teen/SimulationChoice1000";
-import ReflexSmartGrowth from "./pages/Student/Finance/teen/ReflexSmartGrowth";
-import BadgeSmartInvestor from "./pages/Student/Finance/teen/BadgeSmartInvestor";
-import StartupIdeaStory from "./pages/Student/Finance/teen/StartupIdeaStory";
-import QuizEntrepreneurship from "./pages/Student/Finance/teen/QuizEntrepreneurship";
-import ReflexEntrepreneurTraits from "./pages/Student/Finance/teen/ReflexEntrepreneurTraits";
-import PuzzleEntrepreneurs from "./pages/Student/Finance/teen/PuzzleEntrepreneurs";
-import BusinessRiskStory from "./pages/Student/Finance/teen/BusinessRiskStory";
-import DebateJobVsBusiness from "./pages/Student/Finance/teen/DebateJobVsBusiness";
-import JournalEntrepreneurDream from "./pages/Student/Finance/teen/JournalEntrepreneurDream";
-import SimulationMiniStartup from "./pages/Student/Finance/teen/SimulationMiniStartup";
-import ReflexSmartEntrepreneur from "./pages/Student/Finance/teen/ReflexSmartEntrepreneur";
-import BadgeYoungEntrepreneur from "./pages/Student/Finance/teen/BadgeYoungEntrepreneur";
-import FakeOnlineOfferStory from "./pages/Student/Finance/teen/FakeOnlineOfferStory";
-import ConsumerQuiz from "./pages/Student/Finance/teen/ConsumerQuiz";
-import ReflexFraudSafety from "./pages/Student/Finance/teen/ReflexFraudSafety";
-import PuzzleOfRights from "./pages/Student/Finance/teen/PuzzleOfRights";
-import FakeCallStory from "./pages/Student/Finance/teen/FakeCallStory";
-import DebateCashVsOnlineSafety from "./pages/Student/Finance/teen/DebateCashVsOnlineSafety";
-import JournalConsumerRights from "./pages/Student/Finance/teen/JournalConsumerRights";
-import SimulationFraudAlert from "./pages/Student/Finance/teen/SimulationFraudAlert";
-import ReflexScamCheck from "./pages/Student/Finance/teen/ReflexScamCheck";
-import BadgeConsumerProtector from "./pages/Student/Finance/teen/BadgeConsumerProtector";
-import ScholarshipStory from "./pages/Student/Finance/teen/ScholarshipStory";
-import EthicsQuiz from "./pages/Student/Finance/teen/EthicsQuiz";
-import ReflexEthicalChoice from "./pages/Student/Finance/teen/ReflexEthicalChoice";
-import PuzzleRightVsWrong from "./pages/Student/Finance/teen/PuzzleRightVsWrong";
-import BriberyStory from "./pages/Student/Finance/teen/BriberyStory";
-import DebateMoneyAndMorals from "./pages/Student/Finance/teen/DebateMoneyAndMorals";
-import JournalOfResponsibility from "./pages/Student/Finance/teen/JournalOfResponsibility";
-import SimulationCharityChoice from "./pages/Student/Finance/teen/SimulationCharityChoice";
-import ReflexFairness from "./pages/Student/Finance/teen/ReflexFairness";
-import BadgeEthicalFinancier from "./pages/Student/Finance/teen/BadgeEthicalFinancier";
+import PocketMoneyStory from "./pages/Student/Finance/Teen/PocketMoneyStory";
+import ReflexSmartSaver from "./pages/Student/Finance/Teen/ReflexSmartSaver";
+import PuzzleOfSavingGoals from "./pages/Student/Finance/Teen/PuzzleOfSavingGoals";
+import SalaryStory from "./pages/Student/Finance/Teen/SalaryStory";
+import DebateSaveVsSpend from "./pages/Student/Finance/Teen/DebateSaveVsSpend";
+import JournalOfSavingGoal from "./pages/Student/Finance/Teen/JournalOfSavingGoal";
+import SimulationMonthlyMoney from "./pages/Student/Finance/Teen/SimulationMonthlyMoney";
+import ReflexWiseUse from "./pages/Student/Finance/Teen/ReflexWiseUse";
+import BadgeSmartSaver from "./pages/Student/Finance/Teen/BadgeSmartSaver";
+import AllowanceStory from "./pages/Student/Finance/Teen/AllowanceStory";
+import SpendingQuiz from "./pages/Student/Finance/Teen/SpendingQuiz";
+import ReflexWiseChoices from "./pages/Student/Finance/Teen/ReflexWiseChoices";
+import PuzzleSmartSpending from "./pages/Student/Finance/Teen/PuzzleSmartSpending";
+import PartyStory from "./pages/Student/Finance/Teen/PartyStory";
+import DebateNeedsVsWants from "./pages/Student/Finance/Teen/DebateNeedsVsWants";
+import JournalOfSpending from "./pages/Student/Finance/Teen/JournalOfSpending";
+import SimulationShoppingMall from "./pages/Student/Finance/Teen/SimulationShoppingMall";
+import ReflexControl from "./pages/Student/Finance/Teen/ReflexControl";
+import BadgeSmartSpenderTeen from "./pages/Student/Finance/Teen/BadgeSmartSpenderTeen";
+import Allowance from "./pages/Student/Finance/Teen/Allowance";
+import BudgetQuiz from "./pages/Student/Finance/Teen/BudgetQuiz";
+import ReflexBudgett from "./pages/Student/Finance/Teen/ReflexBudgett";
+import QuizOnSavingsRate from "./pages/Student/Finance/Teen/QuizOnSavingsRate";
+import PuzzlePriorities from "./pages/Student/Finance/Teen/PuzzlePriorities";
+import CollegeStory from "./pages/Student/Finance/Teen/CollegeStory";
+import DebateBudgetFreedom from "./pages/Student/Finance/Teen/DebateBudgetFreedom";
+import JournalMonthlyBudget from "./pages/Student/Finance/Teen/JournalMonthlyBudget";
+import SimulationMonthlyAllowance from "./pages/Student/Finance/Teen/SimulationMonthlyAllowance";
+import ReflexBudgetSmarts from "./pages/Student/Finance/Teen/ReflexBudgetSmarts";
+import BadgeBudgetHero from "./pages/Student/Finance/Teen/BadgeBudgetHero";
+import MovieVsBusFareStory from "./pages/Student/Finance/Teen/MovieVsBusFareStory";
+import NeedsVsWantsQuiz from "./pages/Student/Finance/Teen/NeedsVsWantsQuiz";
+import ReflexDecision from "./pages/Student/Finance/Teen/ReflexDecision";
+import PuzzleRealPriorities from "./pages/Student/Finance/Teen/PuzzleRealPriorities";
+import ExamPrepStory from "./pages/Student/Finance/Teen/ExamPrepStory";
+import DebateWantsMatter from "./pages/Student/Finance/Teen/DebateWantsMatter";
+import JournalOfBalance from "./pages/Student/Finance/Teen/JournalOfBalance";
+import SimulationMonthlyBudget from "./pages/Student/Finance/Teen/SimulationMonthlyBudget";
+import ReflexSmartSpend from "./pages/Student/Finance/Teen/ReflexSmartSpend";
+import BadgeWiseChooser from "./pages/Student/Finance/Teen/BadgeWiseChooser";
+import OnlinePaymentStory from "./pages/Student/Finance/Teen/OnlinePaymentStory";
+import QuizOnDigitalMoney from "./pages/Student/Finance/Teen/QuizOnDigitalMoney";
+import ReflexSecureUse from "./pages/Student/Finance/Teen/ReflexSecureUse";
+import PuzzleOfDigitalTools from "./pages/Student/Finance/Teen/PuzzleOfDigitalTools";
+import OnlineFraudStory from "./pages/Student/Finance/Teen/OnlineFraudStory";
+import DebateCashVsDigital from "./pages/Student/Finance/Teen/DebateCashVsDigital";
+import JournalOfDigitalUse from "./pages/Student/Finance/Teen/JournalOfDigitalUse";
+import SimulationDigitalSpend from "./pages/Student/Finance/Teen/SimulationDigitalSpend";
+import ReflexFraudAlert from "./pages/Student/Finance/Teen/ReflexFraudAlert";
+import BadgeDigitalMoneySmart from "./pages/Student/Finance/Teen/BadgeDigitalMoneySmart";
+import MoneyBorrowStory from "./pages/Student/Finance/Teen/MoneyBorrowStory";
+import DebtQuiz from "./pages/Student/Finance/Teen/DebtQuiz";
+import ReflexDebtDangers from "./pages/Student/Finance/Teen/ReflexDebtDangers";
+import PuzzleLoanBasics from "./pages/Student/Finance/Teen/PuzzleLoanBasics";
+import BorrowingStory from "./pages/Student/Finance/Teen/BorrowingStory";
+import DebateBorrowGoodOrBad from "./pages/Student/Finance/Teen/DebateBorrowGoodOrBad";
+import JournalOfBorrowing from "./pages/Student/Finance/Teen/JournalOfBorrowing";
+import SimulationLoanRepayment from "./pages/Student/Finance/Teen/SimulationLoanRepayment";
+import ReflexDebtControl from "./pages/Student/Finance/Teen/ReflexDebtControl";
+import BadgeDebtSmart from "./pages/Student/Finance/Teen/BadgeDebtSmart";
+import SavingsAccountStory from "./pages/Student/Finance/Teen/SavingsAccountStory";
+import InvestmentQuiz from "./pages/Student/Finance/Teen/InvestmentQuiz";
+import ReflexInvestorSmartness from "./pages/Student/Finance/Teen/ReflexInvestorSmartness";
+import PuzzleInvestmentTypes from "./pages/Student/Finance/Teen/PuzzleInvestmentTypes";
+import StartupStory from "./pages/Student/Finance/Teen/StartupStory";
+import DebateSaveVsInvest from "./pages/Student/Finance/Teen/DebateSaveVsInvest";
+import JournalFutureInvesting from "./pages/Student/Finance/Teen/JournalFutureInvesting";
+import SimulationChoice1000 from "./pages/Student/Finance/Teen/SimulationChoice1000";
+import ReflexSmartGrowth from "./pages/Student/Finance/Teen/ReflexSmartGrowth";
+import BadgeSmartInvestor from "./pages/Student/Finance/Teen/BadgeSmartInvestor";
+import StartupIdeaStory from "./pages/Student/Finance/Teen/StartupIdeaStory";
+import QuizEntrepreneurship from "./pages/Student/Finance/Teen/QuizEntrepreneurship";
+import ReflexEntrepreneurTraits from "./pages/Student/Finance/Teen/ReflexEntrepreneurTraits";
+import PuzzleEntrepreneurs from "./pages/Student/Finance/Teen/PuzzleEntrepreneurs";
+import BusinessRiskStory from "./pages/Student/Finance/Teen/BusinessRiskStory";
+import DebateJobVsBusiness from "./pages/Student/Finance/Teen/DebateJobVsBusiness";
+import JournalEntrepreneurDream from "./pages/Student/Finance/Teen/JournalEntrepreneurDream";
+import SimulationMiniStartup from "./pages/Student/Finance/Teen/SimulationMiniStartup";
+import ReflexSmartEntrepreneur from "./pages/Student/Finance/Teen/ReflexSmartEntrepreneur";
+import BadgeYoungEntrepreneur from "./pages/Student/Finance/Teen/BadgeYoungEntrepreneur";
+import FakeOnlineOfferStory from "./pages/Student/Finance/Teen/FakeOnlineOfferStory";
+import ConsumerQuiz from "./pages/Student/Finance/Teen/ConsumerQuiz";
+import ReflexFraudSafety from "./pages/Student/Finance/Teen/ReflexFraudSafety";
+import PuzzleOfRights from "./pages/Student/Finance/Teen/PuzzleOfRights";
+import FakeCallStory from "./pages/Student/Finance/Teen/FakeCallStory";
+import DebateCashVsOnlineSafety from "./pages/Student/Finance/Teen/DebateCashVsOnlineSafety";
+import JournalConsumerRights from "./pages/Student/Finance/Teen/JournalConsumerRights";
+import SimulationFraudAlert from "./pages/Student/Finance/Teen/SimulationFraudAlert";
+import ReflexScamCheck from "./pages/Student/Finance/Teen/ReflexScamCheck";
+import BadgeConsumerProtector from "./pages/Student/Finance/Teen/BadgeConsumerProtector";
+import ScholarshipStory from "./pages/Student/Finance/Teen/ScholarshipStory";
+import EthicsQuiz from "./pages/Student/Finance/Teen/EthicsQuiz";
+import ReflexEthicalChoice from "./pages/Student/Finance/Teen/ReflexEthicalChoice";
+import PuzzleRightVsWrong from "./pages/Student/Finance/Teen/PuzzleRightVsWrong";
+import BriberyStory from "./pages/Student/Finance/Teen/BriberyStory";
+import DebateMoneyAndMorals from "./pages/Student/Finance/Teen/DebateMoneyAndMorals";
+import JournalOfResponsibility from "./pages/Student/Finance/Teen/JournalOfResponsibility";
+import SimulationCharityChoice from "./pages/Student/Finance/Teen/SimulationCharityChoice";
+import ReflexFairness from "./pages/Student/Finance/Teen/ReflexFairness";
+import BadgeEthicalFinancier from "./pages/Student/Finance/Teen/BadgeEthicalFinancier";
 
 // Brain Health Game Levels for Kids
 import WaterStory from "./pages/Student/Brain/Kids/WaterStory";
@@ -887,8 +891,8 @@ import TestCarbonGame from "./pages/Student/Sustainability/CarbonAndClimate/Test
 import TestWaterEnergyGame from "./pages/Student/Sustainability/WaterAndEnergy/TestWaterEnergyGame";
 
 // Admin Pages
-import AdminPanel from "./pages/Admin/AdminPanel";
 import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminPanel from "./pages/Admin/AdminPanel";
 import AdminAnalytics from "./pages/Admin/AdminAnalytics";
 import AllStudents from "./pages/Admin/AllStudents";
 import AdminRedemptions from "./pages/Admin/AdminRedemptions";
@@ -897,6 +901,27 @@ import AllRedemptions from "./pages/Admin/AllRedemptions";
 import AdminStatsPanel from "./pages/Admin/AdminStatsPanel";
 import AdminUsersPanel from "./pages/Admin/AdminUsersPanel";
 import AdminSettings from "./pages/Admin/AdminSettings";
+import AdminSettingsCommunications from "./pages/Admin/AdminSettingsCommunications";
+import AdminSchoolApprovals from "./pages/Admin/AdminSchoolApprovals";
+import IncidentManagement from "./pages/Admin/IncidentManagement";
+import AdminTrackingDashboard from "./pages/Admin/AdminTrackingDashboard";
+import AdminPaymentTracker from "./pages/Admin/AdminPaymentTracker";
+import AdminMarketplace from "./pages/Admin/AdminMarketplace";
+import AdminProfile from "./pages/Admin/AdminProfile";
+import AdminReports from "./pages/Admin/AdminReports";
+import BehaviorAnalytics from "./pages/Admin/BehaviorAnalytics";
+import SmartInsights from "./pages/Admin/SmartInsights";
+import FinancialConsole from "./pages/Admin/FinancialConsole";
+import SupportDesk from "./pages/Admin/SupportDesk";
+import LifecycleManagement from "./pages/Admin/LifecycleManagement";
+import ContentGovernance from "./pages/Admin/ContentGovernance";
+import AuditTimeline from "./pages/Admin/AuditTimeline";
+import ConfigurationControlCenter from "./pages/Admin/ConfigurationControlCenter";
+import CommunicationSuite from "./pages/Admin/CommunicationSuite";
+import OperationalTools from "./pages/Admin/OperationalTools";
+import PredictiveModels from "./pages/Admin/PredictiveModels";
+import APIControlPlane from "./pages/Admin/APIControlPlane";
+import AdminPlatform from "./pages/Admin/AdminPlatform";
 
 // Parent Pages
 import ParentDashboard from "./pages/Parent/ParentDashboard";
@@ -908,6 +933,8 @@ import ChildMoodWellbeing from "./pages/Parent/ChildMoodWellbeing";
 import ChildWalletRewards from "./pages/Parent/ChildWalletRewards";
 import ParentMessages from "./pages/Parent/ParentMessages";
 import ParentSettings from "./pages/Parent/ParentSettings";
+import ParentUpgrade from "./pages/Parent/ParentUpgrade";
+import ParentProfile from "./pages/Parent/ParentProfile";
 
 // Seller Pages
 import SellerDashboard from "./pages/Seller/SellerDashboard";
@@ -940,6 +967,9 @@ import SchoolAdminTemplates from "./pages/School/SchoolAdminTemplates";
 import SchoolAdminNEPTracking from "./pages/School/SchoolAdminNEPTracking";
 import SchoolAdminCompliance from "./pages/School/SchoolAdminCompliance";
 import SchoolAdminBilling from "./pages/School/SchoolAdminBilling";
+import SchoolAdminPaymentTracker from "./pages/School/SchoolAdminPaymentTracker";
+import AdminSchools from "./pages/Admin/AdminSchools";
+import AdminSchoolDetail from "./pages/Admin/AdminSchoolDetail";
 import SchoolAdminEmergency from "./pages/School/SchoolAdminEmergency";
 import SchoolAdminEvents from "./pages/School/SchoolAdminEvents";
 import SchoolAdminSettings from "./pages/School/SchoolAdminSettings";
@@ -963,11 +993,9 @@ import ParentChat from "./pages/Parent/ParentChat";
 import AssignmentTracking from "./pages/School/AssignmentTracking";
 import LandingPage from "./pages/LandingPage";
 import IndividualAccountSelection from "./pages/IndividualAccountSelection";
-
 // Multi-tenant registration pages
 import InstitutionTypeSelection from "./pages/MultiTenant/InstitutionTypeSelection";
 import SchoolRegistration from "./pages/MultiTenant/SchoolRegistration";
-
 // 404 Page
 import NotFound from "./pages/NotFound";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -978,6 +1006,7 @@ import { Toaster } from "react-hot-toast";
 import About from "./pages/About";
 import Blog from "./pages/Blog";
 import Careers from "./pages/Careers";
+import CareerApply from "./pages/CareerApply";
 import Contact from "./pages/Contact";
 import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
@@ -1058,7 +1087,8 @@ const App = () => {
   const isChatPage = location.pathname.includes("/chat");
 
   // Hide navbar on public pages
-  const isPublicPage = [
+  const isPublicPage =
+    [
     "/about",
     "/careers",
     "/blog",
@@ -1066,7 +1096,15 @@ const App = () => {
     "/terms",
     "/privacy",
     "/cookies",
-  ].includes(location.pathname);
+    ].includes(location.pathname) || location.pathname.startsWith("/careers/apply");
+
+  // Hide navbar on presentation pages (when editing or presenting a specific presentation)
+  // Show navbar on /student/presentation (list page), hide on /student/presentation/:id or /student/presentation/share/:shareCode
+  const isPresentationPage = location.pathname.startsWith("/student/presentation") && 
+    location.pathname !== "/student/presentation" &&
+    (location.pathname.match(/\/student\/presentation\/[^/]+$/) || location.pathname.includes("/student/presentation/share/"));
+
+  const isChatbotRestrictedPage = location.pathname.startsWith("/student/payment");
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -1074,6 +1112,7 @@ const App = () => {
         !isFullScreenGame &&
         !isChatPage &&
         !isPublicPage &&
+        !isPresentationPage &&
         location.pathname !== "/" &&
         location.pathname !== "/school-registration" &&
         location.pathname !== "/institution-type" &&
@@ -1088,7 +1127,8 @@ const App = () => {
         !location.pathname.includes("/parent-chat") && <Navbar />}
       {!isAuthPage &&
         user &&
-        (user.role === "student" || user.role === "school_student") && (
+        (user.role === "student" || user.role === "school_student") &&
+        !isChatbotRestrictedPage && (
           <Chatbot />
         )}{" "}
       {/* ✅ Floating Chatbot - Only for students */}
@@ -1253,6 +1293,14 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/school/admin/payment-tracker"
+            element={
+              <ProtectedRoute roles={["school_admin"]}>
+                <SchoolAdminPaymentTracker />
+              </ProtectedRoute>
+            }
+          />
 
           {/* School Admin Profile & Settings Routes */}
           <Route
@@ -1389,7 +1437,7 @@ const App = () => {
             path="/school-teacher/profile"
             element={
               <ProtectedRoute roles={["school_teacher"]}>
-                <Profile />
+                <TeacherProfile />
               </ProtectedRoute>
             }
           />
@@ -1397,7 +1445,7 @@ const App = () => {
             path="/school_teacher/profile"
             element={
               <ProtectedRoute roles={["school_teacher"]}>
-                <Profile />
+                <TeacherProfile />
               </ProtectedRoute>
             }
           />
@@ -1575,7 +1623,7 @@ const App = () => {
           <Route
             path="/student/profile"
             element={
-              <ProtectedRoute roles={["student", "school_student"]}>
+              <ProtectedRoute roles={["student"]}>
                 <Profile />
               </ProtectedRoute>
             }
@@ -1585,6 +1633,46 @@ const App = () => {
             element={
               <ProtectedRoute roles={["student", "school_student"]}>
                 <Setting />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/payment"
+            element={
+              <ProtectedRoute roles={["student"]}>
+                <PaymentPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/payment/checkout"
+            element={
+              <ProtectedRoute roles={["student"]}>
+                <SubscriptionCheckout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parent/upgrade/checkout"
+            element={
+              <ProtectedRoute roles={["parent"]} requireApproved={true}>
+                <SubscriptionCheckout />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/presentation/:id?"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PresentationPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/presentation/share/:shareCode"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PresentationPage />
               </ProtectedRoute>
             }
           />
@@ -4878,7 +4966,6 @@ const App = () => {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/student/brain/teen/reflex-never-quit"
             element={
@@ -6375,14 +6462,6 @@ const App = () => {
       }
     />
     <Route
-      path="/student/uvls/teen/batna-puzzle"
-      element={
-        <ProtectedRoute roles={["student"]}>
-          <BATNAPuzzle />
-        </ProtectedRoute>
-      }
-    />
-    <Route
       path="/student/uvls/teen/tough-bargain-roleplay"
       element={
         <ProtectedRoute roles={["student"]}>
@@ -6875,26 +6954,10 @@ const App = () => {
             }
           />
           <Route
-            path="/student/dcos/teen/encourage-roleplay"
-            element={
-              <ProtectedRoute roles={["student", "school_student"]}>
-                <EncourageRoleplay />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/student/dcos/teen/empathy-journal"
             element={
               <ProtectedRoute roles={["student", "school_student"]}>
                 <EmpathyJournal />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/student/dcos/teen/anti-bully-reflex"
-            element={
-              <ProtectedRoute roles={["student", "school_student"]}>
-                <AntiBullyReflex />
               </ProtectedRoute>
             }
           />
@@ -8322,7 +8385,7 @@ const App = () => {
             path="/admin/profile"
             element={
               <ProtectedRoute roles={["admin"]}>
-                <Profile />
+                <AdminProfile />
               </ProtectedRoute>
             }
           />
@@ -8335,10 +8398,186 @@ const App = () => {
             }
           />
           <Route
+            path="/admin/settings/communications"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminSettingsCommunications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/admin/notifications"
             element={
               <ProtectedRoute roles={["admin"]}>
                 <Notifications />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/approvals"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminSchoolApprovals />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/schools"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminSchools />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/schools/:schoolId"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminSchoolDetail />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/incidents"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <IncidentManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/tracking"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminTrackingDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/payment-tracker"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminPaymentTracker />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/marketplace"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminMarketplace />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/reports"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminReports />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/behavior-analytics"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <BehaviorAnalytics />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/smart-insights"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <SmartInsights />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/financial-console"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <FinancialConsole />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/support-desk"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <SupportDesk />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/lifecycle"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <LifecycleManagement />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/content-governance"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <ContentGovernance />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/audit-timeline"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AuditTimeline />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/configuration"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <ConfigurationControlCenter />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/communication"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <CommunicationSuite />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/operational"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <OperationalTools />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/predictive"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <PredictiveModels />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/api-control"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <APIControlPlane />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/platform"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminPlatform />
               </ProtectedRoute>
             }
           />
@@ -8389,6 +8628,14 @@ const App = () => {
             element={
               <ProtectedRoute roles={["parent"]} requireApproved={true}>
                 <ParentSettings />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/parent/upgrade"
+            element={
+              <ProtectedRoute roles={["parent"]} requireApproved={true}>
+                <ParentUpgrade />
               </ProtectedRoute>
             }
           />
@@ -8447,7 +8694,7 @@ const App = () => {
             path="/parent/profile"
             element={
               <ProtectedRoute roles={["parent"]}>
-                <Profile />
+                <ParentProfile />
               </ProtectedRoute>
             }
           />
@@ -8576,6 +8823,7 @@ const App = () => {
           <Route path="/about" element={<About />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/careers" element={<Careers />} />
+          <Route path="/careers/apply/:jobId" element={<CareerApply />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />

@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
 
 const DebateTalentVsEffort = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -122,6 +125,7 @@ const DebateTalentVsEffort = () => {
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
+      coinsPerLevel={coinsPerLevel}
       gameId="emotion-teens-196"
       gameType="emotion"
       showGameOver={levelCompleted}

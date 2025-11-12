@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Trophy, Building2, Landmark, CreditCard, Lock, Users } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const BadgeBankExplorer = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const { showCorrectAnswerFeedback } = useGameFeedback();
   const [currentLevel, setCurrentLevel] = useState(1);
   const [totalCoins, setTotalCoins] = useState(0);
@@ -139,6 +142,7 @@ const BadgeBankExplorer = () => {
       coins={totalCoins}
       currentLevel={currentLevel}
       totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
       onNext={currentLevel === 5 && answered ? () => navigate("/games/financial-literacy/kids") : null}
       nextEnabled={currentLevel === 5 && answered}
       nextLabel={"Finish & Claim Badge"}

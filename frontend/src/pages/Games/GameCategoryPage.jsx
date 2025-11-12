@@ -1,131 +1,52 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
+import React, { useState, useEffect, useCallback } from "react";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion"; // eslint-disable-line no-unused-vars
 import {
-  ArrowLeft,
-  Trophy,
-  Timer,
-  Coins,
-  Lock,
-  Play,
-  Puzzle,
-  Users,
-  Calendar,
-  Lightbulb,
-  Star,
-  TrendingUp,
-  Zap,
-  Gamepad2,
-  Brain,
-  Wallet,
-  Heart,
-  Shield,
-  Globe,
-  Target,
-  BookOpen,
-  GraduationCap,
-  HandHeart,
-  ShoppingCart,
-  BarChart4,
-  Cpu,
-  Camera,
-  Smartphone,
-  UserX,
-  Eye,
-  Smile,
-  MessageSquare,
-  Flag,
-  RefreshCw,
-  Award,
-  Palette,
-  Home,
-  Leaf,
-  Sun,
-  Droplets,
-  Cloud,
-  Book,
-  Candy,
-  ClipboardList,
-  Gift,
-  Paintbrush,
-  PenSquare,
-  PartyPopper,
-  HelpCircle,
-  PiggyBank,
-  CreditCard,
-  Brush,
-  HeartHandshake,
-  ShoppingBag,
-  Image,
-  Clipboard,
-  School,
-  FileText,
-  Calculator,
-  Video,
-  Mic,
-  PenTool,
-  AlertTriangle,
-  AlertCircle,
-  BookOpenCheck,
-  ToyBrick,
-  MessageCircle,
-  CloudRain,
-  Moon,
-  Tablet,
-  Key,
-  Activity,
-  PlayCircle,
-  HandHelping,
-  Layers,
-  Notebook,
-  Drama,
-  Monitor,
-  ShieldCheck,
-  Wind,
-  Feather,
-  Settings,
-  Coffee,
-  Ear,
-  Volume,
-  Map,
-  Scale,
-  Eraser,
-  ListChecks,
-  CheckSquare,
-  Clock,
-  MonitorPlay,
-  Megaphone,
-  PenLine,
-  Theater,
-  ShieldAlert,
-  ClipboardCheck,
-  CheckCircle,
-  Briefcase,
-  ThumbsUp,
-  Edit3,
-  Handshake,
-  LogOut,
-  DollarSign,
-  Speech,
-  BarChart3,
-  Bell,
-  Siren,
-  Mail,
-  Link,
-  MapPin,
+  ArrowLeft, Trophy, Timer, Coins, Lock, Play, Puzzle, Users, Calendar, Lightbulb, Star, TrendingUp, Zap, Gamepad2, Brain, Wallet, Heart, Shield, Globe, Target, BookOpen, GraduationCap, HandHeart, ShoppingCart, BarChart4, Cpu, Camera, Smartphone, UserX, Eye, Smile, MessageSquare, Flag, RefreshCw, Award, Palette, Home, Leaf, Sun, Droplets, Cloud, Book, Candy, ClipboardList, Gift, Paintbrush, PenSquare, PartyPopper, HelpCircle, PiggyBank, CreditCard, Brush, HeartHandshake, ShoppingBag, Image, Clipboard, School, FileText, Calculator, Video, Mic, PenTool, AlertTriangle, AlertCircle, BookOpenCheck, ToyBrick, MessageCircle, CloudRain, Moon, Tablet, Key, Activity, PlayCircle, HandHelping, Layers, Notebook, Drama, Monitor, ShieldCheck, Wind, Feather, Settings, Coffee, Ear, Volume, Map, Scale, Eraser, ListChecks, CheckSquare, Clock, MonitorPlay, Megaphone, PenLine, Theater, ShieldAlert, ClipboardCheck, CheckCircle, Briefcase, ThumbsUp, Edit3, Handshake, LogOut, DollarSign, Speech, BarChart3, Bell, Siren, Mail, Link, MapPin, X, Loader2
 } from "lucide-react";
 
 import { useAuth } from "../../hooks/useAuth";
+import { useSubscription } from "../../context/SubscriptionContext";
+import { useWallet } from "../../context/WalletContext";
+import { useSocket } from "../../context/SocketContext";
 import { toast } from "react-hot-toast";
 import gameCompletionService from "../../services/gameCompletionService";
+import UpgradePrompt from "../../components/UpgradePrompt";
+import api from "../../utils/api";
 
 const GameCategoryPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+  const { canAccessPillar, canAccessGame: canAccessGameBySubscription, getGamesPerPillar } = useSubscription();
+  const { wallet, refreshWallet } = useWallet();
+  const { socket } = useSocket();
   const { category, ageGroup } = useParams();
   const [userAge, setUserAge] = useState(null);
   const [completedGames, setCompletedGames] = useState(new Set());
   const [gameCompletionStatus, setGameCompletionStatus] = useState({});
+  const [gameProgressData, setGameProgressData] = useState({}); // Store full progress data with coins and XP
+  const [replayableGames, setReplayableGames] = useState(new Set()); // Games that have been unlocked for replay
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [processingReplay, setProcessingReplay] = useState(false);
+  const [showReplayConfirmModal, setShowReplayConfirmModal] = useState(false);
+  const [selectedGameForReplay, setSelectedGameForReplay] = useState(null);
+
+  // Map game category URL to dashboard category slug
+  const getDashboardCategorySlug = (gameCategory) => {
+    const categorySlugMap = {
+      'financial-literacy': 'financial-literacy',
+      'brain-health': 'brain-health',
+      'uvls': 'uvls-life-skills-values',
+      'digital-citizenship': 'digital-citizenship-online-safety',
+      'moral-values': 'moral-values',
+      'ai-for-all': 'ai-for-all',
+      'entrepreneurship': 'entrepreneurship-higher-education',
+      'civic-responsibility': 'civic-responsibility-global-citizenship',
+      'sustainability': 'sustainability'
+    };
+    return categorySlugMap[gameCategory] || gameCategory;
+  };
 
   // Calculate user's age from date of birth
   const calculateUserAge = (dob) => {
@@ -178,9 +99,15 @@ const GameCategoryPage = () => {
     }
   };
 
-  // Check if a specific game is unlocked based on completion sequence
+  // Check if a specific game is unlocked based on completion sequence and subscription
   const isGameUnlocked = (gameIndex) => {
-    // First game is always unlocked
+    // Check subscription-based access first (freemium users can only access first 5 games)
+    const subscriptionAccess = canAccessGameBySubscription(categoryTitle, gameIndex);
+    if (!subscriptionAccess.allowed) {
+      return false; // Game is locked due to subscription limits
+    }
+
+    // First game is always unlocked (if subscription allows)
     if (gameIndex === 0) return true;
 
     // For finance, brain health, UVLS, DCOS, Moral Values, AI For All, EHE, CRGC, and Sustainability kids and teens games, check if previous game is completed
@@ -1245,8 +1172,8 @@ const GameCategoryPage = () => {
     return titleMap[ageGroup] || ageGroup;
   };
 
-  // Load game completion status
-  const loadGameCompletionStatus = async () => {
+  // Load game completion status and progress data
+  const loadGameCompletionStatus = useCallback(async () => {
     try {
       // For finance, brain health, UVLS, DCOS, Moral Values, AI For All, EHE, CRGC, and Sustainability kids games, load completion status
       if (
@@ -1267,23 +1194,61 @@ const GameCategoryPage = () => {
           ageGroup === "water-and-energy")
       ) {
         const status = {};
+        const progressData = {};
         // For all categories, we have 20 games
         const maxGames = 20;
+        
+        // Fetch all game progress in parallel
+        const progressPromises = [];
         for (let i = 0; i < maxGames; i++) {
           const gameId = getGameIdByIndex(i);
           if (gameId) {
-            const isCompleted = await gameCompletionService.isGameCompleted(
-              gameId
+            progressPromises.push(
+              gameCompletionService.getGameProgress(gameId).then(progress => ({
+                gameId,
+                progress
+              }))
             );
-            status[gameId] = isCompleted;
           }
         }
+        
+        const results = await Promise.all(progressPromises);
+        
+        results.forEach(({ gameId, progress }) => {
+          if (progress) {
+            const isCompleted = progress.fullyCompleted || false;
+            status[gameId] = isCompleted;
+            
+            // Store full progress data including coins, XP, and replay status
+            if (isCompleted) {
+              progressData[gameId] = {
+                totalCoinsEarned: progress.totalCoinsEarned || 0,
+                fullyCompleted: progress.fullyCompleted || false,
+                totalLevels: progress.totalLevels || 1,
+                replayUnlocked: progress.replayUnlocked === true // Explicitly check for true, not just truthy
+              };
+            }
+          } else {
+            status[gameId] = false;
+          }
+        });
+        
+        // Update replayable games set based on all progress data
+        const replayableSet = new Set();
+        Object.keys(progressData).forEach(gameId => {
+          if (progressData[gameId].replayUnlocked === true) {
+            replayableSet.add(gameId);
+          }
+        });
+        setReplayableGames(replayableSet);
+        
         setGameCompletionStatus(status);
+        setGameProgressData(progressData);
       }
     } catch (error) {
       console.error("Failed to load game completion status:", error);
     }
-  };
+  }, [category, ageGroup]);
 
   useEffect(() => {
     loadGameCompletionStatus();
@@ -1294,6 +1259,11 @@ const GameCategoryPage = () => {
         (category === "financial-literacy" ||
           category === "brain-health" ||
           category === "uvls" ||
+          category === "digital-citizenship" ||
+          category === "moral-values" ||
+          category === "ai-for-all" ||
+          category === "entrepreneurship" ||
+          category === "civic-responsibility" ||
           category === "sustainability") &&
         (ageGroup === "kids" ||
           ageGroup === "teens" ||
@@ -1302,17 +1272,122 @@ const GameCategoryPage = () => {
           ageGroup === "carbon-and-climate" ||
           ageGroup === "water-and-energy")
       ) {
-        // Reload game completion status when a game is completed
+        // Reload game completion status and progress when a game is completed
         loadGameCompletionStatus();
       }
     };
 
     window.addEventListener("gameCompleted", handleGameCompleted);
+    
+    // Listen for game replayed event from GameShell
+    const handleGameReplayedEvent = async (event) => {
+      const { gameId, replayUnlocked } = event.detail;
+      console.log('🎮 Game replayed event received:', { gameId, replayUnlocked });
+      
+      // Immediately update the state to reflect locked status
+      if (gameId && replayUnlocked === false) {
+        // Remove from replayable games set
+        setReplayableGames(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(gameId);
+          console.log('🔒 Removed game from replayable set:', gameId, 'New set:', Array.from(newSet));
+          return newSet;
+        });
+        
+        // Update progress data to reflect locked status
+        setGameProgressData(prev => {
+          if (!prev[gameId]) {
+            return prev;
+          }
+          const updated = {
+            ...prev,
+            [gameId]: {
+              ...prev[gameId],
+              replayUnlocked: false
+            }
+          };
+          console.log('🔒 Updated progress data for game:', gameId, updated[gameId]);
+          return updated;
+        });
+      }
+      
+      // Reload game completion status from backend to ensure consistency
+      // Add a delay to ensure backend has saved the changes
+      setTimeout(async () => {
+        console.log('🔄 Reloading game completion status after replay...');
+        await loadGameCompletionStatus();
+        console.log('✅ Game completion status reloaded');
+        
+        // Double-check the game is locked by fetching its progress directly
+        if (gameId) {
+          try {
+            const progressResponse = await gameCompletionService.getGameProgress(gameId);
+            console.log('🔍 Direct progress check after reload:', {
+              gameId,
+              replayUnlocked: progressResponse?.replayUnlocked,
+              fullyCompleted: progressResponse?.fullyCompleted
+            });
+            
+            // Force update if still showing as unlocked
+            if (progressResponse && progressResponse.replayUnlocked === false) {
+              setGameProgressData(prev => ({
+                ...prev,
+                [gameId]: {
+                  ...prev[gameId],
+                  replayUnlocked: false
+                }
+              }));
+              setReplayableGames(prev => {
+                const newSet = new Set(prev);
+                newSet.delete(gameId);
+                return newSet;
+              });
+            }
+          } catch (err) {
+            console.error('Error checking progress:', err);
+          }
+        }
+      }, 1000);
+    };
+    
+    window.addEventListener("gameReplayed", handleGameReplayedEvent);
+
+    // Listen for wallet updates and replay events from socket
+    const handleWalletUpdate = () => {
+      if (refreshWallet) {
+        refreshWallet();
+      }
+    };
+
+    const handleGameReplayedSocket = (data) => {
+      // Reload game completion status when a game is replayed via socket
+      console.log('🎮 Game replayed via socket, reloading status:', data);
+      loadGameCompletionStatus();
+      
+      // Update replayable games set - remove the game since it's locked again
+      if (data?.gameId && !data?.replayUnlocked) {
+        setReplayableGames(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(data.gameId);
+          return newSet;
+        });
+      }
+    };
+
+    if (socket?.socket) {
+      socket.socket.on('wallet:updated', handleWalletUpdate);
+      socket.socket.on('game-replayed', handleGameReplayedSocket);
+    }
 
     return () => {
       window.removeEventListener("gameCompleted", handleGameCompleted);
+      window.removeEventListener("gameReplayed", handleGameReplayedEvent);
+      if (socket?.socket) {
+        socket.socket.off('wallet:updated', handleWalletUpdate);
+        socket.socket.off('game-replayed', handleGameReplayedSocket);
+      }
     };
-  }, [category, ageGroup]);
+  }, [category, ageGroup, loadGameCompletionStatus, socket, refreshWallet]);
   // Generate mock games data
   const generateGamesData = () => {
     const games = [];
@@ -1409,7 +1484,7 @@ const GameCategoryPage = () => {
           icon: <GraduationCap className="w-6 h-6" />,
           difficulty: "Medium",
           duration: "7 min",
-          coins: 0,
+          coins: 5,
           xp: 15,
           completed: gameCompletionStatus["finance-kids-6"] || false,
           isSpecial: true,
@@ -4264,7 +4339,7 @@ const GameCategoryPage = () => {
           icon: <GraduationCap className="w-6 h-6" />,
           difficulty: "Medium",
           duration: "7 min",
-          coins: 0,
+          coins: 5,
           xp: 15,
           completed: gameCompletionStatus["brain-kids-6"] || false,
           isSpecial: true,
@@ -12907,10 +12982,63 @@ const GameCategoryPage = () => {
   };
 
   const [games, setGames] = useState([]);
+  const [categoryStats, setCategoryStats] = useState({
+    totalGames: 0,
+    completedGames: 0,
+    coinsEarned: 0,
+    xpGained: 0
+  });
 
   useEffect(() => {
     setGames(generateGamesData());
   }, [gameCompletionStatus]);
+
+  // Calculate category stats from games and completion data
+  useEffect(() => {
+    const calculateStats = () => {
+      if (games.length === 0) return;
+
+      const totalGames = games.length;
+      let completedGames = 0;
+      let totalCoinsEarned = 0;
+      let totalXPGained = 0;
+
+      // Calculate stats for each game using stored progress data
+      games.forEach((game) => {
+        const isCompleted = gameCompletionStatus[game.id] || game.completed || false;
+        
+        if (!isCompleted) return;
+        
+        completedGames++;
+        
+        // Use progress data if available (from loadGameCompletionStatus)
+        const progress = gameProgressData[game.id];
+        
+        if (progress && progress.totalCoinsEarned > 0) {
+          // Use actual coins earned from backend (calculated as totalLevels × coinsPerLevel)
+          totalCoinsEarned += progress.totalCoinsEarned;
+          
+          // XP should match the XP on the game card
+          // Use game.xp from the game card, which is the correct XP value
+          totalXPGained += game.xp || 0;
+        } else {
+          // Fallback: if progress data not loaded yet, try to get it
+          // This should only happen during initial load
+          // For now, we'll skip it and wait for progress data to load
+          console.warn(`Progress data not available for game ${game.id}, skipping from stats calculation`);
+        }
+      });
+
+      setCategoryStats({
+        totalGames,
+        completedGames,
+        coinsEarned: totalCoinsEarned,
+        xpGained: totalXPGained
+      });
+    };
+
+    calculateStats();
+  }, [games, gameCompletionStatus, gameProgressData]);
 
   useEffect(() => {
     if (user?.dateOfBirth) {
@@ -12919,17 +13047,40 @@ const GameCategoryPage = () => {
     }
   }, [user]);
 
+  // Check pillar access based on subscription
+  const categoryTitle = getCategoryTitle(category);
+  const pillarAccess = canAccessPillar(categoryTitle);
+  const isPillarLocked = !pillarAccess.allowed;
+  const gamesPerPillar = getGamesPerPillar();
+
   // Check if this age group is accessible
   const isAccessible = canAccessGame(ageGroup, userAge);
-  const isLocked = !isAccessible;
+  const isLocked = !isAccessible || isPillarLocked;
 
   // Check if unlock requirements are met
   const unlockRequirements = () => {
-    if (ageGroup === "teens" && userAge < 13) {
-      return "Complete all 20 finance related games from Kids section first.";
-    } else if (ageGroup === "adults" && userAge < 18) {
-      return `Available at age 18. You are ${userAge} years old.`;
+    if (isPillarLocked) {
+      return pillarAccess.message || "Upgrade to premium to access this pillar.";
     }
+
+    if (userAge === null) {
+      return "We couldn't verify your age. Update your profile with your date of birth to unlock this section.";
+    }
+
+    if (!isAccessible) {
+      if (ageGroup === "kids" && userAge >= 18) {
+        return `Available for learners under 18. You are ${userAge} years old.`;
+      }
+
+      if (ageGroup === "adults" && userAge < 18) {
+        return `Available at age 18. You are ${userAge} years old.`;
+      }
+    }
+
+    if (ageGroup === "teens" && userAge < 13) {
+      return `Available at age 13 once you complete all 20 Kids games. You are ${userAge} years old.`;
+    }
+
     // Additional adult unlocking requirements can be added here
     return "";
   };
@@ -12938,6 +13089,20 @@ const GameCategoryPage = () => {
 
   // Handle game play
   const handlePlayGame = (game) => {
+    // Check subscription-based access first
+    const subscriptionAccess = canAccessGameBySubscription(categoryTitle, game.index);
+    if (!subscriptionAccess.allowed) {
+      toast.error(
+        subscriptionAccess.reason || `Upgrade to premium to access more than ${gamesPerPillar} games per pillar.`,
+        {
+          duration: 4000,
+          position: "bottom-center",
+          icon: "🔒",
+        }
+      );
+      return;
+    }
+
     if (isLocked) {
       toast.error(requirements || "This section is locked.", {
         duration: 4000,
@@ -12968,10 +13133,26 @@ const GameCategoryPage = () => {
         return;
       }
 
-      // Check if game is already fully completed and should be locked
+      // Check if game is already fully completed
       if (isGameFullyCompleted(game.id)) {
+        // Check if replay is unlocked
+        const progress = gameProgressData[game.id];
+        if (progress && progress.replayUnlocked === true) {
+          // Game is replayable, allow playing
+          if (game.isSpecial && game.path) {
+            navigate(game.path, { 
+              state: { 
+                coinsPerLevel: game.coins || null,
+                isReplay: true,
+                returnPath: location.pathname,
+              } 
+            });
+            return;
+          }
+        } else {
+          // Game is completed but replay not unlocked
         toast.error(
-          "You've already collected all HealCoins for this game. Game is now locked!",
+            "You've already collected all HealCoins for this game. Unlock replay to play again!",
           {
             duration: 4000,
             position: "bottom-center",
@@ -12979,12 +13160,24 @@ const GameCategoryPage = () => {
           }
         );
         return;
+        }
       }
     }
 
     // Special handling for financial literacy kids and teens games
     if (game.isSpecial && game.path) {
-      navigate(game.path);
+      // Check if this is a replay
+      const progress = gameProgressData[game.id];
+      const isReplay = progress && progress.replayUnlocked === true && progress.fullyCompleted;
+      
+      // Pass coinsPerLevel (coins per question) and replay status via navigation state
+      navigate(game.path, { 
+        state: { 
+          coinsPerLevel: game.coins || null,
+          isReplay: isReplay || false,
+          returnPath: location.pathname,
+        } 
+      });
       return;
     }
 
@@ -13009,6 +13202,114 @@ const GameCategoryPage = () => {
     }, 1000);
   };
 
+  // Handle replay unlock button click - show confirmation modal
+  const handleUnlockReplayClick = (game, e) => {
+    e?.stopPropagation(); // Prevent card click
+    
+    if (processingReplay) return;
+    
+    const REPLAY_COST = 10;
+    
+    // Check wallet balance
+    if (!wallet || wallet.balance < REPLAY_COST) {
+      toast.error(
+        `Insufficient balance! You need ${REPLAY_COST} HealCoins to unlock replay.`,
+        {
+          duration: 4000,
+          position: "bottom-center",
+          icon: "💰",
+        }
+      );
+      return;
+    }
+
+    // Show confirmation modal
+    setSelectedGameForReplay(game);
+    setShowReplayConfirmModal(true);
+  };
+
+  // Handle replay unlock confirmation
+  const handleUnlockReplay = async () => {
+    if (!selectedGameForReplay) return;
+    
+    const game = selectedGameForReplay;
+    const REPLAY_COST = 10;
+    
+    setProcessingReplay(true);
+    setShowReplayConfirmModal(false);
+
+    try {
+      console.log('🔓 Attempting to unlock replay for game:', {
+        gameId: game.id,
+        gameTitle: game.title,
+        walletBalance: wallet?.balance,
+        required: REPLAY_COST
+      });
+      
+      const response = await api.post(`/api/game/unlock-replay/${game.id}`);
+      console.log('✅ Unlock replay response:', response.data);
+      
+      if (response.data.replayUnlocked) {
+        // Update replayable games
+        setReplayableGames(prev => new Set([...prev, game.id]));
+        
+        // Update progress data
+        setGameProgressData(prev => ({
+          ...prev,
+          [game.id]: {
+            ...prev[game.id],
+            replayUnlocked: true
+          }
+        }));
+
+        // Refresh wallet
+        if (refreshWallet) {
+          refreshWallet();
+        }
+
+        // Reload game completion status to update UI
+        loadGameCompletionStatus();
+
+        toast.success(response.data.message || 'Replay unlocked!', {
+          duration: 3000,
+          position: "bottom-center",
+          icon: "🎮",
+        });
+      } else {
+        console.warn('⚠️ Response did not indicate replay was unlocked:', response.data);
+        toast.error('Failed to unlock replay. Please try again.', {
+          duration: 4000,
+          position: "bottom-center",
+          icon: "❌",
+        });
+      }
+    } catch (error) {
+      console.error('Failed to unlock replay:', error);
+      console.error('Error details:', {
+        message: error.message,
+        response: error.response?.data,
+        gameId: game.id,
+        status: error.response?.status
+      });
+      
+      const errorMessage = error.response?.data?.error || error.message || 'Failed to unlock replay. Please try again.';
+      toast.error(errorMessage, {
+        duration: 5000,
+        position: "bottom-center",
+        icon: "❌",
+      });
+    } finally {
+      setProcessingReplay(false);
+      setSelectedGameForReplay(null);
+    }
+  };
+
+  // Handle cancel replay unlock
+  const handleCancelReplayUnlock = () => {
+    setShowReplayConfirmModal(false);
+    setSelectedGameForReplay(null);
+  };
+
   // Get difficulty color
   const getDifficultyColor = (difficulty) => {
     switch (difficulty) {
@@ -13023,9 +13324,210 @@ const GameCategoryPage = () => {
     }
   };
 
+  // Find the currently open/active game (first unlocked, not completed game)
+  const getCurrentlyOpenGameIndex = () => {
+    if (games.length === 0) return -1;
+    
+    return games.findIndex((g, idx) => {
+      // Check if game is unlocked
+      let unlocked = true;
+      if ((category === "financial-literacy" ||
+        category === "brain-health" ||
+        category === "uvls" ||
+        category === "digital-citizenship" ||
+        category === "moral-values" ||
+        category === "ai-for-all" ||
+        category === "entrepreneurship" ||
+        category === "civic-responsibility" ||
+        category === "sustainability") &&
+        (ageGroup === "kids" || ageGroup === "teens")) {
+        // First game is always unlocked
+        if (idx === 0) {
+          unlocked = true;
+        } else {
+          // Check if previous game is completed
+          const prevGameId = getGameIdByIndex(idx - 1);
+          unlocked = gameCompletionStatus[prevGameId] === true;
+        }
+      }
+      
+      // Check if game is completed
+      const completed = gameCompletionStatus[g.id] === true;
+      
+      return unlocked && !completed;
+    });
+  };
+
+  // Get card color based on game state and index
+  const getCardColor = (index, isUnlocked, isCompleted, isFullyCompleted, needsReplayUnlock, isLocked, currentlyOpenIndex) => {
+    const isCurrentlyOpen = index === currentlyOpenIndex && isUnlocked && !isCompleted && !isFullyCompleted;
+
+    if (isLocked && !needsReplayUnlock) {
+      // Locked games
+      return {
+        bg: "bg-white",
+        border: "border-gray-200",
+        shadow: "shadow-sm",
+        animated: false
+      };
+    } else if (isCompleted || isFullyCompleted || needsReplayUnlock) {
+      // Completed games - keep green gradient
+      return {
+        bg: "bg-gradient-to-br from-green-50 to-emerald-50",
+        border: "border-green-200",
+        shadow: "shadow-md",
+        animated: false
+      };
+    } else if (isCurrentlyOpen) {
+      // Currently open/active game - vibrant color with animation
+      const colors = [
+        { bg: "bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500", border: "border-blue-300" },
+        { bg: "bg-gradient-to-br from-indigo-400 via-blue-500 to-cyan-500", border: "border-indigo-300" },
+        { bg: "bg-gradient-to-br from-purple-400 via-pink-500 to-red-500", border: "border-purple-300" },
+        { bg: "bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-500", border: "border-cyan-300" },
+        { bg: "bg-gradient-to-br from-pink-400 via-rose-500 to-orange-500", border: "border-pink-300" },
+      ];
+      const colorIndex = index % colors.length;
+      return {
+        bg: colors[colorIndex].bg,
+        border: colors[colorIndex].border,
+        shadow: "shadow-xl",
+        animated: true,
+        textColor: "text-white"
+      };
+    } else if (isUnlocked) {
+      // Not played yet - minimalistic colorful
+      const colors = [
+        { bg: "bg-gradient-to-br from-blue-50 to-indigo-50", border: "border-blue-200", accent: "from-blue-400 to-indigo-500" },
+        { bg: "bg-gradient-to-br from-purple-50 to-pink-50", border: "border-purple-200", accent: "from-purple-400 to-pink-500" },
+        { bg: "bg-gradient-to-br from-cyan-50 to-blue-50", border: "border-cyan-200", accent: "from-cyan-400 to-blue-500" },
+        { bg: "bg-gradient-to-br from-pink-50 to-rose-50", border: "border-pink-200", accent: "from-pink-400 to-rose-500" },
+        { bg: "bg-gradient-to-br from-indigo-50 to-purple-50", border: "border-indigo-200", accent: "from-indigo-400 to-purple-500" },
+        { bg: "bg-gradient-to-br from-orange-50 to-amber-50", border: "border-orange-200", accent: "from-orange-400 to-amber-500" },
+        { bg: "bg-gradient-to-br from-emerald-50 to-teal-50", border: "border-emerald-200", accent: "from-emerald-400 to-teal-500" },
+        { bg: "bg-gradient-to-br from-violet-50 to-purple-50", border: "border-violet-200", accent: "from-violet-400 to-purple-500" },
+      ];
+      const colorIndex = index % colors.length;
+      return {
+        bg: colors[colorIndex].bg,
+        border: colors[colorIndex].border,
+        shadow: "shadow-md",
+        animated: false,
+        accent: colors[colorIndex].accent
+      };
+    } else {
+      // Default
+      return {
+        bg: "bg-white",
+        border: "border-gray-200",
+        shadow: "shadow-sm",
+        animated: false
+      };
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
+        {/* Upgrade Modal */}
+        {showUpgradeModal && (
+          <UpgradePrompt
+            feature="pillar"
+            onClose={() => setShowUpgradeModal(false)}
+          />
+        )}
+
+        {/* Replay Unlock Confirmation Modal */}
+        <AnimatePresence>
+          {showReplayConfirmModal && selectedGameForReplay && (
+            <div 
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+              onClick={handleCancelReplayUnlock}
+            >
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                className="bg-white rounded-2xl shadow-2xl max-w-md w-full"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6">
+                  {/* Header */}
+                  <div className="flex items-center justify-between mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gradient-to-r from-yellow-400 to-amber-500 rounded-full flex items-center justify-center">
+                        <RefreshCw className="w-6 h-6 text-white" />
+                      </div>
+                      <h2 className="text-2xl font-bold text-gray-900">Unlock Replay</h2>
+                    </div>
+                    <button
+                      onClick={handleCancelReplayUnlock}
+                      className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                    >
+                      <X className="w-5 h-5 text-gray-500" />
+                    </button>
+                  </div>
+
+                  {/* Content */}
+                  <div className="mb-6">
+                    <p className="text-gray-700 mb-4">
+                      Unlock replay for <span className="font-semibold text-gray-900">"{selectedGameForReplay.title}"</span>?
+                    </p>
+                    
+                    <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-4 mb-4 border border-yellow-200">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-gray-700 font-medium">Cost:</span>
+                        <span className="text-2xl font-bold text-amber-600">10 HealCoins</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-700 font-medium">Your Balance:</span>
+                        <span className="text-lg font-semibold text-gray-900">{wallet?.balance || 0} HealCoins</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-blue-50 rounded-xl p-4 border border-blue-200">
+                      <div className="flex items-start gap-2">
+                        <AlertCircle className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-blue-800">
+                          <span className="font-semibold">Note:</span> You won't earn coins when replaying this game. The game will be locked again after you complete the replay.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleCancelReplayUnlock}
+                      disabled={processingReplay}
+                      className="flex-1 px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleUnlockReplay}
+                      disabled={processingReplay}
+                      className="flex-1 px-4 py-3 bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {processingReplay ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span>Processing...</span>
+                        </>
+                      ) : (
+                        <>
+                          <RefreshCw className="w-4 h-4" />
+                          <span>Unlock Replay</span>
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+
         {/* Header */}
         <motion.div
           initial={{ opacity: 0, y: -20 }}
@@ -13033,25 +13535,40 @@ const GameCategoryPage = () => {
           className="mb-8"
         >
           <button
-            onClick={() => navigate("/student/dashboard")}
+            onClick={() => navigate(`/student/dashboard/${getDashboardCategorySlug(category)}`)}
             className="flex items-center gap-2 text-indigo-600 hover:text-indigo-800 mb-6 transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             <span>Back</span>
           </button>
 
-          <div className="flex items-center gap-4 mb-6">
-            <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
-              {getCategoryIcon(category)}
+          <div className="flex items-center justify-between gap-4 mb-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                {getCategoryIcon(category)}
+              </div>
+              <div>
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
+                  {getCategoryTitle(category)}
+                </h1>
+                <p className="text-lg text-gray-600">
+                  {getAgeGroupTitle(ageGroup)} - {games.length || categoryStats.totalGames || 0} Games
+                </p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl sm:text-4xl font-bold text-gray-900">
-                {getCategoryTitle(category)}
-              </h1>
-              <p className="text-lg text-gray-600">
-                {getAgeGroupTitle(ageGroup)} - 20 Games
-              </p>
-            </div>
+            {/* HealCoins Button */}
+            {(user?.role === "student" || user?.role === "school_student") && (
+              <motion.button
+                className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 border-2 border-yellow-500 cursor-pointer"
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                onClick={() => navigate("/student/wallet")}
+              >
+                <Wallet className="w-4 h-4" />
+                <span className="font-black">{wallet?.balance || 0}</span>
+                <span className="hidden sm:inline text-xs">Coins</span>
+              </motion.button>
+            )}
           </div>
 
           {isLocked && (
@@ -13065,6 +13582,14 @@ const GameCategoryPage = () => {
                 <h3 className="text-xl font-bold">Locked</h3>
               </div>
               <p className="text-lg">{requirements}</p>
+              {isPillarLocked && (
+                <button
+                  onClick={() => setShowUpgradeModal(true)}
+                  className="mt-4 bg-white text-red-600 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition-colors"
+                >
+                  Upgrade to Premium
+                </button>
+              )}
             </motion.div>
           )}
         </motion.div>
@@ -13081,7 +13606,7 @@ const GameCategoryPage = () => {
               <Gamepad2 className="w-5 h-5 text-indigo-500" />
               <span className="text-gray-600 font-medium">Total Games</span>
             </div>
-            <p className="text-2xl font-bold text-gray-900">20</p>
+            <p className="text-2xl font-bold text-gray-900">{categoryStats.totalGames}</p>
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-md border border-gray-100">
@@ -13159,6 +13684,10 @@ const GameCategoryPage = () => {
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
         >
           {games.map((game, index) => {
+            // Check subscription-based access for freemium users (first 5 games only)
+            const subscriptionAccess = canAccessGameBySubscription(categoryTitle, index);
+            const isSubscriptionLocked = !subscriptionAccess.allowed;
+            
             const isUnlocked =
               (category === "financial-literacy" ||
                 category === "brain-health" ||
@@ -13170,8 +13699,8 @@ const GameCategoryPage = () => {
                 category === "civic-responsibility" ||
                 category === "sustainability") &&
               (ageGroup === "kids" || ageGroup === "teens")
-                ? isGameUnlocked(index)
-                : true;
+                ? isGameUnlocked(index) && !isSubscriptionLocked
+                : !isSubscriptionLocked; // For other categories, check subscription only
             const isFullyCompleted =
               (category === "financial-literacy" ||
                 category === "brain-health" ||
@@ -13185,45 +13714,113 @@ const GameCategoryPage = () => {
               (ageGroup === "kids" || ageGroup === "teens")
                 ? isGameFullyCompleted(game.id)
                 : false;
-            const isLocked = isFullyCompleted || !isUnlocked;
+            const progress = gameProgressData[game.id];
+            // Explicitly check for replayUnlocked === true (not just truthy)
+            const canReplay = isFullyCompleted && progress && progress.replayUnlocked === true;
+            const needsReplayUnlock = isFullyCompleted && (!progress || progress.replayUnlocked !== true);
+            // Game is locked if:
+            // 1. Fully completed AND replay is not unlocked, OR
+            // 2. Not unlocked (sequential or subscription lock), OR
+            // 3. Subscription locked (freemium users beyond first 5 games)
+            const isLocked = (isFullyCompleted && !canReplay) || !isUnlocked || isSubscriptionLocked;
+            const isCompleted = isFullyCompleted || game.completed || gameCompletionStatus[game.id];
+
+            // Get currently open game index
+            const currentlyOpenIndex = getCurrentlyOpenGameIndex();
+            
+            // Get card styling based on state
+            const cardStyle = getCardColor(index, isUnlocked, isCompleted, isFullyCompleted, needsReplayUnlock, isLocked, currentlyOpenIndex);
+            const isCurrentlyOpen = cardStyle.animated;
 
             return (
               <motion.div
                 key={game.id}
                 initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.05 * index }}
-                whileHover={{ y: isUnlocked ? -5 : 0 }}
-                className={`group rounded-2xl p-6 shadow-md border transition-all duration-300 relative overflow-hidden ${
-                  isLocked
-                    ? "bg-white border-gray-200 cursor-not-allowed"
-                    : "bg-white border-gray-100 hover:shadow-lg cursor-pointer"
+                animate={{ 
+                  opacity: 1, 
+                  y: 0,
+                  scale: isCurrentlyOpen ? [1, 1.02, 1] : 1,
+                }}
+                transition={{ 
+                  delay: 0.05 * index,
+                  scale: isCurrentlyOpen ? {
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  } : {}
+                }}
+                whileHover={{ 
+                  y: isUnlocked && !isLocked ? -8 : 0,
+                  scale: isUnlocked && !isLocked ? 1.02 : 1,
+                }}
+                className={`group rounded-2xl p-6 border-2 transition-all duration-300 relative overflow-hidden ${
+                  cardStyle.bg
+                } ${cardStyle.border} ${cardStyle.shadow} ${
+                  isLocked && !needsReplayUnlock
+                    ? "cursor-not-allowed"
+                    : "cursor-pointer hover:shadow-xl"
+                } ${
+                  isCurrentlyOpen ? "ring-4 ring-blue-300 ring-opacity-50 animate-pulse" : ""
+                } ${
+                  !isCompleted && !isFullyCompleted && isUnlocked && !isCurrentlyOpen 
+                    ? "hover:border-opacity-80" 
+                    : ""
                 }`}
-                onClick={() => !isLocked && handlePlayGame(game)}
+                onClick={(e) => {
+                  // Don't trigger card click if clicking on unlock button
+                  if (e.target.closest('button')) {
+                    return;
+                  }
+                  if (!isLocked || needsReplayUnlock) {
+                    handlePlayGame(game);
+                  }
+                }}
               >
-                {/* Locked overlay for additional visual indication */}
-                {isLocked && (
-                  <div className="absolute inset-0 bg-transparent flex items-center justify-center rounded-2xl">
+                {/* Locked overlay for additional visual indication - only show for truly locked games (not completed games needing replay unlock) */}
+                {isLocked && !isFullyCompleted && (
+                  <div className="absolute inset-0 bg-transparent flex items-center justify-center rounded-2xl pointer-events-none">
                     <Lock className="w-8 h-8 text-gray-500" />
                   </div>
                 )}
 
-                <div className="flex items-start justify-between mb-4">
-                  <div
+                <div className="flex items-start justify-between mb-4 relative z-10">
+                  <motion.div
+                    animate={isCurrentlyOpen ? {
+                      scale: [1, 1.1, 1],
+                      rotate: [0, 10, -10, 0]
+                    } : {}}
+                    transition={isCurrentlyOpen ? {
+                      duration: 2.5,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    } : {}}
                     className={`w-12 h-12 rounded-xl bg-gradient-to-r ${getDifficultyColor(
                       game.difficulty
-                    )} flex items-center justify-center text-white shadow-md`}
+                    )} flex items-center justify-center text-white shadow-lg ${
+                      isCurrentlyOpen ? "ring-2 ring-white/50" : ""
+                    }`}
                   >
                     {game.icon}
-                  </div>
+                  </motion.div>
+                  <div className="flex items-center gap-2">
                   {game.completed && !isFullyCompleted && (
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                      <Trophy className="w-4 h-4 text-white" />
+                      <div className="w-6 h-6 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center shadow-md">
+                        <Trophy className="w-4 h-4 text-yellow-900" />
                     </div>
                   )}
                   {isFullyCompleted && (
-                    <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center relative z-10">
-                      <Trophy className="w-4 h-4 text-white" />
+                      <div className="w-6 h-6 bg-gradient-to-br from-yellow-400 to-amber-500 rounded-full flex items-center justify-center relative z-10 shadow-md">
+                        <Trophy className="w-4 h-4 text-yellow-900" />
+                      </div>
+                    )}
+                    {isFullyCompleted && !canReplay && (
+                      <div className="flex items-center gap-1">
+                        <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center relative z-10">
+                          <Lock className="w-4 h-4 text-gray-600" />
+                        </div>
+                        <div className="w-6 h-6 bg-indigo-100 rounded-full flex items-center justify-center relative z-10">
+                          <Play className="w-4 h-4 text-indigo-600" />
+                        </div>
                     </div>
                   )}
                   {isLocked && !isFullyCompleted && (
@@ -13231,32 +13828,66 @@ const GameCategoryPage = () => {
                       <Lock className="w-4 h-4 text-gray-600" />
                     </div>
                   )}
+                  </div>
                 </div>
 
+                {/* Animated background for currently open game */}
+                {isCurrentlyOpen && (
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20 animate-pulse rounded-2xl" />
+                )}
+
+                {/* Colorful accent bar for unplayed games */}
+                {!isCompleted && !isFullyCompleted && isUnlocked && !isCurrentlyOpen && (
+                  <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${cardStyle.accent || 'from-blue-400 to-indigo-500'} rounded-t-2xl`} />
+                )}
+
                 <h3
-                  className={`text-lg font-bold mb-2 ${
-                    isLocked ? "text-gray-500" : "text-gray-900"
+                  className={`text-lg font-bold mb-2 relative z-10 ${
+                    isLocked 
+                      ? "text-gray-500" 
+                      : isCurrentlyOpen 
+                        ? "text-white drop-shadow-md" 
+                        : isCompleted || isFullyCompleted
+                          ? "text-gray-900"
+                          : "text-gray-900"
                   }`}
                 >
                   {game.title}
+                  {isCurrentlyOpen && (
+                    <motion.span
+                      animate={{ opacity: [0.5, 1, 0.5] }}
+                      transition={{ duration: 1.5, repeat: Infinity }}
+                      className="ml-2 text-sm font-normal"
+                    >
+                      ✨ Active
+                    </motion.span>
+                  )}
                 </h3>
 
                 <p
-                  className={`text-sm mb-4 line-clamp-2 ${
-                    isLocked ? "text-gray-400" : "text-gray-600"
+                  className={`text-sm mb-4 line-clamp-2 relative z-10 ${
+                    isLocked 
+                      ? "text-gray-400" 
+                      : isCurrentlyOpen 
+                        ? "text-white/90 drop-shadow-sm" 
+                        : isCompleted || isFullyCompleted
+                          ? "text-gray-600"
+                          : "text-gray-600"
                   }`}
                 >
                   {game.description}
                 </p>
 
-                <div className="flex flex-wrap gap-2 mb-4">
+                <div className="flex flex-wrap gap-2 mb-4 relative z-10">
                   <div
                     className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
                       isLocked
                         ? "bg-gray-200 text-gray-500"
-                        : `bg-gradient-to-r ${getDifficultyColor(
-                            game.difficulty
-                          )} text-white`
+                        : isCurrentlyOpen
+                          ? "bg-white/30 backdrop-blur-sm text-white border border-white/50"
+                          : `bg-gradient-to-r ${getDifficultyColor(
+                              game.difficulty
+                            )} text-white`
                     }`}
                   >
                     <Target className="w-3 h-3" />
@@ -13266,7 +13897,9 @@ const GameCategoryPage = () => {
                     className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
                       isLocked
                         ? "bg-gray-200 text-gray-500"
-                        : "bg-blue-100 text-blue-700"
+                        : isCurrentlyOpen
+                          ? "bg-white/30 backdrop-blur-sm text-white border border-white/50"
+                          : "bg-blue-100 text-blue-700"
                     }`}
                   >
                     <Timer className="w-3 h-3" />
@@ -13274,11 +13907,17 @@ const GameCategoryPage = () => {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between relative z-10">
                   <div className="flex items-center gap-3">
                     <div
                       className={`flex items-center gap-1 text-sm font-semibold ${
-                        isLocked ? "text-gray-400" : "text-green-600"
+                        isLocked 
+                          ? "text-gray-400" 
+                          : isCurrentlyOpen 
+                            ? "text-white drop-shadow-sm" 
+                            : isCompleted || isFullyCompleted
+                              ? "text-green-600"
+                              : "text-green-600"
                       }`}
                     >
                       <Coins className="w-4 h-4" />
@@ -13286,32 +13925,98 @@ const GameCategoryPage = () => {
                     </div>
                     <div
                       className={`flex items-center gap-1 text-sm font-semibold ${
-                        isLocked ? "text-gray-400" : "text-purple-600"
+                        isLocked 
+                          ? "text-gray-400" 
+                          : isCurrentlyOpen 
+                            ? "text-white drop-shadow-sm" 
+                            : isCompleted || isFullyCompleted
+                              ? "text-purple-600"
+                              : "text-purple-600"
                       }`}
                     >
                       <Zap className="w-4 h-4" />
                       <span>{game.xp}</span>
                     </div>
                   </div>
-                  <div
+                  <motion.div
+                    animate={isCurrentlyOpen ? {
+                      scale: [1, 1.1, 1],
+                      rotate: [0, 5, -5, 0]
+                    } : {}}
+                    transition={isCurrentlyOpen ? {
+                      duration: 2,
+                      repeat: Infinity,
+                      ease: "easeInOut"
+                    } : {}}
                     className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      isLocked ? "bg-gray-200" : "bg-indigo-100"
+                      isLocked 
+                        ? "bg-gray-200" 
+                        : isCurrentlyOpen
+                          ? "bg-white/30 backdrop-blur-sm"
+                          : canReplay 
+                            ? "bg-green-100" 
+                            : isCompleted || isFullyCompleted
+                              ? "bg-green-100"
+                              : "bg-white/80 backdrop-blur-sm shadow-md"
                     }`}
                   >
                     {isLocked ? (
                       <Lock className="w-4 h-4 text-gray-500" />
+                    ) : canReplay ? (
+                      <RefreshCw className="w-4 h-4 text-green-600" />
+                    ) : isCurrentlyOpen ? (
+                      <Play className="w-4 h-4 text-white" />
                     ) : (
                       <Play className="w-4 h-4 text-indigo-600" />
                     )}
-                  </div>
+                  </motion.div>
                 </div>
 
+                {/* Replay unlock button for completed games */}
+                {needsReplayUnlock && (
+                  <div className="mt-4 pt-4 border-t border-gray-200 relative z-20">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleUnlockReplayClick(game, e);
+                      }}
+                      disabled={processingReplay || !wallet || wallet.balance < 10}
+                      className={`w-full py-2 px-4 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 relative z-20 ${
+                        processingReplay || !wallet || wallet.balance < 10
+                          ? "bg-gray-200 text-gray-500 cursor-not-allowed"
+                          : "bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-white shadow-md hover:shadow-lg"
+                      }`}
+                      style={{ pointerEvents: 'auto' }}
+                    >
+                      <RefreshCw className="w-4 h-4" />
+                      <span>Unlock Replay (10 HealCoins)</span>
+                    </button>
+                    {wallet && wallet.balance < 10 && (
+                      <p className="text-xs text-red-500 mt-1 text-center">
+                        Insufficient balance
+                      </p>
+                    )}
+                  </div>
+                )}
+
+                {/* Replay indicator for unlocked games */}
+                {canReplay && (
+                  <div className="mt-2 pt-2 border-t border-green-200">
+                    <div className="flex items-center justify-center gap-2 text-xs text-green-600 font-semibold">
+                      <RefreshCw className="w-3 h-3" />
+                      <span>Replay Unlocked (No coins on replay)</span>
+                    </div>
+                  </div>
+                )}
+
                 {/* Hover tooltip for locked games */}
-                {isLocked && (
+                {isLocked && !canReplay && (
                   <div className="absolute bottom-0 left-0 right-0 bg-gray-800 bg-opacity-90 text-white text-xs py-2 px-3 text-center rounded-b-2xl transform translate-y-full transition-transform duration-200 group-hover:translate-y-0">
-                    {isFullyCompleted
-                      ? "Game completed! All HealCoins collected."
-                      : "Complete the previous game to unlock"}
+                    {isSubscriptionLocked
+                      ? subscriptionAccess.reason || `Upgrade to premium to access more than ${gamesPerPillar} games per pillar.`
+                      : isFullyCompleted
+                        ? "Game completed! Unlock replay to play again."
+                        : "Complete the previous game to unlock"}
                   </div>
                 )}
               </motion.div>

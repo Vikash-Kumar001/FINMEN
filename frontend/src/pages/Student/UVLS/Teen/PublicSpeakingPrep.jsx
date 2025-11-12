@@ -1,10 +1,13 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PublicSpeakingPrep = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
   const [opening, setOpening] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [coins, setCoins] = useState(0);
@@ -40,6 +43,7 @@ const PublicSpeakingPrep = () => {
       gameId="communication-168"
       gameType="communication"
       totalLevels={10}
+      coinsPerLevel={coinsPerLevel}
       currentLevel={8}
       showConfetti={showResult}
       flashPoints={flashPoints}

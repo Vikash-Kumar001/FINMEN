@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'framer-motion'; // eslint-disable-line
 import { Camera, Palette, RotateCcw, Upload, Check, X } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 import api from '../utils/api';

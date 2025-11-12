@@ -5,6 +5,7 @@ import User from "../models/User.js";
 import { getTenantQuery, addTenantData } from "../middlewares/tenantMiddleware.js";
 import crypto from "crypto";
 import Razorpay from "razorpay";
+import Stripe from "stripe";
 
 // Payment Gateway Configuration
 export const configurePaymentGateway = async (req, res) => {
@@ -659,8 +660,28 @@ const initializeRazorpayPayment = async (gateway, transaction) => {
 };
 
 const initializeStripePayment = async (gateway, transaction) => {
-  // Stripe implementation would go here
-  throw new Error('Stripe integration not implemented yet');
+  const stripe = new Stripe(decrypt(gateway.credentials.secretKey));
+  
+  // Create payment intent
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: Math.round(transaction.amount * 100), // Convert to paise/cents
+    currency: transaction.currency.toLowerCase(),
+    metadata: {
+      transactionId: transaction.transactionId,
+      description: transaction.description,
+      userId: transaction.userId?.toString() || '',
+    },
+    description: transaction.description,
+  });
+  
+  return {
+    orderId: paymentIntent.id,
+    transactionId: transaction.transactionId,
+    amount: transaction.amount,
+    currency: transaction.currency,
+    clientSecret: paymentIntent.client_secret,
+    gatewayName: 'stripe',
+  };
 };
 
 const verifyGatewayPayment = async (gateway, transaction, gatewayResponse) => {
@@ -710,8 +731,47 @@ const verifyRazorpayPayment = async (gateway, transaction, gatewayResponse) => {
 };
 
 const verifyStripePayment = async (gateway, transaction, gatewayResponse) => {
-  // Stripe verification implementation would go here
-  throw new Error('Stripe verification not implemented yet');
+  const stripe = new Stripe(decrypt(gateway.credentials.secretKey));
+  const { paymentIntentId } = gatewayResponse;
+  
+  if (!paymentIntentId) {
+    throw new Error('Payment Intent ID is required');
+  }
+  
+  // Retrieve payment intent
+  const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+  
+  if (paymentIntent.status === 'succeeded') {
+    // Get payment method details
+    const paymentMethod = paymentIntent.payment_method 
+      ? await stripe.paymentMethods.retrieve(paymentIntent.payment_method)
+      : null;
+    
+    return {
+      success: true,
+      message: 'Payment successful',
+      paymentMethod: {
+        type: paymentMethod?.type || 'card',
+        details: {
+          cardType: paymentMethod?.card?.brand,
+          cardNetwork: paymentMethod?.card?.network,
+          last4Digits: paymentMethod?.card?.last4,
+          funding: paymentMethod?.card?.funding,
+        },
+      },
+    };
+  } else if (paymentIntent.status === 'requires_action') {
+    return {
+      success: false,
+      message: 'Payment requires additional action',
+      requiresAction: true,
+    };
+  } else {
+    return {
+      success: false,
+      message: `Payment ${paymentIntent.status}`,
+    };
+  }
 };
 
 const processGatewayRefund = async (gateway, transaction, amount, reason) => {
@@ -748,8 +808,29 @@ const processRazorpayRefund = async (gateway, transaction, amount, reason) => {
 };
 
 const processStripeRefund = async (gateway, transaction, amount, reason) => {
-  // Stripe refund implementation would go here
-  throw new Error('Stripe refund not implemented yet');
+  const stripe = new Stripe(decrypt(gateway.credentials.secretKey));
+  
+  if (!transaction.gatewayTransactionId) {
+    throw new Error('Stripe payment intent ID is required for refund');
+  }
+  
+  // Create refund
+  const refund = await stripe.refunds.create({
+    payment_intent: transaction.gatewayTransactionId,
+    amount: Math.round(amount * 100), // Convert to paise/cents
+    reason: reason === 'fraudulent' ? 'fraudulent' : 'requested_by_customer',
+    metadata: {
+      transactionId: transaction.transactionId,
+      reason: reason,
+    },
+  });
+  
+  return {
+    refundId: refund.id,
+    gatewayRefundId: refund.id,
+    status: refund.status === 'succeeded' ? 'completed' : refund.status,
+    amount: refund.amount / 100, // Convert back to rupees
+  };
 };
 
 const verifyWebhookSignature = (gateway, payload, signature) => {

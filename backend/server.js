@@ -23,6 +23,7 @@ const allowedOrigins = process.env.CLIENT_URL
   : [
       "http://localhost:5173",
       "http://localhost:3000",
+      "http://localhost:4173"
     ];
 
 // Initialize app and server
@@ -52,12 +53,36 @@ app.use((req, res, next) => {
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
+      // Allow requests with no origin (mobile apps, Postman, etc.)
+      // Also allow requests from installed PWAs which might not send origin header
+      if (!origin) {
+        return callback(null, true);
+      }
+      
+      // Check if origin is in allowed list
       if (allowedOrigins.includes(origin)) {
         return callback(null, true);
-      } else {
-        return callback(new Error("Not allowed by CORS: " + origin), false);
       }
+      
+      // For PWA installations, also check if origin matches localhost patterns
+      // This handles cases where PWA is installed and origin might differ slightly
+      try {
+        const originUrl = new URL(origin);
+        const isLocalhost = originUrl.hostname === 'localhost' || originUrl.hostname === '127.0.0.1';
+        
+        if (isLocalhost && (originUrl.port === '3000' || originUrl.port === '5173' || originUrl.port === '4173' || !originUrl.port)) {
+          return callback(null, true);
+        }
+      } catch (e) {
+        // If URL parsing fails, continue to check against allowed origins
+        console.warn('⚠️ Failed to parse origin URL:', origin);
+      }
+      
+      // Log the blocked origin for debugging
+      console.warn('❌ CORS blocked origin:', origin);
+      console.log('Allowed origins:', allowedOrigins);
+      
+      return callback(new Error("Not allowed by CORS: " + origin), false);
     },
     credentials: true,
   })

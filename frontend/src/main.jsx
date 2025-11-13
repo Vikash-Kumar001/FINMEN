@@ -10,6 +10,20 @@ import { NotificationProvider } from "./context/NotificationContext";
 import { SocketProvider } from "./context/SocketContext";
 import { SubscriptionProvider } from "./context/SubscriptionContext";
 
+// Register Service Worker for PWA
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker
+      .register("/sw.js")
+      .then((registration) => {
+        console.log("✅ Service Worker registered:", registration.scope);
+      })
+      .catch((error) => {
+        console.error("❌ Service Worker registration failed:", error);
+      });
+  });
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthProvider>

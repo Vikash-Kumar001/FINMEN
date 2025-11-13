@@ -4,6 +4,7 @@ import MainNavbar from "../components/MainNavbar";
 import MainFooter from "../components/MainFooter";
 import NationalAlignments from "../components/NationalAlignments";
 import CheckoutModal from "../components/Payment/CheckoutModal";
+import InstallPWA from "../components/InstallPWA";
 import { useAuth } from "../context/AuthUtils";
 import api from "../utils/api";
 import { toast } from "react-hot-toast";
@@ -864,6 +865,9 @@ const LandingPage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 relative overflow-hidden">
+      {/* PWA Install Button */}
+      <InstallPWA />
+      
       {/* Navbar */}
       <MainNavbar
         handlePillarsClick={handlePillarsClick}

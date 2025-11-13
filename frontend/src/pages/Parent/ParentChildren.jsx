@@ -24,21 +24,90 @@ import {
 } from "lucide-react";
 import api from "../../utils/api";
 import { toast } from "react-hot-toast";
+import { useSocket } from "../../context/SocketContext";
+
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(window.Razorpay);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.onload = () => {
+      resolve(window.Razorpay);
+    };
+    script.onerror = () => {
+      resolve(null);
+    };
+    document.body.appendChild(script);
+  });
+};
 
 const ParentChildren = () => {
   const navigate = useNavigate();
+  const { socket } = useSocket();
   const [loading, setLoading] = useState(true);
   const [children, setChildren] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [viewMode, setViewMode] = useState("grid");
   const [parentProfile, setParentProfile] = useState(null);
   const [showAddChildModal, setShowAddChildModal] = useState(false);
-  const [childEmail, setChildEmail] = useState("");
+  const [modalView, setModalView] = useState("link"); // "link" or "create"
+  const [childLinkingCode, setChildLinkingCode] = useState("");
   const [addingChild, setAddingChild] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
+  
+  // Create child form state
+  const [childFormData, setChildFormData] = useState({
+    fullName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+    dateOfBirth: "",
+    gender: "",
+  });
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [creatingChild, setCreatingChild] = useState(false);
 
   useEffect(() => {
     fetchChildren();
   }, []);
+
+  // Prevent background scrolling when modal is open
+  useEffect(() => {
+    if (showAddChildModal) {
+      // Save current overflow style
+      const originalOverflow = document.body.style.overflow;
+      // Prevent scrolling
+      document.body.style.overflow = 'hidden';
+      
+      return () => {
+        // Restore original overflow style when modal closes
+        document.body.style.overflow = originalOverflow;
+      };
+    }
+  }, [showAddChildModal]);
+
+  // Listen for real-time child creation updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleChildCreated = (data) => {
+      console.log('Child created event received:', data);
+      fetchChildren();
+      toast.success(`Child ${data.childName} has been added!`);
+    };
+
+    socket.on('child_created', handleChildCreated);
+
+    return () => {
+      socket.off('child_created', handleChildCreated);
+    };
+  }, [socket]);
 
   const fetchChildren = async () => {
     try {
@@ -57,32 +126,256 @@ const ParentChildren = () => {
     }
   };
 
-  const handleAddChild = async () => {
-    if (!childEmail.trim()) {
-      toast.error("Please enter child's email");
-      return;
-    }
+  const initializeRazorpayPayment = async (orderId, keyId, amount, childId) => {
+    try {
+      const Razorpay = await loadRazorpay();
+      if (!Razorpay) {
+        throw new Error("Payment gateway not available right now.");
+      }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(childEmail)) {
-      toast.error("Please enter a valid email address");
+      const options = {
+        key: keyId,
+        amount: amount * 100, // Convert to paise
+        currency: "INR",
+        name: "Wise Student",
+        description: "Link Child Account - Premium Plan",
+        order_id: orderId,
+        handler: async (response) => {
+          try {
+            // Verify and confirm payment
+            const confirmResponse = await api.post("/api/parent/link-child/confirm-payment", {
+              childId,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            if (confirmResponse.data.success) {
+              toast.success(confirmResponse.data.message || "Child linked successfully!");
+              setShowAddChildModal(false);
+              setChildLinkingCode("");
+              setPaymentData(null);
+              fetchChildren();
+            } else {
+              toast.error(confirmResponse.data.message || "Payment verification failed");
+            }
+          } catch (error) {
+            console.error("Payment confirmation error:", error);
+            toast.error(error.response?.data?.message || "Failed to confirm payment");
+          } finally {
+            setAddingChild(false);
+          }
+        },
+        prefill: {
+          name: parentProfile?.name || "",
+          email: parentProfile?.email || "",
+        },
+        theme: {
+          color: "#6366f1",
+        },
+        modal: {
+          ondismiss: () => {
+            setAddingChild(false);
+            setPaymentData(null);
+          },
+        },
+      };
+
+      const razorpayInstance = new Razorpay(options);
+      razorpayInstance.on("payment.failed", (response) => {
+        console.error("Payment failed:", response);
+        toast.error(`Payment failed: ${response.error.description || "Unknown error"}`);
+        setAddingChild(false);
+        setPaymentData(null);
+      });
+
+      razorpayInstance.open();
+    } catch (error) {
+      console.error("Razorpay initialization error:", error);
+      toast.error("Failed to initialize payment gateway");
+      setAddingChild(false);
+      setPaymentData(null);
+    }
+  };
+
+  const handleAddChild = async () => {
+    if (!childLinkingCode.trim()) {
+      toast.error("Please enter child's secret linking code");
       return;
     }
 
     try {
       setAddingChild(true);
       const response = await api.post("/api/parent/link-child", {
-        childEmail: childEmail.trim(),
+        childLinkingCode: childLinkingCode.trim().toUpperCase(),
       });
-      toast.success(response.data.message || "Child linked successfully!");
-      setShowAddChildModal(false);
-      setChildEmail("");
-      fetchChildren();
+
+      // Check if payment is required
+      if (response.data?.requiresPayment) {
+        setPaymentData({
+          orderId: response.data.orderId,
+          keyId: response.data.keyId,
+          amount: response.data.amount,
+          childId: response.data.childId,
+          childName: response.data.childName,
+          childPlanType: response.data.childPlanType,
+        });
+        
+        // Initialize Razorpay payment
+        await initializeRazorpayPayment(
+          response.data.orderId,
+          response.data.keyId,
+          response.data.amount,
+          response.data.childId
+        );
+        return;
+      }
+
+      // No payment required - child linked directly
+      if (response.data?.success) {
+        toast.success(response.data.message || "Child linked successfully!");
+        setShowAddChildModal(false);
+        setChildLinkingCode("");
+        fetchChildren();
+      }
     } catch (error) {
       console.error("Error linking child:", error);
       toast.error(error.response?.data?.message || "Failed to link child");
     } finally {
       setAddingChild(false);
+    }
+  };
+
+  const handleCreateChild = async (e) => {
+    e.preventDefault();
+    
+    if (childFormData.password !== childFormData.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    if (childFormData.password.length < 6) {
+      toast.error("Password must be at least 6 characters");
+      return;
+    }
+
+    try {
+      setCreatingChild(true);
+      const response = await api.post("/api/parent/create-child", {
+        fullName: childFormData.fullName.trim(),
+        email: childFormData.email.trim(),
+        password: childFormData.password,
+        dateOfBirth: childFormData.dateOfBirth,
+        gender: childFormData.gender,
+      });
+
+      // Check if payment is required
+      if (response.data?.requiresPayment) {
+        // Initialize Razorpay payment
+        await initializeRazorpayPaymentForChildCreation(
+          response.data.orderId,
+          response.data.keyId,
+          response.data.amount,
+          response.data.childCreationIntentId
+        );
+        return;
+      }
+
+      if (response.data.success) {
+        toast.success(response.data.message || "Child account created successfully!");
+        setShowAddChildModal(false);
+        setModalView("link");
+        setChildFormData({
+          fullName: "",
+          email: "",
+          password: "",
+          confirmPassword: "",
+          dateOfBirth: "",
+          gender: "",
+        });
+        fetchChildren();
+      }
+    } catch (error) {
+      console.error("Error creating child:", error);
+      toast.error(error.response?.data?.message || "Failed to create child account");
+    } finally {
+      setCreatingChild(false);
+    }
+  };
+
+  const initializeRazorpayPaymentForChildCreation = async (orderId, keyId, amount, childCreationIntentId) => {
+    try {
+      const Razorpay = await loadRazorpay();
+      if (!Razorpay) {
+        throw new Error("Payment gateway not available right now.");
+      }
+
+      const options = {
+        key: keyId,
+        amount: amount * 100, // Convert to paise
+        currency: "INR",
+        name: "Wise Student",
+        description: "Create Child Account - Student + Parent Premium Pro Plan",
+        order_id: orderId,
+        handler: async (response) => {
+          try {
+            // Verify and confirm payment
+            const confirmResponse = await api.post("/api/parent/create-child/confirm-payment", {
+              childCreationIntentId,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            if (confirmResponse.data.success) {
+              toast.success(confirmResponse.data.message || "Child account created successfully!");
+              setShowAddChildModal(false);
+              setModalView("link");
+              setChildFormData({
+                fullName: "",
+                email: "",
+                password: "",
+                confirmPassword: "",
+                dateOfBirth: "",
+                gender: "",
+              });
+              fetchChildren();
+            } else {
+              toast.error(confirmResponse.data.message || "Payment verification failed");
+            }
+          } catch (error) {
+            console.error("Payment confirmation error:", error);
+            toast.error(error.response?.data?.message || "Failed to confirm payment");
+          } finally {
+            setCreatingChild(false);
+          }
+        },
+        prefill: {
+          name: parentProfile?.name || "",
+          email: parentProfile?.email || "",
+        },
+        theme: {
+          color: "#6366f1",
+        },
+        modal: {
+          ondismiss: () => {
+            setCreatingChild(false);
+          },
+        },
+      };
+
+      const razorpayInstance = new Razorpay(options);
+      razorpayInstance.on("payment.failed", (response) => {
+        console.error("Payment failed:", response);
+        toast.error(`Payment failed: ${response.error.description || "Unknown error"}`);
+        setCreatingChild(false);
+      });
+
+      razorpayInstance.open();
+    } catch (error) {
+      console.error("Razorpay initialization error:", error);
+      toast.error("Failed to initialize payment gateway");
+      setCreatingChild(false);
     }
   };
 
@@ -379,43 +672,280 @@ const ParentChildren = () => {
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl"
+            className="bg-white rounded-2xl p-8 max-w-3xl w-full shadow-2xl max-h-[90vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">Link Child Account</h3>
+              <h3 className="text-2xl font-bold text-gray-900">
+                {modalView === "link" ? "Link Child Account" : "Create Child Account"}
+              </h3>
               <button
-                onClick={() => setShowAddChildModal(false)}
-                className="p-2 hover:bg-gray-100 rounded-lg transition-all"
+                onClick={() => {
+                  setShowAddChildModal(false);
+                  setModalView("link");
+                  setChildLinkingCode("");
+                  setPaymentData(null);
+                  setChildFormData({
+                    fullName: "",
+                    email: "",
+                    password: "",
+                    confirmPassword: "",
+                    dateOfBirth: "",
+                    gender: "",
+                  });
+                }}
+                disabled={addingChild || creatingChild}
+                className="p-2 hover:bg-gray-100 rounded-lg transition-all disabled:opacity-50"
               >
                 <X className="w-5 h-5 text-gray-600" />
               </button>
             </div>
-            <p className="text-gray-600 mb-4">
-              Enter your child's registered email address to link their account
-            </p>
-            <input
-              type="email"
-              placeholder="child@example.com"
-              value={childEmail}
-              onChange={(e) => setChildEmail(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleAddChild()}
-              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none mb-6"
-            />
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowAddChildModal(false)}
-                className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddChild}
-                disabled={addingChild}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {addingChild ? "Linking..." : "Link Child"}
-              </button>
-            </div>
+
+            {modalView === "link" ? (
+              <>
+                <p className="text-gray-600 mb-4">
+                  Enter your child's secret linking code to link their account
+                </p>
+                {paymentData ? (
+                  <div className="mb-6">
+                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-4">
+                      <p className="text-sm text-amber-800 font-semibold mb-2">
+                        Payment Required
+                      </p>
+                      <p className="text-sm text-amber-700">
+                        {paymentData.childPlanType === 'free' 
+                          ? `To link ${paymentData.childName}, you need to upgrade to Student + Parent Premium Pro Plan (₹${paymentData.amount}).`
+                          : `To link ${paymentData.childName}, you need to pay ₹${paymentData.amount} for parent dashboard access.`}
+                      </p>
+                    </div>
+                    <p className="text-sm text-gray-600 text-center">
+                      Razorpay payment window will open shortly...
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="e.g. ST-ABC123 or SST-XYZ789"
+                      value={childLinkingCode}
+                      onChange={(e) => setChildLinkingCode(e.target.value.toUpperCase())}
+                      onKeyPress={(e) => e.key === "Enter" && !addingChild && handleAddChild()}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none mb-6 uppercase tracking-wider"
+                      disabled={addingChild}
+                    />
+                    <div className="flex gap-3">
+                      <button
+                        onClick={() => {
+                          setShowAddChildModal(false);
+                          setChildLinkingCode("");
+                          setPaymentData(null);
+                        }}
+                        disabled={addingChild}
+                        className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all disabled:opacity-50"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleAddChild}
+                        disabled={addingChild || !childLinkingCode.trim()}
+                        className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                      >
+                        {addingChild ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                            {paymentData ? "Processing Payment..." : "Linking..."}
+                          </>
+                        ) : (
+                          "Link Child"
+                        )}
+                      </button>
+                    </div>
+                    <div className="mt-4 pt-4 border-t border-gray-200">
+                      <p className="text-sm text-center text-gray-600 mb-2">
+                        Doesn't have an account?
+                      </p>
+                      <button
+                        onClick={() => setModalView("create")}
+                        disabled={addingChild}
+                        className="w-full px-4 py-2 text-sm font-semibold text-purple-600 hover:bg-purple-50 rounded-lg transition-all disabled:opacity-50"
+                      >
+                        Create Child Account
+                      </button>
+                    </div>
+                  </>
+                )}
+              </>
+            ) : (
+              <>
+                <p className="text-gray-600 mb-6">
+                  Create a new account for your child
+                </p>
+                <form onSubmit={handleCreateChild} className="space-y-4">
+                  {/* Full Name and Date of Birth - Side by side */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={childFormData.fullName}
+                        onChange={(e) => setChildFormData({ ...childFormData, fullName: e.target.value })}
+                        className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 outline-none"
+                        placeholder="Enter child's full name"
+                        disabled={creatingChild}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Date of Birth *
+                      </label>
+                      <input
+                        type="date"
+                        required
+                        value={childFormData.dateOfBirth}
+                        onChange={(e) => setChildFormData({ ...childFormData, dateOfBirth: e.target.value })}
+                        className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 outline-none"
+                        max={new Date().toISOString().split('T')[0]}
+                        disabled={creatingChild}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Email and Gender - Side by side */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Email *
+                      </label>
+                      <input
+                        type="email"
+                        required
+                        value={childFormData.email}
+                        onChange={(e) => setChildFormData({ ...childFormData, email: e.target.value.toLowerCase() })}
+                        className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 outline-none"
+                        placeholder="Enter child's email"
+                        disabled={creatingChild}
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Gender *
+                      </label>
+                      <select
+                        required
+                        value={childFormData.gender}
+                        onChange={(e) => setChildFormData({ ...childFormData, gender: e.target.value })}
+                        className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 outline-none"
+                        disabled={creatingChild}
+                      >
+                        <option value="">Select gender</option>
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                        <option value="non_binary">Non-binary</option>
+                        <option value="prefer_not_to_say">Prefer not to say</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Password and Confirm Password - Side by side */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Password *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          required
+                          value={childFormData.password}
+                          onChange={(e) => setChildFormData({ ...childFormData, password: e.target.value })}
+                          className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 outline-none pr-10"
+                          placeholder="Enter password (min 6 characters)"
+                          minLength={6}
+                          disabled={creatingChild}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 text-sm"
+                          disabled={creatingChild}
+                        >
+                          {showPassword ? "Hide" : "Show"}
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">
+                        Confirm Password *
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showConfirmPassword ? "text" : "password"}
+                          required
+                          value={childFormData.confirmPassword}
+                          onChange={(e) => setChildFormData({ ...childFormData, confirmPassword: e.target.value })}
+                          className="w-full px-4 py-2 rounded-lg border-2 border-gray-200 focus:border-gray-400 focus:ring-2 focus:ring-gray-200 outline-none pr-10"
+                          placeholder="Confirm password"
+                          disabled={creatingChild}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 text-sm"
+                          disabled={creatingChild}
+                        >
+                          {showConfirmPassword ? "Hide" : "Show"}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {childFormData.password && childFormData.confirmPassword && childFormData.password !== childFormData.confirmPassword && (
+                    <p className="text-sm text-red-600">Passwords do not match</p>
+                  )}
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setModalView("link");
+                        setChildFormData({
+                          fullName: "",
+                          email: "",
+                          password: "",
+                          confirmPassword: "",
+                          dateOfBirth: "",
+                          gender: "",
+                        });
+                      }}
+                      disabled={creatingChild}
+                      className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all disabled:opacity-50"
+                    >
+                      Back
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={creatingChild || childFormData.password !== childFormData.confirmPassword || !childFormData.fullName || !childFormData.email || !childFormData.dateOfBirth || !childFormData.gender || childFormData.password.length < 6}
+                      className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {creatingChild ? (
+                        <>
+                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Creating...
+                        </>
+                      ) : (
+                        "Create Account"
+                      )}
+                    </button>
+                  </div>
+                </form>
+              </>
+            )}
           </motion.div>
         </div>
       )}

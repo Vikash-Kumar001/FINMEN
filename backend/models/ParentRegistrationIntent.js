@@ -26,7 +26,7 @@ const parentRegistrationIntentSchema = new mongoose.Schema({
   },
   childSubscriptionPlan: {
     type: String,
-    enum: ['free', 'student_premium', 'student_parent_premium_pro', null],
+    enum: ['free', 'student_premium', 'student_parent_premium_pro', 'educational_institutions_premium', null],
     default: null,
   },
   planType: {
@@ -42,7 +42,7 @@ const parentRegistrationIntentSchema = new mongoose.Schema({
     type: String,
     default: 'INR',
   },
-  stripePaymentIntentId: {
+  razorpayOrderId: {
     type: String,
   },
   status: {

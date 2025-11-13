@@ -329,9 +329,15 @@ userSchema.pre("save", async function (next) {
     return next(new Error("Password is required for admin accounts"));
   }
 
-  if (this.isNew && ["student", "parent"].includes(this.role) && !this.linkingCode) {
+  // Generate linking code for new users or existing users without one
+  if (["student", "parent", "school_student"].includes(this.role) && !this.linkingCode) {
     try {
-      const prefix = this.role === "parent" ? "PR" : "ST";
+      let prefix = "ST";
+      if (this.role === "parent") {
+        prefix = "PR";
+      } else if (this.role === "school_student") {
+        prefix = "SST"; // School Student prefix
+      }
       this.linkingCode = await this.constructor.generateUniqueLinkingCode(prefix);
       this.linkingCodeIssuedAt = new Date();
     } catch (err) {

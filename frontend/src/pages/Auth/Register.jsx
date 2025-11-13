@@ -22,7 +22,30 @@ import {
     CheckCircle2,
     X,
     GraduationCap,
+    Users,
+    CreditCard,
+    MessageCircle,
 } from 'lucide-react';
+
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(window.Razorpay);
+      return;
+    }
+
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => {
+      resolve(window.Razorpay);
+    };
+    script.onerror = () => {
+      resolve(null);
+    };
+    document.body.appendChild(script);
+  });
+};
 
 const AnimatedBackdrop = () => (
     <div className="absolute inset-0 pointer-events-none">
@@ -40,7 +63,6 @@ const Register = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [error, setError] = useState('');
-    const [passwordStrength, setPasswordStrength] = useState(0);
     const [modalOpen, setModalOpen] = useState(false);
     const [modalView, setModalView] = useState('mode-select');
     const [registrationMode, setRegistrationMode] = useState(null);
@@ -50,24 +72,15 @@ const Register = () => {
     const [isProcessing, setIsProcessing] = useState(false);
     const [linkingCodeGenerated, setLinkingCodeGenerated] = useState(null);
     const [gender, setGender] = useState('');
+    const [showPlanSelectionModal, setShowPlanSelectionModal] = useState(false);
+    const [planSelectionData, setPlanSelectionData] = useState(null);
+    const [showStandalonePlanSelection, setShowStandalonePlanSelection] = useState(false);
     const navigate = useNavigate();
     const { fetchUser } = useAuth();
-
-    // Password strength checker
-    const checkPasswordStrength = (password) => {
-        let strength = 0;
-        if (password.length >= 8) strength++;
-        if (/[A-Z]/.test(password)) strength++;
-        if (/[a-z]/.test(password)) strength++;
-        if (/[0-9]/.test(password)) strength++;
-        if (/[^A-Za-z0-9]/.test(password)) strength++;
-        return strength;
-    };
 
     const handlePasswordChange = (e) => {
         const newPassword = e.target.value;
         setPassword(newPassword);
-        setPasswordStrength(checkPasswordStrength(newPassword));
     };
 
     const handleSubmit = (e) => {
@@ -153,26 +166,218 @@ const Register = () => {
             const response = await api.post(`/api/auth/student-registration/finalize`, payload);
             const { linkingCode = null, planType = 'free' } = response.data || {};
             setLinkingCodeGenerated(linkingCode || null);
+            
+            // Close all modals before redirecting
+            setShowStandalonePlanSelection(false);
+            setShowPlanSelectionModal(false);
+            closeModal();
+            
             await loginAndRedirect();
+            
             if (planType === 'student_parent_premium_pro') {
                 toast.success("You're all set! Your family plan is active.");
             } else if (planType === 'student_premium') {
-                toast.success("You're connected to your school’s premium plan. Enjoy full access!");
+                toast.success("You're connected to your school's premium plan. Enjoy full access!");
             } else if (planType === 'educational_institutions_premium') {
-                toast.success("Welcome aboard! Your school’s premium access is active.");
+                toast.success("Welcome aboard! Your school's premium access is active.");
             } else if (payload.flow === 'school_link') {
-                toast.success("Your student account is ready. You’ll start with freemium access until your school activates their plan.");
+                toast.success("Your student account is ready. You'll start with freemium access until your school activates their plan.");
+            } else if (payload.flow === 'parent_not_created') {
+                if (planType === 'free') {
+                toast.success("Freemium student account created. Ask your parent to complete their upgrade anytime.");
+                } else {
+                    toast.success("Your premium account is active! Enjoy full access.");
+            }
+                if (linkingCode) {
+                toast.success(`Share this linking code with your parent: ${linkingCode}`);
+            }
             } else {
                 toast.success("Freemium student account created. Ask your parent to complete their upgrade anytime.");
             }
-            if (payload.flow === 'parent_not_created' && linkingCode) {
-                toast.success(`Share this linking code with your parent: ${linkingCode}`);
-            }
-            closeModal();
         } catch (err) {
             console.error('Student registration finalize error:', err);
             setError(err.response?.data?.message || 'Failed to complete registration.');
-        } finally {
+            setIsProcessing(false);
+        }
+    };
+
+    const handleStandalonePlanSelection = async (selectedPlan) => {
+        setIsProcessing(true);
+        setShowStandalonePlanSelection(false);
+        
+        try {
+            if (selectedPlan === 'free') {
+                // Create account with free plan
+                await startStudentRegistration('parent_not_created', { selectedPlan: 'free' });
+            } else if (selectedPlan === 'student_premium' || selectedPlan === 'student_parent_premium_pro') {
+                // Create payment order for premium plans
+                const response = await api.post(`/api/auth/student-registration/initiate-standalone-with-plan`, {
+                    email: email.trim(),
+                    password,
+                    fullName: fullName.trim(),
+                    dateOfBirth: dob,
+                    flow: 'parent_not_created',
+                    gender,
+                    selectedPlan,
+                });
+                
+                if (response.data?.requiresPayment) {
+                    // Initialize Razorpay payment
+                    await initializeRazorpayPayment(
+                        response.data.orderId,
+                        response.data.keyId,
+                        response.data.amount,
+                        response.data.registrationIntentId
+                    );
+                } else {
+                    const payload = response.data?.payload;
+                    if (payload) {
+                        await finalizeStudentRegistration(payload);
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Standalone plan selection error:', err);
+            setError(err.response?.data?.message || 'Failed to process plan selection.');
+            setIsProcessing(false);
+        }
+    };
+
+    const handlePlanSelection = async (selectedPlan) => {
+        if (!planSelectionData) return;
+        
+        setIsProcessing(true);
+        
+        try {
+            if (selectedPlan === 'free') {
+                // Create account with free plan
+                const response = await api.post(`/api/auth/student-registration/initiate-with-plan`, {
+                    email: email.trim(),
+                    password,
+                    fullName: fullName.trim(),
+                    dateOfBirth: dob,
+                    flow: 'parent_exists',
+                    parentLinkingCode: parentLinkCode.trim().toUpperCase(),
+                    gender,
+                    selectedPlan: 'free',
+                    parentId: planSelectionData.parentId,
+                });
+                
+                const payload = response.data?.payload;
+                if (payload) {
+                    await finalizeStudentRegistration(payload);
+                } else {
+                    throw new Error('Invalid registration response');
+                }
+            } else if (selectedPlan === 'student_premium' || selectedPlan === 'student_parent_premium_pro') {
+                // Create payment order for premium plans
+                const response = await api.post(`/api/auth/student-registration/initiate-with-plan`, {
+                    email: email.trim(),
+                    password,
+                    fullName: fullName.trim(),
+                    dateOfBirth: dob,
+                    flow: 'parent_exists',
+                    parentLinkingCode: parentLinkCode.trim().toUpperCase(),
+                    gender,
+                    selectedPlan,
+                    parentId: planSelectionData.parentId,
+                });
+                
+                if (response.data?.requiresPayment) {
+                    // Initialize Razorpay payment
+                    await initializeRazorpayPayment(
+                        response.data.orderId,
+                        response.data.keyId,
+                        response.data.amount,
+                        response.data.registrationIntentId
+                    );
+                } else {
+                    const payload = response.data?.payload;
+                    if (payload) {
+                        await finalizeStudentRegistration(payload);
+                    }
+                }
+            } else if (selectedPlan === 'contact_parent') {
+                // Close modal and show message
+                setShowPlanSelectionModal(false);
+                toast.info('Please contact your parent to create your account. You can register again later.');
+                setIsProcessing(false);
+            }
+        } catch (err) {
+            console.error('Plan selection error:', err);
+            toast.error(err.response?.data?.message || 'Failed to process plan selection.');
+            setIsProcessing(false);
+        }
+    };
+
+    const initializeRazorpayPayment = async (orderId, keyId, amount, registrationIntentId) => {
+        try {
+            const Razorpay = await loadRazorpay();
+            if (!Razorpay) {
+                throw new Error('Payment gateway not available right now.');
+            }
+
+            const options = {
+                key: keyId,
+                amount: Math.round(amount * 100), // Convert to paise
+                currency: 'INR',
+                name: 'FINMEN',
+                description: 'Student Registration Payment',
+                order_id: orderId,
+                handler: async function (response) {
+                    // Payment successful - finalize registration
+                    setIsProcessing(true);
+                    try {
+                        const finalizeResponse = await api.post(`/api/auth/student-registration/finalize-with-payment`, {
+                            registrationIntentId,
+                            razorpayPaymentId: response.razorpay_payment_id,
+                            razorpayOrderId: response.razorpay_order_id,
+                            razorpaySignature: response.razorpay_signature,
+                        });
+                        
+                        const payload = finalizeResponse.data?.payload;
+                        if (payload) {
+                            // Close modals before finalizing
+                            setShowStandalonePlanSelection(false);
+                            setShowPlanSelectionModal(false);
+                            await finalizeStudentRegistration(payload);
+                        } else {
+                            throw new Error('Invalid registration response');
+                        }
+                    } catch (error) {
+                        console.error('Registration finalization error:', error);
+                        toast.error('Payment succeeded but registration failed. Please contact support.');
+                        setIsProcessing(false);
+                    }
+                },
+                prefill: {
+                    name: fullName.trim(),
+                    email: email.trim(),
+                },
+                theme: {
+                    color: '#6366f1',
+                },
+                modal: {
+                    ondismiss: function () {
+                        setIsProcessing(false);
+                        toast.info('Payment was cancelled');
+                    },
+                },
+            };
+
+            const razorpayInstance = new Razorpay(options);
+            
+            // Handle payment failure
+            razorpayInstance.on('payment.failed', function (response) {
+                console.error('Payment failed:', response.error);
+                setIsProcessing(false);
+                toast.error(response.error.description || 'Payment failed. Please try again.');
+            });
+            
+            razorpayInstance.open();
+        } catch (error) {
+            console.error('Razorpay initialization error:', error);
+            toast.error(error.message || 'Unable to initialize payment.');
             setIsProcessing(false);
         }
     };
@@ -188,6 +393,51 @@ const Register = () => {
             const schoolCode = options.schoolLinkingCode
                 ? options.schoolLinkingCode.trim().toUpperCase()
                 : undefined;
+            
+            // For parent_not_created flow, plan selection is required
+            if (flow === 'parent_not_created') {
+                if (!options.selectedPlan) {
+                    // This should not happen - plan selection modal should have been shown
+                    setError('Please select a plan to continue with registration.');
+                    setIsProcessing(false);
+                    return;
+                }
+                
+                // Use the standalone plan endpoint
+                const response = await api.post(`/api/auth/student-registration/initiate-standalone-with-plan`, {
+                    email: email.trim(),
+                    password,
+                    fullName: fullName.trim(),
+                    dateOfBirth: dob,
+                    flow: 'parent_not_created',
+                    gender,
+                    selectedPlan: options.selectedPlan,
+                });
+                
+                if (response.data?.requiresPayment) {
+                    await initializeRazorpayPayment(
+                        response.data.orderId,
+                        response.data.keyId,
+                        response.data.amount,
+                        response.data.registrationIntentId
+                    );
+                    return;
+                } else if (response.data?.payload) {
+                    await finalizeStudentRegistration(response.data.payload);
+                    return;
+                } else {
+                    setError('Invalid response from server. Please try again.');
+                    setIsProcessing(false);
+                    return;
+                }
+            }
+
+            // Prevent calling initiate endpoint for parent_not_created flow
+            if (flow === 'parent_not_created') {
+                setError('Please select a plan to continue with registration.');
+                setIsProcessing(false);
+                return;
+            }
 
             const response = await api.post(`/api/auth/student-registration/initiate`, {
                 email: email.trim(),
@@ -199,14 +449,80 @@ const Register = () => {
                 schoolLinkingCode: schoolCode,
                 gender,
             });
-            const payload = response.data?.payload;
-            if (!payload) {
-                throw new Error('Invalid registration response');
+            
+            console.log('Registration response:', response);
+            console.log('Response data:', response.data);
+            console.log('Response status:', response.status);
+            
+            // Check if response exists
+            if (!response || !response.data) {
+                console.error('No response or response data received');
+                setError('Failed to start registration. Please try again.');
+                setIsProcessing(false);
+                return;
             }
+            
+            // Check if response is successful
+            if (response.data.success === false) {
+                const errorMessage = response.data.message || 'Failed to start registration.';
+                console.error('Registration failed:', errorMessage);
+                setError(errorMessage);
+                setIsProcessing(false);
+                return;
+            }
+            
+            // Check if parent already has linked children - show plan selection modal FIRST
+            if (response.data.requiresPlanSelection === true) {
+                console.log('Parent already has linked children, showing plan selection modal');
+                setPlanSelectionData({
+                    parentId: response.data.parentId,
+                    parentName: response.data.parentName,
+                    existingChildrenCount: response.data.existingChildrenCount,
+                });
+                setShowPlanSelectionModal(true);
+                setIsProcessing(false);
+                // Close the parent code entry modal if it's open
+                if (modalView === 'enter-parent-code') {
+                    setModalView(null);
+                }
+                return;
+            }
+            
+            // Check for payload - required for normal registration flow
+            if (!response.data.payload) {
+                console.error('Invalid registration response - missing payload:', response.data);
+                const errorMessage = response.data?.message || 'Invalid registration response. Please try again.';
+                setError(errorMessage);
+                setIsProcessing(false);
+                return;
+            }
+            
+            const payload = response.data.payload;
+            console.log('Proceeding with payload:', payload);
             await finalizeStudentRegistration(payload);
         } catch (err) {
             console.error('Student registration initiate error:', err);
-            setError(err.response?.data?.message || 'Failed to start registration.');
+            console.error('Error details:', {
+                message: err.message,
+                response: err.response,
+                responseData: err.response?.data,
+                status: err.response?.status,
+            });
+            
+            let errorMessage = 'Failed to start registration.';
+            
+            if (err.response) {
+                // Server responded with error
+                errorMessage = err.response.data?.message || err.response.data?.error || errorMessage;
+            } else if (err.request) {
+                // Request was made but no response received
+                errorMessage = 'No response from server. Please check your internet connection.';
+            } else {
+                // Error in request setup
+                errorMessage = err.message || errorMessage;
+            }
+            
+            setError(errorMessage);
             setIsProcessing(false);
         }
     };
@@ -215,7 +531,11 @@ const Register = () => {
         setSelectedFlow(flow);
         setRegistrationMode('individual');
         if (flow === 'parent_not_created') {
-            startStudentRegistration('parent_not_created');
+            // Close parent choice modal and show plan selection modal instead of directly creating account
+            setModalView(null);
+            setShowStandalonePlanSelection(true);
+            // Prevent any automatic registration - user must select a plan first
+            return;
         } else {
             setModalView('enter-parent-code');
         }
@@ -577,18 +897,6 @@ const Register = () => {
         }
     };
 
-    const getPasswordStrengthColor = () => {
-        if (passwordStrength <= 2) return 'from-red-500 to-orange-500';
-        if (passwordStrength <= 3) return 'from-yellow-500 to-amber-500';
-        return 'from-green-500 to-emerald-500';
-    };
-
-    const getPasswordStrengthText = () => {
-        if (passwordStrength <= 2) return 'Weak';
-        if (passwordStrength <= 3) return 'Medium';
-        return 'Strong';
-    };
-
     return (
         <div className="h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 relative overflow-hidden">
             <AnimatedBackdrop />
@@ -732,23 +1040,14 @@ const Register = () => {
                                         required
                                         className="w-full appearance-none pl-10 sm:pl-12 pr-8 sm:pr-10 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm sm:text-base"
                                     >
-                                        <option value="" disabled className="bg-slate-900 text-gray-400">
+                                        <option value="" disabled className="bg-white text-black">
                                             Select gender
                                         </option>
-                                        <option value="female" className="bg-slate-900 text-white">
+                                        <option value="female" className="bg-white text-black">
                                             Female
                                         </option>
-                                        <option value="male" className="bg-slate-900 text-white">
+                                        <option value="male" className="bg-white text-black">
                                             Male
-                                        </option>
-                                        <option value="non_binary" className="bg-slate-900 text-white">
-                                            Non-binary
-                                        </option>
-                                        <option value="prefer_not_to_say" className="bg-slate-900 text-white">
-                                            Prefer not to say
-                                        </option>
-                                        <option value="other" className="bg-slate-900 text-white">
-                                            Other
                                         </option>
                                     </select>
                                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-gray-400">
@@ -809,34 +1108,6 @@ const Register = () => {
                                     </button>
                                 </motion.div>
                             </div>
-
-                            {/* Password Strength Indicator */}
-                            <AnimatePresence>
-                                {password && (
-                                    <motion.div
-                                        className="space-y-2"
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        exit={{ opacity: 0, height: 0 }}
-                                        transition={{ duration: 0.3 }}
-                                    >
-                                        <div className="flex items-center justify-between">
-                                            <span className="text-xs sm:text-sm text-gray-400">Password Strength</span>
-                                            <span className={`text-xs sm:text-sm font-medium bg-gradient-to-r ${getPasswordStrengthColor()} bg-clip-text text-transparent`}>
-                                                {getPasswordStrengthText()}
-                                            </span>
-                                        </div>
-                                        <div className="w-full bg-white/10 rounded-full h-1.5 sm:h-2">
-                                            <motion.div
-                                                className={`h-1.5 sm:h-2 rounded-full bg-gradient-to-r ${getPasswordStrengthColor()}`}
-                                                initial={{ width: 0 }}
-                                                animate={{ width: `${(passwordStrength / 5) * 100}%` }}
-                                                transition={{ duration: 0.3 }}
-                                            />
-                                        </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
 
                             {/* Password Match Indicator */}
                             <AnimatePresence>
@@ -929,6 +1200,282 @@ const Register = () => {
                                 <div className="mt-6 p-4 bg-cyan-50 border border-cyan-100 rounded-2xl text-sm text-cyan-700">
                                     Share this code with your parent:{" "}
                                     <span className="font-semibold">{linkingCodeGenerated}</span>
+                                </div>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Standalone Plan Selection Modal (for parent_not_created flow) */}
+            <AnimatePresence>
+                {showStandalonePlanSelection && (
+                    <motion.div
+                        className="fixed inset-0 z-[201] flex items-center justify-center bg-black/70 px-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => !isProcessing && setShowStandalonePlanSelection(false)}
+                    >
+                        <motion.div
+                            className="max-w-5xl w-full bg-white rounded-3xl shadow-2xl p-6 sm:p-8 relative"
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => !isProcessing && setShowStandalonePlanSelection(false)}
+                                disabled={isProcessing}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition disabled:opacity-50"
+                                aria-label="Close"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            <div className="text-center mb-6">
+                                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                                    Choose Your Plan
+                                </h2>
+                                <p className="text-gray-600">
+                                    Select a plan that best fits your learning needs
+                                </p>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {/* Free Plan */}
+                                <motion.button
+                                    type="button"
+                                    onClick={() => handleStandalonePlanSelection('free')}
+                                    disabled={isProcessing}
+                                    className="p-6 bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl text-left hover:border-green-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    whileHover={{ scale: isProcessing ? 1 : 1.02 }}
+                                    whileTap={{ scale: isProcessing ? 1 : 0.98 }}
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="p-3 bg-green-200 rounded-xl">
+                                            <Zap className="w-6 h-6 text-green-600" />
+                                        </div>
+                                        <span className="text-2xl font-bold text-green-600">₹0</span>
+                                    </div>
+                                    <h3 className="font-semibold text-gray-900 mb-2">Free Plan</h3>
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        Basic access with limited features
+                                    </p>
+                                    <ul className="text-xs text-gray-600 space-y-1">
+                                        <li>• 5 Games per Pillar</li>
+                                        <li>• Basic Dashboard</li>
+                                        <li>• HealCoins Rewards</li>
+                                    </ul>
+                                </motion.button>
+
+                                {/* Student Premium Plan */}
+                                <motion.button
+                                    type="button"
+                                    onClick={() => handleStandalonePlanSelection('student_premium')}
+                                    disabled={isProcessing}
+                                    className="p-6 bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl text-left hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    whileHover={{ scale: isProcessing ? 1 : 1.02 }}
+                                    whileTap={{ scale: isProcessing ? 1 : 0.98 }}
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="p-3 bg-blue-200 rounded-xl">
+                                            <Shield className="w-6 h-6 text-blue-600" />
+                                        </div>
+                                        <span className="text-2xl font-bold text-blue-600">₹4,499</span>
+                                    </div>
+                                    <h3 className="font-semibold text-gray-900 mb-2">Students Premium</h3>
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        Full access to all features
+                                    </p>
+                                    <ul className="text-xs text-gray-600 space-y-1">
+                                        <li>• Unlimited Games</li>
+                                        <li>• All 10 Pillars</li>
+                                        <li>• Advanced Analytics</li>
+                                        <li>• Certificates</li>
+                                    </ul>
+                                    <div className="mt-4 flex items-center gap-2 text-xs text-blue-600">
+                                        <CreditCard className="w-4 h-4" />
+                                        <span>Payment required</span>
+                                    </div>
+                                </motion.button>
+
+                                {/* Student + Parent Premium Pro Plan */}
+                                <motion.button
+                                    type="button"
+                                    onClick={() => handleStandalonePlanSelection('student_parent_premium_pro')}
+                                    disabled={isProcessing}
+                                    className="p-6 bg-gradient-to-br from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl text-left hover:border-purple-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    whileHover={{ scale: isProcessing ? 1 : 1.02 }}
+                                    whileTap={{ scale: isProcessing ? 1 : 0.98 }}
+                                >
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="p-3 bg-purple-200 rounded-xl">
+                                            <Users className="w-6 h-6 text-purple-600" />
+                                        </div>
+                                        <span className="text-2xl font-bold text-purple-600">₹4,999</span>
+                                    </div>
+                                    <h3 className="font-semibold text-gray-900 mb-2">Student + Parent Pro</h3>
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        Complete family plan with all features
+                                    </p>
+                                    <ul className="text-xs text-gray-600 space-y-1">
+                                        <li>• Everything in Premium</li>
+                                        <li>• Parent Dashboard</li>
+                                        <li>• Family Tracking</li>
+                                        <li>• Parent Support</li>
+                                    </ul>
+                                    <div className="mt-4 flex items-center gap-2 text-xs text-purple-600">
+                                        <CreditCard className="w-4 h-4" />
+                                        <span>Payment required</span>
+                                    </div>
+                                </motion.button>
+                            </div>
+
+                            {isProcessing && (
+                                <div className="mt-6 flex items-center justify-center gap-3 text-gray-600">
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <span className="text-sm">Processing...</span>
+                                </div>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Plan Selection Modal */}
+            <AnimatePresence>
+                {showPlanSelectionModal && planSelectionData && (
+                    <motion.div
+                        className="fixed inset-0 z-[201] flex items-center justify-center bg-white/10 backdrop-blur-xl px-4"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => !isProcessing && setShowPlanSelectionModal(false)}
+                    >
+                        <motion.div
+                            className="max-w-3xl w-full bg-white rounded-3xl shadow-2xl p-6 sm:p-8 relative max-h-[90vh] overflow-y-auto"
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button
+                                type="button"
+                                onClick={() => !isProcessing && setShowPlanSelectionModal(false)}
+                                disabled={isProcessing}
+                                className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition disabled:opacity-50"
+                                aria-label="Close"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+
+                            <div className="text-center mb-4">
+                                <div className="inline-flex items-center justify-center w-16 h-16 bg-amber-100 rounded-full mb-4">
+                                    <Users className="w-8 h-8 text-amber-600" />
+                                </div>
+                                <h2 className="text-2xl font-bold text-gray-900">
+                                    Parent Already Linked
+                                </h2>
+                                <p className="text-gray-600 mb-2">
+                                    This parent account is already linked with {planSelectionData.existingChildrenCount} {planSelectionData.existingChildrenCount === 1 ? 'child' : 'children'}.
+                                </p>
+                                {/* Contact Parent Option */}
+                                <div className="w-full text-center text-sm text-red-600 mb-1">Ask your parent to create your account for you
+                                </div>
+                                <p className="text-black font-bold text-center"> OR </p>
+                            </div>
+
+                            <div className="space-y-2">
+                                {/* Free Plan Option */}
+                                <motion.button
+                                    type="button"
+                                    onClick={() => handlePlanSelection('free')}
+                                    disabled={isProcessing}
+                                    className="w-full p-5 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl text-left hover:border-green-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    whileHover={{ scale: isProcessing ? 1 : 1.02 }}
+                                    whileTap={{ scale: isProcessing ? 1 : 0.98 }}
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div className="p-3 bg-green-200 rounded-xl">
+                                            <Zap className="w-6 h-6 text-green-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <h3 className="font-semibold text-gray-900">Continue with Free Plan</h3>
+                                                <span className="text-lg font-bold text-green-600">₹0</span>
+                                            </div>
+                                            <p className="text-sm text-gray-600">
+                                                Basic access with limited features
+                                            </p>
+                                        </div>
+                                    </div>
+                                </motion.button>
+
+                                {/* Student Premium Plan Option */}
+                                <motion.button
+                                    type="button"
+                                    onClick={() => handlePlanSelection('student_premium')}
+                                    disabled={isProcessing}
+                                    className="w-full p-5 bg-gradient-to-r from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-2xl text-left hover:border-blue-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    whileHover={{ scale: isProcessing ? 1 : 1.02 }}
+                                    whileTap={{ scale: isProcessing ? 1 : 0.98 }}
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div className="p-3 bg-blue-200 rounded-xl">
+                                            <Shield className="w-6 h-6 text-blue-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <h3 className="font-semibold text-gray-900">Students Premium Plan</h3>
+                                                <span className="text-lg font-bold text-blue-600">₹4,499</span>
+                                            </div>
+                                            <p className="text-sm text-gray-600 mb-2">
+                                                Full access to all 10 pillars, 2200+ games, and premium features
+                                            </p>
+                                            <div className="flex items-center gap-2 text-xs text-blue-600">
+                                                <CreditCard className="w-4 h-4" />
+                                                <span>Payment required</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.button>
+
+                                {/* Student + Parent Premium Pro Plan Option */}
+                                <motion.button
+                                    type="button"
+                                    onClick={() => handlePlanSelection('student_parent_premium_pro')}
+                                    disabled={isProcessing}
+                                    className="w-full p-5 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl text-left hover:border-purple-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    whileHover={{ scale: isProcessing ? 1 : 1.02 }}
+                                    whileTap={{ scale: isProcessing ? 1 : 0.98 }}
+                                >
+                                    <div className="flex items-start gap-4">
+                                        <div className="p-3 bg-purple-200 rounded-xl">
+                                            <Users className="w-6 h-6 text-purple-600" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-1">
+                                                <h3 className="font-semibold text-gray-900">Student + Parent Premium Pro</h3>
+                                                <span className="text-lg font-bold text-purple-600">₹4,999</span>
+                                            </div>
+                                            <p className="text-sm text-gray-600 mb-2">
+                                                Everything in Students Premium + Parent Dashboard & Family Features
+                                            </p>
+                                            <div className="flex items-center gap-2 text-xs text-purple-600">
+                                                <CreditCard className="w-4 h-4" />
+                                                <span>Payment required</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </motion.button>
+                            </div>
+
+                            {isProcessing && (
+                                <div className="mt-6 flex items-center justify-center gap-3 text-gray-600">
+                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <span className="text-sm">Processing...</span>
                                 </div>
                             )}
                         </motion.div>

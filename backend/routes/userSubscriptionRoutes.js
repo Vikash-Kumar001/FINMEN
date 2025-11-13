@@ -8,13 +8,13 @@ import {
   getSubscriptionTransactions,
   updateAutoRenewSettings,
   cancelSubscription,
-  handleStripeWebhook,
+  handleRazorpayWebhook,
 } from '../controllers/userSubscriptionController.js';
 
 const router = express.Router();
 
 // Webhook endpoint (must be before requireAuth middleware)
-router.post('/webhook', express.raw({ type: 'application/json' }), handleStripeWebhook);
+router.post('/webhook', express.json(), handleRazorpayWebhook);
 
 // Protected routes
 router.post('/create-payment', requireAuth, createSubscriptionPayment);

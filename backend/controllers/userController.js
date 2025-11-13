@@ -281,6 +281,18 @@ export const getUserProfile = async (req, res) => {
     const user = await User.findById(req.user._id).select('-password -otp -otpExpiresAt -otpType');
     if (!user) return res.status(404).json({ message: 'User not found' });
     
+    // Generate linking code for school_students if missing (similar to organization linking codes)
+    if (user.role === 'school_student' && !user.linkingCode) {
+      try {
+        const prefix = 'SST';
+        user.linkingCode = await User.generateUniqueLinkingCode(prefix);
+        user.linkingCodeIssuedAt = new Date();
+        await user.save();
+      } catch (err) {
+        console.error('Failed to generate linking code for school_student:', err);
+      }
+    }
+    
     const baseProfile = {
       fullName: user.fullName || user.name,
       name: user.name,
@@ -296,6 +308,8 @@ export const getUserProfile = async (req, res) => {
       createdAt: user.createdAt || null,
       subject: user.subject || '', // Include subject for school teachers
       academic: user.academic || {},
+      linkingCode: user.linkingCode || null, // Include linking code for all users
+      linkingCodeIssuedAt: user.linkingCodeIssuedAt || null,
       preferences: user.preferences || {
         language: 'en',
         notifications: { email: true, push: true, sms: false },
@@ -347,6 +361,28 @@ export const getUserProfile = async (req, res) => {
         organization || profileData.school
       );
       profileData.schoolDetails = schoolDetails;
+
+      // Include linked parent information for students
+      if (user.linkedIds?.parentIds && user.linkedIds.parentIds.length > 0) {
+        try {
+          const parents = await User.find({
+            _id: { $in: user.linkedIds.parentIds },
+            role: { $in: ['parent', 'school_parent'] }
+          }).select('_id name fullName email linkingCode').lean();
+
+          profileData.linkedParents = parents.map(parent => ({
+            id: parent._id,
+            name: parent.fullName || parent.name || parent.email,
+            email: parent.email,
+            linkingCode: parent.linkingCode,
+          }));
+        } catch (err) {
+          console.error('Failed to load linked parents:', err);
+          profileData.linkedParents = [];
+        }
+      } else {
+        profileData.linkedParents = [];
+      }
     } else if (user.role === 'school_teacher') {
       const teacherDetails = await buildTeacherSchoolDetails(
         user,

@@ -26,11 +26,14 @@ import {
   Sparkles,
   TrendingUp,
   Users,
+  Link as LinkIcon,
+  UserPlus,
 } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../../hooks/useAuth";
 import { useSocket } from "../../context/SocketContext";
 import Avatar from "../../components/Avatar";
+import api from "../../utils/api";
 import {
   fetchParentProfileOverview,
   updateEmailNotifications,
@@ -203,6 +206,9 @@ const ParentProfile = () => {
   const [selectedChild, setSelectedChild] = useState(null);
   const [copiedCode, setCopiedCode] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState("/avatars/avatar1.png");
+  const [studentLinkingCode, setStudentLinkingCode] = useState("");
+  const [linkingStudent, setLinkingStudent] = useState(false);
+  const [showLinkStudentForm, setShowLinkStudentForm] = useState(false);
 
   const apiBaseUrl =
     import.meta.env.VITE_API_URL?.trim() || "http://localhost:5000";
@@ -486,6 +492,40 @@ const ParentProfile = () => {
     }
   }, [overview?.parent?.linkingCode]);
 
+  const handleLinkSchoolStudent = useCallback(async (e) => {
+    e?.preventDefault();
+    if (!studentLinkingCode.trim()) {
+      toast.error("Please enter a student linking code");
+      return;
+    }
+
+    try {
+      setLinkingStudent(true);
+      const response = await api.post("/api/auth/parent/link-school-student", {
+        studentLinkingCode: studentLinkingCode.trim().toUpperCase(),
+      });
+
+      if (response.data.success) {
+        toast.success("Successfully linked to school student!");
+        setStudentLinkingCode("");
+        setShowLinkStudentForm(false);
+        loadOverview({ silent: true });
+        // Emit realtime event if socket is available
+        if (socket) {
+          socket.emit("child_linked", {
+            childId: response.data.student.id,
+            childName: response.data.student.name,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Error linking school student:", error);
+      toast.error(error.response?.data?.message || "Failed to link to school student");
+    } finally {
+      setLinkingStudent(false);
+    }
+  }, [studentLinkingCode, socket, loadOverview]);
+
   if (loading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-indigo-50 via-purple-50 to-sky-50">
@@ -611,6 +651,58 @@ const ParentProfile = () => {
                       </div>
                     </div>
                   )}
+
+                  {/* Link with School Student */}
+                  <div className="mt-6 w-full max-w-md rounded-3xl border border-white/30 bg-white/15 p-4 text-white backdrop-blur">
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-wide text-white/70">
+                          Link with School Student
+                        </p>
+                        <p className="text-sm text-white/80 mt-1">
+                          Enter your child's secret linking code to connect their account.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setShowLinkStudentForm(!showLinkStudentForm)}
+                        className="inline-flex items-center gap-2 rounded-2xl bg-white/20 px-3 py-2 text-sm font-semibold text-white transition hover:bg-white/30"
+                      >
+                        <UserPlus className="h-4 w-4" />
+                        {showLinkStudentForm ? "Cancel" : "Link Student"}
+                      </button>
+                    </div>
+                    {showLinkStudentForm && (
+                      <form onSubmit={handleLinkSchoolStudent} className="space-y-3">
+                        <div>
+                          <input
+                            type="text"
+                            value={studentLinkingCode}
+                            onChange={(e) => setStudentLinkingCode(e.target.value.toUpperCase())}
+                            placeholder="Enter student linking code (e.g., SST-XXXXXX)"
+                            className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/50 font-mono uppercase"
+                          />
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={linkingStudent || !studentLinkingCode.trim()}
+                          className="w-full px-4 py-3 rounded-xl bg-white/20 border border-white/30 text-white font-semibold hover:bg-white/30 transition disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {linkingStudent ? (
+                            <>
+                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                              Linking...
+                            </>
+                          ) : (
+                            <>
+                              <LinkIcon className="h-4 w-4" />
+                              Link Student
+                            </>
+                          )}
+                        </button>
+                      </form>
+                    )}
+                  </div>
               </div>
             </div>
             <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-center">

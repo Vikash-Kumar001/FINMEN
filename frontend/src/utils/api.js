@@ -98,8 +98,12 @@ api.interceptors.request.use(
         localStorage.removeItem("finmen_token");
       }
     } else {
-      // ✅ Added from stash
-      console.warn("⚠️ No token found in localStorage");
+      // ✅ Added from stash - Only log warning for protected routes, not public pages
+      const publicPaths = ['/register-parent', '/register-stakeholder', '/register-seller', '/register-teacher', '/school-registration', '/login', '/'];
+      const currentPath = window.location.pathname;
+      if (!publicPaths.some(path => currentPath.includes(path))) {
+        console.warn("⚠️ No token found in localStorage");
+      }
     }
 
     return config;

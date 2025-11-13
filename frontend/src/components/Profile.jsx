@@ -15,6 +15,10 @@ import {
   Target,
   User,
   TrendingUp,
+  Link2,
+  Users,
+  X,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "react-toastify";
 import { useAuth } from "../hooks/useAuth";
@@ -218,6 +222,14 @@ const Profile = () => {
     rank: null,
   });
 
+  // Parent linking state
+  const [linkedParents, setLinkedParents] = useState([]);
+  const [parentLinkingCode, setParentLinkingCode] = useState('');
+  const [showLinkParentForm, setShowLinkParentForm] = useState(false);
+  const [linkingLoading, setLinkingLoading] = useState(false);
+  const [showParentAlreadyLinkedModal, setShowParentAlreadyLinkedModal] = useState(false);
+  const [parentAlreadyLinkedData, setParentAlreadyLinkedData] = useState(null);
+
   const apiBaseUrl =
     import.meta.env.VITE_API_URL?.trim() || "http://localhost:5000";
 
@@ -279,6 +291,7 @@ const Profile = () => {
         }
         if (data.linkingCode) next.linkingCode = data.linkingCode;
         if (data.createdAt) next.createdAt = data.createdAt;
+        if (data.linkedParents !== undefined) next.linkedParents = data.linkedParents;
         return next;
       });
 
@@ -327,6 +340,18 @@ const Profile = () => {
         data.preferences || {}
       );
 
+      // For school_students, ensure linking code is fetched
+      let linkingCode = data.linkingCode || user.linkingCode;
+      if ((data.role === 'school_student' || user.role === 'school_student') && !linkingCode) {
+        // Try to fetch from /api/auth/me endpoint which should have the linking code
+        try {
+          const meResponse = await api.get('/api/auth/me');
+          linkingCode = meResponse.data?.linkingCode || linkingCode;
+        } catch (err) {
+          console.warn('Could not fetch linking code from /api/auth/me:', err);
+        }
+      }
+
       setProfile({
         id: data._id || user._id || user.id,
         fullName:
@@ -341,12 +366,13 @@ const Profile = () => {
         dateOfBirth: data.dateOfBirth || data.dob || "",
         academic: data.academic || {},
         preferences: mergedPreferences,
-        role: data.role,
-        linkingCode: data.linkingCode || user.linkingCode,
+        role: data.role || user.role,
+        linkingCode: linkingCode,
         school: data.school,
         schoolDetails: data.schoolDetails || null,
         stats: data.stats || {},
         createdAt: data.createdAt || data.joiningDate || user.createdAt || null,
+        linkedParents: data.linkedParents || [],
       });
 
       setPersonalForm({
@@ -372,6 +398,9 @@ const Profile = () => {
       setAvatarPreview(
         normalizeAvatarUrl(data.avatar) || "/avatars/avatar1.png"
       );
+
+      // Set linked parents
+      setLinkedParents(data.linkedParents || []);
     } catch (error) {
       console.error("Error fetching profile:", error);
       toast.error("Unable to load your profile right now.");
@@ -432,6 +461,24 @@ const Profile = () => {
     });
     return () => unsubscribe();
   }, [applyProfilePatch, subscribeProfileUpdate, user]);
+
+  // Listen for parent linking events via Socket.IO
+  useEffect(() => {
+    if (!socket || !user) return;
+
+    const handleParentLinked = (data) => {
+      if (data.studentId === (user._id || user.id)) {
+        loadProfile(); // Reload profile to get updated parent information
+        toast.success('Successfully linked to parent!');
+      }
+    };
+
+    socket.on('parent_linked', handleParentLinked);
+
+    return () => {
+      socket.off('parent_linked', handleParentLinked);
+    };
+  }, [socket, user, loadProfile]);
 
   const handleAvatarFileChange = async (event) => {
     const file = event.target.files?.[0];
@@ -585,6 +632,56 @@ const Profile = () => {
     }
   };
 
+  const handleLinkParent = async () => {
+    if (!parentLinkingCode.trim()) {
+      toast.error("Please enter a parent linking code");
+      return;
+    }
+
+    setLinkingLoading(true);
+    try {
+      const endpoint = profile?.role === 'school_student' 
+        ? '/api/auth/school-student/link-parent'
+        : '/api/auth/student/link-parent';
+
+      const response = await api.post(endpoint, {
+        parentLinkingCode: parentLinkingCode.trim().toUpperCase(),
+      });
+
+      // Check if parent is already linked with another child
+      if (response.data?.parentAlreadyLinked) {
+        setParentAlreadyLinkedData({
+          parentName: response.data.parentName || 'Parent',
+          existingChildrenCount: response.data.existingChildrenCount || 1,
+        });
+        setShowParentAlreadyLinkedModal(true);
+        setLinkingLoading(false);
+        return;
+      }
+
+      if (response.data?.requiresPayment) {
+        // Handle payment flow for additional children
+        toast.info(`Payment of ₹${response.data.amount} is required to link with this parent.`);
+        // TODO: Implement Razorpay payment flow here if needed
+        setLinkingLoading(false);
+        return;
+      }
+
+      if (response.data?.success) {
+        toast.success(response.data.message || 'Successfully linked to parent!');
+        setParentLinkingCode('');
+        setShowLinkParentForm(false);
+        await loadProfile(); // Reload profile to get updated parent information
+      }
+    } catch (error) {
+      console.error('Link parent error:', error);
+      const errorMessage = error.response?.data?.message || 'Failed to link with parent. Please try again.';
+      toast.error(errorMessage);
+    } finally {
+      setLinkingLoading(false);
+    }
+  };
+
   if (loadingProfile) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-slate-50">
@@ -681,22 +778,60 @@ const Profile = () => {
                 </div>
               </div>
             </div>
-            {profile?.linkingCode && (
-              <div className="rounded-2xl border border-indigo-200 bg-indigo-50 px-4 py-4 text-center shadow-sm sm:min-w-[220px]">
-                <p className="text-xs font-semibold uppercase tracking-wide text-indigo-600">
-                  Linking Code
+            {(profile?.linkingCode || profile?.role === 'school_student' || user?.role === 'school_student') && (
+              <div className={`rounded-2xl border px-4 py-4 text-center shadow-sm sm:min-w-[220px] ${
+                profile?.role === 'school_student' || user?.role === 'school_student'
+                  ? 'border-purple-300 bg-gradient-to-br from-purple-50 to-indigo-50'
+                  : 'border-indigo-200 bg-indigo-50'
+              }`}>
+                <p className={`text-xs font-semibold uppercase tracking-wide ${
+                  profile?.role === 'school_student' || user?.role === 'school_student'
+                    ? 'text-purple-700'
+                    : 'text-indigo-600'
+                }`}>
+                  {profile?.role === 'school_student' || user?.role === 'school_student'
+                    ? 'Secret Linking Code'
+                    : 'Linking Code'}
                 </p>
-                <p className="mt-2 text-lg font-mono font-semibold text-indigo-900">
-                  {profile.linkingCode}
-                </p>
-                <button
-                  type="button"
-                  onClick={() => handleCopyCode(profile.linkingCode)}
-                  className="mt-3 inline-flex items-center gap-2 rounded-full border border-indigo-200 px-3 py-1 text-xs font-semibold text-indigo-600 transition hover:bg-white"
-                >
-                  <Copy className="h-3.5 w-3.5" />
-                  Copy
-                </button>
+                {profile?.role === 'school_student' || user?.role === 'school_student' ? (
+                  <p className="text-xs text-purple-600 mt-1 mb-2">
+                    Share this code with your parent to connect
+                  </p>
+                ) : null}
+                {profile?.linkingCode ? (
+                  <>
+                    <p className={`mt-2 text-lg font-mono font-semibold ${
+                      profile?.role === 'school_student' || user?.role === 'school_student'
+                        ? 'text-purple-900'
+                        : 'text-indigo-900'
+                    }`}>
+                      {profile.linkingCode}
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => handleCopyCode(profile.linkingCode)}
+                      className={`mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition hover:bg-white ${
+                        profile?.role === 'school_student' || user?.role === 'school_student'
+                          ? 'border-purple-300 text-purple-700 hover:border-purple-400'
+                          : 'border-indigo-200 text-indigo-600'
+                      }`}
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                      Copy
+                    </button>
+                  </>
+                ) : (
+                  <div className="mt-2 text-sm text-gray-500">
+                    <p>Generating linking code...</p>
+                    <button
+                      type="button"
+                      onClick={loadProfile}
+                      className="mt-2 text-xs text-indigo-600 hover:text-indigo-800 underline"
+                    >
+                      Refresh
+                    </button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -726,6 +861,113 @@ const Profile = () => {
         </header>
 
         <div className="grid gap-8 lg:grid-cols-[2fr,1fr]">
+          {/* Parent Linking Section - Only for students */}
+          {(profile?.role === 'student' || profile?.role === 'school_student') && (
+              <SectionCard
+                title="Parent Connection"
+                description="Link your account with your parent to enable family features."
+              >
+                {linkedParents && linkedParents.length > 0 ? (
+                  <div className="space-y-4">
+                    <div className="rounded-xl border border-green-200 bg-green-50 px-4 py-3">
+                      <div className="flex items-center gap-2 text-green-700">
+                        <CheckCircle className="h-5 w-5" />
+                        <span className="font-semibold">Linked with Parent</span>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      {linkedParents.map((parent) => (
+                        <div
+                          key={parent.id}
+                          className="rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm"
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-100 text-indigo-600">
+                                <Users className="h-5 w-5" />
+                              </div>
+                              <div>
+                                <p className="font-semibold text-slate-900">{parent.name}</p>
+                                <p className="text-sm text-slate-500">{parent.email}</p>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
+                                Linked
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                      <div className="flex items-center gap-2 text-amber-700">
+                        <Lock className="h-5 w-5" />
+                        <span className="font-semibold">Not Linked with Parent</span>
+                      </div>
+                      <p className="mt-2 text-sm text-amber-600">
+                        Link your account with your parent to access family features and premium benefits.
+                      </p>
+                    </div>
+                    {!showLinkParentForm ? (
+                      <button
+                        type="button"
+                        onClick={() => setShowLinkParentForm(true)}
+                        className="inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+                      >
+                        <Link2 className="h-4 w-4" />
+                        Link with Parent
+                      </button>
+                    ) : (
+                      <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                        <div className="flex items-center justify-between">
+                          <h3 className="font-semibold text-slate-900">Enter Parent Linking Code</h3>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setShowLinkParentForm(false);
+                              setParentLinkingCode('');
+                            }}
+                            className="text-slate-400 hover:text-slate-600"
+                          >
+                            <X className="h-5 w-5" />
+                          </button>
+                        </div>
+                        <TextField
+                          label="Parent Linking Code"
+                          name="parentLinkingCode"
+                          value={parentLinkingCode}
+                          onChange={(e) => setParentLinkingCode(e.target.value.toUpperCase())}
+                          placeholder="Enter parent's linking code (e.g., PR123456)"
+                          icon={Link2}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleLinkParent}
+                          disabled={linkingLoading || !parentLinkingCode.trim()}
+                          className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500 disabled:cursor-not-allowed disabled:bg-indigo-300"
+                        >
+                          {linkingLoading ? (
+                            <>
+                              <Loader2 className="mr-2 inline h-4 w-4 animate-spin" />
+                              Linking...
+                            </>
+                          ) : (
+                            <>
+                              <Link2 className="mr-2 inline h-4 w-4" />
+                              Link Account
+                            </>
+                          )}
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </SectionCard>
+            )}
           <div className="flex flex-col gap-8">
             <SectionCard
               title="Personal Information"
@@ -898,9 +1140,45 @@ const Profile = () => {
                 </div>
               )}
             </SectionCard>
+
+            
           </div>
         </div>
       </div>
+
+      {/* Parent Already Linked Modal */}
+      {showParentAlreadyLinkedModal && parentAlreadyLinkedData && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-6">
+            <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100">
+              <AlertCircle className="w-8 h-8 text-amber-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-center text-slate-900 mb-2">
+              Parent Already Linked
+            </h2>
+            <p className="text-center text-slate-600 mb-6">
+              This parent ({parentAlreadyLinkedData.parentName}) is already linked with another child.
+            </p>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+              <p className="text-sm text-amber-800 text-center">
+                The parent account is currently connected to {parentAlreadyLinkedData.existingChildrenCount} other child account{parentAlreadyLinkedData.existingChildrenCount > 1 ? 's' : ''}.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                setShowParentAlreadyLinkedModal(false);
+                setParentAlreadyLinkedData(null);
+                setParentLinkingCode('');
+                setShowLinkParentForm(false);
+              }}
+              className="w-full rounded-xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-500"
+            >
+              Understood
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

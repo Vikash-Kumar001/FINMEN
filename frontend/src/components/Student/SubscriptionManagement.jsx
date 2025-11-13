@@ -350,25 +350,51 @@ const SubscriptionManagement = () => {
               <thead>
                 <tr className="bg-gradient-to-r from-purple-50 to-pink-50">
                   <th className="p-4 text-left font-bold text-gray-900 border-b-2 border-purple-200">Features</th>
-                  <th className="p-4 text-center font-bold text-gray-900 border-b-2 border-purple-200">
+                  <th className={`p-4 text-center font-bold text-gray-900 border-b-2 transition-all ${
+                    currentPlanType === 'free' 
+                      ? 'bg-gradient-to-b from-emerald-100 to-green-100 border-emerald-400 border-b-4 shadow-lg relative' 
+                      : 'border-purple-200'
+                  }`}>
                     <div className="flex flex-col items-center">
                       <span className="text-lg">Free Plan</span>
                       <span className="text-sm font-normal text-gray-600">₹0/year</span>
+                      {currentPlanType === 'free' && (
+                        <span className="text-xs bg-emerald-600 text-white px-3 py-1 rounded-full mt-2 font-semibold shadow-md">
+                          ✓ Current Plan
+                        </span>
+                      )}
                     </div>
                   </th>
-                  <th className="p-4 text-center font-bold text-gray-900 border-b-2 border-purple-200 bg-purple-100">
+                  <th className={`p-4 text-center font-bold text-gray-900 border-b-2 transition-all ${
+                    currentPlanType === 'student_premium' 
+                      ? 'bg-gradient-to-b from-blue-100 to-cyan-100 border-blue-400 border-b-4 shadow-lg relative' 
+                      : 'border-purple-200'
+                  }`}>
                     <div className="flex flex-col items-center">
                       <span className="text-lg">Students Premium</span>
                       <span className="text-sm font-normal text-gray-600">₹4,499/year</span>
-                      {currentPlanType === 'free' && (
+                      {currentPlanType === 'student_premium' ? (
+                        <span className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full mt-2 font-semibold shadow-md">
+                          ✓ Current Plan
+                        </span>
+                      ) : currentPlanType === 'free' && (
                         <span className="text-xs bg-purple-600 text-white px-2 py-1 rounded-full mt-1">Popular</span>
                       )}
                     </div>
                   </th>
-                  <th className="p-4 text-center font-bold text-gray-900 border-b-2 border-purple-200">
+                  <th className={`p-4 text-center font-bold text-gray-900 border-b-2 transition-all ${
+                    currentPlanType === 'student_parent_premium_pro' 
+                      ? 'bg-gradient-to-b from-purple-100 to-pink-100 border-purple-400 border-b-4 shadow-lg relative' 
+                      : 'border-purple-200'
+                  }`}>
                     <div className="flex flex-col items-center">
                       <span className="text-lg">Student + Parent Pro</span>
                       <span className="text-sm font-normal text-gray-600">₹4,999/year</span>
+                      {currentPlanType === 'student_parent_premium_pro' && (
+                        <span className="text-xs bg-purple-600 text-white px-3 py-1 rounded-full mt-2 font-semibold shadow-md">
+                          ✓ Current Plan
+                        </span>
+                      )}
                     </div>
                   </th>
                 </tr>
@@ -388,25 +414,37 @@ const SubscriptionManagement = () => {
                 ].map((row, idx) => (
                   <tr key={idx} className="border-b border-gray-200 hover:bg-gray-50 transition-colors">
                     <td className="p-4 font-semibold text-gray-900">{row.feature}</td>
-                    <td className="p-4 text-center">
+                    <td className={`p-4 text-center transition-all ${
+                      currentPlanType === 'free' 
+                        ? 'bg-gradient-to-r from-emerald-50/50 to-green-50/50 border-l-4 border-emerald-400' 
+                        : ''
+                    }`}>
                       {typeof row.free === 'boolean' ? (
                         row.free ? <CheckCircle className="w-5 h-5 text-green-600 mx-auto" /> : <span className="text-gray-400">—</span>
                       ) : (
-                        <span className="text-gray-700">{row.free}</span>
+                        <span className={`text-gray-700 ${currentPlanType === 'free' ? 'font-semibold' : ''}`}>{row.free}</span>
                       )}
                     </td>
-                    <td className="p-4 text-center bg-purple-50">
+                    <td className={`p-4 text-center transition-all ${
+                      currentPlanType === 'student_premium' 
+                        ? 'bg-gradient-to-r from-blue-50/50 to-cyan-50/50 border-l-4 border-blue-400' 
+                        : ''
+                    }`}>
                       {typeof row.premium === 'boolean' ? (
                         row.premium ? <CheckCircle className="w-5 h-5 text-green-600 mx-auto" /> : <span className="text-gray-400">—</span>
                       ) : (
-                        <span className="text-gray-700 font-semibold">{row.premium}</span>
+                        <span className={`text-gray-700 ${currentPlanType === 'student_premium' ? 'font-semibold' : 'font-semibold'}`}>{row.premium}</span>
                       )}
                     </td>
-                    <td className="p-4 text-center">
+                    <td className={`p-4 text-center transition-all ${
+                      currentPlanType === 'student_parent_premium_pro' 
+                        ? 'bg-gradient-to-r from-purple-50/50 to-pink-50/50 border-l-4 border-purple-400' 
+                        : ''
+                    }`}>
                       {typeof row.pro === 'boolean' ? (
                         row.pro ? <CheckCircle className="w-5 h-5 text-green-600 mx-auto" /> : <span className="text-gray-400">—</span>
                       ) : (
-                        <span className="text-gray-700 font-semibold">{row.pro}</span>
+                        <span className={`text-gray-700 ${currentPlanType === 'student_parent_premium_pro' ? 'font-semibold' : 'font-semibold'}`}>{row.pro}</span>
                       )}
                     </td>
                   </tr>

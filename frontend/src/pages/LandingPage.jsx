@@ -600,8 +600,8 @@ const LandingPage = () => {
       buttonText: "Join as Student",
     },
     {
-      title: "Mentors & Guides",
-      description: "Parents, Teachers, and Mentors supporting student growth",
+      title: "Parent/Mentor",
+      description: "Parents as well as Mentors supporting student growth",
       icon: <Users className="w-12 h-12" />,
       color: "from-green-500 to-emerald-500",
       action: () => navigate("/register-parent"),
@@ -1126,7 +1126,7 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
             {userTypes.map((type, index) => (
               <div key={index} className="group relative">
-                <div className={`relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 overflow-hidden flex flex-col`}>
+                <div className={`h-88 relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 overflow-hidden flex flex-col`}>
                   <div className={`absolute inset-0 bg-gradient-to-br ${type.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}></div>
                   <div className={`absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br ${type.color} rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500`}></div>
 
@@ -1236,7 +1236,7 @@ const LandingPage = () => {
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-gray-700 text-sm">Inavora Presentation Preview</span>
+                    <span className="text-gray-700 text-sm">Presentation Tool Access</span>
                   </div>
                   <div className="flex items-start gap-3">
                     <CheckCircle className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" />

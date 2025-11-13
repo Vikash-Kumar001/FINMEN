@@ -70,6 +70,11 @@ const userSubscriptionSchema = new mongoose.Schema({
     enum: ['card', 'upi', 'netbanking', 'wallet'],
   },
   
+  // Razorpay fields (keeping stripe fields for backward compatibility during migration)
+  razorpayCustomerId: {
+    type: String,
+  },
+  
   stripeCustomerId: {
     type: String,
   },
@@ -125,7 +130,9 @@ const userSubscriptionSchema = new mongoose.Schema({
       type: Date,
       default: Date.now,
     },
-    stripePaymentIntentId: String,
+    razorpayOrderId: String,
+    razorpayPaymentId: String,
+    stripePaymentIntentId: String, // Keep for backward compatibility
     receiptUrl: String,
     notes: String,
     metadata: {

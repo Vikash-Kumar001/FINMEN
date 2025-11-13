@@ -7,20 +7,23 @@ import { useSocket } from '../../context/SocketContext';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthUtils';
 
-// Load Stripe.js
-const loadStripe = async () => {
-  if (window.Stripe) {
-    return window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+// Load Razorpay
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(window.Razorpay);
+      return;
   }
   
   const script = document.createElement('script');
-  script.src = 'https://js.stripe.com/v3/';
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
   script.async = true;
-  return new Promise((resolve, reject) => {
     script.onload = () => {
-      resolve(window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''));
+      resolve(window.Razorpay);
     };
-    script.onerror = reject;
+    script.onerror = () => {
+      resolve(null);
+    };
     document.body.appendChild(script);
   });
 };
@@ -28,9 +31,8 @@ const loadStripe = async () => {
 const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYear }) => {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState('init'); // init, login, payment, success, error
-  const [clientSecret, setClientSecret] = useState(null);
-  const [stripe, setStripe] = useState(null);
-  const [stripeElements, setStripeElements] = useState(null);
+  const [orderId, setOrderId] = useState(null);
+  const [razorpayKeyId, setRazorpayKeyId] = useState(null);
   const [paymentError, setPaymentError] = useState(null);
   const [subscriptionId, setSubscriptionId] = useState(null);
   const socket = useSocket();
@@ -65,33 +67,11 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
       // Reset everything when modal closes
       setStep('init');
       setPaymentError(null);
-      setClientSecret(null);
+      setOrderId(null);
+      setRazorpayKeyId(null);
       setSubscriptionId(null);
-      if (stripeElements) {
-        stripeElements.destroy();
-        setStripeElements(null);
-      }
     }
-    
-    // Cleanup on unmount
-    return () => {
-      if (stripeElements) {
-        stripeElements.destroy();
-      }
-    };
   }, [isOpen]);
-
-  useEffect(() => {
-    if (step === 'payment' && stripeElements) {
-      // Mount the payment element
-      const paymentElement = stripeElements.create('payment');
-      paymentElement.mount('#payment-element');
-      
-      return () => {
-        paymentElement.unmount();
-      };
-    }
-  }, [step, stripeElements]);
 
   useEffect(() => {
     // Listen for real-time payment updates
@@ -184,24 +164,13 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
           return;
         }
 
-        // For paid plans, initialize Stripe
-        setClientSecret(response.data.clientSecret);
+        // For paid plans, initialize Razorpay
+        setOrderId(response.data.orderId);
+        setRazorpayKeyId(response.data.keyId);
         setSubscriptionId(response.data.subscriptionId);
 
-        // Initialize Stripe
-        const stripeInstance = await loadStripe();
-        setStripe(stripeInstance);
-
-        // Create elements
-        const elements = stripeInstance.elements({
-          clientSecret: response.data.clientSecret,
-          appearance: {
-            theme: 'stripe',
-          },
-        });
-
-        setStripeElements(elements);
-        setStep('payment');
+        // Initialize Razorpay payment
+        await initializeRazorpayPayment(response.data.orderId, response.data.keyId, amount);
       } else {
         throw new Error(response.data.message || 'Failed to initialize payment');
       }
@@ -220,45 +189,29 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
     }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    if (!stripe || !stripeElements || !clientSecret) {
-      return;
-    }
-
-    setLoading(true);
-    setPaymentError(null);
-
+  const initializeRazorpayPayment = async (orderId, keyId, amount) => {
     try {
-      // Confirm payment
-      const { error: submitError } = await stripeElements.submit();
-      
-      if (submitError) {
-        setPaymentError(submitError.message);
-        setLoading(false);
-        return;
+      const Razorpay = await loadRazorpay();
+      if (!Razorpay) {
+        throw new Error('Payment gateway not available right now.');
       }
 
-      // Confirm payment intent
-      const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
-        elements: stripeElements,
-        clientSecret,
-        confirmParams: {
-          return_url: `${window.location.origin}/subscription-success`,
-        },
-        redirect: 'if_required',
-      });
-
-      if (confirmError) {
-        setPaymentError(confirmError.message);
-        setLoading(false);
-      } else if (paymentIntent && paymentIntent.status === 'succeeded') {
-        // Verify payment on backend and activate subscription
+      const options = {
+        key: keyId,
+        amount: Math.round(amount * 100), // Convert to paise
+        currency: 'INR',
+        name: 'FINMEN',
+        description: `Subscription: ${planName}`,
+        order_id: orderId,
+        handler: async function (response) {
+          // Payment successful
+          setLoading(true);
         try {
           const verifyResponse = await api.post('/api/subscription/verify-payment', {
             subscriptionId,
-            paymentIntentId: paymentIntent.id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
           });
 
           if (verifyResponse.data.success) {
@@ -275,7 +228,6 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
             // Close modal after a delay and refresh
             setTimeout(() => {
               onClose();
-              // Refresh the page to show updated subscription
               window.location.reload();
             }, 2500);
           } else {
@@ -285,13 +237,32 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
           console.error('Subscription activation error:', verifyError);
           setPaymentError(verifyError.response?.data?.message || 'Payment succeeded but failed to activate subscription. Please contact support.');
           toast.error('Payment succeeded but subscription activation failed. Please contact support.');
+            setLoading(false);
         }
-      }
+        },
+        prefill: {
+          name: user?.name || user?.fullName || '',
+          email: user?.email || '',
+        },
+        theme: {
+          color: '#6366f1',
+        },
+        modal: {
+          ondismiss: function () {
+            setLoading(false);
+            setPaymentError('Payment was cancelled');
+          },
+        },
+      };
+
+      const razorpayInstance = new Razorpay(options);
+      razorpayInstance.open();
+      setLoading(true);
+      setStep('payment');
     } catch (error) {
-      console.error('Payment error:', error);
-      setPaymentError(error.response?.data?.message || error.message || 'Payment failed');
-      toast.error('Payment failed. Please try again.');
-    } finally {
+      console.error('Razorpay initialization error:', error);
+      setPaymentError(error.message || 'Unable to initialize payment.');
+      toast.error(error.message || 'Unable to initialize payment.');
       setLoading(false);
     }
   };
@@ -388,7 +359,7 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
             )}
 
             {step === 'payment' && (
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <div className="space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="block text-sm font-bold text-gray-700">
@@ -396,11 +367,23 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
                     </label>
                     <div className="flex items-center gap-1 text-xs text-gray-500">
                       <Shield className="w-3 h-3" />
-                      <span>Secured by Stripe</span>
+                      <span>Secured by Razorpay</span>
                     </div>
                   </div>
-                  <div id="payment-element" className="p-4 border-2 border-gray-200 rounded-lg min-h-[200px] bg-gray-50">
-                    {/* Stripe Elements will mount here */}
+                  <div className="p-8 border-2 border-gray-200 rounded-lg bg-gray-50 text-center">
+                    {loading ? (
+                      <>
+                        <Loader2 className="w-12 h-12 animate-spin mx-auto text-purple-600 mb-4" />
+                        <p className="text-gray-700 font-semibold">Opening Razorpay payment window...</p>
+                        <p className="text-sm text-gray-500 mt-2">Complete the payment in the popup window</p>
+                      </>
+                    ) : (
+                      <>
+                        <CreditCard className="w-12 h-12 mx-auto text-purple-600 mb-4" />
+                        <p className="text-gray-700 font-semibold">Razorpay payment window will open</p>
+                        <p className="text-sm text-gray-500 mt-2">You'll be redirected to complete the payment securely</p>
+                      </>
+                    )}
                   </div>
                   {paymentError && (
                     <motion.div
@@ -426,28 +409,24 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
                   </div>
                 </div>
 
+                <div className="text-center">
+                  <p className="text-sm text-gray-600 mb-4">
+                    Razorpay payment window will open automatically. Complete the payment there.
+                  </p>
                 <button
-                  type="submit"
+                    type="button"
+                    onClick={onClose}
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-4 rounded-xl font-black hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg"
+                    className="px-6 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition disabled:opacity-60"
                 >
-                  {loading ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      Processing Payment...
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-5 h-5" />
-                      Pay ₹{amount.toLocaleString()}
-                    </>
-                  )}
+                    Cancel
                 </button>
+                </div>
                 
                 <p className="text-xs text-center text-gray-500">
                   By proceeding, you agree to our Terms of Service and Privacy Policy
                 </p>
-              </form>
+              </div>
             )}
 
             {step === 'success' && (

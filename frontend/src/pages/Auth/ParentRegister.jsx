@@ -1,3 +1,5 @@
+// ParentRegister.jsx - Version 2.0 (Razorpay Only - No Stripe)
+// Updated: Removed all Stripe code, using Razorpay only
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
@@ -18,24 +20,22 @@ import api from "../../utils/api";
 import { toast } from "react-hot-toast";
 import { useAuth } from "../../context/AuthUtils";
 
-const loadStripeClient = async () => {
-  if (window.Stripe) {
-    return window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || "");
-  }
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(window.Razorpay);
+      return;
+    }
 
-  const script = document.createElement("script");
-  script.src = "https://js.stripe.com/v3/";
-  script.async = true;
-
-  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
     script.onload = () => {
-      if (window.Stripe) {
-        resolve(window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ""));
-      } else {
-        reject(new Error("Stripe.js failed to load"));
-      }
+      resolve(window.Razorpay);
     };
-    script.onerror = () => reject(new Error("Unable to load Stripe.js"));
+    script.onerror = () => {
+      resolve(null);
+    };
     document.body.appendChild(script);
   });
 };
@@ -54,6 +54,7 @@ const ParentRegister = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isFlowLoading, setIsFlowLoading] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalView, setModalView] = useState("choose");
@@ -61,41 +62,21 @@ const ParentRegister = () => {
   const [childLinkCode, setChildLinkCode] = useState("");
   const [intentId, setIntentId] = useState(null);
   const [intentAmount, setIntentAmount] = useState(0);
-  const [clientSecret, setClientSecret] = useState(null);
-  const [stripeInstance, setStripeInstance] = useState(null);
-  const [stripeElements, setStripeElements] = useState(null);
+  const [orderId, setOrderId] = useState(null);
+  const [razorpayKeyId, setRazorpayKeyId] = useState(null);
   const [paymentError, setPaymentError] = useState(null);
   const [isPaymentLoading, setIsPaymentLoading] = useState(false);
-
-  const paymentElementRef = useRef(null);
-
-  useEffect(() => {
-    if (modalView !== "payment" || !stripeElements) {
-      return undefined;
-    }
-
-    const paymentElement = stripeElements.create("payment");
-    paymentElement.mount("#parent-payment-element");
-    paymentElementRef.current = paymentElement;
-
-    return () => {
-      if (paymentElementRef.current) {
-        paymentElementRef.current.unmount();
-        paymentElementRef.current = null;
-      }
-    };
-  }, [modalView, stripeElements]);
 
   const resetFlowState = () => {
     setSelectedFlow(null);
     setChildLinkCode("");
     setIntentId(null);
     setIntentAmount(0);
-    setClientSecret(null);
-    setStripeElements(null);
-    setStripeInstance(null);
+    setOrderId(null);
+    setRazorpayKeyId(null);
     setPaymentError(null);
     setIsPaymentLoading(false);
+    setIsFlowLoading(false);
   };
 
   const openFlowModal = () => {
@@ -140,19 +121,64 @@ const ParentRegister = () => {
     openFlowModal();
   };
 
-  const initializeStripeElements = async (secret) => {
+  const initializeRazorpayPayment = async (orderId, keyId, amount) => {
     try {
-      const stripe = await loadStripeClient();
-      if (!stripe) {
+      const Razorpay = await loadRazorpay();
+      if (!Razorpay) {
         throw new Error("Payment gateway not available right now.");
       }
-      const elements = stripe.elements({
-        clientSecret: secret,
-        appearance: { theme: "stripe" },
+
+      const options = {
+        key: keyId,
+        amount: Math.round(amount * 100), // Convert to paise
+        currency: "INR",
+        name: "FINMEN",
+        description: "Parent Registration Payment",
+        order_id: orderId,
+        handler: async function (response) {
+          // Payment successful
+          setIsPaymentLoading(true);
+          try {
+            await finalizeParentRegistration(
+              intentId,
+              response.razorpay_payment_id,
+              response.razorpay_order_id,
+              response.razorpay_signature,
+              true
+            );
+          } catch (error) {
+            console.error("Payment confirmation error:", error);
+            setIsPaymentLoading(false);
+            toast.error("Payment succeeded but registration failed. Please contact support.");
+          }
+        },
+        prefill: {
+          name: formData.name,
+          email: formData.email,
+        },
+        theme: {
+          color: "#6366f1",
+        },
+        modal: {
+          ondismiss: function () {
+            setIsPaymentLoading(false);
+            setPaymentError("Payment was cancelled");
+          },
+        },
+      };
+
+      const razorpayInstance = new Razorpay(options);
+      
+      // Handle payment failure
+      razorpayInstance.on('payment.failed', function (response) {
+        console.error("Payment failed:", response.error);
+        setIsPaymentLoading(false);
+        setPaymentError(response.error.description || "Payment failed. Please try again.");
+        toast.error(response.error.description || "Payment failed. Please try again.");
       });
-      setStripeInstance(stripe);
-      setStripeElements(elements);
-      setModalView("payment");
+      
+      setIsPaymentLoading(true);
+      razorpayInstance.open();
     } catch (error) {
       console.error(error);
       toast.error(error.message || "Unable to initialize payment.");
@@ -160,7 +186,7 @@ const ParentRegister = () => {
     }
   };
 
-  const finalizeParentRegistration = async (intent, paymentIntentId = null, fromPayment = false) => {
+  const finalizeParentRegistration = async (intent, razorpayPaymentId = null, razorpayOrderId = null, razorpaySignature = null, fromPayment = false) => {
     if (fromPayment) {
       setIsPaymentLoading(true);
     } else {
@@ -170,7 +196,9 @@ const ParentRegister = () => {
     try {
       const response = await api.post("/api/auth/parent-registration/confirm", {
         intentId: intent,
-        paymentIntentId,
+        razorpayPaymentId,
+        razorpayOrderId,
+        razorpaySignature,
       });
 
       const { token } = response.data || {};
@@ -211,11 +239,17 @@ const ParentRegister = () => {
       setIntentAmount(data.amount || 0);
 
       if (data.requiresPayment) {
-        setClientSecret(data.clientSecret);
-        await initializeStripeElements(data.clientSecret);
+        setOrderId(data.orderId);
+        setRazorpayKeyId(data.keyId);
+        // Close the modal first, then open Razorpay payment directly
+        setModalOpen(false);
         setIsSubmitting(false);
+        // Small delay to ensure modal closes before opening Razorpay
+        setTimeout(async () => {
+          await initializeRazorpayPayment(data.orderId, data.keyId, data.amount);
+        }, 100);
       } else {
-        await finalizeParentRegistration(data.intentId, null, false);
+        await finalizeParentRegistration(data.intentId, null, null, null, false);
       }
     } catch (error) {
       console.error("Parent registration initiate error:", error);
@@ -224,10 +258,24 @@ const ParentRegister = () => {
     }
   };
 
-  const handleFlowSelection = (flow) => {
+  const handleFlowSelection = async (flow) => {
+    if (isSubmitting || isFlowLoading) {
+      console.log('Flow selection blocked - already processing');
+      return; // Prevent multiple clicks
+    }
+    
+    console.log('Flow selected:', flow);
     setSelectedFlow(flow);
+    
     if (flow === "child_not_created") {
-      initiateParentRegistration("child_not_created");
+      setIsFlowLoading(true);
+      try {
+        await initiateParentRegistration("child_not_created");
+      } catch (error) {
+        console.error('Flow selection error:', error);
+      } finally {
+        setIsFlowLoading(false);
+      }
     } else {
       setModalView("child-code");
     }
@@ -235,55 +283,19 @@ const ParentRegister = () => {
 
   const handleChildCodeSubmit = async () => {
     if (!childLinkCode.trim()) {
-      toast.error("Please enter your child’s secret linking code");
+      toast.error("Please enter your child's secret linking code");
       return;
     }
-    await initiateParentRegistration("child_existing", childLinkCode);
-  };
-
-  const handleConfirmPayment = async () => {
-    if (!stripeInstance || !stripeElements || !intentId) {
-      return;
-    }
-
-    setPaymentError(null);
-    setIsPaymentLoading(true);
-
+    setIsSubmitting(true);
     try {
-      const { error: submitError } = await stripeElements.submit();
-      if (submitError) {
-        setPaymentError(submitError.message || "Unable to process payment details.");
-        setIsPaymentLoading(false);
-        return;
-      }
-
-      const { error: confirmError, paymentIntent } = await stripeInstance.confirmPayment({
-        elements: stripeElements,
-        clientSecret,
-        confirmParams: {
-          payment_method_data: {
-            billing_details: {
-              name: formData.name,
-              email: formData.email,
-            },
-          },
-        },
-        redirect: "if_required",
-      });
-
-      if (confirmError) {
-        setPaymentError(confirmError.message || "Payment confirmation failed.");
-        setIsPaymentLoading(false);
-        return;
-      }
-
-      await finalizeParentRegistration(intentId, paymentIntent?.id || null, true);
+      await initiateParentRegistration("child_existing", childLinkCode);
     } catch (error) {
-      console.error("Payment confirmation error:", error);
-      setPaymentError(error.message || "Unexpected error while confirming payment");
-      setIsPaymentLoading(false);
+      console.error("Child code submit error:", error);
+      setIsSubmitting(false);
     }
   };
+
+  // Payment is handled by Razorpay checkout, no need for separate confirm handler
 
   const formatAmount = (amount) =>
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount || 0);
@@ -324,14 +336,14 @@ const ParentRegister = () => {
                 setChildLinkCode("");
               }}
               className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition"
-              disabled={isSubmitting}
+              disabled={isSubmitting || isFlowLoading}
             >
               Back
             </button>
             <button
               type="button"
               onClick={handleChildCodeSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || isFlowLoading}
               className="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition disabled:opacity-60"
             >
               {isSubmitting ? (
@@ -345,67 +357,8 @@ const ParentRegister = () => {
       );
     }
 
-    if (modalView === "payment") {
-      return (
-        <motion.div
-          key="payment"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="space-y-5"
-        >
-          <div className="space-y-2">
-            <h3 className="text-xl font-bold text-gray-900">Complete payment</h3>
-            <p className="text-sm text-gray-600">
-              We’ll finalize your parent dashboard as soon as the payment succeeds.
-            </p>
-            <div className="flex items-center gap-3 bg-purple-50 border border-purple-100 rounded-xl px-4 py-3">
-              <ShieldCheck className="w-5 h-5 text-purple-600" />
-              <div>
-                <p className="text-xs uppercase tracking-wide text-purple-500 font-semibold">
-                  Amount due
-                </p>
-                <p className="text-lg font-bold text-purple-700">
-                  {formatAmount(intentAmount)}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="border border-gray-200 rounded-xl p-4 bg-white">
-            <div id="parent-payment-element" />
-          </div>
-
-          {paymentError && (
-            <div className="bg-rose-50 border border-rose-200 text-rose-600 rounded-xl px-4 py-3 text-sm">
-              {paymentError}
-            </div>
-          )}
-
-          <div className="flex gap-3">
-            <button
-              type="button"
-              onClick={closeFlowModal}
-              disabled={isPaymentLoading}
-              className="flex-1 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition disabled:opacity-60"
-            >
-              Cancel
-            </button>
-            <button
-              type="button"
-              onClick={handleConfirmPayment}
-              disabled={isPaymentLoading}
-              className="flex-1 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold shadow-lg hover:shadow-xl transition disabled:opacity-60"
-            >
-              {isPaymentLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin mx-auto" />
-              ) : (
-                "Pay & Create Account"
-              )}
-            </button>
-          </div>
-        </motion.div>
-      );
-    }
+    // Payment view removed - Razorpay handles its own modal
+    // No need for a separate payment view since Razorpay opens its own checkout
 
     return (
       <motion.div
@@ -426,13 +379,17 @@ const ParentRegister = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button
             type="button"
-            onClick={() => handleFlowSelection("child_existing")}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleFlowSelection("child_existing");
+            }}
             className={`group rounded-2xl border-2 transition-all p-5 text-left ${
               selectedFlow === "child_existing"
                 ? "border-purple-500 bg-purple-50"
                 : "border-gray-200 hover:border-purple-200 hover:bg-purple-50/50"
-            }`}
-            disabled={isSubmitting}
+            } ${isSubmitting || isFlowLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+            disabled={isSubmitting || isFlowLoading}
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center">
@@ -452,13 +409,17 @@ const ParentRegister = () => {
 
           <button
             type="button"
-            onClick={() => handleFlowSelection("child_not_created")}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              handleFlowSelection("child_not_created");
+            }}
             className={`group rounded-2xl border-2 transition-all p-5 text-left ${
               selectedFlow === "child_not_created"
                 ? "border-pink-500 bg-pink-50"
                 : "border-gray-200 hover:border-pink-200 hover:bg-pink-50/50"
-            }`}
-            disabled={isSubmitting}
+            } ${isSubmitting || isFlowLoading ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+            disabled={isSubmitting || isFlowLoading}
           >
             <div className="flex items-center justify-between">
               <div className="w-10 h-10 rounded-full bg-pink-100 text-pink-600 flex items-center justify-center">
@@ -628,7 +589,7 @@ const ParentRegister = () => {
 
               <button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || isFlowLoading}
                 className="w-full py-2.5 sm:py-3 md:py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-semibold rounded-xl transition-all duration-300 text-xs sm:text-sm disabled:opacity-60"
               >
                 <span className="flex items-center justify-center gap-2">

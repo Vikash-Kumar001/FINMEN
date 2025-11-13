@@ -18,9 +18,11 @@ const MainNavbar = ({
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="flex justify-between items-center cursor-pointer">
                     <div onClick={() => navigate("/")} className="flex items-center hover:scale-102 duration-200 ease-in-out">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-500 rounded-md flex items-center justify-center">
-                            <span className="text-white font-bold">WS</span>
-                        </div>
+                        <img 
+                            src="/icons/icon2.png" 
+                            alt="Wise Student Logo" 
+                            className="size-14 rounded-md object-contain"
+                        />
                         <h1 className="ml-3 text-xl font-semibold text-gray-900">
                             Wise Student
                         </h1>
@@ -110,9 +112,11 @@ const MainNavbar = ({
                                     {/* Menu header */}
                                     <div className="flex items-center justify-between p-4 border-b border-gray-200">
                                         <div className="flex items-center">
-                                            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-500 rounded flex items-center justify-center">
-                                                <span className="text-white font-bold text-sm">WS</span>
-                                            </div>
+                                            <img 
+                                                src="/icons/icon.png" 
+                                                alt="Wise Student Logo" 
+                                                className="w-8 h-8 rounded object-contain"
+                                            />
                                             <h2 className="ml-2 text-lg font-semibold text-gray-900">Wise Student</h2>
                                         </div>
                                         <button

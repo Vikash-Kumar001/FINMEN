@@ -1,16 +1,19 @@
 import UserSubscription from '../models/UserSubscription.js';
 import User from '../models/User.js';
-import Stripe from 'stripe';
+import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
-// Initialize Stripe only if secret key is available
-let stripe = null;
+// Initialize Razorpay only if keys are available
+let razorpay = null;
 try {
-  if (process.env.STRIPE_SECRET_KEY) {
-    stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+  if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
+    razorpay = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
   }
 } catch (error) {
-  console.error('Stripe initialization error:', error);
+  console.error('Razorpay initialization error:', error);
 }
 
 // Plan configurations
@@ -36,14 +39,14 @@ const buildInitiatorProfile = (user, contextOverride) => ({
   context: normalizeContext(contextOverride, user.role),
 });
 
-const finalizeSubscriptionPayment = async (subscription, paymentIntent) => {
-  if (!subscription || !paymentIntent) {
+const finalizeSubscriptionPayment = async (subscription, payment) => {
+  if (!subscription || !payment) {
     return { updated: false };
   }
 
-  const paymentIntentId = paymentIntent.id;
+  const paymentId = payment.id;
   const transaction = subscription.transactions?.find(
-    (tx) => tx.stripePaymentIntentId === paymentIntentId
+    (tx) => tx.razorpayPaymentId === paymentId
   );
 
   if (!transaction) {
@@ -54,10 +57,10 @@ const finalizeSubscriptionPayment = async (subscription, paymentIntent) => {
 
   transaction.status = 'completed';
   transaction.paymentDate = now;
-  transaction.receiptUrl = paymentIntent.charges?.data[0]?.receipt_url || null;
+  transaction.receiptUrl = payment.receipt || null;
   transaction.metadata = {
     ...(transaction.metadata || {}),
-    paymentIntentStatus: paymentIntent.status,
+    paymentStatus: payment.status,
   };
 
   subscription.status = 'active';
@@ -272,14 +275,13 @@ export const createSubscriptionPayment = async (req, res) => {
       });
     }
 
-    if (!stripe) {
+    if (!razorpay) {
       return res.status(500).json({
         success: false,
         message: 'Payment gateway not configured. Please contact support.',
       });
     }
 
-    let stripeCustomerId;
     const userDoc = await User.findById(userId);
 
     if (!userDoc?.email) {
@@ -289,34 +291,20 @@ export const createSubscriptionPayment = async (req, res) => {
       });
     }
 
-    const userSub = await UserSubscription.findOne({ userId }).sort({ createdAt: -1 });
-    if (userSub?.stripeCustomerId) {
-      stripeCustomerId = userSub.stripeCustomerId;
-    } else {
-      const customer = await stripe.customers.create({
-        email: userDoc.email,
-        name: userDoc.name || userDoc.fullName,
-        metadata: {
-          userId: userId.toString(),
-        },
-      });
-      stripeCustomerId = customer.id;
-    }
-
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: Math.round(amount * 100),
-      currency: 'inr',
-      customer: stripeCustomerId,
-      payment_method_types: ['card', 'upi', 'netbanking'],
-      metadata: {
+    // Create Razorpay order
+    const order = await razorpay.orders.create({
+      amount: Math.round(amount * 100), // Convert to paise
+      currency: 'INR',
+      receipt: `receipt_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
+      notes: {
         userId: userId.toString(),
         planType,
         isFirstYear: isFirstYear.toString(),
         mode,
         context,
         initiatedByRole: user.role,
-      },
       description: `Subscription: ${planConfig.name}`,
+      },
     });
 
     const transactionId = `sub_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
@@ -327,7 +315,7 @@ export const createSubscriptionPayment = async (req, res) => {
       status: 'pending',
       mode,
       initiatedBy: initiator,
-      stripePaymentIntentId: paymentIntent.id,
+      razorpayOrderId: order.id,
     };
 
     let subscription;
@@ -353,7 +341,6 @@ export const createSubscriptionPayment = async (req, res) => {
         status: 'pending',
         startDate: new Date(),
         endDate: new Date(Date.now() + YEAR_IN_MS),
-        stripeCustomerId,
         features: planConfig.features,
         purchasedBy: isFirstYear ? { ...initiator, purchasedAt: new Date() } : undefined,
         renewalCount: 0,
@@ -363,7 +350,8 @@ export const createSubscriptionPayment = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      clientSecret: paymentIntent.client_secret,
+      orderId: order.id,
+      keyId: process.env.RAZORPAY_KEY_ID || null,
       subscriptionId: subscription._id,
       amount,
       currency: 'INR',
@@ -383,13 +371,13 @@ export const createSubscriptionPayment = async (req, res) => {
 // Verify and activate subscription after payment
 export const verifySubscriptionPayment = async (req, res) => {
   try {
-    const { subscriptionId, paymentIntentId } = req.body;
+    const { subscriptionId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
     const userId = req.user.id;
 
-    if (!subscriptionId || !paymentIntentId) {
+    if (!subscriptionId || !razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
       return res.status(400).json({
         success: false,
-        message: 'Subscription ID and payment intent ID are required',
+        message: 'Subscription ID and Razorpay payment details are required',
       });
     }
 
@@ -405,19 +393,32 @@ export const verifySubscriptionPayment = async (req, res) => {
       });
     }
 
-    // Verify payment with Stripe
-    const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    // Verify Razorpay payment signature
+    const expectedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(razorpayOrderId + '|' + razorpayPaymentId)
+      .digest('hex');
 
-    if (paymentIntent.status !== 'succeeded') {
+    if (expectedSignature !== razorpaySignature) {
       return res.status(400).json({
         success: false,
-        message: `Payment ${paymentIntent.status}`,
+        message: 'Invalid payment signature',
+      });
+    }
+
+    // Verify payment with Razorpay
+    const payment = await razorpay.payments.fetch(razorpayPaymentId);
+
+    if (payment.status !== 'captured' && payment.status !== 'authorized') {
+      return res.status(400).json({
+        success: false,
+        message: `Payment ${payment.status}`,
       });
     }
 
     // Locate matching transaction
     const transaction = subscription.transactions?.find(
-      (tx) => tx.stripePaymentIntentId === paymentIntentId
+      (tx) => tx.razorpayOrderId === razorpayOrderId
     );
 
     if (!transaction) {
@@ -427,9 +428,19 @@ export const verifySubscriptionPayment = async (req, res) => {
       });
     }
 
+    // Update transaction with payment details
+    transaction.razorpayPaymentId = razorpayPaymentId;
+    transaction.status = 'completed';
+    transaction.paymentDate = new Date();
+    transaction.receiptUrl = payment.receipt || null;
+    transaction.metadata = {
+      ...(transaction.metadata || {}),
+      paymentStatus: payment.status,
+    };
+
     const { updated, subscription: updatedSubscription } = await finalizeSubscriptionPayment(
       subscription,
-      paymentIntent,
+      payment,
     );
 
     if (!updated) {
@@ -706,9 +717,8 @@ export const updateAutoRenewSettings = async (req, res) => {
       },
     };
 
-    if (paymentMethodId) {
-      subscription.stripePaymentMethodId = paymentMethodId;
-    }
+    // Note: Razorpay doesn't store payment methods like Stripe
+    // Payment method info is stored in autoRenewSettings if needed
 
     await subscription.save();
 
@@ -754,14 +764,8 @@ export const cancelSubscription = async (req, res) => {
     subscription.cancelledAt = new Date();
     subscription.autoRenew = false;
 
-    // Cancel Stripe subscription if exists
-    if (subscription.stripeSubscriptionId && stripe) {
-      try {
-        await stripe.subscriptions.cancel(subscription.stripeSubscriptionId);
-      } catch (error) {
-        console.error('Error cancelling Stripe subscription:', error);
-      }
-    }
+    // Note: Razorpay doesn't have recurring subscriptions like Stripe
+    // Auto-renewal is handled manually via scheduled jobs
 
     await subscription.save();
 
@@ -791,42 +795,54 @@ export const cancelSubscription = async (req, res) => {
   }
 };
 
-// Handle Stripe webhook
-export const handleStripeWebhook = async (req, res) => {
-  if (!stripe) {
-    return res.status(500).json({ error: 'Stripe not configured' });
+// Handle Razorpay webhook
+export const handleRazorpayWebhook = async (req, res) => {
+  if (!razorpay) {
+    return res.status(500).json({ error: 'Razorpay not configured' });
   }
 
-  const sig = req.headers['stripe-signature'];
-  const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+  const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
 
   if (!webhookSecret) {
     return res.status(500).json({ error: 'Webhook secret not configured' });
   }
 
-  let event;
+  const signature = req.headers['x-razorpay-signature'];
 
-  try {
-    event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-  } catch (err) {
-    console.error('Webhook signature verification failed:', err.message);
-    return res.status(400).send(`Webhook Error: ${err.message}`);
+  if (!signature) {
+    return res.status(400).json({ error: 'Missing signature' });
+  }
+
+  // Verify webhook signature
+  const expectedSignature = crypto
+    .createHmac('sha256', webhookSecret)
+    .update(JSON.stringify(req.body))
+    .digest('hex');
+
+  if (expectedSignature !== signature) {
+    console.error('Webhook signature verification failed');
+    return res.status(400).json({ error: 'Invalid signature' });
   }
 
   try {
-    switch (event.type) {
-      case 'payment_intent.succeeded': {
-        const paymentIntent = event.data.object;
-        const userId = paymentIntent.metadata?.userId;
+    const event = req.body;
 
-        if (userId) {
+    switch (event.event) {
+      case 'payment.captured': {
+        const payment = event.payload.payment.entity;
+        const orderId = payment.order_id;
+        const userId = payment.notes?.userId;
+        const purpose = payment.notes?.purpose;
+
+        // Handle subscription payments
+        if (userId && orderId && purpose !== 'parent_registration') {
           const subscription = await UserSubscription.findOne({
             userId,
-            'transactions.stripePaymentIntentId': paymentIntent.id,
+            'transactions.razorpayOrderId': orderId,
           });
 
           if (subscription) {
-            const { updated } = await finalizeSubscriptionPayment(subscription, paymentIntent);
+            const { updated } = await finalizeSubscriptionPayment(subscription, payment);
 
             if (updated) {
               const io = req.app.get('io');
@@ -840,29 +856,96 @@ export const handleStripeWebhook = async (req, res) => {
             }
           }
         }
+
+        // Handle parent registration payments
+        if (purpose === 'parent_registration' && orderId) {
+          const ParentRegistrationIntent = (await import('../models/ParentRegistrationIntent.js')).default;
+          const intent = await ParentRegistrationIntent.findOne({
+            razorpayOrderId: orderId,
+            status: 'payment_pending',
+          });
+
+          if (intent) {
+            // Payment is completed, but account creation happens when user confirms via frontend
+            // We can mark it as completed or keep it as payment_pending until user confirms
+            // The frontend will handle the confirmation flow
+            console.log(`Parent registration payment completed for intent: ${intent._id}`);
+
+            // Emit notification if needed
+            const io = req.app.get('io');
+            if (io && intent.email) {
+              // Could emit to a room based on email or intent ID
+              io.emit('parent_registration:payment_completed', {
+                intentId: intent._id,
+                email: intent.email,
+              });
+            }
+          }
+        }
+
+        // Handle additional child link payments
+        if (purpose === 'additional_child_link' && orderId) {
+          const parentId = payment.notes?.parentId;
+          if (parentId) {
+            // Payment completed for additional child link
+            // The actual linking happens when parent confirms via the frontend
+            const io = req.app.get('io');
+            if (io) {
+              io.to(parentId.toString()).emit('additional_child_link:payment_completed', {
+                orderId,
+                parentId,
+              });
+            }
+          }
+        }
+
+        // Handle parent create child payments
+        if (purpose === 'parent_create_child' && orderId) {
+          const ChildCreationIntent = (await import('../models/ChildCreationIntent.js')).default;
+          const intent = await ChildCreationIntent.findOne({
+            razorpayOrderId: orderId,
+            status: 'payment_pending',
+          });
+
+          if (intent) {
+            intent.status = 'payment_completed';
+            await intent.save();
+
+            const io = req.app.get('io');
+            if (io && intent.parentId) {
+              io.to(intent.parentId.toString()).emit('child_creation:payment_completed', {
+                intentId: intent._id,
+                parentId: intent.parentId,
+                childEmail: intent.email,
+              });
+            }
+          }
+        }
+
         break;
       }
 
-      case 'payment_intent.payment_failed': {
-        const paymentIntent = event.data.object;
-        const userId = paymentIntent.metadata?.userId;
+      case 'payment.failed': {
+        const payment = event.payload.payment.entity;
+        const orderId = payment.order_id;
+        const userId = payment.notes?.userId;
 
-        if (userId) {
+        if (userId && orderId) {
           const subscription = await UserSubscription.findOne({
             userId,
-            'transactions.stripePaymentIntentId': paymentIntent.id,
+            'transactions.razorpayOrderId': orderId,
           });
 
           if (subscription) {
             const transaction = subscription.transactions.find(
-              t => t.stripePaymentIntentId === paymentIntent.id
+              t => t.razorpayOrderId === orderId
             );
             if (transaction) {
               transaction.status = 'failed';
               transaction.metadata = {
                 ...(transaction.metadata || {}),
-                paymentIntentStatus: paymentIntent.status,
-                failureReason: paymentIntent.last_payment_error?.message,
+                paymentStatus: payment.status,
+                failureReason: payment.error_description || 'Payment failed',
               };
             }
             await subscription.save();
@@ -872,7 +955,7 @@ export const handleStripeWebhook = async (req, res) => {
       }
 
       default:
-        console.log(`Unhandled event type ${event.type}`);
+        console.log(`Unhandled event type ${event.event}`);
     }
 
     res.json({ received: true });

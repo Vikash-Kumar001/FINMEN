@@ -16,7 +16,11 @@ import {
     Check,
     AlertCircle,
     Crown,
-    Sparkles
+    Sparkles,
+    Users,
+    Copy,
+    Link as LinkIcon,
+    CheckCircle
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import api from "../utils/api";
@@ -45,6 +49,11 @@ const Settings = () => {
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
     const [activeTab, setActiveTab] = useState("profile");
     const [passwordStrength, setPasswordStrength] = useState(0);
+    const [linkingCode, setLinkingCode] = useState(null);
+    const [parentLinkingCode, setParentLinkingCode] = useState("");
+    const [linkedParents, setLinkedParents] = useState([]);
+    const [linkingLoading, setLinkingLoading] = useState(false);
+    const [copiedCode, setCopiedCode] = useState(false);
 
     useEffect(() => {
         if (user) {
@@ -66,6 +75,114 @@ const Settings = () => {
             setPasswordStrength(0);
         }
     }, [form.newPassword]);
+
+    // Fetch linking code and linked parents for school_students
+    useEffect(() => {
+        if (user?.role === 'school_student') {
+            fetchLinkingData();
+        }
+    }, [user]);
+
+    const fetchLinkingData = async () => {
+        try {
+            const profileRes = await api.get('/api/user/profile');
+            if (profileRes.data?.linkingCode) {
+                setLinkingCode(profileRes.data.linkingCode);
+            } else {
+                // If no linking code exists, try to generate one by updating the profile
+                // The backend will generate it automatically
+                try {
+                    const updateRes = await api.put('/api/user/profile', {});
+                    if (updateRes.data?.linkingCode) {
+                        setLinkingCode(updateRes.data.linkingCode);
+                    }
+                } catch (err) {
+                    console.error('Error generating linking code:', err);
+                }
+            }
+            // Fetch linked parents from user's linkedIds
+            const userRes = await api.get('/api/auth/me');
+            if (userRes.data?.linkedIds?.parentIds && userRes.data.linkedIds.parentIds.length > 0) {
+                // Fetch parent details - try multiple endpoints
+                const parentDetails = await Promise.all(
+                    userRes.data.linkedIds.parentIds.map(async (parentId) => {
+                        try {
+                            // Try different endpoints
+                            const res = await api.get(`/api/user/${parentId}`).catch(() => 
+                                api.get(`/api/parent/profile`).catch(() => null)
+                            );
+                            if (res?.data) {
+                                return {
+                                    _id: parentId,
+                                    id: parentId,
+                                    name: res.data.name || res.data.fullName || 'Parent',
+                                    email: res.data.email || '',
+                                };
+                            }
+                            return {
+                                _id: parentId,
+                                id: parentId,
+                                name: 'Parent',
+                                email: '',
+                            };
+                        } catch {
+                            return {
+                                _id: parentId,
+                                id: parentId,
+                                name: 'Parent',
+                                email: '',
+                            };
+                        }
+                    })
+                );
+                setLinkedParents(parentDetails.filter(Boolean));
+            }
+        } catch (error) {
+            console.error('Error fetching linking data:', error);
+        }
+    };
+
+    const handleCopyLinkingCode = () => {
+        if (linkingCode) {
+            navigator.clipboard.writeText(linkingCode);
+            setCopiedCode(true);
+            toast.success('Linking code copied to clipboard!');
+            setTimeout(() => setCopiedCode(false), 2000);
+        }
+    };
+
+    const handleLinkParent = async (e) => {
+        e.preventDefault();
+        if (!parentLinkingCode.trim()) {
+            toast.error('Please enter a parent linking code');
+            return;
+        }
+
+        try {
+            setLinkingLoading(true);
+            const response = await api.post('/api/auth/school-student/link-parent', {
+                parentLinkingCode: parentLinkingCode.trim().toUpperCase(),
+            });
+
+            if (response.data.success) {
+                toast.success('Successfully linked to parent!');
+                setParentLinkingCode('');
+                fetchLinkingData();
+                // Emit realtime event if socket is available
+                if (window.socket) {
+                    window.socket.emit('parent_linked', {
+                        parentId: response.data.parent.id,
+                        parentName: response.data.parent.name,
+                    });
+                }
+            }
+        } catch (error) {
+            console.error('Error linking parent:', error);
+            toast.error(error.response?.data?.message || 'Failed to link to parent');
+        } finally {
+            setLinkingLoading(false);
+        }
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
@@ -145,7 +262,8 @@ const Settings = () => {
         { id: "profile", label: "Profile", icon: <User className="w-5 h-5" /> },
         { id: "security", label: "Security", icon: <Key className="w-5 h-5" /> },
         { id: "preferences", label: "Preferences", icon: <SettingsIcon className="w-5 h-5" /> },
-        { id: "notifications", label: "Notifications", icon: <Bell className="w-5 h-5" /> }
+        { id: "notifications", label: "Notifications", icon: <Bell className="w-5 h-5" /> },
+        ...(user?.role === 'school_student' ? [{ id: "parent-linking", label: "Parent Linking", icon: <Users className="w-5 h-5" /> }] : [])
     ];
 
     const containerVariants = {
@@ -755,6 +873,134 @@ const Settings = () => {
                                     </div>
                                 </form>
                             </motion.div>
+                        )}
+
+                        {activeTab === "parent-linking" && user?.role === 'school_student' && (
+                            <motion.div variants={itemVariants} className="space-y-6">
+                                <div className="flex items-center gap-3 mb-6">
+                                    <Users className="w-6 h-6 text-indigo-500" />
+                                    <h2 className="text-2xl font-bold text-gray-800">
+                                        Parent Linking
+                                    </h2>
+                    </div>
+
+                                {/* Your Linking Code */}
+                                {linkingCode && (
+                                    <div className="bg-gradient-to-r from-indigo-50 to-purple-50 rounded-2xl border-2 border-indigo-200 p-6">
+                                        <div className="flex items-center justify-between mb-4">
+                                            <div>
+                                                <h3 className="text-lg font-semibold text-gray-800 mb-1">
+                                                    Your Secret Linking Code
+                                                </h3>
+                                                <p className="text-sm text-gray-600">
+                                                    Share this code with your parent so they can link to your account
+                                                </p>
+                                            </div>
+                                            <button
+                                                type="button"
+                                                onClick={handleCopyLinkingCode}
+                                                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border-2 border-indigo-200 text-indigo-600 font-semibold hover:bg-indigo-50 transition"
+                                            >
+                                                {copiedCode ? (
+                                                    <>
+                                                        <CheckCircle className="w-4 h-4" />
+                                                        Copied!
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Copy className="w-4 h-4" />
+                                                        Copy
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
+                                        <div className="bg-white rounded-xl p-4 border-2 border-indigo-100">
+                                            <p className="text-2xl font-mono font-bold text-indigo-900 text-center tracking-wider">
+                                                {linkingCode}
+                                            </p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Link with Parent */}
+                                <div className="bg-white rounded-2xl border-2 border-gray-200 p-6">
+                                    <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                                        Link with Parent
+                                    </h3>
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        Enter your parent's linking code to connect your account
+                                    </p>
+                                    <form onSubmit={handleLinkParent} className="space-y-4">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">
+                                                Parent Linking Code
+                                            </label>
+                                            <div className="relative">
+                                                <input
+                                                    type="text"
+                                                    value={parentLinkingCode}
+                                                    onChange={(e) => setParentLinkingCode(e.target.value.toUpperCase())}
+                                                    placeholder="Enter parent's linking code (e.g., PR-XXXXXX)"
+                                                    className="w-full p-4 border-2 border-gray-200 rounded-xl focus:border-indigo-500 focus:outline-none transition-all font-mono uppercase"
+                                                />
+                                                <LinkIcon className="absolute right-4 top-4 w-5 h-5 text-gray-400" />
+                                            </div>
+                                        </div>
+                                        <button
+                                            type="submit"
+                                            disabled={linkingLoading || !parentLinkingCode.trim()}
+                                            className={`w-full px-6 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg flex items-center justify-center gap-2 ${linkingLoading || !parentLinkingCode.trim() ? "opacity-70 cursor-not-allowed" : "hover:shadow-xl"}`}
+                                        >
+                                            {linkingLoading ? (
+                                                <>
+                                                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                                    Linking...
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <LinkIcon className="w-5 h-5" />
+                                                    Link with Parent
+                                                </>
+                                            )}
+                                        </button>
+                                    </form>
+                                </div>
+
+                                {/* Linked Parents */}
+                                {linkedParents.length > 0 && (
+                                    <div className="bg-white rounded-2xl border-2 border-gray-200 p-6">
+                                        <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                                            Linked Parents
+                                        </h3>
+                                        <div className="space-y-3">
+                                            {linkedParents.map((parent) => (
+                                                <div
+                                                    key={parent._id || parent.id}
+                                                    className="flex items-center justify-between p-4 bg-gray-50 rounded-xl border border-gray-200"
+                                                >
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center">
+                                                            <Users className="w-5 h-5 text-indigo-600" />
+                                                        </div>
+                                                        <div>
+                                                            <p className="font-semibold text-gray-800">
+                                                                {parent.name || parent.fullName || 'Parent'}
+                                                            </p>
+                                                            <p className="text-sm text-gray-500">
+                                                                {parent.email}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-2 text-green-600">
+                                                        <CheckCircle className="w-5 h-5" />
+                                                        <span className="text-sm font-medium">Linked</span>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                </motion.div>
                         )}
                     </div>
                 </motion.div>

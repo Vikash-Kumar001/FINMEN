@@ -21,19 +21,22 @@ import { toast } from 'react-hot-toast';
 import { useSocket } from '../../context/SocketContext';
 import { useAuth } from '../../hooks/useAuth';
 
-const loadStripe = async () => {
-  if (window.Stripe) {
-    return window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || '');
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(window.Razorpay);
+      return;
   }
 
   const script = document.createElement('script');
-  script.src = 'https://js.stripe.com/v3/';
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
   script.async = true;
-  return new Promise((resolve, reject) => {
     script.onload = () => {
-      resolve(window.Stripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY || ''));
+      resolve(window.Razorpay);
     };
-    script.onerror = reject;
+    script.onerror = () => {
+      resolve(null);
+    };
     document.body.appendChild(script);
   });
 };
@@ -111,9 +114,8 @@ const SubscriptionCheckout = () => {
   const [paymentMethod, setPaymentMethod] = useState('card');
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState('details'); // details, payment, success, error
-  const [clientSecret, setClientSecret] = useState(null);
-  const [stripe, setStripe] = useState(null);
-  const [stripeElements, setStripeElements] = useState(null);
+  const [orderId, setOrderId] = useState(null);
+  const [razorpayKeyId, setRazorpayKeyId] = useState(null);
   const [paymentError, setPaymentError] = useState(null);
   const [subscriptionId, setSubscriptionId] = useState(null);
   const [isFirstYear, setIsFirstYear] = useState(initialMode === 'renew' ? false : initialIsFirstYear);
@@ -144,14 +146,7 @@ const SubscriptionCheckout = () => {
     }
   }, [planType, initialPlanType, initialIsFirstYear, checkoutMode]);
 
-  useEffect(() => {
-    if (step === 'payment' && stripeElements) {
-      const paymentElement = stripeElements.create('payment');
-      paymentElement.mount('#payment-element');
-
-      return () => paymentElement.unmount();
-    }
-  }, [step, stripeElements]);
+  // Razorpay handles payment UI, no need for element mounting
 
   const handleBillingChange = (field, value) => {
     setBillingDetails((prev) => ({
@@ -197,26 +192,12 @@ const SubscriptionCheckout = () => {
           return;
         }
 
-        setClientSecret(response.data.clientSecret);
+        setOrderId(response.data.orderId);
+        setRazorpayKeyId(response.data.keyId);
         setSubscriptionId(response.data.subscriptionId);
 
-        const stripeInstance = await loadStripe();
-        setStripe(stripeInstance);
-
-        const paymentMethodOrder = (() => {
-          if (paymentMethod === 'upi') return ['upi', 'card', 'netbanking'];
-          if (paymentMethod === 'netbanking') return ['netbanking', 'card', 'upi'];
-          return ['card', 'upi', 'netbanking'];
-        })();
-
-        const elements = stripeInstance.elements({
-          clientSecret: response.data.clientSecret,
-          appearance: { theme: 'stripe' },
-          paymentMethodOrder,
-        });
-        setStripeElements(elements);
-
-        setStep('payment');
+        // Initialize Razorpay payment
+        await initializeRazorpayPayment(response.data.orderId, response.data.keyId, amount);
       } else {
         throw new Error(response.data.message || 'Failed to initialize payment');
       }
@@ -230,52 +211,29 @@ const SubscriptionCheckout = () => {
     }
   };
 
-  const handleConfirmPayment = async () => {
-    if (!stripe || !stripeElements || !clientSecret) return;
-
+  const initializeRazorpayPayment = async (orderId, keyId, amount) => {
     try {
-      setLoading(true);
-      setPaymentError(null);
-
-      const { error: submitError } = await stripeElements.submit();
-      if (submitError) {
-        setPaymentError(submitError.message);
-        setLoading(false);
-        return;
+      const Razorpay = await loadRazorpay();
+      if (!Razorpay) {
+        throw new Error('Payment gateway not available right now.');
       }
 
-      const { error: confirmError, paymentIntent } = await stripe.confirmPayment({
-        elements: stripeElements,
-        clientSecret,
-        confirmParams: {
-          payment_method_data: {
-            billing_details: {
-              name: billingDetails.fullName,
-              email: billingDetails.email,
-              phone: billingDetails.phone,
-              address: {
-                line1: billingDetails.address,
-                city: billingDetails.city,
-                state: billingDetails.state,
-                postal_code: billingDetails.zipCode,
-                country: 'IN',
-              },
-            },
-          },
-          return_url: `${window.location.origin}/subscription-success`,
-        },
-        redirect: 'if_required',
-      });
-
-      if (confirmError) {
-        setPaymentError(confirmError.message);
-        return;
-      }
-
-      if (paymentIntent && paymentIntent.status === 'succeeded') {
+      const options = {
+        key: keyId,
+        amount: Math.round(amount * 100), // Convert to paise
+        currency: 'INR',
+        name: 'FINMEN',
+        description: `Subscription: ${planConfig.name}`,
+        order_id: orderId,
+        handler: async function (response) {
+          // Payment successful
+          setLoading(true);
+          try {
         const verifyResponse = await api.post('/api/subscription/verify-payment', {
           subscriptionId,
-          paymentIntentId: paymentIntent.id,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
         });
 
         if (verifyResponse.data.success) {
@@ -292,12 +250,43 @@ const SubscriptionCheckout = () => {
         } else {
           throw new Error(verifyResponse.data.message || 'Failed to activate subscription');
         }
-      }
+          } catch (verifyError) {
+            console.error('Subscription activation error:', verifyError);
+            setPaymentError(verifyError.response?.data?.message || 'Payment succeeded but failed to activate subscription. Please contact support.');
+            toast.error('Payment succeeded but subscription activation failed. Please contact support.');
+            setLoading(false);
+          }
+        },
+        prefill: {
+          name: billingDetails.fullName || user?.name || user?.fullName || '',
+          email: billingDetails.email || user?.email || '',
+          contact: billingDetails.phone || '',
+        },
+        notes: {
+          address: billingDetails.address,
+          city: billingDetails.city,
+          state: billingDetails.state,
+          zipCode: billingDetails.zipCode,
+        },
+        theme: {
+          color: '#6366f1',
+        },
+        modal: {
+          ondismiss: function () {
+            setLoading(false);
+            setPaymentError('Payment was cancelled');
+          },
+        },
+      };
+
+      const razorpayInstance = new Razorpay(options);
+      razorpayInstance.open();
+      setLoading(true);
+      setStep('payment');
     } catch (error) {
-      console.error('Payment confirmation error:', error);
-      setPaymentError(error.response?.data?.message || error.message || 'Payment failed. Please try again.');
-      toast.error('Payment failed. Please try again.');
-    } finally {
+      console.error('Razorpay initialization error:', error);
+      setPaymentError(error.message || 'Unable to initialize payment.');
+      toast.error(error.message || 'Unable to initialize payment.');
       setLoading(false);
     }
   };
@@ -307,8 +296,8 @@ const SubscriptionCheckout = () => {
     setCheckoutMode('purchase');
     setIsFirstYear(true);
     setStep('details');
-    setClientSecret(null);
-    setStripeElements(null);
+    setOrderId(null);
+    setRazorpayKeyId(null);
     setPaymentError(null);
   };
 
@@ -524,7 +513,7 @@ const SubscriptionCheckout = () => {
         <div className="bg-purple-50 border border-purple-100 rounded-xl p-4 mb-4">
           <h4 className="text-sm font-semibold text-purple-700 mb-2">Pay securely with your card</h4>
           <p className="text-xs text-purple-600">
-            We use Stripe for secure payments. Your card details are directly processed by Stripe and never stored on our servers.
+            We use Razorpay for secure payments. Your payment details are directly processed by Razorpay and never stored on our servers.
           </p>
         </div>
       )}
@@ -554,7 +543,21 @@ const SubscriptionCheckout = () => {
             <p className="text-xs text-gray-500 mb-2">
               Select <strong>{paymentMethod === 'card' ? 'Card' : paymentMethod === 'upi' ? 'UPI' : 'Net Banking'}</strong> from the payment options inside the secure window and follow the on-screen instructions.
             </p>
-            <div id="payment-element" className="p-4 border-2 border-gray-200 rounded-lg bg-gray-50"></div>
+            <div className="p-8 border-2 border-gray-200 rounded-lg bg-gray-50 text-center">
+              {loading ? (
+                <>
+                  <Loader2 className="w-12 h-12 animate-spin mx-auto text-purple-600 mb-4" />
+                  <p className="text-gray-700 font-semibold">Opening Razorpay payment window...</p>
+                  <p className="text-sm text-gray-500 mt-2">Complete the payment in the popup window</p>
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-12 h-12 mx-auto text-purple-600 mb-4" />
+                  <p className="text-gray-700 font-semibold">Razorpay payment window will open</p>
+                  <p className="text-sm text-gray-500 mt-2">You'll be redirected to complete the payment securely</p>
+                </>
+              )}
+            </div>
             {paymentError && (
               <div className="flex items-center gap-2 text-sm text-red-600 mt-2">
                 <AlertCircle className="w-4 h-4" />
@@ -627,20 +630,22 @@ const SubscriptionCheckout = () => {
 
     if (step === 'payment') {
       return (
+        <div className="text-center">
+          <p className="text-sm text-gray-600 mb-4">
+            Razorpay payment window will open automatically. Complete the payment there.
+          </p>
         <button
-          onClick={handleConfirmPayment}
+            type="button"
+            onClick={() => {
+              setStep('details');
+              setPaymentError(null);
+            }}
           disabled={loading}
-          className="w-full bg-emerald-500 text-white py-3 rounded-xl font-bold hover:bg-emerald-600 transition-all disabled:opacity-50"
+            className="px-6 py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 transition disabled:opacity-60"
         >
-          {loading ? (
-            <span className="flex items-center justify-center gap-2">
-              <Loader2 className="w-5 h-5 animate-spin" />
-              Processing Payment...
-            </span>
-          ) : (
-            'Confirm & Pay'
-          )}
+            Back to Details
         </button>
+        </div>
       );
     }
 
@@ -670,8 +675,8 @@ const SubscriptionCheckout = () => {
 
   const pageTitle = isParentContext ? 'Complete Your Family Upgrade' : 'Complete Your Upgrade';
   const pageSubtitle = isParentContext
-    ? 'Secure checkout powered by Stripe. Confirm your details, choose your preferred payment method, and unlock instant access to WiseFamily Pro.'
-    : 'Secure checkout powered by Stripe. Fill in your billing details, choose your payment method, and unlock instant access to WiseStudent Premium.';
+    ? 'Secure checkout powered by Razorpay. Confirm your details, choose your preferred payment method, and unlock instant access to WiseFamily Pro.'
+    : 'Secure checkout powered by Razorpay. Fill in your billing details, choose your payment method, and unlock instant access to WiseStudent Premium.';
   const backLink = isParentContext ? '/parent/upgrade' : '/student/payment';
   const backLabel = isParentContext ? 'Back to Parent Plans' : 'Back to Plans';
 

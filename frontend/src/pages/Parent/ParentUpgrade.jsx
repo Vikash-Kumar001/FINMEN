@@ -716,7 +716,7 @@ const ParentUpgrade = () => {
                 </div>
                 <div className="flex items-center gap-2">
                   <Heart className="w-4 h-4" />
-                  Billing is processed securely via Stripe · UPI · Netbanking.
+                  Billing is processed securely via Razorpay · UPI · Netbanking.
                 </div>
               </div>
             </div>
@@ -1113,7 +1113,7 @@ const ParentUpgrade = () => {
                         {item.date && (
                           <p className="text-sm text-gray-600 flex items-center gap-2">
                             <Calendar className="w-4 h-4 text-purple-500" />
-                            {item.date.toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })}
+                            {formatShortDate(item.date)}
                           </p>
                         )}
                         {item.amount && (

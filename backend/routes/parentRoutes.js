@@ -316,40 +316,133 @@ router.get("/profile/overview", async (req, res) => {
 router.post("/link-child", async (req, res) => {
   try {
     const parent = req.user;
-    const { childEmail } = req.body;
+    const { childLinkingCode } = req.body;
 
-    if (!childEmail) {
-      return res.status(400).json({ message: 'Child email is required' });
+    if (!childLinkingCode) {
+      return res.status(400).json({ success: false, message: 'Child linking code is required' });
     }
 
-    // Find the child by email - allow both student and school_student roles
+    // Find the child by linking code - allow both student and school_student roles
     const child = await User.findOne({ 
-      email: childEmail.toLowerCase().trim(),
+      linkingCode: childLinkingCode.trim().toUpperCase(),
       role: { $in: ['student', 'school_student'] }
     });
 
     if (!child) {
-      return res.status(404).json({ message: 'Student not found with this email address' });
-    }
-
-    // Check if student has student_parent_premium_pro subscription for parent linking
-    const { getUserSubscription } = await import('../utils/subscriptionUtils.js');
-    const studentSubscription = await getUserSubscription(child._id);
-    
-    if (studentSubscription.planType !== 'student_parent_premium_pro' || studentSubscription.status !== 'active') {
-      return res.status(403).json({ 
-        message: 'Parent linking is only available with Student + Parent Premium Pro Plan. Please upgrade to link your child.',
-        upgradeRequired: true,
-        feature: 'parentDashboard'
-      });
+      return res.status(404).json({ success: false, message: 'Student not found with this linking code. Please check the code and try again.' });
     }
 
     // Check if child is already linked to this parent
     const existingLink = parent.linkedIds?.childIds?.includes(child._id.toString());
     if (existingLink) {
-      return res.status(400).json({ message: 'This child is already linked to your account' });
+      return res.status(400).json({ success: false, message: 'This child is already linked to your account' });
     }
 
+    // Get child's subscription plan
+    const { getUserSubscription } = await import('../utils/subscriptionUtils.js');
+    const UserSubscription = (await import('../models/UserSubscription.js')).default;
+    const childSubscription = await UserSubscription.getActiveSubscription(child._id);
+    const childPlanType = childSubscription?.planType || 'free';
+
+    // Check parent's subscription
+    const parentSubscription = await UserSubscription.getActiveSubscription(parent._id);
+    const isFamilyPlanActive = parentSubscription?.planType === 'student_parent_premium_pro' && 
+                               parentSubscription.status === 'active' &&
+                               (!parentSubscription.endDate || new Date(parentSubscription.endDate) > new Date());
+
+    // Calculate payment amount based on child's plan
+    const PARENT_PLAN_PRICE = 4999;
+    const PARENT_STUDENT_PREMIUM_UPGRADE_PRICE = 1000;
+    
+    let paymentAmount = 0;
+    let requiresPayment = false;
+
+    if (childPlanType === 'student_parent_premium_pro') {
+      // Child already has family plan - no payment needed
+      paymentAmount = 0;
+      requiresPayment = false;
+    } else if (childPlanType === 'student_premium' || childPlanType === 'educational_institutions_premium') {
+      // Child has premium plan - parent pays ₹1000 for parent dashboard access
+      paymentAmount = PARENT_STUDENT_PREMIUM_UPGRADE_PRICE;
+      requiresPayment = true;
+    } else {
+      // Child has free plan - parent pays ₹5000 for student + parent premium pro plan
+      paymentAmount = PARENT_PLAN_PRICE;
+      requiresPayment = true;
+    }
+
+    // If payment is required, return payment information
+    if (requiresPayment && paymentAmount > 0) {
+      // Initialize Razorpay
+      const Razorpay = (await import('razorpay')).default;
+      let razorpayInstance = null;
+      
+      try {
+        const keyId = process.env.RAZORPAY_KEY_ID;
+        const keySecret = process.env.RAZORPAY_KEY_SECRET;
+        
+        if (keyId && keySecret && keyId !== 'your_razorpay_key_id' && keySecret !== 'your_razorpay_key_secret') {
+          razorpayInstance = new Razorpay({
+            key_id: keyId,
+            key_secret: keySecret,
+          });
+        }
+      } catch (error) {
+        console.error('Razorpay initialization error:', error);
+      }
+
+      if (!razorpayInstance) {
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Payment gateway not configured. Please contact support.' 
+        });
+      }
+
+      const metadata = {
+        purpose: 'parent_link_child',
+        parentId: parent._id.toString(),
+        childId: child._id.toString(),
+        childPlanType: childPlanType,
+        amount: paymentAmount.toString(),
+      };
+
+      // Create Razorpay order
+      const crypto = (await import('crypto')).default;
+      let razorpayOrder;
+      try {
+        // Generate short receipt (max 40 chars for Razorpay)
+        const shortId = crypto.randomBytes(3).toString('hex').toUpperCase();
+        const receipt = `PLC${Date.now().toString().slice(-8)}${shortId}`; // Format: PLC + last 8 digits of timestamp + 6 char hex = max 17 chars
+        
+        razorpayOrder = await razorpayInstance.orders.create({
+          amount: paymentAmount * 100, // Convert to paise
+          currency: 'INR',
+          receipt: receipt,
+          notes: metadata,
+        });
+      } catch (error) {
+        console.error('Razorpay order creation error:', error);
+        return res.status(500).json({ 
+          success: false, 
+          message: 'Failed to create payment order. Please try again.' 
+        });
+      }
+
+      return res.status(200).json({
+        success: false,
+        requiresPayment: true,
+        amount: paymentAmount,
+        currency: 'INR',
+        orderId: razorpayOrder?.id || null,
+        keyId: process.env.RAZORPAY_KEY_ID || null,
+        childId: child._id.toString(),
+        childName: child.name || child.fullName,
+        childPlanType: childPlanType,
+        message: `To link this child, payment of ₹${paymentAmount} is required.`,
+      });
+    }
+
+    // No payment required - link directly
     // Add child to parent's linkedIds
     if (!parent.linkedIds) {
       parent.linkedIds = { childIds: [], teacherIds: [] };
@@ -376,9 +469,6 @@ router.post("/link-child", async (req, res) => {
     }
     
     await parent.save();
-    
-    console.log('Updated parent linkedIds:', parent.linkedIds);
-    console.log('Updated parent childEmail:', parent.childEmail);
 
     // Also update child's linkedIds to include parent
     if (!child.linkedIds) {
@@ -390,10 +480,9 @@ router.post("/link-child", async (req, res) => {
     
     child.linkedIds.parentIds.push(parent._id);
     await child.save();
-    
-    console.log('Updated child linkedIds:', child.linkedIds);
 
     res.status(200).json({ 
+      success: true,
       message: `Successfully linked ${child.name} to your account`,
       child: {
         _id: child._id,
@@ -404,7 +493,521 @@ router.post("/link-child", async (req, res) => {
     });
   } catch (error) {
     console.error('Error linking child:', error);
-    res.status(500).json({ message: 'Failed to link child', error: error.message });
+    res.status(500).json({ success: false, message: 'Failed to link child', error: error.message });
+  }
+});
+
+// Confirm payment and link child after payment
+router.post("/link-child/confirm-payment", async (req, res) => {
+  try {
+    const parent = req.user;
+    const { childId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
+
+    if (!childId || !razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
+      return res.status(400).json({ success: false, message: 'Missing payment details' });
+    }
+
+    // Verify payment signature
+    const crypto = await import('crypto');
+    const text = `${razorpayOrderId}|${razorpayPaymentId}`;
+    const generatedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(text)
+      .digest('hex');
+
+    if (generatedSignature !== razorpaySignature) {
+      return res.status(400).json({ success: false, message: 'Invalid payment signature' });
+    }
+
+    // Find child
+    const child = await User.findById(childId);
+    if (!child) {
+      return res.status(404).json({ success: false, message: 'Child not found' });
+    }
+
+    // Check if already linked
+    if (parent.linkedIds?.childIds?.includes(child._id)) {
+      return res.status(400).json({ success: false, message: 'This child is already linked to your account' });
+    }
+
+    // Get child's subscription
+    const UserSubscription = (await import('../models/UserSubscription.js')).default;
+    const childSubscription = await UserSubscription.getActiveSubscription(child._id);
+    const childPlanType = childSubscription?.planType || 'free';
+
+    // Upgrade child's subscription if needed
+    const PARENT_PLAN_PRICE = 4999;
+    const PARENT_STUDENT_PREMIUM_UPGRADE_PRICE = 1000;
+    const STUDENT_PARENT_PREMIUM_PRO_FEATURES = {
+      unlimitedGames: true,
+      allPillars: true,
+      advancedAnalytics: true,
+      certificates: true,
+      parentDashboard: true,
+      familyTracking: true,
+      parentSupport: true,
+    };
+
+    // Determine the payment amount based on child's plan
+    let paymentAmount = 0;
+    if (childPlanType === 'free') {
+      paymentAmount = PARENT_PLAN_PRICE; // ₹5000
+    } else if (childPlanType === 'student_premium' || childPlanType === 'educational_institutions_premium') {
+      paymentAmount = PARENT_STUDENT_PREMIUM_UPGRADE_PRICE; // ₹1000
+    }
+
+    // Upgrade child's subscription to student_parent_premium_pro if needed
+    if (childPlanType !== 'student_parent_premium_pro' && childPlanType !== 'educational_institutions_premium') {
+      if (childSubscription) {
+        childSubscription.planType = 'student_parent_premium_pro';
+        childSubscription.planName = 'Student + Parent Premium Pro Plan';
+        childSubscription.features = STUDENT_PARENT_PREMIUM_PRO_FEATURES;
+        childSubscription.transactions = childSubscription.transactions || [];
+        childSubscription.transactions.push({
+          transactionId: `link_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
+          amount: paymentAmount,
+          currency: 'INR',
+          status: 'completed',
+          paymentDate: new Date(),
+          razorpayOrderId,
+          razorpayPaymentId,
+        });
+        await childSubscription.save();
+      } else {
+        await UserSubscription.create({
+          userId: child._id,
+          planType: 'student_parent_premium_pro',
+          planName: 'Student + Parent Premium Pro Plan',
+          amount: paymentAmount,
+          firstYearAmount: PARENT_PLAN_PRICE,
+          renewalAmount: PARENT_PLAN_PRICE,
+          isFirstYear: true,
+          status: 'active',
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+          features: STUDENT_PARENT_PREMIUM_PRO_FEATURES,
+          transactions: [{
+            transactionId: `link_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
+            amount: paymentAmount,
+            currency: 'INR',
+            status: 'completed',
+            paymentDate: new Date(),
+            razorpayOrderId,
+            razorpayPaymentId,
+          }],
+          metadata: {
+            linkedVia: 'parent_link_child',
+            parentId: parent._id,
+          },
+        });
+      }
+    }
+
+    // Link parent and child
+    if (!parent.linkedIds) {
+      parent.linkedIds = { childIds: [], teacherIds: [] };
+    }
+    if (!parent.linkedIds.childIds) {
+      parent.linkedIds.childIds = [];
+    }
+    parent.linkedIds.childIds.push(child._id);
+    
+    if (!parent.childEmail) {
+      parent.childEmail = [];
+    }
+    if (!Array.isArray(parent.childEmail)) {
+      parent.childEmail = [parent.childEmail];
+    }
+    if (!parent.childEmail.includes(child.email)) {
+      parent.childEmail.push(child.email);
+    }
+    await parent.save();
+
+    if (!child.linkedIds) {
+      child.linkedIds = { parentIds: [], teacherIds: [] };
+    }
+    if (!child.linkedIds.parentIds) {
+      child.linkedIds.parentIds = [];
+    }
+    child.linkedIds.parentIds.push(parent._id);
+    await child.save();
+
+    // Create notifications
+    const Notification = (await import('../models/Notification.js')).default;
+    await Notification.create({
+      userId: parent._id,
+      type: 'child_linked',
+      title: 'Child Linked Successfully',
+      message: `${child.name || child.email} has been successfully linked to your account.`,
+      metadata: { childId: child._id },
+    });
+
+    await Notification.create({
+      userId: child._id,
+      type: 'parent_linked',
+      title: 'Parent Linked Successfully',
+      message: `You have been successfully linked to ${parent.name || parent.email}'s account.`,
+      metadata: { parentId: parent._id },
+    });
+
+    // Emit real-time notifications
+    const io = req.app?.get('io');
+    if (io) {
+      io.to(parent._id.toString()).emit('child_linked', {
+        childId: child._id,
+        childName: child.name,
+      });
+      io.to(child._id.toString()).emit('parent_linked', {
+        parentId: parent._id,
+        parentName: parent.name,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Successfully linked ${child.name} to your account`,
+      child: {
+        _id: child._id,
+        name: child.name,
+        email: child.email,
+        avatar: child.avatar,
+      },
+    });
+  } catch (error) {
+    console.error('Error confirming child link payment:', error);
+    res.status(500).json({ success: false, message: 'Failed to confirm payment', error: error.message });
+  }
+});
+
+// Initiate child account creation by parent (requires payment)
+router.post("/create-child", async (req, res) => {
+  try {
+    const parent = req.user;
+    const { fullName, email, password, dateOfBirth, gender } = req.body;
+
+    if (!fullName || !email || !password || !dateOfBirth || !gender) {
+      return res.status(400).json({ success: false, message: 'All fields are required' });
+    }
+
+    // Validate gender
+    const allowedGenders = ['male', 'female', 'non_binary', 'prefer_not_to_say', 'other'];
+    if (!allowedGenders.includes(gender)) {
+      return res.status(400).json({ success: false, message: 'Invalid gender selection' });
+    }
+
+    // Check if email already exists
+    const normalizedEmail = email.toLowerCase().trim();
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'An account with this email already exists' });
+    }
+
+    // Validate date of birth
+    const dobValue = new Date(dateOfBirth);
+    if (isNaN(dobValue.getTime())) {
+      return res.status(400).json({ success: false, message: 'Invalid date of birth' });
+    }
+
+    // Hash password
+    const bcrypt = (await import('bcrypt')).default;
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Payment amount for student + parent premium pro plan
+    const PARENT_PLAN_PRICE = 4999;
+
+    // Initialize Razorpay
+    const Razorpay = (await import('razorpay')).default;
+    let razorpayInstance = null;
+    
+    try {
+      const keyId = process.env.RAZORPAY_KEY_ID;
+      const keySecret = process.env.RAZORPAY_KEY_SECRET;
+      
+      if (keyId && keySecret && keyId !== 'your_razorpay_key_id' && keySecret !== 'your_razorpay_key_secret') {
+        razorpayInstance = new Razorpay({
+          key_id: keyId,
+          key_secret: keySecret,
+        });
+      }
+    } catch (error) {
+      console.error('Razorpay initialization error:', error);
+    }
+
+    if (!razorpayInstance) {
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Payment gateway not configured. Please contact support.' 
+      });
+    }
+
+    // Create child creation intent
+    const ChildCreationIntent = (await import('../models/ChildCreationIntent.js')).default;
+    const crypto = (await import('crypto')).default;
+    
+    const childIntent = await ChildCreationIntent.create({
+      parentId: parent._id,
+      fullName: fullName.trim(),
+      email: normalizedEmail,
+      passwordHash: hashedPassword,
+      dateOfBirth: dobValue,
+      gender: gender,
+      planType: 'student_parent_premium_pro',
+      amount: PARENT_PLAN_PRICE,
+      status: 'payment_pending',
+    });
+
+    // Create Razorpay order
+    const metadata = {
+      purpose: 'parent_create_child',
+      parentId: parent._id.toString(),
+      childCreationIntentId: childIntent._id.toString(),
+      amount: PARENT_PLAN_PRICE.toString(),
+    };
+
+    let razorpayOrder;
+    try {
+      // Generate short receipt (max 40 chars for Razorpay)
+      const shortId = crypto.randomBytes(3).toString('hex').toUpperCase();
+      const receipt = `PCC${Date.now().toString().slice(-8)}${shortId}`; // Format: PCC + last 8 digits of timestamp + 6 char hex = max 17 chars
+      
+      razorpayOrder = await razorpayInstance.orders.create({
+        amount: PARENT_PLAN_PRICE * 100, // Convert to paise
+        currency: 'INR',
+        receipt: receipt,
+        notes: metadata,
+      });
+    } catch (error) {
+      console.error('Razorpay order creation error:', error);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'Failed to create payment order. Please try again.' 
+      });
+    }
+
+    // Update intent with order ID
+    childIntent.razorpayOrderId = razorpayOrder.id;
+    await childIntent.save();
+
+    res.status(200).json({
+      success: true,
+      requiresPayment: true,
+      amount: PARENT_PLAN_PRICE,
+      currency: 'INR',
+      orderId: razorpayOrder.id,
+      keyId: process.env.RAZORPAY_KEY_ID || null,
+      childCreationIntentId: childIntent._id.toString(),
+      message: `Payment of ₹${PARENT_PLAN_PRICE} required to create child account with Student + Parent Premium Pro Plan.`,
+    });
+  } catch (error) {
+    console.error('Error initiating child creation:', error);
+    res.status(500).json({ success: false, message: 'Failed to initiate child creation', error: error.message });
+  }
+});
+
+// Confirm payment and create child account
+router.post("/create-child/confirm-payment", async (req, res) => {
+  try {
+    const parent = req.user;
+    const { childCreationIntentId, razorpayPaymentId, razorpayOrderId, razorpaySignature } = req.body;
+
+    if (!childCreationIntentId || !razorpayPaymentId || !razorpayOrderId || !razorpaySignature) {
+      return res.status(400).json({ success: false, message: 'Missing payment details' });
+    }
+
+    // Verify payment signature
+    const crypto = (await import('crypto')).default;
+    const text = `${razorpayOrderId}|${razorpayPaymentId}`;
+    const generatedSignature = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(text)
+      .digest('hex');
+
+    if (generatedSignature !== razorpaySignature) {
+      return res.status(400).json({ success: false, message: 'Invalid payment signature' });
+    }
+
+    // Find child creation intent
+    const ChildCreationIntent = (await import('../models/ChildCreationIntent.js')).default;
+    const childIntent = await ChildCreationIntent.findById(childCreationIntentId);
+
+    if (!childIntent) {
+      return res.status(404).json({ success: false, message: 'Child creation intent not found' });
+    }
+
+    if (childIntent.parentId.toString() !== parent._id.toString()) {
+      return res.status(403).json({ success: false, message: 'Unauthorized access to this intent' });
+    }
+
+    if (childIntent.status === 'completed') {
+      return res.status(400).json({ success: false, message: 'Child account already created' });
+    }
+
+    // Verify payment status
+    const Razorpay = (await import('razorpay')).default;
+    const razorpayInstance = new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+
+    try {
+      const payment = await razorpayInstance.payments.fetch(razorpayPaymentId);
+      if (payment.status !== 'captured' && payment.status !== 'authorized') {
+        return res.status(400).json({ success: false, message: 'Payment not completed. Please complete the payment first.' });
+      }
+    } catch (err) {
+      console.error('Payment verification error:', err);
+      return res.status(400).json({ success: false, message: 'Invalid payment details.' });
+    }
+
+    // Check if email still doesn't exist (double check)
+    const existingUser = await User.findOne({ email: childIntent.email });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'An account with this email already exists' });
+    }
+
+    // Generate linking code
+    const prefix = 'ST';
+    let linkingCode;
+    let isUnique = false;
+    while (!isUnique) {
+      const randomPart = crypto.randomBytes(3).toString('hex').toUpperCase();
+      linkingCode = `${prefix}-${randomPart}`;
+      const existing = await User.findOne({ linkingCode });
+      if (!existing) {
+        isUnique = true;
+      }
+    }
+
+    // Create student account
+    const student = await User.create({
+      name: childIntent.fullName,
+      fullName: childIntent.fullName,
+      email: childIntent.email,
+      password: childIntent.passwordHash,
+      role: 'student',
+      linkingCode: linkingCode,
+      linkingCodeIssuedAt: new Date(),
+      dateOfBirth: childIntent.dateOfBirth,
+      dob: childIntent.dateOfBirth.toISOString().split('T')[0],
+      gender: childIntent.gender,
+      isVerified: true,
+      linkedIds: {
+        childIds: [],
+        parentIds: [parent._id],
+        teacherIds: [],
+      },
+    });
+
+    // Link parent and student
+    if (!parent.linkedIds) {
+      parent.linkedIds = { childIds: [], teacherIds: [] };
+    }
+    if (!parent.linkedIds.childIds) {
+      parent.linkedIds.childIds = [];
+    }
+    parent.linkedIds.childIds.push(student._id);
+    
+    if (!parent.childEmail) {
+      parent.childEmail = [];
+    }
+    if (!Array.isArray(parent.childEmail)) {
+      parent.childEmail = [parent.childEmail];
+    }
+    if (!parent.childEmail.includes(childIntent.email)) {
+      parent.childEmail.push(childIntent.email);
+    }
+    await parent.save();
+
+    // Create subscription for child with student_parent_premium_pro plan
+    const UserSubscription = (await import('../models/UserSubscription.js')).default;
+    const STUDENT_PARENT_PREMIUM_PRO_FEATURES = {
+      fullAccess: true,
+      parentDashboard: true,
+      advancedAnalytics: true,
+      certificates: true,
+      wiseClubAccess: true,
+      inavoraAccess: true,
+      gamesPerPillar: -1,
+      totalGames: 2200,
+    };
+
+    await UserSubscription.create({
+      userId: student._id,
+      planType: 'student_parent_premium_pro',
+      planName: 'Student + Parent Premium Pro Plan',
+      amount: childIntent.amount,
+      firstYearAmount: 4999,
+      renewalAmount: 1499,
+      isFirstYear: true,
+      status: 'active',
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+      features: STUDENT_PARENT_PREMIUM_PRO_FEATURES,
+      transactions: [{
+        transactionId: `parent_create_child_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
+        amount: childIntent.amount,
+        currency: 'INR',
+        status: 'completed',
+        paymentDate: new Date(),
+        razorpayOrderId,
+        razorpayPaymentId,
+      }],
+      metadata: {
+        createdBy: 'parent',
+        parentId: parent._id,
+        childCreationIntentId: childIntent._id,
+      },
+    });
+
+    // Update intent status
+    childIntent.status = 'completed';
+    childIntent.studentId = student._id;
+    childIntent.razorpayPaymentId = razorpayPaymentId;
+    await childIntent.save();
+
+    // Create notifications
+    await Notification.create({
+      userId: parent._id,
+      type: 'child_created',
+      title: 'Child Account Created',
+      message: `${student.name || student.email}'s account has been created and linked to your account.`,
+      metadata: { childId: student._id },
+    });
+
+    await Notification.create({
+      userId: student._id,
+      type: 'account_created',
+      title: 'Account Created',
+      message: `Your account has been created by ${parent.name || parent.email}.`,
+      metadata: { parentId: parent._id },
+    });
+
+    // Emit real-time notifications
+    const io = req.app?.get('io');
+    if (io) {
+      io.to(parent._id.toString()).emit('child_created', {
+        childId: student._id,
+        childName: student.name,
+        childEmail: student.email,
+      });
+      io.to(student._id.toString()).emit('account_created', {
+        parentId: parent._id,
+        parentName: parent.name,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: `Child account created and linked successfully`,
+      child: {
+        _id: student._id,
+        name: student.name,
+        email: student.email,
+        linkingCode: student.linkingCode,
+        planType: 'student_parent_premium_pro',
+      },
+    });
+  } catch (error) {
+    console.error('Error confirming child creation payment:', error);
+    res.status(500).json({ success: false, message: 'Failed to confirm payment and create child account', error: error.message });
   }
 });
 

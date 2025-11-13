@@ -43,5 +43,69 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
+    <!-- Prevent Stripe from initializing if cached - We use Razorpay only -->
+    <script>
+      // Block Stripe completely - we use Razorpay only
+      (function() {
+        'use strict';
+        
+        // Remove Stripe from window if it exists (from cache)
+        try {
+          if (window.Stripe) {
+            delete window.Stripe;
+          }
+        } catch (e) {
+          window.Stripe = undefined;
+        }
+        
+        // Create a no-op Stripe function that prevents errors
+        window.Stripe = function(key) {
+          if (!key || key === '') {
+            // Silently return a mock object to prevent errors
+            return {
+              elements: function() {
+                return {
+                  create: function() {
+                    return { mount: function() {}, unmount: function() {} };
+                  }
+                };
+              },
+              paymentIntents: {
+                create: function() {
+                  return Promise.reject(new Error('Stripe is not used. This app uses Razorpay.'));
+                }
+              }
+            };
+          }
+          // Even with a key, return mock to prevent actual Stripe usage
+          console.warn('⚠️ Stripe is not used in this application. Please use Razorpay instead.');
+          return {
+            elements: function() {
+              return {
+                create: function() {
+                  return { mount: function() {}, unmount: function() {} };
+                }
+              };
+            },
+            paymentIntents: {
+              create: function() {
+                return Promise.reject(new Error('Stripe is not configured. Use Razorpay instead.'));
+              }
+            }
+          };
+        };
+        
+        // Make it non-configurable to prevent overwriting
+        try {
+          Object.defineProperty(window, 'Stripe', {
+            value: window.Stripe,
+            writable: false,
+            configurable: false
+          });
+        } catch (e) {
+          // If we can't make it non-configurable, that's okay
+        }
+      })();
+    </script>
   </body>
 </html>

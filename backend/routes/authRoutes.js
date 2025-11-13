@@ -12,9 +12,18 @@ import {
   initiateParentRegistration,
   confirmParentRegistration,
   linkStudentToParent,
+  linkStudentToParentSelf,
   verifyParentLinkCode,
   initiateStudentRegistration,
   finalizeStudentRegistration,
+  initiateStudentRegistrationWithPlan,
+  initiateStandaloneStudentRegistrationWithPlan,
+  finalizeStudentRegistrationWithPayment,
+  linkSchoolStudentToParent,
+  linkParentToSchoolStudent,
+  verifySchoolStudentLinkCode,
+  initiateAdditionalChildLink,
+  confirmAdditionalChildLink,
 } from '../controllers/parentRegistrationController.js';
 import { requireAuth } from "../middlewares/requireAuth.js";
 import { generateToken } from "../utils/generateToken.js";
@@ -277,14 +286,52 @@ router.post('/parent-registration/confirm', confirmParentRegistration);
 router.post('/parent-registration/link-student', linkStudentToParent);
 router.post('/parent-registration/verify-parent-code', verifyParentLinkCode);
 
+// Student parent linking routes
+router.post('/student/link-parent', requireAuth, linkStudentToParentSelf);
+router.post('/school-student/link-parent', requireAuth, linkSchoolStudentToParent);
+router.post('/parent/link-school-student', requireAuth, linkParentToSchoolStudent);
+router.post('/school-student/verify-code', verifySchoolStudentLinkCode);
+
+// Additional child linking routes (for parents who already have a family plan)
+router.post('/parent/initiate-additional-child-link', requireAuth, initiateAdditionalChildLink);
+router.post('/parent/confirm-additional-child-link', requireAuth, confirmAdditionalChildLink);
+
 router.post('/student-registration/initiate', initiateStudentRegistration);
 router.post('/student-registration/finalize', finalizeStudentRegistration);
+router.post('/student-registration/initiate-with-plan', initiateStudentRegistrationWithPlan);
+router.post('/student-registration/initiate-standalone-with-plan', initiateStandaloneStudentRegistrationWithPlan);
+router.post('/student-registration/finalize-with-payment', finalizeStudentRegistrationWithPayment);
 
 // ✅ Removed admin-only registration route
 
 // ✅ Get Logged-in User
-router.get("/me", requireAuth, (req, res) => {
-  res.json(req.user);
+router.get("/me", requireAuth, async (req, res) => {
+  try {
+    // Ensure school_students have a linking code
+    if (req.user.role === 'school_student' && !req.user.linkingCode) {
+      const user = await User.findById(req.user._id);
+      if (user && !user.linkingCode) {
+        try {
+          const prefix = 'SST';
+          user.linkingCode = await User.generateUniqueLinkingCode(prefix);
+          user.linkingCodeIssuedAt = new Date();
+          await user.save();
+          // Update req.user with the new linking code
+          req.user.linkingCode = user.linkingCode;
+          req.user.linkingCodeIssuedAt = user.linkingCodeIssuedAt;
+        } catch (err) {
+          console.error('Failed to generate linking code for school_student:', err);
+        }
+      } else if (user && user.linkingCode) {
+        req.user.linkingCode = user.linkingCode;
+        req.user.linkingCodeIssuedAt = user.linkingCodeIssuedAt;
+      }
+    }
+    res.json(req.user);
+  } catch (error) {
+    console.error('Error in /me endpoint:', error);
+    res.status(500).json({ message: 'Failed to fetch user data' });
+  }
 });
 
 // ✅ Logout

@@ -9,11 +9,33 @@ const notificationSchema = new mongoose.Schema(
     },
     type: {
       type: String,
-      enum: ["info", "success", "warning", "alert"],
+      enum: [
+        "info", 
+        "success", 
+        "warning", 
+        "alert",
+        "child_created",
+        "child_linked",
+        "student_linked",
+        "parent_linked",
+        "account_created",
+        "message",
+        "achievement",
+        "redemption",
+        "level_up",
+        "report",
+        "general"
+      ],
       default: "info",
     },
+    title: { type: String },
     message: { type: String, required: true },
     isRead: { type: Boolean, default: false },
+    read: { type: Boolean, default: false }, // Alias for isRead
+    metadata: {
+      type: mongoose.Schema.Types.Mixed,
+      default: {},
+    },
   },
   { timestamps: true }
 );

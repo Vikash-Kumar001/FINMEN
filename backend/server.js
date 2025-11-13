@@ -23,7 +23,6 @@ const allowedOrigins = process.env.CLIENT_URL
   : [
       "http://localhost:5173",
       "http://localhost:3000",
-      "http://localhost:4173"
     ];
 
 // Initialize app and server
@@ -165,6 +164,7 @@ import careerRoutes from "./routes/careerRoutes.js";
 
 import paymentRoutes from "./routes/paymentRoutes.js";
 import userSubscriptionRoutes from "./routes/userSubscriptionRoutes.js";
+import webhookRoutes from "./routes/webhookRoutes.js";
 import presentationRoutes from "./routes/presentationRoutes.js";
 import slideElementRoutes from "./routes/slideElementRoutes.js";
 import presentationTemplateRoutes from "./routes/presentationTemplateRoutes.js";
@@ -261,6 +261,7 @@ app.use("/api/global", globalStatsRoutes);
 
 app.use("/api/payment", paymentRoutes);
 app.use("/api/subscription", userSubscriptionRoutes);
+app.use("/api", webhookRoutes); // Razorpay webhook at /api/webhook
 app.use("/api/presentations", presentationRoutes);
 app.use("/api/presentations", slideElementRoutes);
 app.use("/api/presentation-templates", presentationTemplateRoutes);

@@ -686,6 +686,86 @@ import RoleSwap from "./pages/Student/DCOS/Kids/RoleSwap";
 import KindnessJournal from "./pages/Student/DCOS/Kids/KindnessJournal";
 import FriendshipReflex from "./pages/Student/DCOS/Kids/FriendshipReflex";
 import KindFriendBadge from "./pages/Student/DCOS/Kids/KindFriendBadge";
+import ScreenTimerReflex from "./pages/Student/DCOS/Kids/ScreenTimerReflex";
+import PlayVsStudyPuzzle from "./pages/Student/DCOS/Kids/PlayVsStudyPuzzle";
+import FamilyRulesStory1 from "./pages/Student/DCOS/Kids/FamilyRulesStory1";
+import EyeStrainReflex from "./pages/Student/DCOS/Kids/EyeStrainReflex";
+import SleepQuiz2 from "./pages/Student/DCOS/Kids/SleepQuiz";
+import BalancePosterTask from "./pages/Student/DCOS/Kids/BalancePosterTask";
+import OutdoorFunStory from "./pages/Student/DCOS/Kids/OutdoorFunStory";
+import AddictionReflex from "./pages/Student/DCOS/Kids/AddictionReflex";
+import JournalMyBalance from "./pages/Student/DCOS/Kids/JournalMyBalance";
+import BalanceBadge from "./pages/Student/DCOS/Kids/BalanceBadge";
+import SpotTheTruthQuiz from "./pages/Student/DCOS/Kids/SpotTheTruthQuiz";
+import CartoonNewsReflex from "./pages/Student/DCOS/Kids/CartoonNewsReflex";
+import ForwardMessageStory from "./pages/Student/DCOS/Kids/ForwardMessageStory";
+import PicturePuzzle from "./pages/Student/DCOS/Kids/PicturePuzzle";
+import GossipReflex from "./pages/Student/DCOS/Kids/GossipReflex";
+import FamilyTalkStory from "./pages/Student/DCOS/Kids/FamilyTalkStory";
+import FactCheckPosterTask from "./pages/Student/DCOS/Kids/FactCheckPosterTask";
+import JournalOfTruth1 from "./pages/Student/DCOS/Kids/JournalOfTruth1";
+import EmojiReflex from "./pages/Student/DCOS/Kids/EmojiReflex";
+import TruthBadge from "./pages/Student/DCOS/Kids/TruthBadge";
+import FreeGiftStory from "./pages/Student/DCOS/Kids/FreeGiftStory";
+import FakeLinkReflex from "./pages/Student/DCOS/Kids/FakeLinkReflex";
+import GameCoinScamQuiz from "./pages/Student/DCOS/Kids/GameCoinScamQuiz";
+import StrangerGiftStory from "./pages/Student/DCOS/Kids/StrangerGiftStory";
+import OTPReflex from "./pages/Student/DCOS/Kids/OTPReflex";
+import PuzzleOfTraps from "./pages/Student/DCOS/Kids/PuzzleOfTraps";
+import PosterTask from "./pages/Student/DCOS/Kids/PosterTask";
+import ChatTrickStory from "./pages/Student/DCOS/Kids/ChatTrickStory";
+import ReflexBlockGame from "./pages/Student/DCOS/Kids/ReflexBlockGame";
+import ScamAwareBadge from "./pages/Student/DCOS/Kids/ScamAwareBadge";
+import PasswordPrivacyStory from "./pages/Student/DCOS/Kids/PasswordPrivacyStory";
+import ProfileQuiz from "./pages/Student/DCOS/Kids/ProfileQuiz";
+import PhotoConsentReflex from "./pages/Student/DCOS/Kids/PhotoConsentReflex";
+import PublicVsPrivatePuzzle from "./pages/Student/DCOS/Kids/PublicVsPrivatePuzzle";
+import StrangerRequestStory from "./pages/Student/DCOS/Kids/StrangerRequestStory";
+import DevicePrivacyReflex from "./pages/Student/DCOS/Kids/DevicePrivacyReflex";
+import RightsPosterTask from "./pages/Student/DCOS/Kids/RightsPosterTask";
+import JournalPrivateInfo from "./pages/Student/DCOS/Kids/JournalPrivateInfo";
+import SafeFriendQuiz from "./pages/Student/DCOS/Kids/SafeFriendQuiz";
+import PrivacyHeroBadge from "./pages/Student/DCOS/Kids/PrivacyHeroBadge";
+import DigitalFootprintStory from "./pages/Student/DCOS/Kids/DigitalFootprintStory";
+import ReflexDelete from "./pages/Student/DCOS/Kids/ReflexDelete";
+import PuzzleOnlineForever from "./pages/Student/DCOS/Kids/PuzzleOnlineForever";
+import GoodVsBadPostQuiz from "./pages/Student/DCOS/Kids/GoodVsBadPostQuiz";
+import EmojiReflex1 from "./pages/Student/DCOS/Kids/EmojiReflex1";
+import SchoolReputationStory from "./pages/Student/DCOS/Kids/SchoolReputationStory";
+import PosterTask1 from "./pages/Student/DCOS/Kids/PosterTask1";
+import JournalOfPosts from "./pages/Student/DCOS/Kids/JournalOfPosts";
+import ReflexShareSafe from "./pages/Student/DCOS/Kids/ReflexShareSafe";
+import FootprintBadge from "./pages/Student/DCOS/Kids/FootprintBadge";
+import SmartRobotStory from "./pages/Student/DCOS/Kids/SmartRobotStory";
+import ReflexAISafety1 from "./pages/Student/DCOS/Kids/ReflexAISafety1";
+import AiGoodBadPuzzle from "./pages/Student/DCOS/Kids/AiGoodBadPuzzle";
+import FairnessQuiz1 from "./pages/Student/DCOS/Kids/FairnessQuiz1";
+import AIFriendStory from "./pages/Student/DCOS/Kids/AIFriendStory";
+import ReflexDeepfakeSpotter from "./pages/Student/DCOS/Kids/ReflexDeepfakeSpotter";
+import PosterTask2 from "./pages/Student/DCOS/Kids/PosterTask2";
+import AIHelperJournal from "./pages/Student/DCOS/Kids/AIHelperJournal";
+import ClassroomStory3 from "./pages/Student/DCOS/Kids/ClassroomStory3";
+import AIEthicsBadge from "./pages/Student/DCOS/Kids/AIEthicsBadge";
+import KindVsMeanQuiz from "./pages/Student/DCOS/Kids/KindVsMeanQuiz";
+import ReflexRespect1 from "./pages/Student/DCOS/Kids/ReflexRespect1";
+import ClassChatStory from "./pages/Student/DCOS/Kids/ClassChatStory";
+import PuzzleRespectMatch1 from "./pages/Student/DCOS/Kids/PuzzleRespectMatch1";
+import SchoolTeamReflex from "./pages/Student/DCOS/Kids/SchoolTeamReflex";
+import PosterTask3 from "./pages/Student/DCOS/Kids/PosterTask3";
+import StoryOfDifference from "./pages/Student/DCOS/Kids/StoryOfDifference";
+import JournalMyWords from "./pages/Student/DCOS/Kids/JournalMyWords";
+import PlaygroundReflex from "./pages/Student/DCOS/Kids/PlaygroundReflex";
+import RespectHeroBadge from "./pages/Student/DCOS/Kids/RespectHeroBadge";
+import StudyAppStory from "./pages/Student/DCOS/Kids/StudyAppStory";
+import ReflexLearningTools from "./pages/Student/DCOS/Kids/ReflexLearningTools";
+import PuzzleGoodVsWasteApps from "./pages/Student/DCOS/Kids/PuzzleGoodVsWasteApps";
+import HomeworkStory1 from "./pages/Student/DCOS/Kids/HomeworkStory1";
+import ReflexOfflineFun from "./pages/Student/DCOS/Kids/ReflexOfflineFun";
+import PosterTask4 from "./pages/Student/DCOS/Kids/PosterTask4";
+import SharingGoodContentStory from "./pages/Student/DCOS/Kids/SharingGoodContentStory";
+import JournalSmartUse from "./pages/Student/DCOS/Kids/JournalSmartUse";
+import ReflexReading from "./pages/Student/DCOS/Kids/ReflexReading";
+import SmartUserBadge from "./pages/Student/DCOS/Kids/SmartUserBadge";
 
 // DCOS Teen Games
 import PasswordSharingStory from "./pages/Student/DCOS/Teen/PasswordSharingStory";
@@ -708,6 +788,86 @@ import EmpathyJournal from "./pages/Student/DCOS/Teen/EmpathyJournal";
 import AntiBullyReflex from "./pages/Student/DCOS/Teen/AntiBullyReflex";
 import UpstanderSimulation from "./pages/Student/DCOS/Teen/UpstanderSimulation";
 import CourageBadge from "./pages/Student/DCOS/Teen/CourageBadge";
+import ScreenLogStory from "./pages/Student/DCOS/Teen/ScreenLogStory";
+import SleepHealthQuiz from "./pages/Student/DCOS/Teen/SleepHealthQuiz";
+import DopamineReflex from "./pages/Student/DCOS/Teen/DopamineReflex";
+import DigitalDetoxSimulation from "./pages/Student/DCOS/Teen/DigitalDetoxSimulation";
+import BalanceJournal from "./pages/Student/DCOS/Teen/BalanceJournal";
+import ProductivityPuzzle from "./pages/Student/DCOS/Teen/ProductivityPuzzle";
+import FamilyRuleDebate from "./pages/Student/DCOS/Teen/FamilyRuleDebate";
+import SleepHygieneReflex from "./pages/Student/DCOS/Teen/SleepHygieneReflex";
+import SuccessStorySimulation from "./pages/Student/DCOS/Teen/SuccessStorySimulation";
+import WellbeingBadge from "./pages/Student/DCOS/Teen/WellbeingBadge";
+import ViralPostStory from "./pages/Student/DCOS/Teen/ViralPostStory";
+import DeepfakeVideoQuiz from "./pages/Student/DCOS/Teen/DeepfakeVideoQuiz";
+import ForwardReflex from "./pages/Student/DCOS/Teen/ForwardReflex";
+import FactCheckSimulation from "./pages/Student/DCOS/Teen/FactCheckSimulation";
+import MemeTruthPuzzle from "./pages/Student/DCOS/Teen/MemeTruthPuzzle";
+import WhatsAppDebate from "./pages/Student/DCOS/Teen/WhatsAppDebate";
+import FakeJobScamStory from "./pages/Student/DCOS/Teen/FakeJobScamStory";
+import TruthJournal2 from "./pages/Student/DCOS/Teen/TruthJournal2";
+import NewsReflex from "./pages/Student/DCOS/Teen/NewsReflex";
+import FactCheckBadge from "./pages/Student/DCOS/Teen/FactCheckBadge";
+import FakeJobAdStory from "./pages/Student/DCOS/Teen/FakeJobAdStory";
+import PhishingEmailQuiz from "./pages/Student/DCOS/Teen/PhishingEmailQuiz";
+import OTPScamReflex from "./pages/Student/DCOS/Teen/OTPScamReflex";
+import ShoppingSimulation from "./pages/Student/DCOS/Teen/ShoppingSimulation";
+import LoanTrapStory from "./pages/Student/DCOS/Teen/LoanTrapStory";
+import ScamDebate from "./pages/Student/DCOS/Teen/ScamDebate";
+import BankingSafetyPuzzle from "./pages/Student/DCOS/Teen/BankingSafetyPuzzle";
+import FraudJournal from "./pages/Student/DCOS/Teen/FraudJournal";
+import ReflexAdTrap from "./pages/Student/DCOS/Teen/ReflexAdTrap";
+import FraudFighterBadge from "./pages/Student/DCOS/Teen/FraudFighterBadge";
+import ConsentStory from "./pages/Student/DCOS/Teen/ConsentStory";
+import DataQuiz from "./pages/Student/DCOS/Teen/DataQuiz";
+import FakeAppReflex from "./pages/Student/DCOS/Teen/FakeAppReflex";
+import SharingRightsSimulation from "./pages/Student/DCOS/Teen/SharingRightsSimulation";
+import PrivacyLawsPuzzle from "./pages/Student/DCOS/Teen/PrivacyLawsPuzzle";
+import DebateStage from "./pages/Student/DCOS/Teen/DebateStage";
+import DigitalFootprintStory1 from "./pages/Student/DCOS/Teen/DigitalFootprintStory1";
+import JournalOfPrivacy from "./pages/Student/DCOS/Teen/JournalOfPrivacy";
+import ContentOwnershipQuiz from "./pages/Student/DCOS/Teen/ContentOwnershipQuiz";
+import RightsDefenderBadge from "./pages/Student/DCOS/Teen/RightsDefenderBadge";
+import FutureJobStory from "./pages/Student/DCOS/Teen/FutureJobStory";
+import CancelCultureQuiz from "./pages/Student/DCOS/Teen/CancelCultureQuiz";
+import ReflexPositiveIdentity from "./pages/Student/DCOS/Teen/ReflexPositiveIdentity";
+import CollegeApplicationSimulation from "./pages/Student/DCOS/Teen/CollegeApplicationSimulation";
+import DebateStage1 from "./pages/Student/DCOS/Teen/DebateStage1";
+import DigitalReputationPuzzle from "./pages/Student/DCOS/Teen/DigitalReputationPuzzle";
+import JournalMyIdentity from "./pages/Student/DCOS/Teen/JournalMyIdentity";
+import StoryOfPositivity from "./pages/Student/DCOS/Teen/StoryOfPositivity";
+import ReflexRecruiter from "./pages/Student/DCOS/Teen/ReflexRecruiter";
+import IdentityBadge from "./pages/Student/DCOS/Teen/IdentityBadge";
+import BiasStory from "./pages/Student/DCOS/Teen/BiasStory";
+import DeepfakeQuiz from "./pages/Student/DCOS/Teen/DeepfakeQuiz";
+import ReflexFairAI from "./pages/Student/DCOS/Teen/ReflexFairAI";
+import AIInExams from "./pages/Student/DCOS/Teen/AIInExams";
+import AIJobsDebate1 from "./pages/Student/DCOS/Teen/AIJobsDebate1";
+import PuzzleAiUses from "./pages/Student/DCOS/Teen/PuzzleAiUses";
+import JournalAiRule from "./pages/Student/DCOS/Teen/JournalAiRule";
+import CopyrightStory from "./pages/Student/DCOS/Teen/CopyrightStory";
+import ReflexAIResponsibility from "./pages/Student/DCOS/Teen/ReflexAIResponsibility";
+import AILeaderBadge from "./pages/Student/DCOS/Teen/AILeaderBadge";
+import HateCommentStory from "./pages/Student/DCOS/Teen/HateCommentStory";
+import FreedomVsAbuseQuiz from "./pages/Student/DCOS/Teen/FreedomVsAbuseQuiz";
+import ReflexSupport from "./pages/Student/DCOS/Teen/ReflexSupport";
+import GroupChatSimulation from "./pages/Student/DCOS/Teen/GroupChatSimulation";
+import DebateStage2 from "./pages/Student/DCOS/Teen/DebateStage2";
+import PuzzleRespectVsHate from "./pages/Student/DCOS/Teen/PuzzleRespectVsHate";
+import JournalOnlineRespect from "./pages/Student/DCOS/Teen/JournalOnlineRespect";
+import RoleplayCalmReply from "./pages/Student/DCOS/Teen/RoleplayCalmReply";
+import ReflexFlag1 from "./pages/Student/DCOS/Teen/ReflexFlag1";
+import RespectChampionBadge from "./pages/Student/DCOS/Teen/RespectChampionBadge";
+import EntrepreneurStory from "./pages/Student/DCOS/Teen/EntrepreneurStory";
+import ReflexProductivity from "./pages/Student/DCOS/Teen/ReflexProductivity";
+import DebateStage3 from "./pages/Student/DCOS/Teen/DebateStage3";
+import OnlineCourseSimulation from "./pages/Student/DCOS/Teen/OnlineCourseSimulation";
+import CareerPuzzle from "./pages/Student/DCOS/Teen/CareerPuzzle";
+import JournalFutureUse from "./pages/Student/DCOS/Teen/JournalFutureUse";
+import SocialMediaStory1 from "./pages/Student/DCOS/Teen/SocialMediaStory1";
+import ReflexSmartScreen from "./pages/Student/DCOS/Teen/ReflexSmartScreen";
+import RoleModelTask from "./pages/Student/DCOS/Teen/RoleModelTask";
+import ProductivityHeroBadge from "./pages/Student/DCOS/Teen/ProductivityHeroBadge";
 
 // Moral Values Kids Games
 import LostPencilStory from "./pages/Student/MoralValues/Kids/LostPencilStory";
@@ -6832,6 +6992,648 @@ const App = () => {
             }
           />
 
+          {/* Additional DCOS Kids Games - Digital Citizenship & Online Safety */}
+          <Route
+            path="/student/dcos/kids/screen-timer-reflex"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ScreenTimerReflex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/play-vs-study-puzzle"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PlayVsStudyPuzzle />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/family-rules-story1"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <FamilyRulesStory1 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/eye-strain-reflex"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <EyeStrainReflex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/sleep-quiz"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <SleepQuiz2 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/balance-poster-task"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <BalancePosterTask />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/outdoor-fun-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <OutdoorFunStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/addiction-reflex"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <AddictionReflex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/journal-my-balance"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <JournalMyBalance />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/balance-badge"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <BalanceBadge />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/spot-the-truth-quiz"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <SpotTheTruthQuiz />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/cartoon-news-reflex"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <CartoonNewsReflex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/forward-message-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ForwardMessageStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/picture-puzzle"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PicturePuzzle />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/gossip-reflex"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <GossipReflex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/family-talk-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <FamilyTalkStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/fact-check-poster-task"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <FactCheckPosterTask />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/journal-of-truth1"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <JournalOfTruth1 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/emoji-reflex"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <EmojiReflex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/truth-badge"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <TruthBadge />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/free-gift-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <FreeGiftStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/fake-link-reflex"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <FakeLinkReflex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/game-coin-scam-quiz"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <GameCoinScamQuiz />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/stranger-gift-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <StrangerGiftStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/otp-reflex"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <OTPReflex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/puzzle-of-traps"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PuzzleOfTraps />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/poster-task"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PosterTask />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/chat-trick-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ChatTrickStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/reflex-block-game"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ReflexBlockGame />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/scam-aware-badge"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ScamAwareBadge />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/password-privacy-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PasswordPrivacyStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/profile-quiz"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ProfileQuiz />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/photo-consent-reflex"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PhotoConsentReflex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/public-vs-private-puzzle"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PublicVsPrivatePuzzle />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/stranger-request-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <StrangerRequestStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/device-privacy-reflex"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <DevicePrivacyReflex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/rights-poster-task"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <RightsPosterTask />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/journal-private-info"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <JournalPrivateInfo />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/safe-friend-quiz"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <SafeFriendQuiz />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/privacy-hero-badge"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PrivacyHeroBadge />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/digital-footprint-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <DigitalFootprintStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/reflex-delete"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ReflexDelete />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/puzzle-online-forever"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PuzzleOnlineForever />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/good-vs-bad-post-quiz"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <GoodVsBadPostQuiz />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/emoji-reflex1"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <EmojiReflex1 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/school-reputation-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <SchoolReputationStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/poster-task1"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PosterTask1 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/journal-of-posts"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <JournalOfPosts />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/reflex-share-safe"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ReflexShareSafe />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/footprint-badge"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <FootprintBadge />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/smart-robot-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <SmartRobotStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/reflex-ai-safety1"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ReflexAISafety1 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/ai-good-bad-puzzle"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <AiGoodBadPuzzle />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/fairness-quiz1"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <FairnessQuiz1 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/ai-friend-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <AIFriendStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/reflex-deepfake-spotter"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ReflexDeepfakeSpotter />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/poster-task2"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PosterTask2 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/ai-helper-journal"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <AIHelperJournal />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/classroom-story3"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ClassroomStory3 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/ai-ethics-badge"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <AIEthicsBadge />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/kind-vs-mean-quiz"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <KindVsMeanQuiz />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/reflex-respect1"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ReflexRespect1 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/class-chat-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ClassChatStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/puzzle-respect-match1"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PuzzleRespectMatch1 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/school-team-reflex"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <SchoolTeamReflex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/poster-task3"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PosterTask3 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/story-of-difference"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <StoryOfDifference />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/journal-my-words"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <JournalMyWords />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/playground-reflex"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PlaygroundReflex />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/respect-hero-badge"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <RespectHeroBadge />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/study-app-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <StudyAppStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/reflex-learning-tools"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ReflexLearningTools />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/puzzle-good-vs-waste-apps"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PuzzleGoodVsWasteApps />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/homework-story1"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <HomeworkStory1 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/reflex-offline-fun"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ReflexOfflineFun />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/poster-task4"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <PosterTask4 />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/sharing-good-content-story"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <SharingGoodContentStory />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/journal-smart-use"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <JournalSmartUse />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/reflex-reading"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <ReflexReading />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/student/dcos/kids/smart-user-badge"
+            element={
+              <ProtectedRoute roles={["student", "school_student"]}>
+                <SmartUserBadge />
+              </ProtectedRoute>
+            }
+          />
+
           {/* DCOS Teen Games - Digital Citizenship & Online Safety */}
           <Route
             path="/student/dcos/teen/password-sharing-story"
@@ -6977,6 +7779,87 @@ const App = () => {
               </ProtectedRoute>
             }
           />
+          <Route path="/student/dcos/teen/screen-log-story" element={<ProtectedRoute roles={['student']}><ScreenLogStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/sleep-health-quiz" element={<ProtectedRoute roles={['student']}><SleepHealthQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/dopamine-reflex" element={<ProtectedRoute roles={['student']}><DopamineReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/digital-detox-simulation" element={<ProtectedRoute roles={['student']}><DigitalDetoxSimulation /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/balance-journal" element={<ProtectedRoute roles={['student']}><BalanceJournal /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/productivity-puzzle" element={<ProtectedRoute roles={['student']}><ProductivityPuzzle /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/family-rule-debate" element={<ProtectedRoute roles={['student']}><FamilyRuleDebate /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/sleep-hygiene-reflex" element={<ProtectedRoute roles={['student']}><SleepHygieneReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/success-story-simulation" element={<ProtectedRoute roles={['student']}><SuccessStorySimulation /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/wellbeing-badge" element={<ProtectedRoute roles={['student']}><WellbeingBadge /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/viral-post-story" element={<ProtectedRoute roles={['student']}><ViralPostStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/deepfake-video-quiz" element={<ProtectedRoute roles={['student']}><DeepfakeVideoQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/forward-reflex" element={<ProtectedRoute roles={['student']}><ForwardReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/fact-check-simulation" element={<ProtectedRoute roles={['student']}><FactCheckSimulation /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/meme-truth-puzzle" element={<ProtectedRoute roles={['student']}><MemeTruthPuzzle /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/whatsapp-debate" element={<ProtectedRoute roles={['student']}><WhatsAppDebate /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/fake-job-scam-story" element={<ProtectedRoute roles={['student']}><FakeJobScamStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/truth-journal2" element={<ProtectedRoute roles={['student']}><TruthJournal2 /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/news-reflex" element={<ProtectedRoute roles={['student']}><NewsReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/fact-check-badge" element={<ProtectedRoute roles={['student']}><FactCheckBadge /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/fake-job-ad-story" element={<ProtectedRoute roles={['student']}><FakeJobAdStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/phishing-email-quiz" element={<ProtectedRoute roles={['student']}><PhishingEmailQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/otp-scam-reflex" element={<ProtectedRoute roles={['student']}><OTPScamReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/shopping-simulation" element={<ProtectedRoute roles={['student']}><ShoppingSimulation /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/loan-trap-story" element={<ProtectedRoute roles={['student']}><LoanTrapStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/scam-debate" element={<ProtectedRoute roles={['student']}><ScamDebate /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/banking-safety-puzzle" element={<ProtectedRoute roles={['student']}><BankingSafetyPuzzle /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/fraud-journal" element={<ProtectedRoute roles={['student']}><FraudJournal /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/reflex-ad-trap" element={<ProtectedRoute roles={['student']}><ReflexAdTrap /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/fraud-fighter-badge" element={<ProtectedRoute roles={['student']}><FraudFighterBadge /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/consent-story" element={<ProtectedRoute roles={['student']}><ConsentStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/data-quiz" element={<ProtectedRoute roles={['student']}><DataQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/fake-app-reflex" element={<ProtectedRoute roles={['student']}><FakeAppReflex /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/sharing-rights-simulation" element={<ProtectedRoute roles={['student']}><SharingRightsSimulation /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/privacy-laws-puzzle" element={<ProtectedRoute roles={['student']}><PrivacyLawsPuzzle /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/debate-stage" element={<ProtectedRoute roles={['student']}><DebateStage /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/digital-footprint-story1" element={<ProtectedRoute roles={['student']}><DigitalFootprintStory1/></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/journal-of-privacy" element={<ProtectedRoute roles={['student']}><JournalOfPrivacy /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/content-ownership-quiz" element={<ProtectedRoute roles={['student']}><ContentOwnershipQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/rights-defender-badge" element={<ProtectedRoute roles={['student']}><RightsDefenderBadge /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/future-job-story" element={<ProtectedRoute roles={['student']}><FutureJobStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/cancel-culture-quiz" element={<ProtectedRoute roles={['student']}><CancelCultureQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/reflex-positive-identity" element={<ProtectedRoute roles={['student']}><ReflexPositiveIdentity /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/college-application-simulation" element={<ProtectedRoute roles={['student']}><CollegeApplicationSimulation /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/debate-stage1" element={<ProtectedRoute roles={['student']}><DebateStage1 /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/digital-reputation-puzzle" element={<ProtectedRoute roles={['student']}><DigitalReputationPuzzle /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/journal-my-identity" element={<ProtectedRoute roles={['student']}><JournalMyIdentity /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/story-of-positivity" element={<ProtectedRoute roles={['student']}><StoryOfPositivity /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/reflex-recruiter" element={<ProtectedRoute roles={['student']}><ReflexRecruiter /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/identity-badge" element={<ProtectedRoute roles={['student']}><IdentityBadge /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/bias-story" element={<ProtectedRoute roles={['student']}><BiasStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/deepfake-quiz" element={<ProtectedRoute roles={['student']}><DeepfakeQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/reflex-fair-ai" element={<ProtectedRoute roles={['student']}><ReflexFairAI /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/ai-in-exams" element={<ProtectedRoute roles={['student']}><AIInExams /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/ai-jobs-debate1" element={<ProtectedRoute roles={['student']}><AIJobsDebate1 /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/puzzle-ai-uses" element={<ProtectedRoute roles={['student']}><PuzzleAiUses /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/journal-ai-rule" element={<ProtectedRoute roles={['student']}><JournalAiRule /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/copyright-story" element={<ProtectedRoute roles={['student']}><CopyrightStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/reflex-ai-responsibility" element={<ProtectedRoute roles={['student']}><ReflexAIResponsibility /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/ai-leader-badge" element={<ProtectedRoute roles={['student']}><AILeaderBadge /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/hate-comment-story" element={<ProtectedRoute roles={['student']}><HateCommentStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/freedom-vs-abuse-quiz" element={<ProtectedRoute roles={['student']}><FreedomVsAbuseQuiz /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/reflex-support" element={<ProtectedRoute roles={['student']}><ReflexSupport /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/group-chat-simulation" element={<ProtectedRoute roles={['student']}><GroupChatSimulation /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/debate-stage2" element={<ProtectedRoute roles={['student']}><DebateStage2 /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/puzzle-respect-vs-hate" element={<ProtectedRoute roles={['student']}><PuzzleRespectVsHate /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/journal-online-respect" element={<ProtectedRoute roles={['student']}><JournalOnlineRespect /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/roleplay-calm-reply" element={<ProtectedRoute roles={['student']}><RoleplayCalmReply /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/reflex-flag1" element={<ProtectedRoute roles={['student']}><ReflexFlag1 /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/respect-champion-badge" element={<ProtectedRoute roles={['student']}><RespectChampionBadge /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/entrepreneur-story" element={<ProtectedRoute roles={['student']}><EntrepreneurStory /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/reflex-productivity" element={<ProtectedRoute roles={['student']}><ReflexProductivity /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/debate-stage3" element={<ProtectedRoute roles={['student']}><DebateStage3 /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/online-course-simulation" element={<ProtectedRoute roles={['student']}><OnlineCourseSimulation /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/career-puzzle" element={<ProtectedRoute roles={['student']}><CareerPuzzle /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/journal-future-use" element={<ProtectedRoute roles={['student']}><JournalFutureUse /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/social-media-story1" element={<ProtectedRoute roles={['student']}><SocialMediaStory1 /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/reflex-smart-screen" element={<ProtectedRoute roles={['student']}><ReflexSmartScreen /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/role-model-task" element={<ProtectedRoute roles={['student']}><RoleModelTask /></ProtectedRoute>} />
+          <Route path="/student/dcos/teen/productivity-hero-badge" element={<ProtectedRoute roles={['student']}><ProductivityHeroBadge /></ProtectedRoute>} />
+
 
           {/* Moral Values Kids Games - Honesty & Respect */}
           <Route

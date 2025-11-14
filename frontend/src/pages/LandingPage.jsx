@@ -1179,21 +1179,21 @@ const LandingPage = () => {
             </p>
           </motion.div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-8">
             {/* Free Plan */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-green-200 relative overflow-hidden group flex flex-col h-full"
+              className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-green-200 relative overflow-hidden group flex flex-col h-full mb-6 sm:mb-0"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
               <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
               <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-emerald-400 to-green-400 rounded-full opacity-5 group-hover:opacity-15 transition-opacity duration-500"></div>
 
               <div className="relative z-10 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-6 h-48">
+                <div className="flex justify-between items-start mb-6 min-h-[180px] sm:min-h-[192px]">
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Free Plan</h3>
                     <p className="text-sm text-gray-600 mb-6">Start your WiseStudent journey free — 5 games in every pillar, full growth unlocked when you're ready.</p>
@@ -1264,14 +1264,14 @@ const LandingPage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-blue-200 relative overflow-hidden group flex flex-col h-full"
+              className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-blue-200 relative overflow-hidden group flex flex-col h-full mb-6 sm:mb-0"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
               <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
               <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-cyan-400 to-blue-400 rounded-full opacity-5 group-hover:opacity-15 transition-opacity duration-500"></div>
 
               <div className="relative z-10 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-6 h-48">
+                <div className="flex justify-between items-start mb-6 min-h-[180px] sm:min-h-[192px]">
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Students Premium Plan</h3>
                     <p className="text-sm text-gray-600 mb-5">Perfect for self-driven students who aspire to grow emotionally, mentally, ethically as well as academically.</p>
@@ -1283,7 +1283,7 @@ const LandingPage = () => {
                     <div className="flex items-baseline">
                       <span className="text-2xl font-bold text-blue-700">₹999</span>
                       <span className="text-gray-500 ml-1 sm:ml-2">•</span>
-                      <span className="text-sm text-gray-500 ml-1 sm:ml-2">For 2nd Year and Beyond</span>
+                      <span className="text-sm text-gray-500 ml-1 sm:ml-2">From 2nd Year onwards</span>
                     </div>
                   </div>
                   <div className=" bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center text-white text-blue-500 p-2 shadow-lg">
@@ -1353,14 +1353,14 @@ const LandingPage = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-purple-200 relative overflow-hidden group flex flex-col h-full"
+              className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-purple-200 relative overflow-hidden group flex flex-col h-full mb-6 sm:mb-0"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
               <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
               <div className="absolute -bottom-10 -left-10 w-32 h-32 bg-gradient-to-br from-pink-400 to-purple-400 rounded-full opacity-5 group-hover:opacity-15 transition-opacity duration-500"></div>
 
               <div className="relative z-10 flex flex-col h-full">
-                <div className="flex justify-between items-start mb-6 h-48">
+                <div className="flex justify-between items-start mb-6 min-h-[180px] sm:min-h-[192px]">
                   <div>
                     <h3 className="text-2xl font-bold text-gray-900 mb-2">Student + Parent Premium Pro Plan</h3>
                     <p className="text-sm text-gray-600 mb-3">For families who want a complete emotional and value-based learning ecosystem.</p>
@@ -1372,7 +1372,7 @@ const LandingPage = () => {
                     <div className="flex items-baseline">
                       <span className="text-2xl font-bold text-purple-700">₹1,499</span>
                       <span className="text-gray-500 ml-1 sm:ml-2">•</span>
-                      <span className="text-sm text-gray-500 ml-1 sm:ml-2">For 2nd Year and Beyond</span>
+                      <span className="text-sm text-gray-500 ml-1 sm:ml-2">From 2nd Year onwards</span>
                     </div>
                   </div>
                   <div className="p-2 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-purple-500 shadow-lg">

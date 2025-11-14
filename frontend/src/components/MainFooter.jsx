@@ -199,7 +199,7 @@ const MainFooter = () => {
                 </p>
               </div>
 
-              <div className="space-y-3 pt-2">
+              {/* <div className="space-y-3 pt-2">
                 <p className="text-sm font-semibold text-gray-700 mb-1">
                   Stay Updated
                 </p>
@@ -218,7 +218,7 @@ const MainFooter = () => {
                     <ArrowUp className="w-4 h-4 rotate-90" />
                   </button>
                 </div>
-              </div>
+              </div> */}
             </div>
 
             {/* Quick Links */}
@@ -343,7 +343,7 @@ const MainFooter = () => {
       {isVisible && (
         <button
           onClick={handleBackToTop}
-          className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-2 rounded-full shadow-lg hover:shadow-xl transition-all z-50 border-1 border-white/40 cursor-pointer hover:scale-105 duration-200 ease-in-out"
+          className="fixed bottom-6 right-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white p-3 rounded-full shadow-lg hover:shadow-xl transition-all z-50 border-1 border-white/40 cursor-pointer hover:scale-105 duration-200 ease-in-out"
           aria-label="Back to Top"
         >
           <ArrowUp className="w-5 h-5" />

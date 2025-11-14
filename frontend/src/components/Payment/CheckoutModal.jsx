@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Loader2, CheckCircle, AlertCircle, CreditCard, LogIn, Shield, Lock } from 'lucide-react';
+import { X, Loader2, CheckCircle, AlertCircle, CreditCard, Shield, Lock, UserPlus, Users, GraduationCap } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
 import { useSocket } from '../../context/SocketContext';
@@ -30,7 +30,7 @@ const loadRazorpay = () => {
 
 const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYear }) => {
   const [loading, setLoading] = useState(false);
-  const [step, setStep] = useState('init'); // init, login, payment, success, error
+  const [step, setStep] = useState('init'); // init, register, payment, success, error
   const [orderId, setOrderId] = useState(null);
   const [razorpayKeyId, setRazorpayKeyId] = useState(null);
   const [paymentError, setPaymentError] = useState(null);
@@ -49,7 +49,7 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
       // Check auth first
       const token = localStorage.getItem("finmen_token");
       if (!token) {
-        setStep('login');
+        setStep('register');
         return;
       }
       
@@ -122,8 +122,8 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
     } catch (error) {
       console.error('Free plan activation error:', error);
       if (error.response?.status === 401) {
-        setStep('login');
-        setPaymentError('Please login to activate the free plan');
+        setStep('register');
+        setPaymentError('Please register to activate the free plan');
       } else {
         setPaymentError(error.response?.data?.message || error.message || 'Failed to activate free plan');
         setStep('error');
@@ -177,8 +177,8 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
     } catch (error) {
       console.error('Payment initialization error:', error);
       if (error.response?.status === 401) {
-        setStep('login');
-        setPaymentError('Please login to continue');
+        setStep('register');
+        setPaymentError('Please register to continue');
       } else {
         setPaymentError(error.response?.data?.message || error.message || 'Failed to initialize payment');
         setStep('error');
@@ -271,33 +271,33 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
 
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm">
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="bg-white rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
+          className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto"
         >
-          <div className="p-6">
+          <div className="p-4 sm:p-6">
             {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-2xl font-black text-gray-900">Complete Payment</h2>
-                <div className="flex items-center gap-2 mt-1">
-                  <Shield className="w-4 h-4 text-green-600" />
+            <div className="flex items-start justify-between mb-4 sm:mb-6 gap-2">
+              <div className="flex-1 min-w-0">
+                <h2 className="text-xl sm:text-2xl font-black text-gray-900">Complete Payment</h2>
+                <div className="flex items-center gap-1.5 sm:gap-2 mt-1">
+                  <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-green-600 flex-shrink-0" />
                   <span className="text-xs text-gray-600 font-semibold">Secure Payment • SSL Encrypted</span>
                 </div>
               </div>
               <button
                 onClick={onClose}
-                className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
             </div>
 
-            {/* Plan Info - Only show if not in login step */}
-            {step !== 'login' && (
+            {/* Plan Info - Only show if not in register step */}
+            {step !== 'register' && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -328,33 +328,69 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
               </div>
             )}
 
-            {step === 'login' && (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <LogIn className="w-8 h-8 text-blue-600" />
+            {step === 'register' && (
+              <div className="text-center py-4 sm:py-6 md:py-8">
+                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
+                  <UserPlus className="w-6 h-6 sm:w-8 sm:h-8 text-blue-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-2">Login Required</h3>
-                <p className="text-gray-600 mb-6">
-                  Please login to {amount === 0 ? 'activate' : 'subscribe to'} this plan
+                <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Registration Required</h3>
+                <p className="text-sm sm:text-base text-gray-600 mb-4 sm:mb-6 px-2">
+                  Please register to {amount === 0 ? 'activate' : 'subscribe to'} this plan
                 </p>
-                <div className="space-y-3">
-                  <button
-                    onClick={() => {
-                      localStorage.setItem('pending_subscription', JSON.stringify({ planType, planName, amount, isFirstYear }));
-                      navigate('/login', { state: { from: 'pricing', planType } });
-                    }}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2"
-                  >
-                    <LogIn className="w-5 h-5" />
-                    Go to Login
-                  </button>
-                  <button
-                    onClick={onClose}
-                    className="w-full bg-gray-100 text-gray-700 py-2 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                </div>
+                
+                {/* For Student + Parent Premium Pro Plan - Show two buttons */}
+                {planType === 'student_parent_premium_pro' ? (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <button
+                        onClick={() => {
+                          localStorage.setItem('pending_subscription', JSON.stringify({ planType, planName, amount, isFirstYear }));
+                          navigate('/register', { state: { from: 'pricing', planType } });
+                        }}
+                        className="w-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base"
+                      >
+                        <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                        <span className="truncate">Continue as Student</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          localStorage.setItem('pending_subscription', JSON.stringify({ planType, planName, amount, isFirstYear }));
+                          navigate('/register-parent', { state: { from: 'pricing', planType } });
+                        }}
+                        className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base"
+                      >
+                        <Users className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                        <span className="truncate">Continue as Parent</span>
+                      </button>
+                    </div>
+                    <button
+                      onClick={onClose}
+                      className="w-full bg-gray-100 text-gray-700 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold hover:bg-gray-200 transition-colors text-sm sm:text-base"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                ) : (
+                  /* For Free Plan and Student Premium Plan - Show single register button */
+                  <div className="space-y-3">
+                    <button
+                      onClick={() => {
+                        localStorage.setItem('pending_subscription', JSON.stringify({ planType, planName, amount, isFirstYear }));
+                        navigate('/register', { state: { from: 'pricing', planType } });
+                      }}
+                      className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white py-2.5 sm:py-3 rounded-lg sm:rounded-xl font-semibold hover:shadow-lg transition-all duration-300 flex items-center justify-center gap-2 text-sm sm:text-base"
+                    >
+                      <UserPlus className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+                      Go to Register
+                    </button>
+                    <button
+                      onClick={onClose}
+                      className="w-full bg-gray-100 text-gray-700 py-2 sm:py-2.5 rounded-lg sm:rounded-xl font-semibold hover:bg-gray-200 transition-colors text-sm sm:text-base"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                )}
               </div>
             )}
 

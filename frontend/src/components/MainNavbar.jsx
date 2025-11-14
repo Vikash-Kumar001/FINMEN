@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import { X, Menu } from "lucide-react";
+import InstallPWA from "./InstallPWA";
 
 const MainNavbar = ({
     handlePillarsClick,
@@ -13,10 +15,34 @@ const MainNavbar = ({
 }) => {
     const navigate = useNavigate();
 
+    // Prevent body scroll when mobile menu is open
+    useEffect(() => {
+        if (showMobileMenu) {
+            // Save current scroll position
+            const scrollY = window.scrollY;
+            // Prevent scrolling
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${scrollY}px`;
+            document.body.style.width = '100%';
+            document.body.style.overflow = 'hidden';
+            
+            return () => {
+                // Restore scrolling
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.width = '';
+                document.body.style.overflow = '';
+                // Restore scroll position
+                window.scrollTo(0, scrollY);
+            };
+        }
+    }, [showMobileMenu]);
+
     return (
         <nav className="bg-white shadow-md py-4 relative">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex justify-between items-center cursor-pointer">
+                <div className="flex items-center cursor-pointer relative">
+                    {/* Left: Logo and Title */}
                     <div onClick={() => navigate("/")} className="flex items-center hover:scale-102 duration-200 ease-in-out">
                         <img 
                             src="/icons/icon2.png" 
@@ -28,8 +54,8 @@ const MainNavbar = ({
                         </h1>
                     </div>
 
-                    {/* Desktop Navigation - hidden on mobile */}
-                    <div className="hidden md:flex items-center space-x-4">
+                    {/* Right: Desktop Navigation - hidden on mobile */}
+                    <div className="hidden md:flex items-center space-x-4 ml-auto">
                         <button
                             onClick={handlePillarsClick}
                             className="text-gray-600 hover:text-black px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
@@ -64,11 +90,14 @@ const MainNavbar = ({
                         >
                             Sign In
                         </button>
+
+                        {/* Install App Button - right side of Sign In */}
+                        <InstallPWA variant="navbar" />
                     </div>
 
                     {/* Mobile menu button - visible only on mobile */}
                     <button
-                        className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none"
+                        className="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100 focus:outline-none ml-auto"
                         onClick={() => setShowMobileMenu(!showMobileMenu)}
                     >
                         {showMobileMenu ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
@@ -173,12 +202,17 @@ const MainNavbar = ({
                                             Contact
                                         </motion.button>
 
+                                        {/* PWA Install in mobile menu - matches Sign In button */}
+                                        <div className="mt-auto">
+                                            <InstallPWA variant="navbar-mobile" />
+                                        </div>
+
                                         <motion.button
                                             onClick={() => {
                                                 navigate("/login");
                                                 setShowMobileMenu(false);
                                             }}
-                                            className="text-left px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90 transition-all font-medium mt-auto"
+                                            className="text-left px-4 py-3 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:opacity-90 transition-all font-medium"
                                             whileTap={{ scale: 0.98 }}
                                         >
                                             Sign In

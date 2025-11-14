@@ -903,7 +903,7 @@ const Register = () => {
 
             {/* Main Content - Changed to use flex to fill entire screen */}
             {/* Added responsive padding and mobile-friendly positioning */}
-            <div className="relative z-10 h-full flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
+            <div className="relative z-10 h-full flex items-center justify-center px-4 py-6 sm:py-8 sm:px-6 lg:px-8 overflow-y-auto">
                 {/* Back to Homepage Button - Adjusted positioning for mobile */}
                 <button
                     onClick={() => navigate("/")}
@@ -922,7 +922,7 @@ const Register = () => {
                 >
                     {/* Register Card - Adjusted padding for mobile */}
                     <motion.div
-                        className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-6 sm:p-8 md:p-10 shadow-2xl"
+                        className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-3xl p-5 sm:p-8 md:p-10 shadow-2xl w-full max-w-full"
                         variants={itemVariants}
                         whileHover={{ y: -5 }}
                         transition={{ type: "spring", stiffness: 300 }}
@@ -966,17 +966,17 @@ const Register = () => {
                         {/* Register Form */}
                         <motion.form
                             onSubmit={handleSubmit}
-                            className="space-y-4 sm:space-y-6"
+                            className="space-y-5 sm:space-y-6"
                             variants={itemVariants}
                         >
                             {/* Full Name and Date of Birth Fields - Responsive grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-4">
                                 {/* Full Name Field */}
                                 <motion.div
                                     className="relative"
                                     whileFocus={{ scale: 1.02 }}
                                 >
-                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
                                         <User className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                     </div>
                                     <input
@@ -985,7 +985,13 @@ const Register = () => {
                                         value={fullName}
                                         onChange={(e) => setFullName(e.target.value)}
                                         required
-                                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm sm:text-base"
+                                        autoComplete="name"
+                                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3.5 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-base sm:text-base appearance-none"
+                                        style={{ 
+                                            WebkitAppearance: 'none',
+                                            WebkitTapHighlightColor: 'transparent',
+                                            fontSize: '16px' // Prevents iOS zoom on focus
+                                        }}
                                     />
                                 </motion.div>
 
@@ -994,27 +1000,41 @@ const Register = () => {
                                     className="relative"
                                     whileFocus={{ scale: 1.02 }}
                                 >
-                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
                                         <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                     </div>
                                     <input
                                         type="date"
-                                        placeholder="Date of Birth"
                                         value={dob}
                                         onChange={(e) => setDob(e.target.value)}
                                         required
-                                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm sm:text-base"
+                                        max={new Date().toISOString().split('T')[0]}
+                                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3.5 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-base sm:text-base relative"
+                                        style={{ 
+                                            WebkitAppearance: 'none',
+                                            WebkitTapHighlightColor: 'transparent',
+                                            colorScheme: 'dark',
+                                            minHeight: '48px',
+                                            fontSize: '16px', // Prevents iOS zoom on focus
+                                            position: 'relative'
+                                        }}
                                     />
+                                    {/* iOS date picker placeholder - only show when empty */}
+                                    {!dob && (
+                                        <div className="absolute inset-y-0 left-10 sm:left-12 right-3 sm:right-4 flex items-center pointer-events-none text-gray-400 text-base z-0">
+                                            <span className="truncate">Date of Birth</span>
+                                        </div>
+                                    )}
                                 </motion.div>
                             </div>
 
                             {/* Email Field */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-4">
                                 <motion.div
                                     className="relative"
                                     whileFocus={{ scale: 1.02 }}
                                 >
-                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
                                         <Mail className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                     </div>
                                     <input
@@ -1023,7 +1043,13 @@ const Register = () => {
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
-                                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm sm:text-base"
+                                        autoComplete="email"
+                                        className="w-full pl-10 sm:pl-12 pr-3 sm:pr-4 py-3.5 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-base sm:text-base appearance-none"
+                                        style={{ 
+                                            WebkitAppearance: 'none',
+                                            WebkitTapHighlightColor: 'transparent',
+                                            fontSize: '16px' // Prevents iOS zoom on focus
+                                        }}
                                     />
                                 </motion.div>
 
@@ -1031,39 +1057,45 @@ const Register = () => {
                                     className="relative"
                                     whileFocus={{ scale: 1.02 }}
                                 >
-                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
                                         <User className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                     </div>
                                     <select
                                         value={gender}
                                         onChange={(e) => setGender(e.target.value)}
                                         required
-                                        className="w-full appearance-none pl-10 sm:pl-12 pr-8 sm:pr-10 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm sm:text-base"
+                                        className="w-full appearance-none pl-10 sm:pl-12 pr-8 sm:pr-10 py-3.5 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-base sm:text-base"
+                                        style={{ 
+                                            WebkitAppearance: 'none',
+                                            WebkitTapHighlightColor: 'transparent',
+                                            fontSize: '16px', // Prevents iOS zoom on focus
+                                            minHeight: '48px'
+                                        }}
                                     >
-                                        <option value="" disabled className="bg-white text-black">
+                                        <option value="" disabled className="bg-slate-800 text-white">
                                             Select gender
                                         </option>
-                                        <option value="female" className="bg-white text-black">
+                                        <option value="female" className="bg-slate-800 text-white">
                                             Female
                                         </option>
-                                        <option value="male" className="bg-white text-black">
+                                        <option value="male" className="bg-slate-800 text-white">
                                             Male
                                         </option>
                                     </select>
-                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-gray-400">
+                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 sm:pr-4 text-gray-400 z-10">
                                         <ArrowRight className="h-3 w-3 sm:h-4 sm:w-4 rotate-90" />
                                     </div>
                                 </motion.div>
                             </div>
 
                             {/* Password and Confirm Password Fields - Responsive grid */}
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-4">
                                 {/* Password Field */}
                                 <motion.div
                                     className="relative"
                                     whileFocus={{ scale: 1.02 }}
                                 >
-                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
                                         <Lock className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                     </div>
                                     <input
@@ -1072,12 +1104,18 @@ const Register = () => {
                                         value={password}
                                         onChange={handlePasswordChange}
                                         required
-                                        className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm sm:text-base"
+                                        autoComplete="new-password"
+                                        className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3.5 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-base sm:text-base appearance-none"
+                                        style={{ 
+                                            WebkitAppearance: 'none',
+                                            WebkitTapHighlightColor: 'transparent',
+                                            fontSize: '16px' // Prevents iOS zoom on focus
+                                        }}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowPassword(!showPassword)}
-                                        className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
+                                        className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-gray-400 hover:text-white transition-colors z-10"
                                     >
                                         {showPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                                     </button>
@@ -1088,7 +1126,7 @@ const Register = () => {
                                     className="relative"
                                     whileFocus={{ scale: 1.02 }}
                                 >
-                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none">
+                                    <div className="absolute inset-y-0 left-0 pl-3 sm:pl-4 flex items-center pointer-events-none z-10">
                                         <Shield className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400" />
                                     </div>
                                     <input
@@ -1097,12 +1135,18 @@ const Register = () => {
                                         value={confirmPassword}
                                         onChange={(e) => setConfirmPassword(e.target.value)}
                                         required
-                                        className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-sm sm:text-base"
+                                        autoComplete="new-password"
+                                        className="w-full pl-10 sm:pl-12 pr-10 sm:pr-12 py-3.5 sm:py-4 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-cyan-500/50 focus:border-transparent transition-all duration-300 backdrop-blur-sm text-base sm:text-base appearance-none"
+                                        style={{ 
+                                            WebkitAppearance: 'none',
+                                            WebkitTapHighlightColor: 'transparent',
+                                            fontSize: '16px' // Prevents iOS zoom on focus
+                                        }}
                                     />
                                     <button
                                         type="button"
                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                        className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-gray-400 hover:text-white transition-colors"
+                                        className="absolute inset-y-0 right-0 pr-3 sm:pr-4 flex items-center text-gray-400 hover:text-white transition-colors z-10"
                                     >
                                         {showConfirmPassword ? <EyeOff className="h-4 w-4 sm:h-5 sm:w-5" /> : <Eye className="h-4 w-4 sm:h-5 sm:w-5" />}
                                     </button>

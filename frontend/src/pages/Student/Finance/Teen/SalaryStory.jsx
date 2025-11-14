@@ -90,7 +90,7 @@ const SalaryStory = () => {
         { 
           id: "spend", 
           text: "Upgrade lifestyle", 
-          emoji: "消费升级", 
+          emoji: "💎", 
           description: "Immediately upgrade to more expensive housing, car, and lifestyle",
           isCorrect: false
         }

@@ -1584,7 +1584,7 @@ export default function StudentDashboard() {
                                                         'dcos': '/games/digital-citizenship',
                                                         'moral': '/games/moral-values',
                                                         'ai': '/games/ai-for-all',
-                                                        'ehe': '/games/entrepreneurship',
+                                                        'ehe': '/games/ehe',
                                                         'crgc': '/games/civic-responsibility',
                                                         'mental': '/games/mental-health',
                                                         'educational': '/games/education'

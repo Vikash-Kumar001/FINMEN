@@ -1,157 +1,98 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
 
 const PosterBeKindAlways = () => {
   const navigate = useNavigate();
-  const [selectedStickers, setSelectedStickers] = useState([]);
-  const [selectedBackground, setSelectedBackground] = useState(null);
-  const [showPoster, setShowPoster] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
-
-  const stickers = [
-    { id: 1, emoji: "💖", name: "Heart" },
-    { id: 2, emoji: "🤝", name: "Handshake" },
-    { id: 3, emoji: "😊", name: "Smile" },
-    { id: 4, emoji: "🌟", name: "Star" },
-    { id: 5, emoji: "🦸", name: "Superhero" },
-    { id: 6, emoji: "🌈", name: "Rainbow" }
-  ];
-
-  const backgrounds = [
-    { id: 1, name: "Sky Blue", gradient: "from-blue-400 to-cyan-300" },
-    { id: 2, name: "Pink Dreams", gradient: "from-pink-400 to-purple-400" },
-    { id: 3, name: "Sunshine", gradient: "from-yellow-400 to-orange-400" },
-    { id: 4, name: "Nature", gradient: "from-green-400 to-emerald-500" }
-  ];
-
-  const handleToggleSticker = (stickerId) => {
-    if (selectedStickers.includes(stickerId)) {
-      setSelectedStickers(selectedStickers.filter(id => id !== stickerId));
-    } else if (selectedStickers.length < 3) {
-      setSelectedStickers([...selectedStickers, stickerId]);
-    }
-  };
+  const [gameStarted, setGameStarted] = useState(false);
+  const [posterCreated, setPosterCreated] = useState(false);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setGameStarted(true);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleCreatePoster = () => {
-    if (selectedStickers.length >= 3 && selectedBackground) {
-      showCorrectAnswerFeedback(3, true);
-      setCoins(3);
-      setShowPoster(true);
-    }
+    setPosterCreated(true);
   };
 
   const handleNext = () => {
-    navigate("/student/civic-responsibility/kids/journal-of-empathy");
+    navigate("/games/civic-responsibility/kids");
   };
 
-  const bg = backgrounds.find(b => b.id === selectedBackground);
-  const chosenStickers = stickers.filter(s => selectedStickers.includes(s.id));
+  if (!gameStarted) {
+    return (
+      <GameShell
+        title="Poster: Be Kind Always"
+        subtitle="Loading..."
+        backPath="/games/civic-responsibility/kids"
+      >
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="animate-pulse text-center">
+            <div className="text-6xl mb-4">🎨</div>
+            <p className="text-white">Getting your poster ready...</p>
+          </div>
+        </div>
+      </GameShell>
+    );
+  }
 
   return (
     <GameShell
       title="Poster: Be Kind Always"
-      subtitle="Express Kindness"
+      subtitle="Create Your Poster"
       onNext={handleNext}
-      nextEnabled={showPoster}
-      showGameOver={showPoster}
-      score={coins}
-      gameId="crgc-kids-6"
-      gameType="crgc"
-      totalLevels={20}
+      nextEnabled={posterCreated}
+      nextButtonText="Back to Games"
+      showGameOver={posterCreated}
+      score={posterCreated ? 1 : 0}
+      gameId="civic-responsibility-kids-6"
+      gameType="civic-responsibility"
+      totalLevels={10}
       currentLevel={6}
-      showConfetti={showPoster}
+      showConfetti={posterCreated}
       backPath="/games/civic-responsibility/kids"
     >
       <div className="space-y-8">
-        {!showPoster ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">Create Your Kindness Poster!</h3>
-            
-            <div className="mb-6">
-              <h4 className="text-white font-bold mb-3">Choose 3 Stickers:</h4>
-              <div className="grid grid-cols-3 gap-3">
-                {stickers.map(sticker => (
-                  <button
-                    key={sticker.id}
-                    onClick={() => handleToggleSticker(sticker.id)}
-                    className={`border-2 rounded-xl p-4 transition-all ${
-                      selectedStickers.includes(sticker.id)
-                        ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <div className="text-4xl mb-1">{sticker.emoji}</div>
-                    <div className="text-white text-xs font-semibold">{sticker.name}</div>
-                  </button>
-                ))}
-              </div>
-              <p className="text-white/70 text-sm mt-2 text-center">
-                Selected: {selectedStickers.length}/3
-              </p>
-            </div>
-
-            <div className="mb-6">
-              <h4 className="text-white font-bold mb-3">Choose Background:</h4>
-              <div className="grid grid-cols-4 gap-3">
-                {backgrounds.map(bg => (
-                  <button
-                    key={bg.id}
-                    onClick={() => setSelectedBackground(bg.id)}
-                    className={`h-16 rounded-xl bg-gradient-to-br ${bg.gradient} transition-all ${
-                      selectedBackground === bg.id
-                        ? 'ring-4 ring-white scale-105'
-                        : 'hover:scale-105'
-                    }`}
-                  >
-                    <div className="text-white text-xs font-bold">{bg.name}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button
-              onClick={handleCreatePoster}
-              disabled={selectedStickers.length < 3 || !selectedBackground}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedStickers.length >= 3 && selectedBackground
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Create Poster! 🎨
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-6 text-center">Your Kindness Poster!</h2>
-            
-            <div className={`bg-gradient-to-br ${bg.gradient} rounded-2xl p-8 mb-6 text-center`}>
-              <div className="flex justify-center gap-4 mb-6">
-                {chosenStickers.map(sticker => (
-                  <div key={sticker.id} className="text-7xl">{sticker.emoji}</div>
-                ))}
-              </div>
-              <h2 className="text-white text-4xl font-black mb-2">Kindness is My</h2>
-              <h1 className="text-white text-5xl font-black">SUPERPOWER!</h1>
-            </div>
-
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center">
-                🌟 Amazing poster! Remember, kindness is a superpower that makes the world better!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned a Badge! 🏆
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <h2 className="text-2xl font-bold text-center mb-6 text-white">
+            Create a Poster: "Kindness is My Superpower"
+          </h2>
+          
+          <div className="bg-gradient-to-br from-blue-500 to-purple-600 p-8 rounded-2xl text-center mb-8">
+            <div className="text-6xl mb-4">🦸</div>
+            <h3 className="text-3xl font-bold text-white mb-4">Kindness is My Superpower</h3>
+            <p className="text-white/90">
+              Draw or design a poster showing how kindness makes the world better!
             </p>
           </div>
-        )}
+          
+          {!posterCreated ? (
+            <button
+              onClick={handleCreatePoster}
+              className="w-full py-4 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-bold rounded-xl text-lg transition-all transform hover:scale-105"
+            >
+              🎨 Create My Poster
+            </button>
+          ) : (
+            <div className="text-center p-6 bg-green-500/20 rounded-xl border border-green-500/30">
+              <div className="text-4xl mb-2">🎉</div>
+              <h3 className="text-xl font-bold text-green-300 mb-2">Great Job!</h3>
+              <p className="text-white/90">You've created an amazing poster!</p>
+              <p className="text-yellow-300 font-medium mt-2">Badge Unlocked: Kindness Artist</p>
+            </div>
+          )}
+          
+          <div className="mt-6 text-sm text-white/60">
+            <p>Tip: Show your poster to friends and family to teach them about kindness!</p>
+          </div>
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default PosterBeKindAlways;
-

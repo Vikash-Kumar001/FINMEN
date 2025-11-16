@@ -5,148 +5,193 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const GenderStory = () => {
   const navigate = useNavigate();
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const story = {
-    title: "Everyone Can Play",
-    emoji: "⚽",
-    situation: "A boy says 'Girls can't play football.' What should you say?",
-    choices: [
-      { id: 1, text: "Everyone can play - boys and girls!", emoji: "👫", isCorrect: true },
-      { id: 2, text: "You're right, girls can't play", emoji: "🙅", isCorrect: false },
-      { id: 3, text: "Say nothing and agree", emoji: "😶", isCorrect: false }
-    ]
-  };
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = story.choices.find(c => c.id === selectedChoice);
-    
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+  const questions = [
+    {
+      id: 1,
+      text: "A boy says, \"Girls can't play football.\" What do you say?",
+      options: [
+        {
+          id: "a",
+          text: "Ignore him and walk away",
+          emoji: "🚶",
+          description: "That's not helpful. Ignoring unfair comments doesn't address the issue or promote equality.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Explain that everyone can play any sport they enjoy",
+          emoji: "🗣️",
+          description: "Great response! Everyone should have the opportunity to participate in activities they enjoy, regardless of gender.",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "Some kids are excluding girls from the science club. What should you do?",
+      options: [
+        {
+          id: "a",
+          text: "Join the group that's excluding them",
+          emoji: "🙅",
+          description: "That's not fair. Excluding people based on gender is discriminatory and harmful.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Stand up for the girls and support their inclusion",
+          emoji: "✊",
+          description: "Perfect! Standing up for others and promoting inclusion creates a fair environment for everyone.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "A girl wants to be a firefighter when she grows up. Some boys are laughing at her. What do you do?",
+      options: [
+        {
+          id: "a",
+          text: "Laugh with them",
+          emoji: "😂",
+          description: "That's not respectful. Everyone should be able to dream about any career without judgment.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Support her dream and tell the boys to stop",
+          emoji: "👍",
+          description: "Wonderful! Supporting others' dreams and standing up against teasing promotes respect and equality.",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "Your friend says only boys should be leaders. How do you respond?",
+      options: [
+        {
+          id: "a",
+          text: "Agree with your friend",
+          emoji: "🤝",
+          description: "That's not inclusive. Leadership qualities aren't determined by gender.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Explain that anyone can be a leader regardless of gender",
+          emoji: "💡",
+          description: "Excellent! Leadership skills can be found in anyone, regardless of gender. Everyone should have equal opportunities.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "During class, the teacher asks for volunteers. Only boys raise their hands. What do you do?",
+      options: [
+        {
+          id: "a",
+          text: "Wait for the teacher to call on boys only",
+          emoji: "⏱️",
+          description: "That's not promoting equality. Everyone should have equal opportunities to participate.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Encourage girls to raise their hands too",
+          emoji: "🙋",
+          description: "Great! Encouraging everyone to participate ensures equal opportunities for all students.",
+          isCorrect: true
+        }
+      ]
     }
-    
-    setShowFeedback(true);
-  };
+  ];
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
-    resetFeedback();
+  const handleChoice = (optionId) => {
+    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
+
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+      } else {
+        setGameFinished(true);
+      }
+    }, 1500);
   };
 
   const handleNext = () => {
-    navigate("/student/civic-responsibility/kids/poster-respect-all");
+    navigate("/games/civic-responsibility/kids");
   };
 
-  const selectedChoiceData = story.choices.find(c => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Gender Story"
-      subtitle="Equal Opportunities"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
-      showGameOver={showFeedback && coins > 0}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={coins}
-      gameId="crgc-kids-15"
-      gameType="crgc"
+      gameId="civic-responsibility-kids-15"
+      gameType="civic-responsibility"
       totalLevels={20}
       currentLevel={15}
-      showConfetti={showFeedback && coins > 0}
+      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/kids"
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-4 text-center">{story.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{story.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center">{story.situation}</p>
-            </div>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+          </div>
+          
+          <h2 className="text-xl font-semibold text-white mb-6">
+            {getCurrentQuestion().text}
+          </h2>
 
-            <div className="space-y-3 mb-6">
-              {story.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
+          <div className="grid grid-cols-1 gap-4">
+            {getCurrentQuestion().options.map(option => (
+              <button
+                key={option.id}
+                onClick={() => handleChoice(option.id)}
+                disabled={choices.some(c => c.question === currentQuestion)}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+              >
+                <div className="flex items-center">
+                  <div className="text-2xl mr-4">{option.emoji}</div>
+                  <div>
+                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
+                      <p className="text-white/90">{option.description}</p>
+                    )}
                   </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "👫 Fair and Equal!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-            
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Perfect! Girls and boys can do anything! Sports, science, art - everyone has equal 
-                    rights to play and learn. Stand up for fairness!
-                  </p>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Everyone can play and do anything! Gender doesn't limit what you can achieve!
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default GenderStory;
-

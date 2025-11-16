@@ -1,139 +1,164 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ReflexJobMatch = () => {
   const navigate = useNavigate();
-  const [currentItem, setCurrentItem] = useState(0);
-  const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(30);
+  const [gameActive, setGameActive] = useState(false);
+  const [currentItem, setCurrentItem] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const items = [
-    { id: 1, statement: "Nurse works in Hospital", isCorrect: true },
-    { id: 2, statement: "Nurse works in Factory", isCorrect: false },
-    { id: 3, statement: "Teacher works in School", isCorrect: true },
-    { id: 4, statement: "Teacher works in Farm", isCorrect: false },
-    { id: 5, statement: "Chef works in Kitchen", isCorrect: true },
-    { id: 6, statement: "Chef works in Office", isCorrect: false },
-    { id: 7, statement: "Pilot flies Planes", isCorrect: true },
-    { id: 8, statement: "Pilot drives Buses", isCorrect: false },
-    { id: 9, statement: "Farmer grows Crops", isCorrect: true },
-    { id: 10, statement: "Farmer builds Houses", isCorrect: false }
+  const jobItems = [
+    { id: 1, emoji: "🏥", job: "Nurse", location: "Hospital", correct: true },
+    { id: 2, emoji: "🏥", job: "Nurse", location: "Factory", correct: false },
+    { id: 3, emoji: "✈️", job: "Pilot", location: "Airport", correct: true },
+    { id: 4, emoji: "✈️", job: "Pilot", location: "Restaurant", correct: false },
+    { id: 5, emoji: "🍳", job: "Chef", location: "Kitchen", correct: true },
+    { id: 6, emoji: "🍳", job: "Chef", location: "Hospital", correct: false },
+    { id: 7, emoji: "🏫", job: "Teacher", location: "School", correct: true },
+    { id: 8, emoji: "🏫", job: "Teacher", location: "Airport", correct: false },
+    { id: 9, emoji: "🚜", job: "Farmer", location: "Farm", correct: true },
+    { id: 10, emoji: "🚜", job: "Farmer", location: "Office", correct: false }
   ];
 
-  const currentItemData = items[currentItem];
+  const [items, setItems] = useState([]);
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentItemData.isCorrect;
-    
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+  useEffect(() => {
+    if (gameActive && timeLeft > 0) {
+      const timer = setTimeout(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } else if (timeLeft === 0 && gameActive) {
+      setGameActive(false);
+      setGameFinished(true);
     }
-    
-    if (currentItem < items.length - 1) {
-      setTimeout(() => {
-        setCurrentItem(prev => prev + 1);
-      }, 300);
-    } else {
-      if ((score + (isCorrect ? 1 : 0)) >= 7) {
-        setCoins(3);
-      }
-      setScore(prev => prev + (isCorrect ? 1 : 0));
-      setShowResult(true);
-    }
-  };
+  }, [timeLeft, gameActive]);
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentItem(0);
+  const startGame = () => {
+    setGameActive(true);
+    setTimeLeft(30);
     setScore(0);
     setCoins(0);
-    resetFeedback();
+    setItems([...jobItems].sort(() => Math.random() - 0.5));
+    setCurrentItem(jobItems[0]);
+  };
+
+  const handleChoice = (isCorrect) => {
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    // Move to next item
+    const currentIndex = items.findIndex(item => item.id === currentItem.id);
+    if (currentIndex < items.length - 1) {
+      setCurrentItem(items[currentIndex + 1]);
+    } else {
+      // If we've gone through all items, reshuffle and continue
+      const shuffled = [...jobItems].sort(() => Math.random() - 0.5);
+      setItems(shuffled);
+      setCurrentItem(shuffled[0]);
+    }
   };
 
   const handleNext = () => {
-    navigate("/student/ehe/kids/puzzle-who-does-what");
+    navigate("/games/ehe/kids");
   };
-
-  const accuracy = Math.round((score / items.length) * 100);
 
   return (
     <GameShell
       title="Reflex Job Match"
-      subtitle={`Statement ${currentItem + 1} of ${items.length}`}
+      subtitle={gameActive ? `Time: ${timeLeft}s | Score: ${score}` : "Match jobs to the right places!"}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 7}
-      showGameOver={showResult && score >= 7}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={coins}
       gameId="ehe-kids-3"
-      gameType="educational"
-      totalLevels={20}
+      gameType="ehe"
+      totalLevels={10}
       currentLevel={3}
-      showConfetti={showResult && score >= 7}
+      showConfetti={gameFinished}
       flashPoints={flashPoints}
+      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/entrepreneurship/kids"
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">Is this correct?</h3>
-            
-            <div className="bg-gradient-to-br from-purple-500/30 to-pink-500/30 rounded-xl p-8 mb-6">
-              <p className="text-white text-2xl font-bold text-center">{currentItemData.statement}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice(true)}
-                className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-6xl mb-2">✓</div>
-                <div className="text-white font-bold text-xl">CORRECT</div>
-              </button>
-              <button
-                onClick={() => handleChoice(false)}
-                className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-6xl mb-2">✗</div>
-                <div className="text-white font-bold text-xl">WRONG</div>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 7 ? "🎉 Quick Thinker!" : "💪 Keep Practicing!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You got {score} out of {items.length} correct! ({accuracy}%)
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Knowing where people work helps you understand different careers!
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          {!gameActive && !gameFinished && (
+            <div className="text-center">
+              <h2 className="text-xl font-semibold text-white mb-4">
+                Match jobs to the right places! Tap ✅ for correct matches and ❌ for wrong ones.
+              </h2>
+              <p className="text-white/80 mb-6">
+                You have 30 seconds to get as many correct matches as possible!
               </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 7 ? "You earned 3 Coins! 🪙" : "Get 7 or more correct to earn coins!"}
-            </p>
-            {score < 7 && (
               <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                onClick={startGame}
+                className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white px-6 py-3 rounded-full font-bold text-lg shadow-lg hover:opacity-90 transition-all"
               >
-                Try Again
+                Start Game
               </button>
-            )}
-          </div>
-        )}
+            </div>
+          )}
+
+          {gameActive && currentItem && (
+            <div className="text-center">
+              <div className="flex justify-between items-center mb-6">
+                <div className="text-white/80">Time: {timeLeft}s</div>
+                <div className="text-yellow-400 font-bold">Score: {score}</div>
+              </div>
+              
+              <div className="mb-8">
+                <span className="text-6xl block mb-4">{currentItem.emoji}</span>
+                <h3 className="text-2xl font-bold text-white mb-2">
+                  {currentItem.job} = {currentItem.location}
+                </h3>
+                <p className="text-white/80">Is this correct?</p>
+              </div>
+              
+              <div className="flex justify-center gap-8">
+                <button
+                  onClick={() => handleChoice(true)}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white w-20 h-20 rounded-full text-4xl font-bold shadow-lg transition-all transform hover:scale-105"
+                >
+                  ✅
+                </button>
+                <button
+                  onClick={() => handleChoice(false)}
+                  className="bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white w-20 h-20 rounded-full text-4xl font-bold shadow-lg transition-all transform hover:scale-105"
+                >
+                  ❌
+                </button>
+              </div>
+            </div>
+          )}
+
+          {gameFinished && (
+            <div className="text-center">
+              <h2 className="text-2xl font-bold text-white mb-4">Game Over!</h2>
+              <p className="text-xl text-white/80 mb-2">Your final score: <span className="text-yellow-400 font-bold">{score}</span></p>
+              <p className="text-white/80 mb-6">You earned {coins} coins!</p>
+              <div className="bg-gradient-to-r from-purple-500/20 to-pink-500/20 rounded-xl p-4 border border-white/10">
+                <h3 className="text-lg font-semibold text-white mb-2">How did you do?</h3>
+                <p className="text-white/80">
+                  {score >= 8 ? "Excellent job! You're a job matching expert!" : 
+                   score >= 5 ? "Good work! Keep practicing to improve!" : 
+                   "Keep practicing and you'll get better!"}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default ReflexJobMatch;
-

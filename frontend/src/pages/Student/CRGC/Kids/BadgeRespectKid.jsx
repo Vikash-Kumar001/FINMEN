@@ -1,96 +1,342 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const BadgeRespectKid = () => {
   const navigate = useNavigate();
-  const [completedExamples, setCompletedExamples] = useState(0);
-  const [showBadge, setShowBadge] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [completedChallenges, setCompletedChallenges] = useState([]);
+  const [currentChallenge, setCurrentChallenge] = useState(0);
+  const [userAnswer, setUserAnswer] = useState("");
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedback, setFeedback] = useState({ correct: false, message: "" });
+  const [gameFinished, setGameFinished] = useState(false);
+  const { showAnswerConfetti } = useGameFeedback();
 
-  const examples = [
-    { id: 1, example: "Respected different languages" },
-    { id: 2, example: "Treated everyone kindly" },
-    { id: 3, example: "Listened without interrupting" },
-    { id: 4, example: "Supported gender equality" },
-    { id: 5, example: "Included everyone equally" }
+  const challenges = [
+    {
+      id: 1,
+      type: "multipleChoice",
+      question: "Which action shows respect to someone who speaks a different language?",
+      options: [
+        "Make fun of their accent",
+        "Be patient and try to communicate",
+        "Ignore them completely"
+      ],
+      correctAnswer: "Be patient and try to communicate",
+      explanation: "Being patient and trying to communicate shows respect for others, regardless of language differences!"
+    },
+    {
+      id: 2,
+      type: "trueFalse",
+      question: "It's important to include everyone in games and activities, regardless of their differences.",
+      correctAnswer: "true",
+      explanation: "Yes! Including everyone helps create a welcoming environment for all."
+    },
+    {
+      id: 3,
+      type: "fillBlank",
+      question: "When someone is being treated unfairly, you should _____ an adult.",
+      correctAnswer: "tell",
+      explanation: "Telling an adult is the right way to get help when someone is being treated unfairly."
+    },
+    {
+      id: 4,
+      type: "scenario",
+      question: "You see someone being excluded from a group activity because of how they look. What should you do?",
+      options: [
+        "Join the group that's excluding them",
+        "Walk past without helping",
+        "Invite them to join your group"
+      ],
+      correctAnswer: "Invite them to join your group",
+      explanation: "Inviting someone who is being excluded shows respect and inclusion."
+    },
+    {
+      id: 5,
+      type: "multipleChoice",
+      question: "How can you show respect to someone with a disability?",
+      options: [
+        "Make fun of their differences",
+        "Ignore them completely",
+        "Treat them with the same respect as anyone else"
+      ],
+      correctAnswer: "Treat them with the same respect as anyone else",
+      explanation: "Treating everyone with the same respect, regardless of differences, is the foundation of inclusion."
+    }
   ];
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setCompletedExamples(5);
-      showCorrectAnswerFeedback(3, true);
-      setCoins(3);
-      setShowBadge(true);
-    }, 1000);
-    return () => clearTimeout(timer);
-  }, [showCorrectAnswerFeedback]);
-
-  const handleFinish = () => {
-    navigate("/games/crgc/kids");
+  const handleMultipleChoice = (selectedOption) => {
+    const challenge = challenges[currentChallenge];
+    const isCorrect = selectedOption === challenge.correctAnswer;
+    
+    setFeedback({
+      correct: isCorrect,
+      message: isCorrect ? "Correct!" : "Not quite right.",
+      explanation: challenge.explanation
+    });
+    
+    setShowFeedback(true);
+    
+    if (isCorrect && !completedChallenges.includes(challenge.id)) {
+      setTimeout(() => {
+        setCompletedChallenges(prev => [...prev, challenge.id]);
+        moveToNextChallenge();
+      }, 2000);
+    } else if (!isCorrect) {
+      setTimeout(() => {
+        setShowFeedback(false);
+      }, 2000);
+    }
   };
+
+  const handleTrueFalse = (answer) => {
+    const challenge = challenges[currentChallenge];
+    const isCorrect = answer === challenge.correctAnswer;
+    
+    setFeedback({
+      correct: isCorrect,
+      message: isCorrect ? "Correct!" : "Not quite right.",
+      explanation: challenge.explanation
+    });
+    
+    setShowFeedback(true);
+    
+    if (isCorrect && !completedChallenges.includes(challenge.id)) {
+      setTimeout(() => {
+        setCompletedChallenges(prev => [...prev, challenge.id]);
+        moveToNextChallenge();
+      }, 2000);
+    } else if (!isCorrect) {
+      setTimeout(() => {
+        setShowFeedback(false);
+      }, 2000);
+    }
+  };
+
+  const handleFillBlank = () => {
+    const challenge = challenges[currentChallenge];
+    const isCorrect = userAnswer.trim().toLowerCase() === challenge.correctAnswer.toLowerCase();
+    
+    setFeedback({
+      correct: isCorrect,
+      message: isCorrect ? "Correct!" : "Not quite right.",
+      explanation: challenge.explanation
+    });
+    
+    setShowFeedback(true);
+    
+    if (isCorrect && !completedChallenges.includes(challenge.id)) {
+      setTimeout(() => {
+        setCompletedChallenges(prev => [...prev, challenge.id]);
+        moveToNextChallenge();
+      }, 2000);
+    } else if (!isCorrect) {
+      setTimeout(() => {
+        setShowFeedback(false);
+      }, 2000);
+    }
+  };
+
+  const moveToNextChallenge = () => {
+    setShowFeedback(false);
+    setUserAnswer("");
+    
+    if (currentChallenge < challenges.length - 1) {
+      setCurrentChallenge(prev => prev + 1);
+    } else {
+      // Check if all challenges are completed
+      if (completedChallenges.length + 1 === challenges.length) {
+        setTimeout(() => {
+          setGameFinished(true);
+          showAnswerConfetti();
+        }, 1000);
+      }
+    }
+  };
+
+  const handleNext = () => {
+    navigate("/games/civic-responsibility/kids");
+  };
+
+  const getCurrentChallenge = () => challenges[currentChallenge];
+
+  const renderChallenge = () => {
+    const challenge = getCurrentChallenge();
+    
+    switch (challenge.type) {
+      case "multipleChoice":
+        return (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-white mb-4">{challenge.question}</h3>
+            <div className="grid grid-cols-1 gap-3">
+              {challenge.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleMultipleChoice(option)}
+                  disabled={showFeedback}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 rounded-xl shadow-lg transition-all transform hover:scale-105 text-left"
+                >
+                  <div className="flex items-center">
+                    <div className="text-lg mr-3">{String.fromCharCode(65 + index)}.</div>
+                    <div>{option}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+        
+      case "trueFalse":
+        return (
+          <div className="space-y-6">
+            <h3 className="text-xl font-semibold text-white mb-4">{challenge.question}</h3>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => handleTrueFalse("true")}
+                disabled={showFeedback}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+              >
+                True
+              </button>
+              <button
+                onClick={() => handleTrueFalse("false")}
+                disabled={showFeedback}
+                className="bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white px-8 py-4 rounded-xl text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+              >
+                False
+              </button>
+            </div>
+          </div>
+        );
+        
+      case "fillBlank":
+        return (
+          <div className="space-y-6">
+            <h3 className="text-xl font-semibold text-white mb-4">{challenge.question}</h3>
+            <div className="flex justify-center">
+              <input
+                type="text"
+                value={userAnswer}
+                onChange={(e) => setUserAnswer(e.target.value)}
+                disabled={showFeedback}
+                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-lg w-32 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Enter answer"
+              />
+            </div>
+            <div className="text-center">
+              <button
+                onClick={handleFillBlank}
+                disabled={showFeedback || userAnswer.trim() === ""}
+                className={`px-6 py-3 rounded-xl font-bold text-white transition-all ${
+                  userAnswer.trim() !== ""
+                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105'
+                    : 'bg-gray-500 cursor-not-allowed'
+                }`}
+              >
+                Submit Answer
+              </button>
+            </div>
+          </div>
+        );
+        
+      case "scenario":
+        return (
+          <div className="space-y-4">
+            <h3 className="text-xl font-semibold text-white mb-4">{challenge.question}</h3>
+            <div className="grid grid-cols-1 gap-3">
+              {challenge.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleMultipleChoice(option)}
+                  disabled={showFeedback}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 rounded-xl shadow-lg transition-all transform hover:scale-105 text-left"
+                >
+                  <div className="flex items-center">
+                    <div className="text-lg mr-3">{String.fromCharCode(65 + index)}.</div>
+                    <div>{option}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        );
+        
+      default:
+        return null;
+    }
+  };
+
+  if (gameFinished) {
+    return (
+      <GameShell
+        title="Badge: Respect Kid"
+        subtitle="Congratulations!"
+        onNext={handleNext}
+        nextEnabled={true}
+        nextButtonText="Back to Games"
+        showGameOver={true}
+        gameId="civic-responsibility-kids-20"
+        gameType="civic-responsibility"
+        totalLevels={20}
+        currentLevel={20}
+        showConfetti={true}
+        backPath="/games/civic-responsibility/kids"
+      >
+        <div className="text-center p-8">
+          <div className="text-6xl mb-6">🏅</div>
+          <h2 className="text-2xl font-bold mb-4">Respect Kid</h2>
+          <p className="text-white/80 mb-6">
+            You've completed all respect challenges!
+          </p>
+          <div className="text-yellow-400 font-bold text-lg mb-8">
+            You've earned your Respect Kid Badge!
+          </div>
+          <button
+            onClick={handleNext}
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full text-lg transition-colors"
+          >
+            Continue Learning
+          </button>
+        </div>
+      </GameShell>
+    );
+  }
 
   return (
     <GameShell
       title="Badge: Respect Kid"
-      subtitle="Achievement Unlocked"
-      onNext={handleFinish}
-      nextEnabled={showBadge}
-      showGameOver={showBadge}
-      score={coins}
-      gameId="crgc-kids-20"
-      gameType="crgc"
-      totalLevels={20}
-      currentLevel={20}
-      showConfetti={showBadge}
+      subtitle={`Challenge ${currentChallenge + 1} of ${challenges.length} | Completed: ${completedChallenges.length}/${challenges.length}`}
       backPath="/games/civic-responsibility/kids"
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-          {!showBadge ? (
-            <>
-              <div className="text-7xl mb-4 text-center animate-pulse">🔄</div>
-              <h3 className="text-white text-xl font-bold mb-6 text-center">
-                Checking your respect examples...
-              </h3>
-            </>
-          ) : (
-            <>
-              <div className="text-9xl mb-4 text-center animate-bounce">🏆</div>
-              <h2 className="text-3xl font-bold text-white mb-6 text-center">
-                Respect Kid Badge!
-              </h2>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="mb-6">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-white/80">Progress</span>
+              <span className="text-yellow-400 font-bold">{completedChallenges.length}/{challenges.length} challenges</span>
+            </div>
+            <div className="bg-white/10 rounded-full h-3 w-full overflow-hidden">
+              <div 
+                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500 rounded-full"
+                style={{ width: `${(completedChallenges.length / challenges.length) * 100}%` }}
+              ></div>
+            </div>
+          </div>
 
-              <div className="bg-gradient-to-br from-green-500/30 to-blue-500/30 rounded-xl p-6 mb-6">
-                <h3 className="text-white font-bold text-xl mb-4 text-center">
-                  Respect Examples Completed:
-                </h3>
-                <div className="space-y-2">
-                  {examples.map(example => (
-                    <div
-                      key={example.id}
-                      className="flex items-center gap-3 bg-white/10 rounded-lg p-3"
-                    >
-                      <div className="text-2xl">✅</div>
-                      <div className="text-white font-semibold">{example.example}</div>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          {renderChallenge()}
 
-              <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                <p className="text-white text-center">
-                  🌟 Congratulations! You've shown respect in 5 different situations! You understand 
-                  that everyone deserves kindness and inclusion. Keep being respectful!
-                </p>
-              </div>
-
-              <p className="text-yellow-400 text-2xl font-bold text-center">
-                Badge Earned: Respect Kid! 🏆
+          {showFeedback && (
+            <div className={`p-4 rounded-xl mt-6 ${
+              feedback.correct 
+                ? 'bg-green-500/20 border border-green-500/30' 
+                : 'bg-red-500/20 border border-red-500/30'
+            }`}>
+              <p className={`text-lg font-semibold ${feedback.correct ? 'text-green-300' : 'text-red-300'}`}>
+                {feedback.message}
               </p>
-            </>
+              <p className="text-white/90 mt-2">{feedback.explanation}</p>
+            </div>
           )}
         </div>
       </div>
@@ -99,4 +345,3 @@ const BadgeRespectKid = () => {
 };
 
 export default BadgeRespectKid;
-

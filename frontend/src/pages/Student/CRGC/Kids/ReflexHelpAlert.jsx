@@ -1,137 +1,235 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import GameShell from "../../Finance/GameShell";
+import GameShell from '../../Finance/GameShell';
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ReflexHelpAlert = () => {
   const navigate = useNavigate();
-  const [currentItem, setCurrentItem] = useState(0);
-  const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(5);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [feedback, setFeedback] = useState({ correct: false, message: '' });
+  const { showCorrectAnswerFeedback } = useGameFeedback();
 
-  const items = [
-    { id: 1, action: "Help a Friend", isGood: true },
-    { id: 2, action: "Ignore Pain", isGood: false },
-    { id: 3, action: "Share Lunch", isGood: true },
-    { id: 4, action: "Take Toys", isGood: false },
-    { id: 5, action: "Listen to Problems", isGood: true },
-    { id: 6, action: "Walk Away", isGood: false },
-    { id: 7, action: "Offer Tissues", isGood: true },
-    { id: 8, action: "Make Fun", isGood: false },
-    { id: 9, action: "Include Everyone", isGood: true },
-    { id: 10, action: "Leave Out Friend", isGood: false }
+  const questions = [
+    {
+      id: 1,
+      text: "Quick! Tap 🙋 for 'Help a Friend' or ❌ for 'Ignore Pain'",
+      correctAnswer: '🙋',
+      feedback: {
+        correct: "Great job! Helping friends in need shows empathy and kindness!",
+        incorrect: "Remember, ignoring someone in pain isn't kind. Helping is always better!"
+      }
+    },
+    {
+      id: 2,
+      text: "Tap 🙋 for 'Share Lunch' or ❌ for 'Eat Alone'",
+      correctAnswer: '🙋',
+      feedback: {
+        correct: "Excellent! Sharing with others builds friendships and shows generosity!",
+        incorrect: "Don't forget that sharing brings people together!"
+      }
+    },
+    {
+      id: 3,
+      text: "Quick! Tap 🙋 for 'Comfort Crying' or ❌ for 'Laugh at Tears'",
+      correctAnswer: '🙋',
+      feedback: {
+        correct: "Perfect! Comforting someone who is crying shows true empathy!",
+        incorrect: "Laughing at someone's tears is hurtful. Comfort is what they need!"
+      }
+    },
+    {
+      id: 4,
+      text: "Tap 🙋 for 'Help Carry Books' or ❌ for 'Let Them Struggle'",
+      correctAnswer: '🙋',
+      feedback: {
+        correct: "Well done! Helping others with tasks shows kindness and consideration!",
+        incorrect: "Letting someone struggle when you can help isn't considerate!"
+      }
+    },
+    {
+      id: 5,
+      text: "Quick! Tap 🙋 for 'Include Everyone' or ❌ for 'Leave Someone Out'",
+      correctAnswer: '🙋',
+      feedback: {
+        correct: "Awesome! Including everyone makes everyone feel welcome and valued!",
+        incorrect: "Leaving people out hurts their feelings. Inclusion is important!"
+      }
+    }
   ];
 
-  const currentItemData = items[currentItem];
+  // Start the game automatically when component mounts
+  useEffect(() => {
+    if (!gameStarted) {
+      startGame();
+    }
+  }, []);
 
-  const handleChoice = (choice) => {
-    const isCorrect = choice === currentItemData.isGood;
-    
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    if (currentItem < items.length - 1) {
-      setTimeout(() => {
-        setCurrentItem(prev => prev + 1);
-      }, 300);
-    } else {
-      if ((score + (isCorrect ? 1 : 0)) >= 7) {
-        setCoins(3);
-      }
-      setScore(prev => prev + (isCorrect ? 1 : 0));
-      setShowResult(true);
-    }
+  useEffect(() => {
+    if (gameStarted && timeLeft > 0 && !showFeedback) {
+      const timer = setTimeout(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+      return () => clearTimeout(timer);
+    } 
+  }, [timeLeft, gameStarted, showFeedback]);
+
+  const startGame = () => {
+    setGameStarted(true);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentItem(0);
-    setScore(0);
-    setCoins(0);
-    resetFeedback();
+  const handleAnswer = (answer) => {
+    const currentQ = questions[currentQuestion];
+    const isCorrect = answer === currentQ.correctAnswer;
+    
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      setFeedback({ correct: true, message: currentQ.feedback.correct });
+    } else {
+      setFeedback({ correct: false, message: currentQ.feedback.incorrect });
+    }
+
+    setShowFeedback(true);
+
+    setTimeout(() => {
+      setShowFeedback(false);
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setTimeLeft(5);
+      } else {
+        setGameFinished(true);
+      }
+    }, 2000);
   };
 
   const handleNext = () => {
-    navigate("/student/civic-responsibility/kids/badge-kind-kid");
+    navigate("/games/civic-responsibility/kids");
   };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
+
+  // Show loading state while game starts
+  if (!gameStarted) {
+    return (
+      <GameShell
+        title="Reflex Help Alert"
+        subtitle="Loading..."
+        backPath="/games/civic-responsibility/kids"
+      >
+        <div className="flex items-center justify-center min-h-[300px]">
+          <div className="animate-pulse text-center">
+            <div className="text-6xl mb-4">⏱️</div>
+            <p className="text-white">Starting game...</p>
+          </div>
+        </div>
+      </GameShell>
+    );
+  }
+
+  if (gameFinished) {
+    return (
+      <GameShell
+        title="Reflex Help Alert"
+        subtitle="Game Complete!"
+        onNext={handleNext}
+        nextEnabled={true}
+        nextButtonText="Back to Games"
+        showGameOver={true}
+        score={coins}
+        gameId="civic-responsibility-kids-9"
+        gameType="civic-responsibility"
+        totalLevels={10}
+        currentLevel={9}
+        showConfetti={true}
+        backPath="/games/civic-responsibility/kids"
+      >
+        <div className="text-center p-8">
+          <div className="text-6xl mb-6">🎉</div>
+          <h2 className="text-2xl font-bold mb-4">Great Job!</h2>
+          <p className="text-white mb-6">
+            You scored {coins} out of {questions.length} points!
+          </p>
+          <div className="text-yellow-400 font-bold text-lg">
+            Keep being helpful!
+          </div>
+        </div>
+      </GameShell>
+    );
+  }
 
   return (
     <GameShell
       title="Reflex Help Alert"
-      subtitle={`Action ${currentItem + 1} of ${items.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && score >= 7}
-      showGameOver={showResult && score >= 7}
-      score={coins}
-      gameId="crgc-kids-9"
-      gameType="crgc"
-      totalLevels={20}
-      currentLevel={9}
-      showConfetti={showResult && score >= 7}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       backPath="/games/civic-responsibility/kids"
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">Quick! Should you do this?</h3>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex flex-col items-center justify-center min-h-[300px]">
+            <div className="flex justify-between items-center w-full mb-8">
+              <div className="bg-blue-500/20 px-4 py-2 rounded-full">
+                <span className="text-white font-bold">{timeLeft}s</span>
+              </div>
+              <div className="bg-yellow-500/20 px-4 py-2 rounded-full">
+                <span className="text-yellow-400 font-bold">Score: {coins}</span>
+              </div>
+            </div>
             
-            <div className="bg-gradient-to-br from-green-500/30 to-blue-500/30 rounded-xl p-12 mb-6">
-              <p className="text-white text-3xl font-bold text-center">{currentItemData.action}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice(true)}
-                className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-6xl mb-2">✓</div>
-                <div className="text-white font-bold text-xl">YES - DO IT</div>
-              </button>
-              <button
-                onClick={() => handleChoice(false)}
-                className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-6xl mb-2">✗</div>
-                <div className="text-white font-bold text-xl">NO - DON'T</div>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 7 ? "🎉 Helper Hero!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You got {score} out of {items.length} correct!
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Always choose to help and be kind! Ignore actions that hurt others!
+            <div className="text-center mb-10">
+              <div className="text-6xl mb-6 bg-white/10 p-6 rounded-2xl inline-block">
+                <span className="text-white">{getCurrentQuestion().text.split(' ')[0]}</span>
+              </div>
+              <p className="text-xl text-white mt-4">
+                {getCurrentQuestion().text.split(' ').slice(1).join(' ')}
               </p>
             </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 7 ? "You earned 3 Coins! 🪙" : "Get 7 or more correct to earn coins!"}
-            </p>
-            {score < 7 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+            
+            {showFeedback ? (
+              <div className={`p-6 rounded-2xl text-center mb-8 w-full max-w-md mx-auto ${
+                feedback.correct 
+                  ? 'bg-green-500/20 border border-green-500/30' 
+                  : 'bg-red-500/20 border border-red-500/30'
+              }`}>
+                <p className={`text-lg ${feedback.correct ? 'text-green-300' : 'text-red-300'}`}>
+                  {feedback.message}
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-3 gap-4 w-full max-w-md mx-auto">
+                {['🙋', '❌'].map((emoji) => (
+                  <button
+                    key={emoji}
+                    onClick={() => handleAnswer(emoji)}
+                    disabled={showFeedback}
+                    className="bg-gradient-to-br from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-4xl p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 active:scale-95 text-white"
+                  >
+                    {emoji}
+                  </button>
+                ))}
+              </div>
             )}
+            
+            <div className="mt-8 w-full max-w-md">
+              <div className="bg-white/10 rounded-full h-3 w-full overflow-hidden">
+                <div 
+                  className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-1000 ease-linear rounded-full"
+                  style={{ width: `${(timeLeft / 5) * 100}%` }}
+                ></div>
+              </div>
+              <p className="text-center text-white/70 text-sm mt-2">
+                Time remaining: {timeLeft}s
+              </p>
+            </div>
           </div>
-        )}
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default ReflexHelpAlert;
-

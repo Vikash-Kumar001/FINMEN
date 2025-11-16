@@ -5,153 +5,222 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PuzzleWhoDoesWhat = () => {
   const navigate = useNavigate();
-  const [matches, setMatches] = useState({});
-  const [showResult, setShowResult] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [selectedWorker, setSelectedWorker] = useState(null);
+  const [selectedJob, setSelectedJob] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const jobs = [
-    { id: 1, job: "Farmer", emoji: "👨‍🌾", correct: "crops" },
-    { id: 2, job: "Pilot", emoji: "👨‍✈️", correct: "plane" },
-    { id: 3, job: "Chef", emoji: "👨‍🍳", correct: "food" },
-    { id: 4, job: "Teacher", emoji: "👩‍🏫", correct: "students" },
-    { id: 5, job: "Doctor", emoji: "👨‍⚕️", correct: "patients" }
-  ];
-
-  const tasks = [
-    { id: "crops", name: "Grows Crops", emoji: "🌾" },
-    { id: "plane", name: "Flies Plane", emoji: "✈️" },
-    { id: "food", name: "Cooks Food", emoji: "🍳" },
-    { id: "students", name: "Teaches Students", emoji: "📚" },
-    { id: "patients", name: "Treats Patients", emoji: "💊" }
-  ];
-
-  const handleMatch = (jobId, taskId) => {
-    setMatches({ ...matches, [jobId]: taskId });
-  };
-
-  const handleCheck = () => {
-    let correct = 0;
-    jobs.forEach(job => {
-      if (matches[job.id] === job.correct) {
-        correct++;
-      }
-    });
-
-    if (correct >= 4) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+  const puzzles = [
+    {
+      id: 1,
+      worker: "Farmer",
+      emoji: "👨‍🌾",
+      job: "Crops",
+      jobEmoji: "🌾",
+      description: "Farmers grow crops like wheat, rice, and vegetables."
+    },
+    {
+      id: 2,
+      worker: "Pilot",
+      emoji: "👨‍✈️",
+      job: "Plane",
+      jobEmoji: "✈️",
+      description: "Pilots fly airplanes to take people to different places."
+    },
+    {
+      id: 3,
+      worker: "Chef",
+      emoji: "👨‍🍳",
+      job: "Food",
+      jobEmoji: "🍲",
+      description: "Chefs cook delicious meals in restaurants and hotels."
+    },
+    {
+      id: 4,
+      worker: "Doctor",
+      emoji: "👨‍⚕️",
+      job: "Hospital",
+      jobEmoji: "🏥",
+      description: "Doctors work in hospitals to treat sick patients."
+    },
+    {
+      id: 5,
+      worker: "Teacher",
+      emoji: "👩‍🏫",
+      job: "Students",
+      jobEmoji: "📚",
+      description: "Teachers help students learn new things in school."
     }
-    setShowResult(true);
+  ];
+
+  const handleWorkerSelect = (worker) => {
+    if (selectedJob) {
+      // Check if this is a correct match
+      const puzzle = puzzles.find(p => p.worker === worker && p.job === selectedJob);
+      if (puzzle) {
+        // Correct match
+        setMatchedPairs([...matchedPairs, puzzle.id]);
+        setCoins(prev => prev + 1);
+        showCorrectAnswerFeedback(1, true);
+        
+        // Check if all puzzles are matched
+        if (matchedPairs.length + 1 === puzzles.length) {
+          setTimeout(() => setGameFinished(true), 1500);
+        }
+      }
+      
+      // Reset selection
+      setSelectedWorker(null);
+      setSelectedJob(null);
+    } else {
+      setSelectedWorker(worker);
+    }
   };
 
-  const allMatched = jobs.every(job => matches[job.id]);
-
-  const handleTryAgain = () => {
-    setMatches({});
-    setShowResult(false);
-    setCoins(0);
+  const handleJobSelect = (job) => {
+    if (selectedWorker) {
+      // Check if this is a correct match
+      const puzzle = puzzles.find(p => p.worker === selectedWorker && p.job === job);
+      if (puzzle) {
+        // Correct match
+        setMatchedPairs([...matchedPairs, puzzle.id]);
+        setCoins(prev => prev + 1);
+        showCorrectAnswerFeedback(1, true);
+        
+        // Check if all puzzles are matched
+        if (matchedPairs.length + 1 === puzzles.length) {
+          setTimeout(() => setGameFinished(true), 1500);
+        }
+      }
+      
+      // Reset selection
+      setSelectedWorker(null);
+      setSelectedJob(null);
+    } else {
+      setSelectedJob(job);
+    }
   };
 
   const handleNext = () => {
-    navigate("/student/ehe/kids/dream-job-story");
+    navigate("/games/ehe/kids");
   };
 
-  const correctCount = jobs.filter(job => matches[job.id] === job.correct).length;
+  const isMatched = (id) => matchedPairs.includes(id);
+  const isWorkerSelected = (worker) => selectedWorker === worker;
+  const isJobSelected = (job) => selectedJob === job;
 
   return (
     <GameShell
       title="Puzzle: Who Does What?"
-      subtitle="Match Jobs to Tasks"
+      subtitle={`Match workers to their jobs! ${matchedPairs.length}/${puzzles.length} matched`}
       onNext={handleNext}
-      nextEnabled={showResult && correctCount >= 4}
-      showGameOver={showResult && correctCount >= 4}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={coins}
       gameId="ehe-kids-4"
-      gameType="educational"
-      totalLevels={20}
+      gameType="ehe"
+      totalLevels={10}
       currentLevel={4}
-      showConfetti={showResult && correctCount >= 4}
-      backPath="/games/entrepreneurship/kids"
+      showConfetti={gameFinished}
+      flashPoints={flashPoints}
+      backPath="/games/ehe/kids"
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">Match each job with what they do!</h3>
-            
-            <div className="space-y-4 mb-6">
-              {jobs.map(job => {
-                const selectedTask = tasks.find(t => t.id === matches[job.id]);
-                return (
-                  <div key={job.id} className="bg-purple-500/20 rounded-xl p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="text-4xl">{job.emoji}</div>
-                        <div className="text-white font-bold">{job.job}</div>
-                      </div>
-                      <div className="text-2xl">→</div>
-                      <div className="flex-1 ml-4">
-                        <select
-                          value={matches[job.id] || ""}
-                          onChange={(e) => handleMatch(job.id, e.target.value)}
-                          className="w-full px-4 py-2 bg-white/10 border-2 border-white/40 rounded-lg text-white"
-                        >
-                          <option value="">Select task...</option>
-                          {tasks.map(task => (
-                            <option key={task.id} value={task.id} className="text-black">
-                              {task.emoji} {task.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Workers column */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4 text-center">Workers</h3>
+              <div className="space-y-4">
+                {puzzles.map((puzzle) => (
+                  <button
+                    key={`worker-${puzzle.id}`}
+                    onClick={() => handleWorkerSelect(puzzle.worker)}
+                    disabled={isMatched(puzzle.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isMatched(puzzle.id)
+                        ? 'bg-green-500/20 border-2 border-green-400'
+                        : isWorkerSelected(puzzle.worker)
+                        ? 'bg-blue-500/20 border-2 border-blue-400'
+                        : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <span className="text-3xl mr-3">{puzzle.emoji}</span>
+                      <span className="text-white/90 text-lg">{puzzle.worker}</span>
                     </div>
-                  </div>
-                );
-              })}
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <button
-              onClick={handleCheck}
-              disabled={!allMatched}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                allMatched
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Check My Answers
-            </button>
+            
+            {/* Jobs column */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4 text-center">Jobs/Places</h3>
+              <div className="space-y-4">
+                {puzzles.map((puzzle) => (
+                  <button
+                    key={`job-${puzzle.id}`}
+                    onClick={() => handleJobSelect(puzzle.job)}
+                    disabled={isMatched(puzzle.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isMatched(puzzle.id)
+                        ? 'bg-green-500/20 border-2 border-green-400'
+                        : isJobSelected(puzzle.job)
+                        ? 'bg-blue-500/20 border-2 border-blue-400'
+                        : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <span className="text-3xl mr-3">{puzzle.jobEmoji}</span>
+                      <span className="text-white/90 text-lg">{puzzle.job}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {correctCount >= 4 ? "🎉 Perfect Match!" : "💪 Try Again!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You matched {correctCount} out of {jobs.length} correctly!
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Every profession has unique tasks! Understanding what people do helps you explore careers!
+          
+          {/* Feedback area */}
+          {selectedWorker && selectedJob && (
+            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
+              <p className="text-white/90 text-center">
+                Matching: {selectedWorker} → {selectedJob}
               </p>
             </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {correctCount >= 4 ? "You earned 5 Coins! 🪙" : "Get 4 or more correct to earn coins!"}
-            </p>
-            {correctCount < 4 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
-          </div>
-        )}
+          )}
+          
+          {selectedWorker && !selectedJob && (
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
+              <p className="text-blue-300 text-center">
+                Selected: {selectedWorker}. Now select a job to match!
+              </p>
+            </div>
+          )}
+          
+          {!selectedWorker && selectedJob && (
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
+              <p className="text-blue-300 text-center">
+                Selected: {selectedJob}. Now select a worker to match!
+              </p>
+            </div>
+          )}
+          
+          {/* Completion message */}
+          {gameFinished && (
+            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
+              <p className="text-green-300 text-center font-bold">
+                Great job! You matched all workers to their jobs!
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default PuzzleWhoDoesWhat;
-

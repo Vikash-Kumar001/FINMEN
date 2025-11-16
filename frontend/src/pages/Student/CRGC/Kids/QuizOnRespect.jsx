@@ -5,148 +5,184 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const QuizOnRespect = () => {
   const navigate = useNavigate();
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [showFeedback, setShowFeedback] = useState(false);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { showCorrectAnswerFeedback } = useGameFeedback();
 
-  const question = {
-    text: "What does respect mean?",
-    emoji: "🙏",
-    choices: [
-      { id: 1, text: "Treating all people kindly", emoji: "💖", isCorrect: true },
-      { id: 2, text: "Ignoring others", emoji: "😐", isCorrect: false },
-      { id: 3, text: "Only being nice to friends", emoji: "🤷", isCorrect: false }
-    ]
-  };
+  const questions = [
+    {
+      id: 1,
+      text: "Respect means?",
+      options: [
+        { id: "a", text: "Treating all kindly" },
+        { id: "b", text: "Ignoring others" },
+        { id: "c", text: "Thinking only about yourself" }
+      ],
+      correctAnswer: "a",
+      explanation: "Respect means treating everyone with kindness and consideration, regardless of their differences."
+    },
+    {
+      id: 2,
+      text: "Which action shows respect?",
+      options: [
+        { id: "a", text: "Making fun of someone's appearance" },
+        { id: "b", text: "Listening when someone speaks" },
+        { id: "c", text: "Excluding others from activities" }
+      ],
+      correctAnswer: "b",
+      explanation: "Listening when someone speaks shows that you value their thoughts and feelings, which is a key aspect of respect."
+    },
+    {
+      id: 3,
+      text: "Why is respect important?",
+      options: [
+        { id: "a", text: "It makes you feel superior" },
+        { id: "b", text: "It helps build better relationships" },
+        { id: "c", text: "It helps you ignore others" }
+      ],
+      correctAnswer: "b",
+      explanation: "Respect helps us build better relationships by creating an environment where everyone feels valued and understood."
+    },
+    {
+      id: 4,
+      text: "Which situation requires respect?",
+      options: [
+        { id: "a", text: "Getting a new toy" },
+        { id: "b", text: "Working with a classmate who has different ideas" },
+        { id: "c", text: "Winning a game" }
+      ],
+      correctAnswer: "b",
+      explanation: "When working with someone who has different ideas, respect helps us appreciate diverse perspectives and collaborate effectively."
+    },
+    {
+      id: 5,
+      text: "How can you show respect?",
+      options: [
+        { id: "a", text: "Interrupt others when speaking" },
+        { id: "b", text: "Make fun of others' feelings" },
+        { id: "c", text: "Value others' opinions even if different from yours" }
+      ],
+      correctAnswer: "c",
+      explanation: "Valuing others' opinions, even when they differ from yours, shows respect for their perspective and promotes understanding."
+    }
+  ];
 
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = question.choices.find(c => c.id === selectedChoice);
+  const handleOptionSelect = (optionId) => {
+    if (selectedOption || showFeedback) return;
     
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(3, true);
-      setCoins(3);
+    setSelectedOption(optionId);
+    const isCorrect = optionId === questions[currentQuestion].correctAnswer;
+    
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setShowFeedback(true);
-  };
-
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
-    resetFeedback();
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setShowFeedback(false);
+      } else {
+        setGameFinished(true);
+      }
+    }, 2000);
   };
 
   const handleNext = () => {
-    navigate("/student/civic-responsibility/kids/reflex-respect");
+    navigate("/games/civic-responsibility/kids");
   };
 
-  const selectedChoiceData = question.choices.find(c => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Quiz on Respect"
-      subtitle="Understanding Respect"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
-      showGameOver={showFeedback && coins > 0}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={coins}
-      gameId="crgc-kids-12"
-      gameType="crgc"
+      gameId="civic-responsibility-kids-12"
+      gameType="civic-responsibility"
       totalLevels={20}
       currentLevel={12}
-      showConfetti={showFeedback && coins > 0}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
+      showConfetti={gameFinished}
       backPath="/games/civic-responsibility/kids"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-6 text-center">{question.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {question.text}
-              </p>
-            </div>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+          </div>
+          
+          <h2 className="text-xl font-semibold text-white mb-6">
+            {getCurrentQuestion().text}
+          </h2>
 
-            <div className="space-y-3">
-              {question.choices.map(choice => (
+          <div className="space-y-3">
+            {getCurrentQuestion().options.map(option => {
+              const isSelected = selectedOption === option.id;
+              const isCorrect = option.id === getCurrentQuestion().correctAnswer;
+              const showCorrect = showFeedback && isCorrect;
+              const showIncorrect = showFeedback && isSelected && !isCorrect;
+              
+              return (
                 <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
+                  key={option.id}
+                  onClick={() => handleOptionSelect(option.id)}
+                  disabled={showFeedback}
+                  className={`w-full p-4 rounded-xl text-left transition-all ${
+                    showCorrect
+                      ? 'bg-green-500/20 border-2 border-green-500 text-white'
+                      : showIncorrect
+                      ? 'bg-red-500/20 border-2 border-red-500 text-white'
+                      : isSelected
+                      ? 'bg-blue-500/20 border-2 border-blue-500 text-white'
+                      : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
                   }`}
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
+                  <div className="flex items-center">
+                    <div className="text-lg mr-3 font-bold">
+                      {option.id.toUpperCase()}.
+                    </div>
+                    <div>{option.text}</div>
                   </div>
                 </button>
-              ))}
-            </div>
+              );
+            })}
+          </div>
 
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Answer
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{coins > 0 ? "🌟" : "❌"}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {coins > 0 ? "Correct!" : "Not Quite..."}
-            </h2>
-            
-            {coins > 0 ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Yes! Respect means treating ALL people kindly - not just friends, but everyone! 
-                    It means valuing others and being polite!
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 3 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Respect means treating ALL people kindly, not just some!
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
-          </div>
-        )}
+          {showFeedback && (
+            <div className={`mt-6 p-4 rounded-xl ${
+              selectedOption === getCurrentQuestion().correctAnswer
+                ? 'bg-green-500/20 border border-green-500/30'
+                : 'bg-red-500/20 border border-red-500/30'
+            }`}>
+              <p className={`font-semibold ${
+                selectedOption === getCurrentQuestion().correctAnswer
+                  ? 'text-green-300'
+                  : 'text-red-300'
+              }`}>
+                {selectedOption === getCurrentQuestion().correctAnswer
+                  ? 'Correct! 🎉'
+                  : 'Not quite right!'}
+              </p>
+              <p className="text-white/90 mt-2">
+                {getCurrentQuestion().explanation}
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default QuizOnRespect;
-
-

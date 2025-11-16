@@ -1,103 +1,243 @@
-// UVLS Teen Games Index - Complete Set 
-export { default as ListenDeep } from './ListenDeep';
-export { default as EmpathyQuiz } from './EmpathyQuiz';
-export { default as PerspectivePuzzle } from './PerspectivePuzzle';
-export { default as WalkInShoes } from './WalkInShoes';
-export { default as EmpathyDebate } from './EmpathyDebate';
-export { default as ReflectiveJournal } from './ReflectiveJournal';
-export { default as PeerSupportRoleplay } from './PeerSupportRoleplay';
-export { default as CaseResponsePuzzle } from './CaseResponsePuzzle';
-export { default as SpotDistressReflex } from './SpotDistressReflex';
-export { default as EmpathyChampionBadge } from './EmpathyChampionBadge';
-export { default as CulturalGreeting } from './CulturalGreeting';
-export { default as InclusionQuiz } from './InclusionQuiz';
-export { default as AccessibilityPuzzle } from './AccessibilityPuzzle';
-export { default as InclusiveClassSimulation } from './InclusiveClassSimulation';
-export { default as RespectDebate } from './RespectDebate';
-export { default as InclusionJournal } from './InclusionJournal';
-export { default as CorrectingBiasRoleplay } from './CorrectingBiasRoleplay';
-export { default as NameRespectReflex } from './NameRespectReflex';
-export { default as PolicyCasePuzzle } from './PolicyCasePuzzle';
-export { default as RespectLeaderBadge } from './RespectLeaderBadge';
-export { default as EncourageAmbition } from './EncourageAmbition';
-export { default as RightsLawQuiz } from './RightsLawQuiz';
-export { default as BiasSpotReflex } from './BiasSpotReflex';
-export { default as WorkplacePuzzle } from './WorkplacePuzzle';
-export { default as ProgramDesignSimulation } from './ProgramDesignSimulation';
-export { default as EqualityDebate } from './EqualityDebate';
-export { default as AllyJournal } from './AllyJournal';
-export { default as InterventionRoleplay } from './InterventionRoleplay';
-export { default as RightsApplicationPuzzle } from './RightsApplicationPuzzle';
-export { default as GenderJusticeLeaderBadge } from './GenderJusticeLeaderBadge';
-export { default as OnlineHarassScenario } from './OnlineHarassScenario';
-export { default as ReportingQuiz } from './ReportingQuiz';
-export { default as SupportNetworkPuzzle } from './SupportNetworkPuzzle';
-export { default as InterventionSimulation } from './InterventionSimulation';
-export { default as RehabVsPunishDebate } from './RehabVsPunishDebate';
-export { default as LongTermJournal } from './LongTermJournal';
-export { default as CounselorRoleplay } from './CounselorRoleplay';
-export { default as CyberSafetyReflex } from './CyberSafetyReflex';
-export { default as SystemicCasePuzzle } from './SystemicCasePuzzle';
-export { default as AntiBullyingChampionBadge } from './AntiBullyingChampionBadge';
-export { default as EmotionalCheckIn } from './EmotionalCheckIn';
-export { default as TriggerQuiz } from './TriggerQuiz';
-export { default as AdvancedBreathing } from './AdvancedBreathing';
-export { default as CopingStrategyPuzzle } from './CopingStrategyPuzzle';
-export { default as DeEscalationRoleplay } from './DeEscalationRoleplay';
-export { default as EmotionPatternJournal } from './EmotionPatternJournal';
-export { default as PeerSupportSimulation } from './PeerSupportSimulation';
-export { default as SelfCheckReflex } from './SelfCheckReflex';
-export { default as BuildToolboxPuzzle } from './BuildToolboxPuzzle';
-export { default as EmotionalResponderBadge } from './EmotionalResponderBadge';
+// UVLS Teen Games Imports - Empathy & Compassion
+import ListenDeep from './ListenDeep';
+import EmpathyQuiz from './EmpathyQuiz';
+import PerspectivePuzzle from './PerspectivePuzzle';
+import WalkInShoes from './WalkInShoes';
+import EmpathyDebate from './EmpathyDebate';
+import ReflectiveJournal from './ReflectiveJournal';
+import PeerSupportRoleplay from './PeerSupportRoleplay';
+import CaseResponsePuzzle from './CaseResponsePuzzle';
+import SpotDistressReflex from './SpotDistressReflex';
+import EmpathyChampionBadge from './EmpathyChampionBadge';
 
+// UVLS Teen Games Imports - Respect & Inclusion
+import CulturalGreeting from './CulturalGreeting';
+import InclusionQuiz from './InclusionQuiz';
+import AccessibilityPuzzle from './AccessibilityPuzzle';
+import InclusiveClassSimulation from './InclusiveClassSimulation';
+import RespectDebate from './RespectDebate';
+import InclusionJournal from './InclusionJournal';
+import CorrectingBiasRoleplay from './CorrectingBiasRoleplay';
+import NameRespectReflex from './NameRespectReflex';
+import PolicyCasePuzzle from './PolicyCasePuzzle';
+import RespectLeaderBadge from './RespectLeaderBadge';
 
-export { default as EvidenceCheck } from './EvidenceCheck';
-export { default as FakeNewsQuiz } from './FakeNewsQuiz';
-export { default as TradeOffsPuzzle } from './TradeOffsPuzzle';
-export { default as ScenarioSimulation } from './ScenarioSimulation';
-export { default as EthicalRoleplay } from './EthicalRoleplay';
-export { default as BiasDetectionReflex } from './BiasDetectionReflex';
-export { default as EvidenceJournal } from './EvidenceJournal';
-export { default as TimedDebate } from './TimedDebate';
-export { default as PolicyPuzzle } from './PolicyPuzzle';
-export { default as DecisionMasterBadge } from './DecisionMasterBadge';
-export { default as ToughConversation } from './ToughConversation';
-export { default as NonverbalQuiz } from './NonverbalQuiz';
-export { default as ClarifyReflex } from './ClarifyReflex';
-export { default as InterviewSimulation } from './InterviewSimulation';
-export { default as FeedbackRoleplay } from './FeedbackRoleplay';
-export { default as PersuasionPuzzle } from './PersuasionPuzzle';
-export { default as CommunicationJournal } from './CommunicationJournal';
-export { default as PublicSpeakingPrep } from './PublicSpeakingPrep';
-export { default as ListeningVsSpeakingDebate } from './ListeningVsSpeakingDebate';
-export { default as CommunicationProBadge } from './CommunicationProBadge';
-export { default as PowerDynamicsScenario } from './PowerDynamicsScenario';
-export { default as NegotiationTacticsQuiz } from './NegotiationTacticsQuiz';
-export { default as MediationSimulation } from './MediationSimulation';
-export { default as BATNAPuzzle } from './BATNAPuzzle';
-export { default as ToughBargainRoleplay } from './ToughBargainRoleplay';
-export { default as EthicsInNegotiationDebate } from './EthicsInNegotiationDebate';
-export { default as NegotiationJournal } from './NegotiationJournal';
-export { default as WalkAwayReflex } from './WalkAwayReflex';
-export { default as WorkplaceConflictSim } from './WorkplaceConflictSim';
-export { default as ConflictSolverBadge } from './ConflictSolverBadge';
-export { default as CampaignStory } from './CampaignStory';
-export { default as SDGQuiz } from './SDGQuiz';
-export { default as VolunteerSimulation } from './VolunteerSimulation';
-export { default as PublicBudgetPuzzle } from './PublicBudgetPuzzle';
-export { default as AdvocacyRoleplay } from './AdvocacyRoleplay';
-export { default as ImpactJournal } from './ImpactJournal';
-export { default as ServiceDesignPuzzle } from './ServiceDesignPuzzle';
-export { default as CoalitionSimulation } from './CoalitionSimulation';
-export { default as CivicReflex } from './CivicReflex';
-export { default as CitizenLeaderBadge } from './CitizenLeaderBadge';
-export { default as ShortVsLongGoalsDebate } from './ShortVsLongGoalsDebate';
-export { default as EmergencyStepsQuiz } from './EmergencyStepsQuiz';
-export { default as OneYearPlanJournal } from './OneYearPlanJournal';
-export { default as CrisisSimulation } from './CrisisSimulation';
-export { default as RequestExtensionRoleplay } from './RequestExtensionRoleplay';
-export { default as SafetyOfferReflex } from './SafetyOfferReflex';
-export { default as HabitChainPuzzle } from './HabitChainPuzzle';
-export { default as HabitChangeJournal } from './HabitChangeJournal';
-export { default as SoloTripSimulation } from './SoloTripSimulation';
-export { default as LifeSkillsChampionBadge } from './LifeSkillsChampionBadge';
+// UVLS Teen Games Imports - Equality & Rights
+import EncourageAmbition from './EncourageAmbition';
+import RightsLawQuiz from './RightsLawQuiz';
+import BiasSpotReflex from './BiasSpotReflex';
+import WorkplacePuzzle from './WorkplacePuzzle';
+import ProgramDesignSimulation from './ProgramDesignSimulation';
+import EqualityDebate from './EqualityDebate';
+import AllyJournal from './AllyJournal';
+import InterventionRoleplay from './InterventionRoleplay';
+import RightsApplicationPuzzle from './RightsApplicationPuzzle';
+import GenderJusticeLeaderBadge from './GenderJusticeLeaderBadge';
+
+// UVLS Teen Games Imports - Anti-Bullying
+import OnlineHarassScenario from './OnlineHarassScenario';
+import ReportingQuiz from './ReportingQuiz';
+import SupportNetworkPuzzle from './SupportNetworkPuzzle';
+import InterventionSimulation from './InterventionSimulation';
+import RehabVsPunishDebate from './RehabVsPunishDebate';
+import LongTermJournal from './LongTermJournal';
+import CounselorRoleplay from './CounselorRoleplay';
+import CyberSafetyReflex from './CyberSafetyReflex';
+import SystemicCasePuzzle from './SystemicCasePuzzle';
+import AntiBullyingChampionBadge from './AntiBullyingChampionBadge';
+
+// UVLS Teen Games Imports - Emotional Intelligence
+import EmotionalCheckIn from './EmotionalCheckIn';
+import TriggerQuiz from './TriggerQuiz';
+import AdvancedBreathing from './AdvancedBreathing';
+import CopingStrategyPuzzle from './CopingStrategyPuzzle';
+import DeEscalationRoleplay from './DeEscalationRoleplay';
+import EmotionPatternJournal from './EmotionPatternJournal';
+import PeerSupportSimulation from './PeerSupportSimulation';
+import SelfCheckReflex from './SelfCheckReflex';
+import BuildToolboxPuzzle from './BuildToolboxPuzzle';
+import EmotionalResponderBadge from './EmotionalResponderBadge';
+
+// UVLS Teen Games Imports - Critical Thinking
+import EvidenceCheck from './EvidenceCheck';
+import FakeNewsQuiz from './FakeNewsQuiz';
+import TradeOffsPuzzle from './TradeOffsPuzzle';
+import ScenarioSimulation from './ScenarioSimulation';
+import EthicalRoleplay from './EthicalRoleplay';
+import BiasDetectionReflex from './BiasDetectionReflex';
+import EvidenceJournal from './EvidenceJournal';
+import TimedDebate from './TimedDebate';
+import PolicyPuzzle from './PolicyPuzzle';
+import DecisionMasterBadge from './DecisionMasterBadge';
+
+// UVLS Teen Games Imports - Communication
+import ToughConversation from './ToughConversation';
+import NonverbalQuiz from './NonverbalQuiz';
+import ClarifyReflex from './ClarifyReflex';
+import InterviewSimulation from './InterviewSimulation';
+import FeedbackRoleplay from './FeedbackRoleplay';
+import PersuasionPuzzle from './PersuasionPuzzle';
+import CommunicationJournal from './CommunicationJournal';
+import PublicSpeakingPrep from './PublicSpeakingPrep';
+import ListeningVsSpeakingDebate from './ListeningVsSpeakingDebate';
+import CommunicationProBadge from './CommunicationProBadge';
+
+// UVLS Teen Games Imports - Conflict Resolution
+import PowerDynamicsScenario from './PowerDynamicsScenario';
+import NegotiationTacticsQuiz from './NegotiationTacticsQuiz';
+import MediationSimulation from './MediationSimulation';
+import BATNAPuzzle from './BATNAPuzzle';
+import ToughBargainRoleplay from './ToughBargainRoleplay';
+import EthicsInNegotiationDebate from './EthicsInNegotiationDebate';
+import NegotiationJournal from './NegotiationJournal';
+import WalkAwayReflex from './WalkAwayReflex';
+import WorkplaceConflictSim from './WorkplaceConflictSim';
+import ConflictSolverBadge from './ConflictSolverBadge';
+
+// UVLS Teen Games Imports - Civic Responsibility
+import CampaignStory from './CampaignStory';
+import SDGQuiz from './SDGQuiz';
+import VolunteerSimulation from './VolunteerSimulation';
+import PublicBudgetPuzzle from './PublicBudgetPuzzle';
+import AdvocacyRoleplay from './AdvocacyRoleplay';
+import ImpactJournal from './ImpactJournal';
+import ServiceDesignPuzzle from './ServiceDesignPuzzle';
+import CoalitionSimulation from './CoalitionSimulation';
+import CivicReflex from './CivicReflex';
+import CitizenLeaderBadge from './CitizenLeaderBadge';
+
+// UVLS Teen Games Imports - Life Skills
+import ShortVsLongGoalsDebate from './ShortVsLongGoalsDebate';
+import EmergencyStepsQuiz from './EmergencyStepsQuiz';
+import OneYearPlanJournal from './OneYearPlanJournal';
+import CrisisSimulation from './CrisisSimulation';
+import RequestExtensionRoleplay from './RequestExtensionRoleplay';
+import SafetyOfferReflex from './SafetyOfferReflex';
+import HabitChainPuzzle from './HabitChainPuzzle';
+import HabitChangeJournal from './HabitChangeJournal';
+import SoloTripSimulation from './SoloTripSimulation';
+import LifeSkillsChampionBadge from './LifeSkillsChampionBadge';
+
+const teenUvlsGames = {
+  // Empathy & Compassion Games (1-10)
+  'listen-deep': ListenDeep,
+  'empathy-quiz': EmpathyQuiz,
+  'perspective-puzzle': PerspectivePuzzle,
+  'walk-in-shoes': WalkInShoes,
+  'empathy-debate': EmpathyDebate,
+  'reflective-journal': ReflectiveJournal,
+  'peer-support-roleplay': PeerSupportRoleplay,
+  'case-response-puzzle': CaseResponsePuzzle,
+  'spot-distress-reflex': SpotDistressReflex,
+  'empathy-champion-badge': EmpathyChampionBadge,
+
+  // Respect & Inclusion Games (11-20)
+  'cultural-greeting': CulturalGreeting,
+  'inclusion-quiz': InclusionQuiz,
+  'accessibility-puzzle': AccessibilityPuzzle,
+  'inclusive-class-simulation': InclusiveClassSimulation,
+  'respect-debate': RespectDebate,
+  'inclusion-journal': InclusionJournal,
+  'correcting-bias-roleplay': CorrectingBiasRoleplay,
+  'name-respect-reflex': NameRespectReflex,
+  'policy-case-puzzle': PolicyCasePuzzle,
+  'respect-leader-badge': RespectLeaderBadge,
+
+  // Equality & Rights Games (21-30)
+  'encourage-ambition': EncourageAmbition,
+  'rights-law-quiz': RightsLawQuiz,
+  'bias-spot-reflex': BiasSpotReflex,
+  'workplace-puzzle': WorkplacePuzzle,
+  'program-design-simulation': ProgramDesignSimulation,
+  'equality-debate': EqualityDebate,
+  'ally-journal': AllyJournal,
+  'intervention-roleplay': InterventionRoleplay,
+  'rights-application-puzzle': RightsApplicationPuzzle,
+  'gender-justice-leader-badge': GenderJusticeLeaderBadge,
+
+  // Anti-Bullying Games (31-40)
+  'online-harass-scenario': OnlineHarassScenario,
+  'reporting-quiz': ReportingQuiz,
+  'support-network-puzzle': SupportNetworkPuzzle,
+  'intervention-simulation': InterventionSimulation,
+  'rehab-vs-punish-debate': RehabVsPunishDebate,
+  'long-term-journal': LongTermJournal,
+  'counselor-roleplay': CounselorRoleplay,
+  'cyber-safety-reflex': CyberSafetyReflex,
+  'systemic-case-puzzle': SystemicCasePuzzle,
+  'anti-bullying-champion-badge': AntiBullyingChampionBadge,
+
+  // Emotional Intelligence Games (41-50)
+  'emotional-check-in': EmotionalCheckIn,
+  'trigger-quiz': TriggerQuiz,
+  'advanced-breathing': AdvancedBreathing,
+  'coping-strategy-puzzle': CopingStrategyPuzzle,
+  'de-escalation-roleplay': DeEscalationRoleplay,
+  'emotion-pattern-journal': EmotionPatternJournal,
+  'peer-support-simulation': PeerSupportSimulation,
+  'self-check-reflex': SelfCheckReflex,
+  'build-toolbox-puzzle': BuildToolboxPuzzle,
+  'emotional-responder-badge': EmotionalResponderBadge,
+
+  // Critical Thinking Games (51-60)
+  'evidence-check': EvidenceCheck,
+  'fake-news-quiz': FakeNewsQuiz,
+  'trade-offs-puzzle': TradeOffsPuzzle,
+  'scenario-simulation': ScenarioSimulation,
+  'ethical-roleplay': EthicalRoleplay,
+  'bias-detection-reflex': BiasDetectionReflex,
+  'evidence-journal': EvidenceJournal,
+  'timed-debate': TimedDebate,
+  'policy-puzzle': PolicyPuzzle,
+  'decision-master-badge': DecisionMasterBadge,
+
+  // Communication Games (61-70)
+  'tough-conversation': ToughConversation,
+  'nonverbal-quiz': NonverbalQuiz,
+  'clarify-reflex': ClarifyReflex,
+  'interview-simulation': InterviewSimulation,
+  'feedback-roleplay': FeedbackRoleplay,
+  'persuasion-puzzle': PersuasionPuzzle,
+  'communication-journal': CommunicationJournal,
+  'public-speaking-prep': PublicSpeakingPrep,
+  'listening-vs-speaking-debate': ListeningVsSpeakingDebate,
+  'communication-pro-badge': CommunicationProBadge,
+
+  // Conflict Resolution Games (71-80)
+  'power-dynamics-scenario': PowerDynamicsScenario,
+  'negotiation-tactics-quiz': NegotiationTacticsQuiz,
+  'mediation-simulation': MediationSimulation,
+  'batna-puzzle': BATNAPuzzle,
+  'tough-bargain-roleplay': ToughBargainRoleplay,
+  'ethics-in-negotiation-debate': EthicsInNegotiationDebate,
+  'negotiation-journal': NegotiationJournal,
+  'walk-away-reflex': WalkAwayReflex,
+  'workplace-conflict-sim': WorkplaceConflictSim,
+  'conflict-solver-badge': ConflictSolverBadge,
+
+  // Civic Responsibility Games (81-90)
+  'campaign-story': CampaignStory,
+  'sdg-quiz': SDGQuiz,
+  'volunteer-simulation': VolunteerSimulation,
+  'public-budget-puzzle': PublicBudgetPuzzle,
+  'advocacy-roleplay': AdvocacyRoleplay,
+  'impact-journal': ImpactJournal,
+  'service-design-puzzle': ServiceDesignPuzzle,
+  'coalition-simulation': CoalitionSimulation,
+  'civic-reflex': CivicReflex,
+  'citizen-leader-badge': CitizenLeaderBadge,
+
+  // Life Skills Games (91-100)
+  'short-vs-long-goals-debate': ShortVsLongGoalsDebate,
+  'emergency-steps-quiz': EmergencyStepsQuiz,
+  'one-year-plan-journal': OneYearPlanJournal,
+  'crisis-simulation': CrisisSimulation,
+  'request-extension-roleplay': RequestExtensionRoleplay,
+  'safety-offer-reflex': SafetyOfferReflex,
+  'habit-chain-puzzle': HabitChainPuzzle,
+  'habit-change-journal': HabitChangeJournal,
+  'solo-trip-simulation': SoloTripSimulation,
+  'life-skills-champion-badge': LifeSkillsChampionBadge,
+};
+
+export default teenUvlsGames;

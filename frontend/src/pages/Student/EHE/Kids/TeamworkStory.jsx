@@ -5,148 +5,235 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const TeamworkStory = () => {
   const navigate = useNavigate();
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const story = {
-    title: "Starting a Project",
-    emoji: "🤝",
-    situation: "You want to start a project. Should you work alone or with friends?",
-    choices: [
-      { id: 1, text: "Work with friends (teamwork)", emoji: "👥", isCorrect: true },
-      { id: 2, text: "Work alone always", emoji: "🙍", isCorrect: false },
-      { id: 3, text: "Don't start the project", emoji: "😔", isCorrect: false }
-    ]
-  };
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = story.choices.find(c => c.id === selectedChoice);
-    
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+  const questions = [
+    {
+      id: 1,
+      text: "You want to start a school project. Should you work alone or with friends?",
+      options: [
+        {
+          id: "a",
+          text: "Work with friends and share responsibilities",
+          emoji: "🤝",
+          description: "Perfect! Teamwork means collaborating and sharing tasks!",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Work alone to do everything yourself",
+          emoji: "👤",
+          description: "Working alone can be limiting. You miss out on different ideas!",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ask friends to help but boss them around",
+          emoji: "😤",
+          description: "That's not real teamwork. Everyone should contribute equally!",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "During your group project, a friend has a different idea. What should you do?",
+      options: [
+        {
+          id: "c",
+          text: "Argue and insist yours is better",
+          emoji: "😠",
+          description: "Conflict isn't helpful. Good teamwork involves listening!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Listen to their idea and discuss together",
+          emoji: "👂",
+          description: "Excellent! Good teamwork involves open communication!",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Ignore their idea completely",
+          emoji: "🔇",
+          description: "That's not respectful teamwork. Everyone's ideas matter!",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "One team member isn't doing their part of the project. How should you handle this?",
+      options: [
+        {
+          id: "c",
+          text: "Get angry and yell at them",
+          emoji: "😡",
+          description: "Anger doesn't help. Communication is the key!",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Do all their work yourself",
+          emoji: "😤",
+          description: "That's not fair to you and doesn't solve the problem!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Talk to them kindly and offer help",
+          emoji: "💬",
+          description: "Great! Addressing issues with kindness helps the team!",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "Your team completes the project successfully. How should you celebrate?",
+      options: [
+        {
+          id: "c",
+          text: "Blame others if anything goes wrong",
+          emoji: "😠",
+          description: "That destroys team spirit. Own your part in outcomes!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Thank everyone for their contributions",
+          emoji: "🙏",
+          description: "Perfect! Recognizing everyone's efforts builds strong teams!",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Take all the credit for yourself",
+          emoji: "👑",
+          description: "That's not fair. Success belongs to the whole team!",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "What's the most important benefit of working in a team?",
+      options: [
+        {
+          id: "c",
+          text: "Less work for yourself",
+          emoji: "🛋️",
+          description: "Teams work together, not to reduce individual effort!",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Having someone else to blame",
+          emoji: "🫣",
+          description: "That's not the right mindset for teamwork!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Combining different skills and ideas",
+          emoji: "🌟",
+          description: "Exactly! Teams are stronger when they combine diverse talents!",
+          isCorrect: true
+        }
+      ]
     }
-    
-    setShowFeedback(true);
-  };
+  ];
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
-    resetFeedback();
+  const handleChoice = (optionId) => {
+    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
+
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+      } else {
+        setGameFinished(true);
+      }
+    }, 1500);
   };
 
   const handleNext = () => {
-    navigate("/student/ehe/kids/poster-skills-for-success");
+    navigate("/games/ehe/kids");
   };
 
-  const selectedChoiceData = story.choices.find(c => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Teamwork Story"
-      subtitle="Power of Collaboration"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
-      showGameOver={showFeedback && coins > 0}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={coins}
       gameId="ehe-kids-15"
-      gameType="educational"
-      totalLevels={20}
+      gameType="ehe"
+      totalLevels={10}
       currentLevel={15}
-      showConfetti={showFeedback && coins > 0}
+      showConfetti={gameFinished}
       flashPoints={flashPoints}
+      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/entrepreneurship/kids"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-4 text-center">{story.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{story.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center">{story.situation}</p>
-            </div>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+          </div>
+          
+          <h2 className="text-xl font-semibold text-white mb-6">
+            {getCurrentQuestion().text}
+          </h2>
 
-            <div className="space-y-3 mb-6">
-              {story.choices.map(choice => (
+          <div className="grid grid-cols-1 gap-4">
+            {getCurrentQuestion().options.map(option => {
+              const isSelected = choices.some(c => 
+                c.question === currentQuestion && c.optionId === option.id
+              );
+              const showFeedback = choices.some(c => c.question === currentQuestion);
+              
+              return (
                 <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
+                  <div className="flex items-center">
+                    <div className="text-2xl mr-4">{option.emoji}</div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white/90">{option.description}</p>
+                      )}
+                    </div>
                   </div>
                 </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
+              );
+            })}
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "🤝 Team Player!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-            
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Perfect! Teamwork makes the dream work! When you work with friends, you can 
-                    share ideas, help each other, and achieve more together!
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Working with friends is better! Teamwork helps you learn, grow, and succeed together!
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default TeamworkStory;
-

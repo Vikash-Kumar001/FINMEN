@@ -5,161 +5,235 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const QuizOnJobs = () => {
   const navigate = useNavigate();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      question: "Who teaches students?",
-      options: ["Farmer", "Teacher", "Driver"],
-      correct: "Teacher",
-      emoji: "👩‍🏫"
+      text: "Who teaches students in school?",
+      options: [
+        {
+          id: "c",
+          text: "Farmer",
+          emoji: "🚜",
+          description: "Farmers grow crops and take care of animals!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Teacher",
+          emoji: "📚",
+          description: "Correct! Teachers help students learn new things!",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Driver",
+          emoji: "🚗",
+          description: "Drivers operate vehicles to transport people!",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      question: "Who grows crops?",
-      options: ["Pilot", "Farmer", "Chef"],
-      correct: "Farmer",
-      emoji: "👨‍🌾"
+      text: "Who grows crops and takes care of animals?",
+      options: [
+        {
+          id: "a",
+          text: "Chef",
+          emoji: "👨‍🍳",
+          description: "Chefs cook delicious food!",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Farmer",
+          emoji: "🚜",
+          description: "Correct! Farmers grow the food we eat!",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Doctor",
+          emoji: "👨‍⚕️",
+          description: "Doctors help sick people feel better!",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      question: "Who flies airplanes?",
-      options: ["Pilot", "Doctor", "Artist"],
-      correct: "Pilot",
-      emoji: "👨‍✈️"
+      text: "Who flies airplanes to take people to different places?",
+      options: [
+        {
+          id: "b",
+          text: "Police Officer",
+          emoji: "👮",
+          description: "Police officers help keep people safe!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Pilot",
+          emoji: "✈️",
+          description: "Correct! Pilots fly airplanes safely!",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Firefighter",
+          emoji: "🚒",
+          description: "Firefighters put out fires and save people!",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      question: "Who cooks food?",
-      options: ["Chef", "Nurse", "Mechanic"],
-      correct: "Chef",
-      emoji: "👨‍🍳"
+      text: "Who cooks delicious food in restaurants?",
+      options: [
+        {
+          id: "c",
+          text: "Nurse",
+          emoji: "👩‍⚕️",
+          description: "Nurses take care of patients in hospitals!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Chef",
+          emoji: "👨‍🍳",
+          description: "Correct! Chefs create tasty meals!",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Builder",
+          emoji: "🏗️",
+          description: "Builders construct houses and buildings!",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      question: "Who fixes cars?",
-      options: ["Teacher", "Mechanic", "Singer"],
-      correct: "Mechanic",
-      emoji: "👨‍🔧"
-    },
-    {
-      id: 6,
-      question: "Who helps sick people in hospitals?",
-      options: ["Nurse", "Driver", "Painter"],
-      correct: "Nurse",
-      emoji: "👩‍⚕️"
+      text: "Who helps keep you safe in your neighborhood?",
+      options: [
+        {
+          id: "c",
+          text: "Scientist",
+          emoji: "🔬",
+          description: "Scientists do experiments and research!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Police Officer",
+          emoji: "👮",
+          description: "Correct! Police officers help protect people!",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Artist",
+          emoji: "🎨",
+          description: "Artists create beautiful paintings and drawings!",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentQ = questions[currentQuestion];
+  const handleChoice = (optionId) => {
+    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
 
-  const handleAnswer = (answer) => {
-    const isCorrect = answer === currentQ.correct;
-    
     if (isCorrect) {
-      setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-    
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 800 : 600);
-    } else {
-      if ((score + (isCorrect ? 1 : 0)) >= 4) {
-        setCoins(3);
-      }
-      setScore(prev => prev + (isCorrect ? 1 : 0));
-      setShowResult(true);
-    }
-  };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentQuestion(0);
-    setScore(0);
-    setCoins(0);
-    resetFeedback();
+    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
+
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+      } else {
+        setGameFinished(true);
+      }
+    }, 1500);
   };
 
   const handleNext = () => {
-    navigate("/student/ehe/kids/reflex-job-match");
+    navigate("/games/ehe/kids");
   };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Quiz on Jobs"
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && score >= 4}
-      showGameOver={showResult && score >= 4}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={coins}
       gameId="ehe-kids-2"
-      gameType="educational"
-      totalLevels={20}
+      gameType="ehe"
+      totalLevels={10}
       currentLevel={2}
-      showConfetti={showResult && score >= 4}
+      showConfetti={gameFinished}
       flashPoints={flashPoints}
+      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/entrepreneurship/kids"
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{currentQ.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center font-semibold">
-                {currentQ.question}
-              </p>
-            </div>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+          </div>
+          
+          <h2 className="text-xl font-semibold text-white mb-6">
+            {getCurrentQuestion().text}
+          </h2>
 
-            <div className="space-y-3">
-              {currentQ.options.map((option, idx) => (
+          <div className="grid grid-cols-1 gap-4">
+            {getCurrentQuestion().options.map(option => {
+              const isSelected = choices.some(c => 
+                c.question === currentQuestion && c.optionId === option.id
+              );
+              const showFeedback = choices.some(c => c.question === currentQuestion);
+              
+              return (
                 <button
-                  key={idx}
-                  onClick={() => handleAnswer(option)}
-                  className="w-full border-2 rounded-xl p-5 transition-all bg-white/20 border-white/40 hover:bg-white/30 text-white font-semibold text-lg"
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
                 >
-                  {option}
+                  <div className="flex items-center">
+                    <div className="text-2xl mr-4">{option.emoji}</div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white/90">{option.description}</p>
+                      )}
+                    </div>
+                  </div>
                 </button>
-              ))}
-            </div>
+              );
+            })}
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {score >= 4 ? "🎉 Job Expert!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You answered {score} out of {questions.length} correctly!
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Every job is important! Learning about different careers helps you dream big!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {score >= 4 ? "You earned 3 Coins! 🪙" : "Get 4 or more correct to earn coins!"}
-            </p>
-            {score < 4 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
-          </div>
-        )}
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default QuizOnJobs;
-

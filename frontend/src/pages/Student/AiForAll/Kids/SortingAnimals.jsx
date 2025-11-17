@@ -1,0 +1,148 @@
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+
+const SortingAnimals = () => {
+  const navigate = useNavigate();
+  const [sortedItems, setSortedItems] = useState([]);
+  const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const animals = [
+    { id: 1, name: "Cow", emoji: "🐄", category: "Farm" },
+    { id: 2, name: "Dog", emoji: "🐕", category: "Pet" },
+    { id: 3, name: "Cat", emoji: "🐈", category: "Pet" },
+    { id: 4, name: "Chicken", emoji: "🐓", category: "Farm" },
+    { id: 5, name: "Rabbit", emoji: "🐇", category: "Pet" }
+  ];
+
+  const categories = [
+    { name: "Farm", emoji: "🌾" },
+    { name: "Pet", emoji: "🏠" }
+  ];
+
+  const handleDrop = (animal, category) => {
+    const isCorrect = animal.category === category.name;
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      setCoins(prev => prev + 2);
+      showCorrectAnswerFeedback(2, false);
+    }
+    setSortedItems(prev => [...prev, { ...animal, selected: category.name }]);
+
+    if (sortedItems.length + 1 === animals.length) {
+      setTimeout(() => setShowResult(true), 500);
+    }
+  };
+
+  const handleTryAgain = () => {
+    setSortedItems([]);
+    setScore(0);
+    setCoins(0);
+    setShowResult(false);
+    resetFeedback();
+  };
+
+  const handleNext = () => {
+    navigate("/student/ai-for-all/kids/ai-basics-badge"); // Update next game path
+  };
+
+  return (
+    <GameShell
+      title="Sorting Animals"
+      subtitle={`Sort ${sortedItems.length + 1} of ${animals.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && score >= 3}
+      showGameOver={showResult && score >= 3}
+      score={coins}
+      gameId="ai-kids-24"
+      gameType="ai"
+      totalLevels={100}
+      currentLevel={24}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/ai-for-all/kids"
+    >
+      <div className="space-y-8">
+        {!showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <h3 className="text-white text-xl font-bold mb-6 text-center">
+              Drag the animal to the correct category!
+            </h3>
+
+            <div className="grid grid-cols-2 gap-6">
+              <div>
+                <h4 className="text-white font-semibold mb-4">Animals</h4>
+                <div className="space-y-4">
+                  {animals.map(animal => !sortedItems.find(s => s.id === animal.id) && (
+                    <div
+                      key={animal.id}
+                      draggable
+                      onDragStart={(e) => e.dataTransfer.setData("text/plain", animal.id)}
+                      className="bg-green-500/30 p-4 rounded-xl text-white font-bold cursor-move select-none flex items-center justify-center gap-2"
+                    >
+                      <span className="text-2xl">{animal.emoji}</span>
+                      <span>{animal.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="text-white font-semibold mb-4">Categories</h4>
+                <div className="space-y-4">
+                  {categories.map(category => (
+                    <div
+                      key={category.name}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={(e) => {
+                        const id = parseInt(e.dataTransfer.getData("text/plain"));
+                        const animal = animals.find(a => a.id === id);
+                        handleDrop(animal, category);
+                      }}
+                      className="bg-blue-500/30 p-4 rounded-xl text-white font-bold min-h-[50px] flex items-center justify-center gap-2"
+                    >
+                      <span className="text-2xl">{category.emoji}</span>
+                      <span>{category.name}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <h2 className="text-3xl font-bold text-white mb-4">
+              {score >= 3 ? "🎉 Data Sorting Pro!" : "💪 Keep Practicing!"}
+            </h2>
+            <p className="text-white/90 text-xl mb-4">
+              You sorted {score} out of {animals.length} correctly!
+            </p>
+            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
+              <p className="text-white/90 text-sm">
+                💡 Sorting data correctly is how AI “learns.” You helped the robot learn!
+              </p>
+            </div>
+            <p className="text-yellow-400 text-2xl font-bold">
+              {score >= 3 ? "You earned 6 Coins! 🪙" : "Score 3 or more to earn coins!"}
+            </p>
+            {score < 3 && (
+              <button
+                onClick={handleTryAgain}
+                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+              >
+                Try Again
+              </button>
+            )}
+          </div>
+        )}
+      </div>
+    </GameShell>
+  );
+};
+
+export default SortingAnimals;

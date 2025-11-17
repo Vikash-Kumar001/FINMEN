@@ -9,7 +9,7 @@ const CleanlinessQuiz = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showAnswerConfetti, showCorrectAnswerFeedback, flashPoints } = useGameFeedback();
 
   const questions = [
     {
@@ -165,6 +165,7 @@ const CleanlinessQuiz = () => {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
+        showAnswerConfetti();
       }
     }, 1500);
   };
@@ -183,6 +184,13 @@ const CleanlinessQuiz = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
+      gameId="health-female-kids-2"
+      gameType="health-female"
+      totalLevels={10}
+      currentLevel={2}
+      showConfetti={gameFinished}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/health-female/kids"
     >
       <div className="space-y-8">
@@ -210,9 +218,9 @@ const CleanlinessQuiz = () => {
                   onClick={() => handleChoice(option.id)}
                   disabled={choices.some(c => c.question === currentQuestion && c.optionId === option.id)}
                   className={`w-full p-6 rounded-2xl shadow-lg transition-all transform hover:scale-[1.02] text-left ${
-                    choices.some(c => c.optionId === option.id && c.isCorrect)
+                    choices.some(c => c.question === currentQuestion && c.optionId === option.id && c.isCorrect)
                       ? 'bg-gradient-to-r from-green-500 to-emerald-600'
-                      : choices.some(c => c.optionId === option.id && !c.isCorrect)
+                      : choices.some(c => c.question === currentQuestion && c.optionId === option.id && !c.isCorrect)
                       ? 'bg-gradient-to-r from-red-500 to-pink-600 opacity-80'
                       : 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
                   }`}

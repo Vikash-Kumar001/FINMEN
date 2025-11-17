@@ -46,6 +46,7 @@ const GameCategoryPage = () => {
   const [completedGames, setCompletedGames] = useState(new Set());
   const [gameCompletionStatus, setGameCompletionStatus] = useState({});
   const [gameProgressData, setGameProgressData] = useState({}); // Store full progress data with coins and XP
+  //eslint-disable-next-line
   const [replayableGames, setReplayableGames] = useState(new Set()); // Games that have been unlocked for replay
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [processingReplay, setProcessingReplay] = useState(false);
@@ -408,6 +409,7 @@ const GameCategoryPage = () => {
     } catch (error) {
       console.error("Failed to load game completion status:", error);
     }
+    // eslint-disable-next-line
   }, [category, ageGroup]);
 
   useEffect(() => {
@@ -554,6 +556,7 @@ const GameCategoryPage = () => {
   // Generate mock games data
   const generateGamesData = () => {
     const games = [];
+
     const difficulties = ["Easy", "Medium", "Hard"];
     const icons = [
       <Gamepad2 />,
@@ -617,9 +620,9 @@ const GameCategoryPage = () => {
       // Add our real DCOS Teen games
       games.push(...realDCOSTeenGames);
   } else if (category === 'moral-values' && ageGroup === 'kids') {
-      // Add our 20 real Moral Values Kids games
+     
       const realMoralKidsGames = getMoralKidsGames(gameCompletionStatus);
-      
+
       // Add our real Moral Values Kids games
       games.push(...realMoralKidsGames);
   } else if (category === 'moral-values' && (ageGroup === 'teens' || ageGroup === 'teen')) {
@@ -824,6 +827,7 @@ const GameCategoryPage = () => {
 
   useEffect(() => {
     setGames(generateGamesData());
+    // eslint-disable-next-line
   }, [gameCompletionStatus]);
 
   // Calculate category stats from games and completion data

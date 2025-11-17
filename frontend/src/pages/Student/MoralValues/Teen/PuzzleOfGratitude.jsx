@@ -5,78 +5,152 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PuzzleOfGratitude = () => {
   const navigate = useNavigate();
+  const [currentPuzzle, setCurrentPuzzle] = useState(0);
   const [connections, setConnections] = useState([]);
   const [selectedStart, setSelectedStart] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [coins, setCoins] = useState(0);
+  const [totalCoins, setTotalCoins] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const startItems = [
-    { id: 1, text: "Thanks", emoji: "🙏" },
-    { id: 2, text: "Ignore", emoji: "🙈" }
+  // 🧩 All 5 puzzles
+  const puzzles = [
+    {
+      id: 1,
+      title: "Thanks & Feelings",
+      startItems: [
+        { id: 1, text: "Thanks", emoji: "🙏" },
+        { id: 2, text: "Ignore", emoji: "🙈" },
+      ],
+      endItems: [
+        { id: 1, text: "Smile", emoji: "😊" },
+        { id: 2, text: "Hurt", emoji: "💔" },
+      ],
+      correctPairs: [
+        { start: 1, end: 1 },
+        { start: 2, end: 2 },
+      ],
+    },
+    {
+      id: 2,
+      title: "Helping Hand",
+      startItems: [
+        { id: 1, text: "Say Thank You", emoji: "🤝" },
+        { id: 2, text: "Stay Silent", emoji: "😶" },
+      ],
+      endItems: [
+        { id: 1, text: "Happy Helper", emoji: "😄" },
+        { id: 2, text: "Disappointed", emoji: "😞" },
+      ],
+      correctPairs: [
+        { start: 1, end: 1 },
+        { start: 2, end: 2 },
+      ],
+    },
+    {
+      id: 3,
+      title: "Gift Reaction",
+      startItems: [
+        { id: 1, text: "Say 'Wow, thanks!'", emoji: "🎁" },
+        { id: 2, text: "Say 'You didn’t have to'", emoji: "🙃" },
+      ],
+      endItems: [
+        { id: 1, text: "Giver feels happy", emoji: "😊" },
+        { id: 2, text: "Giver feels sad", emoji: "😔" },
+      ],
+      correctPairs: [
+        { start: 1, end: 1 },
+        { start: 2, end: 2 },
+      ],
+    },
+    {
+      id: 4,
+      title: "Team Support",
+      startItems: [
+        { id: 1, text: "Appreciate teammates", emoji: "🏅" },
+        { id: 2, text: "Take all credit", emoji: "😏" },
+      ],
+      endItems: [
+        { id: 1, text: "Team feels valued", emoji: "🤗" },
+        { id: 2, text: "Team feels ignored", emoji: "😕" },
+      ],
+      correctPairs: [
+        { start: 1, end: 1 },
+        { start: 2, end: 2 },
+      ],
+    },
+    {
+      id: 5,
+      title: "Home Help",
+      startItems: [
+        { id: 1, text: "Say thanks to parents", emoji: "👨‍👩‍👧" },
+        { id: 2, text: "Take it for granted", emoji: "😐" },
+      ],
+      endItems: [
+        { id: 1, text: "Parents feel loved", emoji: "💖" },
+        { id: 2, text: "Parents feel unappreciated", emoji: "💭" },
+      ],
+      correctPairs: [
+        { start: 1, end: 1 },
+        { start: 2, end: 2 },
+      ],
+    },
   ];
 
-  const endItems = [
-    { id: 1, text: "Smile", emoji: "😊" },
-    { id: 2, text: "Hurt", emoji: "💔" }
-  ];
+  const current = puzzles[currentPuzzle];
 
-  const correctPairs = [
-    { start: 1, end: 1 },  // Thanks = Smile
-    { start: 2, end: 2 }   // Ignore = Hurt
-  ];
-
-  const handleStartClick = (startId) => {
-    setSelectedStart(startId);
-  };
+  const handleStartClick = (startId) => setSelectedStart(startId);
 
   const handleEndClick = (endId) => {
     if (!selectedStart) return;
-    
-    if (connections.find(c => c.start === selectedStart || c.end === endId)) {
-      return;
-    }
-    
+
+    if (connections.find((c) => c.start === selectedStart || c.end === endId)) return;
+
     const newConnections = [...connections, { start: selectedStart, end: endId }];
     setConnections(newConnections);
     setSelectedStart(null);
-    
+
     if (newConnections.length === 2) {
-      const allCorrect = newConnections.every(conn => 
-        correctPairs.some(pair => pair.start === conn.start && pair.end === conn.end)
+      const allCorrect = newConnections.every((conn) =>
+        current.correctPairs.some(
+          (pair) => pair.start === conn.start && pair.end === conn.end
+        )
       );
-      
+
       if (allCorrect) {
         showCorrectAnswerFeedback(5, true);
         setCoins(5);
+        setTotalCoins((prev) => prev + 5);
+      } else {
+        setCoins(0);
       }
       setShowResult(true);
     }
   };
 
-  const handleTryAgain = () => {
-    setConnections([]);
-    setSelectedStart(null);
-    setShowResult(false);
-    setCoins(0);
+  const handleNextPuzzle = () => {
+    if (currentPuzzle < puzzles.length - 1) {
+      setConnections([]);
+      setSelectedStart(null);
+      setShowResult(false);
+      setCoins(0);
+      setCurrentPuzzle(currentPuzzle + 1);
+    } else {
+      navigate("/student/moral-values/teen/service-story");
+    }
   };
 
-  const handleNext = () => {
-    navigate("/student/moral-values/teen/service-story");
-  };
-
-  const isConnected = (id, type) => {
-    return connections.some(c => type === 'start' ? c.start === id : c.end === id);
-  };
+  const isConnected = (id, type) =>
+    connections.some((c) => (type === "start" ? c.start === id : c.end === id));
 
   return (
     <GameShell
       title="Puzzle of Gratitude"
-      subtitle="Match Actions to Feelings"
-      onNext={handleNext}
-      nextEnabled={showResult && coins > 0}
-      showGameOver={showResult && coins > 0}
-      score={coins}
+      subtitle={`Round ${currentPuzzle + 1} of ${puzzles.length}`}
+      onNext={handleNextPuzzle}
+      nextEnabled={showResult}
+      showGameOver={showResult && currentPuzzle === puzzles.length - 1}
+      score={totalCoins}
       gameId="moral-teen-14"
       gameType="moral"
       totalLevels={20}
@@ -90,26 +164,26 @@ const PuzzleOfGratitude = () => {
         {!showResult ? (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
             <h3 className="text-white text-xl font-bold mb-4 text-center">
-              Connect each action to its outcome
+              {current.title}
             </h3>
             <p className="text-white/70 text-sm mb-6 text-center">
-              Click an action, then click its matching outcome
+              Connect each action to its correct feeling
             </p>
-            
+
             <div className="grid grid-cols-2 gap-8">
               <div className="space-y-3">
                 <h4 className="text-white font-bold text-center mb-3">Actions</h4>
-                {startItems.map(item => (
+                {current.startItems.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => handleStartClick(item.id)}
-                    disabled={isConnected(item.id, 'start')}
+                    disabled={isConnected(item.id, "start")}
                     className={`w-full border-2 rounded-xl p-6 transition-all ${
-                      isConnected(item.id, 'start')
-                        ? 'bg-green-500/30 border-green-400'
+                      isConnected(item.id, "start")
+                        ? "bg-green-500/30 border-green-400"
                         : selectedStart === item.id
-                        ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
+                        ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
+                        : "bg-white/20 border-white/40 hover:bg-white/30"
                     }`}
                   >
                     <div className="text-5xl mb-2">{item.emoji}</div>
@@ -120,15 +194,15 @@ const PuzzleOfGratitude = () => {
 
               <div className="space-y-3">
                 <h4 className="text-white font-bold text-center mb-3">Outcomes</h4>
-                {endItems.map(item => (
+                {current.endItems.map((item) => (
                   <button
                     key={item.id}
                     onClick={() => handleEndClick(item.id)}
-                    disabled={isConnected(item.id, 'end')}
+                    disabled={isConnected(item.id, "end")}
                     className={`w-full border-2 rounded-xl p-6 transition-all ${
-                      isConnected(item.id, 'end')
-                        ? 'bg-green-500/30 border-green-400'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
+                      isConnected(item.id, "end")
+                        ? "bg-green-500/30 border-green-400"
+                        : "bg-white/20 border-white/40 hover:bg-white/30"
                     }`}
                   >
                     <div className="text-5xl mb-2">{item.emoji}</div>
@@ -145,38 +219,40 @@ const PuzzleOfGratitude = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
             <h2 className="text-3xl font-bold text-white mb-4 text-center">
               {coins > 0 ? "🎉 Perfect Understanding!" : "Not Quite Right"}
             </h2>
-            
+
             {coins > 0 ? (
               <>
                 <div className="bg-green-500/20 rounded-lg p-4 mb-4">
                   <p className="text-white text-center">
-                    Excellent! Saying thanks makes people smile and feel appreciated. Ignoring kindness 
-                    hurts feelings and discourages future help. Gratitude strengthens relationships!
+                    Excellent! Gratitude connects good actions with positive
+                    feelings. Keep spreading kindness!
                   </p>
                 </div>
                 <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
+                  +5 Coins Earned! 🪙
                 </p>
               </>
             ) : (
               <>
                 <div className="bg-red-500/20 rounded-lg p-4 mb-4">
                   <p className="text-white text-center">
-                    Remember: Thanks → Smile, and Ignore → Hurt. Let's try again!
+                    Review your matches — gratitude brings smiles, not sadness.
+                    Try again!
                   </p>
                 </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
               </>
             )}
+
+            <button
+              onClick={handleNextPuzzle}
+              className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+            >
+              {currentPuzzle < puzzles.length - 1 ? "Next Puzzle ➜" : "Finish 🎉"}
+            </button>
           </div>
         )}
       </div>
@@ -185,4 +261,3 @@ const PuzzleOfGratitude = () => {
 };
 
 export default PuzzleOfGratitude;
-

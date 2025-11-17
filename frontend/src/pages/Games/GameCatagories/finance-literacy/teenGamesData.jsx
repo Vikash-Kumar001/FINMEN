@@ -5,7 +5,7 @@ import {
 import buildIds from "../buildGameIds";
 
 
-export const financegGameIdsTeen = buildIds("finance", "teen")
+export const financegGameIdsTeen = buildIds("finance", "teens")
 
 export const getFinanceTeenGames = (gameCompletionStatus)=> {
     const financeGamesTeen =  [

@@ -3,20 +3,21 @@ import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
-const PoliteWordsQuiz = () => {
+const RobotVisionMistake = () => {
   const navigate = useNavigate();
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const question = {
-    text: "Which word is polite?",
-    emoji: "🗣️",
+  const story = {
+    title: "Robot Vision Mistake",
+    emoji: "🤖",
+    situation: 'The robot looks at an animal and says "Cow = Dog". Can you correct its mistake?',
     choices: [
-      { id: 1, text: "Please", emoji: "✨", isCorrect: true },
-      { id: 2, text: "Stupid", emoji: "😠", isCorrect: false },
-      { id: 3, text: "Idiot", emoji: "👎", isCorrect: false }
+      { id: 1, text: "Correct: Cow = Cow", emoji: "🐄", isCorrect: true },
+      { id: 2, text: "Leave it as Dog", emoji: "🐕", isCorrect: false },
+      { id: 3, text: "Guess randomly", emoji: "❓", isCorrect: false }
     ]
   };
 
@@ -25,13 +26,13 @@ const PoliteWordsQuiz = () => {
   };
 
   const handleConfirm = () => {
-    const choice = question.choices.find(c => c.id === selectedChoice);
-    
+    const choice = story.choices.find(c => c.id === selectedChoice);
+
     if (choice.isCorrect) {
-      showCorrectAnswerFeedback(3, true);
-      setCoins(3);
+      showCorrectAnswerFeedback(10, true);
+      setCoins(10);
     }
-    
+
     setShowFeedback(true);
   };
 
@@ -43,44 +44,43 @@ const PoliteWordsQuiz = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/moral-values/kids/reflex-respect");
+    navigate("/student/ai-for-all/teen/ai-vs-tools-quiz"); // Update with the actual next game path
   };
 
-  const selectedChoiceData = question.choices.find(c => c.id === selectedChoice);
+  const selectedChoiceData = story.choices.find(c => c.id === selectedChoice);
 
   return (
     <GameShell
-      title="Polite Words Quiz"
-      subtitle="Learning Respectful Language"
+      title="Robot Vision Mistake"
+      subtitle="Correct AI Errors"
       onNext={handleNext}
       nextEnabled={showFeedback && coins > 0}
       showGameOver={showFeedback && coins > 0}
       score={coins}
-      gameId="moral-kids-12"
-      gameType="educational"
+      gameId="ai-teen-22"
+      gameType="story"
       totalLevels={20}
-      currentLevel={12}
+      currentLevel={22}
       showConfetti={showFeedback && coins > 0}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/moral-values/kids"
+      backPath="/games/ai-for-all/teens"
     >
       <div className="space-y-8">
         {!showFeedback ? (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-6 text-center">{question.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center font-semibold">
-                {question.text}
-              </p>
+            <div className="text-9xl mb-4 text-center">{story.emoji}</div>
+            <h2 className="text-2xl font-bold text-white mb-4 text-center">{story.title}</h2>
+            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
+              <p className="text-white text-lg leading-relaxed text-center">{story.situation}</p>
             </div>
 
             <div className="space-y-3 mb-6">
-              {question.choices.map(choice => (
+              {story.choices.map(choice => (
                 <button
                   key={choice.id}
                   onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all ${
+                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
                     selectedChoice === choice.id
                       ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
                       : 'bg-white/20 border-white/40 hover:bg-white/30'
@@ -103,35 +103,33 @@ const PoliteWordsQuiz = () => {
                   : 'bg-gray-500/50 cursor-not-allowed'
               }`}
             >
-              Submit Answer
+              Confirm Choice
             </button>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
             <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
             <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "✨ Polite Kid!" : "Not Polite..."}
+              {selectedChoiceData.isCorrect ? "✅ Corrected!" : "❌ Try Again..."}
             </h2>
             <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-            
+
             {selectedChoiceData.isCorrect ? (
               <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-6">
+                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
                   <p className="text-white text-center">
-                    Perfect! "Please" is a polite word. Other polite words include "Thank you," "Sorry," 
-                    "Excuse me," and "May I." Using polite words shows respect to others!
+                    Well done! 🤖 Robots sometimes make mistakes. Correcting AI helps it learn and avoid errors in the future. Teaching AI is part of understanding how it works!
                   </p>
                 </div>
                 <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 3 Coins! 🪙
+                  You earned 10 Coins! 🪙
                 </p>
               </>
             ) : (
               <>
                 <div className="bg-red-500/20 rounded-lg p-4 mb-4">
                   <p className="text-white text-center">
-                    "Stupid" and "Idiot" are rude words that hurt people's feelings. Always use kind 
-                    and polite words like "Please," "Thank you," and "Sorry"!
+                    AI made a mistake! Correcting it ensures it learns properly. Robots rely on humans to help refine their vision systems. 🛠️
                   </p>
                 </div>
                 <button
@@ -149,5 +147,4 @@ const PoliteWordsQuiz = () => {
   );
 };
 
-export default PoliteWordsQuiz;
-
+export default RobotVisionMistake;

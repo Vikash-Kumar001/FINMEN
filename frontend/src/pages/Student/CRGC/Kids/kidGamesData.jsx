@@ -22,7 +22,7 @@ import {
   Music,
   ChefHat
 } from "lucide-react";
-import buildIds from "../../../Games/GameCatagories/buildGameIds";
+import buildIds from "../../../Games/GameCategories/buildGameIds";
 
 export const crgcGameIdsKids = buildIds("civic-responsibility", "kids")
 

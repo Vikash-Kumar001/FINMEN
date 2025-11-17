@@ -21,6 +21,7 @@ export default function CategoryView() {
     const [featureCards, setFeatureCards] = useState([]);
     const [categoryInfo, setCategoryInfo] = useState(null);
     const [loading, setLoading] = useState(true);
+    console.log("featuresCrad,", featureCards);
 
     const categories = [
         { key: "finance", label: "Financial Literacy", color: "from-blue-500 to-cyan-500" },

@@ -5,80 +5,127 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const CheatingStory = () => {
   const navigate = useNavigate();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const story = {
-    title: "The Cheating Friend",
-    emoji: "📝",
-    situation: "Your friend is cheating during a test and asks you to join. What should you do?",
-    choices: [
-      { id: 1, text: "Join them - everyone does it", emoji: "😏", isCorrect: false },
-      { id: 2, text: "Say no and do your own work", emoji: "🛡️", isCorrect: true },
-      { id: 3, text: "Pretend not to notice", emoji: "🙈", isCorrect: false }
-    ]
-  };
+  const stories = [
+    {
+      title: "The Cheating Friend",
+      emoji: "📝",
+      situation: "Your friend is cheating during a test and asks you to join. What should you do?",
+      choices: [
+        { id: 1, text: "Join them - everyone does it", emoji: "😏", isCorrect: false },
+        { id: 2, text: "Say no and do your own work", emoji: "🛡️", isCorrect: true },
+        { id: 3, text: "Pretend not to notice", emoji: "🙈", isCorrect: false }
+      ]
+    },
+    {
+      title: "The Found Wallet",
+      emoji: "👛",
+      situation: "You find a wallet with money at school. What’s the right thing to do?",
+      choices: [
+        { id: 1, text: "Keep it and say nothing", emoji: "💰", isCorrect: false },
+        { id: 2, text: "Tell a teacher or hand it in", emoji: "🧑‍🏫", isCorrect: true },
+        { id: 3, text: "Ask your friends what to do", emoji: "🤔", isCorrect: false }
+      ]
+    },
+    {
+      title: "The Homework Copy",
+      emoji: "📚",
+      situation: "Your classmate forgot their homework and wants to copy yours. What should you do?",
+      choices: [
+        { id: 1, text: "Let them copy quickly", emoji: "📝", isCorrect: false },
+        { id: 2, text: "Say no, but help them learn", emoji: "🤝", isCorrect: true },
+        { id: 3, text: "Ignore them", emoji: "🙄", isCorrect: false }
+      ]
+    },
+    {
+      title: "The Online Rumor",
+      emoji: "💻",
+      situation: "Someone sends you a rumor about a classmate. What should you do?",
+      choices: [
+        { id: 1, text: "Share it to more friends", emoji: "📱", isCorrect: false },
+        { id: 2, text: "Delete it and don’t spread it", emoji: "🚫", isCorrect: true },
+        { id: 3, text: "Laugh and ignore", emoji: "😅", isCorrect: false }
+      ]
+    },
+    {
+      title: "The Team Project",
+      emoji: "🧩",
+      situation: "You worked hard on a project, but your team takes all the credit. What should you do?",
+      choices: [
+        { id: 1, text: "Argue and get angry", emoji: "😠", isCorrect: false },
+        { id: 2, text: "Talk calmly with the teacher", emoji: "🗣️", isCorrect: true },
+        { id: 3, text: "Do nothing and stay upset", emoji: "😔", isCorrect: false }
+      ]
+    }
+  ];
+
+  const currentStory = stories[currentQuestion];
+  const selectedChoiceData = currentStory.choices.find(c => c.id === selectedChoice);
 
   const handleChoice = (choiceId) => {
     setSelectedChoice(choiceId);
   };
 
   const handleConfirm = () => {
-    const choice = story.choices.find(c => c.id === selectedChoice);
-    
+    const choice = currentStory.choices.find(c => c.id === selectedChoice);
     if (choice.isCorrect) {
       showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+      setCoins(prev => prev + 5);
     }
-    
     setShowFeedback(true);
+  };
+
+  const handleNextQuestion = () => {
+    if (currentQuestion < stories.length - 1) {
+      setCurrentQuestion(prev => prev + 1);
+      setSelectedChoice(null);
+      setShowFeedback(false);
+      resetFeedback();
+    } else {
+      navigate("/student/moral-values/kids/poster-of-honesty");
+    }
   };
 
   const handleTryAgain = () => {
     setSelectedChoice(null);
     setShowFeedback(false);
-    setCoins(0);
     resetFeedback();
   };
-
-  const handleNext = () => {
-    navigate("/student/moral-values/kids/poster-of-honesty");
-  };
-
-  const selectedChoiceData = story.choices.find(c => c.id === selectedChoice);
 
   return (
     <GameShell
       title="Cheating Story"
-      subtitle="Being Honest in Tests"
-      onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
-      showGameOver={showFeedback && coins > 0}
+      subtitle="Being Honest in Everyday Situations"
+      onNext={handleNextQuestion}
+      nextEnabled={showFeedback}
+      showGameOver={currentQuestion === stories.length - 1 && showFeedback}
       score={coins}
       gameId="moral-kids-5"
       gameType="educational"
       totalLevels={20}
       currentLevel={5}
-      showConfetti={showFeedback && coins > 0}
+      showConfetti={showFeedback && selectedChoiceData?.isCorrect}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/moral-values/kids"
     >
       <div className="space-y-8">
         {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{story.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{story.title}</h2>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
+            <div className="text-8xl mb-4 text-center">{currentStory.emoji}</div>
+            <h2 className="text-2xl font-bold text-white mb-4 text-center">{currentStory.title}</h2>
             <div className="bg-orange-500/20 border-2 border-orange-400 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed text-center">{story.situation}</p>
+              <p className="text-white text-lg leading-relaxed text-center">{currentStory.situation}</p>
             </div>
 
-            <h3 className="text-white font-bold mb-4">What should you do?</h3>
-            
+            <h3 className="text-white font-bold mb-4 text-center">What should you do?</h3>
             <div className="space-y-3 mb-6">
-              {story.choices.map(choice => (
+              {currentStory.choices.map(choice => (
                 <button
                   key={choice.id}
                   onClick={() => handleChoice(choice.id)}
@@ -109,7 +156,7 @@ const CheatingStory = () => {
             </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-xl mx-auto">
             <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
             <h2 className="text-3xl font-bold text-white mb-4 text-center">
               {selectedChoiceData.isCorrect ? "🌟 Honest Choice!" : "Think Again..."}
@@ -120,21 +167,24 @@ const CheatingStory = () => {
               <>
                 <div className="bg-green-500/20 rounded-lg p-4 mb-4">
                   <p className="text-white text-center">
-                    Perfect! Cheating is dishonest and wrong. Even if others are doing it, you should 
-                    always do your own work. Real learning comes from trying your best honestly!
+                    Great job! Honesty builds trust and good character. Keep choosing what’s right!
                   </p>
                 </div>
                 <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
+                  +5 Coins Earned! 🪙
                 </p>
+                <button
+                  onClick={handleNextQuestion}
+                  className="mt-6 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                >
+                  {currentQuestion < stories.length - 1 ? "Next Story ➜" : "Finish Game 🎉"}
+                </button>
               </>
             ) : (
               <>
                 <div className="bg-red-500/20 rounded-lg p-4 mb-4">
                   <p className="text-white text-center">
-                    {selectedChoice === 1
-                      ? "Cheating is always wrong, even if others do it. Be honest and do your own work!"
-                      : "Ignoring cheating doesn't help. The right thing is to say no and do your own honest work!"}
+                    That’s not quite right — honesty is the best path. Try again!
                   </p>
                 </div>
                 <button
@@ -147,6 +197,10 @@ const CheatingStory = () => {
             )}
           </div>
         )}
+
+        <p className="text-center text-white/70 text-sm">
+          Story {currentQuestion + 1} of {stories.length}
+        </p>
       </div>
     </GameShell>
   );

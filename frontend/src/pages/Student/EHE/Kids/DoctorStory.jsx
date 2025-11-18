@@ -5,148 +5,235 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const DoctorStory = () => {
   const navigate = useNavigate();
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const story = {
-    title: "Visit to the Doctor",
-    emoji: "👨‍⚕️",
-    situation: "You visit a doctor. What is her job?",
-    choices: [
-      { id: 1, text: "To treat sick people", emoji: "💊", isCorrect: true },
-      { id: 2, text: "To cook food", emoji: "🍳", isCorrect: false },
-      { id: 3, text: "To drive vehicles", emoji: "🚗", isCorrect: false }
-    ]
-  };
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = story.choices.find(c => c.id === selectedChoice);
-    
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+  const questions = [
+    {
+      id: 1,
+      text: "You're not feeling well and your mom takes you to see a doctor. What does a doctor do?",
+      options: [
+        {
+          id: "b",
+          text: "Teaches students in school",
+          emoji: "📚",
+          description: "That's what teachers do, not doctors!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Treats sick people and helps them feel better",
+          emoji: "🏥",
+          description: "Excellent! Doctors help sick people get healthy again!",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Builds houses and buildings",
+          emoji: "🏗️",
+          description: "That's what construction workers do!",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "The doctor listens to your heartbeat with a stethoscope. Why does she do this?",
+      options: [
+        {
+          id: "c",
+          text: "To make you nervous",
+          emoji: "😰",
+          description: "No, doctors want to help you, not make you nervous!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "To check if your heart is working properly",
+          emoji: "❤️",
+          description: "Perfect! Doctors check your heartbeat to make sure your heart is healthy!",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "To listen to your favorite music",
+          emoji: "🎵",
+          description: "Doctors use stethoscopes for medical checks, not for music!",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "The doctor gives you medicine. What should you do with it?",
+      options: [
+        {
+          id: "b",
+          text: "Take more than prescribed to get better faster",
+          emoji: "💊",
+          description: "No! Taking too much medicine can be dangerous!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Take it exactly as the doctor said",
+          emoji: "✅",
+          description: "Great! Always follow the doctor's instructions for medicine!",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Hide it and don't take it at all",
+          emoji: "❌",
+          description: "That won't help you get better!",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "After your visit, the doctor tells you to rest and drink lots of water. Why?",
+      options: [
+        {
+          id: "b",
+          text: "Because the doctor wants you to miss school",
+          emoji: "🏫",
+          description: "Doctors want you to get better so you can go back to school!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "To help your body fight the illness",
+          emoji: "💧",
+          description: "Exactly! Rest and water help your body heal!",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "To make you bored",
+          emoji: "😴",
+          description: "Rest is important for healing, not just for boredom!",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "You want to become a doctor when you grow up. What should you do now to prepare?",
+      options: [
+        {
+          id: "b",
+          text: "Play video games all day",
+          emoji: "🎮",
+          description: "Fun, but you'll need to study to become a doctor!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Study hard, especially science, and be kind to others",
+          emoji: "📖",
+          description: "Perfect! Doctors need to study a lot and be caring people!",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Never go to school",
+          emoji: "🚫",
+          description: "You definitely need to go to school to become a doctor!",
+          isCorrect: false
+        }
+      ]
     }
-    
-    setShowFeedback(true);
-  };
+  ];
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
-    resetFeedback();
+  const handleChoice = (optionId) => {
+    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
+
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+      } else {
+        setGameFinished(true);
+      }
+    }, 1500);
   };
 
   const handleNext = () => {
-    navigate("/student/ehe/kids/quiz-on-jobs");
+    navigate("/games/ehe/kids");
   };
 
-  const selectedChoiceData = story.choices.find(c => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Doctor Story"
-      subtitle="Career Awareness"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
-      showGameOver={showFeedback && coins > 0}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={coins}
       gameId="ehe-kids-1"
-      gameType="educational"
-      totalLevels={20}
+      gameType="ehe"
+      totalLevels={10}
       currentLevel={1}
-      showConfetti={showFeedback && coins > 0}
+      showConfetti={gameFinished}
       flashPoints={flashPoints}
+      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/entrepreneurship/kids"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-4 text-center">{story.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{story.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center font-semibold">{story.situation}</p>
-            </div>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+          </div>
+          
+          <h2 className="text-xl font-semibold text-white mb-6">
+            {getCurrentQuestion().text}
+          </h2>
 
-            <div className="space-y-3 mb-6">
-              {story.choices.map(choice => (
+          <div className="grid grid-cols-1 gap-4">
+            {getCurrentQuestion().options.map(option => {
+              const isSelected = choices.some(c => 
+                c.question === currentQuestion && c.optionId === option.id
+              );
+              const showFeedback = choices.some(c => c.question === currentQuestion);
+              
+              return (
                 <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
                 >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
+                  <div className="flex items-center">
+                    <div className="text-2xl mr-4">{option.emoji}</div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white/90">{option.description}</p>
+                      )}
+                    </div>
                   </div>
                 </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
+              );
+            })}
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "🌟 Correct!" : "Try Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-            
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Perfect! Doctors treat sick people and help them get better. They are important 
-                    healthcare professionals who work in hospitals and clinics!
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    A doctor's job is to treat sick people and help them stay healthy!
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default DoctorStory;
-

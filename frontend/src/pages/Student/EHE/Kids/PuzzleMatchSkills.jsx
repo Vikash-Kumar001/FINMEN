@@ -5,149 +5,222 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PuzzleMatchSkills = () => {
   const navigate = useNavigate();
-  const [matches, setMatches] = useState({});
-  const [showResult, setShowResult] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [selectedSkill, setSelectedSkill] = useState(null);
+  const [selectedMeaning, setSelectedMeaning] = useState(null);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const roles = [
-    { id: 1, role: "Leader", emoji: "👑", correct: "guide" },
-    { id: 2, role: "Innovator", emoji: "💡", correct: "invent" },
-    { id: 3, role: "Team Player", emoji: "🤝", correct: "support" }
-  ];
-
-  const actions = [
-    { id: "guide", name: "Guides Others", emoji: "🧭" },
-    { id: "invent", name: "Creates New Ideas", emoji: "🚀" },
-    { id: "support", name: "Helps the Team", emoji: "💪" }
-  ];
-
-  const handleMatch = (roleId, actionId) => {
-    setMatches({ ...matches, [roleId]: actionId });
-  };
-
-  const handleCheck = () => {
-    let correct = 0;
-    roles.forEach(role => {
-      if (matches[role.id] === role.correct) {
-        correct++;
-      }
-    });
-
-    if (correct >= 2) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+  const puzzles = [
+    {
+      id: 1,
+      skill: "Leader",
+      emoji: "👑",
+      meaning: "Guide",
+      meaningEmoji: "🧭",
+      description: "A leader guides and inspires others toward a common goal."
+    },
+    {
+      id: 2,
+      skill: "Innovator",
+      emoji: "🔧",
+      meaning: "Invent",
+      meaningEmoji: "💡",
+      description: "An innovator creates new ideas, products, or solutions."
+    },
+    {
+      id: 3,
+      skill: "Team Player",
+      emoji: "🤝",
+      meaning: "Support",
+      meaningEmoji: "🤲",
+      description: "A team player works well with others and supports their teammates."
+    },
+    {
+      id: 4,
+      skill: "Problem Solver",
+      emoji: "🧩",
+      meaning: "Fix",
+      meaningEmoji: "🔧",
+      description: "A problem solver finds solutions to challenges and obstacles."
+    },
+    {
+      id: 5,
+      skill: "Communicator",
+      emoji: "💬",
+      meaning: "Share",
+      meaningEmoji: "📤",
+      description: "A communicator shares ideas and information clearly with others."
     }
-    setShowResult(true);
+  ];
+
+  const handleSkillSelect = (skill) => {
+    if (selectedMeaning) {
+      // Check if this is a correct match
+      const puzzle = puzzles.find(p => p.skill === skill && p.meaning === selectedMeaning);
+      if (puzzle) {
+        // Correct match
+        setMatchedPairs([...matchedPairs, puzzle.id]);
+        setCoins(prev => prev + 1);
+        showCorrectAnswerFeedback(1, true);
+        
+        // Check if all puzzles are matched
+        if (matchedPairs.length + 1 === puzzles.length) {
+          setTimeout(() => setGameFinished(true), 1500);
+        }
+      }
+      
+      // Reset selection
+      setSelectedSkill(null);
+      setSelectedMeaning(null);
+    } else {
+      setSelectedSkill(skill);
+    }
   };
 
-  const allMatched = roles.every(role => matches[role.id]);
-
-  const handleTryAgain = () => {
-    setMatches({});
-    setShowResult(false);
-    setCoins(0);
+  const handleMeaningSelect = (meaning) => {
+    if (selectedSkill) {
+      // Check if this is a correct match
+      const puzzle = puzzles.find(p => p.skill === selectedSkill && p.meaning === meaning);
+      if (puzzle) {
+        // Correct match
+        setMatchedPairs([...matchedPairs, puzzle.id]);
+        setCoins(prev => prev + 1);
+        showCorrectAnswerFeedback(1, true);
+        
+        // Check if all puzzles are matched
+        if (matchedPairs.length + 1 === puzzles.length) {
+          setTimeout(() => setGameFinished(true), 1500);
+        }
+      }
+      
+      // Reset selection
+      setSelectedSkill(null);
+      setSelectedMeaning(null);
+    } else {
+      setSelectedMeaning(meaning);
+    }
   };
 
   const handleNext = () => {
-    navigate("/student/ehe/kids/teamwork-story");
+    navigate("/games/ehe/kids");
   };
 
-  const correctCount = roles.filter(role => matches[role.id] === role.correct).length;
+  const isMatched = (id) => matchedPairs.includes(id);
+  const isSkillSelected = (skill) => selectedSkill === skill;
+  const isMeaningSelected = (meaning) => selectedMeaning === meaning;
 
   return (
     <GameShell
       title="Puzzle: Match Skills"
-      subtitle="Match Roles to Actions"
+      subtitle={`Match skills to their meanings! ${matchedPairs.length}/${puzzles.length} matched`}
       onNext={handleNext}
-      nextEnabled={showResult && correctCount >= 2}
-      showGameOver={showResult && correctCount >= 2}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={coins}
       gameId="ehe-kids-14"
-      gameType="educational"
-      totalLevels={20}
+      gameType="ehe"
+      totalLevels={10}
       currentLevel={14}
-      showConfetti={showResult && correctCount >= 2}
-      backPath="/games/entrepreneurship/kids"
+      showConfetti={gameFinished}
+      flashPoints={flashPoints}
+      backPath="/games/ehe/kids"
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-6 text-center">Match each role with what they do!</h3>
-            
-            <div className="space-y-4 mb-6">
-              {roles.map(role => {
-                const selectedAction = actions.find(a => a.id === matches[role.id]);
-                return (
-                  <div key={role.id} className="bg-purple-500/20 rounded-xl p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="text-5xl">{role.emoji}</div>
-                        <div className="text-white font-bold text-lg">{role.role}</div>
-                      </div>
-                      <div className="text-2xl">→</div>
-                      <div className="flex-1 ml-4">
-                        <select
-                          value={matches[role.id] || ""}
-                          onChange={(e) => handleMatch(role.id, e.target.value)}
-                          className="w-full px-4 py-2 bg-white/10 border-2 border-white/40 rounded-lg text-white"
-                        >
-                          <option value="">Select action...</option>
-                          {actions.map(action => (
-                            <option key={action.id} value={action.id} className="text-black">
-                              {action.emoji} {action.name}
-                            </option>
-                          ))}
-                        </select>
-                      </div>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            {/* Skills column */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4 text-center">Skills</h3>
+              <div className="space-y-4">
+                {puzzles.map((puzzle) => (
+                  <button
+                    key={`skill-${puzzle.id}`}
+                    onClick={() => handleSkillSelect(puzzle.skill)}
+                    disabled={isMatched(puzzle.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isMatched(puzzle.id)
+                        ? 'bg-green-500/20 border-2 border-green-400'
+                        : isSkillSelected(puzzle.skill)
+                        ? 'bg-blue-500/20 border-2 border-blue-400'
+                        : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <span className="text-3xl mr-3">{puzzle.emoji}</span>
+                      <span className="text-white/90 text-lg">{puzzle.skill}</span>
                     </div>
-                  </div>
-                );
-              })}
+                  </button>
+                ))}
+              </div>
             </div>
-
-            <button
-              onClick={handleCheck}
-              disabled={!allMatched}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                allMatched
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Check My Answers
-            </button>
+            
+            {/* Meanings column */}
+            <div>
+              <h3 className="text-lg font-semibold text-white mb-4 text-center">Meanings</h3>
+              <div className="space-y-4">
+                {puzzles.map((puzzle) => (
+                  <button
+                    key={`meaning-${puzzle.id}`}
+                    onClick={() => handleMeaningSelect(puzzle.meaning)}
+                    disabled={isMatched(puzzle.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isMatched(puzzle.id)
+                        ? 'bg-green-500/20 border-2 border-green-400'
+                        : isMeaningSelected(puzzle.meaning)
+                        ? 'bg-blue-500/20 border-2 border-blue-400'
+                        : 'bg-white/5 hover:bg-white/10 border border-white/10'
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <span className="text-3xl mr-3">{puzzle.meaningEmoji}</span>
+                      <span className="text-white/90 text-lg">{puzzle.meaning}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {correctCount >= 2 ? "🎉 Great Match!" : "💪 Try Again!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4 text-center">
-              You matched {correctCount} out of {roles.length} correctly!
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Leaders guide, innovators invent, and team players support. Each role is important!
+          
+          {/* Feedback area */}
+          {selectedSkill && selectedMeaning && (
+            <div className="mt-6 p-4 bg-white/5 rounded-xl border border-white/10">
+              <p className="text-white/90 text-center">
+                Matching: {selectedSkill} → {selectedMeaning}
               </p>
             </div>
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              {correctCount >= 2 ? "You earned 5 Coins! 🪙" : "Get 2 or more correct to earn coins!"}
-            </p>
-            {correctCount < 2 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
-          </div>
-        )}
+          )}
+          
+          {selectedSkill && !selectedMeaning && (
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
+              <p className="text-blue-300 text-center">
+                Selected: {selectedSkill}. Now select a meaning to match!
+              </p>
+            </div>
+          )}
+          
+          {!selectedSkill && selectedMeaning && (
+            <div className="mt-6 p-4 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 rounded-xl border border-blue-400/30">
+              <p className="text-blue-300 text-center">
+                Selected: {selectedMeaning}. Now select a skill to match!
+              </p>
+            </div>
+          )}
+          
+          {/* Completion message */}
+          {gameFinished && (
+            <div className="mt-6 p-4 bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-xl border border-green-400/30">
+              <p className="text-green-300 text-center font-bold">
+                Great job! You matched all skills to their meanings!
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default PuzzleMatchSkills;
-

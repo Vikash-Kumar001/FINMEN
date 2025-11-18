@@ -8,15 +8,32 @@ const RespectJournal = () => {
   const [journalEntry, setJournalEntry] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [coins, setCoins] = useState(0);
+  const [currentPromptIndex, setCurrentPromptIndex] = useState(0);
   const { showCorrectAnswerFeedback } = useGameFeedback();
 
-  const prompt = "This week I showed respect by...";
+  // 🔹 5 sequential prompts
+  const prompts = [
+    "1️⃣ This week I showed respect by...",
+    "2️⃣ A time I listened to someone even when I disagreed was...",
+    "3️⃣ One way I show respect at school is...",
+    "4️⃣ I can show respect to my parents or elders by...",
+    "5️⃣ When someone disrespected me, I responded respectfully by..."
+  ];
 
   const handleSubmit = () => {
     if (journalEntry.trim().length >= 20) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
-      setShowResult(true);
+      // If there are more prompts left
+      if (currentPromptIndex < prompts.length - 1) {
+        showCorrectAnswerFeedback(1, true); // 1 coin per reflection
+        setCoins((prev) => prev + 1);
+        setCurrentPromptIndex((prev) => prev + 1);
+        setJournalEntry(""); // clear for next
+      } else {
+        // Last prompt completed
+        showCorrectAnswerFeedback(5, true);
+        setCoins((prev) => prev + 1);
+        setShowResult(true);
+      }
     }
   };
 
@@ -43,24 +60,28 @@ const RespectJournal = () => {
         {!showResult ? (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
             <div className="text-6xl mb-4 text-center">📖</div>
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">Respect Reflection</h2>
-            
+            <h2 className="text-2xl font-bold text-white mb-6 text-center">
+              Respect Reflection {currentPromptIndex + 1}/5
+            </h2>
+
             <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
               <p className="text-white/70 text-sm mb-2">Reflection Prompt:</p>
-              <p className="text-white text-xl font-semibold">{prompt}</p>
+              <p className="text-white text-xl font-semibold">
+                {prompts[currentPromptIndex]}
+              </p>
               <p className="text-white/60 text-sm mt-2">
-                Think about respectful actions: listening, helping, using polite words, etc.
+                Think about respectful actions like listening, helping, or using kind words.
               </p>
             </div>
 
             <textarea
               value={journalEntry}
               onChange={(e) => setJournalEntry(e.target.value)}
-              placeholder="Write your story here... (minimum 20 characters)\n\nInclude: What did you do? Who was involved? How did it show respect?"
+              placeholder={`Write your reflection here... (minimum 20 characters)\n\nInclude: What did you do? Who was involved? How did it show respect?`}
               className="w-full h-40 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 resize-none"
               maxLength={250}
             />
-            
+
             <div className="text-white/50 text-sm mt-2 text-right">
               {journalEntry.length}/250 characters (min: 20)
             </div>
@@ -70,34 +91,31 @@ const RespectJournal = () => {
               disabled={journalEntry.trim().length < 20}
               className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
                 journalEntry.trim().length >= 20
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
+                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
+                  : "bg-gray-500/50 cursor-not-allowed"
               }`}
             >
-              Submit Journal Entry
+              {currentPromptIndex < prompts.length - 1
+                ? "Next Reflection ➡️"
+                : "Finish All Reflections 🌟"}
             </button>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">🌟</div>
+            <div className="text-7xl mb-4 text-center">🎉</div>
             <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              Thoughtful Reflection!
+              Excellent Reflections!
             </h2>
-            
-            <div className="bg-purple-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white/70 text-sm mb-2">Your Entry:</p>
-              <p className="text-white text-lg font-semibold italic">"{journalEntry}"</p>
-            </div>
 
             <div className="bg-green-500/20 rounded-lg p-4 mb-4">
               <p className="text-white text-center text-sm">
-                💡 Reflecting on respectful actions helps us recognize and repeat them. Keep showing 
-                respect to everyone you meet!
+                💡 You completed all 5 respect reflections! Every act of respect makes
+                your community better. Keep practicing respect in daily life.
               </p>
             </div>
 
             <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned 5 Coins! 🪙
+              You earned {coins} Coins! 🪙
             </p>
           </div>
         )}
@@ -107,4 +125,3 @@ const RespectJournal = () => {
 };
 
 export default RespectJournal;
-

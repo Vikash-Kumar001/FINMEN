@@ -1,121 +1,225 @@
-// Brain Health Games for Kids Exports
+// Brain Health Games for Kids Imports
+import WaterStory from './WaterStory';
+import QuizOnBrainFood from './QuizOnBrainFood';
+import ReflexBrainBoost from './ReflexBrainBoost';
+import PuzzleOfBrainCare from './PuzzleOfBrainCare';
+import BreakfastStory from './BreakfastStory';
+import PosterBrainHealth from './PosterBrainHealth';
+import JournalOfHabits from './JournalOfHabits';
+import SportsStory from './SportsStory';
+import ReflexDailyHabit from './ReflexDailyHabit';
+import BadgeBrainCareKid from './BadgeBrainCareKid';
+import ClassroomStory from './ClassroomStory';
+import QuizOnFocus from './QuizOnFocus';
+import ReflexAttention from './ReflexAttention';
+import PuzzleOfFocus from './PuzzleOfFocus';
+import HomeworkStory from './HomeworkStory';
+import PosterFocusMatters from './PosterFocusMatters';
+import JournalOfFocus from './JournalOfFocus';
+import GameStory from './GameStory';
+import ReflexQuickAttention from './ReflexQuickAttention';
+import BadgeFocusKid from './BadgeFocusKid';
+import ShoppingListStory from './ShoppingListStory';
+import MemoryQuiz from './MemoryQuiz';
+import ReflexRecall from './ReflexRecall';
+import MemoryMatchPuzzle from './MemoryMatchPuzzle';
+import RepetitionStory from './RepetitionStory';
+import StrongMemoryPoster from './StrongMemoryPoster';
+import RecallJournal from './RecallJournal';
+import Game from './Game';
+import ReflexSequence from './ReflexSequence';
+import MemoryKidBadge from './MemoryKidBadge';
+import Homework from './Homework';
+import CalmnessQuiz from './CalmnessQuiz';
+import ReflexCalm from './ReflexCalm';
+import RelaxingPuzzle from './RelaxingPuzzle';
+import ExamStoryy from './ExamStoryy';
+import StayCoolPoster from './StayCoolPoster';
+import CalmnessJournal from './CalmnessJournal';
+import Sports from './Sports';
+import QuickCalmReflex from './QuickCalmReflex';
+import CalmKidBadge from './CalmKidBadge';
+import ToyBrokenStory from './ToyBrokenStory';
+import FeelingsQuizz from './FeelingsQuizz';
+import ReflexEmotions from './ReflexEmotions';
+import MatchFeelingsPuzzle from './MatchFeelingsPuzzle';
+import SharingStory from './SharingStory';
+import FeelingsMatterPoster from './FeelingsMatterPoster';
+import FeelingsJournal from './FeelingsJournal';
+import LostGameStory from './LostGameStory';
+import QuickEmotionReflex from './QuickEmotionReflex';
+import EmotionKidBadge from './EmotionKidBadge';
+import RainyDayStory from './RainyDayStory';
+import PositivityQuiz from './PositivityQuiz';
+import HappyThoughtsReflex from './HappyThoughtsReflex';
+import PositiveWordsPuzzle from './PositiveWordsPuzzle';
+import LostMatchStory from './LostMatchStory';
+import StayPositivePoster from './StayPositivePoster';
+import GoodThingsJournal from './GoodThingsJournal';
+import Homeworkk from './Homeworkk';
+import PositiveNegativeReflex from './PositiveNegativeReflex';
+import PositiveKidBadge from './PositiveKidBadge';
+import BedtimeStory from './BedtimeStory';
+import SleepQuiz from './SleepQuiz';
+import SleepHabitsReflex from './SleepHabitsReflex';
+import RestPuzzle from './RestPuzzle';
+import ExamStori from './ExamStori';
+import SleepWellPoster from './SleepWellPoster';
+import RestJournal from './RestJournal';
+import HolidayStory from './HolidayStory';
+import RestAlertReflex from './RestAlertReflex';
+import SleepChampBadge from './SleepChampBadge';
+import TabletStory from './TabletStory';
+import ScreensQuiz from './ScreensQuiz';
+import DigitalChoiceReflex from './DigitalChoiceReflex';
+import BalancePuzzle from './BalancePuzzle';
+import HomeworkStories from './HomeworkStories';
+import BalanceTechPoster from './BalanceTechPoster';
+import ScreenUseJournal from './ScreenUseJournal';
+import OutdoorStory from './OutdoorStory';
+import ScreenAlertReflex from './ScreenAlertReflex';
+import BalancedKidBadge from './BalancedKidBadge';
+import LostKeyStory from './LostKeyStory';
+import CreativityQuiz from './CreativityQuiz';
+import ProblemSolverReflex from './ProblemSolverReflex';
+import SolutionsPuzzle from './SolutionsPuzzle';
+import GroupStory from './GroupStory';
+import BeCreativePoster from './BeCreativePoster';
+import IdeasJournal from './IdeasJournal';
+import ArtStory from './ArtStory';
+import CreativeThinkingReflex from './CreativeThinkingReflex';
+import CreativeKidBadge from './CreativeKidBadge';
+import FallStory from './FallStory';
+import ResilienceQuiz from './ResilienceQuiz';
+import TryAgainReflex from './TryAgainReflex';
+import ResiliencePuzzle from './ResiliencePuzzle';
+import TestStory from './TestStory';
+import DontGiveUpPoster from './DontGiveUpPoster';
+import BounceBackJournal from './BounceBackJournal';
+import SportsStories from './SportsStories';
+import GrowthThinkingReflex from './GrowthThinkingReflex';
+import BounceBackKidBadge from './BounceBackKidBadge';
 
-// First set of 10 games (brain health focused)
-export { default as WaterStory } from './WaterStory';
-export { default as QuizOnBrainFood } from './QuizOnBrainFood';
-export { default as ReflexBrainBoost } from './ReflexBrainBoost';
-export { default as PuzzleOfBrainCare } from './PuzzleOfBrainCare';
-export { default as BreakfastStory } from './BreakfastStory';
-export { default as PosterBrainHealth } from './PosterBrainHealth';
-export { default as JournalOfHabits } from './JournalOfHabits';
-export { default as SportsStory } from './SportsStory';
-export { default as ReflexDailyHabit } from './ReflexDailyHabit';
-export { default as BadgeBrainCareKid } from './BadgeBrainCareKid';
+const kidBrainGames = {
+  // First set of 10 games (brain health focused)
+  'water-story': WaterStory,
+  'quiz-on-brain-food': QuizOnBrainFood,
+  'reflex-brain-boost': ReflexBrainBoost,
+  'puzzle-of-brain-care': PuzzleOfBrainCare,
+  'breakfast-story': BreakfastStory,
+  'poster-brain-health': PosterBrainHealth,
+  'journal-of-habits': JournalOfHabits,
+  'sports-story': SportsStory,
+  'reflex-daily-habit': ReflexDailyHabit,
+  'badge-brain-care-kid': BadgeBrainCareKid,
 
-// Second set of 10 games 
-export { default as ClassroomStory } from './ClassroomStory';
-export { default as QuizOnFocus } from './QuizOnFocus';
-export { default as ReflexAttention } from './ReflexAttention';
-export { default as PuzzleOfFocus } from './PuzzleOfFocus';
-export { default as HomeworkStory } from './HomeworkStory';
-export { default as PosterFocusMatters } from './PosterFocusMatters';
-export { default as JournalOfFocus } from './JournalOfFocus';
-export { default as GameStory } from './GameStory';
-export { default as ReflexQuickAttention } from './ReflexQuickAttention';
-export { default as BadgeFocusKid } from './BadgeFocusKid';
+  // Second set of 10 games (focus focused)
+  'classroom-story': ClassroomStory,
+  'quiz-on-focus': QuizOnFocus,
+  'reflex-attention': ReflexAttention,
+  'puzzle-of-focus': PuzzleOfFocus,
+  'homework-story': HomeworkStory,
+  'poster-focus-matters': PosterFocusMatters,
+  'journal-of-focus': JournalOfFocus,
+  'game-story': GameStory,
+  'reflex-quick-attention': ReflexQuickAttention,
+  'badge-focus-kid': BadgeFocusKid,
 
-// third set of 10 games 
-export { default as ShoppingListStory } from './ShoppingListStory';
-export { default as MemoryQuiz } from './MemoryQuiz';
-export { default as ReflexRecall } from './ReflexRecall';
-export { default as MemoryMatchPuzzle } from './MemoryMatchPuzzle';
-export { default as RepetitionStory } from './RepetitionStory';
-export { default as StrongMemoryPoster } from './StrongMemoryPoster';
-export { default as RecallJournal } from './RecallJournal';
-export { default as Game } from './Game';
-export { default as ReflexSequence } from './ReflexSequence';
-export { default as MemoryKidBadge } from './MemoryKidBadge';
+  // Third set of 10 games (memory focused)
+  'shopping-list-story': ShoppingListStory,
+  'memory-quiz': MemoryQuiz,
+  'reflex-recall': ReflexRecall,
+  'memory-match-puzzle': MemoryMatchPuzzle,
+  'repetition-story': RepetitionStory,
+  'strong-memory-poster': StrongMemoryPoster,
+  'recall-journal': RecallJournal,
+  'game': Game,
+  'reflex-sequence': ReflexSequence,
+  'memory-kid-badge': MemoryKidBadge,
 
-// fourth set of 10 games 
-export { default as Homework } from './Homework';
-export { default as CalmnessQuiz } from './CalmnessQuiz';
-export { default as ReflexCalm } from './ReflexCalm';
-export { default as RelaxingPuzzle } from './RelaxingPuzzle';
-export { default as ExamStoryy } from './ExamStoryy';
-export { default as StayCoolPoster } from './StayCoolPoster';
-export { default as CalmnessJournal } from './CalmnessJournal';
-export { default as Sports } from './Sports';
-export { default as QuickCalmReflex } from './QuickCalmReflex';
-export { default as CalmKidBadge } from './CalmKidBadge';
+  // Fourth set of 10 games (calmness focused)
+  'homework': Homework,
+  'calmness-quiz': CalmnessQuiz,
+  'reflex-calm': ReflexCalm,
+  'relaxing-puzzle': RelaxingPuzzle,
+  'exam-storyy': ExamStoryy,
+  'stay-cool-poster': StayCoolPoster,
+  'calmness-journal': CalmnessJournal,
+  'sports': Sports,
+  'quick-calm-reflex': QuickCalmReflex,
+  'calm-kid-badge': CalmKidBadge,
 
-// fifth set of 10 games 
-export { default as ToyBrokenStory } from './ToyBrokenStory';
-export { default as FeelingsQuizz } from './FeelingsQuizz';
-export { default as ReflexEmotions } from './ReflexEmotions';
-export { default as MatchFeelingsPuzzle } from './MatchFeelingsPuzzle';
-export { default as SharingStory } from './SharingStory';
-export { default as FeelingsMatterPoster } from './FeelingsMatterPoster';
-export { default as FeelingsJournal } from './FeelingsJournal';
-export { default as LostGameStory } from './LostGameStory';
-export { default as QuickEmotionReflex } from './QuickEmotionReflex';
-export { default as EmotionKidBadge } from './EmotionKidBadge';
+  // Fifth set of 10 games (emotions focused)
+  'toy-broken-story': ToyBrokenStory,
+  'feelings-quizz': FeelingsQuizz,
+  'reflex-emotions': ReflexEmotions,
+  'match-feelings-puzzle': MatchFeelingsPuzzle,
+  'sharing-story': SharingStory,
+  'feelings-matter-poster': FeelingsMatterPoster,
+  'feelings-journal': FeelingsJournal,
+  'lost-game-story': LostGameStory,
+  'quick-emotion-reflex': QuickEmotionReflex,
+  'emotion-kid-badge': EmotionKidBadge,
 
-// sixth set of 10 games 
-export { default as RainyDayStory } from './RainyDayStory';
-export { default as PositivityQuiz } from './PositivityQuiz';
-export { default as HappyThoughtsReflex } from './HappyThoughtsReflex';
-export { default as PositiveWordsPuzzle } from './PositiveWordsPuzzle';
-export { default as LostMatchStory } from './LostMatchStory';
-export { default as StayPositivePoster } from './StayPositivePoster';
-export { default as GoodThingsJournal } from './GoodThingsJournal';
-export { default as Homeworkk } from './Homeworkk';
-export { default as PositiveNegativeReflex } from './PositiveNegativeReflex';
-export { default as PositiveKidBadge } from './PositiveKidBadge';
+  // Sixth set of 10 games (positivity focused)
+  'rainy-day-story': RainyDayStory,
+  'positivity-quiz': PositivityQuiz,
+  'happy-thoughts-reflex': HappyThoughtsReflex,
+  'positive-words-puzzle': PositiveWordsPuzzle,
+  'lost-match-story': LostMatchStory,
+  'stay-positive-poster': StayPositivePoster,
+  'good-things-journal': GoodThingsJournal,
+  'homeworkk': Homeworkk,
+  'positive-negative-reflex': PositiveNegativeReflex,
+  'positive-kid-badge': PositiveKidBadge,
 
-// seventh set of 10 games 
-export { default as BedtimeStory } from './BedtimeStory';
-export { default as SleepQuiz } from './SleepQuiz';
-export { default as SleepHabitsReflex } from './SleepHabitsReflex';
-export { default as RestPuzzle } from './RestPuzzle';
-export { default as ExamStori } from './ExamStori';
-export { default as SleepWellPoster } from './SleepWellPoster';
-export { default as RestJournal } from './RestJournal';
-export { default as HolidayStory } from './HolidayStory';
-export { default as RestAlertReflex } from './RestAlertReflex';
-export { default as SleepChampBadge } from './SleepChampBadge';
+  // Seventh set of 10 games (sleep focused)
+  'bedtime-story': BedtimeStory,
+  'sleep-quiz': SleepQuiz,
+  'sleep-habits-reflex': SleepHabitsReflex,
+  'rest-puzzle': RestPuzzle,
+  'exam-stori': ExamStori,
+  'sleep-well-poster': SleepWellPoster,
+  'rest-journal': RestJournal,
+  'holiday-story': HolidayStory,
+  'rest-alert-reflex': RestAlertReflex,
+  'sleep-champ-badge': SleepChampBadge,
 
-// eight set of 10 games 
-export { default as TabletStory } from './TabletStory';
-export { default as ScreensQuiz } from './ScreensQuiz';
-export { default as DigitalChoiceReflex } from './DigitalChoiceReflex';
-export { default as BalancePuzzle } from './BalancePuzzle';
-export { default as HomeworkStories } from './HomeworkStories';
-export { default as BalanceTechPoster } from './BalanceTechPoster';
-export { default as ScreenUseJournal } from './ScreenUseJournal';
-export { default as OutdoorStory } from './OutdoorStory';
-export { default as ScreenAlertReflex } from './ScreenAlertReflex';
-export { default as BalancedKidBadge } from './BalancedKidBadge';
+  // Eighth set of 10 games (digital balance focused)
+  'tablet-story': TabletStory,
+  'screens-quiz': ScreensQuiz,
+  'digital-choice-reflex': DigitalChoiceReflex,
+  'balance-puzzle': BalancePuzzle,
+  'homework-stories': HomeworkStories,
+  'balance-tech-poster': BalanceTechPoster,
+  'screen-use-journal': ScreenUseJournal,
+  'outdoor-story': OutdoorStory,
+  'screen-alert-reflex': ScreenAlertReflex,
+  'balanced-kid-badge': BalancedKidBadge,
 
-// ninth set of 10 games 
-export { default as LostKeyStory } from './LostKeyStory';
-export { default as CreativityQuiz } from './CreativityQuiz';
-export { default as ProblemSolverReflex } from './ProblemSolverReflex';
-export { default as SolutionsPuzzle } from './SolutionsPuzzle';
-export { default as GroupStory } from './GroupStory';
-export { default as BeCreativePoster } from './BeCreativePoster';
-export { default as IdeasJournal } from './IdeasJournal';
-export { default as ArtStory } from './ArtStory';
-export { default as CreativeThinkingReflex } from './CreativeThinkingReflex';
-export { default as CreativeKidBadge } from './CreativeKidBadge';
+  // Ninth set of 10 games (creativity focused)
+  'lost-key-story': LostKeyStory,
+  'creativity-quiz': CreativityQuiz,
+  'problem-solver-reflex': ProblemSolverReflex,
+  'solutions-puzzle': SolutionsPuzzle,
+  'group-story': GroupStory,
+  'be-creative-poster': BeCreativePoster,
+  'ideas-journal': IdeasJournal,
+  'art-story': ArtStory,
+  'creative-thinking-reflex': CreativeThinkingReflex,
+  'creative-kid-badge': CreativeKidBadge,
 
-// tenth set of 10 games 
-export { default as FallStory } from './FallStory';
-export { default as ResilienceQuiz } from './ResilienceQuiz';
-export { default as TryAgainReflex } from './TryAgainReflex';
-export { default as ResiliencePuzzle } from './ResiliencePuzzle';
-export { default as TestStory } from './TestStory';
-export { default as DontGiveUpPoster } from './DontGiveUpPoster';
-export { default as BounceBackJournal } from './BounceBackJournal';
-export { default as SportsStories } from './SportsStories';
-export { default as GrowthThinkingReflex } from './GrowthThinkingReflex';
-export { default as BounceBackKidBadge } from './BounceBackKidBadge';
+  // Tenth set of 10 games (resilience focused)
+  'fall-story': FallStory,
+  'resilience-quiz': ResilienceQuiz,
+  'try-again-reflex': TryAgainReflex,
+  'resilience-puzzle': ResiliencePuzzle,
+  'test-story': TestStory,
+  'dont-give-up-poster': DontGiveUpPoster,
+  'bounce-back-journal': BounceBackJournal,
+  'sports-stories': SportsStories,
+  'growth-thinking-reflex': GrowthThinkingReflex,
+  'bounce-back-kid-badge': BounceBackKidBadge,
+};
+
+export default kidBrainGames;

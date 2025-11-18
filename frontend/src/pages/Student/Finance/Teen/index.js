@@ -1,121 +1,225 @@
-// Teen Finance Games Exports
+// Teen Finance Games Imports
+import PocketMoneyStory from './PocketMoneyStory';
+import QuizOnSavingsRate from './QuizOnSavingsRate';
+import ReflexSmartSaver from './ReflexSmartSaver';
+import PuzzleOfSavingGoals from './PuzzleOfSavingGoals';
+import SalaryStory from './SalaryStory';
+import DebateSaveVsSpend from './DebateSaveVsSpend';
+import JournalOfSavingGoal from './JournalOfSavingGoal';
+import SimulationMonthlyMoney from './SimulationMonthlyMoney';
+import ReflexWiseUse from './ReflexWiseUse';
+import BadgeSmartSaver from './BadgeSmartSaver';
+import AllowanceStory from './AllowanceStory';
+import SpendingQuiz from './SpendingQuiz';
+import ReflexWiseChoices from './ReflexWiseChoices';
+import PuzzleSmartSpending from './PuzzleSmartSpending';
+import PartyStory from './PartyStory';
+import DebateNeedsVsWants from './DebateNeedsVsWants';
+import JournalOfSpending from './JournalOfSpending';
+import SimulationShoppingMall from './SimulationShoppingMall';
+import ReflexControl from './ReflexControl';
+import BadgeSmartSpenderTeen from './BadgeSmartSpenderTeen';
+import Allowance from './Allowance';
+import BudgetQuiz from './BudgetQuiz';
+import ReflexBudgett from './ReflexBudgett';
+import PuzzlePriorities from './PuzzlePriorities';
+import CollegeStory from './CollegeStory';
+import DebateBudgetFreedom from './DebateBudgetFreedom';
+import JournalMonthlyBudget from './JournalMonthlyBudget';
+import SimulationMonthlyAllowance from './SimulationMonthlyAllowance';
+import ReflexBudgetSmarts from './ReflexBudgetSmarts';
+import BadgeBudgetHero from './BadgeBudgetHero';
+import MovieVsBusFareStory from './MovieVsBusFareStory';
+import NeedsVsWantsQuiz from './NeedsVsWantsQuiz';
+import ReflexDecision from './ReflexDecision';
+import PuzzleRealPriorities from './PuzzleRealPriorities';
+import ExamPrepStory from './ExamPrepStory';
+import DebateWantsMatter from './DebateWantsMatter';
+import JournalOfBalance from './JournalOfBalance';
+import SimulationMonthlyBudget from './SimulationMonthlyBudget';
+import ReflexSmartSpend from './ReflexSmartSpend';
+import BadgeWiseChooser from './BadgeWiseChooser';
+import OnlinePaymentStory from './OnlinePaymentStory';
+import QuizOnDigitalMoney from './QuizOnDigitalMoney';
+import ReflexSecureUse from './ReflexSecureUse';
+import PuzzleOfDigitalTools from './PuzzleOfDigitalTools';
+import OnlineFraudStory from './OnlineFraudStory';
+import DebateCashVsDigital from './DebateCashVsDigital';
+import JournalOfDigitalUse from './JournalOfDigitalUse';
+import SimulationDigitalSpend from './SimulationDigitalSpend';
+import ReflexFraudAlert from './ReflexFraudAlert';
+import BadgeDigitalMoneySmart from './BadgeDigitalMoneySmart';
+import MoneyBorrowStory from './MoneyBorrowStory';
+import DebtQuiz from './DebtQuiz';
+import ReflexDebtDangers from './ReflexDebtDangers';
+import PuzzleLoanBasics from './PuzzleLoanBasics';
+import BorrowingStory from './BorrowingStory';
+import DebateBorrowGoodOrBad from './DebateBorrowGoodOrBad';
+import JournalOfBorrowing from './JournalOfBorrowing';
+import SimulationLoanRepayment from './SimulationLoanRepayment';
+import ReflexDebtControl from './ReflexDebtControl';
+import BadgeDebtSmart from './BadgeDebtSmart';
+import SavingsAccountStory from './SavingsAccountStory';
+import InvestmentQuiz from './InvestmentQuiz';
+import ReflexInvestorSmartness from './ReflexInvestorSmartness';
+import PuzzleInvestmentTypes from './PuzzleInvestmentTypes';
+import StartupStory from './StartupStory';
+import DebateSaveVsInvest from './DebateSaveVsInvest';
+import JournalFutureInvesting from './JournalFutureInvesting';
+import SimulationChoice1000 from './SimulationChoice1000';
+import ReflexSmartGrowth from './ReflexSmartGrowth';
+import BadgeSmartInvestor from './BadgeSmartInvestor';
+import StartupIdeaStory from './StartupIdeaStory';
+import QuizEntrepreneurship from './QuizEntrepreneurship';
+import ReflexEntrepreneurTraits from './ReflexEntrepreneurTraits';
+import PuzzleEntrepreneurs from './PuzzleEntrepreneurs';
+import BusinessRiskStory from './BusinessRiskStory';
+import DebateJobVsBusiness from './DebateJobVsBusiness';
+import JournalEntrepreneurDream from './JournalEntrepreneurDream';
+import SimulationMiniStartup from './SimulationMiniStartup';
+import ReflexSmartEntrepreneur from './ReflexSmartEntrepreneur';
+import BadgeYoungEntrepreneur from './BadgeYoungEntrepreneur';
+import FakeOnlineOfferStory from './FakeOnlineOfferStory';
+import ConsumerQuiz from './ConsumerQuiz';
+import ReflexFraudSafety from './ReflexFraudSafety';
+import PuzzleOfRights from './PuzzleOfRights';
+import FakeCallStory from './FakeCallStory';
+import DebateCashVsOnlineSafety from './DebateCashVsOnlineSafety';
+import JournalConsumerRights from './JournalConsumerRights';
+import SimulationFraudAlert from './SimulationFraudAlert';
+import ReflexScamCheck from './ReflexScamCheck';
+import BadgeConsumerProtector from './BadgeConsumerProtector';
+import ScholarshipStory from './ScholarshipStory';
+import EthicsQuiz from './EthicsQuiz';
+import ReflexEthicalChoice from './ReflexEthicalChoice';
+import PuzzleRightVsWrong from './PuzzleRightVsWrong';
+import BriberyStory from './BriberyStory';
+import DebateMoneyAndMorals from './DebateMoneyAndMorals';
+import JournalOfResponsibility from './JournalOfResponsibility';
+import SimulationCharityChoice from './SimulationCharityChoice';
+import ReflexFairness from './ReflexFairness';
+import BadgeEthicalFinancier from './BadgeEthicalFinancier';
 
-// First set of 10 games (saving focused)
-export { default as PocketMoneyStory } from './PocketMoneyStory';
-export { default as QuizOnSavingsRate } from './QuizOnSavingsRate';
-export { default as ReflexSmartSaver } from './ReflexSmartSaver';
-export { default as PuzzleOfSavingGoals } from './PuzzleOfSavingGoals';
-export { default as SalaryStory } from './SalaryStory';
-export { default as DebateSaveVsSpend } from './DebateSaveVsSpend';
-export { default as JournalOfSavingGoal } from './JournalOfSavingGoal';
-export { default as SimulationMonthlyMoney } from './SimulationMonthlyMoney';
-export { default as ReflexWiseUse } from './ReflexWiseUse';
-export { default as BadgeSmartSaver } from './BadgeSmartSaver';
+const teenFinanceGames = {
+  // First set of 10 games (saving focused)
+  'pocket-money-story': PocketMoneyStory,
+  'quiz-on-savings-rate': QuizOnSavingsRate,
+  'reflex-smart-saver': ReflexSmartSaver,
+  'puzzle-of-saving-goals': PuzzleOfSavingGoals,
+  'salary-story': SalaryStory,
+  'debate-save-vs-spend': DebateSaveVsSpend,
+  'journal-of-saving-goal': JournalOfSavingGoal,
+  'simulation-monthly-money': SimulationMonthlyMoney,
+  'reflex-wise-use': ReflexWiseUse,
+  'badge-smart-saver': BadgeSmartSaver,
 
-// Second set of 10 games (spending focused)
-export { default as AllowanceStory } from './AllowanceStory';
-export { default as SpendingQuiz } from './SpendingQuiz';
-export { default as ReflexWiseChoices } from './ReflexWiseChoices';
-export { default as PuzzleSmartSpending } from './PuzzleSmartSpending';
-export { default as PartyStory } from './PartyStory';
-export { default as DebateNeedsVsWants } from './DebateNeedsVsWants';
-export { default as JournalOfSpending } from './JournalOfSpending';
-export { default as SimulationShoppingMall } from './SimulationShoppingMall';
-export { default as ReflexControl } from './ReflexControl';
-export { default as BadgeSmartSpenderTeen } from './BadgeSmartSpenderTeen';
+  // Second set of 10 games (spending focused)
+  'allowance-story': AllowanceStory,
+  'spending-quiz': SpendingQuiz,
+  'reflex-wise-choices': ReflexWiseChoices,
+  'puzzle-smart-spending': PuzzleSmartSpending,
+  'party-story': PartyStory,
+  'debate-needs-vs-wants': DebateNeedsVsWants,
+  'journal-of-spending': JournalOfSpending,
+  'simulation-shopping-mall': SimulationShoppingMall,
+  'reflex-control': ReflexControl,
+  'badge-smart-spender-teen': BadgeSmartSpenderTeen,
 
-// third set of 10 games (spending focused)
-export { default as Allowance } from './Allowance';
-export { default as BudgetQuiz } from './BudgetQuiz';
-export { default as ReflexBudgett } from './ReflexBudgett';
-export { default as PuzzlePriorities } from './PuzzlePriorities';
-export { default as CollegeStory } from './CollegeStory';
-export { default as DebateBudgetFreedom } from './DebateBudgetFreedom';
-export { default as JournalMonthlyBudget } from './JournalMonthlyBudget';
-export { default as SimulationMonthlyAllowance } from './SimulationMonthlyAllowance';
-export { default as ReflexBudgetSmarts } from './ReflexBudgetSmarts';
-export { default as BadgeBudgetHero } from './BadgeBudgetHero';
+  // Third set of 10 games (budgeting focused)
+  'allowance': Allowance,
+  'budget-quiz': BudgetQuiz,
+  'reflex-budgett': ReflexBudgett,
+  'puzzle-priorities': PuzzlePriorities,
+  'college-story': CollegeStory,
+  'debate-budget-freedom': DebateBudgetFreedom,
+  'journal-monthly-budget': JournalMonthlyBudget,
+  'simulation-monthly-allowance': SimulationMonthlyAllowance,
+  'reflex-budget-smarts': ReflexBudgetSmarts,
+  'badge-budget-hero': BadgeBudgetHero,
 
-// fourth set of 10 games (spending focused)
-export { default as MovieVsBusFareStory } from './MovieVsBusFareStory';
-export { default as NeedsVsWantsQuiz } from './NeedsVsWantsQuiz';
-export { default as ReflexDecision } from './ReflexDecision';
-export { default as PuzzleRealPriorities } from './PuzzleRealPriorities';
-export { default as ExamPrepStory } from './ExamPrepStory';
-export { default as DebateWantsMatter } from './DebateWantsMatter';
-export { default as JournalOfBalance } from './JournalOfBalance';
-export { default as SimulationMonthlyBudget } from './SimulationMonthlyBudget';
-export { default as ReflexSmartSpend } from './ReflexSmartSpend';
-export { default as BadgeWiseChooser } from './BadgeWiseChooser';
+  // Fourth set of 10 games (needs vs wants focused)
+  'movie-vs-bus-fare-story': MovieVsBusFareStory,
+  'needs-vs-wants-quiz': NeedsVsWantsQuiz,
+  'reflex-decision': ReflexDecision,
+  'puzzle-real-priorities': PuzzleRealPriorities,
+  'exam-prep-story': ExamPrepStory,
+  'debate-wants-matter': DebateWantsMatter,
+  'journal-of-balance': JournalOfBalance,
+  'simulation-monthly-budget': SimulationMonthlyBudget,
+  'reflex-smart-spend': ReflexSmartSpend,
+  'badge-wise-chooser': BadgeWiseChooser,
 
-// fifth set of 10 games (spending focused)
-export { default as OnlinePaymentStory } from './OnlinePaymentStory';
-export { default as QuizOnDigitalMoney } from './QuizOnDigitalMoney';
-export { default as ReflexSecureUse } from './ReflexSecureUse';
-export { default as PuzzleOfDigitalTools } from './PuzzleOfDigitalTools';
-export { default as OnlineFraudStory } from './OnlineFraudStory';
-export { default as DebateCashVsDigital } from './DebateCashVsDigital';
-export { default as JournalOfDigitalUse } from './JournalOfDigitalUse';
-export { default as SimulationDigitalSpend } from './SimulationDigitalSpend';
-export { default as ReflexFraudAlert } from './ReflexFraudAlert';
-export { default as BadgeDigitalMoneySmart } from './BadgeDigitalMoneySmart';
+  // Fifth set of 10 games (digital money focused)
+  'online-payment-story': OnlinePaymentStory,
+  'quiz-on-digital-money': QuizOnDigitalMoney,
+  'reflex-secure-use': ReflexSecureUse,
+  'puzzle-of-digital-tools': PuzzleOfDigitalTools,
+  'online-fraud-story': OnlineFraudStory,
+  'debate-cash-vs-digital': DebateCashVsDigital,
+  'journal-of-digital-use': JournalOfDigitalUse,
+  'simulation-digital-spend': SimulationDigitalSpend,
+  'reflex-fraud-alert': ReflexFraudAlert,
+  'badge-digital-money-smart': BadgeDigitalMoneySmart,
 
-// sixth set of 10 games (spending focused)
-export { default as MoneyBorrowStory } from './MoneyBorrowStory';
-export { default as DebtQuiz } from './DebtQuiz';
-export { default as ReflexDebtDangers } from './ReflexDebtDangers';
-export { default as PuzzleLoanBasics } from './PuzzleLoanBasics';
-export { default as BorrowingStory } from './BorrowingStory';
-export { default as DebateBorrowGoodOrBad } from './DebateBorrowGoodOrBad';
-export { default as JournalOfBorrowing } from './JournalOfBorrowing';
-export { default as SimulationLoanRepayment } from './SimulationLoanRepayment';
-export { default as ReflexDebtControl } from './ReflexDebtControl';
-export { default as BadgeDebtSmart } from './BadgeDebtSmart';
+  // Sixth set of 10 games (borrowing/debt focused)
+  'money-borrow-story': MoneyBorrowStory,
+  'debt-quiz': DebtQuiz,
+  'reflex-debt-dangers': ReflexDebtDangers,
+  'puzzle-loan-basics': PuzzleLoanBasics,
+  'borrowing-story': BorrowingStory,
+  'debate-borrow-good-or-bad': DebateBorrowGoodOrBad,
+  'journal-of-borrowing': JournalOfBorrowing,
+  'simulation-loan-repayment': SimulationLoanRepayment,
+  'reflex-debt-control': ReflexDebtControl,
+  'badge-debt-smart': BadgeDebtSmart,
 
-// seventh set of 10 games (spending focused)
-export { default as SavingsAccountStory } from './SavingsAccountStory';
-export { default as InvestmentQuiz } from './InvestmentQuiz';
-export { default as ReflexInvestorSmartness } from './ReflexInvestorSmartness';
-export { default as PuzzleInvestmentTypes } from './PuzzleInvestmentTypes';
-export { default as StartupStory } from './StartupStory';
-export { default as DebateSaveVsInvest } from './DebateSaveVsInvest';
-export { default as JournalFutureInvesting } from './JournalFutureInvesting';
-export { default as SimulationChoice1000 } from './SimulationChoice1000';
-export { default as ReflexSmartGrowth } from './ReflexSmartGrowth';
-export { default as BadgeSmartInvestor } from './BadgeSmartInvestor';
+  // Seventh set of 10 games (investment focused)
+  'savings-account-story': SavingsAccountStory,
+  'investment-quiz': InvestmentQuiz,
+  'reflex-investor-smartness': ReflexInvestorSmartness,
+  'puzzle-investment-types': PuzzleInvestmentTypes,
+  'startup-story': StartupStory,
+  'debate-save-vs-invest': DebateSaveVsInvest,
+  'journal-future-investing': JournalFutureInvesting,
+  'simulation-choice-1000': SimulationChoice1000,
+  'reflex-smart-growth': ReflexSmartGrowth,
+  'badge-smart-investor': BadgeSmartInvestor,
 
-// eight set of 10 games (spending focused)
-export { default as StartupIdeaStory } from './StartupIdeaStory';
-export { default as QuizEntrepreneurship } from './QuizEntrepreneurship';
-export { default as ReflexEntrepreneurTraits } from './ReflexEntrepreneurTraits';
-export { default as PuzzleEntrepreneurs } from './PuzzleEntrepreneurs';
-export { default as BusinessRiskStory } from './BusinessRiskStory';
-export { default as DebateJobVsBusiness } from './DebateJobVsBusiness';
-export { default as JournalEntrepreneurDream } from './JournalEntrepreneurDream';
-export { default as SimulationMiniStartup } from './SimulationMiniStartup';
-export { default as ReflexSmartEntrepreneur } from './ReflexSmartEntrepreneur';
-export { default as BadgeYoungEntrepreneur } from './BadgeYoungEntrepreneur';
+  // Eighth set of 10 games (entrepreneurship focused)
+  'startup-idea-story': StartupIdeaStory,
+  'quiz-entrepreneurship': QuizEntrepreneurship,
+  'reflex-entrepreneur-traits': ReflexEntrepreneurTraits,
+  'puzzle-entrepreneurs': PuzzleEntrepreneurs,
+  'business-risk-story': BusinessRiskStory,
+  'debate-job-vs-business': DebateJobVsBusiness,
+  'journal-entrepreneur-dream': JournalEntrepreneurDream,
+  'simulation-mini-startup': SimulationMiniStartup,
+  'reflex-smart-entrepreneur': ReflexSmartEntrepreneur,
+  'badge-young-entrepreneur': BadgeYoungEntrepreneur,
 
-// ninth set of 10 games (spending focused)
-export { default as FakeOnlineOfferStory } from './FakeOnlineOfferStory';
-export { default as ConsumerQuiz } from './ConsumerQuiz';
-export { default as ReflexFraudSafety } from './ReflexFraudSafety';
-export { default as PuzzleOfRights } from './PuzzleOfRights';
-export { default as FakeCallStory } from './FakeCallStory';
-export { default as DebateCashVsOnlineSafety } from './DebateCashVsOnlineSafety';
-export { default as JournalConsumerRights } from './JournalConsumerRights';
-export { default as SimulationFraudAlert } from './SimulationFraudAlert';
-export { default as ReflexScamCheck } from './ReflexScamCheck';
-export { default as BadgeConsumerProtector } from './BadgeConsumerProtector';
+  // Ninth set of 10 games (consumer protection focused)
+  'fake-online-offer-story': FakeOnlineOfferStory,
+  'consumer-quiz': ConsumerQuiz,
+  'reflex-fraud-safety': ReflexFraudSafety,
+  'puzzle-of-rights': PuzzleOfRights,
+  'fake-call-story': FakeCallStory,
+  'debate-cash-vs-online-safety': DebateCashVsOnlineSafety,
+  'journal-consumer-rights': JournalConsumerRights,
+  'simulation-fraud-alert': SimulationFraudAlert,
+  'reflex-scam-check': ReflexScamCheck,
+  'badge-consumer-protector': BadgeConsumerProtector,
 
-// tenth set of 10 games (spending focused)
-export { default as ScholarshipStory } from './ScholarshipStory';
-export { default as EthicsQuiz } from './EthicsQuiz';
-export { default as ReflexEthicalChoice } from './ReflexEthicalChoice';
-export { default as PuzzleRightVsWrong } from './PuzzleRightVsWrong';
-export { default as BriberyStory } from './BriberyStory';
-export { default as DebateMoneyAndMorals } from './DebateMoneyAndMorals';
-export { default as JournalOfResponsibility } from './JournalOfResponsibility';
-export { default as SimulationCharityChoice } from './SimulationCharityChoice';
-export { default as ReflexFairness } from './ReflexFairness';
-export { default as BadgeEthicalFinancier } from './BadgeEthicalFinancier';
+  // Tenth set of 10 games (ethics focused)
+  'scholarship-story': ScholarshipStory,
+  'ethics-quiz': EthicsQuiz,
+  'reflex-ethical-choice': ReflexEthicalChoice,
+  'puzzle-right-vs-wrong': PuzzleRightVsWrong,
+  'bribery-story': BriberyStory,
+  'debate-money-and-morals': DebateMoneyAndMorals,
+  'journal-of-responsibility': JournalOfResponsibility,
+  'simulation-charity-choice': SimulationCharityChoice,
+  'reflex-fairness': ReflexFairness,
+  'badge-ethical-financier': BadgeEthicalFinancier,
+};
+
+export default teenFinanceGames;

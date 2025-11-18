@@ -5,148 +5,193 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const DisabilityStory = () => {
   const navigate = useNavigate();
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const story = {
-    title: "Wheelchair Friend",
-    emoji: "♿",
-    situation: "A new girl in a wheelchair joins your school. What should you do?",
-    choices: [
-      { id: 1, text: "Include her in games and activities", emoji: "🤝", isCorrect: true },
-      { id: 2, text: "Leave her out because she's different", emoji: "🚫", isCorrect: false },
-      { id: 3, text: "Ignore her", emoji: "😐", isCorrect: false }
-    ]
-  };
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = story.choices.find(c => c.id === selectedChoice);
-    
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+  const questions = [
+    {
+      id: 1,
+      text: "A girl in a wheelchair joins your school. Some kids are staring and whispering. What do you do?",
+      options: [
+        {
+          id: "a",
+          text: "Stare and whisper too",
+          emoji: "👀",
+          description: "That's not respectful. Staring and whispering can make someone feel uncomfortable and excluded.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Approach her with a friendly smile",
+          emoji: "😊",
+          description: "Great choice! Approaching with kindness helps create an inclusive environment for everyone.",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "During group work, the girl in a wheelchair can't reach some materials on the high shelf. What should you do?",
+      options: [
+        {
+          id: "a",
+          text: "Ignore her struggle and continue with your work",
+          emoji: "😒",
+          description: "That's not helpful. Everyone deserves support to participate fully.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Help her get the materials she needs",
+          emoji: "🤝",
+          description: "Perfect! Helping others ensures everyone can participate equally in activities.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "Some kids are excluding the girl in a wheelchair from playing during recess. What would you do?",
+      options: [
+        {
+          id: "a",
+          text: "Join the group that's excluding her",
+          emoji: "🙅",
+          description: "That's not inclusive. Excluding others based on differences is hurtful and unfair.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Invite her to play with you and your friends",
+          emoji: "🎉",
+          description: "Wonderful! Including everyone in activities promotes fairness and builds a positive community.",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "The girl in a wheelchair wants to participate in a school play. Some students say she can't because of her wheelchair. What's the right thing to do?",
+      options: [
+        {
+          id: "a",
+          text: "Agree that she can't participate",
+          emoji: "😞",
+          description: "That's not fair. Everyone should have equal opportunities to participate in activities.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Support her participation and help find solutions",
+          emoji: "💪",
+          description: "Excellent! Supporting inclusion and finding creative solutions ensures everyone can participate.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "The teacher is explaining how to make the classroom more accessible. What do you do?",
+      options: [
+        {
+          id: "a",
+          text: "Stay quiet and let others contribute",
+          emoji: "🤫",
+          description: "That's not helpful. Everyone can contribute ideas to create an inclusive environment.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Share ideas on how to make the classroom welcoming for everyone",
+          emoji: "🙋",
+          description: "Great! Contributing ideas helps create an environment where everyone feels welcome and included.",
+          isCorrect: true
+        }
+      ]
     }
-    
-    setShowFeedback(true);
-  };
+  ];
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
-    resetFeedback();
+  const handleChoice = (optionId) => {
+    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
+
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+      } else {
+        setGameFinished(true);
+      }
+    }, 1500);
   };
 
   const handleNext = () => {
-    navigate("/student/civic-responsibility/kids/reflex-inclusion");
+    navigate("/games/civic-responsibility/kids");
   };
 
-  const selectedChoiceData = story.choices.find(c => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Disability Story"
-      subtitle="Inclusion for All"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
-      showGameOver={showFeedback && coins > 0}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={coins}
-      gameId="crgc-kids-18"
-      gameType="crgc"
+      gameId="civic-responsibility-kids-18"
+      gameType="civic-responsibility"
       totalLevels={20}
       currentLevel={18}
-      showConfetti={showFeedback && coins > 0}
+      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/kids"
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-4 text-center">{story.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{story.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center">{story.situation}</p>
-            </div>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+          </div>
+          
+          <h2 className="text-xl font-semibold text-white mb-6">
+            {getCurrentQuestion().text}
+          </h2>
 
-            <div className="space-y-3 mb-6">
-              {story.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
+          <div className="grid grid-cols-1 gap-4">
+            {getCurrentQuestion().options.map(option => (
+              <button
+                key={option.id}
+                onClick={() => handleChoice(option.id)}
+                disabled={choices.some(c => c.question === currentQuestion)}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+              >
+                <div className="flex items-center">
+                  <div className="text-2xl mr-4">{option.emoji}</div>
+                  <div>
+                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
+                      <p className="text-white/90">{option.description}</p>
+                    )}
                   </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "🤝 Inclusive Heart!" : "Think Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-            
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Excellent! Everyone deserves to be included, no matter their abilities. We can all 
-                    play together! Being inclusive makes everyone happy!
-                  </p>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Never leave anyone out! Everyone can participate and have fun together!
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default DisabilityStory;
-

@@ -1,33 +1,47 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const BadgeIntegrityHero = () => {
   const navigate = useNavigate();
-  const [completedDilemmas, setCompletedDilemmas] = useState([]);
-  const [showBadge, setShowBadge] = useState(false);
   const { showCorrectAnswerFeedback } = useGameFeedback();
 
-  const integrityDilemmas = [
-    { id: 1, text: "Refused to lie for a friend", emoji: "🤥", completed: true },
-    { id: 2, text: "Chose truth over white lies", emoji: "💎", completed: true },
-    { id: 3, text: "Refused a bribe offer", emoji: "💰", completed: true },
-    { id: 4, text: "Didn't cheat in important exam", emoji: "📝", completed: true },
-    { id: 5, text: "Led group with honesty", emoji: "👥", completed: true }
+  // ✅ 5 Integrity Acts (Yes/No)
+  const integrityActs = [
+    { id: 1, text: "Refused to lie for a friend", emoji: "🤥" },
+    { id: 2, text: "Chose truth over white lies", emoji: "💎" },
+    { id: 3, text: "Refused a bribe offer", emoji: "💰" },
+    { id: 4, text: "Did not cheat during an important exam", emoji: "📝" },
+    { id: 5, text: "Led group with honesty and fairness", emoji: "👥" },
   ];
 
-  useEffect(() => {
-    const completed = integrityDilemmas.filter(d => d.completed);
-    setCompletedDilemmas(completed);
-    
-    if (completed.length === 5) {
-      setTimeout(() => {
-        setShowBadge(true);
-        showCorrectAnswerFeedback(1, true);
-      }, 1000);
+  const [answers, setAnswers] = useState({});
+  const [showResult, setShowResult] = useState(false);
+  const [isWinner, setIsWinner] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+
+  // ✅ Handle Yes/No Selection
+  const handleAnswer = (id, value) => {
+    setAnswers((prev) => ({ ...prev, [id]: value }));
+  };
+
+  // ✅ Submit Logic
+  const handleSubmit = () => {
+    if (Object.keys(answers).length !== integrityActs.length) {
+      alert("Please answer all integrity acts before submitting!");
+      return;
     }
-  }, []);
+
+    const allYes = integrityActs.every((act) => answers[act.id] === "yes");
+    setIsWinner(allYes);
+    setShowResult(true);
+
+    if (allYes) {
+      showCorrectAnswerFeedback(1, true);
+      setTimeout(() => setShowPopup(true), 6000); // 🎉 show popup after 6s
+    }
+  };
 
   const handleNext = () => {
     navigate("/student/moral-values/teen/debate-obey-or-question");
@@ -38,62 +52,112 @@ const BadgeIntegrityHero = () => {
       title="Badge: Integrity Hero"
       subtitle="Integrity Mastery"
       onNext={handleNext}
-      nextEnabled={showBadge}
-      showGameOver={showBadge}
-      score={3}
+      nextEnabled={isWinner}
+      showGameOver={showResult}
       gameId="moral-teen-10"
       gameType="moral"
-      totalLevels={20}
+      totalLevels={100}
       currentLevel={10}
-      showConfetti={showBadge}
+      showConfetti={isWinner}
       backPath="/games/moral-values/teens"
     >
       <div className="space-y-6">
+        {/* ✅ Main Card */}
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
           <h2 className="text-2xl font-bold text-white mb-6 text-center">
-            {showBadge ? "🏆 Achievement Unlocked!" : "Integrity Dilemmas Progress"}
+            Integrity Hero Challenge 💎
           </h2>
-          
+
           <p className="text-white/80 mb-6 text-center">
-            You've faced and conquered all integrity challenges!
+            Answer truthfully — do you live with integrity every day?
           </p>
 
-          <div className="space-y-3 mb-6">
-            {integrityDilemmas.map(dilemma => (
+          {/* ✅ 5 Integrity Dilemmas with Yes/No Buttons */}
+          <div className="space-y-4 mb-6">
+            {integrityActs.map((act) => (
               <div
-                key={dilemma.id}
-                className={`border-2 rounded-xl p-4 transition-all ${
-                  completedDilemmas.find(d => d.id === dilemma.id)
-                    ? 'bg-green-500/30 border-green-400'
-                    : 'bg-white/10 border-white/30'
-                }`}
+                key={act.id}
+                className="border border-white/30 rounded-xl p-4 bg-white/5 hover:bg-white/10 transition"
               >
-                <div className="flex items-center gap-3">
-                  <div className="text-3xl">{dilemma.emoji}</div>
-                  <div className="flex-1 text-white font-semibold">{dilemma.text}</div>
-                  {completedDilemmas.find(d => d.id === dilemma.id) && (
-                    <div className="text-2xl">✅</div>
-                  )}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">{act.emoji}</div>
+                    <div className="text-white font-medium text-lg">{act.text}</div>
+                  </div>
+                  <div className="flex gap-4 mt-2 sm:mt-0">
+                    <button
+                      className={`px-4 py-2 rounded-xl font-semibold transition ${
+                        answers[act.id] === "yes"
+                          ? "bg-green-500 text-white"
+                          : "bg-white/20 text-white hover:bg-green-600/50"
+                      }`}
+                      onClick={() => handleAnswer(act.id, "yes")}
+                    >
+                      Yes
+                    </button>
+                    <button
+                      className={`px-4 py-2 rounded-xl font-semibold transition ${
+                        answers[act.id] === "no"
+                          ? "bg-red-500 text-white"
+                          : "bg-white/20 text-white hover:bg-red-600/50"
+                      }`}
+                      onClick={() => handleAnswer(act.id, "no")}
+                    >
+                      No
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
 
-          {showBadge && (
-            <div className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-2xl p-8 text-center animate-pulse">
-              <div className="text-9xl mb-4">💎</div>
-              <h3 className="text-white text-4xl font-bold mb-3">Integrity Hero!</h3>
-              <p className="text-white/90 text-lg">You've completed all 5 integrity dilemmas!</p>
-              <p className="text-white/80 text-sm mt-4">
-                You have unshakeable moral character! 🌟
-              </p>
+          {/* ✅ Submit Button */}
+          <div className="text-center">
+            <button
+              onClick={handleSubmit}
+              className="bg-gradient-to-r from-purple-500 to-blue-500 hover:opacity-90 text-white font-semibold px-6 py-3 rounded-xl transition-all"
+            >
+              Submit Answers
+            </button>
+          </div>
+
+          {/* ✅ Result Section */}
+          {showResult && (
+            <div className="mt-8 text-center">
+              {isWinner ? (
+                <div className="text-green-400 text-xl font-bold">
+                  💎 Integrity Wins! You are a True Hero!
+                </div>
+              ) : (
+                <div className="text-red-400 text-lg font-semibold">
+                  ⚠️ Some answers lack integrity — try again with full honesty!
+                </div>
+              )}
             </div>
           )}
         </div>
       </div>
+
+      {/* ✅ Popup for Badge Unlock */}
+      {showPopup && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50">
+          <div className="bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 text-white rounded-2xl p-10 text-center shadow-2xl animate-bounce">
+            <div className="text-6xl mb-4">🏆</div>
+            <h3 className="text-3xl font-bold mb-2">Congratulations!</h3>
+            <p className="text-lg mb-6">
+              You’ve earned the <strong>Integrity Hero Badge!</strong> 💎
+            </p>
+            <button
+              onClick={() => setShowPopup(false)}
+              className="bg-white text-blue-600 font-bold px-6 py-2 rounded-xl hover:bg-gray-200"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </GameShell>
   );
 };
 
 export default BadgeIntegrityHero;
-

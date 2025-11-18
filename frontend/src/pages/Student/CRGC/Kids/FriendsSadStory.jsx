@@ -5,148 +5,193 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const FriendsSadStory = () => {
   const navigate = useNavigate();
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const story = {
-    title: "Friend Needs Comfort",
-    emoji: "😢",
-    situation: "Your friend is crying because her toy broke. What should you do?",
-    choices: [
-      { id: 1, text: "Comfort her and offer help", emoji: "🤗", isCorrect: true },
-      { id: 2, text: "Laugh at her", emoji: "😂", isCorrect: false },
-      { id: 3, text: "Walk away and ignore her", emoji: "🚶", isCorrect: false }
-    ]
-  };
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = story.choices.find(c => c.id === selectedChoice);
-    
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
+  const questions = [
+    {
+      id: 1,
+      text: "Your friend is crying because her toy broke. What should you do?",
+      options: [
+        {
+          id: "a",
+          text: "Comfort her",
+          emoji: "🤗",
+          description: "That's right! When a friend is sad, showing empathy and offering comfort helps them feel better.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Ignore her",
+          emoji: "🤫",
+          description: "That's not the best choice. Ignoring someone who is sad can make them feel worse and more alone.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "Your friend is still upset. What else can you do?",
+      options: [
+        {
+          id: "a",
+          text: "Tell her to stop crying",
+          emoji: "✋",
+          description: "That's not helpful. Telling someone to stop crying dismisses their feelings and doesn't help them cope.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Listen to her feelings",
+          emoji: "👂",
+          description: "Perfect! Listening shows that you care about your friend's feelings and helps them process what happened.",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "Your friend feels a bit better. What could you suggest?",
+      options: [
+        {
+          id: "a",
+          text: "Leave her alone",
+          emoji: "🚶",
+          description: "That's not ideal. While sometimes people need space, leaving a friend alone when they're sad might make them feel abandoned.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Play together to cheer her up",
+          emoji: "🎮",
+          description: "Great idea! Playing together can help distract from sadness and bring back positive feelings.",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "Your friend's toy can't be fixed. How can you help?",
+      options: [
+        {
+          id: "a",
+          text: "Tell her it was her fault",
+          emoji: "😠",
+          description: "That's not kind. Blaming someone for an accident doesn't help and can make them feel worse.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Share your toys with her",
+          emoji: "🧸",
+          description: "Wonderful! Sharing shows kindness and can help your friend feel supported during a difficult time.",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Your friend is feeling much better now. What should you do?",
+      options: [
+        {
+          id: "a",
+          text: "Forget about what happened",
+          emoji: "😴",
+          description: "That's not the best approach. Remembering to check in shows empathy and strengthens friendships.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Ask her how she's feeling",
+          emoji: "💬",
+          description: "Excellent! Checking in shows continued care and helps ensure your friend is truly feeling better.",
+          isCorrect: true
+        }
+      ]
     }
-    
-    setShowFeedback(true);
-  };
+  ];
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
-    resetFeedback();
+  const handleChoice = (optionId) => {
+    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
+
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+      } else {
+        setGameFinished(true);
+      }
+    }, 1500);
   };
 
   const handleNext = () => {
-    navigate("/student/civic-responsibility/kids/quiz-on-empathy");
+    navigate("/games/civic-responsibility/kids");
   };
 
-  const selectedChoiceData = story.choices.find(c => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Friend's Sad Story"
-      subtitle="Showing Empathy"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
-      showGameOver={showFeedback && coins > 0}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={coins}
-      gameId="crgc-kids-1"
-      gameType="crgc"
-      totalLevels={20}
+      gameId="civic-responsibility-kids-1"
+      gameType="civic-responsibility"
+      totalLevels={10}
       currentLevel={1}
-      showConfetti={showFeedback && coins > 0}
+      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
       backPath="/games/civic-responsibility/kids"
+      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-4 text-center">{story.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{story.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-6">
-              <p className="text-white text-xl leading-relaxed text-center">{story.situation}</p>
-            </div>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+          </div>
+          
+          <h2 className="text-xl font-semibold text-white mb-6">
+            {getCurrentQuestion().text}
+          </h2>
 
-            <div className="space-y-3 mb-6">
-              {story.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-lg">{choice.text}</div>
+          <div className="grid grid-cols-1 gap-4">
+            {getCurrentQuestion().options.map(option => (
+              <button
+                key={option.id}
+                onClick={() => handleChoice(option.id)}
+                disabled={choices.some(c => c.question === currentQuestion)}
+                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+              >
+                <div className="flex items-center">
+                  <div className="text-2xl mr-4">{option.emoji}</div>
+                  <div>
+                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
+                      <p className="text-white/90">{option.description}</p>
+                    )}
                   </div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Choice
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "💖 Kind Heart!" : "Try Again..."}
-            </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-            
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Perfect! When friends are sad, we should comfort them. This shows empathy and care. 
-                    Being there for others makes you a great friend!
-                  </p>
                 </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    When friends are sad, we should comfort them and help! Being kind makes you a good friend!
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
+              </button>
+            ))}
           </div>
-        )}
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default FriendsSadStory;
-

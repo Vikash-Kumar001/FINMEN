@@ -42,7 +42,7 @@ const AIEverywhereQuiz = () => {
   };
 
   const handleFinish = () => {
-    navigate("/games/ai-for-all/teens");
+    navigate("/games/ai-for-all/teens/spam-filter-reflex");
   };
 
   const selectedChoiceData = question.choices.find(c => c.id === selectedChoice);

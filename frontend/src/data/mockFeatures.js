@@ -358,7 +358,7 @@ export const mockFeatures = [
     title: "Kids Games",
     description: "Fun and educational entrepreneurship games for children",
     icon: "🧸",
-    path: "/games/entrepreneurship/kids",
+    path: "/games/ehe/kids",
     color: "bg-yellow-400",
     category: "rewards",
     xpReward: 30
@@ -368,7 +368,7 @@ export const mockFeatures = [
     title: "Teen Games",
     description: "Engaging entrepreneurship games designed for teenagers",
     icon: "📱",
-    path: "/games/entrepreneurship/teens",
+    path: "/games/ehe/teens",
     color: "bg-blue-500",
     category: "rewards",
     xpReward: 35
@@ -378,7 +378,7 @@ export const mockFeatures = [
     title: "Adult Games",
     description: "Challenging entrepreneurship games for adults",
     icon: "🧩",
-    path: "/games/entrepreneurship/adults",
+    path: "/games/ehe/adults",
     color: "bg-purple-500",
     category: "rewards",
     xpReward: 40

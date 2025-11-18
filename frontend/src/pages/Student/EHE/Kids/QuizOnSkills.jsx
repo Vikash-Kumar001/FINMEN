@@ -5,144 +5,235 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const QuizOnSkills = () => {
   const navigate = useNavigate();
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [gameFinished, setGameFinished] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const question = {
-    text: "Which skill helps entrepreneurs succeed?",
-    emoji: "💪",
-    choices: [
-      { id: 1, text: "Problem-solving", isCorrect: true },
-      { id: 2, text: "Sleeping late", isCorrect: false },
-      { id: 3, text: "Giving up easily", isCorrect: false }
-    ]
-  };
-
-  const handleChoice = (choiceId) => {
-    setSelectedChoice(choiceId);
-  };
-
-  const handleConfirm = () => {
-    const choice = question.choices.find(c => c.id === selectedChoice);
-    
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(3, true);
-      setCoins(3);
+  const questions = [
+    {
+      id: 1,
+      text: "Which skill helps entrepreneurs solve problems and find new solutions?",
+      options: [
+        {
+          id: "a",
+          text: "Problem-solving",
+          emoji: "🧩",
+          description: "Correct! Entrepreneurs need to solve problems creatively!",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Sleeping late",
+          emoji: "😴",
+          description: "Sleep is important, but it doesn't solve business problems!",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Watching TV",
+          emoji: "📺",
+          description: "Entertainment is good, but it doesn't help with business challenges!",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "What skill helps you understand what customers want and need?",
+      options: [
+        {
+          id: "c",
+          text: "Running fast",
+          emoji: "🏃",
+          description: "Fitness is good, but not for understanding customer needs!",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Cooking",
+          emoji: "🍳",
+          description: "Cooking is useful, but not for understanding customers!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Communication",
+          emoji: "💬",
+          description: "Perfect! Good communication helps you listen to and understand customers!",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "Which skill helps you work well with others on a team?",
+      options: [
+        {
+          id: "c",
+          text: "Drawing",
+          emoji: "🎨",
+          description: "Art is creative, but not specifically for teamwork!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Teamwork",
+          emoji: "🤝",
+          description: "Exactly! Teamwork is essential for success in business!",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Singing",
+          emoji: "🎤",
+          description: "Singing is fun, but not essential for teamwork!",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "What skill helps you come up with new ideas and think differently?",
+      options: [
+        {
+          id: "b",
+          text: "Shopping",
+          emoji: "🛍️",
+          description: "Shopping is fun, but not for generating ideas!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Creativity",
+          emoji: "💡",
+          description: "Great! Creativity helps you innovate and find unique solutions!",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Cleaning",
+          emoji: "🧹",
+          description: "Cleanliness is good, but not for creative thinking!",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Which skill helps you keep going even when things get tough?",
+      options: [
+        {
+          id: "c",
+          text: "Playing games",
+          emoji: "🎮",
+          description: "Games are fun, but don't develop perseverance!",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Eating sweets",
+          emoji: "🍰",
+          description: "Treats are nice, but don't build resilience!",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Perseverance",
+          emoji: "💪",
+          description: "Correct! Perseverance helps you overcome challenges!",
+          isCorrect: true
+        }
+      ]
     }
-    
-    setShowFeedback(true);
-  };
+  ];
 
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
-    setCoins(0);
-    resetFeedback();
+  const handleChoice = (optionId) => {
+    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
+
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+      } else {
+        setGameFinished(true);
+      }
+    }, 1500);
   };
 
   const handleNext = () => {
-    navigate("/student/ehe/kids/reflex-skill-check");
+    navigate("/games/ehe/kids");
   };
 
-  const selectedChoiceData = question.choices.find(c => c.id === selectedChoice);
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Quiz on Skills"
-      subtitle="Entrepreneur Skills"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
-      showGameOver={showFeedback && coins > 0}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
       score={coins}
       gameId="ehe-kids-12"
-      gameType="educational"
-      totalLevels={20}
+      gameType="ehe"
+      totalLevels={10}
       currentLevel={12}
-      showConfetti={showFeedback && coins > 0}
+      showConfetti={gameFinished}
       flashPoints={flashPoints}
+      backPath="/games/ehe/kids"
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/entrepreneurship/kids"
     >
       <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-9xl mb-6 text-center">{question.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-5 mb-8">
-              <p className="text-white text-2xl leading-relaxed text-center font-semibold">
-                {question.text}
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              {question.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-5 transition-all ${
-                    selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="text-white font-semibold text-lg text-center">{choice.text}</div>
-                </button>
-              ))}
-            </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Answer
-            </button>
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{coins > 0 ? "🌟" : "❌"}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {coins > 0 ? "Correct!" : "Not Quite..."}
-            </h2>
-            
-            {coins > 0 ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Yes! Problem-solving is a key skill for entrepreneurs. They find solutions to 
-                    challenges and create opportunities!
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 3 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Problem-solving is the key skill! Entrepreneurs solve problems creatively!
-                  </p>
-                </div>
+          
+          <h2 className="text-xl font-semibold text-white mb-6">
+            {getCurrentQuestion().text}
+          </h2>
+
+          <div className="grid grid-cols-1 gap-4">
+            {getCurrentQuestion().options.map(option => {
+              const isSelected = choices.some(c => 
+                c.question === currentQuestion && c.optionId === option.id
+              );
+              const showFeedback = choices.some(c => c.question === currentQuestion);
+              
+              return (
                 <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
                 >
-                  Try Again
+                  <div className="flex items-center">
+                    <div className="text-2xl mr-4">{option.emoji}</div>
+                    <div>
+                      <h3 className="font-bold text-xl mb-1">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white/90">{option.description}</p>
+                      )}
+                    </div>
+                  </div>
                 </button>
-              </>
-            )}
+              );
+            })}
           </div>
-        )}
+        </div>
       </div>
     </GameShell>
   );
 };
 
 export default QuizOnSkills;
-

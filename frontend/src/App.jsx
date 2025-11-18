@@ -226,7 +226,22 @@ const App = () => {
   // Hide navbar on full-screen game routes and standalone pages with back buttons
   const isFullScreenGame =
     location.pathname.startsWith("/student/games/") ||
-    location.pathname.startsWith("/student/") ||
+    location.pathname.startsWith("/student/finance/kids/") ||
+    location.pathname.startsWith("/student/finance/teen/") ||
+    location.pathname.startsWith("/student/brain/kids/") ||
+    location.pathname.startsWith("/student/brain/teen/") ||
+    location.pathname.startsWith("/student/uvls/kids/") ||
+    location.pathname.startsWith("/student/uvls/teen/") ||
+    location.pathname.startsWith("/student/dcos/kids/") ||
+    location.pathname.startsWith("/student/dcos/teen/") ||
+    location.pathname.startsWith("/student/moral-values/kids/") ||
+    location.pathname.startsWith("/student/moral-values/teen/") ||
+    location.pathname.startsWith("/student/ai-for-all/kids/") ||
+    location.pathname.startsWith("/student/ai-for-all/teen/") ||
+    location.pathname.startsWith("/student/ehe/kids/") ||
+    location.pathname.startsWith("/student/ehe/teen/") ||
+    location.pathname.startsWith("/student/civic-responsibility/kids/") ||
+    location.pathname.startsWith("/student/civic-responsibility/teen/") ||
     location.pathname.startsWith("/games/") ||
     location.pathname.startsWith("/tools/") ||
     location.pathname.startsWith("/learn/") ||

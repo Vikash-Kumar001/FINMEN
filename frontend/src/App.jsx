@@ -809,14 +809,6 @@ const App = () => {
             }
           />
           <Route
-            path="/student/payment/checkout"
-            element={
-              <ProtectedRoute roles={["student"]}>
-                <SubscriptionCheckout />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/parent/upgrade/checkout"
             element={
               <ProtectedRoute roles={["parent"]} requireApproved={true}>

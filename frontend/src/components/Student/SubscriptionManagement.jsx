@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import {
   CreditCard, Crown, ArrowRight, Zap, CheckCircle, Calendar, TrendingUp, ArrowUp, ArrowDown, RefreshCw, Lock, Unlock, Sparkles, Loader2
@@ -7,6 +7,28 @@ import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
 import { useSocket } from '../../context/SocketContext';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../../context/AuthUtils';
+
+// Load Razorpay
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(window.Razorpay);
+      return;
+    }
+    
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.async = true;
+    script.onload = () => {
+      resolve(window.Razorpay);
+    };
+    script.onerror = () => {
+      resolve(null);
+    };
+    document.body.appendChild(script);
+  });
+};
 
 const SubscriptionManagement = () => {
   const [subscription, setSubscription] = useState(null);
@@ -14,6 +36,8 @@ const SubscriptionManagement = () => {
   const [upgrading, setUpgrading] = useState(false);
   const socket = useSocket();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const availableUpgradesRef = useRef(null);
 
   // Plan configurations
   const plans = {
@@ -126,7 +150,7 @@ const SubscriptionManagement = () => {
     };
   }, [socket, fetchSubscription]);
 
-  const handleUpgrade = (planType) => {
+  const handleUpgrade = async (planType) => {
     const plan = plans[planType];
     if (!plan) {
       toast.error('Invalid plan selected');
@@ -139,21 +163,139 @@ const SubscriptionManagement = () => {
       return;
     }
 
+    // Check if user is authenticated
+    const token = localStorage.getItem("finmen_token");
+    if (!token) {
+      toast.error('Please login to upgrade your plan');
+      navigate('/login');
+      return;
+    }
+
     // Determine if it's first year or renewal
     const isFirstYear = !subscription || subscription.planType === 'free';
     const amount = isFirstYear
       ? plan.firstYearPrice || plan.renewalPrice || 0
       : plan.renewalPrice || plan.firstYearPrice || 0;
 
-    // Navigate to dedicated checkout page with plan details
-    navigate(`/student/payment/checkout?plan=${planType}&firstYear=${isFirstYear ? '1' : '0'}`, {
-      state: {
+    // For free plan, activate immediately
+    if (planType === 'free' || amount === 0) {
+      try {
+        setUpgrading(true);
+        const response = await api.post('/api/subscription/create-payment', {
+          planType: 'free',
+        });
+        if (response.data.success) {
+          toast.success('Free plan activated successfully! 🎉');
+          if (socket?.socket) {
+            socket.socket.emit('subscription:activated', {
+              subscription: response.data.subscription,
+            });
+          }
+          fetchSubscription();
+        }
+      } catch (error) {
+        toast.error(error.response?.data?.message || 'Failed to activate free plan');
+      } finally {
+        setUpgrading(false);
+      }
+      return;
+    }
+
+    // For paid plans, initialize Razorpay payment
+    try {
+      setUpgrading(true);
+      
+      // Determine context based on user role and plan type
+      const context = (user?.role === 'parent' || planType === 'student_parent_premium_pro') ? 'parent' : 'student';
+      
+      // Create payment intent
+      const response = await api.post('/api/subscription/create-payment', {
         planType,
-        planName: plan.name,
-        amount,
-        isFirstYear,
-      },
-    });
+        context,
+        mode: 'purchase',
+      });
+
+      if (response.data.success) {
+        const { orderId, keyId, subscriptionId } = response.data;
+
+        // Load Razorpay
+        const Razorpay = await loadRazorpay();
+        if (!Razorpay) {
+          throw new Error('Payment gateway not available right now.');
+        }
+
+        // Initialize Razorpay payment
+        const options = {
+          key: keyId,
+          amount: Math.round(amount * 100), // Convert to paise
+          currency: 'INR',
+          name: 'FINMEN',
+          description: `Subscription: ${plan.name}`,
+          order_id: orderId,
+          handler: async function (paymentResponse) {
+            try {
+              setUpgrading(true);
+              // Verify payment
+              const verifyResponse = await api.post('/api/subscription/verify-payment', {
+                subscriptionId,
+                razorpayPaymentId: paymentResponse.razorpay_payment_id,
+                razorpayOrderId: paymentResponse.razorpay_order_id,
+                razorpaySignature: paymentResponse.razorpay_signature,
+              });
+
+              if (verifyResponse.data.success) {
+                toast.success('Payment successful! Your subscription has been activated. 🎉');
+                
+                // Emit real-time update via socket
+                if (socket?.socket) {
+                  socket.socket.emit('subscription:activated', {
+                    subscription: verifyResponse.data.subscription,
+                  });
+                }
+                
+                // Refresh subscription data
+                fetchSubscription();
+              } else {
+                throw new Error(verifyResponse.data.message || 'Failed to activate subscription');
+              }
+            } catch (verifyError) {
+              console.error('Subscription activation error:', verifyError);
+              toast.error(verifyError.response?.data?.message || 'Payment succeeded but subscription activation failed. Please contact support.');
+            } finally {
+              setUpgrading(false);
+            }
+          },
+          prefill: {
+            name: user?.name || user?.fullName || '',
+            email: user?.email || '',
+          },
+          theme: {
+            color: '#6366f1',
+          },
+          modal: {
+            ondismiss: function () {
+              setUpgrading(false);
+              toast.info('Payment was cancelled');
+            },
+          },
+        };
+
+        const razorpayInstance = new Razorpay(options);
+        razorpayInstance.open();
+      } else {
+        throw new Error(response.data.message || 'Failed to initialize payment');
+      }
+    } catch (error) {
+      console.error('Payment initialization error:', error);
+      if (error.response?.status === 401) {
+        toast.error('Please login to continue');
+        navigate('/login');
+      } else {
+        toast.error(error.response?.data?.message || error.message || 'Failed to initialize payment');
+      }
+    } finally {
+      setUpgrading(false);
+    }
   };
 
   const handleCancel = async () => {
@@ -328,7 +470,13 @@ const SubscriptionManagement = () => {
               )}
               {subscription?.planType === 'free' && (
                 <button
-                  onClick={() => handleUpgrade('student_premium')}
+                  onClick={() => {
+                    // Scroll to available upgrades section
+                    availableUpgradesRef.current?.scrollIntoView({ 
+                      behavior: 'smooth', 
+                      block: 'start' 
+                    });
+                  }}
                   className="flex-1 bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-white/90 transition-colors"
                 >
                   Upgrade to Premium
@@ -456,7 +604,7 @@ const SubscriptionManagement = () => {
 
         {/* Upgrade Options */}
         {!['student_parent_premium_pro', 'educational_institutions_premium'].includes(currentPlanType) && (
-          <div className="mb-6">
+          <div className="mb-6" ref={availableUpgradesRef}>
             <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
               <TrendingUp className="w-5 h-5 text-purple-600" />
               Available Upgrades
@@ -494,7 +642,7 @@ const SubscriptionManagement = () => {
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleUpgrade('student_parent_premium_pro');
+                          handleUpgrade('student_premium');
                         }}
                         className="w-full bg-white text-purple-600 py-3 rounded-lg font-bold hover:bg-white/90 transition-colors flex items-center justify-center gap-2"
                       >
@@ -533,7 +681,7 @@ const SubscriptionManagement = () => {
                       <button 
                         onClick={(e) => {
                           e.stopPropagation();
-                          handleUpgrade('student_premium');
+                          handleUpgrade('student_parent_premium_pro');
                         }}
                         className="w-full bg-white text-purple-600 py-3 rounded-lg font-bold hover:bg-white/90 transition-colors flex items-center justify-center gap-2"
                       >
@@ -593,7 +741,6 @@ const SubscriptionManagement = () => {
         )}
 
       </motion.div>
-
     </>
   );
 };

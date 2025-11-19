@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useEffect, useCallback } from 'react';
+import { createPortal } from 'react-dom';
+import { motion, AnimatePresence } from 'framer-motion'; // eslint-disable-line no-unused-vars
 import { X, Loader2, CheckCircle, AlertCircle, CreditCard, Shield, Lock, UserPlus, Users, GraduationCap } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
@@ -31,8 +32,6 @@ const loadRazorpay = () => {
 const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYear }) => {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState('init'); // init, register, payment, success, error
-  const [orderId, setOrderId] = useState(null);
-  const [razorpayKeyId, setRazorpayKeyId] = useState(null);
   const [paymentError, setPaymentError] = useState(null);
   const [subscriptionId, setSubscriptionId] = useState(null);
   const socket = useSocket();
@@ -41,6 +40,9 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
 
   useEffect(() => {
     if (isOpen) {
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+      
       // Reset state when modal opens
       setStep('init');
       setPaymentError(null);
@@ -64,14 +66,20 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
         initializePayment();
       }
     } else {
+      // Restore body scroll when modal closes
+      document.body.style.overflow = 'auto';
+      
       // Reset everything when modal closes
       setStep('init');
       setPaymentError(null);
-      setOrderId(null);
-      setRazorpayKeyId(null);
       setSubscriptionId(null);
     }
-  }, [isOpen]);
+    
+    // Cleanup function
+    return () => {
+      document.body.style.overflow = 'auto';
+    };
+  }, [isOpen, planType, amount, activateFreePlan, initializePayment]);
 
   useEffect(() => {
     // Listen for real-time payment updates
@@ -91,7 +99,7 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
     }
   }, [socket, subscriptionId]);
 
-  const activateFreePlan = async () => {
+  const activateFreePlan = useCallback(async () => {
     try {
       setLoading(true);
       setPaymentError(null);
@@ -132,16 +140,21 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
     } finally {
       setLoading(false);
     }
-  };
+  }, [socket, onClose]);
 
-  const initializePayment = async () => {
+  const initializePayment = useCallback(async () => {
     try {
       setLoading(true);
       setPaymentError(null);
 
       // Create payment intent
+      // Determine context based on user role and plan type
+      const context = (user?.role === 'parent' || planType === 'student_parent_premium_pro') ? 'parent' : 'student';
+      
       const response = await api.post('/api/subscription/create-payment', {
         planType,
+        context,
+        mode: 'purchase',
       });
 
       if (response.data.success) {
@@ -165,12 +178,12 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
         }
 
         // For paid plans, initialize Razorpay
-        setOrderId(response.data.orderId);
-        setRazorpayKeyId(response.data.keyId);
+        const orderId = response.data.orderId;
+        const keyId = response.data.keyId;
         setSubscriptionId(response.data.subscriptionId);
 
         // Initialize Razorpay payment
-        await initializeRazorpayPayment(response.data.orderId, response.data.keyId, amount);
+        await initializeRazorpayPayment(orderId, keyId, amount);
       } else {
         throw new Error(response.data.message || 'Failed to initialize payment');
       }
@@ -187,9 +200,9 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
     } finally {
       setLoading(false);
     }
-  };
+  }, [user, planType, amount, socket, onClose, initializeRazorpayPayment]);
 
-  const initializeRazorpayPayment = async (orderId, keyId, amount) => {
+  const initializeRazorpayPayment = useCallback(async (orderId, keyId, amount) => {
     try {
       const Razorpay = await loadRazorpay();
       if (!Razorpay) {
@@ -265,13 +278,17 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
       toast.error(error.message || 'Unable to initialize payment.');
       setLoading(false);
     }
-  };
+  }, [planName, subscriptionId, socket, onClose, user]);
 
-  if (!isOpen) return null;
-
-  return (
+  const modalContent = isOpen ? (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm">
+      <motion.div
+        key="checkout-modal"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/50 backdrop-blur-sm"
+      >
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -508,9 +525,12 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
 
           </div>
         </motion.div>
-      </div>
+      </motion.div>
     </AnimatePresence>
-  );
+  ) : null;
+
+  // Render modal using React Portal to ensure it's always on top
+  return createPortal(modalContent, document.body);
 };
 
 export default CheckoutModal;

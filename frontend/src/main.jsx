@@ -24,6 +24,15 @@ if ("serviceWorker" in navigator) {
   });
 }
 
+// Capture beforeinstallprompt event early (before React components mount)
+// This ensures we don't miss the event if it fires before the InstallPWA component loads
+window.addEventListener("beforeinstallprompt", (e) => {
+  console.log("🔔 beforeinstallprompt event captured globally");
+  e.preventDefault();
+  // Store globally so InstallPWA component can access it
+  window.deferredInstallPrompt = e;
+});
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthProvider>

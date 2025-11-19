@@ -10,6 +10,38 @@ const InstallPWA = ({ variant = "floating" }) => {
   const [showInstructions, setShowInstructions] = useState(false);
   const [platform, setPlatform] = useState("unknown");
   const [isStandalone, setIsStandalone] = useState(false);
+  const [isInstallable, setIsInstallable] = useState(false);
+
+  // Check if PWA is installable
+  const checkInstallability = async () => {
+    // Check if service worker is registered
+    if ('serviceWorker' in navigator) {
+      try {
+        const registration = await navigator.serviceWorker.getRegistration();
+        if (!registration) {
+          console.log('[InstallPWA] Service worker not registered yet');
+          return false;
+        }
+      } catch (error) {
+        console.log('[InstallPWA] Error checking service worker:', error);
+        return false;
+      }
+    }
+
+    // Check if manifest exists
+    try {
+      const response = await fetch('/manifest.json');
+      if (!response.ok) {
+        console.log('[InstallPWA] Manifest not found');
+        return false;
+      }
+    } catch (error) {
+      console.log('[InstallPWA] Error checking manifest:', error);
+      return false;
+    }
+
+    return true;
+  };
 
   // Detect platform and if app is already installed
   useEffect(() => {
@@ -26,6 +58,8 @@ const InstallPWA = ({ variant = "floating" }) => {
     const userAgent = window.navigator.userAgent.toLowerCase();
     const isIOS = /iphone|ipad|ipod/.test(userAgent);
     const isAndroid = /android/.test(userAgent);
+    const isChrome = /chrome/.test(userAgent) && !/edge|edg/.test(userAgent);
+    const isEdge = /edge|edg/.test(userAgent);
 
     let detectedPlatform = "desktop";
     if (isIOS) {
@@ -44,24 +78,74 @@ const InstallPWA = ({ variant = "floating" }) => {
       return;
     }
 
+    // Check for existing deferredPrompt (in case event fired before component mounted)
+    // Store it in window for persistence across component remounts
+    if (window.deferredInstallPrompt) {
+      console.log('[InstallPWA] Found existing deferredPrompt');
+      setDeferredPrompt(window.deferredInstallPrompt);
+      setIsInstallable(true);
+    }
+
     // Listen for beforeinstallprompt event (Android/Desktop Chrome/Edge)
     const handleBeforeInstallPrompt = (e) => {
       console.log('[InstallPWA] beforeinstallprompt event received');
       e.preventDefault();
+      // Store globally for persistence
+      window.deferredInstallPrompt = e;
       setDeferredPrompt(e);
+      setIsInstallable(true);
       setShowInstallButton(true);
     };
 
     window.addEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
 
-    // Show button immediately if not already installed (removed delay)
-    if (!isStandaloneCheck) {
-      console.log('[InstallPWA] Showing install button immediately');
-      setShowInstallButton(true);
-    }
+    // Also listen for appinstalled event to detect when app is installed
+    const handleAppInstalled = () => {
+      console.log('[InstallPWA] App installed');
+      setIsInstalled(true);
+      setShowInstallButton(false);
+      setDeferredPrompt(null);
+      window.deferredInstallPrompt = null;
+    };
+
+    window.addEventListener("appinstalled", handleAppInstalled);
+
+    // Wait for service worker registration, then check installability
+    const initInstallButton = async () => {
+      // Wait a bit for service worker to register
+      if ('serviceWorker' in navigator) {
+        let registration = await navigator.serviceWorker.getRegistration();
+        let attempts = 0;
+        while (!registration && attempts < 10) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+          registration = await navigator.serviceWorker.getRegistration();
+          attempts++;
+        }
+      }
+
+      if (isIOS) {
+        // iOS always shows button (manual installation via share menu)
+        setShowInstallButton(true);
+        setIsInstallable(false);
+      } else if (isAndroid || isChrome || isEdge) {
+        // For Android/Chrome/Edge, check if installable
+        const installable = await checkInstallability();
+        setIsInstallable(installable);
+        // Show button even if beforeinstallprompt hasn't fired yet
+        // It will become functional when the event fires
+        setShowInstallButton(true);
+      } else {
+        // Other browsers - show button but may not be installable
+        setShowInstallButton(true);
+        setIsInstallable(false);
+      }
+    };
+
+    initInstallButton();
 
     return () => {
       window.removeEventListener("beforeinstallprompt", handleBeforeInstallPrompt);
+      window.removeEventListener("appinstalled", handleAppInstalled);
     };
   }, []);
 
@@ -88,26 +172,71 @@ const InstallPWA = ({ variant = "floating" }) => {
     }
   }, [showInstructions]);
 
-  // Handle install button click - directly start installation for all devices
+  // Handle install button click - directly start installation without modal
   const handleInstallClick = async () => {
+    console.log('[InstallPWA] Install button clicked. deferredPrompt:', !!deferredPrompt, 'Platform:', platform);
+    
+    // For Android/Desktop Chrome/Edge - directly trigger install prompt
     if (deferredPrompt) {
-      // Show install prompt (Android/Desktop Chrome/Edge)
       try {
-        deferredPrompt.prompt();
+        console.log('[InstallPWA] Triggering install prompt...');
+        // Show the native browser install prompt directly (no modal)
+        await deferredPrompt.prompt();
         const { outcome } = await deferredPrompt.userChoice;
         
+        console.log('[InstallPWA] User choice:', outcome);
+        
         if (outcome === "accepted") {
+          console.log('[InstallPWA] Installation accepted');
+          setIsInstalled(true);
+          setShowInstallButton(false);
+        } else {
+          console.log('[InstallPWA] Installation dismissed');
+        }
+        
+        // Clear the deferred prompt after use
+        setDeferredPrompt(null);
+        window.deferredInstallPrompt = null;
+      } catch (error) {
+        console.error('[InstallPWA] Install prompt error:', error);
+        // If prompt fails, the app might already be installed or not installable
+        // Check if we can detect installation status
+        const isStandaloneCheck = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone;
+        if (isStandaloneCheck) {
           setIsInstalled(true);
           setShowInstallButton(false);
         }
-      } catch (error) {
-        console.error('Install prompt error:', error);
       }
-      
-      setDeferredPrompt(null);
-    }
-    // For iOS or browsers without deferredPrompt, do nothing (no modal, no toast)
-    // iOS requires manual installation via browser menu
+    } else {
+        // No deferredPrompt available - check if it's stored globally
+        if (window.deferredInstallPrompt) {
+          console.log('[InstallPWA] Found deferredPrompt in window, using it');
+          const prompt = window.deferredInstallPrompt;
+          setDeferredPrompt(prompt);
+          // Retry with the found prompt
+          try {
+            await prompt.prompt();
+            const { outcome } = await prompt.userChoice;
+            if (outcome === "accepted") {
+              setIsInstalled(true);
+              setShowInstallButton(false);
+            }
+            setDeferredPrompt(null);
+            window.deferredInstallPrompt = null;
+          } catch (error) {
+            console.error('[InstallPWA] Install prompt error:', error);
+          }
+        } else {
+          // No prompt available at all
+          // On Android Chrome, the install option should appear in the browser menu
+          // We can't programmatically trigger it, so just log
+          if (platform === "android") {
+            console.log('[InstallPWA] No install prompt available. On Android Chrome, users can install via browser menu (3 dots > Install app)');
+          } else if (platform === "ios") {
+            console.log('[InstallPWA] iOS detected - manual installation required via Safari Share menu');
+          }
+        }
+      }
   };
 
   // Handle actual installation (kept for backward compatibility if needed)

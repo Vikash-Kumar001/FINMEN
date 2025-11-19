@@ -29,6 +29,7 @@ import {
   fetchUserProfile,
   updateUserProfile,
   uploadUserAvatar,
+  fetchLeaderboardSnippet,
 } from "../services/dashboardService";
 
 const defaultPreferences = {
@@ -229,6 +230,7 @@ const Profile = () => {
   const [linkingLoading, setLinkingLoading] = useState(false);
   const [showParentAlreadyLinkedModal, setShowParentAlreadyLinkedModal] = useState(false);
   const [parentAlreadyLinkedData, setParentAlreadyLinkedData] = useState(null);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   const apiBaseUrl =
     import.meta.env.VITE_API_URL?.trim() || "http://localhost:5000";
@@ -413,10 +415,11 @@ const Profile = () => {
     if (!user) return;
     try {
       setAchievementsLoading(true);
-      const [achievementsRes, progressRes, statsRes] = await Promise.all([
+      const [achievementsRes, progressRes, statsRes, leaderboardData] = await Promise.all([
         api.get("/api/game/achievements"),
         api.get("/api/progress"),
         api.get("/api/stats/student").catch(() => ({ data: {} })),
+        fetchLeaderboardSnippet().catch(() => ({ currentUserRank: null })),
       ]);
 
       setAchievements(Array.isArray(achievementsRes.data) ? achievementsRes.data : []);
@@ -428,7 +431,9 @@ const Profile = () => {
           xp: progressRes.data.xp || prev.xp || 0,
           streak: progressRes.data.streak || prev.streak || 0,
           rank:
-            statsRes.data?.rank !== undefined
+            leaderboardData?.currentUserRank !== undefined && leaderboardData?.currentUserRank !== null
+              ? leaderboardData.currentUserRank
+              : statsRes.data?.rank !== undefined
               ? statsRes.data.rank
               : prev.rank,
         }));
@@ -625,7 +630,12 @@ const Profile = () => {
     if (!value) return;
     try {
       await navigator.clipboard.writeText(value);
+      setCodeCopied(true);
       toast.success("Linking code copied");
+      // Reset the "Copied" state after 2 seconds
+      setTimeout(() => {
+        setCodeCopied(false);
+      }, 2000);
     } catch (error) {
       console.error("Clipboard error:", error);
       toast.error("Unable to copy right now");
@@ -811,13 +821,26 @@ const Profile = () => {
                       type="button"
                       onClick={() => handleCopyCode(profile.linkingCode)}
                       className={`mt-3 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition hover:bg-white ${
-                        profile?.role === 'school_student' || user?.role === 'school_student'
+                        codeCopied
+                          ? profile?.role === 'school_student' || user?.role === 'school_student'
+                            ? 'border-green-300 text-green-700 bg-green-50'
+                            : 'border-green-300 text-green-700 bg-green-50'
+                          : profile?.role === 'school_student' || user?.role === 'school_student'
                           ? 'border-purple-300 text-purple-700 hover:border-purple-400'
                           : 'border-indigo-200 text-indigo-600'
                       }`}
                     >
-                      <Copy className="h-3.5 w-3.5" />
-                      Copy
+                      {codeCopied ? (
+                        <>
+                          <CheckCircle className="h-3.5 w-3.5" />
+                          Copied
+                        </>
+                      ) : (
+                        <>
+                          <Copy className="h-3.5 w-3.5" />
+                          Copy
+                        </>
+                      )}
                     </button>
                   </>
                 ) : (

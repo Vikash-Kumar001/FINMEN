@@ -1370,7 +1370,7 @@ export default function StudentDashboard() {
                             <p className="text-gray-600 font-medium">Master all skills and unlock your potential!</p>
                         </div>
                         
-                        <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 sm:gap-8 justify-center">
+                        <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 sm:gap-8 justify-center items-stretch">
                             {pillarMastery.pillars.map((pillar, index) => {
                                 const colorSchemes = [
                                     { 
@@ -1463,11 +1463,11 @@ export default function StudentDashboard() {
                                             y: -5,
                                             transition: { duration: 0.2 }
                                         }}
-                                        className="sm:w-auto w-full relative group cursor-pointer"
+                                        className="sm:w-auto w-full relative group cursor-pointer h-full"
                                     >
                                         {/* 3D Card Container */}
                                         <div 
-                                            className={`relative bg-gradient-to-br ${colorScheme.bg} -z-10 rounded-3xl sm:p-6 p-3 shadow-xl ${colorScheme.shadow} transition-all duration-300 group-hover:shadow-2xl`}
+                                            className={`relative bg-gradient-to-br ${colorScheme.bg} -z-10 rounded-3xl sm:p-6 p-3 shadow-xl ${colorScheme.shadow} transition-all duration-300 group-hover:shadow-2xl h-full flex flex-col`}
                                             style={{
                                                 boxShadow: `0 10px 30px -10px ${colorScheme.glow}`
                                             }}
@@ -1550,6 +1550,7 @@ export default function StudentDashboard() {
                                             {/* Label with gradient background */}
                                             <motion.div
                                                 whileHover={{ scale: 1.05 }}
+                                                className="mt-auto"
                                                 onClick={() => {
                                                     // Check if pillar is locked
                                                     if (pillar.locked || pillar.accessMode === 'locked' || pillar.upgradeRequired) {
@@ -1584,10 +1585,11 @@ export default function StudentDashboard() {
                                                         'dcos': '/games/digital-citizenship',
                                                         'moral': '/games/moral-values',
                                                         'ai': '/games/ai-for-all',
+                                                        'health-male': '/games/health-male',
+                                                        'health-female': '/games/health-female',
                                                         'ehe': '/games/ehe',
                                                         'crgc': '/games/civic-responsibility',
-                                                        'mental': '/games/mental-health',
-                                                        'educational': '/games/education'
+                                                        'sustainability': '/games/sustainability'
                                                     };
 
                                                     const routeBase = pillarRouteMap[pillar.pillarKey] || `/games/${pillar.pillarKey}`;
@@ -1598,10 +1600,15 @@ export default function StudentDashboard() {
                                                     
                                                     navigate(`${routeBase}/${ageGroup}`);
                                                 }}
-                                                className={`mt-4 bg-gradient-to-r ${colorScheme.gradient} rounded-2xl px-4 py-3 shadow-lg ${pillar.locked || pillar.accessMode === 'locked' || pillar.upgradeRequired ? 'cursor-pointer opacity-75' : 'cursor-pointer'}`}
+                                                className={`mt-4 bg-gradient-to-r ${colorScheme.gradient} rounded-2xl px-4 py-3 shadow-lg min-h-[4rem] flex flex-col justify-center ${pillar.locked || pillar.accessMode === 'locked' || pillar.upgradeRequired ? 'cursor-pointer opacity-75' : 'cursor-pointer'}`}
                                             >
                                                 <div className="flex items-center justify-center gap-2">
-                                                    <p className="text-sm font-bold text-white text-center leading-tight drop-shadow">
+                                                    <p className="text-sm font-bold text-white text-center leading-tight drop-shadow" style={{ 
+                                                        display: '-webkit-box',
+                                                        WebkitLineClamp: 2,
+                                                        WebkitBoxOrient: 'vertical',
+                                                        overflow: 'hidden'
+                                                    }}>
                                                         {pillar.pillar}
                                                     </p>
                                                     {(pillar.locked || pillar.accessMode === 'locked' || pillar.upgradeRequired) && (

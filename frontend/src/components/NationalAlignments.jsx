@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
 
 // Import all logo images
 import rbiLogo from "../assets/NA_Images/rbi.png";
@@ -116,7 +116,7 @@ function NationalAlignments({ services = defaultServices, sectionRef }) {
           viewport={{ once: true }}
           className="text-left"
         >
-          <h2 className="text-4xl font-bold text-white mb-10 text-center">National Alignments</h2>
+          <h2 className="sm:text-4xl text-3xl font-bold text-white mb-10 text-center">National Alignments</h2>
 
           <div className="relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm p-12">
             <motion.div

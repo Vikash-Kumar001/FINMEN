@@ -59,7 +59,9 @@ const AutoSlidingCards = () => {
         "Progress You Can See – Beyond marks, track growth in skills.",
         "Peace of Mind – Tools for resilience, safety, and well-being.",
         "Beyond Textbooks – Education that shapes character and confidence.",
+        "Exclusive-wellbeing labs – AI nudges and 24x7 support.",
         "Partnership – Parents play an active role in their child's journey.",
+        
       ],
       color: "from-rose-500 to-red-500",
       icon: "👨‍👩‍👧",
@@ -119,7 +121,7 @@ const AutoSlidingCards = () => {
 
   return (
     <div
-      className="relative w-full py-12"
+      className="relative w-full"
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -145,23 +147,32 @@ const AutoSlidingCards = () => {
             >
               <div
                 className={`bg-gradient-to-br ${card.color
-                  } rounded-3xl p-8 text-white shadow-2xl h-[500px] sm:h-[400px] flex flex-col relative overflow-hidden transition-transform duration-300 ${position === "center" ? "hover:scale-105" : ""
+                  } rounded-3xl p-8 text-white shadow-2xl h-[400px] sm:h-[320px] flex flex-col relative overflow-hidden transition-transform duration-300 ${position === "center" ? "hover:scale-105" : ""
                   }`}
               >
                 <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl"></div>
                 <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
 
                 <div className="relative z-10">
-                  <div className="text-5xl mb-4">{card.icon}</div>
-                  <h3 className="text-3xl font-bold mb-6">{card.title}</h3>
+                  <div className="flex items-center justify-start gap-3 mb-8">
+                  <div className="sm:text-5xl text-3xl">{card.icon}</div>
+                  <div className="sm:text-3xl text-2xl font-bold">{card.title}</div>
+                  </div>
                   <div className="space-y-3 flex-1">
-                    {card.content.map((item, i) => (
-                      <div key={i} className="flex items-start">
-                        <span className="text-white font-medium text-sm leading-relaxed">
-                          • {item}
-                        </span>
-                      </div>
-                    ))}
+                    {card.content.map((item, i) => {
+                      const dashIndex = item.indexOf('–');
+                      const boldText = dashIndex !== -1 ? item.substring(0, dashIndex).trim() : item;
+                      const normalText = dashIndex !== -1 ? item.substring(dashIndex).trim() : '';
+                      
+                      return (
+                        <div key={i} className="flex items-start">
+                          <span className="text-white sm:text-sm text-xs leading-relaxed">
+                            <span className="font-bold">{boldText}</span>
+                            {normalText && <span className="font-normal"> {normalText}</span>}
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -170,7 +181,7 @@ const AutoSlidingCards = () => {
         })}
       </div>
 
-      <div className="flex justify-center mt-8 space-x-3">
+      <div className="flex justify-center mt-2 space-x-3">
         {cards.map((_, index) => (
           <button
             key={index}
@@ -198,7 +209,6 @@ const LandingPage = () => {
   const [showCheckout, setShowCheckout] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const studentServicesRef = useRef(null);
-  const footerRef = useRef(null);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [selectedFeature, setSelectedFeature] = useState(null);
@@ -594,7 +604,7 @@ const LandingPage = () => {
       title: "Individual Students",
       description:
         "Students wanting to access mental wellness and learning tools",
-      icon: <GraduationCap className="w-12 h-12" />,
+      icon: <GraduationCap className="sm:size-12 size-8" />,
       color: "from-purple-500 to-pink-500",
       action: () => navigate("/register"),
       buttonText: "Join as Student",
@@ -602,7 +612,7 @@ const LandingPage = () => {
     {
       title: "Parent/Mentor",
       description: "Parents as well as Mentors supporting student growth",
-      icon: <Users className="w-12 h-12" />,
+      icon: <Users className="sm:size-12 size-8" />,
       color: "from-green-500 to-emerald-500",
       action: () => navigate("/register-parent"),
       buttonText: "Join as Parent",
@@ -611,7 +621,7 @@ const LandingPage = () => {
       title: "Educational Institution",
       description:
         "Schools looking for comprehensive management solutions",
-      icon: <Building className="w-12 h-12" />,
+      icon: <Building className="sm:size-12 size-8" />,
       color: "from-blue-500 to-cyan-500",
       action: () => navigate("/school-registration"),
       buttonText: "Join as School",
@@ -619,7 +629,7 @@ const LandingPage = () => {
     {
       title: "Impact Partners",
       description: "Organizations contributing to student development and education",
-      icon: <Target className="w-12 h-12" />,
+      icon: <Target className="sm:size-12 size-8" />,
       color: "from-amber-500 to-orange-500",
       action: () => navigate("/register-stakeholder"),
       buttonText: "Partner With Us",
@@ -737,7 +747,7 @@ const LandingPage = () => {
           isFirstYear: isFirstYearPayment,
         });
         setShowCheckout(true);
-      } catch (error) {
+      } catch {
         // If error (including auth), assume first year and proceed
         // The modal will handle auth check
         setSelectedPlan({
@@ -770,7 +780,7 @@ const LandingPage = () => {
             const parsed = JSON.parse(stored);
             localStorage.removeItem('pending_subscription');
             return parsed;
-          } catch (e) {
+          } catch {
             localStorage.removeItem('pending_subscription');
             return null;
           }
@@ -857,7 +867,6 @@ const LandingPage = () => {
         }
       }, 800);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user, location.state]);
 
   useEffect(() => {
@@ -998,7 +1007,7 @@ const LandingPage = () => {
       )}
 
       {/* Hero Section */}
-      <div className="relative h-screen flex items-center justify-center">
+      <div className="relative sm:h-screen h-auto sm:py-0 py-12 flex items-center justify-center">
         <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -1009,7 +1018,7 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="text-5xl md:text-7xl font-bold text-gray-900 mb-4"
+              className="sm:text-5xl text-4xl md:text-7xl font-bold text-gray-900 mb-4"
             >
               Welcome to{" "}
               <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
@@ -1024,7 +1033,7 @@ const LandingPage = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="text-xl md:text-xl text-gray-600 mb-6 max-w-4xl mx-auto"
+              className="sm:text-xl text-lg md:text-xl text-gray-600 mb-6 max-w-4xl mx-auto"
             >
               Knowledge alone is no longer enough — today's learners need
               balance, resilience, and future-ready skills. Our Platform raises
@@ -1078,10 +1087,10 @@ const LandingPage = () => {
             viewport={{ once: true }}
             className="text-center mb-8"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-2">
+            <h2 className="sm:text-4xl text-2xl font-bold text-gray-900 mb-2">
               Everything You Need in One Platform
             </h2>
-            <p className="text-lg text-gray-600 max-w-7xl mx-auto py-4">
+            <p className="sm:text-lg text-base text-gray-600 max-w-7xl mx-auto py-4">
               WiseStudent sets a new standard in education: blending holistic
               growth with futuristic learning experiences, nurturing confidence,
               values, wellness, and innovation in every Student. Because the
@@ -1131,12 +1140,12 @@ const LandingPage = () => {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="text-center mb-8"
+            className="text-center"
           >
-            <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            <h2 className="sm:text-4xl text-2xl font-bold text-gray-900 mb-2">
               Why Choose WiseStudent?
             </h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+            <p className="sm:text-lg text-base text-gray-600 max-w-3xl mx-auto">
               Because education is more than grades — it's about raising
               life-ready humans.
             </p>
@@ -1155,10 +1164,10 @@ const LandingPage = () => {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="sm:text-4xl text-2xl font-bold text-gray-900 mb-4">
               Choose Your Path
             </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+            <p className="sm:text-xl text-base text-gray-600 max-w-3xl mx-auto leading-relaxed">
               Different entry points for different needs. Get started with the
               option that fits you best.
             </p>
@@ -1167,16 +1176,16 @@ const LandingPage = () => {
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-3">
             {userTypes.map((type, index) => (
               <div key={index} className="group relative">
-                <div className={`h-88 relative bg-white rounded-3xl p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 overflow-hidden flex flex-col`}>
+                <div className={`sm:h-88 h-72 relative bg-white sm:rounded-3xl rounded-2xl sm:p-8 p-6 shadow-lg hover:shadow-2xl transition-all duration-500 border border-gray-100 overflow-hidden flex flex-col`}>
                   <div className={`absolute inset-0 bg-gradient-to-br ${type.color} opacity-0 group-hover:opacity-5 transition-opacity duration-500`}></div>
                   <div className={`absolute -top-12 -right-12 w-32 h-32 bg-gradient-to-br ${type.color} rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500`}></div>
 
                   <div className="relative z-10 flex flex-col">
-                    <div className={`w-24 h-24 bg-gradient-to-br ${type.color} rounded-3xl flex items-center justify-center text-white mx-auto mb-6 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-500`}>
+                    <div className={`sm:size-24 size-16 bg-gradient-to-br ${type.color} sm:rounded-3xl rounded-2xl flex items-center justify-center text-white mx-auto mb-6 shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-500`}>
                       {type.icon}
                     </div>
 
-                    <h3 className="text-2xl font-bold text-gray-900 mb-3 text-center">
+                    <h3 className="sm:text-2xl text-xl font-bold text-gray-900 sm:mb-3 mb-0 text-center">
                       {type.title}
                     </h3>
 
@@ -1186,7 +1195,7 @@ const LandingPage = () => {
 
                     <button
                       onClick={type.action}
-                      className={`w-full bg-gradient-to-r ${type.color} text-white py-4 px-6 rounded-2xl font-semibold flex items-center justify-center gap-3 hover:shadow-xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden group/btn mt-auto`}
+                      className={`w-full bg-gradient-to-r ${type.color} text-white sm:py-4 py-3 sm:px-6 px-4 sm:rounded-2xl rounded-xl font-semibold flex items-center justify-center gap-3 hover:shadow-xl transition-all duration-300 transform hover:scale-105 relative overflow-hidden group/btn mt-auto`}
                     >
                       <span className="relative z-10">{type.buttonText}</span>
                       <ArrowRight className="w-5 h-5 group-hover/btn:translate-x-1 transition-transform duration-300 relative z-10" />
@@ -1212,10 +1221,10 @@ const LandingPage = () => {
             viewport={{ once: true }}
             className="text-center mb-12"
           >
-            <h2 className="text-4xl font-bold text-gray-900 mb-4">
+            <h2 className="sm:text-4xl text-2xl font-bold text-gray-900 mb-4">
               Pricing & Inclusions
             </h2>
-            <p className="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
+            <p className="sm:text-xl text-base text-gray-600 max-w-4xl mx-auto leading-relaxed">
               Choose the plan that best fits your needs with comprehensive features for holistic education
             </p>
           </motion.div>
@@ -1227,7 +1236,7 @@ const LandingPage = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.1 }}
-              className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-green-200 relative overflow-hidden group flex flex-col h-full mb-6 sm:mb-0"
+              className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-3xl p-4 sm:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-green-200 relative overflow-hidden group flex flex-col h-full mb-6 sm:mb-0"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-green-500 to-emerald-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
               <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
@@ -1249,7 +1258,7 @@ const LandingPage = () => {
 
                 <button 
                   onClick={() => handlePlanSelect('free', 'Free Plan', 0, true)}
-                  className="w-full mb-6 bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  className="w-full sm:mb-6 mb-2 bg-gradient-to-r from-green-500 to-emerald-500 text-white sm:py-3 py-2 sm:rounded-2xl rounded-xl sm:font-semibold font-medium hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   Get Free Plan
                 </button>
@@ -1305,7 +1314,7 @@ const LandingPage = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.2 }}
-              className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-blue-200 relative overflow-hidden group flex flex-col h-full mb-6 sm:mb-0"
+              className="bg-gradient-to-br from-blue-50 to-cyan-50 rounded-3xl p-4 sm:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-blue-200 relative overflow-hidden group flex flex-col h-full mb-6 sm:mb-0"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500 to-cyan-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
               <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
@@ -1334,7 +1343,7 @@ const LandingPage = () => {
 
                 <button 
                   onClick={() => handlePlanSelect('student_premium', 'Students Premium Plan', 4499, true)}
-                  className="w-full mb-6 bg-gradient-to-r from-blue-500 to-cyan-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  className="w-full sm:mb-6 mb-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white sm:py-3 py-2 sm:rounded-2xl rounded-xl sm:font-semibold font-medium hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   Get Students Premium Plan
                 </button>
@@ -1394,7 +1403,7 @@ const LandingPage = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ delay: 0.3 }}
-              className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-6 sm:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-purple-200 relative overflow-hidden group flex flex-col h-full mb-6 sm:mb-0"
+              className="bg-gradient-to-br from-purple-50 to-pink-50 rounded-3xl p-4 sm:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 border-2 border-purple-200 relative overflow-hidden group flex flex-col h-full mb-6 sm:mb-0"
             >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-pink-500 opacity-0 group-hover:opacity-10 transition-opacity duration-500"></div>
               <div className="absolute -top-20 -right-20 w-64 h-64 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full opacity-10 group-hover:opacity-20 transition-opacity duration-500"></div>
@@ -1423,7 +1432,7 @@ const LandingPage = () => {
 
                 <button 
                   onClick={() => handlePlanSelect('student_parent_premium_pro', 'Student + Parent Premium Pro Plan', 4999, true)}
-                  className="w-full mb-6 bg-gradient-to-r from-purple-500 to-pink-500 text-white py-3 rounded-2xl font-semibold hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
+                  className="w-full sm:mb-6 mb-2 bg-gradient-to-r from-purple-500 to-pink-500 text-white sm:py-3 py-2 sm:rounded-2xl rounded-xl sm:font-semibold font-medium hover:shadow-xl transition-all duration-300 transform hover:scale-105 shadow-lg"
                 >
                   Get Student + Parent Premium Pro Plan
                 </button>

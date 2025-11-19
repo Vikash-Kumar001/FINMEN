@@ -331,28 +331,28 @@ const SchoolRegistration = () => {
           </div>
 
           {activeTab === "whatYouGet" && (
-            <div className="p-5 sm:p-6 space-y-6">
-              <div className="relative overflow-hidden rounded-2xl p-[1px]">
+            <div className="p-0 sm:p-6 space-y-0 sm:space-y-6">
+              <div className="relative overflow-hidden sm:rounded-2xl rounded-none p-[1px]">
                 <div className="absolute inset-0 bg-gradient-to-r from-cyan-400/70 via-purple-500/80 to-pink-500/80 blur-2xl opacity-40"></div>
-                <div className="bg-gradient-to-br from-[#1a1f4d] via-[#351f57] to-[#521b6a] rounded-2xl relative z-[1] p-3 sm:p-4 border border-white/10 shadow-[0_10px_40px_rgba(109,40,217,0.35)]">
+                <div className="bg-gradient-to-br from-[#1a1f4d] via-[#351f57] to-[#521b6a] relative sm:rounded-2xl rounded-none z-[1] p-3 sm:p-4 border border-white/10 shadow-[0_10px_40px_rgba(109,40,217,0.35)]">
                   <div className="absolute -top-10 -right-8 w-24 h-24 sm:w-32 sm:h-32 bg-gradient-to-br from-white/20 via-sky-200/20 to-transparent rounded-full blur-2xl opacity-70"></div>
                   <div className="absolute -bottom-12 -left-6 w-40 h-40 bg-gradient-to-br from-pink-400/30 via-transparent to-transparent rounded-full blur-3xl opacity-60"></div>
-                  <p className="text-center relative z-[2] text-base sm:text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-purple-100 to-pink-200 drop-shadow-[0_2px_6px_rgba(59,130,246,0.35)]">
+                  <p className="text-center relative z-[2] text-sm sm:text-xl font-semibold text-transparent bg-clip-text bg-gradient-to-r from-cyan-200 via-purple-100 to-pink-200 drop-shadow-[0_2px_6px_rgba(59,130,246,0.35)]">
                     Everything from
-                    <span className="ml-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/30 via-rose-500/40 to-purple-500/30 border border-white/20 text-amber-100 text-xs sm:text-sm uppercase tracking-[0.2em] shadow-[0_8px_20px_rgba(236,72,153,0.35)]">
+                    <span className="ml-2 inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500/30 via-rose-500/40 to-purple-500/30 border border-white/20 text-amber-100 text-[8px] sm:text-sm uppercase tracking-[0.2em] shadow-[0_8px_20px_rgba(236,72,153,0.35)]">
                       Student + Parent Premium Pro Plan
                     </span>
                   </p>
                 </div>
               </div>
 
-              <div className="space-y-4">
+              <div className="sm:space-y-4 space-y-2 sm:p-0 p-3">
                 <p className="uppercase text-xs sm:text-sm font-bold text-pink-200 tracking-[0.25em]">PLUS</p>
-                <ul className="space-y-3 sm:space-y-4">
+                <ul className="space-y-2 sm:space-y-4">
                   {whatYouGetHighlights.map((item, index) => (
                     <li key={index} className="flex items-start gap-3">
                       <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-purple-300 mt-0.5 flex-shrink-0" />
-                      <span className="text-gray-200 text-sm sm:text-base leading-relaxed">{item}</span>
+                      <span className="text-gray-200 text-xs sm:text-base leading-relaxed">{item}</span>
                     </li>
                   ))}
                 </ul>

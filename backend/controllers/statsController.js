@@ -5,6 +5,7 @@ import Wallet from "../models/Wallet.js";
 import UnifiedGameProgress from "../models/UnifiedGameProgress.js";
 import ActivityLog from "../models/ActivityLog.js";
 import Transaction from "../models/Transaction.js";
+import { getPillarGameCount } from "../utils/gameCountUtils.js";
 
 
 // Student Stats Overview
@@ -108,20 +109,32 @@ export const getPillarMastery = async (req, res) => {
     const hasFullAccess = features.fullAccess === true;
     const gamesPerPillar = features.gamesPerPillar || 5;
 
-    // Define all pillars with their total game counts
+    // Define all pillars - total game counts will be fetched dynamically
     // First 5 pillars are accessible to freemium users
-    const allPillars = [
-      { key: 'finance', name: 'Financial Literacy', icon: '💰', totalGames: 42, order: 1 }, // 21 Kids + 21 Teen
-      { key: 'brain', name: 'Brain Health', icon: '🎯', totalGames: 42, order: 2 },
-      { key: 'uvls', name: 'UVLS (Life Skills & Values)', icon: '🌟', totalGames: 42, order: 3 },
-      { key: 'dcos', name: 'Digital Citizenship & Online Safety', icon: '🔒', totalGames: 42, order: 4 },
-      { key: 'moral', name: 'Moral Values', icon: '💫', totalGames: 42, order: 5 },
-      { key: 'ai', name: 'AI for All', icon: '🤖', totalGames: 42, order: 6 },
-      { key: 'ehe', name: 'Entrepreneurship & Higher Education', icon: '🚀', totalGames: 42, order: 7 },
-      { key: 'crgc', name: 'Civic Responsibility & Global Citizenship', icon: '🌍', totalGames: 42, order: 8 },
-      { key: 'mental', name: 'Mental Health', icon: '🧠', totalGames: 42, order: 9 },
-      { key: 'educational', name: 'Education', icon: '📚', totalGames: 42, order: 10 }
+    const pillarDefinitions = [
+      { key: 'finance', name: 'Financial Literacy', icon: '💰', order: 1 },
+      { key: 'brain', name: 'Brain Health', icon: '🎯', order: 2 },
+      { key: 'uvls', name: 'UVLS (Life Skills & Values)', icon: '🌟', order: 3 },
+      { key: 'dcos', name: 'Digital Citizenship & Online Safety', icon: '🔒', order: 4 },
+      { key: 'moral', name: 'Moral Values', icon: '💫', order: 5 },
+      { key: 'ai', name: 'AI for All', icon: '🤖', order: 6 },
+      { key: 'health-male', name: 'Health - Male', icon: '🛡️', order: 7 },
+      { key: 'health-female', name: 'Health - Female', icon: '🌸', order: 8 },
+      { key: 'ehe', name: 'Entrepreneurship & Higher Education', icon: '🚀', order: 9 },
+      { key: 'crgc', name: 'Civic Responsibility & Global Citizenship', icon: '🌍', order: 10 },
+      { key: 'sustainability', name: 'Sustainability', icon: '🌱', order: 11 }
     ];
+
+    // Fetch total game counts dynamically for each pillar
+    const allPillars = await Promise.all(
+      pillarDefinitions.map(async (pillar) => {
+        const totalGames = await getPillarGameCount(pillar.key, UnifiedGameProgress);
+        return {
+          ...pillar,
+          totalGames: totalGames || 0 // Default to 0 if no games found
+        };
+      })
+    );
 
     // Freemium users can see all pillars, but only first 5 games per pillar are playable
     const pillars = allPillars;
@@ -129,9 +142,28 @@ export const getPillarMastery = async (req, res) => {
     // Get all game progress for user
     const gameProgress = await UnifiedGameProgress.find({ userId });
 
+    // Map pillar keys to possible gameType values (for backward compatibility)
+    const pillarToGameTypeMap = {
+      'crgc': ['crgc', 'civic-responsibility'],
+      'moral': ['moral', 'moral-values'],
+      'ai': ['ai', 'ai-for-all'],
+      'finance': ['finance', 'financial']
+    };
+
     // Calculate mastery for each pillar
     const pillarMastery = pillars.map(pillar => {
-      const pillarGames = gameProgress.filter(game => game.gameType === pillar.key);
+      // Get possible gameType values for this pillar
+      const gameTypeValues = pillarToGameTypeMap[pillar.key] || [pillar.key];
+      const pillarGames = gameProgress.filter(game => gameTypeValues.includes(game.gameType));
+
+      // Calculate mastery based on games completed vs total games
+      // Mastery should always be calculated based on actual total games (e.g., 200)
+      // This represents real progress towards completing all available games
+      const gamesCompleted = pillarGames.filter(g => g.fullyCompleted).length;
+      
+      // Always calculate mastery based on actual total games, not allowed games
+      // This ensures mastery stays between 0-100% and shows real progress
+      const mastery = Math.min(100, Math.round((gamesCompleted / pillar.totalGames) * 100));
 
       if (pillarGames.length === 0) {
         return {
@@ -140,30 +172,22 @@ export const getPillarMastery = async (req, res) => {
           pillarKey: pillar.key,
           mastery: 0,
           gamesCompleted: 0,
-          totalGames: hasFullAccess ? pillar.totalGames : gamesPerPillar, // Show limited games for free users
+          totalGames: pillar.totalGames, // Always show actual total games
           accessMode: hasFullAccess ? 'full' : 'preview',
           gamesAllowed: hasFullAccess ? -1 : gamesPerPillar, // -1 means unlimited
           locked: false // Pillars shown are accessible
         };
       }
 
-      // Calculate mastery based on games completed vs total games
-      // This is the fix - we were calculating based on level completion percentage before
-      const gamesCompleted = pillarGames.filter(g => g.fullyCompleted).length;
-      
-      // For free users, calculate mastery based on allowed games, not total games
-      const effectiveTotalGames = hasFullAccess ? pillar.totalGames : gamesPerPillar;
-      const mastery = Math.round((gamesCompleted / effectiveTotalGames) * 100);
-
       return {
         pillar: pillar.name,
         icon: pillar.icon,
         pillarKey: pillar.key,
         mastery: mastery,
-        gamesCompleted,
-        totalGames: hasFullAccess ? pillar.totalGames : gamesPerPillar,
+        gamesCompleted, // Actual completed games count
+        totalGames: pillar.totalGames, // Always show actual total games (e.g., 200)
         accessMode: hasFullAccess ? 'full' : (gamesCompleted >= gamesPerPillar ? 'locked' : 'preview'),
-        gamesAllowed: hasFullAccess ? -1 : gamesPerPillar,
+        gamesAllowed: hasFullAccess ? -1 : gamesPerPillar, // -1 means unlimited
         locked: !hasFullAccess && gamesCompleted >= gamesPerPillar
       };
     }).filter(p => p.totalGames > 0); // Only include pillars with games
@@ -171,10 +195,11 @@ export const getPillarMastery = async (req, res) => {
     // Note: All pillars are now accessible to freemium users
     // Games are limited to first 5 per pillar for freemium users
 
-    // Calculate overall mastery - only count accessible pillars (exclude locked/upgrade required)
-    const accessiblePillars = pillarMastery.filter(p => !p.locked && !p.upgradeRequired && p.totalGames > 0);
-    const overallMastery = accessiblePillars.length > 0
-      ? Math.round(accessiblePillars.reduce((sum, p) => sum + p.mastery, 0) / accessiblePillars.length)
+    // Calculate overall mastery - use ALL pillars with games, not just accessible ones
+    // This gives a true representation of overall progress across all pillars
+    const pillarsWithGames = pillarMastery.filter(p => p.totalGames > 0);
+    const overallMastery = pillarsWithGames.length > 0
+      ? Math.round(pillarsWithGames.reduce((sum, p) => sum + p.mastery, 0) / pillarsWithGames.length)
       : 0;
 
     // Get week-on-week delta
@@ -190,10 +215,12 @@ export const getPillarMastery = async (req, res) => {
     });
 
     const lastWeekPillarMastery = pillars.map(pillar => {
-      const pillarGames = lastWeekProgress.filter(game => game.gameType === pillar.key);
+      // Get possible gameType values for this pillar
+      const gameTypeValues = pillarToGameTypeMap[pillar.key] || [pillar.key];
+      const pillarGames = lastWeekProgress.filter(game => gameTypeValues.includes(game.gameType));
       const gamesCompleted = pillarGames.filter(g => g.fullyCompleted).length;
-      const effectiveTotalGames = hasFullAccess ? pillar.totalGames : gamesPerPillar;
-      const mastery = Math.round((gamesCompleted / effectiveTotalGames) * 100);
+      // Always calculate mastery based on actual total games, capped at 100%
+      const mastery = Math.min(100, Math.round((gamesCompleted / pillar.totalGames) * 100));
 
       return {
         pillar: pillar.name,
@@ -212,17 +239,22 @@ export const getPillarMastery = async (req, res) => {
       };
     });
 
-    // Get top 3 weak pillars (lowest mastery, but with at least 1 game)
+    // Get top 3 weak pillars (lowest mastery) - show all pillars regardless of locked status
+    // This helps users see which areas need the most improvement
     const weakPillars = [...pillarMasteryWithDelta]
-      .sort((a, b) => a.mastery - b.mastery)
-      .slice(0, 3);
+      .filter(p => p.totalGames > 0) // Only include pillars with games
+      .sort((a, b) => a.mastery - b.mastery) // Sort by mastery (lowest first)
+      .slice(0, 3); // Get top 3 weakest
+
+    // Count accessible pillars for subscription info
+    const accessiblePillars = pillarMastery.filter(p => !p.locked && !p.upgradeRequired && p.totalGames > 0);
 
     res.status(200).json({
       overallMastery,
-      totalPillars: accessiblePillars.length, // Only count accessible pillars
-      totalPillarsAvailable: allPillars.length, // Total pillars in system
+      totalPillars: pillarsWithGames.length, // Total pillars with games (all pillars)
+      totalPillarsAvailable: allPillars.length, // Total pillars in system (11)
       pillars: pillarMasteryWithDelta,
-      weakPillars: weakPillars.filter(p => !p.locked && !p.upgradeRequired), // Only show accessible weak pillars
+      weakPillars: weakPillars, // Show actual weakest pillars (not filtered by locked status)
       subscription: {
         planType: subscription.planType,
         hasFullAccess: hasFullAccess,

@@ -226,16 +226,21 @@ const InstallPWA = ({ variant = "floating" }) => {
           } catch (error) {
             console.error('[InstallPWA] Install prompt error:', error);
           }
-        } else {
-          // No prompt available at all
-          // On Android Chrome, the install option should appear in the browser menu
-          // We can't programmatically trigger it, so just log
-          if (platform === "android") {
-            console.log('[InstallPWA] No install prompt available. On Android Chrome, users can install via browser menu (3 dots > Install app)');
-          } else if (platform === "ios") {
-            console.log('[InstallPWA] iOS detected - manual installation required via Safari Share menu');
-          }
-        }
+         } else {
+           // No prompt available at all
+           if (platform === "android") {
+             // On Android, if no deferredPrompt, do nothing (no modal)
+             // The install option should appear in the browser menu (3 dots > Install app)
+             console.log('[InstallPWA] No install prompt available. On Android Chrome, users can install via browser menu (3 dots > Install app)');
+           } else if (platform === "ios") {
+             // iOS requires manual installation - show instructions modal
+             console.log('[InstallPWA] iOS detected - showing installation guide');
+             setShowInstructions(true);
+           } else {
+             // Desktop or other browsers - show instructions
+             setShowInstructions(true);
+           }
+         }
       }
   };
 
@@ -511,7 +516,7 @@ const InstallPWA = ({ variant = "floating" }) => {
           <Download className="w-4 h-4" />
           <span>Install App</span>
         </motion.button>
-        {showInstructions && (
+        {showInstructions && platform !== "android" && (
           <>
             <div
               onClick={handleCancel}
@@ -544,7 +549,7 @@ const InstallPWA = ({ variant = "floating" }) => {
           <Download className="w-4 h-4" />
           <span>Install App</span>
         </motion.button>
-        {showInstructions && (
+        {showInstructions && platform !== "android" && (
           <>
             <div
               onClick={handleCancel}
@@ -561,10 +566,13 @@ const InstallPWA = ({ variant = "floating" }) => {
     );
   }
 
-  // Floating variant (default)
+  // Floating variant (default) - no floating button, just modal support
+  if (isInstalled || isStandalone || !showInstallButton) {
+    return null;
+  }
+  
   return (
     <>
-
       {showInstructions && (
         <>
           <div

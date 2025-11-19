@@ -160,8 +160,11 @@ const MainNavbar = ({
                                     <div className="flex flex-col p-4 space-y-4 flex-grow">
                                         <motion.button
                                             onClick={() => {
-                                                handlePillarsClick();
                                                 setShowMobileMenu(false);
+                                                // Small delay to ensure menu closes before scroll
+                                                setTimeout(() => {
+                                                    handlePillarsClick();
+                                                }, 100);
                                             }}
                                             className="text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
                                             whileTap={{ scale: 0.98 }}
@@ -171,8 +174,11 @@ const MainNavbar = ({
 
                                         <motion.button
                                             onClick={() => {
-                                                handleWhyChooseClick();
                                                 setShowMobileMenu(false);
+                                                // Small delay to ensure menu closes before scroll
+                                                setTimeout(() => {
+                                                    handleWhyChooseClick();
+                                                }, 100);
                                             }}
                                             className="text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
                                             whileTap={{ scale: 0.98 }}
@@ -182,8 +188,11 @@ const MainNavbar = ({
 
                                         <motion.button
                                             onClick={() => {
-                                                handlePricingClick();
                                                 setShowMobileMenu(false);
+                                                // Small delay to ensure menu closes before scroll
+                                                setTimeout(() => {
+                                                    handlePricingClick();
+                                                }, 100);
                                             }}
                                             className="text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
                                             whileTap={{ scale: 0.98 }}
@@ -193,8 +202,11 @@ const MainNavbar = ({
 
                                         <motion.button
                                             onClick={() => {
-                                                handleFooterClick();
                                                 setShowMobileMenu(false);
+                                                // Navigate to contact page
+                                                setTimeout(() => {
+                                                    handleFooterClick();
+                                                }, 100);
                                             }}
                                             className="text-left px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium"
                                             whileTap={{ scale: 0.98 }}

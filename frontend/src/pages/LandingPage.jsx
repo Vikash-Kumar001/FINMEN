@@ -631,24 +631,65 @@ const LandingPage = () => {
   };
 
   const handlePillarsClick = () => {
-    featuresRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (featuresRef.current) {
+      const element = featuresRef.current;
+      const headerOffset = 80; // Account for fixed header
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
   };
 
   // Add this function for pricing scroll
   const handlePricingClick = () => {
-    pricingRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (pricingRef.current) {
+      const element = pricingRef.current;
+      const headerOffset = 80; // Account for fixed header
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
   };
 
   const handleWhyChooseClick = () => {
-    whyChooseRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (whyChooseRef.current) {
+      const element = whyChooseRef.current;
+      const headerOffset = 80; // Account for fixed header
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
   };
 
   const handleStudentServicesClick = () => {
-    studentServicesRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (studentServicesRef.current) {
+      const element = studentServicesRef.current;
+      const headerOffset = 80; // Account for fixed header
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
+    }
   };
 
   const handleFooterClick = () => {
-    footerRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Navigate to contact page instead of scrolling to footer
+    navigate("/contact");
   };
 
   // Handle plan selection

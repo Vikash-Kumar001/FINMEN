@@ -93,27 +93,70 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip API requests - always fetch from network (never cache API calls)
+  // Handle API requests - cache batch progress endpoints for performance
   if (isApiRequest(url.href)) {
-    console.log('[Service Worker] API request - fetching from network (no cache):', url.href);
-    event.respondWith(
-      fetch(request)
-        .catch((error) => {
-          console.error('[Service Worker] API request failed (offline):', error);
-          // Return offline response for API calls
-          return new Response(
-            JSON.stringify({ 
-              error: 'Offline', 
-              message: 'You are currently offline. Please check your connection.' 
-            }),
-            {
-              status: 503,
-              statusText: 'Service Unavailable',
-              headers: { 'Content-Type': 'application/json' }
+    // Check if this is a batch progress endpoint (cache-worthy)
+    const isBatchProgressEndpoint = url.pathname.includes('/api/game/progress/batch/');
+    
+    if (isBatchProgressEndpoint) {
+      // Network-first strategy with cache fallback for batch endpoints
+      event.respondWith(
+        fetch(request)
+          .then((response) => {
+            // Cache successful responses
+            if (response.status === 200) {
+              const responseClone = response.clone();
+              caches.open(RUNTIME_CACHE).then((cache) => {
+                cache.put(request, responseClone);
+              });
             }
-          );
-        })
-    );
+            return response;
+          })
+          .catch((error) => {
+            console.error('[Service Worker] Batch API request failed, trying cache:', error);
+            // Try to serve from cache if network fails
+            return caches.match(request).then((cachedResponse) => {
+              if (cachedResponse) {
+                console.log('[Service Worker] Serving batch API from cache:', url.href);
+                return cachedResponse;
+              }
+              // Return offline response if no cache
+              return new Response(
+                JSON.stringify({ 
+                  error: 'Offline', 
+                  message: 'You are currently offline. Please check your connection.' 
+                }),
+                {
+                  status: 503,
+                  statusText: 'Service Unavailable',
+                  headers: { 'Content-Type': 'application/json' }
+                }
+              );
+            });
+          })
+      );
+    } else {
+      // Other API requests - always fetch from network (no cache)
+      console.log('[Service Worker] API request - fetching from network (no cache):', url.href);
+      event.respondWith(
+        fetch(request)
+          .catch((error) => {
+            console.error('[Service Worker] API request failed (offline):', error);
+            // Return offline response for API calls
+            return new Response(
+              JSON.stringify({ 
+                error: 'Offline', 
+                message: 'You are currently offline. Please check your connection.' 
+              }),
+              {
+                status: 503,
+                statusText: 'Service Unavailable',
+                headers: { 'Content-Type': 'application/json' }
+              }
+            );
+          })
+      );
+    }
     return;
   }
 

@@ -14,6 +14,7 @@ import {
   completeUnifiedGame,
   getUnifiedGameProgress,
   updateUnifiedGameProgress,
+  getBatchGameProgress,
   getCompletedGames,
   getDCOSGames,
   getBrainTeaserGames,
@@ -64,6 +65,9 @@ router.post('/unlock-replay/:gameId', requireAuth, unlockGameReplay);
 
 // 📊 GET /api/game/progress/:gameId — Get specific game progress
 router.get('/progress/:gameId', requireAuth, getUnifiedGameProgress);
+
+// 📊 GET /api/game/progress/batch/:categoryPrefix — Get batch game progress for a category (e.g., finance-kids)
+router.get('/progress/batch/:categoryPrefix', requireAuth, getBatchGameProgress);
 
 // 📊 PUT /api/game/progress/:gameId — Update specific game progress
 router.put('/progress/:gameId', requireAuth, updateUnifiedGameProgress);

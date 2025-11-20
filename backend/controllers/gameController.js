@@ -1220,6 +1220,40 @@ export const getUnifiedGameProgress = async (req, res) => {
   }
 };
 
+// 📊 GET /api/game/progress/batch/:categoryPrefix - Get all game progress for a category (e.g., finance-kids)
+export const getBatchGameProgress = async (req, res) => {
+  const userId = req.user?._id;
+  const { categoryPrefix } = req.params; // e.g., "finance-kids", "brain-health-teens"
+  
+  try {
+    // Query all progress documents where gameId starts with the category prefix
+    // Using regex to match gameIds like "finance-kids-1", "finance-kids-2", etc.
+    const regex = new RegExp(`^${categoryPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-\\d+$`);
+    
+    const allProgress = await UnifiedGameProgress.find({
+      userId,
+      gameId: { $regex: regex }
+    });
+    
+    // Convert array to object keyed by gameId for easy frontend access
+    const progressMap = {};
+    
+    allProgress.forEach(progress => {
+      const progressObj = progress.toObject ? progress.toObject() : progress;
+      progressMap[progress.gameId] = {
+        ...progressObj,
+        replayUnlocked: progress.replayUnlocked || false
+      };
+    });
+    
+    // Return progress map keyed by gameId
+    res.status(200).json(progressMap);
+  } catch (err) {
+    console.error('❌ Failed to fetch batch game progress:', err);
+    res.status(500).json({ error: 'Failed to fetch batch game progress' });
+  }
+};
+
 // 📊 PUT /api/game/progress/:gameId - Update game progress
 export const updateUnifiedGameProgress = async (req, res) => {
   const userId = req.user?._id;

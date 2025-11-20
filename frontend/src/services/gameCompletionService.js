@@ -192,6 +192,20 @@ class GameCompletionService {
   }
 
   /**
+   * Get batch game progress for a category (e.g., finance-kids)
+   * Returns an object keyed by gameId with all progress data
+   */
+  async getBatchGameProgress(categoryPrefix) {
+    try {
+      const response = await api.get(`/api/game/progress/batch/${categoryPrefix}`);
+      return response.data || {}; // Returns object keyed by gameId
+    } catch (error) {
+      console.error(`❌ Failed to get batch game progress for ${categoryPrefix}:`, error);
+      return {}; // Return empty object on error
+    }
+  }
+
+  /**
    * Get all completed games for current user
    */
   async getCompletedGames() {

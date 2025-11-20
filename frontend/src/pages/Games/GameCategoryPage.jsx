@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion"; // eslint-disable-line no-unused-vars
 import {
@@ -52,6 +52,9 @@ const GameCategoryPage = () => {
   const [processingReplay, setProcessingReplay] = useState(false);
   const [showReplayConfirmModal, setShowReplayConfirmModal] = useState(false);
   const [selectedGameForReplay, setSelectedGameForReplay] = useState(null);
+  const [isLoadingProgress, setIsLoadingProgress] = useState(true); // Track loading state
+  const gameCardRefs = useRef({}); // Refs for game cards to enable auto-scroll
+  const hasScrolledToCurrentGame = useRef(false); // Track if we've already scrolled
 
   // Map game category URL to dashboard category slug
   const getDashboardCategorySlug = (gameCategory) => {
@@ -330,8 +333,48 @@ const GameCategoryPage = () => {
     return titleMap[ageGroup] || ageGroup;
   };
 
-  // Load game completion status and progress data
+  // Map URL category/ageGroup to gameId prefix for batch API calls
+  const getCategoryPrefix = (category, ageGroup) => {
+    // Normalize ageGroup: "teen" -> "teens"
+    const normalizedAge = ageGroup === "teen" ? "teens" : ageGroup;
+    
+    // Map URL categories to gameId prefix categories
+    const categoryMap = {
+      "financial-literacy": "finance",
+      "brain-health": "brain",
+      "uvls": "uvls",
+      "digital-citizenship": "dcos",
+      "moral-values": "moral",
+      "ai-for-all": "ai",
+      "ehe": "ehe",
+      "civic-responsibility": "civic-responsibility",
+      "health-male": "health-male",
+      "health-female": "health-female",
+      "sustainability": "sustainability"
+    };
+    
+    const prefixCategory = categoryMap[category] || category;
+    
+    // Handle sustainability subcategories
+    if (category === "sustainability") {
+      if (ageGroup === "solar-and-city") {
+        return "sustainability-solar";
+      } else if (ageGroup === "water-and-recycle") {
+        return "sustainability-water";
+      } else if (ageGroup === "carbon-and-climate") {
+        return "sustainability-carbon";
+      } else if (ageGroup === "water-and-energy") {
+        return "sustainability-water-energy";
+      }
+    }
+    
+    // Return prefix in format: "{category}-{age}"
+    return `${prefixCategory}-${normalizedAge}`;
+  };
+
+  // Load game completion status and progress data using batch API
   const loadGameCompletionStatus = useCallback(async () => {
+    setIsLoadingProgress(true); // Start loading
     try {
       // For finance, brain health, UVLS, DCOS, Moral Values, AI For All, EHE, CRGC, Health Male, Health Female, and Sustainability kids games, load completion status
       if (
@@ -354,28 +397,24 @@ const GameCategoryPage = () => {
           ageGroup === "carbon-and-climate" ||
           ageGroup === "water-and-energy")
       ) {
+        // Get category prefix for batch API call (e.g., "finance-kids")
+        const categoryPrefix = getCategoryPrefix(category, ageGroup);
+        
+        console.log(`📦 Loading batch game progress for: ${categoryPrefix}`);
+        
+        // Make single batch API call to get all progress for this category
+        const progressMap = await gameCompletionService.getBatchGameProgress(categoryPrefix);
+        
+        console.log(`✅ Loaded progress for ${Object.keys(progressMap).length} games`);
+        
+        // Process the batch response into status and progressData
         const status = {};
         const progressData = {};
-        // For all categories, we have 20 games
-        const maxGames = 100;
         
-        // Fetch all game progress in parallel
-        const progressPromises = [];
-        for (let i = 0; i < maxGames; i++) {
-          const gameId = getGameIdByIndex(i);
-          if (gameId) {
-            progressPromises.push(
-              gameCompletionService.getGameProgress(gameId).then(progress => ({
-                gameId,
-                progress
-              }))
-            );
-          }
-        }
-        
-        const results = await Promise.all(progressPromises);
-        
-        results.forEach(({ gameId, progress }) => {
+        // Iterate through all returned progress entries
+        Object.keys(progressMap).forEach(gameId => {
+          const progress = progressMap[gameId];
+          
           if (progress) {
             const isCompleted = progress.fullyCompleted || false;
             status[gameId] = isCompleted;
@@ -394,20 +433,35 @@ const GameCategoryPage = () => {
           }
         });
         
-        // Update replayable games set based on all progress data
+        // Initialize status for all expected games (even if not in progress map)
+        // This ensures cards that haven't been started yet show as incomplete
+        const maxGames = 100;
+        for (let i = 0; i < maxGames; i++) {
+          const gameId = getGameIdByIndex(i);
+          if (gameId && !(gameId in status)) {
+            status[gameId] = false;
+          }
+        }
+        
+        // Update replayable games set
         const replayableSet = new Set();
         Object.keys(progressData).forEach(gameId => {
           if (progressData[gameId].replayUnlocked === true) {
             replayableSet.add(gameId);
           }
         });
-        setReplayableGames(replayableSet);
         
+        // Set all state at once for instant rendering
+        setReplayableGames(replayableSet);
         setGameCompletionStatus(status);
         setGameProgressData(progressData);
+        
+        console.log(`✅ Game completion status updated for ${Object.keys(status).length} games`);
       }
     } catch (error) {
       console.error("Failed to load game completion status:", error);
+    } finally {
+      setIsLoadingProgress(false); // Stop loading
     }
     // eslint-disable-next-line
   }, [category, ageGroup]);
@@ -876,6 +930,61 @@ const GameCategoryPage = () => {
 
     calculateStats();
   }, [games, gameCompletionStatus, gameProgressData]);
+
+  // Reset scroll flag when category or ageGroup changes
+  useEffect(() => {
+    hasScrolledToCurrentGame.current = false;
+  }, [category, ageGroup]);
+
+  // Auto-scroll to current game card when page loads
+  useEffect(() => {
+    // Only scroll once when page first loads
+    if (hasScrolledToCurrentGame.current) return;
+    
+    // Wait for games and completion status to be loaded
+    if (games.length === 0 || Object.keys(gameCompletionStatus).length === 0) return;
+    
+    // Get the current game index
+    const currentGameIndex = getCurrentlyOpenGameIndex();
+    if (currentGameIndex === -1) return; // No current game found
+    
+    const currentGame = games[currentGameIndex];
+    if (!currentGame) return;
+    
+    // Wait a bit for DOM to render cards (increase delay to account for batched loading)
+    const scrollTimer = setTimeout(() => {
+      const gameCardElement = gameCardRefs.current[currentGame.id];
+      
+      if (gameCardElement) {
+        hasScrolledToCurrentGame.current = true;
+        
+        // Smooth scroll to the game card with offset for better visibility
+        gameCardElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'center',
+          inline: 'nearest'
+        });
+        
+        console.log('✅ Scrolled to current game:', currentGame.title, 'at index', currentGameIndex);
+      } else {
+        // Retry once if element not found (cards might still be rendering)
+        setTimeout(() => {
+          const retryElement = gameCardRefs.current[currentGame.id];
+          if (retryElement) {
+            hasScrolledToCurrentGame.current = true;
+            retryElement.scrollIntoView({
+              behavior: 'smooth',
+              block: 'center',
+              inline: 'nearest'
+            });
+            console.log('✅ Scrolled to current game (retry):', currentGame.title);
+          }
+        }, 500);
+      }
+    }, 1200); // Delay to ensure cards are rendered (accounting for batched API loading)
+    
+    return () => clearTimeout(scrollTimer);
+  }, [games, gameCompletionStatus, category, ageGroup]);
 
   useEffect(() => {
     if (user?.dateOfBirth) {
@@ -1526,13 +1635,21 @@ const GameCategoryPage = () => {
         </motion.div>
 
         {/* Games Grid */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
-        >
-          {games.map((game, index) => {
+        {isLoadingProgress ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-center">
+              <Loader2 className="w-12 h-12 text-blue-500 animate-spin mx-auto mb-4" />
+              <p className="text-gray-600">Loading games...</p>
+            </div>
+          </div>
+        ) : (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.1 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
+          >
+            {games.map((game, index) => {
             // Check subscription-based access for freemium users (first 5 games only)
             const subscriptionAccess = canAccessGameBySubscription(categoryTitle, index);
             const isSubscriptionLocked = !subscriptionAccess.allowed;
@@ -1589,6 +1706,11 @@ const GameCategoryPage = () => {
             return (
               <motion.div
                 key={game.id}
+                ref={(el) => {
+                  if (el) {
+                    gameCardRefs.current[game.id] = el;
+                  }
+                }}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ 
                   opacity: 1, 
@@ -1614,7 +1736,7 @@ const GameCategoryPage = () => {
                     ? "cursor-not-allowed"
                     : "cursor-pointer hover:shadow-xl"
                 } ${
-                  isCurrentlyOpen ? "ring-4 ring-blue-300 ring-opacity-50 animate-pulse" : ""
+                  isCurrentlyOpen ? "ring-4 ring-blue-400 ring-opacity-75 shadow-2xl shadow-blue-400/50" : ""
                 } ${
                   !isCompleted && !isFullyCompleted && isUnlocked && !isCurrentlyOpen 
                     ? "hover:border-opacity-80" 
@@ -1685,9 +1807,13 @@ const GameCategoryPage = () => {
                   </div>
                 </div>
 
-                {/* Animated background for currently open game */}
+                {/* Enhanced animated background for currently open game with blue glow */}
                 {isCurrentlyOpen && (
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-400/20 via-purple-400/20 to-pink-400/20 animate-pulse rounded-2xl" />
+                  <>
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-500/30 via-blue-400/25 to-blue-600/30 rounded-2xl animate-pulse" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-blue-400/40 via-purple-400/30 to-blue-500/40 rounded-2xl blur-sm" />
+                    <div className="absolute -inset-1 bg-gradient-to-r from-blue-400 via-blue-500 to-blue-400 rounded-2xl opacity-20 blur-lg animate-pulse" />
+                  </>
                 )}
 
                 {/* Colorful accent bar for unplayed games */}
@@ -1875,8 +2001,9 @@ const GameCategoryPage = () => {
                 )}
               </motion.div>
             );
-          })}
-        </motion.div>
+            })}
+          </motion.div>
+        )}
       </div>
     </div>
   );

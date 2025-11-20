@@ -83,7 +83,7 @@ import { useSocket } from '../../context/SocketContext';
 export default function StudentDashboard() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { wallet } = useWallet();
+    const { wallet, refreshWallet } = useWallet();
     const { subscription, canAccessPillar, hasFeature } = useSubscription();
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [upgradeFeature, setUpgradeFeature] = useState(null);
@@ -416,10 +416,16 @@ export default function StudentDashboard() {
     };
 
     useEffect(() => {
-        loadDashboardData();
-        loadNotifications();
-        loadAnalyticsData();
-    }, [loadDashboardData, loadNotifications, loadAnalyticsData]);
+        // Only run once on mount or when user changes
+        if (user && (user.role === "student" || user.role === "school_student")) {
+            loadDashboardData();
+            loadNotifications();
+            loadAnalyticsData();
+            // Refresh wallet when dashboard loads to ensure balance is displayed
+            refreshWallet();
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [user?._id]); // Only depend on user ID to prevent infinite loops
 
     // Real-time subscription updates
     useEffect(() => {
@@ -453,7 +459,8 @@ export default function StudentDashboard() {
                 socket.socket.off('subscription:cancelled', handleSubscriptionUpdate);
             }
         };
-    }, [socket, subscription, loadAnalyticsData]);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [socket?.socket, subscription?.status]); // Only depend on socket and subscription status
 
     useEffect(() => {
         if (!socket) return;
@@ -1550,7 +1557,6 @@ export default function StudentDashboard() {
                                             {/* Label with gradient background */}
                                             <motion.div
                                                 whileHover={{ scale: 1.05 }}
-                                                className="mt-auto"
                                                 onClick={() => {
                                                     // Check if pillar is locked
                                                     if (pillar.locked || pillar.accessMode === 'locked' || pillar.upgradeRequired) {

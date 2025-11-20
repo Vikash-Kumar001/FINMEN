@@ -7,10 +7,12 @@ import React, {
 } from "react";
 import { toast } from "react-hot-toast";
 import api from "../utils/api";
+import { useAuth } from "../hooks/useAuth";
 
 const WalletContext = createContext();
 
 export const WalletProvider = ({ children }) => {
+    const { user } = useAuth();
     const [wallet, setWallet] = useState(null);
     const [loading, setLoading] = useState(true);
     const [triggerRefresh, setTriggerRefresh] = useState(false);
@@ -18,7 +20,7 @@ export const WalletProvider = ({ children }) => {
     const fetchWallet = useCallback(async () => {
         // Check if user is authenticated before fetching wallet
         const token = localStorage.getItem("finmen_token");
-        if (!token) {
+        if (!token || !user) {
             setWallet(null);
             setLoading(false);
             return;
@@ -40,11 +42,17 @@ export const WalletProvider = ({ children }) => {
         } finally {
             setLoading(false);
         }
-    }, []);
+    }, [user]);
 
     useEffect(() => {
-        fetchWallet();
-    }, [fetchWallet, triggerRefresh]);
+        // Fetch wallet when user is available or when triggerRefresh changes
+        if (user) {
+            fetchWallet();
+        } else {
+            setWallet(null);
+            setLoading(false);
+        }
+    }, [fetchWallet, triggerRefresh, user]);
 
     const refreshWallet = () => setTriggerRefresh(prev => !prev);
 

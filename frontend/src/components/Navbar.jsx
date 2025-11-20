@@ -169,14 +169,36 @@ const Navbar = () => {
         visible: { opacity: 1, scale: 1, y: 0, transition: { duration: 0.2, ease: "easeOut" } }
     };
 
+    // Prevent body scroll when mobile menu is open
+    useEffect(() => {
+        if (showMobileMenu) {
+            // Save current scroll position
+            const scrollY = window.scrollY;
+            // Prevent scrolling
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${scrollY}px`;
+            document.body.style.width = '100%';
+            document.body.style.overflow = 'hidden';
+            
+            return () => {
+                // Restore scrolling
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.width = '';
+                document.body.style.overflow = '';
+                // Restore scroll position
+                window.scrollTo(0, scrollY);
+            };
+        }
+    }, [showMobileMenu]);
+
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) setShowProfileMenu(false);
-            if (showMobileMenu && !event.target.closest('.mobile-menu-button')) setShowMobileMenu(false);
         };
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
-    }, [showProfileMenu, showMobileMenu]);
+    }, [showProfileMenu]);
 
     useEffect(() => {
         const fetchUnreadCount = async () => {
@@ -296,7 +318,7 @@ const Navbar = () => {
                                 <>
                                     {(user.role === "student" || user.role === "school_student") && (
                                         <motion.button
-                                            className="flex items-center gap-1.5 px-3 sm:px-4 py-2.5 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 border-2 border-yellow-500 cursor-pointer"
+                                            className="hidden md:flex items-center gap-1.5 px-3 sm:px-4 py-2.5 bg-gradient-to-r from-yellow-400 to-amber-500 text-white rounded-lg font-bold text-sm shadow-md hover:shadow-lg transition-all duration-200 border-2 border-yellow-500 cursor-pointer"
                                             whileHover={{ scale: 1.03 }}
                                             whileTap={{ scale: 0.97 }}
                                             onClick={() => navigate("/student/wallet")}
@@ -309,7 +331,7 @@ const Navbar = () => {
 
                                     {( user.role === "admin") && (
                                         <motion.button
-                                            className="relative p-2 sm:p-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
+                                            className="hidden md:flex relative p-2 sm:p-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
                                             whileHover={{ scale: 1.08, rotate: -10 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={() => navigate(`/${user.role}/notifications`)}
@@ -328,7 +350,7 @@ const Navbar = () => {
                                     )}
                                     {(user.role === "student" || user.role === "school_student") && (
                                         <motion.button
-                                            className="relative p-2 sm:p-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
+                                            className="hidden md:flex relative p-2 sm:p-2.5 text-gray-700 bg-gray-100 hover:bg-gray-200 border-2 border-gray-300 rounded-lg transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
                                             whileHover={{ scale: 1.08, rotate: -10 }}
                                             whileTap={{ scale: 0.95 }}
                                             onClick={() => navigate(`/student/notifications`)}
@@ -464,37 +486,173 @@ const Navbar = () => {
                     </div>
                 </div>
 
-                {/* Mobile Menu */}
+                {/* Mobile Menu Sidebar */}
                 <AnimatePresence>
                     {showMobileMenu && (
                         <motion.div
-                            initial={{ opacity: 0, height: 0 }}
-                            animate={{ opacity: 1, height: "auto" }}
-                            exit={{ opacity: 0, height: 0 }}
-                            transition={{ duration: 0.3, ease: "easeInOut" }}
-                            className="md:hidden border-t-2 border-gray-200 bg-white shadow-lg max-h-96 overflow-y-auto"
+                            className="md:hidden fixed inset-0 z-50"
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.2 }}
                         >
-                            <div className="px-4 py-4">
-                                <div className="grid grid-cols-2 gap-2 mb-4">
-                                    {navigationItems.map((item, index) => (
-                                        <motion.button
-                                            key={index}
-                                            onClick={() => {
-                                                item.onClick();
-                                                setShowMobileMenu(false);
-                                            }}
-                                            className="flex items-center gap-2 px-3 py-2.5 text-xs font-semibold text-gray-700 hover:text-white bg-gray-100 hover:bg-gradient-to-r hover:from-indigo-600 hover:via-purple-600 hover:to-pink-600 border-2 border-gray-200 hover:border-transparent rounded-lg transition-all duration-200 shadow-sm hover:shadow-lg"
-                                            whileHover={{ scale: 1.02 }}
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            transition={{ delay: index * 0.03 }}
+                            {/* Dark overlay background */}
+                            <motion.div
+                                className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+                                onClick={() => setShowMobileMenu(false)}
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                transition={{ duration: 0.2 }}
+                            />
+
+                            {/* Mobile menu panel */}
+                            <motion.div
+                                className="fixed top-0 left-0 bottom-0 w-4/5 max-w-sm bg-white shadow-xl"
+                                initial={{ x: '-100%' }}
+                                animate={{ x: 0 }}
+                                exit={{ x: '-100%' }}
+                                transition={{
+                                    type: "spring",
+                                    damping: 25,
+                                    stiffness: 300,
+                                    mass: 0.8
+                                }}
+                            >
+                                <div className="flex flex-col h-full">
+                                    {/* Menu header */}
+                                    <div className="flex items-center justify-between p-4 border-b border-gray-200">
+                                        <div className="flex items-center">
+                                            <div className="w-10 h-10 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 rounded-xl flex items-center justify-center text-white font-bold shadow-lg">
+                                                <Zap className="w-5 h-5" />
+                                            </div>
+                                            <div className="ml-3">
+                                                <h2 className="text-lg font-semibold text-gray-900">WiseStudent</h2>
+                                                <p className="text-xs text-gray-600 font-medium">{getDashboardLabel()}</p>
+                                            </div>
+                                        </div>
+                                        <button
+                                            className="p-2 rounded-md text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+                                            onClick={() => setShowMobileMenu(false)}
                                         >
-                                            <div className="w-4 h-4">{item.icon}</div>
-                                            <span className="truncate">{item.label}</span>
-                                        </motion.button>
-                                    ))}
+                                            <X className="h-6 w-6" />
+                                        </button>
+                                    </div>
+
+                                    {/* User info section */}
+                                    {user && (
+                                        <div className="px-4 py-3 border-b border-gray-200 bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+                                            <div className="flex items-center gap-3">
+                                                <Avatar
+                                                    user={user}
+                                                    size="small"
+                                                    className="border-2 border-white shadow-md"
+                                                />
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="text-sm font-bold text-gray-900 truncate">{displayName}</p>
+                                                    <p className="text-xs text-gray-600 truncate capitalize">{user.role?.replace('_', ' ')}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Menu items */}
+                                    <div className="flex flex-col p-4 space-y-2 flex-grow overflow-y-auto">
+                                        {navigationItems.map((item, index) => (
+                                            <motion.button
+                                                key={index}
+                                                onClick={() => {
+                                                    item.onClick();
+                                                    setShowMobileMenu(false);
+                                                }}
+                                                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium text-left"
+                                                whileTap={{ scale: 0.98 }}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: index * 0.05 }}
+                                            >
+                                                <div className="w-5 h-5 text-gray-600">{item.icon}</div>
+                                                <span>{item.label}</span>
+                                            </motion.button>
+                                        ))}
+
+                                        {/* Wallet button for students */}
+                                        {(user?.role === "student" || user?.role === "school_student") && (
+                                            <motion.button
+                                                onClick={() => {
+                                                    navigate("/student/wallet");
+                                                    setShowMobileMenu(false);
+                                                }}
+                                                className="flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-yellow-400 to-amber-500 text-white font-medium text-left mt-2"
+                                                whileTap={{ scale: 0.98 }}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: navigationItems.length * 0.05 }}
+                                            >
+                                                <Wallet className="w-5 h-5" />
+                                                <div className="flex-1">
+                                                    <span>Wallet</span>
+                                                    <p className="text-xs font-bold">{wallet?.balance || 0} Coins</p>
+                                                </div>
+                                            </motion.button>
+                                        )}
+
+                                        {/* Notifications button */}
+                                        {user && (
+                                            <motion.button
+                                                onClick={() => {
+                                                    if (user.role === "admin") {
+                                                        navigate(`/admin/notifications`);
+                                                    } else if (user.role === "student" || user.role === "school_student") {
+                                                        navigate(`/student/notifications`);
+                                                    }
+                                                    setShowMobileMenu(false);
+                                                }}
+                                                className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors font-medium text-left relative"
+                                                whileTap={{ scale: 0.98 }}
+                                                initial={{ opacity: 0, x: -20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                transition={{ delay: (navigationItems.length + 1) * 0.05 }}
+                                            >
+                                                <div className="relative">
+                                                    <Bell className="w-5 h-5 text-gray-600" />
+                                                    {unreadCount > 0 && (
+                                                        <span className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                                                            {unreadCount > 9 ? '9+' : unreadCount}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <span>Notifications</span>
+                                            </motion.button>
+                                        )}
+
+                                        {/* Profile menu items */}
+                                        <div className="mt-auto pt-4 border-t border-gray-200 space-y-2">
+                                            {profileMenuItems.map((item, index) => (
+                                                <motion.button
+                                                    key={index}
+                                                    onClick={() => {
+                                                        item.onClick();
+                                                        setShowMobileMenu(false);
+                                                    }}
+                                                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg font-medium text-left transition-colors ${
+                                                        item.danger
+                                                            ? 'text-red-600 hover:bg-red-50'
+                                                            : 'text-gray-700 hover:bg-gray-100'
+                                                    }`}
+                                                    whileTap={{ scale: 0.98 }}
+                                                    initial={{ opacity: 0, x: -20 }}
+                                                    animate={{ opacity: 1, x: 0 }}
+                                                    transition={{ delay: (navigationItems.length + 3 + index) * 0.05 }}
+                                                >
+                                                    <div className="w-5 h-5">{item.icon}</div>
+                                                    <span>{item.label}</span>
+                                                </motion.button>
+                                            ))}
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+                            </motion.div>
                         </motion.div>
                     )}
                 </AnimatePresence>

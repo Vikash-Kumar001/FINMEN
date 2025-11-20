@@ -1,11 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { Routes, Route, Navigate, useLocation } from "react-router-dom";
 import ProtectedRoute from "./components/ProtectedRoute";
 import { useAuth } from "./hooks/useAuth";
 
 // Global UI
 import Navbar from "./components/Navbar";
-import Chatbot from "./components/Chatbot";
 // Auth Pages
 import Login from "./pages/Auth/Login";
 import Register from "./pages/Auth/Register";
@@ -180,6 +179,214 @@ const App = () => {
   const { user, loading } = useAuth();
   const location = useLocation();
 
+  // Update document title based on current route
+  useEffect(() => {
+    const getPageTitle = (pathname) => {
+      // Auth pages
+      if (pathname === "/login") return "Login";
+      if (pathname === "/register") return "Register";
+      if (pathname === "/forgot-password") return "Forgot Password";
+      if (pathname === "/reset-password") return "Reset Password";
+      if (pathname === "/verify-otp") return "Verify OTP";
+      if (pathname === "/pending-approval") return "Pending Approval";
+      if (pathname === "/choose-account-type") return "Choose Account Type";
+      if (pathname === "/register-parent") return "Register Parent";
+      if (pathname === "/register-seller") return "Register Seller";
+      if (pathname === "/register-teacher") return "Register Teacher";
+      if (pathname === "/register-stakeholder") return "Register Stakeholder";
+      
+      // Landing and public pages
+      if (pathname === "/") return "Wise Student";
+      if (pathname === "/about") return "About Us";
+      if (pathname === "/blog") return "Blog";
+      if (pathname === "/careers") return "Careers";
+      if (pathname.startsWith("/careers/apply")) return "Apply for Job";
+      if (pathname === "/contact") return "Contact Us";
+      if (pathname === "/terms") return "Terms of Service";
+      if (pathname === "/privacy") return "Privacy Policy";
+      if (pathname === "/cookies") return "Cookie Policy";
+      
+      // Account selection
+      if (pathname === "/individual-account") return "Individual Account";
+      if (pathname === "/institution-type") return "Institution Type";
+      if (pathname === "/school-registration") return "School Registration";
+      if (pathname === "/company-signup") return "Company Signup";
+      if (pathname === "/create-organization") return "Create Organization";
+      
+      // Student routes
+      if (pathname === "/student/dashboard") return "Student Dashboard";
+      if (pathname === "/student/activity") return "Student Activity";
+      if (pathname.startsWith("/student/assignment/")) return "Assignment";
+      if (pathname === "/student/announcements") return "Announcements";
+      if (pathname === "/student/dashboard/quick-quiz") return "Quick Quiz";
+      if (pathname.startsWith("/student/dashboard/")) return "Category";
+      if (pathname === "/student/mindfull-break") return "Mindfulness Break";
+      if (pathname === "/student/mood-tracker") return "Mood Tracker";
+      if (pathname === "/student/journal") return "Journal";
+      if (pathname === "/student/rewards") return "Rewards";
+      if (pathname === "/student/redeem") return "Redeem";
+      if (pathname === "/student/wallet") return "Wallet";
+      if (pathname === "/student/leaderboard") return "Leaderboard";
+      if (pathname === "/student/game") return "Games";
+      if (pathname === "/student/notifications") return "Notifications";
+      if (pathname === "/student/profile") return "Profile";
+      if (pathname === "/student/settings") return "Settings";
+      if (pathname === "/student/payment") return "Payment";
+      if (pathname.startsWith("/student/presentation")) return "Presentation";
+      if (pathname === "/student/breathing") return "Breathing Exercise";
+      
+      // Student financial literacy routes
+      if (pathname === "/learn/financial-literacy") return "Financial Literacy";
+      if (pathname === "/tools/budget-planner") return "Budget Planner";
+      if (pathname === "/games/investment-simulator") return "Investment Simulator";
+      if (pathname === "/tools/savings-goals") return "Savings Goals";
+      if (pathname === "/learn/financial-quiz") return "Financial Quiz";
+      if (pathname === "/tools/expense-tracker") return "Expense Tracker";
+      
+      // Student game routes
+      if (pathname.startsWith("/student/") && pathname.includes("/games/")) return "Games";
+      if (pathname.startsWith("/games/")) return "Games";
+      
+      // School Admin routes
+      if (pathname === "/school/admin/dashboard") return "School Admin Dashboard";
+      if (pathname === "/school/admin/analytics") return "School Analytics";
+      if (pathname === "/school/admin/students") return "Students";
+      if (pathname === "/school/admin/teachers") return "Teachers";
+      if (pathname === "/school/admin/classes") return "Classes";
+      if (pathname === "/school/admin/staff") return "Staff";
+      if (pathname === "/school/admin/announcements") return "Announcements";
+      if (pathname === "/school/admin/approvals") return "Approvals";
+      if (pathname === "/school/admin/templates") return "Templates";
+      if (pathname === "/school/admin/nep-tracking") return "NEP Tracking";
+      if (pathname === "/school/admin/compliance") return "Compliance";
+      if (pathname === "/school/admin/billing") return "Billing";
+      if (pathname === "/school/admin/emergency") return "Emergency";
+      if (pathname === "/school/admin/events") return "Events";
+      if (pathname === "/school/admin/settings") return "School Settings";
+      if (pathname === "/school/admin/payment-tracker") return "Payment Tracker";
+      if (pathname === "/school_admin/profile") return "School Admin Profile";
+      if (pathname === "/school_admin/settings") return "School Admin Settings";
+      
+      // School Teacher routes
+      if (pathname === "/school-teacher/overview") return "Teacher Overview";
+      if (pathname === "/school-teacher/dashboard") return "Teacher Dashboard";
+      if (pathname === "/school-teacher/students") return "My Students";
+      if (pathname === "/school-teacher/analytics") return "Teacher Analytics";
+      if (pathname === "/school-teacher/messages") return "Messages";
+      if (pathname === "/school-teacher/chat-contacts") return "Chat Contacts";
+      if (pathname === "/school-teacher/announcements") return "Announcements";
+      if (pathname === "/school-teacher/tasks") return "Tasks";
+      if (pathname === "/school-teacher/tracking") return "Assignment Tracking";
+      if (pathname === "/school-teacher/settings") return "Teacher Settings";
+      if (pathname === "/school_teacher/settings") return "Teacher Settings";
+      if (pathname.startsWith("/school-teacher/student/")) return "Student Progress";
+      if (pathname.startsWith("/school-teacher/student-chat/")) return "Student Chat";
+      if (pathname.startsWith("/school-teacher/student/") && pathname.includes("/parent-chat")) return "Parent Chat";
+      if (pathname === "/school-teacher/profile") return "Teacher Profile";
+      if (pathname === "/school_teacher/profile") return "Teacher Profile";
+      
+      // School Student routes
+      if (pathname === "/school-student/dashboard") return "Student Dashboard";
+      if (pathname === "/school-student/announcements") return "Announcements";
+      if (pathname === "/school-student/chat") return "Chat";
+      
+      // School Parent routes
+      if (pathname === "/school-parent/dashboard") return "Parent Dashboard";
+      if (pathname === "/school-parent/announcements") return "Announcements";
+      if (pathname.startsWith("/school-parent/student/") && pathname.includes("/chat")) return "Chat";
+      
+      // Admin routes
+      if (pathname === "/admin/panel") return "Admin Panel";
+      if (pathname === "/admin/dashboard") return "Admin Dashboard";
+      if (pathname === "/admin/analytics") return "Admin Analytics";
+      if (pathname === "/admin/students") return "All Students";
+      if (pathname === "/admin/redemptions") return "Redemptions";
+      if (pathname === "/admin/feedback") return "Feedback";
+      if (pathname === "/admin/all-redemptions") return "All Redemptions";
+      if (pathname === "/admin/stats") return "Statistics";
+      if (pathname === "/admin/users") return "Users";
+      if (pathname === "/admin/profile") return "Admin Profile";
+      if (pathname === "/admin/settings") return "Admin Settings";
+      if (pathname === "/admin/settings/communications") return "Communication Settings";
+      if (pathname === "/admin/notifications") return "Notifications";
+      if (pathname === "/admin/approvals") return "Approvals";
+      if (pathname === "/admin/schools") return "Schools";
+      if (pathname.startsWith("/admin/schools/")) return "School Details";
+      if (pathname === "/admin/incidents") return "Incident Management";
+      if (pathname === "/admin/tracking") return "Tracking Dashboard";
+      if (pathname === "/admin/payment-tracker") return "Payment Tracker";
+      if (pathname === "/admin/marketplace") return "Marketplace";
+      if (pathname === "/admin/reports") return "Reports";
+      if (pathname === "/admin/behavior-analytics") return "Behavior Analytics";
+      if (pathname === "/admin/smart-insights") return "Smart Insights";
+      if (pathname === "/admin/financial-console") return "Financial Console";
+      if (pathname === "/admin/support-desk") return "Support Desk";
+      if (pathname === "/admin/lifecycle") return "Lifecycle Management";
+      if (pathname === "/admin/content-governance") return "Content Governance";
+      if (pathname === "/admin/audit-timeline") return "Audit Timeline";
+      if (pathname === "/admin/configuration") return "Configuration";
+      if (pathname === "/admin/communication") return "Communication Suite";
+      if (pathname === "/admin/operational") return "Operational Tools";
+      if (pathname === "/admin/predictive") return "Predictive Models";
+      if (pathname === "/admin/api-control") return "API Control Plane";
+      if (pathname === "/admin/platform") return "Admin Platform";
+      
+      // Parent routes
+      if (pathname === "/parent/overview") return "Parent Overview";
+      if (pathname === "/parent/dashboard") return "Parent Dashboard";
+      if (pathname === "/parent/announcements") return "Announcements";
+      if (pathname === "/parent/children") return "My Children";
+      if (pathname === "/parent/messages") return "Messages";
+      if (pathname === "/parent/settings") return "Parent Settings";
+      if (pathname === "/parent/upgrade") return "Upgrade";
+      if (pathname.startsWith("/parent/child/")) {
+        if (pathname.includes("/analytics")) return "Child Analytics";
+        if (pathname.includes("/progress")) return "Child Progress";
+        if (pathname.includes("/wellbeing")) return "Child Wellbeing";
+        if (pathname.includes("/wallet")) return "Child Wallet";
+        if (pathname.includes("/chat")) return "Chat";
+        return "Child Details";
+      }
+      if (pathname === "/parent/profile") return "Parent Profile";
+      if (pathname === "/parent/notifications") return "Notifications";
+      if (pathname === "/parent/parent-progress" || pathname === "/parent/progress") return "Progress";
+      if (pathname === "/parent/upgrade/checkout") return "Checkout";
+      
+      // Seller routes
+      if (pathname === "/seller/dashboard") return "Seller Dashboard";
+      
+      // CSR routes
+      if (pathname === "/csr" || pathname === "/csr/overview") return "CSR Overview";
+      if (pathname === "/csr/dashboard") return "CSR Dashboard";
+      if (pathname === "/csr/campaigns") return "CSR Campaigns";
+      if (pathname === "/csr/campaign-wizard") return "Campaign Wizard";
+      if (pathname === "/csr/financial") return "CSR Financial";
+      if (pathname === "/csr/reports") return "CSR Reports";
+      if (pathname === "/csr/approvals") return "CSR Approvals";
+      if (pathname === "/csr/budget-tracking") return "Budget Tracking";
+      if (pathname === "/csr/budget") return "Budget";
+      if (pathname === "/csr/cobranding") return "Co-branding";
+      
+      // Chat routes
+      if (pathname.includes("/student-chat/") || pathname.includes("/parent-chat")) return "Chat";
+      
+      // Default fallback - format pathname nicely
+      const pathParts = pathname.split("/").filter(Boolean);
+      if (pathParts.length === 0) return "Wise Student";
+      
+      // Capitalize and format the last path segment
+      const lastPart = pathParts[pathParts.length - 1];
+      const formatted = lastPart
+        .split("-")
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(" ");
+      
+      return formatted || "Wise Student";
+    };
+
+    document.title = getPageTitle(location.pathname);
+  }, [location.pathname]);
+
   const isAuthPage = [
     "/login",
     "/register",
@@ -268,8 +475,6 @@ const App = () => {
     location.pathname !== "/student/presentation" &&
     (location.pathname.match(/\/student\/presentation\/[^/]+$/) || location.pathname.includes("/student/presentation/share/"));
 
-  const isChatbotRestrictedPage = location.pathname.startsWith("/student/payment");
-
   return (
     <div className="min-h-screen bg-gray-100">
       {!isAuthPage &&
@@ -289,13 +494,6 @@ const App = () => {
         location.pathname !== "/pending-approval" &&
         !location.pathname.includes("/student-chat/") &&
         !location.pathname.includes("/parent-chat") && <Navbar />}
-      {!isAuthPage &&
-        user &&
-        (user.role === "student" || user.role === "school_student") &&
-        !isChatbotRestrictedPage && (
-          <Chatbot />
-        )}{" "}
-      {/* ✅ Floating Chatbot - Only for students */}
       <ErrorBoundary>
         <Routes>
           <Route path="/" element={user ? <RootRedirect /> : <LandingPage />} />

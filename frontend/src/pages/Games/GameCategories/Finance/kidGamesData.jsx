@@ -11,7 +11,7 @@ export const getFinanceKidsGames = (gameCompletionStatus)=> {
     const financeGamesKids = [
         {
           id: "finance-kids-1",
-          title: "Piggy Bank Story",
+          title: "Smart Saver Stories",
           description: "You get ₹10. Do you save ₹5 or spend all?",
           icon: <Wallet className="w-6 h-6" />,
           difficulty: "Easy",

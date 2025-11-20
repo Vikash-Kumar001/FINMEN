@@ -183,7 +183,7 @@ const PiggyBankStory = () => {
   if (!currentQuestionData && !showResult) {
     return (
       <GameShell
-        title="Piggy Bank Story"
+        title="Smart Saver Stories"
         subtitle="Loading..."
         score={coins}
         gameId="finance-kids-1"
@@ -198,7 +198,7 @@ const PiggyBankStory = () => {
 
   return (
     <GameShell
-      title="Piggy Bank Story"
+      title="Smart Saver Stories"
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct

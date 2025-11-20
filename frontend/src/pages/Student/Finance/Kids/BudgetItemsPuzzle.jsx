@@ -1,7 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy, ShoppingBag, Apple, Gamepad2, Book, Home } from "lucide-react";
-import GameShell from "../GameShell";
+import { Confetti, ScoreFlash, GameOverModal } from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const BudgetItemsPuzzle = () => {
@@ -9,26 +8,68 @@ const BudgetItemsPuzzle = () => {
   const location = useLocation();
   // Get coinsPerLevel from navigation state (from game card) or use default
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choice, setChoice] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [answers, setAnswers] = useState([]);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [totalCoins, setTotalCoins] = useState(0);
-  const [answered, setAnswered] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [earnedBadge, setEarnedBadge] = useState(false);
+  // Calculate back path
+  const resolvedBackPath = useMemo(() => {
+    if (location.state?.returnPath) {
+      return location.state.returnPath;
+    }
 
-  const levels = [
+    const pathSegments = location.pathname.split("/").filter(Boolean);
+    if (pathSegments[0] === "student" && pathSegments.length >= 3) {
+      const categoryKey = pathSegments[1];
+      const ageKey = pathSegments[2];
+
+      const categorySlugMap = {
+        finance: "financial-literacy",
+        "financial-literacy": "financial-literacy",
+      };
+
+      const ageSlugMap = {
+        kid: "kids",
+        kids: "kids",
+      };
+
+      const mappedCategory = categorySlugMap[categoryKey] || categoryKey;
+      const mappedAge = ageSlugMap[ageKey] || ageKey;
+
+      return `/games/${mappedCategory}/${mappedAge}`;
+    }
+
+    return "/games";
+  }, [location.pathname, location.state]);
+
+  const handleGameOverClose = () => {
+    navigate(resolvedBackPath);
+  };
+
+  const questions = [
     {
       id: 1,
       title: "Food",
-      question: "Is Food a Need or Want?",
-      icon: Apple,
+      text: "Is Food a Need or Want?",
+      emoji: "🍎",
       item: "Food",
-      correctAnswer: "Need",
       options: [
-        { text: "Need - Must have to live", correct: true, coins: 10 },
-        { text: "Want - Nice to have", correct: false, coins: 0 }
+        { 
+          id: "need", 
+          text: "Need - Must have to live", 
+          emoji: "✅",
+          isCorrect: true
+        },
+        { 
+          id: "want", 
+          text: "Want - Nice to have", 
+          emoji: "🎁",
+          isCorrect: false
+        }
       ],
       feedback: {
         correct: "Right! Food is essential to survive!",
@@ -38,13 +79,22 @@ const BudgetItemsPuzzle = () => {
     {
       id: 2,
       title: "Toys",
-      question: "Are Toys a Need or Want?",
-      icon: ShoppingBag,
+      text: "Are Toys a Need or Want?",
+      emoji: "🧸",
       item: "Toys",
-      correctAnswer: "Want",
       options: [
-        { text: "Need - Must have to live", correct: false, coins: 0 },
-        { text: "Want - Nice to have", correct: true, coins: 15 }
+        { 
+          id: "need", 
+          text: "Need - Must have to live", 
+          emoji: "🏠",
+          isCorrect: false
+        },
+        { 
+          id: "want", 
+          text: "Want - Nice to have", 
+          emoji: "🎮",
+          isCorrect: true
+        }
       ],
       feedback: {
         correct: "Correct! Toys are fun but not essential!",
@@ -54,13 +104,22 @@ const BudgetItemsPuzzle = () => {
     {
       id: 3,
       title: "Books",
-      question: "Are School Books a Need or Want?",
-      icon: Book,
-      item: "Books",
-      correctAnswer: "Need",
+      text: "Are School Books a Need or Want?",
+      emoji: "📚",
+      item: "School Books",
       options: [
-        { text: "Need - Required for education", correct: true, coins: 20 },
-        { text: "Want - Optional fun", correct: false, coins: 0 }
+        { 
+          id: "need", 
+          text: "Need - Required for education", 
+          emoji: "📖",
+          isCorrect: true
+        },
+        { 
+          id: "want", 
+          text: "Want - Optional fun", 
+          emoji: "📖",
+          isCorrect: false
+        }
       ],
       feedback: {
         correct: "Perfect! Books are needed for learning!",
@@ -70,13 +129,22 @@ const BudgetItemsPuzzle = () => {
     {
       id: 4,
       title: "Games",
-      question: "Are Video Games a Need or Want?",
-      icon: Gamepad2,
-      item: "Games",
-      correctAnswer: "Want",
+      text: "Are Video Games a Need or Want?",
+      emoji: "🎮",
+      item: "Video Games",
       options: [
-        { text: "Need - Can't live without", correct: false, coins: 0 },
-        { text: "Want - Entertainment choice", correct: true, coins: 25 }
+        { 
+          id: "need", 
+          text: "Need - Can't live without", 
+          emoji: "💊",
+          isCorrect: false
+        },
+        { 
+          id: "want", 
+          text: "Want - Entertainment choice", 
+          emoji: "🎯",
+          isCorrect: true
+        }
       ],
       feedback: {
         correct: "Great! Games are wants, not needs!",
@@ -86,13 +154,22 @@ const BudgetItemsPuzzle = () => {
     {
       id: 5,
       title: "Shelter",
-      question: "Is a Home/Shelter a Need or Want?",
-      icon: Home,
-      item: "Shelter",
-      correctAnswer: "Need",
+      text: "Is a Home/Shelter a Need or Want?",
+      emoji: "🏠",
+      item: "Home/Shelter",
       options: [
-        { text: "Need - Basic protection", correct: true, coins: 30 },
-        { text: "Want - Luxury item", correct: false, coins: 0 }
+        { 
+          id: "need", 
+          text: "Need - Basic protection", 
+          emoji: "🛡️",
+          isCorrect: true
+        },
+        { 
+          id: "want", 
+          text: "Want - Luxury item", 
+          emoji: "🏰",
+          isCorrect: false
+        }
       ],
       feedback: {
         correct: "Excellent! Shelter is a basic human need!",
@@ -101,159 +178,251 @@ const BudgetItemsPuzzle = () => {
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-  const Icon = currentLevelData.icon;
-
-  const handleAnswer = (option) => {
-    setSelectedAnswer(option);
-    setAnswered(true);
-    resetFeedback();
+  const handleChoice = (selectedChoice) => {
+    if (choice !== null) return; // Prevent multiple selections
     
-    if (option.correct) {
-      setTotalCoins(totalCoins + option.coins);
-      showCorrectAnswerFeedback(option.coins, true);
-      
-      if (currentLevel === 5) {
-        setEarnedBadge(true);
-      }
+    const currentQ = questions[currentQuestion];
+    const selectedOption = currentQ.options.find(opt => opt.id === selectedChoice);
+    const isCorrect = selectedOption?.isCorrect || false;
+    
+    setChoice(selectedChoice);
+    setAnswers([...answers, { questionId: currentQ.id, choice: selectedChoice, isCorrect }]);
+    
+    if (isCorrect) {
+      showCorrectAnswerFeedback(1, true);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setChoice(null);
+        resetFeedback();
+      } else {
+        // Calculate final score
+        const correctAnswers = [...answers, { questionId: currentQ.id, choice: selectedChoice, isCorrect }].filter(a => a.isCorrect).length;
+        setFinalScore(correctAnswers);
+        setCoins(5); // Award 5 coins on completion
+        setShowResult(true);
+      }
+    }, isCorrect ? 1500 : 1000);
   };
 
   const handleNext = () => {
-    if (currentLevel < 5) {
-      setCurrentLevel(currentLevel + 1);
-      setAnswered(false);
-      setSelectedAnswer(null);
-    } else {
-      navigate("/games/financial-literacy/kids");
-    }
+    navigate(resolvedBackPath);
   };
 
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setAnswers([]);
+    setChoice(null);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const allQuestionsAnswered = answers.length === questions.length;
+
   return (
-    <GameShell
-      title={`Question ${currentLevel} – ${currentLevelData.title}`}
-      subtitle={currentLevelData.question}
-      coins={totalCoins}
-      currentLevel={currentLevel}
-      totalLevels={5}
-      coinsPerLevel={coinsPerLevel}
-      onNext={answered ? handleNext : null}
-      nextEnabled={answered}
-      nextLabel={currentLevel === 5 ? "Finish" : "Next"}
-      showConfetti={answered && selectedAnswer?.correct}
-      gameId="finance-kids-44"
-      gameType="finance"
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      score={totalCoins}
-    >
-      <div className="text-center text-white space-y-4">
-        {/* Icon Display */}
-        <div className="flex justify-center mb-3">
-          <Icon className="w-16 h-16 text-orange-400 animate-bounce" />
-        </div>
+    <div className="h-screen w-full bg-gradient-to-br from-orange-100 via-amber-50 to-yellow-100 flex flex-col relative overflow-hidden">
+      {/* Floating Puzzle Elements Background */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 15 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute text-lg sm:text-2xl opacity-10"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `float ${Math.random() * 6 + 4}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 2}s`,
+            }}
+          >
+            {['🧩', '🍎', '🧸', '📚', '🎮', '🏠'][i % 6]}
+          </div>
+        ))}
+      </div>
 
-        {/* Item Label */}
-        <div className="bg-orange-900/30 backdrop-blur-sm rounded-lg p-2 border border-orange-500/30 max-w-xs mx-auto">
-          <p className="text-orange-300 font-semibold text-sm">
-            {currentLevelData.item}
-          </p>
+      {/* Header */}
+      <div className="flex items-center justify-between px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 relative z-30 bg-white/30 backdrop-blur-sm border-b border-orange-200 flex-shrink-0 gap-2 sm:gap-4">
+        <button
+          onClick={() => navigate(resolvedBackPath)}
+          className="bg-white/80 hover:bg-white text-orange-600 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-orange-300 shadow-md transition-all cursor-pointer font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base flex-shrink-0"
+        >
+          ← <span className="hidden sm:inline">Back</span>
+        </button>
+        <div className="flex-1 flex items-center justify-center min-w-0">
+          <h1 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold px-2 flex items-center justify-center gap-1 sm:gap-2 truncate">
+            <span className="text-sm sm:text-base md:text-lg lg:text-xl flex-shrink-0">🧩</span>
+            <span className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 bg-clip-text text-transparent truncate">
+              <span className="hidden xs:inline">Puzzle: Budget Items</span>
+              <span className="xs:hidden">Budget Items</span>
+            </span>
+          </h1>
         </div>
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 bg-white/80 backdrop-blur-md px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-orange-300 shadow-md">
+            <span className="text-lg sm:text-xl md:text-2xl">🧩</span>
+            <span className="text-orange-700 font-bold text-xs sm:text-sm md:text-lg">Coins: {coins}</span>
+          </div>
+        </div>
+      </div>
 
-        {!answered ? (
-          <div className="space-y-2">
-            {currentLevelData.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswer(option)}
-                className={`w-full ${
-                  option.correct 
-                    ? 'bg-gradient-to-r from-green-600 to-emerald-600'
-                    : 'bg-gradient-to-r from-blue-600 to-cyan-600'
-                } px-6 py-3 rounded-full text-white font-bold hover:scale-105 transition-transform text-sm`}
-              >
-                {option.text}
-              </button>
-            ))}
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col justify-center items-center text-center px-2 sm:px-4 md:px-6 z-10 py-2 sm:py-4 overflow-y-auto min-h-0">
+        {!showResult ? (
+          <div className="w-full max-w-3xl space-y-3 sm:space-y-4">
+            {/* Progress Dots */}
+            <div className="flex justify-center gap-2 mb-2 sm:mb-3">
+              {questions.map((_, index) => (
+                <div
+                  key={index}
+                  className={`h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full transition-all ${
+                    index === currentQuestion
+                      ? 'bg-orange-500 w-6 sm:w-8'
+                      : index < currentQuestion
+                      ? 'bg-orange-300'
+                      : 'bg-orange-200'
+                  }`}
+                />
+              ))}
+            </div>
+
+            {/* Question Counter */}
+            <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 font-medium">
+              Question {currentQuestion + 1} of {questions.length}
+            </p>
+
+            {/* Question Card */}
+            <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-orange-300 shadow-xl">
+              <div className="text-3xl sm:text-4xl md:text-5xl mb-3 sm:mb-4">{questions[currentQuestion].emoji}</div>
+              
+              <h3 className="text-base sm:text-lg md:text-xl font-bold text-orange-700 mb-2 sm:mb-3">
+                {questions[currentQuestion].title}
+              </h3>
+              
+              <p className="text-gray-800 text-sm sm:text-base md:text-lg mb-4 sm:mb-6 font-semibold leading-relaxed px-1">
+                {questions[currentQuestion].text}
+              </p>
+
+              {/* Options */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                {questions[currentQuestion].options.map((option) => {
+                  const isSelected = choice === option.id;
+                  const isCorrect = option.isCorrect;
+                  const showFeedback = choice !== null;
+                  
+                  let buttonClass = "bg-gradient-to-r from-orange-400 via-amber-400 to-yellow-400 hover:from-orange-500 hover:via-amber-500 hover:to-yellow-500 text-white";
+                  
+                  if (showFeedback) {
+                    if (isSelected) {
+                      buttonClass = isCorrect
+                        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white ring-4 ring-green-200"
+                        : "bg-gradient-to-r from-red-500 to-rose-600 text-white ring-4 ring-red-200";
+                    } else if (isCorrect) {
+                      buttonClass = "bg-gradient-to-r from-green-500 to-emerald-600 text-white ring-4 ring-green-200";
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleChoice(option.id)}
+                      disabled={choice !== null}
+                      className={`${buttonClass} p-4 sm:p-5 rounded-xl sm:rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-75 disabled:cursor-not-allowed disabled:transform-none`}
+                    >
+                      <div className="text-3xl sm:text-4xl mb-2">{option.emoji}</div>
+                      <h3 className="font-bold text-sm sm:text-base md:text-lg">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <div className="mt-2 text-2xl">
+                          {isCorrect ? "✓" : "✗"}
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         ) : (
-          <div className={`p-4 rounded-xl border-2 ${
-            selectedAnswer.correct 
-              ? 'bg-green-500/20 border-green-400' 
-              : 'bg-red-500/20 border-red-400'
-          }`}>
-            <Trophy className={`mx-auto w-12 h-12 mb-2 ${
-              selectedAnswer.correct ? 'text-yellow-400' : 'text-gray-400'
-            }`} />
-            <h3 className="text-lg font-bold mb-1">
-              {selectedAnswer.correct ? `+${selectedAnswer.coins} Coins!` : 'Think Again!'}
-            </h3>
-            <p className="text-white/90 text-sm">
-              {selectedAnswer.correct 
-                ? currentLevelData.feedback.correct 
-                : currentLevelData.feedback.wrong}
-            </p>
-            
-            {earnedBadge && (
-              <div className="mt-3 p-3 bg-gradient-to-r from-orange-500/30 to-yellow-500/30 rounded-xl border-2 border-orange-400">
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  <Trophy className="w-8 h-8 text-yellow-400" />
-                  <ShoppingBag className="w-8 h-8 text-orange-400" />
+          <>
+            {/* Results Card */}
+            <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-orange-300 shadow-xl text-center max-w-2xl w-full">
+              {finalScore >= 3 ? (
+                <div>
+                  <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4 animate-bounce">🧩</div>
+                  <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">✨</div>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mb-2 sm:mb-3">Puzzle Master!</h3>
+                  <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
+                    You got {finalScore} out of {questions.length} questions correct!
+                    You know Needs vs Wants well! 🎯
+                  </p>
+                  <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
+                    <span className="text-xl sm:text-2xl">💰</span>
+                    <span className="text-base sm:text-lg md:text-xl font-bold">+{coins} Coins</span>
+                  </div>
+                  <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 px-1">
+                    Needs = Essential, Wants = Optional! 💡
+                  </p>
+                  {allQuestionsAnswered && (
+                    <button
+                      onClick={handleNext}
+                      className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 hover:from-orange-600 hover:via-amber-600 hover:to-yellow-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
+                    >
+                      <span className="hidden sm:inline">Continue to Next Level</span>
+                      <span className="sm:hidden">Next Level</span> →
+                    </button>
+                  )}
                 </div>
-                <p className="text-lg font-bold text-orange-300 mb-1">
-                  🧩 Puzzle Master! 🧩
-                </p>
-                <p className="text-white/90 text-xs mb-1">
-                  You know Needs vs Wants!
-                </p>
-                <p className="text-green-200 font-bold text-sm">
-                  Total: {totalCoins} Coins
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Progress Items */}
-        <div className="flex justify-center gap-1">
-          {levels.map((level) => {
-            const LevelIcon = level.icon;
-            return (
-              <LevelIcon
-                key={level.id}
-                className={`w-5 h-5 ${
-                  level.id < currentLevel
-                    ? 'text-green-400'
-                    : level.id === currentLevel
-                    ? 'text-orange-400 animate-pulse'
-                    : 'text-gray-600'
-                }`}
-              />
-            );
-          })}
-        </div>
-
-        {/* Compact Stats */}
-        <div className="flex gap-2 justify-center">
-          <div className="bg-white/5 rounded-lg p-2 backdrop-blur-sm flex-1 max-w-[120px]">
-            <p className="text-white/70 text-xs">Matched</p>
-            <p className="text-orange-400 font-bold">{currentLevel}/5</p>
-          </div>
-          <div className="bg-white/5 rounded-lg p-2 backdrop-blur-sm flex-1 max-w-[120px]">
-            <p className="text-white/70 text-xs">Coins</p>
-            <p className="text-yellow-400 font-bold">{totalCoins}</p>
-          </div>
-        </div>
-
-        {currentLevel === 5 && answered && (
-          <div className="p-2 bg-orange-500/20 rounded-lg border border-orange-400">
-            <p className="text-xs text-orange-200">
-              💡 Needs = Essential, Wants = Optional!
-            </p>
-          </div>
+              ) : (
+                <div>
+                  <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">😔</div>
+                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-700 mb-2 sm:mb-3">Keep Learning!</h3>
+                  <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
+                    You got {finalScore} out of {questions.length} questions correct.
+                    Remember, needs are essential for life, wants are optional!
+                  </p>
+                  <button
+                    onClick={handleTryAgain}
+                    className="bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 hover:from-orange-600 hover:via-amber-600 hover:to-yellow-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105 mb-3 sm:mb-4"
+                  >
+                    Try Again 🧩
+                  </button>
+                  <p className="text-gray-600 text-xs sm:text-sm px-1">
+                    Try to understand the difference between needs and wants!
+                  </p>
+                </div>
+              )}
+            </div>
+          </>
         )}
       </div>
-    </GameShell>
+
+      {/* Confetti and Score Flash */}
+      {showAnswerConfetti && <Confetti duration={2000} />}
+      {flashPoints > 0 && <ScoreFlash points={flashPoints} />}
+
+      {/* Game Over Modal */}
+      {showResult && finalScore >= 3 && (
+        <GameOverModal
+          score={5}
+          gameId="finance-kids-24"
+          gameType="finance"
+          totalLevels={1}
+          coinsPerLevel={5}
+          isReplay={location?.state?.isReplay || false}
+          onClose={handleGameOverClose}
+        />
+      )}
+
+      {/* Animations CSS */}
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(10deg); }
+        }
+      `}</style>
+    </div>
   );
 };
 

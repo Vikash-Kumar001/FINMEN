@@ -930,9 +930,9 @@ export const getFinanceKidsGames = (gameCompletionStatus)=> {
         },
         {
           id: "finance-kids-65",
-          title: "Piggy Bank Story",
+          title: "Bank vs Piggy Bank",
           description:
-            "Piggy bank earns no interest. Bank account does. Better option? → Bank.",
+            "Compare piggy bank vs bank savings: which keeps money safe and helps it grow? → Bank account.",
           icon: <ShoppingCart className="w-6 h-6" />,
           difficulty: "Medium",
           duration: "5 min",

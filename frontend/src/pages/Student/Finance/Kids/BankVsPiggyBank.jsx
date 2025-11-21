@@ -3,7 +3,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Confetti, ScoreFlash, GameOverModal } from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
-const SavingsStory = () => {
+const BankVsPiggyBank = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [coins, setCoins] = useState(0);
@@ -53,47 +53,52 @@ const SavingsStory = () => {
   const questions = [
     {
       id: 1,
-      text: "You get ₹200 as gift money. What's the safest first step?",
+      icon: "🐷🏦",
+      text: "Piggy bank earns 0% interest. Bank account earns interest. Which is better to grow money?",
       choices: [
-        { id: "a", text: "Put it in a savings account", emoji: "🏦", correct: true },
-        { id: "b", text: "Hide it at home", emoji: "🏠", correct: false },
-        { id: "c", text: "Spend it all today", emoji: "🛍️", correct: false },
+        { id: "a", text: "Bank account 🏦", correct: true },
+        { id: "b", text: "Piggy bank 🐷", correct: false },
+        { id: "c", text: "Under the mattress 🛏️", correct: false },
       ],
     },
     {
       id: 2,
-      text: "Why is keeping money in a bank better than keeping it at home?",
+      icon: "💰",
+      text: "You have ₹50. Where should you save if you want it to grow safely?",
       choices: [
-        { id: "a", text: "Bank keeps it safe and can help it grow", emoji: "📈", correct: true },
-        { id: "b", text: "Home is more fun", emoji: "🎮", correct: false },
-        { id: "c", text: "You can forget where you kept it", emoji: "🤔", correct: false },
+        { id: "a", text: "Bank savings account 💰", correct: true },
+        { id: "b", text: "Jar at home 🏺", correct: false },
+        { id: "c", text: "Spend it on snacks 🛍️", correct: false },
       ],
     },
     {
       id: 3,
-      text: "You want new shoes later. What should you do with today's gift money?",
+      icon: "📈",
+      text: "The bank offers 5% interest but your piggy bank offers 0%. What is the smart choice?",
       choices: [
-        { id: "a", text: "Save it in the bank for the shoes", emoji: "👟", correct: true },
-        { id: "b", text: "Buy more snacks now", emoji: "🍟", correct: false },
-        { id: "c", text: "Lend it to a stranger", emoji: "🧑‍🤝‍🧑", correct: false },
+        { id: "a", text: "Keep money in the bank 📈", correct: true },
+        { id: "b", text: "Keep money in the piggy bank 🐷", correct: false },
+        { id: "c", text: "Give all the money away 🎁", correct: false },
       ],
     },
     {
       id: 4,
-      text: "Your friend says, “Keeping money at home is enough.” What is a smart reply?",
+      icon: "🏦",
+      text: "You saved ₹100 in the bank. Later you see ₹105. Why did it grow?",
       choices: [
-        { id: "a", text: "Banks are safer and help money grow", emoji: "✅", correct: true },
-        { id: "b", text: "You're right, I'll keep it anywhere", emoji: "🤷‍♂️", correct: false },
-        { id: "c", text: "I'll just spend it quickly", emoji: "💸", correct: false },
+        { id: "a", text: "The bank paid interest 📊", correct: true },
+        { id: "b", text: "Piggy bank did magic 🪄", correct: false },
+        { id: "c", text: "Someone secretly added money 💸", correct: false },
       ],
     },
     {
       id: 5,
-      text: "What is the main lesson of Savings Story?",
+      icon: "🔒",
+      text: "Why is a bank usually better than a piggy bank for long-term saving?",
       choices: [
-        { id: "a", text: "Put money in the bank and save for goals", emoji: "🎯", correct: true },
-        { id: "b", text: "Spend money as soon as you get it", emoji: "🎉", correct: false },
-        { id: "c", text: "Hide money so no one finds it", emoji: "🙈", correct: false },
+        { id: "a", text: "It is safe and can grow your money 🔒", correct: true },
+        { id: "b", text: "It looks cooler than a piggy bank 😎", correct: false },
+        { id: "c", text: "You can shake it and hear coins 🎵", correct: false },
       ],
     },
   ];
@@ -143,10 +148,10 @@ const SavingsStory = () => {
   const allQuestionsAnswered = answers.length === questions.length;
 
   return (
-    <div className="h-screen w-full bg-gradient-to-br from-sky-100 via-blue-50 to-indigo-100 flex flex-col relative overflow-hidden">
+    <div className="h-screen w-full bg-gradient-to-br from-indigo-100 via-sky-50 to-emerald-100 flex flex-col relative overflow-hidden">
       {/* Floating Background Elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 15 }).map((_, i) => (
+        {Array.from({ length: 18 }).map((_, i) => (
           <div
             key={i}
             className="absolute text-lg sm:text-2xl opacity-10"
@@ -157,34 +162,34 @@ const SavingsStory = () => {
               animationDelay: `${Math.random() * 2}s`,
             }}
           >
-            {["🏦", "💰", "📈", "👟", "✅", "🎯"][i % 6]}
+            {["🐷", "🏦", "💰", "📈", "🔒", "🪙"][i % 6]}
           </div>
         ))}
       </div>
 
       {/* Header */}
-      <div className="flex items-center justify-between px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 relative z-30 bg-white/40 backdrop-blur-sm border-b border-blue-200 flex-shrink-0 gap-2 sm:gap-4">
+      <div className="flex items-center justify-between px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 relative z-30 bg-white/40 backdrop-blur-sm border-b border-sky-200 flex-shrink-0 gap-2 sm:gap-4">
         <button
           onClick={() => navigate(resolvedBackPath)}
-          className="bg-white/80 hover:bg-white text-blue-600 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-blue-300 shadow-md transition-all cursor-pointer font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base flex-shrink-0"
+          className="bg-white/80 hover:bg-white text-sky-700 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-sky-300 shadow-md transition-all cursor-pointer font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base flex-shrink-0"
         >
           ← <span className="hidden sm:inline">Back</span>
         </button>
         <div className="flex-1 flex items-center justify-center min-w-0">
           <h1 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold px-2 flex items-center justify-center gap-1 sm:gap-2 truncate">
             <span className="text-sm sm:text-base md:text-lg lg:text-xl flex-shrink-0">
-              🏦
+              🐷🏦
             </span>
-            <span className="bg-gradient-to-r from-blue-600 via-sky-500 to-indigo-600 bg-clip-text text-transparent truncate">
-              <span className="hidden xs:inline">Savings Story</span>
-              <span className="xs:hidden">Savings</span>
+            <span className="bg-gradient-to-r from-sky-600 via-blue-600 to-emerald-600 bg-clip-text text-transparent truncate">
+              <span className="hidden xs:inline">Bank vs Piggy Bank</span>
+              <span className="xs:hidden">Piggy Bank Quiz</span>
             </span>
           </h1>
         </div>
         <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-          <div className="flex items-center gap-1 sm:gap-2 bg-white/80 backdrop-blur-md px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-blue-300 shadow-md">
+          <div className="flex items-center gap-1 sm:gap-2 bg-white/80 backdrop-blur-md px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-sky-300 shadow-md">
             <span className="text-lg sm:text-xl md:text-2xl">💰</span>
-            <span className="text-blue-700 font-bold text-xs sm:text-sm md:text-lg">
+            <span className="text-sky-800 font-bold text-xs sm:text-sm md:text-lg">
               Coins: {coins}
             </span>
           </div>
@@ -195,7 +200,7 @@ const SavingsStory = () => {
       <div className="flex-1 flex flex-col justify-center items-center text-center px-2 sm:px-4 md:px-6 z-10 py-2 sm:py-4 overflow-y-auto min-h-0">
         {!showResult && finalScore === 0 && (
           <div className="mb-1 sm:mb-2 md:mb-3 relative z-20 flex-shrink-0">
-            <p className="text-gray-700 text-xs sm:text-sm mt-0.5 sm:mt-1 font-medium">
+            <p className="text-sky-900 text-xs sm:text-sm mt-0.5 sm:mt-1 font-medium">
               Question {currentQuestion + 1} of {questions.length}
             </p>
           </div>
@@ -207,11 +212,16 @@ const SavingsStory = () => {
             !showResult ? (
               <div className="space-y-2 sm:space-y-3">
                 {/* Question Card */}
-                <div className="bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-blue-300 shadow-xl">
-                  <div className="text-3xl sm:text-4xl md:text-5xl mb-3 sm:mb-4">
-                    🏦
+                <div className="bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border-2 border-sky-200 shadow-xl">
+                  <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                    <span className="text-2xl sm:text-3xl md:text-4xl">
+                      {currentQuestionData.icon}
+                    </span>
+                    <span className="text-xs sm:text-sm md:text-base font-semibold text-sky-700">
+                      Bank vs Piggy Question {currentQuestion + 1}
+                    </span>
                   </div>
-                  <p className="text-gray-800 text-sm sm:text-base md:text-lg mb-4 sm:mb-6 font-semibold leading-relaxed px-1">
+                  <p className="text-sky-900 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 font-semibold leading-relaxed px-1">
                     {currentQuestionData.text}
                   </p>
 
@@ -227,19 +237,16 @@ const SavingsStory = () => {
                           disabled={showResult}
                           className={`flex-1 min-w-[120px] sm:min-w-[150px] p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-75 disabled:cursor-not-allowed disabled:transform-none ${
                             !showResult
-                              ? "bg-gradient-to-r from-blue-500 via-sky-500 to-indigo-500 hover:from-blue-600 hover:via-sky-600 hover:to-indigo-600 text-white border-2 border-white/40"
+                              ? "bg-gradient-to-r from-sky-400 via-blue-400 to-emerald-400 hover:from-sky-500 hover:via-blue-500 hover:to-emerald-500 text-white border-2 border-white/40"
                               : isSelected && choice.correct
                               ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white border-2 border-green-400 ring-4 ring-green-200"
                               : isSelected && !choice.correct
                               ? "bg-gradient-to-r from-red-500 to-rose-600 text-white border-2 border-red-400 ring-4 ring-red-200"
                               : choice.correct && showResult
                               ? "bg-gradient-to-r from-green-500/60 to-emerald-600/60 text-white border-2 border-green-400/60"
-                              : "bg-gradient-to-r from-blue-400/50 via-sky-400/50 to-indigo-400/50 text-white/80 border-2 border-white/20"
+                              : "bg-gradient-to-r from-sky-300/60 via-blue-300/60 to-emerald-300/60 text-sky-900 border-2 border-white/30"
                           }`}
                         >
-                          <div className="text-2xl sm:text-3xl md:text-4xl mb-2">
-                            {choice.emoji}
-                          </div>
                           <h3 className="font-bold text-xs sm:text-sm md:text-base">
                             {choice.text}
                           </h3>
@@ -257,8 +264,8 @@ const SavingsStory = () => {
                           index < currentQuestion
                             ? "bg-green-500 w-5 sm:w-6"
                             : index === currentQuestion
-                            ? "bg-blue-500 w-5 sm:w-6 animate-pulse"
-                            : "bg-gray-300 w-2"
+                            ? "bg-sky-500 w-5 sm:w-6 animate-pulse"
+                            : "bg-sky-200 w-2"
                         }`}
                       />
                     ))}
@@ -266,7 +273,7 @@ const SavingsStory = () => {
                 </div>
               </div>
             ) : (
-              <div className="bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-blue-300 shadow-xl text-center">
+              <div className="bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-sky-200 shadow-xl text-center">
                 <div
                   className={`text-6xl sm:text-7xl md:text-8xl mb-4 ${
                     isCorrect ? "animate-bounce" : ""
@@ -274,18 +281,18 @@ const SavingsStory = () => {
                 >
                   {isCorrect ? "✅" : "❌"}
                 </div>
-                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 sm:mb-4">
-                  {isCorrect ? "Correct!" : "Incorrect"}
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-sky-800 mb-2 sm:mb-4">
+                  {isCorrect ? "Smart Savings Choice!" : "Think About Growth"}
                 </h3>
-                <p className="text-lg sm:text-xl text-gray-700 mb-6 sm:mb-8">
+                <p className="text-lg sm:text-xl text-sky-800 mb-6 sm:mb-8 leading-relaxed px-1">
                   {isCorrect
-                    ? "Great choice! You're saving smart!"
-                    : "The correct answer is: " +
+                    ? "Nice! You picked the option that helps money grow safely."
+                    : "The best choice is: " +
                       currentQuestionData.choices.find((opt) => opt.correct)?.text}
                 </p>
                 <button
                   onClick={handleNextQuestion}
-                  className="px-8 sm:px-10 py-3 sm:py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-xl sm:rounded-2xl font-bold text-lg sm:text-xl transition-all hover:scale-105 shadow-lg"
+                  className="px-8 sm:px-10 py-3 sm:py-4 bg-sky-500 hover:bg-sky-600 text-white rounded-xl sm:rounded-2xl font-bold text-lg sm:text-xl transition-all hover:scale-105 shadow-lg"
                 >
                   {currentQuestion < questions.length - 1
                     ? "Next Question"
@@ -294,32 +301,33 @@ const SavingsStory = () => {
               </div>
             )
           ) : (
-            <div className="bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-blue-300 shadow-xl text-center max-w-2xl w-full">
+            <div className="bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-sky-200 shadow-xl text-center max-w-2xl w-full">
               <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4 animate-bounce">
-                💰🏦
+                🐷🏦🎉
               </div>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mb-2 sm:mb-3">
-                Super Saver!
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-sky-700 mb-2 sm:mb-3">
+                Savings Star!
               </h3>
-              <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
-                You scored {finalScore} out of {questions.length} — amazing saving skills!
+              <p className="text-sky-900 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
+                You scored {finalScore} out of {questions.length} — great decisions about
+                where money should live!
                 <br />
-                You know how to use the bank to protect and grow your money. 🎯
+                Remember: banks keep your money safe and can help it grow with interest. 💰
               </p>
-              <div className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
+              <div className="bg-gradient-to-r from-yellow-400 to-amber-400 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
                 <span className="text-xl sm:text-2xl">💰</span>
                 <span className="text-base sm:text-lg md:text-xl font-bold">
                   +{coins} Coins
                 </span>
               </div>
-              <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 px-1">
-                Lesson: Put money in the bank and save for your goals instead of spending
-                it all at once.
+              <p className="text-sky-800 text-xs sm:text-sm mb-3 sm:mb-4 px-1">
+                Lesson: Piggy banks are fun, but banks are safer and help your savings grow
+                over time.
               </p>
               {allQuestionsAnswered && (
                 <button
                   onClick={() => navigate(resolvedBackPath)}
-                  className="bg-gradient-to-r from-blue-500 via-sky-500 to-indigo-500 hover:from-blue-600 hover:via-sky-600 hover:to-indigo-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
+                  className="bg-gradient-to-r from-sky-500 via-blue-500 to-emerald-500 hover:from-sky-600 hover:via-blue-600 hover:to-emerald-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
                 >
                   <span className="hidden sm:inline">
                     Continue to Next Level
@@ -344,7 +352,7 @@ const SavingsStory = () => {
           coinsPerLevel={5}
           totalLevels={1}
           onClose={handleGameOverClose}
-          gameId="finance-kids-45"
+          gameId="finance-kids-65"
           gameType="finance"
           showConfetti={true}
         />
@@ -361,4 +369,6 @@ const SavingsStory = () => {
   );
 };
 
-export default SavingsStory;
+export default BankVsPiggyBank;
+
+

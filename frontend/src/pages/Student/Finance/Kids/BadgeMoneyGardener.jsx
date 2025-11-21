@@ -1,264 +1,476 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Trophy, Sprout, TreePine, Flower2, Leaf, Award } from "lucide-react";
-import GameShell from "../GameShell";
+import { Confetti, ScoreFlash, GameOverModal } from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const BadgeMoneyGardener = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
-  const { showCorrectAnswerFeedback } = useGameFeedback();
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [totalCoins, setTotalCoins] = useState(0);
-  const [answered, setAnswered] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [earnedBadge, setEarnedBadge] = useState(false);
-  const [gardenGrowth, setGardenGrowth] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAnswerId, setSelectedAnswerId] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [isCorrect, setIsCorrect] = useState(false);
+  const [answers, setAnswers] = useState([]);
+  const [finalScore, setFinalScore] = useState(0);
+  const [showBadge, setShowBadge] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
+    useGameFeedback();
 
-  const levels = [
+  // Calculate back path
+  const resolvedBackPath = useMemo(() => {
+    if (location.state?.returnPath) {
+      return location.state.returnPath;
+    }
+
+    const pathSegments = location.pathname.split("/").filter(Boolean);
+    if (pathSegments[0] === "student" && pathSegments.length >= 3) {
+      const categoryKey = pathSegments[1];
+      const ageKey = pathSegments[2];
+
+      const categorySlugMap = {
+        finance: "financial-literacy",
+        "financial-literacy": "financial-literacy",
+      };
+
+      const ageSlugMap = {
+        kid: "kids",
+        kids: "kids",
+      };
+
+      const mappedCategory = categorySlugMap[categoryKey] || categoryKey;
+      const mappedAge = ageSlugMap[ageKey] || ageKey;
+
+      return `/games/${mappedCategory}/${mappedAge}`;
+    }
+
+    return "/games";
+  }, [location.pathname, location.state]);
+
+  const handleGameOverClose = () => {
+    navigate(resolvedBackPath);
+  };
+
+  const questions = [
     {
       id: 1,
-      title: "Seed Money - First Choice",
-      question: "You got 100 rupees for your birthday. What will you do?",
-      icon: Sprout,
+      icon: <Sprout className="w-7 h-7 text-emerald-500" />,
       stage: "Seed",
-      options: [
-        { text: "Save 80, spend 20 - Plant seeds for growth", correct: true, coins: 10 },
-        { text: "Spend all on candy today", correct: false, coins: 0 },
-        { text: "Give all away immediately", correct: false, coins: 0 }
+      title: "Seed Money – First Choice",
+      text: "You get ₹100 for your birthday. What is the best way to plant your money seed?",
+      choices: [
+        {
+          id: "a",
+          text: "Save ₹80 and spend ₹20 on something small",
+          correct: true,
+        },
+        {
+          id: "b",
+          text: "Spend all ₹100 on candy today",
+          correct: false,
+        },
+        {
+          id: "c",
+          text: "Give all the money away immediately",
+          correct: false,
+        },
       ],
-      feedback: {
-        correct: "Perfect! You planted your first money seed. Savings help money grow!",
-        wrong: "Remember: Saving money is like planting seeds - they grow over time!"
-      }
     },
     {
       id: 2,
-      title: "Watering Growth - Patience",
-      question: "Your friend bought a new toy, but you're saving. What do you do?",
-      icon: Leaf,
+      icon: <Leaf className="w-7 h-7 text-green-500" />,
       stage: "Sprout",
-      options: [
-        { text: "Stay patient, keep saving for bigger goals", correct: true, coins: 15 },
-        { text: "Break your piggy bank for instant fun", correct: false, coins: 0 },
-        { text: "Feel sad and give up saving", correct: false, coins: 0 }
+      title: "Watering Growth – Patience",
+      text: "Your friend buys a new toy, but you are saving for a big goal. What grows your money sprout?",
+      choices: [
+        {
+          id: "a",
+          text: "Stay patient and keep saving for your goal",
+          correct: true,
+        },
+        {
+          id: "b",
+          text: "Break your savings and buy a toy now",
+          correct: false,
+        },
+        {
+          id: "c",
+          text: "Feel upset and stop saving",
+          correct: false,
+        },
       ],
-      feedback: {
-        correct: "Excellent! Patience waters your money garden. Your sprout is growing!",
-        wrong: "Gardens need patience! Don't give up - good things take time to grow!"
-      }
     },
     {
       id: 3,
-      title: "Growing Strong - Smart Choices",
-      question: "You want a 500 rupee toy but have only 300 saved. What's the smart choice?",
-      icon: TreePine,
+      icon: <TreePine className="w-7 h-7 text-emerald-600" />,
       stage: "Sapling",
-      options: [
-        { text: "Save 200 more before buying - Let it grow!", correct: true, coins: 20 },
-        { text: "Borrow from parents and buy now", correct: false, coins: 0 },
-        { text: "Buy a cheaper toy you don't want", correct: false, coins: 0 }
+      title: "Growing Strong – Smart Choices",
+      text: "You want a ₹500 toy but only have ₹300 saved. What is the smartest money decision?",
+      choices: [
+        {
+          id: "a",
+          text: "Save ₹200 more and buy it later",
+          correct: true,
+        },
+        {
+          id: "b",
+          text: "Borrow the rest and buy it now",
+          correct: false,
+        },
+        {
+          id: "c",
+          text: "Buy a cheaper toy you don’t really like",
+          correct: false,
+        },
       ],
-      feedback: {
-        correct: "Amazing! Your money tree is getting stronger with smart decisions!",
-        wrong: "Strong trees don't rush! Save completely before big purchases!"
-      }
     },
     {
       id: 4,
-      title: "Blooming Wisdom - Investment",
-      question: "Your piggy bank is full! Grandma offers to add 10% to your savings if you wait one month. What do you choose?",
-      icon: Flower2,
+      icon: <Flower2 className="w-7 h-7 text-pink-500" />,
       stage: "Blooming",
-      options: [
-        { text: "Wait one month - Money can make money!", correct: true, coins: 25 },
-        { text: "Take money out immediately", correct: false, coins: 0 },
-        { text: "Spend half now, save half", correct: false, coins: 0 }
+      title: "Blooming Wisdom – Interest",
+      text: "Your savings are full! Grandma will add 10% extra if you keep the money saved for one more month. What do you choose?",
+      choices: [
+        {
+          id: "a",
+          text: "Wait one month and let your money earn extra",
+          correct: true,
+        },
+        {
+          id: "b",
+          text: "Take the money out and spend it now",
+          correct: false,
+        },
+        {
+          id: "c",
+          text: "Take half out and leave half",
+          correct: false,
+        },
       ],
-      feedback: {
-        correct: "Wonderful! Your garden is blooming! You understand how money grows money!",
-        wrong: "Flowers bloom with time! Interest helps money grow - be patient!"
-      }
     },
     {
       id: 5,
-      title: "Harvest Time - Reaping Rewards",
-      question: "After months of saving, you have 1000 rupees! What's the wisest choice?",
-      icon: Award,
+      icon: <Award className="w-7 h-7 text-yellow-500" />,
       stage: "Harvest",
-      options: [
-        { text: "Keep 800 saved, spend 200 on something special", correct: true, coins: 30 },
-        { text: "Spend everything at once", correct: false, coins: 0 },
-        { text: "Never spend, just keep saving forever", correct: false, coins: 0 }
+      title: "Harvest Time – Reaping Rewards",
+      text: "After months of saving you have ₹1000. What is a wise way to enjoy and still grow your money garden?",
+      choices: [
+        {
+          id: "a",
+          text: "Keep ₹800 saved, spend ₹200 on something special",
+          correct: true,
+        },
+        {
+          id: "b",
+          text: "Spend all ₹1000 at once",
+          correct: false,
+        },
+        {
+          id: "c",
+          text: "Never spend any money at all",
+          correct: false,
+        },
       ],
-      feedback: {
-        correct: "Perfect! You're a true Money Gardener! Enjoy some fruits but keep the garden growing!",
-        wrong: "Good gardeners enjoy some harvest but keep planting for the future!"
-      }
-    }
+    },
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-  const Icon = currentLevelData.icon;
+  const currentQuestionData = questions[currentQuestion];
 
-  const handleAnswer = (option) => {
-    setSelectedAnswer(option);
-    setAnswered(true);
-    
-    if (option.correct) {
-      setTotalCoins(totalCoins + option.coins);
-      setGardenGrowth(currentLevel);
-      showCorrectAnswerFeedback(option.coins, true);
-      
-      if (currentLevel === 5) {
-        setEarnedBadge(true);
-      }
+  const handleSelect = (choice) => {
+    if (showResult || showBadge) return;
+
+    setSelectedAnswerId(choice.id);
+    const correct = choice.correct;
+    setIsCorrect(correct);
+
+    const newAnswers = [
+      ...answers,
+      { questionId: currentQuestionData.id, correct },
+    ];
+    setAnswers(newAnswers);
+
+    if (correct) {
+      showCorrectAnswerFeedback(1, true);
     }
+
+    setTimeout(() => {
+      setShowResult(true);
+    }, correct ? 1000 : 0);
   };
 
-  const handleNext = () => {
-    if (currentLevel < 5) {
-      setCurrentLevel(currentLevel + 1);
-      setAnswered(false);
-      setSelectedAnswer(null);
+  const handleNextQuestion = () => {
+    if (currentQuestion < questions.length - 1) {
+      setCurrentQuestion((prev) => prev + 1);
+      setSelectedAnswerId(null);
+      setShowResult(false);
+      setIsCorrect(false);
+      resetFeedback();
     } else {
-      navigate("/games/financial-literacy/kids");
+      const correctCount = answers.filter((a) => a.correct).length;
+      setFinalScore(correctCount);
+      if (correctCount === questions.length) {
+        setShowBadge(true);
+      }
+      setCoins(5);
     }
   };
+
+  useEffect(() => {
+    if (finalScore > 0 && coins === 5) {
+      setShowResult(true);
+    }
+  }, [finalScore, coins]);
+
+  const allQuestionsAnswered = answers.length === questions.length;
+  const allCorrect = finalScore === questions.length;
 
   return (
-    <GameShell
-      title={`Question ${currentLevel} – ${currentLevelData.title}`}
-      subtitle={currentLevelData.question}
-      coins={totalCoins}
-      currentLevel={currentLevel}
-      totalLevels={5}
-      coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      showConfetti={answered && selectedAnswer?.correct}
-      score={totalCoins}
-      gameId="finance-kids-130"
-      gameType="finance"
-    >
-      <div className="text-center text-white space-y-4 max-w-4xl mx-auto px-4">
-        {/* Garden Growth Visualization */}
-        <div className="relative h-20 flex items-end justify-center mb-3">
-          <div className="absolute bottom-0 w-48 h-2 bg-amber-700 rounded-full"></div>
-          <Icon className={`w-14 h-14 text-green-400 transition-all duration-1000 ${
-            answered && selectedAnswer?.correct ? 'animate-bounce' : ''
-          }`} style={{
-            transform: `scale(${0.5 + (gardenGrowth * 0.2)})`
-          }} />
+    <div className="h-screen w-full bg-gradient-to-br from-emerald-100 via-green-50 to-lime-100 flex flex-col relative overflow-hidden">
+      {/* Floating Background Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {Array.from({ length: 18 }).map((_, i) => (
+          <div
+            key={i}
+            className="absolute text-lg sm:text-2xl opacity-10"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animation: `float ${Math.random() * 6 + 4}s ease-in-out infinite`,
+              animationDelay: `${Math.random() * 2}s`,
+            }}
+          >
+            {["🌱", "🍃", "🌳", "🌼", "💰", "🪴"][i % 6]}
+          </div>
+        ))}
+      </div>
+
+      {/* Header */}
+      <div className="flex items-center justify-between px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 relative z-30 bg-white/40 backdrop-blur-sm border-b border-emerald-200 flex-shrink-0 gap-2 sm:gap-4">
+        <button
+          onClick={() => navigate(resolvedBackPath)}
+          className="bg-white/80 hover:bg-white text-emerald-700 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-emerald-300 shadow-md transition-all cursor-pointer font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base flex-shrink-0"
+        >
+          ← <span className="hidden sm:inline">Back</span>
+        </button>
+        <div className="flex-1 flex items-center justify-center min-w-0">
+          <h1 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold px-2 flex items-center justify-center gap-1 sm:gap-2 truncate">
+            <Trophy className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-emerald-500" />
+            <span className="bg-gradient-to-r from-emerald-600 via-green-600 to-lime-600 bg-clip-text text-transparent truncate">
+              <span className="hidden xs:inline">Badge: Money Gardener</span>
+              <span className="xs:hidden">Money Gardener</span>
+            </span>
+          </h1>
         </div>
-
-        {/* Growth Stage Indicator */}
-        <div className="bg-green-900/30 backdrop-blur-sm rounded-lg p-2 border border-green-500/30">
-          <p className="text-green-300 font-semibold text-sm">
-            🌱 Garden Stage: {currentLevelData.stage}
-          </p>
-        </div>
-
-        {!answered ? (
-          <div className="space-y-3">
-            {currentLevelData.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswer(option)}
-                className="w-full bg-gradient-to-r from-green-600 to-teal-600 px-6 py-3 rounded-full text-white font-bold hover:scale-105 transition-transform hover:shadow-lg text-sm"
-              >
-                {option.text}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className={`p-6 rounded-2xl border-2 mt-4 ${
-            selectedAnswer.correct 
-              ? 'bg-green-500/20 border-green-400' 
-              : 'bg-red-500/20 border-red-400'
-          }`}>
-            <Trophy className={`mx-auto w-12 h-12 mb-3 ${
-              selectedAnswer.correct ? 'text-yellow-400' : 'text-gray-400'
-            }`} />
-            <h3 className="text-lg font-bold mb-2">
-              {selectedAnswer.correct ? `+${selectedAnswer.coins} Coins! 🌱` : 'Garden Needs Care!'}
-            </h3>
-            <p className="text-white/90 text-sm">
-              {selectedAnswer.correct 
-                ? currentLevelData.feedback.correct 
-                : currentLevelData.feedback.wrong}
-            </p>
-            
-            {earnedBadge && (
-              <div className="mt-4 p-4 bg-gradient-to-r from-green-500/30 to-emerald-500/30 rounded-xl border-2 border-green-400 animate-pulse">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <Trophy className="w-8 h-8 text-yellow-400" />
-                  <Flower2 className="w-8 h-8 text-pink-400" />
-                  <Award className="w-8 h-8 text-green-400" />
-                </div>
-                <p className="text-lg font-bold text-yellow-300 mb-2">
-                  🌻 Money Gardener Badge Unlocked! 🌻
-                </p>
-                <p className="text-white/90 mb-2 text-sm">
-                  Your money garden is thriving! You chose growth over instant spending!
-                </p>
-                <p className="text-green-200 font-bold mt-2 text-sm">
-                  Total Harvest: {totalCoins} Coins 💰
-                </p>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Progress Garden */}
-        <div className="flex justify-center gap-2 mt-4">
-          {levels.map((level, index) => {
-            const LevelIcon = level.icon;
-            return (
-              <div
-                key={level.id}
-                className={`transition-all duration-500 ${
-                  index < currentLevel - 1
-                    ? 'opacity-100 scale-100'
-                    : index === currentLevel - 1
-                    ? 'opacity-100 scale-125 animate-pulse'
-                    : 'opacity-30 scale-75'
-                }`}
-              >
-                <LevelIcon className={`w-6 h-6 ${
-                  index < currentLevel - 1
-                    ? 'text-green-400'
-                    : index === currentLevel - 1
-                    ? 'text-yellow-400'
-                    : 'text-gray-600'
-                }`} />
-              </div>
-            );
-          })}
-        </div>
-
-        {currentLevel === 5 && answered && (
-          <div className="mt-3 p-3 bg-green-500/20 rounded-lg border border-green-400">
-            <p className="text-xs text-green-200">
-              🌳 "The best time to plant a tree was 20 years ago. The second best time is now!" - Start saving today!
-            </p>
-          </div>
-        )}
-
-        {/* Garden Stats */}
-        <div className="grid grid-cols-2 gap-3 mt-4">
-          <div className="bg-white/5 rounded-lg p-2 backdrop-blur-sm">
-            <p className="text-white/70 text-xs">Seeds Planted</p>
-            <p className="text-green-400 font-bold text-lg">{gardenGrowth}/5</p>
-          </div>
-          <div className="bg-white/5 rounded-lg p-2 backdrop-blur-sm">
-            <p className="text-white/70 text-xs">Coins Harvested</p>
-            <p className="text-yellow-400 font-bold text-lg">{totalCoins}</p>
+        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+          <div className="flex items-center gap-1 sm:gap-2 bg-white/80 backdrop-blur-md px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-emerald-300 shadow-md">
+            <span className="text-lg sm:text-xl md:text-2xl">💰</span>
+            <span className="text-emerald-800 font-bold text-xs sm:text-sm md:text-lg">
+              Coins: {coins}
+            </span>
           </div>
         </div>
       </div>
-    </GameShell>
+
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col justify-center items-center text-center px-2 sm:px-4 md:px-6 z-10 py-2 sm:py-4 overflow-y-auto min-h-0">
+        {!showResult && !showBadge && (
+          <div className="mb-1 sm:mb-2 md:mb-3 relative z-20 flex-shrink-0">
+            <p className="text-emerald-900 text-xs sm:text-sm mt-0.5 sm:mt-1 font-medium">
+              Question {currentQuestion + 1} of {questions.length}
+            </p>
+          </div>
+        )}
+
+        {/* Game Content */}
+        <div className="w-full max-w-3xl flex-1 flex flex-col justify-center min-h-0">
+          {showBadge ? (
+            <div className="bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-emerald-200 shadow-xl text-center max-w-2xl w-full">
+              <div className="text-5xl sm:text-6xl md:text-7xl mb-3 sm:mb-4 animate-bounce">
+                🌻🏅
+              </div>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-emerald-700 mb-2 sm:mb-3">
+                Money Gardener Badge!
+              </h3>
+              <p className="text-emerald-900 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
+                You answered all {questions.length} questions correctly — your money garden
+                is blooming!
+                <br />
+                You know how to plant, water, and harvest your savings wisely. 🌳
+              </p>
+              <div className="bg-gradient-to-r from-yellow-400 to-amber-400 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
+                <span className="text-xl sm:text-2xl">💰</span>
+                <span className="text-base sm:text-lg md:text-xl font-bold">
+                  +{coins} Coins
+                </span>
+              </div>
+              <button
+                onClick={() => navigate(resolvedBackPath)}
+                className="bg-gradient-to-r from-emerald-500 via-green-500 to-lime-500 hover:from-emerald-600 hover:via-green-600 hover:to-lime-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
+              >
+                <span className="hidden sm:inline">
+                  Continue to Next Level
+                </span>
+                <span className="sm:hidden">Next Level</span> →
+              </button>
+            </div>
+          ) : finalScore === 0 ? (
+            !showResult ? (
+              <div className="space-y-2 sm:space-y-3">
+                {/* Question Card */}
+                <div className="bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border-2 border-emerald-200 shadow-xl">
+                  <div className="flex items-center justify-center gap-2 sm:gap-3 mb-2 sm:mb-3">
+                    {currentQuestionData.icon}
+                    <span className="text-xs sm:text-sm md:text-base font-semibold text-emerald-700">
+                      Garden Stage: {currentQuestionData.stage}
+                    </span>
+                  </div>
+                  <p className="text-emerald-900 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 font-semibold leading-relaxed px-1">
+                    {currentQuestionData.text}
+                  </p>
+
+                  {/* Options - Single Row */}
+                  <div className="flex flex-row gap-2 sm:gap-3 md:gap-4 justify-center flex-wrap mb-3 sm:mb-4">
+                    {currentQuestionData.choices.map((choice) => {
+                      const isSelected = selectedAnswerId === choice.id;
+
+                      return (
+                        <button
+                          key={choice.id}
+                          onClick={() => handleSelect(choice)}
+                          disabled={showResult}
+                          className={`flex-1 min-w-[120px] sm:min-w-[150px] p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-75 disabled:cursor-not-allowed disabled:transform-none ${
+                            !showResult
+                              ? "bg-gradient-to-r from-emerald-400 via-green-400 to-lime-400 hover:from-emerald-500 hover:via-green-500 hover:to-lime-500 text-white border-2 border-white/40"
+                              : isSelected && choice.correct
+                              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white border-2 border-green-400 ring-4 ring-green-200"
+                              : isSelected && !choice.correct
+                              ? "bg-gradient-to-r from-red-500 to-rose-600 text-white border-2 border-red-400 ring-4 ring-red-200"
+                              : choice.correct && showResult
+                              ? "bg-gradient-to-r from-green-500/60 to-emerald-600/60 text-white border-2 border-green-400/60"
+                              : "bg-gradient-to-r from-emerald-300/60 via-green-300/60 to-lime-300/60 text-emerald-900 border-2 border-white/30"
+                          }`}
+                        >
+                          <h3 className="font-bold text-xs sm:text-sm md:text-base">
+                            {choice.text}
+                          </h3>
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Progress Indicator - Inside Card */}
+                  <div className="mt-3 sm:mt-4 flex justify-center gap-1 sm:gap-1.5 flex-wrap">
+                    {questions.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`h-2 rounded-full transition-all ${
+                          index < currentQuestion
+                            ? "bg-green-500 w-5 sm:w-6"
+                            : index === currentQuestion
+                            ? "bg-emerald-500 w-5 sm:w-6 animate-pulse"
+                            : "bg-emerald-200 w-2"
+                        }`}
+                      />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <div className="bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-emerald-200 shadow-xl text-center">
+                <div
+                  className={`text-6xl sm:text-7xl md:text-8xl mb-4 ${
+                    isCorrect ? "animate-bounce" : ""
+                  }`}
+                >
+                  {isCorrect ? "✅" : "❌"}
+                </div>
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-800 mb-2 sm:mb-4">
+                  {isCorrect ? "Great Garden Choice!" : "Garden Needs Care"}
+                </h3>
+                <p className="text-lg sm:text-xl text-emerald-900 mb-6 sm:mb-8 leading-relaxed px-1">
+                  {isCorrect
+                    ? "Nice! That choice helps your money garden grow strong over time."
+                    : "A better gardener choice is: " +
+                      currentQuestionData.choices.find((opt) => opt.correct)?.text}
+                </p>
+                <button
+                  onClick={handleNextQuestion}
+                  className="px-8 sm:px-10 py-3 sm:py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-xl sm:rounded-2xl font-bold text-lg sm:text-xl transition-all hover:scale-105 shadow-lg"
+                >
+                  {currentQuestion < questions.length - 1
+                    ? "Next Garden Question"
+                    : "Finish"}
+                </button>
+              </div>
+            )
+          ) : (
+            <div className="bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-emerald-200 shadow-xl text-center max-w-2xl w-full">
+              <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4 animate-bounce">
+                🌱🌳💰
+              </div>
+              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-emerald-700 mb-2 sm:mb-3">
+                Money Garden Growing!
+              </h3>
+              <p className="text-emerald-900 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
+                You scored {finalScore} out of {questions.length} — very good money
+                gardening!
+                <br />
+                Keep planting savings, being patient, and enjoying some harvest while your
+                garden grows. 🌼
+              </p>
+              <div className="bg-gradient-to-r from-yellow-400 to-amber-400 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
+                <span className="text-xl sm:text-2xl">💰</span>
+                <span className="text-base sm:text-lg md:text-xl font-bold">
+                  +{coins} Coins
+                </span>
+              </div>
+              <p className="text-emerald-800 text-xs sm:text-sm mb-3 sm:mb-4 px-1">
+                Lesson: Good money gardeners save, wait, and then enjoy the fruits of
+                their smart choices.
+              </p>
+              {allQuestionsAnswered && (
+                <button
+                  onClick={() => navigate(resolvedBackPath)}
+                  className="bg-gradient-to-r from-emerald-500 via-green-500 to-lime-500 hover:from-emerald-600 hover:via-green-600 hover:to-lime-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
+                >
+                  <span className="hidden sm:inline">
+                    Continue to Next Level
+                  </span>
+                  <span className="sm:hidden">Next Level</span> →
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Confetti and Score Flash */}
+      {showAnswerConfetti && <Confetti duration={2000} />}
+      {flashPoints > 0 && <ScoreFlash points={flashPoints} />}
+
+      {/* Game Over Modal */}
+      {finalScore > 0 && coins === 5 && (
+        <GameOverModal
+          score={finalScore}
+          totalQuestions={questions.length}
+          coinsPerLevel={5}
+          totalLevels={1}
+          onClose={handleGameOverClose}
+          gameId="finance-kids-70"
+          gameType="finance"
+          showConfetti={true}
+        />
+      )}
+
+      {/* Animations CSS */}
+      <style>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px) rotate(0deg); }
+          50% { transform: translateY(-20px) rotate(10deg); }
+        }
+      `}</style>
+    </div>
   );
 };
 

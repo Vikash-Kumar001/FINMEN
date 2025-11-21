@@ -62,7 +62,7 @@ import TreeStory from './TreeStory';
 import QuizOnGrowth from './QuizOnGrowth';
 import ReflexInvestmentBasics from './ReflexInvestmentBasics';
 import PuzzleOfGrowth from './PuzzleOfGrowth';
-import PiggyBank from './PiggyBank';
+import BankVsPiggyBank from './BankVsPiggyBank';
 import PosterGrowYourMoney from './PosterGrowYourMoney';
 import JournalOfGrowth from './JournalOfGrowth';
 import ToyVsSavingStory from './ToyVsSavingStory';
@@ -164,7 +164,7 @@ const kidFinanceGames = {
   'quiz-on-growth': QuizOnGrowth,
   'reflex-investment-basics': ReflexInvestmentBasics,
   'puzzle-of-growth': PuzzleOfGrowth,
-  'piggy-bank': PiggyBank,
+  'piggy-bank': BankVsPiggyBank,
   'poster-grow-your-money': PosterGrowYourMoney,
   'journal-of-growth': JournalOfGrowth,
   'toy-vs-saving-story': ToyVsSavingStory,
@@ -184,7 +184,7 @@ const kidFinanceGames = {
   'quiz-on-honesty': QuizOnHonesty,
   'reflex-scam-alert': ReflexScamAlert,
   'puzzle-honest-vs-fraud': PuzzleHonestVsFraud,
-  'stranger-storyy': StrangerStoryy,
+  'stranger-story': StrangerStoryy,
   'poster-be-alert': PosterBeAlert,
   'journal-safety': JournalSafety,
   'toy-shop-story': ToyShopStory,

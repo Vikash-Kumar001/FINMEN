@@ -156,7 +156,8 @@ const GameCategoryPage = () => {
         ageGroup === "water-and-energy")
     ) {
       const previousGameId = getGameIdByIndex(gameIndex - 1);
-      return gameCompletionStatus[previousGameId] || false;
+      // Only unlock if previous game is explicitly completed (strict check)
+      return gameCompletionStatus[previousGameId] === true;
     }
 
     // For other categories, unlock all games (existing behavior)

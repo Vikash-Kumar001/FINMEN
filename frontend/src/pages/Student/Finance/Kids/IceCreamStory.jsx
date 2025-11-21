@@ -180,7 +180,7 @@ const IceCreamStory = () => {
 
   const handleNextQuestion = () => {
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
+        setCurrentQuestion(prev => prev + 1);
       setChoice(null);
       setShowResult(false);
       resetFeedback();
@@ -270,8 +270,8 @@ const IceCreamStory = () => {
             <span className="text-rose-700 font-bold text-xs sm:text-sm md:text-lg">Coins: {coins}</span>
           </div>
         </div>
-      </div>
-
+              </div>
+              
       {/* Main Game Area */}
       <div className="flex-1 flex flex-col justify-center items-center text-center px-2 sm:px-4 md:px-6 z-10 py-2 sm:py-4 overflow-y-auto min-h-0">
         {!allQuestionsAnswered && !showResult && (
@@ -300,14 +300,14 @@ const IceCreamStory = () => {
                 
                 <p className="text-gray-800 text-sm sm:text-base md:text-lg mb-3 sm:mb-4 font-semibold leading-relaxed px-1">
                   {currentQuestionData.text}
-                </p>
-                
+              </p>
+              
                 {/* Options */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
                   {currentQuestionData.options.map(option => (
-                    <button
-                      key={option.id}
-                      onClick={() => handleChoice(option.id)}
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
                       disabled={showResult}
                       className={`p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 border-2 ${
                         showResult && choice === option.id
@@ -316,13 +316,13 @@ const IceCreamStory = () => {
                             : "bg-gradient-to-r from-red-500 to-orange-600 text-white border-red-400"
                           : "bg-gradient-to-r from-pink-500 via-rose-500 to-orange-500 hover:from-pink-600 hover:via-rose-600 hover:to-orange-600 text-white border-pink-400"
                       } ${showResult ? "opacity-75 cursor-not-allowed" : ""}`}
-                    >
+                  >
                       <div className="text-2xl sm:text-3xl md:text-4xl mb-1 sm:mb-2">{option.emoji}</div>
                       <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 sm:mb-2">{option.text}</h3>
                       <p className="text-white/95 text-xs sm:text-sm">{option.description}</p>
-                    </button>
-                  ))}
-                </div>
+                  </button>
+                ))}
+              </div>
 
                 {/* Progress Indicator */}
                 <div className="mt-3 sm:mt-4 flex justify-center gap-1 sm:gap-1.5 flex-wrap">
@@ -339,8 +339,8 @@ const IceCreamStory = () => {
                     />
                   ))}
                 </div>
-              </div>
             </div>
+          </div>
           ) : !allQuestionsAnswered && showResult ? (
             <>
               {/* Question Result */}
@@ -382,8 +382,8 @@ const IceCreamStory = () => {
             <>
               {/* Final Results Card */}
               <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border-2 border-rose-300 shadow-xl text-center">
-              {finalScore >= 3 ? (
-                <div>
+            {finalScore >= 3 ? (
+              <div>
                   <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3 animate-bounce">🎉</div>
                   <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">🍦💰</div>
                   <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mb-2 sm:mb-3">Great Job!</h3>
@@ -392,14 +392,14 @@ const IceCreamStory = () => {
                     <span className="font-bold">{questions.length}</span> questions correct!
                     <br />
                     You're learning to make smart spending choices! 🍦
-                  </p>
+                </p>
                   <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-2 sm:py-2.5 px-3 sm:px-5 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
                     <span className="text-xl sm:text-2xl">💰</span>
                     <span className="text-base sm:text-lg md:text-xl font-bold">+5 Coins</span>
-                  </div>
+                </div>
                   <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 px-1">
-                    You correctly chose to save money instead of spending on treats. That's a smart habit!
-                  </p>
+                  You correctly chose to save money instead of spending on treats. That's a smart habit!
+                </p>
                   {finalScore >= 3 && (
                     <button
                       onClick={handleNext}
@@ -409,9 +409,9 @@ const IceCreamStory = () => {
                       <span className="sm:hidden">Next Level</span> →
                     </button>
                   )}
-                </div>
-              ) : (
-                <div>
+              </div>
+            ) : (
+              <div>
                   <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3">😔</div>
                   <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">🍦</div>
                   <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-700 mb-2 sm:mb-3">Keep Learning!</h3>
@@ -419,27 +419,27 @@ const IceCreamStory = () => {
                     You got <span className="font-bold text-rose-600">{finalScore}</span> out of{" "}
                     <span className="font-bold">{questions.length}</span> questions correct.
                     <br />
-                    Remember, sometimes it's better to save for bigger goals!
-                  </p>
+                  Remember, sometimes it's better to save for bigger goals!
+                </p>
                   <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-2 sm:py-2.5 px-3 sm:px-5 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
                     <span className="text-xl sm:text-2xl">💰</span>
                     <span className="text-base sm:text-lg md:text-xl font-bold">+5 Coins</span>
                   </div>
-                  <button
-                    onClick={handleTryAgain}
+                <button
+                  onClick={handleTryAgain}
                     className="bg-gradient-to-r from-pink-500 via-rose-500 to-orange-500 hover:from-pink-600 hover:via-rose-600 hover:to-orange-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105 mb-3 sm:mb-4"
-                  >
+                >
                     Try Again 🍦
-                  </button>
+                </button>
                   <p className="text-gray-600 text-xs sm:text-sm px-1">
-                    Try to choose the option that saves money for more important things.
-                  </p>
-                </div>
-              )}
+                  Try to choose the option that saves money for more important things.
+                </p>
               </div>
+            )}
+          </div>
             </>
-          )}
-        </div>
+        )}
+      </div>
       </div>
 
       {/* Game Over Modal */}

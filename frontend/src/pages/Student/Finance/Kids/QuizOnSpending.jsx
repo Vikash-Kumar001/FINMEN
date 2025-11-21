@@ -215,7 +215,7 @@ const QuizOnSpending = () => {
 
   const handleNextQuestion = () => {
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
+        setCurrentQuestion(prev => prev + 1);
       setChoice(null);
       setShowResult(false);
       resetFeedback();
@@ -305,8 +305,8 @@ const QuizOnSpending = () => {
             <span className="text-indigo-700 font-bold text-xs sm:text-sm md:text-lg">Coins: {coins}</span>
           </div>
         </div>
-      </div>
-
+              </div>
+              
       {/* Main Game Area */}
       <div className="flex-1 flex flex-col justify-center items-center text-center px-2 sm:px-4 md:px-6 z-10 py-2 sm:py-4 overflow-y-auto min-h-0">
         {!allQuestionsAnswered && !showResult && (
@@ -335,14 +335,14 @@ const QuizOnSpending = () => {
                 
                 <p className="text-gray-800 text-sm sm:text-base md:text-lg mb-3 sm:mb-4 font-semibold leading-relaxed px-1">
                   {currentQuestionData.text}
-                </p>
-                
+              </p>
+              
                 {/* Options */}
                 <div className="grid grid-cols-1 gap-2 sm:gap-3">
                   {currentQuestionData.options.map((option, index) => (
-                    <button
-                      key={option.id}
-                      onClick={() => handleChoice(option.id)}
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
                       disabled={showResult}
                       className={`p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 text-left border-2 ${
                         showResult && choice === option.id
@@ -360,11 +360,11 @@ const QuizOnSpending = () => {
                         <div className="flex-1">
                           <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1">{option.text}</h3>
                           <p className="text-white/95 text-xs sm:text-sm">{option.description}</p>
-                        </div>
                       </div>
-                    </button>
-                  ))}
-                </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
 
                 {/* Progress Indicator */}
                 <div className="mt-3 sm:mt-4 flex justify-center gap-1 sm:gap-1.5 flex-wrap">
@@ -381,8 +381,8 @@ const QuizOnSpending = () => {
                     />
                   ))}
                 </div>
-              </div>
             </div>
+          </div>
           ) : !allQuestionsAnswered && showResult ? (
             <>
               {/* Question Result */}
@@ -423,8 +423,8 @@ const QuizOnSpending = () => {
             <>
               {/* Final Results Card */}
               <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border-2 border-indigo-300 shadow-xl text-center">
-              {finalScore >= 3 ? (
-                <div>
+            {finalScore >= 3 ? (
+              <div>
                   <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3 animate-bounce">🎉</div>
                   <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">📝✅</div>
                   <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mb-2 sm:mb-3">Excellent!</h3>
@@ -433,14 +433,14 @@ const QuizOnSpending = () => {
                     <span className="font-bold">{questions.length}</span> questions correct!
                     <br />
                     You know how to make smart spending choices! 📝
-                  </p>
+                </p>
                   <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-2 sm:py-2.5 px-3 sm:px-5 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
                     <span className="text-xl sm:text-2xl">💰</span>
                     <span className="text-base sm:text-lg md:text-xl font-bold">+5 Coins</span>
-                  </div>
+                </div>
                   <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 px-1">
-                    You understand the importance of comparing options and planning before spending!
-                  </p>
+                  You understand the importance of comparing options and planning before spending!
+                </p>
                   {finalScore >= 3 && (
                     <button
                       onClick={handleNext}
@@ -450,9 +450,9 @@ const QuizOnSpending = () => {
                       <span className="sm:hidden">Next Level</span> →
                     </button>
                   )}
-                </div>
-              ) : (
-                <div>
+              </div>
+            ) : (
+              <div>
                   <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3">😔</div>
                   <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">📝</div>
                   <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-700 mb-2 sm:mb-3">Keep Learning!</h3>
@@ -460,27 +460,27 @@ const QuizOnSpending = () => {
                     You got <span className="font-bold text-indigo-600">{finalScore}</span> out of{" "}
                     <span className="font-bold">{questions.length}</span> questions correct.
                     <br />
-                    Remember, smart spending means thinking before you buy!
-                  </p>
+                  Remember, smart spending means thinking before you buy!
+                </p>
                   <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-2 sm:py-2.5 px-3 sm:px-5 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
                     <span className="text-xl sm:text-2xl">💰</span>
                     <span className="text-base sm:text-lg md:text-xl font-bold">+5 Coins</span>
                   </div>
-                  <button
-                    onClick={handleTryAgain}
+                <button
+                  onClick={handleTryAgain}
                     className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105 mb-3 sm:mb-4"
-                  >
+                >
                     Try Again 📝
-                  </button>
+                </button>
                   <p className="text-gray-600 text-xs sm:text-sm px-1">
-                    Try to choose the option that involves planning and comparing before spending.
-                  </p>
-                </div>
-              )}
+                  Try to choose the option that involves planning and comparing before spending.
+                </p>
               </div>
+            )}
+          </div>
             </>
-          )}
-        </div>
+        )}
+      </div>
       </div>
 
       {/* Game Over Modal */}

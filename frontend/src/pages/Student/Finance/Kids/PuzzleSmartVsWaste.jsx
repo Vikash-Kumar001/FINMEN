@@ -114,16 +114,16 @@ const PuzzleSmartVsWaste = () => {
     if (newMatches.length === leftItems.length) {
       // Calculate final score with a small delay for better UX
       setTimeout(() => {
-        const correctCount = newMatches.filter(match => match.isCorrect).length;
-        setFinalScore(correctCount);
-        setShowResult(true);
+      const correctCount = newMatches.filter(match => match.isCorrect).length;
+      setFinalScore(correctCount);
+      setShowResult(true);
       }, 500);
     }
 
     // Reset selections with a small delay for visual feedback
     setTimeout(() => {
-      setSelectedLeft(null);
-      setSelectedRight(null);
+    setSelectedLeft(null);
+    setSelectedRight(null);
     }, 200);
   };
 
@@ -229,7 +229,7 @@ const PuzzleSmartVsWaste = () => {
 
         {/* Game Content */}
         <div className="w-full max-w-5xl flex-1 flex flex-col justify-center min-h-0">
-          {!showResult ? (
+        {!showResult ? (
             <div className="space-y-3 sm:space-y-4">
               {/* Instructions */}
               <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 border-2 border-purple-300 shadow-lg">
@@ -240,7 +240,7 @@ const PuzzleSmartVsWaste = () => {
 
               {/* Game Grid */}
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4">
-                {/* Left column - Items to categorize */}
+            {/* Left column - Items to categorize */}
                 <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 border-2 border-purple-300 shadow-xl">
                   <h3 className="text-base sm:text-lg md:text-xl font-bold text-purple-700 mb-2 sm:mb-3 text-center">
                     Items to Match
@@ -252,20 +252,20 @@ const PuzzleSmartVsWaste = () => {
                       const matchedCategory = getMatchedCategory(item.id);
                       
                       return (
-                        <button
-                          key={item.id}
-                          onClick={() => handleLeftSelect(item)}
+                  <button
+                    key={item.id}
+                    onClick={() => handleLeftSelect(item)}
                           disabled={isMatched}
                           className={`w-full p-2 sm:p-3 rounded-lg sm:rounded-xl text-left transition-all transform hover:scale-[1.02] ${
                             isMatched
                               ? matchResult
                                 ? "bg-gradient-to-r from-green-400 to-emerald-500 text-white border-2 border-green-500 shadow-md"
                                 : "bg-gradient-to-r from-red-400 to-pink-500 text-white border-2 border-red-500 shadow-md"
-                              : selectedLeft?.id === item.id
+                        : selectedLeft?.id === item.id
                               ? "bg-gradient-to-r from-purple-400 to-indigo-400 text-white border-2 border-purple-500 shadow-lg ring-2 ring-purple-300"
                               : "bg-gradient-to-r from-purple-100 to-indigo-100 hover:from-purple-200 hover:to-indigo-200 text-gray-800 border-2 border-purple-200"
                           } ${isMatched ? "opacity-75 cursor-not-allowed" : "cursor-pointer"}`}
-                        >
+                  >
                           <div className="flex flex-col items-center justify-center gap-1 sm:gap-1.5 text-center">
                             <div className="text-xl sm:text-2xl md:text-3xl">{item.emoji}</div>
                             <div className="w-full">
@@ -279,24 +279,24 @@ const PuzzleSmartVsWaste = () => {
                             {isMatched && (
                               <div className="text-base sm:text-lg">
                                 {matchResult ? "✓" : "✗"}
-                              </div>
+                      </div>
                             )}
-                          </div>
-                        </button>
+                    </div>
+                  </button>
                       );
                     })}
-                  </div>
-                </div>
+              </div>
+            </div>
 
                 {/* Middle column - Instructions/Match button */}
-                <div className="flex flex-col items-center justify-center">
+            <div className="flex flex-col items-center justify-center">
                   <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border-2 border-purple-300 shadow-xl text-center w-full">
                     <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">🎯</div>
                     {selectedLeft && !isItemMatched(selectedLeft.id) ? (
                       <div className="space-y-2 sm:space-y-3">
                         <p className="text-gray-700 text-xs sm:text-sm md:text-base font-semibold">
                           Selected Item:
-                        </p>
+                </p>
                         <div className="bg-gradient-to-r from-purple-400 to-indigo-400 text-white p-2 sm:p-3 rounded-lg shadow-md animate-pulse">
                           <div className="text-2xl sm:text-3xl mb-1">{selectedLeft.emoji}</div>
                           <p className="font-bold text-xs sm:text-sm md:text-base">{selectedLeft.name}</p>
@@ -341,48 +341,48 @@ const PuzzleSmartVsWaste = () => {
                           ></div>
                         </div>
                       </div>
-                    </div>
-                  </div>
                 </div>
+              </div>
+            </div>
 
-                {/* Right column - Categories */}
+            {/* Right column - Categories */}
                 <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-2 sm:p-3 md:p-4 border-2 border-purple-300 shadow-xl">
                   <h3 className="text-base sm:text-lg md:text-xl font-bold text-purple-700 mb-2 sm:mb-3 text-center">
                     Categories
                   </h3>
                   <div className="space-y-2 sm:space-y-3">
-                    {rightItems.map(item => (
-                      <button
-                        key={item.id}
-                        onClick={() => handleRightSelect(item)}
+                {rightItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleRightSelect(item)}
                         className={`w-full p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl text-left transition-all transform hover:scale-[1.02] ${
-                          selectedRight?.id === item.id
+                      selectedRight?.id === item.id
                             ? item.color === "green"
                               ? "bg-gradient-to-r from-green-400 to-emerald-500 text-white border-2 border-green-500 shadow-lg ring-2 ring-green-300"
                               : "bg-gradient-to-r from-red-400 to-pink-500 text-white border-2 border-red-500 shadow-lg ring-2 ring-red-300"
                             : item.color === "green"
                             ? "bg-gradient-to-r from-green-100 to-emerald-100 hover:from-green-200 hover:to-emerald-200 text-gray-800 border-2 border-green-200"
                             : "bg-gradient-to-r from-red-100 to-pink-100 hover:from-red-200 hover:to-pink-200 text-gray-800 border-2 border-red-200"
-                        }`}
-                      >
+                    }`}
+                  >
                         <div className="flex items-center gap-3 sm:gap-4">
                           <div className="text-2xl sm:text-3xl md:text-4xl flex-shrink-0">{item.emoji}</div>
                           <div className="flex-1 min-w-0">
                             <h4 className="font-bold text-sm sm:text-base md:text-lg">{item.name}</h4>
                             <p className="text-xs sm:text-sm md:text-base opacity-80 mt-1">{item.description}</p>
-                          </div>
-                        </div>
-                      </button>
-                    ))}
+                      </div>
+                    </div>
+                  </button>
+                ))}
                   </div>
-                </div>
               </div>
             </div>
-          ) : (
+          </div>
+        ) : (
             /* Results Card */
             <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-5 border-2 border-purple-300 shadow-xl text-center">
-              {finalScore >= 4 ? (
-                <div>
+            {finalScore >= 4 ? (
+              <div>
                   <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3 animate-bounce">🎉</div>
                   <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">🧩✅</div>
                   <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mb-2 sm:mb-3">Excellent Matching!</h3>
@@ -391,14 +391,14 @@ const PuzzleSmartVsWaste = () => {
                     <span className="font-bold">{leftItems.length}</span> items!
                     <br />
                     You understand the difference between needs and wants! 🎯
-                  </p>
+                </p>
                   <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-2 sm:py-2.5 px-3 sm:px-5 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
                     <span className="text-xl sm:text-2xl">💰</span>
                     <span className="text-base sm:text-lg md:text-xl font-bold">+5 Coins</span>
-                  </div>
+                </div>
                   <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 px-1">
-                    You know that items like notebooks and medicine are needs, while extra candy is a want!
-                  </p>
+                  You know that items like notebooks and medicine are needs, while extra candy is a want!
+                </p>
                   {finalScore >= 4 && (
                     <button
                       onClick={handleNext}
@@ -408,9 +408,9 @@ const PuzzleSmartVsWaste = () => {
                       <span className="sm:hidden">Next Level</span> →
                     </button>
                   )}
-                </div>
-              ) : (
-                <div>
+              </div>
+            ) : (
+              <div>
                   <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3">😔</div>
                   <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">🧩</div>
                   <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-700 mb-2 sm:mb-3">Keep Learning!</h3>
@@ -418,26 +418,26 @@ const PuzzleSmartVsWaste = () => {
                     You matched <span className="font-bold text-purple-600">{finalScore}</span> out of{" "}
                     <span className="font-bold">{leftItems.length}</span> items correctly.
                     <br />
-                    Remember, needs are important for life while wants are things we'd like to have!
-                  </p>
+                  Remember, needs are important for life while wants are things we'd like to have!
+                </p>
                   <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-2 sm:py-2.5 px-3 sm:px-5 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
                     <span className="text-xl sm:text-2xl">💰</span>
                     <span className="text-base sm:text-lg md:text-xl font-bold">+5 Coins</span>
                   </div>
-                  <button
-                    onClick={handleTryAgain}
+                <button
+                  onClick={handleTryAgain}
                     className="bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 hover:from-purple-600 hover:via-pink-600 hover:to-indigo-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105 mb-3 sm:mb-4"
-                  >
+                >
                     Try Again 🧩
-                  </button>
+                </button>
                   <p className="text-gray-600 text-xs sm:text-sm px-1">
-                    Try to distinguish between essential items (needs) and non-essential items (wants).
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+                  Try to distinguish between essential items (needs) and non-essential items (wants).
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
       </div>
 
       {/* Game Over Modal */}

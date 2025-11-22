@@ -68,8 +68,6 @@ const ReflexMoneyChoice = () => {
       }, 1000);
     } else if (timeLeft === 0) {
       setGameState("finished");
-      // Award 5 coins when game finishes
-      setCoins(5);
     }
 
     return () => {
@@ -102,6 +100,8 @@ const ReflexMoneyChoice = () => {
     
     if (isSave === currentWord.isCorrect) {
       setScore(prev => prev + 1);
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
     

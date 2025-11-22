@@ -841,7 +841,7 @@ export const completeUnifiedGame = async (req, res) => {
       gameProgress.totalTimePlayed += timePlayed;
       gameProgress.lastPlayedAt = new Date();
       
-      // Lock the game again after replay (user needs to pay 10 HealCoins again to replay)
+      // Lock the game again after replay (user needs to pay 2 HealCoins again to replay)
       gameProgress.replayUnlocked = false;
       gameProgress.replayUnlockedAt = null;
       
@@ -866,7 +866,7 @@ export const completeUnifiedGame = async (req, res) => {
       }
 
       return res.status(200).json({
-        message: '🎮 Game replayed! No coins awarded for replays. Pay 10 HealCoins to unlock replay again.',
+        message: '🎮 Game replayed! No coins awarded for replays. Pay 2 HealCoins to unlock replay again.',
         coinsEarned: 0,
         xpEarned: 0,
         totalCoinsEarned: gameProgress.totalCoinsEarned,
@@ -1086,11 +1086,11 @@ export const completeUnifiedGame = async (req, res) => {
   }
 };
 
-// 🔄 POST /api/game/unlock-replay/:gameId - Unlock replay for a completed game (costs 10 HealCoins)
+// 🔄 POST /api/game/unlock-replay/:gameId - Unlock replay for a completed game (costs 2 HealCoins)
 export const unlockGameReplay = async (req, res) => {
   const userId = req.user?._id;
   const { gameId } = req.params;
-  const REPLAY_COST = 10;
+  const REPLAY_COST = 2;
 
   try {
     console.log('🔓 Unlock replay request:', { userId, gameId });

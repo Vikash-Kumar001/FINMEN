@@ -108,6 +108,8 @@ const NeedsFirstKidBadge = () => {
     setAnswers(newAnswers);
     
     if (correct) {
+      // Update coins in real-time for correct answers
+      setCoins((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -129,15 +131,14 @@ const NeedsFirstKidBadge = () => {
       if (correctCount === questions.length) {
         setShowBadge(true);
       }
-      setCoins(5);
     }
   };
 
   useEffect(() => {
-    if (finalScore > 0 && coins === 5) {
+    if (finalScore > 0) {
       setShowResult(true);
     }
-  }, [finalScore, coins]);
+  }, [finalScore]);
 
   const currentQuestionData = questions[currentQuestion];
   const allQuestionsAnswered = answers.length === questions.length;

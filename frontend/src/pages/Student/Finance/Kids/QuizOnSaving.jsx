@@ -109,13 +109,19 @@ const QuizOnSaving = () => {
     setAnswers(newAnswers);
     
     if (correct) {
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
+      // For correct answers, automatically move to next question after a short delay
+      setTimeout(() => {
+        handleNextQuestion();
+      }, 1000);
+    } else {
+      // For incorrect answers, show result modal
+      setTimeout(() => {
+        setShowResult(true);
+      }, 0);
     }
-    
-    // Show result, then move to next question or finish
-    setTimeout(() => {
-      setShowResult(true);
-    }, correct ? 1000 : 0);
   };
 
   const handleNextQuestion = () => {
@@ -129,6 +135,7 @@ const QuizOnSaving = () => {
       // Calculate final score
       const correctCount = answers.filter(a => a.correct).length;
       setFinalScore(correctCount);
+      // For the last question, show the results instead of navigating
       setShowResult(true);
     }
   };
@@ -163,12 +170,14 @@ const QuizOnSaving = () => {
   const isLastQuestion = currentQuestion === questions.length - 1;
   const allQuestionsAnswered = answers.length === questions.length;
 
-  // Award 5 coins when all questions are answered
+  // Calculate final score when all questions are answered
   useEffect(() => {
-    if (allQuestionsAnswered && finalScore > 0) {
-      setCoins(5);
+    if (allQuestionsAnswered) {
+      // Calculate final score when all questions are answered
+      const correctCount = answers.filter(a => a.correct).length;
+      setFinalScore(correctCount);
     }
-  }, [allQuestionsAnswered, finalScore]);
+  }, [allQuestionsAnswered]);
 
   return (
     <div className="h-screen w-full bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100 flex flex-col relative overflow-hidden">
@@ -298,92 +307,7 @@ const QuizOnSaving = () => {
                 </div>
               </div>
             </div>
-          ) : !allQuestionsAnswered && showResult ? (
-            /* Question Result */
-            <div className="bg-white/90 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border-2 border-blue-300 shadow-xl text-center">
-              {isCorrect ? (
-                <div>
-                  <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3 animate-bounce">🎉</div>
-                  <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">✅</div>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mb-2 sm:mb-3">Correct!</h3>
-                  <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
-                    Great answer! You're learning about saving money!
-                  </p>
-                  <button
-                    onClick={handleNextQuestion}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
-                  >
-                    {isLastQuestion ? "See Results" : "Next Question"} →
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3">😔</div>
-                  <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">❌</div>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-700 mb-2 sm:mb-3">Not Quite!</h3>
-                  <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
-                    That's okay! Keep learning about saving money.
-                  </p>
-                  <button
-                    onClick={handleNextQuestion}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105 mb-3 sm:mb-4"
-                  >
-                    {isLastQuestion ? "See Results" : "Next Question"} →
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : (
-            /* Final Results Card */
-            <div className="bg-white/90 backdrop-blur-md rounded-xl sm:rounded-2xl p-3 sm:p-4 md:p-5 border-2 border-blue-300 shadow-xl text-center">
-              {finalScore >= 3 ? (
-                <div>
-                  <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3 animate-bounce">🎉</div>
-                  <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">🏆</div>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mb-2 sm:mb-3">Excellent Work!</h3>
-                  <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
-                    You got <span className="font-bold text-green-600">{finalScore}</span> out of{" "}
-                    <span className="font-bold">{questions.length}</span> questions correct!
-                    <br />
-                    You're becoming a savings expert! 💰
-                  </p>
-                  <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-2 sm:py-2.5 px-3 sm:px-5 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
-                    <span className="text-xl sm:text-2xl">💰</span>
-                    <span className="text-base sm:text-lg md:text-xl font-bold">+5 Coins</span>
-                  </div>
-                  <button
-                    onClick={handleNext}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
-                  >
-                    <span className="hidden sm:inline">Continue to Next Level</span>
-                    <span className="sm:hidden">Next Level</span> →
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3">😔</div>
-                  <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">📚</div>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-700 mb-2 sm:mb-3">Keep Learning!</h3>
-                  <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
-                    You got <span className="font-bold text-blue-600">{finalScore}</span> out of{" "}
-                    <span className="font-bold">{questions.length}</span> questions correct.
-                    <br />
-                    Practice makes perfect! Keep learning about saving money!
-                  </p>
-                  <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-2 sm:py-2.5 px-3 sm:px-5 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
-                    <span className="text-xl sm:text-2xl">💰</span>
-                    <span className="text-base sm:text-lg md:text-xl font-bold">+5 Coins</span>
-                  </div>
-                  <button
-                    onClick={handleRestart}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105 mb-3 sm:mb-4"
-                  >
-                    Try Again 📝
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+          ) : null}
         </div>
       </div>
 

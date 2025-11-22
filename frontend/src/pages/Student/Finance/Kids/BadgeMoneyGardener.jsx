@@ -191,6 +191,8 @@ const BadgeMoneyGardener = () => {
     setAnswers(newAnswers);
 
     if (correct) {
+      // Update coins in real-time for correct answers
+      setCoins((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
@@ -212,15 +214,9 @@ const BadgeMoneyGardener = () => {
       if (correctCount === questions.length) {
         setShowBadge(true);
       }
-      setCoins(5);
+      // Remove setCoins(5) as coins are now updated in real-time
     }
   };
-
-  useEffect(() => {
-    if (finalScore > 0 && coins === 5) {
-      setShowResult(true);
-    }
-  }, [finalScore, coins]);
 
   const allQuestionsAnswered = answers.length === questions.length;
   const allCorrect = finalScore === questions.length;

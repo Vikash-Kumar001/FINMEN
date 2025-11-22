@@ -88,7 +88,8 @@ const JournalOfBudgeting = () => {
         setJournalEntry("");
         showCorrectAnswerFeedback(1, true);
       } else {
-        setCoins(5);
+        // Update coins in real-time for completing the journal entry
+        setCoins(prevCoins => prevCoins + 1);
         showCorrectAnswerFeedback(1, true);
         setTimeout(() => {
           setShowResult(true);

@@ -1157,7 +1157,7 @@ const GameCategoryPage = () => {
     
     if (processingReplay) return;
     
-    const REPLAY_COST = 10;
+    const REPLAY_COST = 2;
     
     // Check wallet balance
     if (!wallet || wallet.balance < REPLAY_COST) {
@@ -1182,7 +1182,7 @@ const GameCategoryPage = () => {
     if (!selectedGameForReplay) return;
     
     const game = selectedGameForReplay;
-    const REPLAY_COST = 10;
+    const REPLAY_COST = 2;
     
     setProcessingReplay(true);
     setShowReplayConfirmModal(false);
@@ -1427,7 +1427,7 @@ const GameCategoryPage = () => {
                     <div className="bg-gradient-to-r from-yellow-50 to-amber-50 rounded-xl p-4 mb-4 border border-yellow-200">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-gray-700 font-medium">Cost:</span>
-                        <span className="text-2xl font-bold text-amber-600">10 HealCoins</span>
+                        <span className="text-2xl font-bold text-amber-600">2 HealCoins</span>
                       </div>
                       <div className="flex items-center justify-between">
                         <span className="text-gray-700 font-medium">Your Balance:</span>
@@ -1961,18 +1961,18 @@ const GameCategoryPage = () => {
                         e.stopPropagation();
                         handleUnlockReplayClick(game, e);
                       }}
-                      disabled={processingReplay || !wallet || wallet.balance < 10}
+                      disabled={processingReplay || !wallet || wallet.balance < 2}
                       className={`w-full py-2 px-4 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 relative z-20 ${
-                        processingReplay || !wallet || wallet.balance < 10
+                        processingReplay || !wallet || wallet.balance < 2
                           ? "bg-gray-200 text-gray-500 cursor-not-allowed"
                           : "bg-gradient-to-r from-yellow-400 to-amber-500 hover:from-yellow-500 hover:to-amber-600 text-white shadow-md hover:shadow-lg"
                       }`}
                       style={{ pointerEvents: 'auto' }}
                     >
                       <RefreshCw className="w-4 h-4" />
-                      <span>Unlock Replay (10 HealCoins)</span>
+                      <span>Unlock Replay (2 HealCoins)</span>
                     </button>
-                    {wallet && wallet.balance < 10 && (
+                    {wallet && wallet.balance < 2 && (
                       <p className="text-xs text-red-500 mt-1 text-center">
                         Insufficient balance
                       </p>

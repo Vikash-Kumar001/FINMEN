@@ -56,10 +56,13 @@ const JournalOfNeeds = () => {
 
   const handleSubmit = () => {
     if (entries[currentEntry].trim().length >= prompts[currentEntry].minLength) {
+      // Update coins in real-time for each completed entry
+      setCoins((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      
       if (currentEntry < prompts.length - 1) {
         setCurrentEntry(prev => prev + 1);
       } else {
-        setCoins(5);
         setShowResult(true);
       }
     }
@@ -72,6 +75,14 @@ const JournalOfNeeds = () => {
   };
 
   const allEntriesCompleted = entries.every((entry, index) => entry.trim().length >= prompts[index].minLength);
+  
+  // Update final score when all entries are completed
+  useEffect(() => {
+    if (showResult && allEntriesCompleted) {
+      // Calculate final score based on completed entries
+      // In this case, all entries are required, so we can set it to the total number of entries
+    }
+  }, [showResult, allEntriesCompleted]);
 
   return (
     <div className="h-screen w-full bg-gradient-to-br from-green-100 via-emerald-50 to-teal-100 flex flex-col relative overflow-hidden">

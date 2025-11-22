@@ -106,9 +106,12 @@ const CandyStory = () => {
     const isCorrect = selectedOption?.correct || false;
     
     setChoice(selectedChoice);
-    setAnswers([...answers, { stageId: currentQ.id, choice: selectedChoice, isCorrect }]);
+    const newAnswers = [...answers, { stageId: currentQ.id, choice: selectedChoice, isCorrect }];
+    setAnswers(newAnswers);
     
     if (isCorrect) {
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -119,9 +122,8 @@ const CandyStory = () => {
         resetFeedback();
       } else {
         // Calculate final score
-        const correctAnswers = [...answers, { stageId: currentQ.id, choice: selectedChoice, isCorrect }].filter(a => a.isCorrect).length;
+        const correctAnswers = newAnswers.filter(a => a.isCorrect).length;
         setFinalScore(correctAnswers);
-        setCoins(5); // Award 5 coins on completion
         setShowResult(true);
       }
     }, isCorrect ? 1500 : 1000);

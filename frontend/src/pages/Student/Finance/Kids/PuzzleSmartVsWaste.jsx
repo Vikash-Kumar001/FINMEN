@@ -105,8 +105,10 @@ const PuzzleSmartVsWaste = () => {
     const newMatches = [...matches, newMatch];
     setMatches(newMatches);
 
-    // If the match is correct, show flash/confetti
+    // If the match is correct, show flash/confetti and update coins
     if (newMatch.isCorrect) {
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
@@ -158,10 +160,10 @@ const PuzzleSmartVsWaste = () => {
     return match ? rightItems.find(r => r.id === match.rightId) : null;
   };
 
-  // Award 5 coins when game finishes
+  // Award coins based on correct answers when game finishes
   useEffect(() => {
     if (showResult && finalScore > 0) {
-      setCoins(5);
+      // Coins are already updated in real-time, so we don't need to set them here
     }
   }, [showResult, finalScore]);
 

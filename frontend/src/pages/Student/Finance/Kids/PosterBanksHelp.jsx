@@ -242,6 +242,8 @@ const PosterBanksHelp = () => {
     setChoices(newChoices);
 
     if (isCorrect) {
+      // Update coins in real-time for correct answers
+      setCoins((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
@@ -290,12 +292,11 @@ const PosterBanksHelp = () => {
     (opt) => opt.id === choice
   );
 
-  // Calculate final score and award coins when all questions are answered
+  // Calculate final score when all questions are answered
   useEffect(() => {
     if (allQuestionsAnswered && finalScore === 0 && choices.length > 0) {
       const correctCount = choices.filter((c) => c.isCorrect).length;
       setFinalScore(correctCount);
-      setCoins(5);
     }
   }, [allQuestionsAnswered, choices, finalScore]);
 

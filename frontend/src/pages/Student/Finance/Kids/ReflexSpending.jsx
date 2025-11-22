@@ -77,6 +77,8 @@ const ReflexSpending = () => {
     if (isSmart === currentWord.isCorrect) {
       const newScore = score + 1;
       setScore(newScore);
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       const newStreak = streak + 1;
       setStreak(newStreak);
       if (newStreak > bestStreak) {
@@ -113,8 +115,6 @@ const ReflexSpending = () => {
       }, 1000);
     } else if (timeLeft === 0 && gameState === "playing") {
       setGameState("finished");
-      // Award 5 coins when game finishes
-      setCoins(5);
     }
     return () => clearTimeout(timer);
   }, [gameState, timeLeft]);

@@ -107,6 +107,8 @@ const GiftMoneyStory = () => {
     setAnswers(newAnswers);
     
     if (correct) {
+      // Update coins in real-time for correct answers
+      setCoins((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -125,15 +127,9 @@ const GiftMoneyStory = () => {
     } else {
       const correctCount = answers.filter(a => a.correct).length;
       setFinalScore(correctCount);
-      setCoins(5);
+      // Remove setCoins(5) as coins are now updated in real-time
     }
   };
-
-  useEffect(() => {
-    if (finalScore > 0 && coins === 5) {
-      setShowResult(true);
-    }
-  }, [finalScore, coins]);
 
   const currentQuestionData = questions[currentQuestion];
   const allQuestionsAnswered = answers.length === questions.length;

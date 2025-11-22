@@ -81,8 +81,9 @@ const PosterSavingHabit = () => {
     setSelectedPoster(poster.id);
     
     if (poster.isCorrect) {
-      setCoins(5);
-      showCorrectAnswerFeedback(5, true);
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
+      showCorrectAnswerFeedback(1, true);
       
       setTimeout(() => {
         setShowResult(true);

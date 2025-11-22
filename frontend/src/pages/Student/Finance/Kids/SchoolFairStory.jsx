@@ -159,9 +159,12 @@ const SchoolFairStory = () => {
     const isCorrect = selectedOption?.isCorrect || false;
     
     setChoice(selectedChoice);
-    setChoices([...choices, { questionId: currentQ.id, choice: selectedChoice, isCorrect }]);
+    const newChoices = [...choices, { questionId: currentQ.id, choice: selectedChoice, isCorrect }];
+    setChoices(newChoices);
     
     if (isCorrect) {
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -171,9 +174,8 @@ const SchoolFairStory = () => {
         setChoice(null);
         resetFeedback();
       } else {
-        const correctAnswers = [...choices, { questionId: currentQ.id, choice: selectedChoice, isCorrect }].filter(a => a.isCorrect).length;
+        const correctAnswers = newChoices.filter(a => a.isCorrect).length;
         setFinalScore(correctAnswers);
-        setCoins(5);
         setShowResult(true);
       }
     }, isCorrect ? 1500 : 1000);

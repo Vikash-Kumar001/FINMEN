@@ -74,6 +74,8 @@ const ReflexNeedVsWant = () => {
     setAnswers([...answers, { stageId: currentStage + 1, isCorrect }]);
     
     if (isCorrect) {
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -91,15 +93,14 @@ const ReflexNeedVsWant = () => {
     } else {
       const correctCount = answers.filter(a => a.isCorrect).length;
       setFinalScore(correctCount);
-      setCoins(5);
     }
   };
 
   useEffect(() => {
-    if (finalScore > 0 && coins === 5) {
+    if (finalScore > 0) {
       setShowResult(true);
     }
-  }, [finalScore, coins]);
+  }, [finalScore]);
 
   const currentStageData = stages[currentStage];
   const isCorrect = choice && ((choice === "need" && target === currentStageData.action) || (choice === "want" && target === currentStageData.wrong));

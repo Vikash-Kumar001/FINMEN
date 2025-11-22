@@ -107,6 +107,8 @@ const BankVisitStory = () => {
     setAnswers(newAnswers);
     
     if (correct) {
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -125,15 +127,10 @@ const BankVisitStory = () => {
     } else {
       const correctCount = answers.filter(a => a.correct).length;
       setFinalScore(correctCount);
-      setCoins(5);
     }
   };
 
-  useEffect(() => {
-    if (finalScore > 0 && coins === 5) {
-      setShowResult(true);
-    }
-  }, [finalScore, coins]);
+  // useEffect removed to prevent overriding real-time coin updates
 
   const currentQuestionData = questions[currentQuestion];
   const allQuestionsAnswered = answers.length === questions.length;

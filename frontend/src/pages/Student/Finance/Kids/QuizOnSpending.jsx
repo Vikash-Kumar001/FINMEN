@@ -204,6 +204,8 @@ const QuizOnSpending = () => {
     setChoices(newChoices);
     
     if (isCorrect) {
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -252,8 +254,6 @@ const QuizOnSpending = () => {
     if (allQuestionsAnswered && finalScore === 0) {
       const correctCount = choices.filter(c => c.isCorrect).length;
       setFinalScore(correctCount);
-      // Award 5 coins when game finishes
-      setCoins(5);
     }
   }, [allQuestionsAnswered, choices, finalScore]);
 

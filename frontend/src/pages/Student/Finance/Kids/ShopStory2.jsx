@@ -169,6 +169,8 @@ const ShopStory2 = () => {
     setChoices(newChoices);
 
     if (isCorrect) {
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
@@ -189,8 +191,6 @@ const ShopStory2 = () => {
       const correctAnswers = choices.filter(c => c.isCorrect).length;
       setFinalScore(correctAnswers);
       setShowResult(true);
-      // Award 5 coins when game finishes
-      setCoins(5);
     }
   };
 
@@ -219,8 +219,6 @@ const ShopStory2 = () => {
     if (allQuestionsAnswered && finalScore === 0 && choices.length > 0) {
       const correctCount = choices.filter(c => c.isCorrect).length;
       setFinalScore(correctCount);
-      // Award 5 coins when game finishes
-      setCoins(5);
     }
   }, [allQuestionsAnswered, choices, finalScore]);
 

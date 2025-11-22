@@ -85,12 +85,13 @@ const JournalBorrowing = () => {
 
   const handleSubmit = () => {
     if (entries[currentEntry].trim().length >= prompts[currentEntry].minLength) {
+      // Update coins in real-time for each completed entry
+      setCoins((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      
       if (currentEntry < prompts.length - 1) {
         setCurrentEntry((prev) => prev + 1);
-        showCorrectAnswerFeedback(1, true);
       } else {
-        setCoins(5);
-        showCorrectAnswerFeedback(1, true);
         setTimeout(() => {
           setShowResult(true);
         }, 500);
@@ -107,6 +108,13 @@ const JournalBorrowing = () => {
   const allEntriesCompleted = entries.every(
     (entry, index) => entry.trim().length >= prompts[index].minLength
   );
+  
+  // Update final score when all entries are completed
+  useEffect(() => {
+    if (showResult && allEntriesCompleted) {
+      // Final score is always 5 for this journal (all entries required)
+    }
+  }, [showResult, allEntriesCompleted]);
 
   return (
     <div className="h-screen w-full bg-gradient-to-br from-purple-100 via-pink-50 to-indigo-100 flex flex-col relative overflow-hidden">

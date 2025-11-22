@@ -49,8 +49,9 @@ const JournalOfSaving = () => {
 
   const handleSubmit = () => {
     if (journalEntry.trim().length > 10) {
-      setCoins(5);
-      showCorrectAnswerFeedback(5, true);
+      // Update coins in real-time for completing the journal entry
+      setCoins(prevCoins => prevCoins + 1);
+      showCorrectAnswerFeedback(1, true);
       
       setTimeout(() => {
         setShowResult(true);
@@ -189,7 +190,7 @@ const JournalOfSaving = () => {
                   {isValidEntry && (
                     <button
                       onClick={handleNext}
-                      className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
+                      className="bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-600 hover:to-orange-500 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
                     >
                       <span className="hidden sm:inline">Continue to Next Level</span>
                       <span className="sm:hidden">Next Level</span> →

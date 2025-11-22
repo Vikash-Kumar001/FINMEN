@@ -118,6 +118,8 @@ const BadgeGoodBorrower = () => {
     setAnswers(newAnswers);
 
     if (correct) {
+      // Update coins in real-time for correct answers
+      setCoins((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
@@ -139,15 +141,9 @@ const BadgeGoodBorrower = () => {
       if (correctCount === questions.length) {
         setShowBadge(true);
       }
-      setCoins(5);
+      // Remove setCoins(5) as coins are now updated in real-time
     }
   };
-
-  useEffect(() => {
-    if (finalScore > 0 && coins === 5) {
-      setShowResult(true);
-    }
-  }, [finalScore, coins]);
 
   const currentQuestionData = questions[currentQuestion];
   const allQuestionsAnswered = answers.length === questions.length;
@@ -186,7 +182,7 @@ const BadgeGoodBorrower = () => {
         >
           ← <span className="hidden sm:inline">Back</span>
         </button>
-        <div className="flex-1 flex items中心 justify-center min-w-0">
+        <div className="flex-1 flex items-center justify-center min-w-0">
           <h1 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold px-2 flex items-center justify-center gap-1 sm:gap-2 truncate">
             <span className="text-sm sm:text-base md:text-lg lg:text-xl flex-shrink-0">
               🏆

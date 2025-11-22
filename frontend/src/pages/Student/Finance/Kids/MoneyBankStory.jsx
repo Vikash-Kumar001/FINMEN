@@ -174,6 +174,8 @@ const MoneyBankStory = () => {
     // If the choice is correct, show flash/confetti
     const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -213,12 +215,7 @@ const MoneyBankStory = () => {
   const currentQuestionData = getCurrentQuestion();
   const allQuestionsAnswered = choices.length === questions.length;
 
-  // Award 5 coins when all questions are answered
-  useEffect(() => {
-    if (allQuestionsAnswered && showResult) {
-      setCoins(5);
-    }
-  }, [allQuestionsAnswered, showResult]);
+  // useEffect removed to prevent overriding real-time coin updates
 
   // If no current question, show loading or return early
   if (!currentQuestionData && !showResult) {

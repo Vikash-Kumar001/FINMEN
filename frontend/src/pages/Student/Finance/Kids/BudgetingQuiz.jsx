@@ -211,9 +211,12 @@ const BudgetingQuiz = () => {
     const isCorrect = selectedOption?.isCorrect || false;
     
     setChoice(selectedChoice);
-    setAnswers([...answers, { questionId: currentQ.id, choice: selectedChoice, isCorrect }]);
+    const newAnswers = [...answers, { questionId: currentQ.id, choice: selectedChoice, isCorrect }];
+    setAnswers(newAnswers);
     
     if (isCorrect) {
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -224,9 +227,8 @@ const BudgetingQuiz = () => {
         resetFeedback();
       } else {
         // Calculate final score
-        const correctAnswers = [...answers, { questionId: currentQ.id, choice: selectedChoice, isCorrect }].filter(a => a.isCorrect).length;
+        const correctAnswers = newAnswers.filter(a => a.isCorrect).length;
         setFinalScore(correctAnswers);
-        setCoins(5); // Award 5 coins on completion
         setShowResult(true);
       }
     }, isCorrect ? 1500 : 1000);

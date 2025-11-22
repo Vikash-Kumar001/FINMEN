@@ -111,11 +111,12 @@ const EthicsJournalGame = () => {
     ];
     setAnswers(newAnswers);
 
+    // Update coins in real-time for completed entries
+    setCoins((prev) => prev + 1);
     showCorrectAnswerFeedback(1, true);
 
     if (currentEntryIndex < prompts.length - 1) {
       setTimeout(() => {
-        setCoins((prev) => prev + 1);
         setCurrentEntryIndex((prev) => prev + 1);
         setEntry(updatedEntries[prompts[currentEntryIndex + 1].id] || "");
       }, 600);
@@ -123,7 +124,7 @@ const EthicsJournalGame = () => {
       setTimeout(() => {
         const completedCount = newAnswers.filter((a) => a.completed).length;
         setFinalScore(completedCount);
-        setCoins(5);
+        // Remove setCoins(5) as coins are now updated in real-time
         setShowResult(true);
       }, 600);
     }

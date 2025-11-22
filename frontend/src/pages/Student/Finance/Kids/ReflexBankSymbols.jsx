@@ -69,6 +69,8 @@ const ReflexBankSymbols = () => {
     setAnswers(newAnswers);
 
     if (correct) {
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
@@ -87,15 +89,14 @@ const ReflexBankSymbols = () => {
     } else {
       const correctCount = answers.filter((a) => a.correct).length;
       setFinalScore(correctCount);
-      setCoins(5);
     }
   };
 
   useEffect(() => {
-    if (finalScore > 0 && coins === 5) {
+    if (finalScore > 0) {
       setShowResult(true);
     }
-  }, [finalScore, coins]);
+  }, [finalScore]);
 
   const currentStageData = stages[currentStage];
   const allQuestionsAnswered = answers.length === stages.length;

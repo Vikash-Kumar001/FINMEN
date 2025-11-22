@@ -65,14 +65,14 @@ const BadgeBudgetKid = () => {
       setBudgets(newBudgets);
       setCurrentBudget({ name: "", amount: "", category: "" });
       
+      // Update coins in real-time for each budget created
+      setCoins(prevCoins => prevCoins + 1);
+      showCorrectAnswerFeedback(1, true);
+      
       if (newBudgets.length === 3) {
         setTimeout(() => {
           setShowBadge(true);
-          setCoins(5);
-          showCorrectAnswerFeedback(1, true);
         }, 500);
-      } else {
-        showCorrectAnswerFeedback(1, true);
       }
     }
   };

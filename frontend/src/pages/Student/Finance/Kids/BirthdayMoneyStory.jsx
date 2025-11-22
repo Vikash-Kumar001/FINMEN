@@ -105,6 +105,8 @@ const BirthdayMoneyStory = () => {
     setAnswers(newAnswers);
     
     if (isCorrect) {
+      // Update coins in real-time for correct answers
+      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -162,8 +164,6 @@ const BirthdayMoneyStory = () => {
     if (allQuestionsAnswered && finalScore === 0) {
       const correctCount = answers.filter(a => a.isCorrect).length;
       setFinalScore(correctCount);
-      // Award 5 coins when game finishes
-      setCoins(5);
     }
   }, [allQuestionsAnswered, answers, finalScore]);
 

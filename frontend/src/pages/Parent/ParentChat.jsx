@@ -84,11 +84,15 @@ const ParentChat = () => {
       }
       
       const response = await api.get(`/api/chat/student/${actualStudentId}`);
-      console.log('Chat response:', response.data);
-      console.log('Student details from API:', response.data.data?.studentDetails);
+      // Only log in development (never expose user/chat data in production)
+      if (import.meta.env.DEV) {
+        console.log('Chat response received');
+      }
       if (response.data.success) {
         setChat(response.data.data);
-        console.log('Chat object set. Student details:', response.data.data.studentDetails);
+        if (import.meta.env.DEV) {
+          console.log('Chat object set successfully');
+        }
       } else {
         toast.error(response.data.message || 'Failed to load chat');
       }
@@ -175,7 +179,10 @@ const ParentChat = () => {
     // Initialize socket connection only once
     const token = localStorage.getItem('finmen_token');
     if (token && !socket) {
-      console.log('Initializing socket connection with token:', token.substring(0, 20) + '...');
+      // Only log in development (never expose token in production)
+      if (import.meta.env.DEV) {
+        console.log('Initializing socket connection with token:', token.substring(0, 20) + '...');
+      }
       const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
         auth: { token }
       });
@@ -193,7 +200,10 @@ const ParentChat = () => {
       });
 
       newSocket.on('new-message', (data) => {
-        console.log('New message received:', data);
+        // Only log in development (never expose message data in production)
+        if (import.meta.env.DEV) {
+          console.log('New message received');
+        }
         if (data.chatId === chatRef.current?._id) {
           setMessages(prev => {
             // Check if message already exists to prevent duplicates
@@ -210,7 +220,10 @@ const ParentChat = () => {
       });
 
       newSocket.on('messages-seen', (data) => {
-        console.log('Messages seen:', data);
+        // Only log in development (never expose message data in production)
+        if (import.meta.env.DEV) {
+          console.log('Messages seen event received');
+        }
         if (data.chatId === chatRef.current?._id) {
           setMessages(prev => 
             prev.map(msg => 

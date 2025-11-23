@@ -55,11 +55,15 @@ const ParentDashboard = () => {
   const fetchChildren = useCallback(async () => {
     try {
       setLoading(true);
-      console.log('Fetching children from API...');
+      // Only log in development (never expose user data in production)
+      if (import.meta.env.DEV) {
+        console.log('Fetching children from API...');
+      }
       const response = await api.get('/api/parent/children');
-      console.log('API Response:', response.data);
       const childrenData = response.data.children || [];
-      console.log('Children data:', childrenData);
+      if (import.meta.env.DEV) {
+        console.log('Children data fetched successfully');
+      }
       setChildren(childrenData);
       
       // Auto-select first child if none selected
@@ -95,9 +99,15 @@ const ParentDashboard = () => {
 
     try {
       setAddingChild(true);
-      console.log('Linking child with email:', childEmail.trim());
+      // Only log in development (never expose email in production)
+      if (import.meta.env.DEV) {
+        console.log('Linking child with email');
+      }
       const response = await api.post('/api/parent/link-child', { childEmail: childEmail.trim() });
-      console.log('Link child response:', response.data);
+      // Only log in development (never expose response data in production)
+      if (import.meta.env.DEV) {
+        console.log('Link child response received');
+      }
       toast.success(response.data.message || 'Child linked successfully!');
       setShowAddChildModal(false);
       setChildEmail('');

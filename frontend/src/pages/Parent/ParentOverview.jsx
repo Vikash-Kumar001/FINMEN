@@ -312,7 +312,10 @@ const ParentOverview = () => {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {children.map((child, idx) => {
-                console.log('Child data:', { id: child._id, name: child.name, email: child.email });
+                // Only log in development (never expose user data in production)
+                if (import.meta.env.DEV) {
+                  console.log('Child data:', { id: child._id, name: child.name });
+                }
                 return (
                 <motion.div
                   key={child._id}

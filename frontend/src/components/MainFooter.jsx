@@ -103,7 +103,10 @@ const MainFooter = () => {
 
   const handleSubscribe = () => {
     if (email) {
-      console.log("Subscribing email:", email);
+      // Only log in development (never expose email in production)
+      if (import.meta.env.DEV) {
+        console.log("Subscribing email");
+      }
       setEmail("");
     }
   };

@@ -90,10 +90,12 @@ const StudentActivity = () => {
 
   const handleAttemptAssignment = async (assignment) => {
     try {
-      console.log('🚀 Starting assignment attempt for:', assignment);
-      console.log('🔑 Token in localStorage:', localStorage.getItem('finmen_token') ? 'Present' : 'Missing');
-      console.log('🔑 Token value:', localStorage.getItem('finmen_token'));
-      console.log('🌐 API base URL:', api.defaults.baseURL);
+      // Only log in development (never expose token or sensitive data in production)
+      if (import.meta.env.DEV) {
+        console.log('🚀 Starting assignment attempt for:', assignment);
+        console.log('🔑 Token in localStorage:', localStorage.getItem('finmen_token') ? 'Present' : 'Missing');
+        console.log('🌐 API base URL:', api.defaults.baseURL);
+      }
       
       // Check if it's an assignment and has a type that can be attempted
       const canAttempt = assignment.type === 'assignment' && 

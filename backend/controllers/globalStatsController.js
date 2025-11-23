@@ -22,12 +22,16 @@ const buildGlobalStats = async () => {
 export const getGlobalStats = async (_req, res) => {
   try {
     const stats = await buildGlobalStats();
+    // Ensure we always return JSON, never HTML
+    res.setHeader('Content-Type', 'application/json');
     res.json({
       success: true,
       data: stats,
     });
   } catch (error) {
     console.error('Error fetching global stats:', error);
+    // Ensure we always return JSON, never HTML
+    res.setHeader('Content-Type', 'application/json');
     res.status(500).json({
       success: false,
       message: 'Server error',
@@ -43,6 +47,9 @@ export const getGlobalStats = async (_req, res) => {
 // Get real-time stats with caching (optional optimization)
 export const getCachedGlobalStats = async (_req, res) => {
   try {
+    // Ensure we always return JSON, never HTML
+    res.setHeader('Content-Type', 'application/json');
+    
     const cacheKey = 'global_stats';
     const cacheExpiry = 5 * 60 * 1000; // 5 minutes
 
@@ -72,6 +79,8 @@ export const getCachedGlobalStats = async (_req, res) => {
     });
   } catch (error) {
     console.error('Error fetching cached global stats:', error);
+    // Ensure we always return JSON, never HTML
+    res.setHeader('Content-Type', 'application/json');
     res.status(500).json({
       success: false,
       message: 'Server error',

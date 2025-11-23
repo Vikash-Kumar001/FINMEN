@@ -4,8 +4,8 @@ import axios from "axios";
 // In production, this should be set to your production API URL (e.g., https://api.wisestudent.org)
 const baseURL = import.meta.env.VITE_API_URL?.trim() || "http://localhost:5000";
 
-// Log API URL in development or if it's still localhost in production
-if (import.meta.env.DEV || baseURL.includes('localhost')) {
+// Only log API URL in development (never in production)
+if (import.meta.env.DEV) {
   console.log('🔧 API Base URL:', baseURL);
 }
 
@@ -65,13 +65,15 @@ api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("finmen_token");
 
-    // ✅ Added from stash (api.js.rej)
-    console.log('🔐 API Request interceptor:', {
-      url: config.url,
-      method: config.method,
-      hasToken: !!token,
-      tokenLength: token ? token.length : 0
-    });
+    // Only log in development (never expose token info in production)
+    if (import.meta.env.DEV) {
+      console.log('🔐 API Request interceptor:', {
+        url: config.url,
+        method: config.method,
+        hasToken: !!token,
+        tokenLength: token ? token.length : 0
+      });
+    }
 
     if (token) {
       try {
@@ -93,8 +95,10 @@ api.interceptors.request.use(
           
           config.headers.Authorization = `Bearer ${token}`;
           
-          // ✅ Added from stash
-          console.log('✅ Token added to request headers');
+          // Only log in development
+          if (import.meta.env.DEV) {
+            console.log('✅ Token added to request headers');
+          }
         } else {
           console.warn("⚠️ Malformed token found. Removing...");
           localStorage.removeItem("finmen_token");

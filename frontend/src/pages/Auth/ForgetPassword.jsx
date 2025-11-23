@@ -26,10 +26,12 @@ const ForgotPassword = () => {
             setError('');
             setMessage('');
             
-            // Log API URL for debugging
-            const apiBaseURL = api.defaults.baseURL;
-            console.log('🌐 API Base URL:', apiBaseURL);
-            console.log('📧 Sending forgot password request for:', email);
+            // Only log in development (never expose email in production)
+            if (import.meta.env.DEV) {
+              const apiBaseURL = api.defaults.baseURL;
+              console.log('🌐 API Base URL:', apiBaseURL);
+              console.log('📧 Sending forgot password request');
+            }
             
             const res = await api.post(
                 '/api/auth/forgot-password',

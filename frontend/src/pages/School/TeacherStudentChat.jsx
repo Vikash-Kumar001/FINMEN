@@ -182,7 +182,10 @@ const TeacherStudentChat = () => {
     // Initialize socket connection only once
     const token = localStorage.getItem('finmen_token');
     if (token && !socket) {
-      console.log('Initializing socket connection with token:', token.substring(0, 20) + '...');
+      // Only log in development (never expose token in production)
+      if (import.meta.env.DEV) {
+        console.log('Initializing socket connection with token:', token.substring(0, 20) + '...');
+      }
       const newSocket = io(import.meta.env.VITE_API_URL || 'http://localhost:5000', {
         auth: { token }
       });

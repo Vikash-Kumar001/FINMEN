@@ -77,23 +77,23 @@ export const sendOTP = async (email, type = "verify", sendEmailSync = false) => 
       }
     };
 
-    // In production, wait for email to be sent to ensure it completes
-    // In development, we can use async for faster response
+    // Hybrid approach: Try synchronous with short timeout, fallback to async
+    // This ensures quick response while still attempting to send email
     const isProduction = process.env.NODE_ENV === 'production';
     const shouldSendSync = sendEmailSync || isProduction;
 
     if (shouldSendSync) {
-      // For production or when synchronous sending is required
-      // This ensures emails are actually sent before responding
-      // Add timeout protection to prevent hanging requests
+      // Try to send synchronously with a reasonable timeout (20 seconds)
+      // If it times out or fails, fall back to async sending
       try {
-        console.log(`📧 Sending email ${isProduction ? 'synchronously (production)' : 'synchronously'} to ${email} for ${type}...`);
+        console.log(`📧 Attempting to send email ${isProduction ? 'synchronously (production)' : 'synchronously'} to ${email} for ${type}...`);
         const startTime = Date.now();
         
-        // Wrap email sending in a timeout to prevent hanging
+        // Use a shorter timeout (20 seconds) for better UX
+        // If email takes longer, we'll send it async instead
         const emailPromise = sendEmail({ to: email, subject, html: message });
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Email sending timeout after 90 seconds')), 90000)
+          setTimeout(() => reject(new Error('Email sending timeout after 20 seconds')), 20000)
         );
         
         await Promise.race([emailPromise, timeoutPromise]);
@@ -104,42 +104,43 @@ export const sendOTP = async (email, type = "verify", sendEmailSync = false) => 
         
         return { success: true, message: "OTP sent successfully" };
       } catch (emailErr) {
-        console.error("Send email error:", emailErr);
         const errorMessage = emailErr?.message || "Unknown email error";
         const errorCode = emailErr?.code || "UNKNOWN";
+        const isTimeout = errorMessage.includes("timeout") || errorCode === 'ETIMEDOUT';
         
-        // Log detailed error information
-        console.error(`❌ Email send failed for ${email}:`, errorMessage);
-        console.error(`❌ Error code: ${errorCode}`);
-        console.error(`❌ Full error:`, emailErr);
+        // Log the error
+        console.warn(`⚠️ Synchronous email send ${isTimeout ? 'timed out' : 'failed'} for ${email}:`, errorMessage);
         
         // Check if it's a configuration error
         if (errorMessage.includes("not configured") || errorMessage.includes("MAIL_USER") || errorMessage.includes("MAIL_PASS")) {
           return { success: false, message: "Email service is not configured. Please contact support." };
         }
         
-        // Check if it's a timeout
-        if (errorMessage.includes("timeout") || errorCode === 'ETIMEDOUT') {
-          console.error(`⏱️ Email sending timed out for ${email}`);
-          // OTP is already saved, so return success with a note
-          return { 
-            success: true, 
-            message: "OTP generated successfully. Email sending is taking longer than expected. Please check your email or try resending." 
-          };
-        }
+        // If timeout or other error, send email asynchronously as fallback
+        // OTP is already saved, so we can return success and send email in background
+        console.log(`🔄 Falling back to async email sending for ${email}...`);
         
-        // In production, we want to know if email failed
-        // OTP is already saved, so user can still use it or request resend
-        if (isProduction) {
-          // In production, log the error but still return success since OTP is saved
-          // User can request resend if email doesn't arrive
-          return { 
-            success: true, 
-            message: "OTP generated successfully. If you don't receive the email, please try resending." 
-          };
-        } else {
-          return { success: true, message: "OTP generated successfully. Email sending failed, but you can still use the OTP or request a resend." };
-        }
+        // Send email asynchronously in background
+        process.nextTick(() => {
+          sendEmailAsync()
+            .then(result => {
+              if (result && result.success) {
+                console.log(`✅ Background email sent successfully for ${email} (took ${result.duration}ms)`);
+              } else {
+                console.error(`❌ Background email failed for ${email}:`, result?.error || 'Unknown error');
+                console.error(`❌ Error code: ${result?.code || 'UNKNOWN'}`);
+              }
+            })
+            .catch(err => {
+              console.error(`❌ Unexpected error in background email for ${email}:`, err);
+            });
+        });
+        
+        // Return success immediately - OTP is saved, email will be sent in background
+        return { 
+          success: true, 
+          message: "OTP generated successfully. Email is being sent. Please check your inbox." 
+        };
       }
     } else {
       // Development mode: Start email sending in background (fire and forget)
@@ -282,8 +283,9 @@ export const forgotPassword = async (req, res) => {
       return res.status(400).json({ message: "Admin accounts cannot reset password via OTP. Please contact your administrator." });
     }
 
-    // Send OTP asynchronously (non-blocking email sending)
-    // OTP is saved immediately, email is sent in background
+    // Send OTP with hybrid approach (try sync with timeout, fallback to async)
+    // This ensures quick response while attempting to send email
+    // In production, it will try sync first (with 20s timeout), then fallback to async
     const result = await sendOTP(user.email, "reset", false);
 
     if (result && result.success) {

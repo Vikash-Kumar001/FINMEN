@@ -35,8 +35,12 @@ export const sendEmail = async ({ to, subject, text, html }) => {
       if (!process.env.MAIL_USER) missingVars.push("MAIL_USER");
       if (!process.env.MAIL_PASS) missingVars.push("MAIL_PASS");
       console.error(`❌ Email configuration missing: ${missingVars.join(", ")} not set`);
+      console.error(`❌ Environment check - NODE_ENV: ${process.env.NODE_ENV}`);
       throw new Error(`Email service not configured: ${missingVars.join(", ")} environment variables are missing`);
     }
+    
+    // Log email configuration status (without exposing password)
+    console.log(`📧 Email service configured - User: ${process.env.MAIL_USER}, Password: ${process.env.MAIL_PASS ? '***' : 'NOT SET'}`);
 
     // Use explicit SMTP configuration for better reliability in production
     // This works better than using service: "gmail" on platforms like Render

@@ -42,6 +42,13 @@ app.set("io", io);
 app.use(express.json());
 app.use(cookieParser());
 
+// Ensure API routes always return JSON (prevent HTML responses)
+app.use('/api', (req, res, next) => {
+  // Set JSON content type for all API routes
+  res.setHeader('Content-Type', 'application/json');
+  next();
+});
+
 // Add security headers to fix Cross-Origin-Opener-Policy issues
 app.use((req, res, next) => {
   res.header('Cross-Origin-Opener-Policy', 'same-origin-allow-popups');
@@ -325,10 +332,32 @@ app.get("/", (_, res) => {
 });
 
 // Serve frontend in production
+// IMPORTANT: This catch-all route must come AFTER all API routes
+// to prevent API routes from being served as HTML
 if (process.env.NODE_ENV === "production") {
   const clientPath = path.resolve(__dirname, "../frontend/dist");
-  app.use(express.static(clientPath));
-  app.get("*", (_, res) => {
+  
+  // Only serve static files for non-API routes
+  app.use((req, res, next) => {
+    // Skip API routes - they should be handled by API routes above
+    if (req.path.startsWith('/api')) {
+      return next();
+    }
+    // For non-API routes, serve static files
+    express.static(clientPath)(req, res, next);
+  });
+  
+  // Catch-all route for frontend (only for non-API routes)
+  app.get("*", (req, res, next) => {
+    // Don't serve HTML for API routes
+    if (req.path.startsWith('/api')) {
+      return res.status(404).json({
+        success: false,
+        error: 'API endpoint not found',
+        path: req.path
+      });
+    }
+    // Serve frontend for all other routes
     res.sendFile(path.join(clientPath, "index.html"));
   });
 }

@@ -1,7 +1,13 @@
 import axios from "axios";
 
 // 🌐 Set the base URL from .env or fallback to localhost
+// In production, this should be set to your production API URL (e.g., https://api.wisestudent.org)
 const baseURL = import.meta.env.VITE_API_URL?.trim() || "http://localhost:5000";
+
+// Log API URL in development or if it's still localhost in production
+if (import.meta.env.DEV || baseURL.includes('localhost')) {
+  console.log('🔧 API Base URL:', baseURL);
+}
 
 // ✅ Create an Axios instance
 const api = axios.create({

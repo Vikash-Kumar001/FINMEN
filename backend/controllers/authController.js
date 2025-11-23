@@ -164,7 +164,19 @@ export const forgotPassword = async (req, res) => {
       return res.status(400).json({ message: "Admin accounts cannot reset password via OTP. Please contact your administrator." });
     }
 
-    const result = await sendOTP(user.email, "reset");
+    // Send OTP with timeout protection
+    const result = await Promise.race([
+      sendOTP(user.email, "reset"),
+      new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Request timeout")), 30000)
+      )
+    ]).catch((error) => {
+      // If timeout or other error, return failure result
+      if (error.message === "Request timeout") {
+        return { success: false, message: "Request timeout. Please try again." };
+      }
+      throw error;
+    });
 
     if (result.success) {
       res.status(200).json({
@@ -178,7 +190,11 @@ export const forgotPassword = async (req, res) => {
     }
   } catch (error) {
     console.error("Forgot password error:", error);
-    res.status(500).json({ message: "Failed to send reset OTP" });
+    if (error.message === "Request timeout") {
+      res.status(504).json({ message: "Request timeout. Please try again." });
+    } else {
+      res.status(500).json({ message: "Failed to send reset OTP. Please try again." });
+    }
   }
 };
 

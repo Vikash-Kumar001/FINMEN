@@ -23,18 +23,63 @@ const ForgotPassword = () => {
 
         try {
             setIsLoading(true);
+            setError('');
+            setMessage('');
+            
+            // Log API URL for debugging
+            const apiBaseURL = api.defaults.baseURL;
+            console.log('🌐 API Base URL:', apiBaseURL);
+            console.log('📧 Sending forgot password request for:', email);
+            
             const res = await api.post(
                 '/api/auth/forgot-password',
                 { email }
             );
 
-            setMessage(res.data.message || 'OTP sent successfully!');
-            localStorage.setItem('reset_password_email', email);
-            navigate('/verify-otp');
+            if (res.data && res.data.message) {
+                setMessage(res.data.message || 'OTP sent successfully!');
+                localStorage.setItem('reset_password_email', email);
+                // Small delay to show success message before navigation
+                setTimeout(() => {
+                    navigate('/verify-otp');
+                }, 1000);
+            } else {
+                setError('Unexpected response from server. Please try again.');
+                setIsLoading(false);
+            }
         } catch (err) {
-            console.error(err);
-            setError(err.response?.data?.message || 'Failed to send OTP.');
-        } finally {
+            console.error('Forgot password error:', err);
+            console.error('Error details:', {
+                message: err.message,
+                response: err.response?.data,
+                status: err.response?.status,
+                apiURL: api.defaults.baseURL
+            });
+            
+            let errorMessage = 'Failed to send OTP. Please try again.';
+            
+            // Network error (CORS, connection refused, etc.)
+            if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+                errorMessage = 'Unable to connect to server. Please check your internet connection or contact support.';
+            }
+            // Request timeout
+            else if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+                errorMessage = 'Request timed out. Please try again.';
+            }
+            // Server error
+            else if (err.response?.status >= 500) {
+                errorMessage = 'Server error. Please try again later or contact support.';
+            }
+            // Client error (400-499)
+            else if (err.response?.data?.message) {
+                errorMessage = err.response.data.message;
+            }
+            // Other errors
+            else if (err.message) {
+                errorMessage = err.message;
+            }
+            
+            setError(errorMessage);
             setIsLoading(false);
         }
     };

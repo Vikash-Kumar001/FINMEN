@@ -34,10 +34,8 @@ export default defineConfig({
             console.error('Proxy error:', err);
           });
           proxy.on('proxyReq', (proxyReq, req, _res) => {
-            // Optional: Log proxy requests in development
-            if (process.env.NODE_ENV === 'development') {
-              console.log(`🔄 Proxying ${req.method} ${req.url} to backend`);
-            }
+            // Suppress proxy request logging to reduce console noise
+            // Only log errors, not successful proxy requests
           });
         },
       },

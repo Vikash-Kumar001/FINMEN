@@ -44,19 +44,45 @@ export const sendOTP = async (email, type = "verify", sendEmailSync = false) => 
     // This ensures the API responds quickly even if email service is slow
     const sendEmailAsync = async () => {
       try {
+        console.log(`📧 Starting to send email to ${email} for ${type}...`);
+        const startTime = Date.now();
+        
         await sendEmail({ to: email, subject, html: message });
-        console.log(`📩 Email sent successfully to ${email} for ${type}`);
+        
+        const duration = Date.now() - startTime;
+        console.log(`✅ Email sent successfully to ${email} for ${type} (took ${duration}ms)`);
+        console.log(`📩 Email details: Subject="${subject}", OTP=${otp}`);
+        
+        return { success: true, duration };
       } catch (emailErr) {
-        console.error(`❌ Background email send error for ${email}:`, emailErr?.message || emailErr);
+        const errorMessage = emailErr?.message || "Unknown error";
+        const errorCode = emailErr?.code || "UNKNOWN";
+        
+        console.error(`❌ Background email send error for ${email}:`, errorMessage);
+        console.error(`❌ Error code: ${errorCode}`);
+        console.error(`❌ Full error:`, emailErr);
+        
+        // Log specific error types
+        if (errorCode === 'ETIMEDOUT' || errorMessage.includes('timeout')) {
+          console.error(`⏱️ Email timeout for ${email} - SMTP connection timed out`);
+        } else if (errorCode === 'EAUTH') {
+          console.error(`🔐 Email auth failed for ${email} - Check MAIL_USER and MAIL_PASS`);
+        } else if (errorMessage.includes('not configured')) {
+          console.error(`⚙️ Email not configured - Missing environment variables`);
+        }
+        
         // Email failure is logged but doesn't affect the response
         // OTP is already saved, so user can still use it or request resend
+        return { success: false, error: errorMessage, code: errorCode };
       }
     };
 
     if (sendEmailSync) {
       // For testing or when synchronous sending is required
       try {
+        console.log(`📧 Sending email synchronously to ${email} for ${type}...`);
         await sendEmail({ to: email, subject, html: message });
+        console.log(`✅ Email sent successfully to ${email} for ${type}`);
         return { success: true, message: "OTP sent successfully" };
       } catch (emailErr) {
         console.error("Send email error:", emailErr);
@@ -70,11 +96,26 @@ export const sendOTP = async (email, type = "verify", sendEmailSync = false) => 
       }
     } else {
       // Start email sending in background (fire and forget)
-      sendEmailAsync().catch(err => {
-        console.error(`Failed to send email in background for ${email}:`, err);
+      // Use process.nextTick to ensure it runs in the next event loop iteration
+      // This keeps the process alive and ensures the email sending starts
+      process.nextTick(() => {
+        sendEmailAsync()
+          .then(result => {
+            if (result && result.success) {
+              console.log(`✅ Background email completed successfully for ${email} (took ${result.duration}ms)`);
+            } else {
+              console.error(`❌ Background email failed for ${email}:`, result?.error || 'Unknown error');
+              console.error(`❌ Error code: ${result?.code || 'UNKNOWN'}`);
+            }
+          })
+          .catch(err => {
+            console.error(`❌ Unexpected error in background email for ${email}:`, err);
+            console.error(`❌ Error stack:`, err?.stack);
+          });
       });
       
       // Return success immediately - OTP is saved, email will be sent in background
+      console.log(`✅ OTP generated and saved for ${email}. Email sending started in background.`);
       return { success: true, message: "OTP generated and email is being sent" };
     }
   } catch (error) {

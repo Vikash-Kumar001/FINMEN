@@ -43,6 +43,10 @@ export const sendEmail = async ({ to, subject, text, html }) => {
     const smtpPort = parseInt(process.env.SMTP_PORT || "587");
     const smtpHost = process.env.SMTP_HOST || "smtp.gmail.com";
     
+    console.log(`📧 Configuring SMTP transporter: ${smtpHost}:${smtpPort}`);
+    console.log(`📧 Using email: ${process.env.MAIL_USER}`);
+    console.log(`📧 Password configured: ${process.env.MAIL_PASS ? 'Yes' : 'No'}`);
+    
     const transporter = nodemailer.createTransport({
       host: smtpHost,
       port: smtpPort,
@@ -52,9 +56,10 @@ export const sendEmail = async ({ to, subject, text, html }) => {
         pass: process.env.MAIL_PASS,
       },
       // Increased timeouts for production environments (Render.com needs more time)
-      connectionTimeout: 30000, // 30 seconds
-      greetingTimeout: 30000,
-      socketTimeout: 30000,
+      // Increased to 60 seconds to handle slow connections
+      connectionTimeout: 60000, // 60 seconds
+      greetingTimeout: 60000,
+      socketTimeout: 60000,
       // Additional options for better reliability
       tls: {
         // Don't reject unauthorized certificates (useful for some network configurations)
@@ -63,7 +68,12 @@ export const sendEmail = async ({ to, subject, text, html }) => {
       // Disable pooling for now to avoid connection issues
       // Pool connections can sometimes cause issues on cloud platforms
       pool: false,
+      // Add debug logging in development
+      debug: process.env.NODE_ENV === 'development',
+      logger: process.env.NODE_ENV === 'development',
     });
+    
+    console.log(`📧 SMTP transporter configured successfully`);
 
     // Skip verification in production to avoid extra connection overhead
     // Verification adds an extra connection attempt which can timeout
@@ -78,8 +88,17 @@ export const sendEmail = async ({ to, subject, text, html }) => {
     };
 
     // Use retry logic for sending email
+    console.log(`📧 Attempting to send email to ${to} with subject: ${subject}`);
+    const startTime = Date.now();
+    
     const info = await retryEmailSend(transporter, mailOptions);
-    console.log("📩 Email sent to", to, "Message ID:", info.messageId);
+    
+    const duration = Date.now() - startTime;
+    console.log(`✅ Email sent successfully to ${to}`);
+    console.log(`📩 Message ID: ${info.messageId}`);
+    console.log(`⏱️ Email send duration: ${duration}ms`);
+    console.log(`📧 Response: ${JSON.stringify(info.response || 'N/A')}`);
+    
     return info;
   } catch (err) {
     const errorMessage = err?.message || "Unknown error";

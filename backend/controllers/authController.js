@@ -77,27 +77,73 @@ export const sendOTP = async (email, type = "verify", sendEmailSync = false) => 
       }
     };
 
-    if (sendEmailSync) {
-      // For testing or when synchronous sending is required
+    // In production, wait for email to be sent to ensure it completes
+    // In development, we can use async for faster response
+    const isProduction = process.env.NODE_ENV === 'production';
+    const shouldSendSync = sendEmailSync || isProduction;
+
+    if (shouldSendSync) {
+      // For production or when synchronous sending is required
+      // This ensures emails are actually sent before responding
+      // Add timeout protection to prevent hanging requests
       try {
-        console.log(`📧 Sending email synchronously to ${email} for ${type}...`);
-        await sendEmail({ to: email, subject, html: message });
-        console.log(`✅ Email sent successfully to ${email} for ${type}`);
+        console.log(`📧 Sending email ${isProduction ? 'synchronously (production)' : 'synchronously'} to ${email} for ${type}...`);
+        const startTime = Date.now();
+        
+        // Wrap email sending in a timeout to prevent hanging
+        const emailPromise = sendEmail({ to: email, subject, html: message });
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Email sending timeout after 90 seconds')), 90000)
+        );
+        
+        await Promise.race([emailPromise, timeoutPromise]);
+        
+        const duration = Date.now() - startTime;
+        console.log(`✅ Email sent successfully to ${email} for ${type} (took ${duration}ms)`);
+        console.log(`📩 Email details: Subject="${subject}", OTP=${otp}`);
+        
         return { success: true, message: "OTP sent successfully" };
       } catch (emailErr) {
         console.error("Send email error:", emailErr);
         const errorMessage = emailErr?.message || "Unknown email error";
+        const errorCode = emailErr?.code || "UNKNOWN";
+        
+        // Log detailed error information
+        console.error(`❌ Email send failed for ${email}:`, errorMessage);
+        console.error(`❌ Error code: ${errorCode}`);
+        console.error(`❌ Full error:`, emailErr);
+        
         // Check if it's a configuration error
         if (errorMessage.includes("not configured") || errorMessage.includes("MAIL_USER") || errorMessage.includes("MAIL_PASS")) {
           return { success: false, message: "Email service is not configured. Please contact support." };
         }
-        // OTP is already saved, so return success with a note
-        return { success: true, message: "OTP generated successfully. Email sending failed, but you can still use the OTP or request a resend." };
+        
+        // Check if it's a timeout
+        if (errorMessage.includes("timeout") || errorCode === 'ETIMEDOUT') {
+          console.error(`⏱️ Email sending timed out for ${email}`);
+          // OTP is already saved, so return success with a note
+          return { 
+            success: true, 
+            message: "OTP generated successfully. Email sending is taking longer than expected. Please check your email or try resending." 
+          };
+        }
+        
+        // In production, we want to know if email failed
+        // OTP is already saved, so user can still use it or request resend
+        if (isProduction) {
+          // In production, log the error but still return success since OTP is saved
+          // User can request resend if email doesn't arrive
+          return { 
+            success: true, 
+            message: "OTP generated successfully. If you don't receive the email, please try resending." 
+          };
+        } else {
+          return { success: true, message: "OTP generated successfully. Email sending failed, but you can still use the OTP or request a resend." };
+        }
       }
     } else {
-      // Start email sending in background (fire and forget)
+      // Development mode: Start email sending in background (fire and forget)
       // Use process.nextTick to ensure it runs in the next event loop iteration
-      // This keeps the process alive and ensures the email sending starts
       process.nextTick(() => {
         sendEmailAsync()
           .then(result => {

@@ -42,6 +42,114 @@ const ReproductiveStory = () => {
           isCorrect: false
         }
       ]
+    },
+    {
+      id: 2,
+      text: "A friend asks you about changes happening to her body. What is the best response?",
+      options: [
+        {
+          id: "a",
+          text: "Tell her it's normal and she can talk to a trusted adult",
+          emoji: "💬",
+          description: "Correct! Body changes are normal, and talking to a trusted adult is always a good idea.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Make fun of her for asking",
+          emoji: "😒",
+          description: "Not appropriate. We should be supportive and kind to our friends.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ignore her question",
+          emoji: "🤐",
+          description: "It's better to be supportive. Friends should help each other.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "You notice changes in your body that worry you. What should you do?",
+      options: [
+        {
+          id: "a",
+          text: "Talk to a parent, teacher, or healthcare provider",
+          emoji: "👩‍⚕️",
+          description: "Correct! Talking to trusted adults helps you understand what's normal and get support.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Keep it to yourself and worry alone",
+          emoji: "😰",
+          description: "It's always better to talk to someone you trust. You don't have to face concerns alone.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Search online without guidance",
+          emoji: "🔍",
+          description: "While information is helpful, it's better to talk to a trusted adult who can guide you properly.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "Your friend is embarrassed about body changes. How can you help?",
+      options: [
+        {
+          id: "a",
+          text: "Reassure her that changes are normal and everyone goes through them",
+          emoji: "🤗",
+          description: "Correct! Being supportive and reassuring helps friends feel better about natural changes.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Tell her she's weird",
+          emoji: "😤",
+          description: "This is hurtful. We should be kind and supportive to our friends.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Share her concerns with others without permission",
+          emoji: "📢",
+          description: "Privacy is important. We should respect our friends' feelings and keep personal matters private.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Learning about reproductive health helps you:",
+      options: [
+        {
+          id: "a",
+          text: "Understand your body and make informed decisions",
+          emoji: "🧠",
+          description: "Correct! Knowledge about reproductive health helps you understand your body and make healthy choices.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Feel embarrassed and confused",
+          emoji: "😳",
+          description: "While it might feel awkward at first, learning helps reduce confusion and builds confidence.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Avoid talking about health topics",
+          emoji: "🚫",
+          description: "Actually, learning helps you feel more comfortable discussing important health topics.",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
@@ -93,7 +201,7 @@ const ReproductiveStory = () => {
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 31/40</span>
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
             <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
           </div>
 

@@ -48,37 +48,48 @@ const ForgotPassword = () => {
                 setIsLoading(false);
             }
         } catch (err) {
-            console.error('Forgot password error:', err);
-            console.error('Error details:', {
-                message: err.message,
-                response: err.response?.data,
-                status: err.response?.status,
-                apiURL: api.defaults.baseURL
-            });
+            // Log full error details for debugging
+            console.error('🔴 API Error:', err);
+            console.error('Error type:', typeof err);
+            console.error('Error message:', err?.message);
+            console.error('Error response:', err?.response);
+            console.error('Error response data:', err?.response?.data);
+            console.error('Error status:', err?.response?.status);
+            console.error('Error code:', err?.code);
             
             let errorMessage = 'Failed to send OTP. Please try again.';
             
+            // Extract error message from response
+            const responseMessage = err?.response?.data?.message;
+            const errorMsg = err?.message;
+            
             // Network error (CORS, connection refused, etc.)
-            if (err.code === 'ERR_NETWORK' || err.message === 'Network Error') {
+            if (err.code === 'ERR_NETWORK' || errorMsg === 'Network Error') {
                 errorMessage = 'Unable to connect to server. Please check your internet connection or contact support.';
             }
             // Request timeout
-            else if (err.code === 'ECONNABORTED' || err.message.includes('timeout')) {
+            else if (err.code === 'ECONNABORTED' || (errorMsg && errorMsg.includes('timeout'))) {
                 errorMessage = 'Request timed out. Please try again.';
             }
-            // Server error
+            // Server error (500+)
             else if (err.response?.status >= 500) {
-                errorMessage = 'Server error. Please try again later or contact support.';
+                // Use server message if available, otherwise generic message
+                errorMessage = responseMessage || 'Server error. Please try again later or contact support.';
             }
-            // Client error (400-499)
-            else if (err.response?.data?.message) {
-                errorMessage = err.response.data.message;
+            // Client error (400-499) - use server message
+            else if (err.response?.status >= 400 && err.response?.status < 500) {
+                errorMessage = responseMessage || 'Invalid request. Please check your email and try again.';
             }
-            // Other errors
-            else if (err.message) {
-                errorMessage = err.message;
+            // Use response message if available
+            else if (responseMessage) {
+                errorMessage = responseMessage;
+            }
+            // Use error message if available
+            else if (errorMsg && typeof errorMsg === 'string' && errorMsg.length > 0) {
+                errorMessage = errorMsg;
             }
             
+            console.error('Final error message:', errorMessage);
             setError(errorMessage);
             setIsLoading(false);
         }

@@ -44,13 +44,19 @@ export const sendOTP = async (email, type = "verify") => {
       return { success: true, message: "OTP sent successfully" };
     } catch (emailErr) {
       console.error("Send email error:", emailErr);
+      const errorMessage = emailErr?.message || "Unknown email error";
+      // Check if it's a configuration error
+      if (errorMessage.includes("not configured") || errorMessage.includes("MAIL_USER") || errorMessage.includes("MAIL_PASS")) {
+        return { success: false, message: "Email service is not configured. Please contact support." };
+      }
       // Do not throw; OTP is already stored. Allow frontend to handle resend.
       return { success: false, message: "Failed to send OTP email, please try resending." };
     }
   } catch (error) {
     console.error("Send OTP error:", error);
+    const errorMessage = error?.message || "Unknown error";
     // Non-fatal: return failure to caller instead of throwing
-    return { success: false, message: "Failed to generate or store OTP" };
+    return { success: false, message: `Failed to generate or store OTP: ${errorMessage}` };
   }
 };
 
@@ -165,32 +171,47 @@ export const forgotPassword = async (req, res) => {
     }
 
     // Send OTP with timeout protection
-    const result = await Promise.race([
-      sendOTP(user.email, "reset"),
-      new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("Request timeout")), 30000)
-      )
-    ]).catch((error) => {
-      // If timeout or other error, return failure result
-      if (error.message === "Request timeout") {
-        return { success: false, message: "Request timeout. Please try again." };
+    let result;
+    try {
+      result = await Promise.race([
+        sendOTP(user.email, "reset"),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error("Request timeout")), 30000)
+        )
+      ]);
+    } catch (error) {
+      // If timeout or other unexpected error, return failure result
+      console.error("Promise.race error in forgotPassword:", error);
+      const errorMessage = error?.message || "Unknown error";
+      if (errorMessage === "Request timeout") {
+        result = { success: false, message: "Request timeout. Please try again." };
+      } else {
+        // If sendOTP somehow threw an error (shouldn't happen), handle it gracefully
+        result = { success: false, message: `Failed to send OTP: ${errorMessage}` };
       }
-      throw error;
-    });
+    }
 
-    if (result.success) {
+    if (result && result.success) {
       res.status(200).json({
         message: "OTP sent to email for password reset",
         email: user.email,
       });
     } else {
+      const errorMessage = result?.message || "Failed to send reset OTP";
+      console.error("Failed to send OTP:", errorMessage);
       res.status(500).json({
-        message: result.message || "Failed to send reset OTP",
+        message: errorMessage,
       });
     }
   } catch (error) {
     console.error("Forgot password error:", error);
-    if (error.message === "Request timeout") {
+    console.error("Error details:", {
+      message: error?.message,
+      stack: error?.stack,
+      name: error?.name
+    });
+    const errorMessage = error?.message || "Unknown error occurred";
+    if (errorMessage === "Request timeout") {
       res.status(504).json({ message: "Request timeout. Please try again." });
     } else {
       res.status(500).json({ message: "Failed to send reset OTP. Please try again." });

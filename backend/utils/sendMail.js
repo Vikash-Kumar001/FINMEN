@@ -4,8 +4,11 @@ export const sendEmail = async ({ to, subject, text, html }) => {
   try {
     // Validate email configuration
     if (!process.env.MAIL_USER || !process.env.MAIL_PASS) {
-      console.error("❌ Email configuration missing: MAIL_USER or MAIL_PASS not set");
-      throw new Error("Email service not configured");
+      const missingVars = [];
+      if (!process.env.MAIL_USER) missingVars.push("MAIL_USER");
+      if (!process.env.MAIL_PASS) missingVars.push("MAIL_PASS");
+      console.error(`❌ Email configuration missing: ${missingVars.join(", ")} not set`);
+      throw new Error(`Email service not configured: ${missingVars.join(", ")} environment variables are missing`);
     }
 
     const transporter = nodemailer.createTransport({
@@ -21,7 +24,12 @@ export const sendEmail = async ({ to, subject, text, html }) => {
     });
 
     // Verify connection before sending
-    await transporter.verify();
+    try {
+      await transporter.verify();
+    } catch (verifyErr) {
+      console.error("❌ Email transporter verification failed:", verifyErr.message);
+      throw new Error(`Email service verification failed: ${verifyErr.message}`);
+    }
 
     const mailOptions = {
       from: `"Wise Student" <${process.env.MAIL_USER}>`,
@@ -35,9 +43,17 @@ export const sendEmail = async ({ to, subject, text, html }) => {
     console.log("📩 Email sent to", to, "Message ID:", info.messageId);
     return info;
   } catch (err) {
-    console.error("❌ Email send error:", err.message);
-    console.error("Full error:", err);
-    throw new Error(`Failed to send email: ${err.message}`);
+    const errorMessage = err?.message || "Unknown error";
+    console.error("❌ Email send error:", errorMessage);
+    console.error("Full error details:", {
+      message: err?.message,
+      code: err?.code,
+      response: err?.response,
+      responseCode: err?.responseCode,
+      command: err?.command,
+      stack: err?.stack
+    });
+    throw new Error(`Failed to send email: ${errorMessage}`);
   }
 };
 

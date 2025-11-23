@@ -23,6 +23,23 @@ export default defineConfig({
         changeOrigin: true,
         secure: false,
         ws: true,
+        configure: (proxy, _options) => {
+          proxy.on('error', (err, _req, res) => {
+            // Suppress connection refused errors - they're handled by the client
+            if (err.code === 'ECONNREFUSED') {
+              console.warn('⚠️ Backend server not running. Some API calls may fail.');
+              // Don't log the full error stack for connection refused
+              return;
+            }
+            console.error('Proxy error:', err);
+          });
+          proxy.on('proxyReq', (proxyReq, req, _res) => {
+            // Optional: Log proxy requests in development
+            if (process.env.NODE_ENV === 'development') {
+              console.log(`🔄 Proxying ${req.method} ${req.url} to backend`);
+            }
+          });
+        },
       },
     },
   },

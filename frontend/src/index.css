@@ -47,3 +47,17 @@
   background: linear-gradient(to bottom, #4f46e5, #7c3aed);
 }
 
+/* Infinite Moving Cards Animation */
+@keyframes scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(calc(-100% - 1rem));
+  }
+}
+
+.animate-scroll {
+  animation: scroll var(--animation-duration, 40s) linear infinite var(--animation-direction, forwards);
+}
+

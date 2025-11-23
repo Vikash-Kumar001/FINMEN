@@ -27,9 +27,9 @@ const IndividualAccountSelection = () => {
           </div>
                     <button
                         className="text-gray-600 hover:text-gray-800 z-50"
-                        onClick={() => navigate('/')}
+                        onClick={() => navigate(-1)}
                     >
-                        Back to Home
+                        Back
                     </button>
                 </div>
                 <h2 className="text-4xl font-bold text-gray-900 text-center mb-2">Choose Your Account Type</h2>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import api from "../../utils/api";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { motion } from "framer-motion";
 import { MailCheck, RefreshCw, ShieldCheck } from "lucide-react";
 
@@ -13,8 +13,17 @@ const VerifyOTP = () => {
     const [resendTimer, setResendTimer] = useState(60);
     const [resendDisabled, setResendDisabled] = useState(true);
     const navigate = useNavigate();
+    const location = useLocation();
 
     useEffect(() => {
+        // Check for email from navigation state first (from forgot password page)
+        if (location.state?.email) {
+            setMode(location.state.mode || "forgot");
+            setEmail(location.state.email);
+            return;
+        }
+
+        // Fallback to localStorage
         const registerEmail = localStorage.getItem("pending_verification_email");
         const resetEmail = localStorage.getItem("reset_password_email");
 
@@ -27,7 +36,7 @@ const VerifyOTP = () => {
         } else {
             return navigate("/login");
         }
-    }, []);
+    }, [navigate, location]);
 
     useEffect(() => {
         let timer;

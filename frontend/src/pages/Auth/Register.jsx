@@ -904,14 +904,14 @@ const Register = () => {
             {/* Main Content - Changed to use flex to fill entire screen */}
             {/* Added responsive padding and mobile-friendly positioning */}
             <div className="relative z-10 h-full flex items-center justify-center px-4 py-6 sm:py-8 sm:px-6 lg:px-8 overflow-y-auto">
-                {/* Back to Homepage Button - Adjusted positioning for mobile */}
+                {/* Back Button - Adjusted positioning for mobile */}
                 <button
-                    onClick={() => navigate("/")}
+                    onClick={() => navigate(-1)}
                     className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-white/10 backdrop-blur-xl border border-white/20 text-white px-3 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 text-xs sm:text-sm flex items-center gap-1 sm:gap-2 z-50"
                 >
                     <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
-                    <span className="hidden xs:inline">Back to Homepage</span>
-                    <span className="xs:hidden">Home</span>
+                    <span className="hidden xs:inline">Back</span>
+                    <span className="xs:hidden">Back</span>
                 </button>
 
                 <motion.div

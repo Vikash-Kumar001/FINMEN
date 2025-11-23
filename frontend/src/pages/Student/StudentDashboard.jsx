@@ -17,7 +17,6 @@ import {
     Bell,
     TrendingUp,
     User,
-    Settings as SettingsIcon,
     Heart,
     Star,
     Flame,
@@ -48,10 +47,8 @@ import {
     Mail,
     Lightbulb,
     Medal,
-    Share2,
     Eye,
     EyeOff,
-    Volume2,
     MessageCircle,
     Inbox,
 } from "lucide-react";
@@ -118,27 +115,6 @@ export default function StudentDashboard() {
     const [achievementTimeline, setAchievementTimeline] = useState(null);
     const [dailyActions, setDailyActions] = useState(null);
     
-    // Quick Settings state
-    const [quickSettings, setQuickSettings] = useState({
-        privacy: {
-            profileVisibility: true,
-            showActivity: true
-        },
-        parentShare: {
-            weeklyReports: true,
-            shareProgress: true
-        },
-        accessibility: {
-            soundEffects: true,
-            animations: true
-        }
-    });
-    const [settingsLoading, setSettingsLoading] = useState(false);
-    
-    // Debug: Log settings changes
-    useEffect(() => {
-        console.log('🔧 Quick Settings state updated:', quickSettings);
-    }, [quickSettings]);
     
     // Calculate user's age from date of birth
     const calculateUserAge = (dob) => {
@@ -439,107 +415,6 @@ export default function StudentDashboard() {
         }
     };
 
-    // Fetch Quick Settings from backend
-    const fetchQuickSettings = async () => {
-        try {
-            setSettingsLoading(true);
-            console.log('🔧 Fetching Quick Settings...');
-            const response = await api.get('/api/user/settings');
-            console.log('🔧 Settings response:', response.data);
-            
-            if (response.data?.settings) {
-                const settings = response.data.settings;
-                const newSettings = {
-                    privacy: {
-                        profileVisibility: settings.privacy?.profileVisibility ?? true,
-                        showActivity: settings.privacy?.showActivity ?? true
-                    },
-                    parentShare: {
-                        weeklyReports: settings.parentShare?.weeklyReports ?? true,
-                        shareProgress: settings.parentShare?.shareProgress ?? true
-                    },
-                    accessibility: {
-                        soundEffects: settings.display?.soundEffects ?? true,
-                        animations: settings.display?.animations ?? true
-                    }
-                };
-                console.log('🔧 Setting Quick Settings state:', newSettings);
-                setQuickSettings(newSettings);
-            } else {
-                console.warn('⚠️ No settings data in response, using defaults');
-            }
-        } catch (error) {
-            console.error('❌ Error fetching settings:', error);
-            console.error('❌ Error details:', error.response?.data || error.message);
-            // Use defaults if fetch fails - state is already initialized with defaults
-        } finally {
-            setSettingsLoading(false);
-        }
-    };
-
-    // Update Quick Settings
-    const updateQuickSetting = async (section, key, value) => {
-        try {
-            console.log(`🔧 Updating setting: ${section}.${key} = ${value}`);
-            
-            // Optimistically update UI
-            const previousValue = quickSettings[section]?.[key];
-            setQuickSettings(prev => ({
-                ...prev,
-                [section]: {
-                    ...prev[section],
-                    [key]: value
-                }
-            }));
-
-            // Save to backend
-            const settingsToUpdate = { [key]: value };
-            const backendSection = section === 'accessibility' ? 'display' : section;
-            
-            console.log(`🔧 Sending to backend: section=${backendSection}, settings=`, settingsToUpdate);
-            
-            const response = await api.put('/api/user/settings', {
-                section: backendSection,
-                settings: settingsToUpdate
-            });
-            
-            console.log('🔧 Backend response:', response.data);
-
-            // Emit socket event for real-time updates (broadcast to other sessions)
-            if (socket) {
-                socket.emit('settings:update', {
-                    userId: user?._id,
-                    section,
-                    key,
-                    value
-                });
-            }
-
-            toast.success('Setting updated', {
-                duration: 2000,
-                position: 'bottom-center',
-                icon: '✅'
-            });
-        } catch (error) {
-            console.error('❌ Error updating setting:', error);
-            console.error('❌ Error details:', error.response?.data || error.message);
-            
-            // Revert on error
-            setQuickSettings(prev => ({
-                ...prev,
-                [section]: {
-                    ...prev[section],
-                    [key]: !value
-                }
-            }));
-            
-            toast.error(error.response?.data?.message || 'Failed to update setting', {
-                duration: 3000,
-                position: 'bottom-center',
-                icon: '❌'
-            });
-        }
-    };
 
     useEffect(() => {
         // Only run once on mount or when user changes
@@ -547,7 +422,6 @@ export default function StudentDashboard() {
             loadDashboardData();
             loadNotifications();
             loadAnalyticsData();
-            fetchQuickSettings();
             // Refresh wallet when dashboard loads to ensure balance is displayed
             refreshWallet();
         }
@@ -2080,11 +1954,20 @@ export default function StudentDashboard() {
                             transition={{ duration: 0.6, delay: 0.8 }}
                             className="bg-gradient-to-br from-yellow-50 via-amber-50 to-orange-50 rounded-3xl p-6 shadow-xl border-2 border-yellow-200"
                         >
-                            <h2 className="text-2xl font-black text-gray-800 mb-4 flex items-center gap-2">
+                            <h2 className="text-2xl font-black text-gray-800 mb-4 flex items-center justify-between">
+                                <div className="flex items-center gap-2">
                                 <Trophy className="w-7 h-7 text-yellow-600" />
                                 <span className="bg-gradient-to-r from-yellow-600 to-orange-600 bg-clip-text text-transparent">
                                     Top Players
                                 </span>
+                                </div>
+                                <button
+                                    onClick={() => navigate('/student/leaderboard')}
+                                    className="p-2 hover:bg-yellow-100 rounded-full transition-colors cursor-pointer"
+                                    aria-label="View full leaderboard"
+                                >
+                                    <ChevronRight className="w-6 h-6 text-yellow-600" />
+                                </button>
                             </h2>
                             <div className="space-y-3">
                                 {leaderboardData.leaderboard.map((player, index) => (
@@ -2230,225 +2113,6 @@ export default function StudentDashboard() {
                         </motion.div>
                     )}
                 </div>
-
-                {/* 9. Settings Panel */}
-                <motion.div
-                    initial={{ opacity: 0, y: 50 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.6, delay: 0.9 }}
-                    className="mb-8 bg-gradient-to-br from-gray-50 to-slate-100 rounded-3xl p-6 shadow-xl border-2 border-gray-200"
-                >
-                    <h2 className="text-2xl font-black text-gray-800 mb-6 flex items-center gap-2">
-                        <SettingsIcon className="w-7 h-7 text-gray-700" />
-                        <span className="bg-gradient-to-r from-gray-700 to-slate-700 bg-clip-text text-transparent">
-                            Quick Settings
-                        </span>
-                    </h2>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Privacy Settings */}
-                        <motion.div
-                            whileHover={{ y: -5 }}
-                            className="bg-white rounded-2xl p-5 shadow-lg border-2 border-gray-200 hover:border-indigo-300 transition-all"
-                        >
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-3 bg-gradient-to-br from-indigo-400 to-purple-500 rounded-xl">
-                                    <Eye className="w-6 h-6 text-white" />
-                                </div>
-                                <h3 className="font-bold text-gray-800">Privacy</h3>
-                            </div>
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Profile Visibility</span>
-                                    <motion.button
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            console.log('🔧 Toggle clicked: profileVisibility');
-                                            updateQuickSetting('privacy', 'profileVisibility', !quickSettings.privacy.profileVisibility);
-                                        }}
-                                        disabled={settingsLoading}
-                                        className={`w-12 h-6 rounded-full relative shadow-md transition-colors cursor-pointer ${
-                                            settingsLoading ? 'opacity-50 cursor-not-allowed' : ''
-                                        } ${
-                                            quickSettings.privacy.profileVisibility 
-                                                ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
-                                                : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <motion.div 
-                                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
-                                            animate={{ x: quickSettings.privacy.profileVisibility ? 22 : 2 }}
-                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                        />
-                                    </motion.button>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Show Activity</span>
-                                    <motion.button
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            console.log('🔧 Toggle clicked: showActivity');
-                                            updateQuickSetting('privacy', 'showActivity', !quickSettings.privacy.showActivity);
-                                        }}
-                                        disabled={settingsLoading}
-                                        className={`w-12 h-6 rounded-full relative shadow-md transition-colors cursor-pointer ${
-                                            settingsLoading ? 'opacity-50 cursor-not-allowed' : ''
-                                        } ${
-                                            quickSettings.privacy.showActivity 
-                                                ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
-                                                : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <motion.div 
-                                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
-                                            animate={{ x: quickSettings.privacy.showActivity ? 22 : 2 }}
-                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                        />
-                                    </motion.button>
-                                </div>
-                            </div>
-                        </motion.div>
-
-                        {/* Parent Share */}
-                        <motion.div
-                            whileHover={{ y: -5 }}
-                            className="bg-white rounded-2xl p-5 shadow-lg border-2 border-gray-200 hover:border-pink-300 transition-all"
-                        >
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-3 bg-gradient-to-br from-pink-400 to-rose-500 rounded-xl">
-                                    <Share2 className="w-6 h-6 text-white" />
-                                </div>
-                                <h3 className="font-bold text-gray-800">Parent Share</h3>
-                            </div>
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Weekly Reports</span>
-                                    <motion.button
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            console.log('🔧 Toggle clicked: weeklyReports');
-                                            updateQuickSetting('parentShare', 'weeklyReports', !quickSettings.parentShare.weeklyReports);
-                                        }}
-                                        disabled={settingsLoading}
-                                        className={`w-12 h-6 rounded-full relative shadow-md transition-colors cursor-pointer ${
-                                            settingsLoading ? 'opacity-50 cursor-not-allowed' : ''
-                                        } ${
-                                            quickSettings.parentShare.weeklyReports 
-                                                ? 'bg-gradient-to-r from-pink-400 to-rose-500' 
-                                                : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <motion.div 
-                                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
-                                            animate={{ x: quickSettings.parentShare.weeklyReports ? 22 : 2 }}
-                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                        />
-                                    </motion.button>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Share Progress</span>
-                                    <motion.button
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            console.log('🔧 Toggle clicked: shareProgress');
-                                            updateQuickSetting('parentShare', 'shareProgress', !quickSettings.parentShare.shareProgress);
-                                        }}
-                                        disabled={settingsLoading}
-                                        className={`w-12 h-6 rounded-full relative shadow-md transition-colors cursor-pointer ${
-                                            settingsLoading ? 'opacity-50 cursor-not-allowed' : ''
-                                        } ${
-                                            quickSettings.parentShare.shareProgress 
-                                                ? 'bg-gradient-to-r from-pink-400 to-rose-500' 
-                                                : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <motion.div 
-                                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
-                                            animate={{ x: quickSettings.parentShare.shareProgress ? 22 : 2 }}
-                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                        />
-                                    </motion.button>
-                                </div>
-                            </div>
-                </motion.div>
-
-                        {/* Accessibility */}
-                        <motion.div
-                            whileHover={{ y: -5 }}
-                            className="bg-white rounded-2xl p-5 shadow-lg border-2 border-gray-200 hover:border-green-300 transition-all"
-                        >
-                            <div className="flex items-center gap-3 mb-4">
-                                <div className="p-3 bg-gradient-to-br from-green-400 to-emerald-500 rounded-xl">
-                                    <Volume2 className="w-6 h-6 text-white" />
-                                </div>
-                                <h3 className="font-bold text-gray-800">Accessibility</h3>
-                            </div>
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Sound Effects</span>
-                                    <motion.button
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            console.log('🔧 Toggle clicked: soundEffects');
-                                            updateQuickSetting('accessibility', 'soundEffects', !quickSettings.accessibility.soundEffects);
-                                        }}
-                                        disabled={settingsLoading}
-                                        className={`w-12 h-6 rounded-full relative shadow-md transition-colors cursor-pointer ${
-                                            settingsLoading ? 'opacity-50 cursor-not-allowed' : ''
-                                        } ${
-                                            quickSettings.accessibility.soundEffects 
-                                                ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
-                                                : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <motion.div 
-                                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
-                                            animate={{ x: quickSettings.accessibility.soundEffects ? 22 : 2 }}
-                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                        />
-                                    </motion.button>
-                                </div>
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm text-gray-600">Animations</span>
-                                    <motion.button
-                                        whileTap={{ scale: 0.9 }}
-                                        onClick={(e) => {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            console.log('🔧 Toggle clicked: animations');
-                                            updateQuickSetting('accessibility', 'animations', !quickSettings.accessibility.animations);
-                                        }}
-                                        disabled={settingsLoading}
-                                        className={`w-12 h-6 rounded-full relative shadow-md transition-colors cursor-pointer ${
-                                            settingsLoading ? 'opacity-50 cursor-not-allowed' : ''
-                                        } ${
-                                            quickSettings.accessibility.animations 
-                                                ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
-                                                : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <motion.div 
-                                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
-                                            animate={{ x: quickSettings.accessibility.animations ? 22 : 2 }}
-                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
-                                        />
-                                    </motion.button>
-                                </div>
-                            </div>
-                        </motion.div>
-                    </div>
-                </motion.div>
-
 
                 {/* Recent Activities Section */}
                 {recentActivities.length > 0 && (

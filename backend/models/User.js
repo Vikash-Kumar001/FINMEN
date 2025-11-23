@@ -218,6 +218,12 @@ const userSchema = new mongoose.Schema(
       type: String,
       enum: ["verify", "reset"],
     },
+    resetToken: {
+      type: String,
+    },
+    resetTokenExpires: {
+      type: Date,
+    },
     fromGoogle: {
       type: Boolean,
       default: false,

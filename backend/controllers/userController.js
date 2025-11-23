@@ -649,13 +649,7 @@ export const getUserSettings = async (req, res) => {
         showPhoneToTeachers: false,
         allowDataExport: true,
         twoFactorAuth: false,
-        sessionTimeout: 30,
-        profileVisibility: true,
-        showActivity: true
-      },
-      parentShare: {
-        weeklyReports: true,
-        shareProgress: true
+        sessionTimeout: 30
       },
       display: {
         theme: 'light',
@@ -665,9 +659,7 @@ export const getUserSettings = async (req, res) => {
         timezone: 'Asia/Kolkata',
         compactMode: false,
         animationsEnabled: true,
-        soundEnabled: false,
-        soundEffects: true,
-        animations: true
+        soundEnabled: false
       }
     };
 
@@ -675,7 +667,6 @@ export const getUserSettings = async (req, res) => {
       settings: {
         notifications: { ...defaultSettings.notifications, ...(user.settings?.notifications || user.preferences?.notifications || {}) },
         privacy: { ...defaultSettings.privacy, ...(user.settings?.privacy || {}) },
-        parentShare: { ...defaultSettings.parentShare, ...(user.settings?.parentShare || {}) },
         display: { ...defaultSettings.display, ...(user.settings?.display || user.preferences || {}) }
       }
     });
@@ -704,8 +695,6 @@ export const updateUserSettings = async (req, res) => {
       user.settings.notifications = { ...(user.settings.notifications || {}), ...settings };
     } else if (section === 'privacy') {
       user.settings.privacy = { ...(user.settings.privacy || {}), ...settings };
-    } else if (section === 'parentShare') {
-      user.settings.parentShare = { ...(user.settings.parentShare || {}), ...settings };
     } else if (section === 'display') {
       user.settings.display = { ...(user.settings.display || {}), ...settings };
       // Also update user.preferences for backward compatibility

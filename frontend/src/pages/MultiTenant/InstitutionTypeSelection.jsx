@@ -36,12 +36,12 @@ const InstitutionTypeSelection = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative overflow-hidden">
-      {/* Back to Homepage Button */}
+      {/* Back Button */}
       <button
-        onClick={() => navigate('/')}
+        onClick={() => navigate(-1)}
         className="absolute top-6 left-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-lg hover:shadow-xl transition-all z-50"
       >
-        ← Back to Homepage
+        ← Back
       </button>
 
       {/* Background Elements */}

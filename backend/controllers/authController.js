@@ -83,17 +83,19 @@ export const sendOTP = async (email, type = "verify", sendEmailSync = false) => 
     const shouldSendSync = sendEmailSync || isProduction;
 
     if (shouldSendSync) {
-      // Try to send synchronously with a reasonable timeout (20 seconds)
-      // If it times out or fails, fall back to async sending
+      // Try to send synchronously with timeout
+      // SMTP can be slow (10-30 seconds), use appropriate timeout
       try {
         console.log(`📧 Attempting to send email ${isProduction ? 'synchronously (production)' : 'synchronously'} to ${email} for ${type}...`);
         const startTime = Date.now();
         
-        // Use a shorter timeout (20 seconds) for better UX
-        // If email takes longer, we'll send it async instead
+        // Use appropriate timeout based on email service
+        // SMTP can be slow, use 20 second timeout
+        const timeoutDuration = 20000; // 20 seconds for SMTP
+        
         const emailPromise = sendEmail({ to: email, subject, html: message });
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Email sending timeout after 20 seconds')), 20000)
+          setTimeout(() => reject(new Error(`Email sending timeout after ${timeoutDuration/1000} seconds`)), timeoutDuration)
         );
         
         await Promise.race([emailPromise, timeoutPromise]);
@@ -102,7 +104,7 @@ export const sendOTP = async (email, type = "verify", sendEmailSync = false) => 
         console.log(`✅ Email sent successfully to ${email} for ${type} (took ${duration}ms)`);
         console.log(`📩 Email details: Subject="${subject}", OTP=${otp}`);
         
-        return { success: true, message: "OTP sent successfully" };
+        return { success: true, message: "OTP sent successfully. Please check your email inbox." };
       } catch (emailErr) {
         const errorMessage = emailErr?.message || "Unknown email error";
         const errorCode = emailErr?.code || "UNKNOWN";
@@ -113,7 +115,10 @@ export const sendOTP = async (email, type = "verify", sendEmailSync = false) => 
         
         // Check if it's a configuration error
         if (errorMessage.includes("not configured") || errorMessage.includes("MAIL_USER") || errorMessage.includes("MAIL_PASS")) {
-          return { success: false, message: "Email service is not configured. Please contact support." };
+          return { 
+            success: false, 
+            message: "Email service is not configured properly. Please contact support." 
+          };
         }
         
         // If timeout or other error, send email asynchronously as fallback
@@ -139,7 +144,7 @@ export const sendOTP = async (email, type = "verify", sendEmailSync = false) => 
         // Return success immediately - OTP is saved, email will be sent in background
         return { 
           success: true, 
-          message: "OTP generated successfully. Email is being sent. Please check your inbox." 
+          message: "OTP generated successfully. Email is being sent. Please check your inbox in a few moments." 
         };
       }
     } else {
@@ -275,39 +280,38 @@ export const forgotPassword = async (req, res) => {
     if (!email) return res.status(400).json({ message: "Email is required" });
 
     const user = await User.findOne({ email: email.toLowerCase() });
-    if (!user) return res.status(400).json({ message: "User not found" });
-
-    // Allow password reset via OTP even if no password is currently set
+    if (!user) {
+      // Don't reveal if user exists for security
+      return res.status(200).json({
+        message: "If an account exists with this email, an OTP has been sent. Please check your inbox.",
+      });
+    }
 
     if (user.role === "admin") {
       return res.status(400).json({ message: "Admin accounts cannot reset password via OTP. Please contact your administrator." });
     }
 
     // Send OTP with hybrid approach (try sync with timeout, fallback to async)
-    // This ensures quick response while attempting to send email
-    // In production, it will try sync first (with 20s timeout), then fallback to async
-    const result = await sendOTP(user.email, "reset", false);
+    // In production, use synchronous sending (SMTP can be slow)
+    // This ensures emails are actually sent before responding
+    const isProduction = process.env.NODE_ENV === 'production';
+    const result = await sendOTP(user.email, "reset", isProduction);
 
     if (result && result.success) {
       res.status(200).json({
-        message: "OTP has been generated and sent to your email. Please check your inbox.",
+        message: "If an account exists with this email, an OTP has been sent. Please check your inbox.",
         email: user.email,
       });
     } else {
       const errorMessage = result?.message || "Failed to generate reset OTP";
       console.error("Failed to generate OTP:", errorMessage);
-      res.status(500).json({
-        message: errorMessage,
+      // Still return success to prevent email enumeration
+      res.status(200).json({
+        message: "If an account exists with this email, an OTP has been sent. Please check your inbox.",
       });
     }
   } catch (error) {
     console.error("Forgot password error:", error);
-    console.error("Error details:", {
-      message: error?.message,
-      stack: error?.stack,
-      name: error?.name
-    });
-    const errorMessage = error?.message || "Unknown error occurred";
     res.status(500).json({ message: "Failed to process password reset request. Please try again." });
   }
 };
@@ -318,6 +322,10 @@ export const resetPasswordWithOTP = async (req, res) => {
 
     if (!email || !otp || !newPassword) {
       return res.status(400).json({ message: "Email, OTP, and new password are required" });
+    }
+
+    if (newPassword.length < 8) {
+      return res.status(400).json({ message: "Password must be at least 8 characters long" });
     }
 
     const user = await User.findOne({ email: email.toLowerCase() });
@@ -335,8 +343,10 @@ export const resetPasswordWithOTP = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP type" });
     }
 
+    // Hash new password
     const hashedPassword = await bcrypt.hash(newPassword, 10);
 
+    // Update password and clear OTP
     await User.findByIdAndUpdate(user._id, {
       password: hashedPassword,
       otp: null,
@@ -344,7 +354,8 @@ export const resetPasswordWithOTP = async (req, res) => {
       otpType: null,
     });
 
-    res.status(200).json({ message: "Password reset successful" });
+    console.log(`✅ Password reset successful for ${user.email}`);
+    res.status(200).json({ message: "Password reset successful. You can now login with your new password." });
   } catch (error) {
     console.error("Reset password error:", error);
     res.status(500).json({ message: "Password reset failed" });

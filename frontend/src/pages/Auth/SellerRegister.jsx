@@ -77,14 +77,14 @@ const SellerRegister = () => {
         />
       </div>
 
-      {/* Back to Homepage Button - Adjusted for mobile */}
+      {/* Back Button - Adjusted for mobile */}
       <button
-        onClick={() => navigate("/")}
+        onClick={() => navigate(-1)}
         className="absolute top-4 left-4 sm:top-6 sm:left-6 bg-white/10 backdrop-blur-xl border border-white/20 text-white px-3 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 z-50"
       >
         <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
-        <span className="hidden xs:inline">Back to Homepage</span>
-        <span className="xs:hidden">Home</span>
+        <span className="hidden xs:inline">Back</span>
+        <span className="xs:hidden">Back</span>
       </button>
 
       {/* Added responsive padding and mobile-friendly layout */}

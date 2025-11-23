@@ -258,11 +258,11 @@ const SchoolRegistration = () => {
       {/* Back Buttons - Adjusted for mobile */}
       <div className="absolute top-4 left-4 sm:top-6 sm:left-6 z-50">
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate(-1)}
           className="bg-white/10 backdrop-blur-xl border border-white/20 text-white px-3 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2"
         >
           <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
-          <span className="sm:block hidden">Home</span>
+          <span className="sm:block hidden">Back</span>
         </button>
       </div>
 

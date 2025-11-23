@@ -268,11 +268,11 @@ const CollegeRegistration = () => {
           Back to Institution Type
         </button>
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate(-1)}
           className="bg-white/10 backdrop-blur-xl border border-white/20 text-white px-4 py-2 rounded-xl hover:bg-white/20 transition-all duration-300 text-sm flex items-center gap-2"
         >
           <ArrowRight className="w-4 h-4 rotate-180" />
-          Back to Homepage
+          Back
         </button>
       </div>
 

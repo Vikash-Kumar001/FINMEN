@@ -28,13 +28,13 @@ export default function AccountTypeSelection() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center relative">
-      {/* Back to Homepage Button */}
+      {/* Back Button */}
       <button
-        onClick={() => navigate('/')}
+        onClick={() => navigate(-1)}
         className="absolute top-6 left-6 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 rounded-xl font-semibold text-sm flex items-center gap-2 shadow-lg hover:shadow-xl transition-all z-50"
       >
         <ArrowRight className="w-3 h-3 sm:w-4 sm:h-4 rotate-180" />
-        <span className="sm:block hidden">Home</span>
+        <span className="sm:block hidden">Back</span>
       </button>
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">

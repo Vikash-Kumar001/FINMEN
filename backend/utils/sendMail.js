@@ -1,5 +1,4 @@
 import nodemailer from "nodemailer";
-import axios from "axios";
 
 // Retry function for email sending with better error handling
 const retryEmailSend = async (transporter, mailOptions, maxRetries = 2, delay = 2000) => {
@@ -62,67 +61,8 @@ const createTransporter = (port, host) => {
   });
 };
 
-// Send email using Resend API (HTTP-based, works on cloud platforms)
-const sendEmailViaResend = async ({ to, subject, text, html, from }) => {
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
-    throw new Error('RESEND_API_KEY not configured');
-  }
-
-  // Format from email - Resend accepts "Name <email@domain.com>" or just "email@domain.com"
-  let fromEmail = from || process.env.RESEND_FROM_EMAIL;
-  
-  // If no from email is set, try to use MAIL_USER or default to Resend's test domain
-  if (!fromEmail) {
-    if (process.env.MAIL_USER) {
-      fromEmail = `"Wise Student" <${process.env.MAIL_USER}>`;
-    } else {
-      fromEmail = 'onboarding@resend.dev'; // Resend's default test domain
-    }
-  }
-  
-  // Ensure from email is in correct format
-  if (!fromEmail.includes('<') && fromEmail.includes('@')) {
-    fromEmail = `"Wise Student" <${fromEmail}>`;
-  }
-  
-  try {
-    const response = await axios.post(
-      'https://api.resend.com/emails',
-      {
-        from: fromEmail,
-        to: Array.isArray(to) ? to : [to],
-        subject,
-        html: html || text,
-        text: text || html?.replace(/<[^>]*>/g, ''),
-      },
-      {
-        headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        timeout: 10000, // 10 second timeout
-      }
-    );
-
-    console.log(`✅ Email sent via Resend to ${to}, ID: ${response.data.id}`);
-    return { messageId: response.data.id, response: response.data };
-  } catch (error) {
-    console.error('❌ Resend API error:', error.response?.data || error.message);
-    throw new Error(`Resend API error: ${error.response?.data?.message || error.message}`);
-  }
-};
-
 export const sendEmail = async ({ to, subject, text, html }) => {
   try {
-    // Check if Resend is configured (preferred for cloud platforms)
-    if (process.env.RESEND_API_KEY) {
-      console.log(`📧 Using Resend API for email delivery`);
-      const from = process.env.MAIL_USER ? `"Wise Student" <${process.env.MAIL_USER}>` : undefined;
-      return await sendEmailViaResend({ to, subject, text, html, from });
-    }
-
-    // Fallback to SMTP if Resend is not configured
     // Validate email configuration
     if (!process.env.MAIL_USER || !process.env.MAIL_PASS) {
       const missingVars = [];
@@ -130,8 +70,7 @@ export const sendEmail = async ({ to, subject, text, html }) => {
       if (!process.env.MAIL_PASS) missingVars.push("MAIL_PASS");
       console.error(`❌ Email configuration missing: ${missingVars.join(", ")} not set`);
       console.error(`❌ Environment check - NODE_ENV: ${process.env.NODE_ENV}`);
-      console.error(`💡 Tip: Consider using Resend API (set RESEND_API_KEY) for better cloud platform compatibility`);
-      throw new Error(`Email service not configured: ${missingVars.join(", ")} environment variables are missing. Consider using Resend API instead.`);
+      throw new Error(`Email service not configured: ${missingVars.join(", ")} environment variables are missing.`);
     }
     
     // Log email configuration status (without exposing password)
@@ -208,11 +147,9 @@ export const sendEmail = async ({ to, subject, text, html }) => {
     // Provide more specific error messages
     if (errorCode === 'ETIMEDOUT' || errorCode === 'ECONNREFUSED' || errorCode === 'ECONNRESET' || errorMessage.includes('timeout')) {
       const isProduction = process.env.NODE_ENV === 'production';
-      const resendTip = `💡 SOLUTION: Use Resend API instead of SMTP. Set RESEND_API_KEY in environment variables. Get free API key at https://resend.com/api-keys`;
       const errorMsg = isProduction 
-        ? `SMTP connection failed. Render.com blocks SMTP connections. ${resendTip}`
-        : `Email service connection timeout. Please check your network connection and SMTP settings. ${resendTip}`;
-      console.error(resendTip);
+        ? `SMTP connection failed. Please check your SMTP settings and network configuration.`
+        : `Email service connection timeout. Please check your network connection and SMTP settings.`;
       throw new Error(errorMsg);
     } else if (errorCode === 'EAUTH') {
       throw new Error(`Email authentication failed. Please check your MAIL_USER and MAIL_PASS credentials. Ensure you're using a Gmail App Password, not your regular password.`);

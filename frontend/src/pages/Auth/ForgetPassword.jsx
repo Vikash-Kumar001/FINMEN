@@ -39,25 +39,29 @@ const ForgotPassword = () => {
             );
 
             if (res.data && res.data.message) {
-                setMessage(res.data.message || 'OTP sent successfully!');
+                const successMessage = res.data.message || 'OTP sent successfully!';
+                setMessage(successMessage);
                 localStorage.setItem('reset_password_email', email);
                 // Small delay to show success message before navigation
                 setTimeout(() => {
-                    navigate('/verify-otp');
-                }, 1000);
+                    navigate('/verify-otp', { 
+                        state: { 
+                            email: email,
+                            mode: 'forgot'
+                        } 
+                    });
+                }, 1500);
             } else {
                 setError('Unexpected response from server. Please try again.');
                 setIsLoading(false);
             }
         } catch (err) {
-            // Log full error details for debugging
-            console.error('🔴 API Error:', err);
-            console.error('Error type:', typeof err);
-            console.error('Error message:', err?.message);
-            console.error('Error response:', err?.response);
-            console.error('Error response data:', err?.response?.data);
-            console.error('Error status:', err?.response?.status);
-            console.error('Error code:', err?.code);
+            // Only log detailed errors in development
+            if (import.meta.env.DEV) {
+                console.error('🔴 API Error:', err);
+                console.error('Error response data:', err?.response?.data);
+                console.error('Error status:', err?.response?.status);
+            }
             
             let errorMessage = 'Failed to send OTP. Please try again.';
             
@@ -86,12 +90,12 @@ const ForgotPassword = () => {
             else if (responseMessage) {
                 errorMessage = responseMessage;
             }
-            // Use error message if available
+            // Use error message if available (but sanitize it)
             else if (errorMsg && typeof errorMsg === 'string' && errorMsg.length > 0) {
-                errorMessage = errorMsg;
+                // Remove technical details for user-facing messages
+                errorMessage = errorMsg.replace(/Error:|at .*|\(.*\)/g, '').trim() || 'Failed to send OTP. Please try again.';
             }
             
-            console.error('Final error message:', errorMessage);
             setError(errorMessage);
             setIsLoading(false);
         }

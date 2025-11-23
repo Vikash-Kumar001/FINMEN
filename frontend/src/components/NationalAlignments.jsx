@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion"; // eslint-disable-line no-unused-vars
+import { InfiniteMovingCards } from "./ui/infinite-moving-cards";
 
 // Import all logo images
 import rbiLogo from "../assets/NA_Images/rbi.png";
@@ -107,74 +107,37 @@ const defaultServices = [
 ];
 
 function NationalAlignments({ services = defaultServices, sectionRef }) {
+  // Transform services into card items for InfiniteMovingCards
+  const cardItems = services.map((service) => (
+    <div key={service.title} className="flex flex-col items-center gap-0.5 sm:gap-1 md:gap-1.5">
+      <div className="w-12 h-12 sm:w-16 sm:h-16 md:w-20 md:h-20 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
+                    <img 
+                      src={logoMap[service.title]} 
+                      alt={service.title}
+                      className="w-full h-full object-contain p-1"
+                    />
+                  </div>
+      <div className="whitespace-nowrap px-1">
+        <h3 className="text-xs sm:text-sm md:text-base lg:text-lg font-semibold text-white text-center leading-tight">{service.title}</h3>
+                  </div>
+                </div>
+  ));
+
   return (
-    <div ref={sectionRef} className="py-16 bg-gradient-to-r from-blue-600 to-purple-600">
-      <div className="w-full mx-auto px-4 sm:px-6 lg:px-8">
-        <motion.div
-          initial={{ opacity: 0, x: -20 }}
-          whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
-          className="text-left"
-        >
-          <h2 className="sm:text-4xl text-3xl font-bold text-white mb-10 text-center">National Alignments</h2>
+    <div ref={sectionRef} className="py-8 sm:py-12 md:py-16 bg-gradient-to-r from-blue-600 to-purple-600">
+      <div className="w-full mx-auto">
+        <div className="text-left">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-6 sm:mb-8 md:mb-10 text-center">National Alignments</h2>
 
-          <div className="relative overflow-hidden rounded-2xl bg-white/10 backdrop-blur-sm p-12">
-            <motion.div
-              animate={{ x: [0, -100 * services.length * 12] }}
-              transition={{ duration: 500, repeat: Infinity, ease: "linear" }}
-              className="flex gap-8 whitespace-nowrap"
-              style={{ width: "max-content" }}
-            >
-              {services.map((service, index) => (
-                <div key={`first-${index}`} className="flex flex-col items-center gap-3 flex-shrink-0 px-4 py-2">
-                  <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
-                    <img 
-                      src={logoMap[service.title]} 
-                      alt={service.title}
-                      className="w-full h-full object-contain p-1"
-                    />
-                  </div>
-                  <div className="whitespace-nowrap">
-                    <h3 className="text-lg font-semibold text-white">{service.title}</h3>
-                  </div>
-                </div>
-              ))}
-
-              {services.map((service, index) => (
-                <div key={`second-${index}`} className="flex items-center gap-3 flex-shrink-0 px-4 py-2">
-                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
-                    <img 
-                      src={logoMap[service.title]} 
-                      alt={service.title}
-                      className="w-full h-full object-contain p-1"
-                    />
-                  </div>
-                  <div className="whitespace-nowrap">
-                    <h3 className="text-lg font-semibold text-white">{service.title}</h3>
-                  </div>
-                </div>
-              ))}
-
-              {services.map((service, index) => (
-                <div key={`third-${index}`} className="flex items-center gap-3 flex-shrink-0 px-4 py-2">
-                  <div className="w-8 h-8 bg-white rounded-full flex items-center justify-center flex-shrink-0 shadow-lg overflow-hidden">
-                    <img 
-                      src={logoMap[service.title]} 
-                      alt={service.title}
-                      className="w-full h-full object-contain p-1"
-                    />
-                  </div>
-                  <div className="whitespace-nowrap">
-                    <h3 className="text-lg font-semibold text-white">{service.title}</h3>
-                  </div>
-                </div>
-              ))}
-            </motion.div>
-
-            <div className="absolute top-0 left-0 bottom-0 w-12 bg-gradient-to-r from-white/10 to-transparent pointer-events-none"></div>
-            <div className="absolute top-0 right-0 bottom-0 w-12 bg-gradient-to-l from-white/10 to-transparent pointer-events-none"></div>
+          <div className="relative overflow-hidden bg-white/10 py-4 sm:py-6 md:py-8 lg:py-12">
+            <InfiniteMovingCards 
+              items={cardItems} 
+              direction="left" 
+              speed="slow"
+              pauseOnHover={true}
+            />
           </div>
-        </motion.div>
+          </div>
       </div>
     </div>
   );

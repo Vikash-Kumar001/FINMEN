@@ -183,7 +183,7 @@ router.post("/check-verification", checkVerificationStatus);
 // ✅ Login with role-based checks
 router.post("/login", login);
 
-// ✅ Forgot Password
+// ✅ Forgot Password (sends OTP)
 router.post("/forgot-password", forgotPassword);
 
 // ✅ Reset Password with OTP

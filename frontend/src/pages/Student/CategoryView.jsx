@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useParams, useNavigate } from "react-router-dom";
 import {
     ArrowLeft,
@@ -7,7 +7,9 @@ import {
     ChevronRight,
     Lock,
     Sparkles,
-    Star
+    Star,
+    AlertTriangle,
+    X
 } from "lucide-react";
 import { useAuth } from "../../hooks/useAuth";
 import { mockFeatures } from "../../data/mockFeatures";
@@ -21,6 +23,10 @@ export default function CategoryView() {
     const [featureCards, setFeatureCards] = useState([]);
     const [categoryInfo, setCategoryInfo] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [showAgeRestrictionModal, setShowAgeRestrictionModal] = useState(false);
+    const [restrictedUserAge, setRestrictedUserAge] = useState(null);
+    const [restrictedCategorySlug, setRestrictedCategorySlug] = useState(null);
+    const [restrictionType, setRestrictionType] = useState(null); // 'adult' or 'kids'
     console.log("featuresCrad,", featureCards);
 
     const categories = [
@@ -106,6 +112,22 @@ export default function CategoryView() {
                     filtered = filtered.filter((card) => card.title !== "Financial Literacy");
                 }
                 
+                // Special handling for Health - Female category
+                // Remove the "Leaderboard" card
+                if (category.key === 'competition' && categorySlug === 'health-female') {
+                    filtered = filtered.filter((card) => card.title !== "Leaderboard");
+                }
+                
+                // Special handling for Financial Literacy category
+                // Move "Financial Quiz" card to the end
+                if (category.key === 'finance' && categorySlug === 'financial-literacy') {
+                    const financialQuizCard = filtered.find((card) => card.title === "Financial Quiz");
+                    const otherCards = filtered.filter((card) => card.title !== "Financial Quiz");
+                    if (financialQuizCard) {
+                        filtered = [...otherCards, financialQuizCard];
+                    }
+                }
+                
                 setFeatureCards(filtered);
             }
         } else {
@@ -115,6 +137,27 @@ export default function CategoryView() {
         
         setLoading(false);
     }, [categorySlug, navigate]);
+
+    // Prevent background scrolling when modal is open
+    useEffect(() => {
+        if (showAgeRestrictionModal) {
+            // Save the current scroll position
+            const scrollY = window.scrollY;
+            document.body.style.position = 'fixed';
+            document.body.style.top = `-${scrollY}px`;
+            document.body.style.width = '100%';
+            document.body.style.overflow = 'hidden';
+            
+            return () => {
+                // Restore scroll position when modal closes
+                document.body.style.position = '';
+                document.body.style.top = '';
+                document.body.style.width = '';
+                document.body.style.overflow = '';
+                window.scrollTo(0, scrollY);
+            };
+        }
+    }, [showAgeRestrictionModal]);
 
     const handleNavigate = (path, featureTitle) => {
         if (path && typeof path === "string") {
@@ -251,7 +294,23 @@ export default function CategoryView() {
                             let lockReason = "";
                             
                             if (isGameCard && userAge !== null) {
-                                // Game access logic here (same as dashboard)
+                                // Check age restrictions for game cards
+                                // Below 14: Only Kids and Teen games
+                                // 14-17: All games (Kids, Teen, Adult)
+                                // 18+: Only Teen and Adult games
+                                if (card.title === "Adult Games" && userAge < 14) {
+                                    isDisabled = true;
+                                    disabledMessage = "Age restriction applies";
+                                    lockReason = "14+";
+                                } else if (card.title === "Teen Games" && userAge < 13) {
+                                    isDisabled = true;
+                                    disabledMessage = "Age restriction applies";
+                                    lockReason = "13+";
+                                } else if (card.title === "Kids Games" && userAge >= 18) {
+                                    isDisabled = true;
+                                    disabledMessage = "Available for learners under 18";
+                                    lockReason = "Under 18";
+                                }
                             }
                             
                             return (
@@ -267,11 +326,24 @@ export default function CategoryView() {
                                     className={`group relative ${isDisabled ? 'cursor-not-allowed' : 'cursor-pointer'}`}
                                     onClick={() => {
                                         if (isDisabled) {
-                                            toast.error(disabledMessage, {
-                                                duration: 4000,
-                                                position: "bottom-center",
-                                                icon: "🔒"
-                                            });
+                                            // Show professional modal for age restrictions
+                                            if (card.title === "Adult Games" && userAge !== null && userAge < 14) {
+                                                setRestrictedUserAge(userAge);
+                                                setRestrictedCategorySlug(categorySlug);
+                                                setRestrictionType('adult');
+                                                setShowAgeRestrictionModal(true);
+                                            } else if (card.title === "Kids Games" && userAge !== null && userAge >= 18) {
+                                                setRestrictedUserAge(userAge);
+                                                setRestrictedCategorySlug(categorySlug);
+                                                setRestrictionType('kids');
+                                                setShowAgeRestrictionModal(true);
+                                            } else {
+                                                toast.error(disabledMessage, {
+                                                    duration: 4000,
+                                                    position: "bottom-center",
+                                                    icon: "🔒"
+                                                });
+                                            }
                                             return;
                                         }
                                         
@@ -365,6 +437,123 @@ export default function CategoryView() {
                     </div>
                 </div>
             </div>
+
+            {/* Age Restriction Modal */}
+            <AnimatePresence>
+                {showAgeRestrictionModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        onClick={() => setShowAgeRestrictionModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-white rounded-2xl shadow-2xl max-w-lg w-full border-2 border-red-200 relative overflow-hidden"
+                        >
+                            {/* Red Warning Header */}
+                            <div className="bg-gradient-to-r from-red-500 to-red-600 px-6 py-4 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-white/20 rounded-full">
+                                        <AlertTriangle className="w-6 h-6 text-white" />
+                                    </div>
+                                    <h3 className="text-xl font-bold text-white">Age Restriction Notice</h3>
+                                </div>
+                                <button
+                                    onClick={() => setShowAgeRestrictionModal(false)}
+                                    className="p-1 hover:bg-white/20 rounded-full transition-colors"
+                                >
+                                    <X className="w-5 h-5 text-white" />
+                                </button>
+                            </div>
+
+                            {/* Modal Content */}
+                            <div className="p-6">
+                                <div className="mb-4">
+                                    {restrictionType === 'adult' ? (
+                                        <>
+                                            <p className="text-gray-700 text-base leading-relaxed mb-3">
+                                                Thank you for your interest in accessing our Adult Games content{categoryInfo ? ` in ${categoryInfo.label}` : ''}. 
+                                                We appreciate your enthusiasm for learning!
+                                            </p>
+                                            <p className="text-gray-700 text-base leading-relaxed mb-3">
+                                                <strong className="text-red-600">Age Requirement:</strong> This content is 
+                                                designed for users who are <strong>14 years of age or older</strong>. 
+                                                Our age restrictions are in place to ensure that all content is 
+                                                age-appropriate and aligns with educational standards.
+                                            </p>
+                                            {restrictedUserAge !== null && (
+                                                <p className="text-gray-700 text-base leading-relaxed mb-3">
+                                                    Your current age is <strong className="text-red-600">{restrictedUserAge} years</strong>. 
+                                                    You will be eligible to access this content when you reach 14 years of age.
+                                                </p>
+                                            )}
+                                            <p className="text-gray-700 text-base leading-relaxed">
+                                                In the meantime, we encourage you to explore our <strong>Kids Games</strong> and 
+                                                <strong> Teen Games</strong> sections{categoryInfo ? ` in ${categoryInfo.label}` : ''}, which are specifically tailored to your age group 
+                                                and offer engaging, educational experiences designed to support your learning journey.
+                                            </p>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <p className="text-gray-700 text-base leading-relaxed mb-3">
+                                                Thank you for your interest in accessing our Kids Games content{categoryInfo ? ` in ${categoryInfo.label}` : ''}. 
+                                                We appreciate your enthusiasm for learning!
+                                            </p>
+                                            <p className="text-gray-700 text-base leading-relaxed mb-3">
+                                                <strong className="text-red-600">Age Requirement:</strong> This content is 
+                                                specifically designed for learners <strong>under 18 years of age</strong>. 
+                                                Our age restrictions are in place to ensure that all content is 
+                                                age-appropriate and aligns with educational standards for younger learners.
+                                            </p>
+                                            {restrictedUserAge !== null && (
+                                                <p className="text-gray-700 text-base leading-relaxed mb-3">
+                                                    Your current age is <strong className="text-red-600">{restrictedUserAge} years</strong>. 
+                                                    This content is optimized for younger learners and may not provide the appropriate 
+                                                    level of challenge or engagement for your age group.
+                                                </p>
+                                            )}
+                                            <p className="text-gray-700 text-base leading-relaxed">
+                                                We encourage you to explore our <strong>Teen Games</strong> and 
+                                                <strong> Adult Games</strong> sections{categoryInfo ? ` in ${categoryInfo.label}` : ''}, which are specifically tailored to your age group 
+                                                and offer more advanced, engaging educational experiences designed to support your learning journey.
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div className="flex gap-3 mt-6">
+                                    <button
+                                        onClick={() => {
+                                            setShowAgeRestrictionModal(false);
+                                            if (restrictedCategorySlug) {
+                                                navigate(`/student/dashboard/${restrictedCategorySlug}`);
+                                            } else {
+                                                navigate('/student/dashboard');
+                                            }
+                                        }}
+                                        className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 py-3 rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl"
+                                    >
+                                        {restrictionType === 'adult' ? 'Explore Kids & Teen Games' : 'Explore Teen & Adult Games'}
+                                    </button>
+                                    <button
+                                        onClick={() => setShowAgeRestrictionModal(false)}
+                                        className="px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

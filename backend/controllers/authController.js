@@ -11,7 +11,7 @@ const generateOTP = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-export const sendOTP = async (email, type = "verify") => {
+export const sendOTP = async (email, type = "verify", sendEmailSync = false) => {
   try {
     const user = await User.findOne({ email: email.toLowerCase() });
 
@@ -22,6 +22,7 @@ export const sendOTP = async (email, type = "verify") => {
     const otp = generateOTP();
     const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
+    // Save OTP first - this is critical and must succeed
     await User.findOneAndUpdate(
       { email: email.toLowerCase() },
       {
@@ -39,26 +40,42 @@ export const sendOTP = async (email, type = "verify") => {
       <p>If you didn't request this, please ignore this email.</p>
     `;
 
-    try {
-      await sendEmail({ to: email, subject, html: message });
-      return { success: true, message: "OTP sent successfully" };
-    } catch (emailErr) {
-      console.error("Send email error:", emailErr);
-      const errorMessage = emailErr?.message || "Unknown email error";
-      // Check if it's a configuration error
-      if (errorMessage.includes("not configured") || errorMessage.includes("MAIL_USER") || errorMessage.includes("MAIL_PASS")) {
-        return { success: false, message: "Email service is not configured. Please contact support." };
+    // Send email asynchronously in the background (non-blocking)
+    // This ensures the API responds quickly even if email service is slow
+    const sendEmailAsync = async () => {
+      try {
+        await sendEmail({ to: email, subject, html: message });
+        console.log(`📩 Email sent successfully to ${email} for ${type}`);
+      } catch (emailErr) {
+        console.error(`❌ Background email send error for ${email}:`, emailErr?.message || emailErr);
+        // Email failure is logged but doesn't affect the response
+        // OTP is already saved, so user can still use it or request resend
       }
-      // Check if it's a timeout error
-      if (errorMessage.includes("timeout") || errorMessage.includes("ETIMEDOUT")) {
-        return { success: false, message: "Email service connection timeout. The OTP has been generated and saved. Please try resending or contact support if the issue persists." };
+    };
+
+    if (sendEmailSync) {
+      // For testing or when synchronous sending is required
+      try {
+        await sendEmail({ to: email, subject, html: message });
+        return { success: true, message: "OTP sent successfully" };
+      } catch (emailErr) {
+        console.error("Send email error:", emailErr);
+        const errorMessage = emailErr?.message || "Unknown email error";
+        // Check if it's a configuration error
+        if (errorMessage.includes("not configured") || errorMessage.includes("MAIL_USER") || errorMessage.includes("MAIL_PASS")) {
+          return { success: false, message: "Email service is not configured. Please contact support." };
+        }
+        // OTP is already saved, so return success with a note
+        return { success: true, message: "OTP generated successfully. Email sending failed, but you can still use the OTP or request a resend." };
       }
-      // Check if it's an authentication error
-      if (errorMessage.includes("authentication") || errorMessage.includes("EAUTH")) {
-        return { success: false, message: "Email service authentication failed. Please contact support." };
-      }
-      // Do not throw; OTP is already stored. Allow frontend to handle resend.
-      return { success: false, message: "Failed to send OTP email, please try resending." };
+    } else {
+      // Start email sending in background (fire and forget)
+      sendEmailAsync().catch(err => {
+        console.error(`Failed to send email in background for ${email}:`, err);
+      });
+      
+      // Return success immediately - OTP is saved, email will be sent in background
+      return { success: true, message: "OTP generated and email is being sent" };
     }
   } catch (error) {
     console.error("Send OTP error:", error);
@@ -178,35 +195,18 @@ export const forgotPassword = async (req, res) => {
       return res.status(400).json({ message: "Admin accounts cannot reset password via OTP. Please contact your administrator." });
     }
 
-    // Send OTP with timeout protection
-    let result;
-    try {
-      result = await Promise.race([
-        sendOTP(user.email, "reset"),
-        new Promise((_, reject) => 
-          setTimeout(() => reject(new Error("Request timeout")), 30000)
-        )
-      ]);
-    } catch (error) {
-      // If timeout or other unexpected error, return failure result
-      console.error("Promise.race error in forgotPassword:", error);
-      const errorMessage = error?.message || "Unknown error";
-      if (errorMessage === "Request timeout") {
-        result = { success: false, message: "Request timeout. Please try again." };
-      } else {
-        // If sendOTP somehow threw an error (shouldn't happen), handle it gracefully
-        result = { success: false, message: `Failed to send OTP: ${errorMessage}` };
-      }
-    }
+    // Send OTP asynchronously (non-blocking email sending)
+    // OTP is saved immediately, email is sent in background
+    const result = await sendOTP(user.email, "reset", false);
 
     if (result && result.success) {
       res.status(200).json({
-        message: "OTP sent to email for password reset",
+        message: "OTP has been generated and sent to your email. Please check your inbox.",
         email: user.email,
       });
     } else {
-      const errorMessage = result?.message || "Failed to send reset OTP";
-      console.error("Failed to send OTP:", errorMessage);
+      const errorMessage = result?.message || "Failed to generate reset OTP";
+      console.error("Failed to generate OTP:", errorMessage);
       res.status(500).json({
         message: errorMessage,
       });
@@ -219,11 +219,7 @@ export const forgotPassword = async (req, res) => {
       name: error?.name
     });
     const errorMessage = error?.message || "Unknown error occurred";
-    if (errorMessage === "Request timeout") {
-      res.status(504).json({ message: "Request timeout. Please try again." });
-    } else {
-      res.status(500).json({ message: "Failed to send reset OTP. Please try again." });
-    }
+    res.status(500).json({ message: "Failed to process password reset request. Please try again." });
   }
 };
 

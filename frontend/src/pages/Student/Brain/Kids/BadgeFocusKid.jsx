@@ -45,7 +45,10 @@ const BadgeFocusKid = () => {
       nextEnabled={levelCompleted}
       nextLabel="Complete"
       backPath="/games/brain-health/kids"
-    >
+    
+      maxScore={1} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <LevelCompleteHandler
         gameId="brain-kids-20"
         gameType="brain-health"

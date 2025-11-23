@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PosterTask2 = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [selectedMessage, setSelectedMessage] = useState(null);
   const [selectedDesign, setSelectedDesign] = useState(null);
   const [showResult, setShowResult] = useState(false);
@@ -126,7 +131,11 @@ const PosterTask2 = () => {
       currentLevel={77}
       showConfetti={showResult}
       backPath="/games/digital-citizenship/kids"
-    >
+    
+      maxScore={questions.length} // Max score is total number of questions (all correct)
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8">
         {!showResult ? (
           <div className="space-y-6">

@@ -180,7 +180,10 @@ const BadgeSmartSaver = () => {
       totalLevels={20}
       coinsPerLevel={coinsPerLevel}
       currentLevel={10}
-      showConfetti={showResult && finalScore >= 4}
+      maxScore={20} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore>= 4}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
     >

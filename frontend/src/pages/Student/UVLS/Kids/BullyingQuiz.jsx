@@ -109,11 +109,15 @@ const BullyingQuiz = () => {
   return (
     <GameShell
       title="Bullying Quiz"
+      score={coins}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 4}
-      score={coins}
+      
       gameId="uvls-kids-32"
       gameType="uvls"
       totalLevels={50}

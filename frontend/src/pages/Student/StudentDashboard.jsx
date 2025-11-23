@@ -79,12 +79,15 @@ import {
 import { toast } from "react-hot-toast";
 import { mockFeatures } from "../../data/mockFeatures";
 import { useSocket } from '../../context/SocketContext';
+import api from "../../utils/api";
 
 export default function StudentDashboard() {
     const navigate = useNavigate();
     const { user } = useAuth();
-    const { wallet, refreshWallet } = useWallet();
+    const { wallet, refreshWallet, setWallet } = useWallet();
     const { subscription, canAccessPillar, hasFeature } = useSubscription();
+    const socketContext = useSocket();
+    const socket = socketContext?.socket || null;
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
     const [upgradeFeature, setUpgradeFeature] = useState(null);
     const [featureCards, setFeatureCards] = useState([]);
@@ -103,7 +106,6 @@ export default function StudentDashboard() {
         weeklyXP: 0,
     });
     const [loading, setLoading] = useState(true);
-    const { socket } = useSocket();
     
     // New analytics data states
     const [pillarMastery, setPillarMastery] = useState(null);
@@ -115,6 +117,28 @@ export default function StudentDashboard() {
     const [leaderboardData, setLeaderboardData] = useState(null);
     const [achievementTimeline, setAchievementTimeline] = useState(null);
     const [dailyActions, setDailyActions] = useState(null);
+    
+    // Quick Settings state
+    const [quickSettings, setQuickSettings] = useState({
+        privacy: {
+            profileVisibility: true,
+            showActivity: true
+        },
+        parentShare: {
+            weeklyReports: true,
+            shareProgress: true
+        },
+        accessibility: {
+            soundEffects: true,
+            animations: true
+        }
+    });
+    const [settingsLoading, setSettingsLoading] = useState(false);
+    
+    // Debug: Log settings changes
+    useEffect(() => {
+        console.log('🔧 Quick Settings state updated:', quickSettings);
+    }, [quickSettings]);
     
     // Calculate user's age from date of birth
     const calculateUserAge = (dob) => {
@@ -415,12 +439,115 @@ export default function StudentDashboard() {
         }
     };
 
+    // Fetch Quick Settings from backend
+    const fetchQuickSettings = async () => {
+        try {
+            setSettingsLoading(true);
+            console.log('🔧 Fetching Quick Settings...');
+            const response = await api.get('/api/user/settings');
+            console.log('🔧 Settings response:', response.data);
+            
+            if (response.data?.settings) {
+                const settings = response.data.settings;
+                const newSettings = {
+                    privacy: {
+                        profileVisibility: settings.privacy?.profileVisibility ?? true,
+                        showActivity: settings.privacy?.showActivity ?? true
+                    },
+                    parentShare: {
+                        weeklyReports: settings.parentShare?.weeklyReports ?? true,
+                        shareProgress: settings.parentShare?.shareProgress ?? true
+                    },
+                    accessibility: {
+                        soundEffects: settings.display?.soundEffects ?? true,
+                        animations: settings.display?.animations ?? true
+                    }
+                };
+                console.log('🔧 Setting Quick Settings state:', newSettings);
+                setQuickSettings(newSettings);
+            } else {
+                console.warn('⚠️ No settings data in response, using defaults');
+            }
+        } catch (error) {
+            console.error('❌ Error fetching settings:', error);
+            console.error('❌ Error details:', error.response?.data || error.message);
+            // Use defaults if fetch fails - state is already initialized with defaults
+        } finally {
+            setSettingsLoading(false);
+        }
+    };
+
+    // Update Quick Settings
+    const updateQuickSetting = async (section, key, value) => {
+        try {
+            console.log(`🔧 Updating setting: ${section}.${key} = ${value}`);
+            
+            // Optimistically update UI
+            const previousValue = quickSettings[section]?.[key];
+            setQuickSettings(prev => ({
+                ...prev,
+                [section]: {
+                    ...prev[section],
+                    [key]: value
+                }
+            }));
+
+            // Save to backend
+            const settingsToUpdate = { [key]: value };
+            const backendSection = section === 'accessibility' ? 'display' : section;
+            
+            console.log(`🔧 Sending to backend: section=${backendSection}, settings=`, settingsToUpdate);
+            
+            const response = await api.put('/api/user/settings', {
+                section: backendSection,
+                settings: settingsToUpdate
+            });
+            
+            console.log('🔧 Backend response:', response.data);
+
+            // Emit socket event for real-time updates (broadcast to other sessions)
+            if (socket) {
+                socket.emit('settings:update', {
+                    userId: user?._id,
+                    section,
+                    key,
+                    value
+                });
+            }
+
+            toast.success('Setting updated', {
+                duration: 2000,
+                position: 'bottom-center',
+                icon: '✅'
+            });
+        } catch (error) {
+            console.error('❌ Error updating setting:', error);
+            console.error('❌ Error details:', error.response?.data || error.message);
+            
+            // Revert on error
+            setQuickSettings(prev => ({
+                ...prev,
+                [section]: {
+                    ...prev[section],
+                    [key]: !value
+                }
+            }));
+            
+            toast.error(error.response?.data?.message || 'Failed to update setting', {
+                duration: 3000,
+                position: 'bottom-center',
+                icon: '❌'
+            });
+        }
+    };
+
     useEffect(() => {
         // Only run once on mount or when user changes
         if (user && (user.role === "student" || user.role === "school_student")) {
             loadDashboardData();
             loadNotifications();
             loadAnalyticsData();
+            fetchQuickSettings();
             // Refresh wallet when dashboard loads to ensure balance is displayed
             refreshWallet();
         }
@@ -429,7 +556,7 @@ export default function StudentDashboard() {
 
     // Real-time subscription updates
     useEffect(() => {
-        if (!socket?.socket) return;
+        if (!socket) return;
 
         const handleSubscriptionUpdate = (data) => {
             if (data && data.subscription) {
@@ -448,19 +575,19 @@ export default function StudentDashboard() {
             }
         };
 
-        socket.socket.on('subscription:activated', handleSubscriptionUpdate);
-        socket.socket.on('subscription:updated', handleSubscriptionUpdate);
-        socket.socket.on('subscription:cancelled', handleSubscriptionUpdate);
+        socket.on('subscription:activated', handleSubscriptionUpdate);
+        socket.on('subscription:updated', handleSubscriptionUpdate);
+        socket.on('subscription:cancelled', handleSubscriptionUpdate);
 
         return () => {
-            if (socket?.socket) {
-                socket.socket.off('subscription:activated', handleSubscriptionUpdate);
-                socket.socket.off('subscription:updated', handleSubscriptionUpdate);
-                socket.socket.off('subscription:cancelled', handleSubscriptionUpdate);
+            if (socket) {
+                socket.off('subscription:activated', handleSubscriptionUpdate);
+                socket.off('subscription:updated', handleSubscriptionUpdate);
+                socket.off('subscription:cancelled', handleSubscriptionUpdate);
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [socket?.socket, subscription?.status]); // Only depend on socket and subscription status
+    }, [socket, subscription?.status]); // Only depend on socket and subscription status
 
     useEffect(() => {
         if (!socket) return;
@@ -476,6 +603,30 @@ export default function StudentDashboard() {
                 nextLevelXp: (data.level || prev.level) * 100,
                 streak: data.streak || prev.streak
             }));
+            
+            // Update wallet balance immediately if provided in the event
+            if (data?.newBalance !== undefined && setWallet) {
+                setWallet(prev => {
+                    if (prev) {
+                        return {
+                            ...prev,
+                            balance: data.newBalance
+                        };
+                    } else {
+                        return {
+                            balance: data.newBalance,
+                            userId: user?._id || user?.id
+                        };
+                    }
+                });
+            }
+            
+            // Refresh wallet from API to ensure consistency
+            if (refreshWallet) {
+                setTimeout(() => {
+                    refreshWallet();
+                }, 200);
+            }
             
             // Show toast with XP and coins earned
             if (data.xpEarned && data.coinsEarned) {
@@ -503,6 +654,36 @@ export default function StudentDashboard() {
             }
         };
         
+        const handleWalletUpdate = (data) => {
+            console.log('💰 Wallet updated via socket in StudentDashboard:', data);
+            
+            // Update wallet balance directly from socket data for immediate UI update
+            if (data?.balance !== undefined || data?.newBalance !== undefined) {
+                const newBalance = data.balance || data.newBalance;
+                if (setWallet) {
+                    setWallet(prev => {
+                        if (prev) {
+                            return {
+                                ...prev,
+                                balance: newBalance
+                            };
+                        } else {
+                            return {
+                                balance: newBalance,
+                                userId: user?._id || user?.id
+                            };
+                        }
+                    });
+                }
+            }
+            
+            // Also refresh from API to ensure consistency
+            if (refreshWallet) {
+                setTimeout(() => {
+                    refreshWallet();
+                }, 200);
+            }
+        };
         
         const handleLevelUp = (data) => {
             setStats((prev) => ({ 
@@ -518,14 +699,30 @@ export default function StudentDashboard() {
             );
         };
         
+        const handleSettingsUpdate = (data) => {
+            if (data.userId === user?._id) {
+                setQuickSettings(prev => ({
+                    ...prev,
+                    [data.section]: {
+                        ...prev[data.section],
+                        [data.key]: data.value
+                    }
+                }));
+            }
+        };
+        
         socket.on('game-completed', handleGameCompleted);
+        socket.on('wallet:updated', handleWalletUpdate);
         socket.on('level-up', handleLevelUp);
+        socket.on('settings:updated', handleSettingsUpdate);
         
         return () => {
             socket.off('game-completed', handleGameCompleted);
+            socket.off('wallet:updated', handleWalletUpdate);
             socket.off('level-up', handleLevelUp);
+            socket.off('settings:updated', handleSettingsUpdate);
         };
-    }, [socket, stats.level]);
+    }, [socket, stats.level, setWallet, refreshWallet, user]);
 
     const categories = [
         { key: "finance", label: "Financial Literacy" },
@@ -2065,11 +2262,25 @@ export default function StudentDashboard() {
                                     <span className="text-sm text-gray-600">Profile Visibility</span>
                                     <motion.button
                                         whileTap={{ scale: 0.9 }}
-                                        className="w-12 h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full relative shadow-md"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            console.log('🔧 Toggle clicked: profileVisibility');
+                                            updateQuickSetting('privacy', 'profileVisibility', !quickSettings.privacy.profileVisibility);
+                                        }}
+                                        disabled={settingsLoading}
+                                        className={`w-12 h-6 rounded-full relative shadow-md transition-colors cursor-pointer ${
+                                            settingsLoading ? 'opacity-50 cursor-not-allowed' : ''
+                                        } ${
+                                            quickSettings.privacy.profileVisibility 
+                                                ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
+                                                : 'bg-gray-300'
+                                        }`}
                                     >
                                         <motion.div 
-                                            className="absolute top-0.5 right-0.5 w-5 h-5 bg-white rounded-full shadow"
-                                            animate={{ x: 0 }}
+                                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
+                                            animate={{ x: quickSettings.privacy.profileVisibility ? 22 : 2 }}
+                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
                                         />
                                     </motion.button>
                                 </div>
@@ -2077,16 +2288,30 @@ export default function StudentDashboard() {
                                     <span className="text-sm text-gray-600">Show Activity</span>
                                     <motion.button
                                         whileTap={{ scale: 0.9 }}
-                                        className="w-12 h-6 bg-gray-300 rounded-full relative shadow-md"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            console.log('🔧 Toggle clicked: showActivity');
+                                            updateQuickSetting('privacy', 'showActivity', !quickSettings.privacy.showActivity);
+                                        }}
+                                        disabled={settingsLoading}
+                                        className={`w-12 h-6 rounded-full relative shadow-md transition-colors cursor-pointer ${
+                                            settingsLoading ? 'opacity-50 cursor-not-allowed' : ''
+                                        } ${
+                                            quickSettings.privacy.showActivity 
+                                                ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
+                                                : 'bg-gray-300'
+                                        }`}
                                     >
                                         <motion.div 
-                                            className="absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow"
-                                            animate={{ x: 0 }}
+                                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
+                                            animate={{ x: quickSettings.privacy.showActivity ? 22 : 2 }}
+                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
                                         />
                                     </motion.button>
-                                    </div>
                                 </div>
-                            </motion.div>
+                            </div>
+                        </motion.div>
 
                         {/* Parent Share */}
                         <motion.div
@@ -2104,11 +2329,25 @@ export default function StudentDashboard() {
                                     <span className="text-sm text-gray-600">Weekly Reports</span>
                                     <motion.button
                                         whileTap={{ scale: 0.9 }}
-                                        className="w-12 h-6 bg-gradient-to-r from-pink-400 to-rose-500 rounded-full relative shadow-md"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            console.log('🔧 Toggle clicked: weeklyReports');
+                                            updateQuickSetting('parentShare', 'weeklyReports', !quickSettings.parentShare.weeklyReports);
+                                        }}
+                                        disabled={settingsLoading}
+                                        className={`w-12 h-6 rounded-full relative shadow-md transition-colors cursor-pointer ${
+                                            settingsLoading ? 'opacity-50 cursor-not-allowed' : ''
+                                        } ${
+                                            quickSettings.parentShare.weeklyReports 
+                                                ? 'bg-gradient-to-r from-pink-400 to-rose-500' 
+                                                : 'bg-gray-300'
+                                        }`}
                                     >
                                         <motion.div 
-                                            className="absolute top-0.5 right-0.5 w-5 h-5 bg-white rounded-full shadow"
-                                            animate={{ x: 0 }}
+                                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
+                                            animate={{ x: quickSettings.parentShare.weeklyReports ? 22 : 2 }}
+                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
                                         />
                                     </motion.button>
                                 </div>
@@ -2116,11 +2355,25 @@ export default function StudentDashboard() {
                                     <span className="text-sm text-gray-600">Share Progress</span>
                                     <motion.button
                                         whileTap={{ scale: 0.9 }}
-                                        className="w-12 h-6 bg-gradient-to-r from-pink-400 to-rose-500 rounded-full relative shadow-md"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            console.log('🔧 Toggle clicked: shareProgress');
+                                            updateQuickSetting('parentShare', 'shareProgress', !quickSettings.parentShare.shareProgress);
+                                        }}
+                                        disabled={settingsLoading}
+                                        className={`w-12 h-6 rounded-full relative shadow-md transition-colors cursor-pointer ${
+                                            settingsLoading ? 'opacity-50 cursor-not-allowed' : ''
+                                        } ${
+                                            quickSettings.parentShare.shareProgress 
+                                                ? 'bg-gradient-to-r from-pink-400 to-rose-500' 
+                                                : 'bg-gray-300'
+                                        }`}
                                     >
                                         <motion.div 
-                                            className="absolute top-0.5 right-0.5 w-5 h-5 bg-white rounded-full shadow"
-                                            animate={{ x: 0 }}
+                                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
+                                            animate={{ x: quickSettings.parentShare.shareProgress ? 22 : 2 }}
+                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
                                         />
                                     </motion.button>
                                 </div>
@@ -2143,11 +2396,25 @@ export default function StudentDashboard() {
                                     <span className="text-sm text-gray-600">Sound Effects</span>
                                     <motion.button
                                         whileTap={{ scale: 0.9 }}
-                                        className="w-12 h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full relative shadow-md"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            console.log('🔧 Toggle clicked: soundEffects');
+                                            updateQuickSetting('accessibility', 'soundEffects', !quickSettings.accessibility.soundEffects);
+                                        }}
+                                        disabled={settingsLoading}
+                                        className={`w-12 h-6 rounded-full relative shadow-md transition-colors cursor-pointer ${
+                                            settingsLoading ? 'opacity-50 cursor-not-allowed' : ''
+                                        } ${
+                                            quickSettings.accessibility.soundEffects 
+                                                ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
+                                                : 'bg-gray-300'
+                                        }`}
                                     >
                                         <motion.div 
-                                            className="absolute top-0.5 right-0.5 w-5 h-5 bg-white rounded-full shadow"
-                                            animate={{ x: 0 }}
+                                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
+                                            animate={{ x: quickSettings.accessibility.soundEffects ? 22 : 2 }}
+                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
                                         />
                                     </motion.button>
                                 </div>
@@ -2155,11 +2422,25 @@ export default function StudentDashboard() {
                                     <span className="text-sm text-gray-600">Animations</span>
                                     <motion.button
                                         whileTap={{ scale: 0.9 }}
-                                        className="w-12 h-6 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full relative shadow-md"
+                                        onClick={(e) => {
+                                            e.preventDefault();
+                                            e.stopPropagation();
+                                            console.log('🔧 Toggle clicked: animations');
+                                            updateQuickSetting('accessibility', 'animations', !quickSettings.accessibility.animations);
+                                        }}
+                                        disabled={settingsLoading}
+                                        className={`w-12 h-6 rounded-full relative shadow-md transition-colors cursor-pointer ${
+                                            settingsLoading ? 'opacity-50 cursor-not-allowed' : ''
+                                        } ${
+                                            quickSettings.accessibility.animations 
+                                                ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
+                                                : 'bg-gray-300'
+                                        }`}
                                     >
                                         <motion.div 
-                                            className="absolute top-0.5 right-0.5 w-5 h-5 bg-white rounded-full shadow"
-                                            animate={{ x: 0 }}
+                                            className="absolute top-0.5 w-5 h-5 bg-white rounded-full shadow"
+                                            animate={{ x: quickSettings.accessibility.animations ? 22 : 2 }}
+                                            transition={{ type: "spring", stiffness: 500, damping: 30 }}
                                         />
                                     </motion.button>
                                 </div>

@@ -128,11 +128,15 @@ const SpotHelp = () => {
   return (
     <GameShell
       title="Spot Help"
+      score={coins}
       subtitle={`Scene ${currentScenario + 1} of ${scenarios.length}`}
       onNext={handleNext}
       nextEnabled={showResult && correctChoices >= 2}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && correctChoices >= 2}
-      score={coins}
+      
       gameId="uvls-kids-5"
       gameType="uvls"
       totalLevels={10}

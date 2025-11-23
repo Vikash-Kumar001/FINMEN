@@ -116,11 +116,15 @@ const PuzzleOfSavingGoals = () => {
   return (
     <GameShell
       title="Puzzle of Saving Goals"
+      score={coins}
       subtitle={showResult ? "Game Complete!" : "Match saving goals to their purposes"}
       onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 4} // Pass if 4 or more correct
+      nextEnabled={showResult && finalScore >= 4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp} // Pass if 4 or more correct
       showGameOver={showResult && finalScore >= 4}
-      score={coins}
+      
       gameId="finance-teens-4"
       gameType="finance"
       totalLevels={20}

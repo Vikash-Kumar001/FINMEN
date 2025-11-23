@@ -60,7 +60,10 @@ const ReflexBudgetSmarts = () => {
       onNext={showResult ? handleFinish : null}
       nextEnabled={showResult}
       showGameOver={showResult}
-      showConfetti={showResult && score >= 3}
+      maxScore={stages.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && score>= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       score={score}

@@ -1,6 +1,7 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Confetti, ScoreFlash, GameOverModal } from "../GameShell";
+import { Trophy, Calculator, PiggyBank, TrendingUp, Target, CheckCircle } from "lucide-react";
+import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const BudgetingQuiz = () => {
@@ -8,448 +9,269 @@ const BudgetingQuiz = () => {
   const location = useLocation();
   // Get coinsPerLevel from navigation state (from game card) or use default
   const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choice, setChoice] = useState(null);
-  const [showResult, setShowResult] = useState(false);
-  const [answers, setAnswers] = useState([]);
-  const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
+    useGameFeedback();
 
-  // Calculate back path
-  const resolvedBackPath = useMemo(() => {
-    if (location.state?.returnPath) {
-      return location.state.returnPath;
-    }
+  const autoAdvanceTimer = useRef(null);
 
-    const pathSegments = location.pathname.split("/").filter(Boolean);
-    if (pathSegments[0] === "student" && pathSegments.length >= 3) {
-      const categoryKey = pathSegments[1];
-      const ageKey = pathSegments[2];
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [totalCoins, setTotalCoins] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [earnedBadge, setEarnedBadge] = useState(false);
 
-      const categorySlugMap = {
-        finance: "financial-literacy",
-        "financial-literacy": "financial-literacy",
-      };
-
-      const ageSlugMap = {
-        kid: "kids",
-        kids: "kids",
-      };
-
-      const mappedCategory = categorySlugMap[categoryKey] || categoryKey;
-      const mappedAge = ageSlugMap[ageKey] || ageKey;
-
-      return `/games/${mappedCategory}/${mappedAge}`;
-    }
-
-    return "/games";
-  }, [location.pathname, location.state]);
-
-  const handleGameOverClose = () => {
-    navigate(resolvedBackPath);
-  };
-
-  const questions = [
+  const levels = [
     {
       id: 1,
-      title: "What is a Budget?",
-      text: "What is a budget?",
-      emoji: "📊",
+      title: "What is Budget?",
+      question: "What is a budget?",
+      icon: Calculator,
       options: [
-        { 
-          id: "a", 
-          text: "A plan for spending and saving money", 
-          emoji: "📋",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "A shopping list", 
-          emoji: "🛒",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Free money you get", 
-          emoji: "💰",
-          isCorrect: false
-        }
+        { text: "A spending plan", correct: true, coins: 10 },
+        { text: "A shopping list", correct: false, coins: 0 },
+        { text: "Free money", correct: false, coins: 0 }
       ],
       feedback: {
-        correct: "Right! A budget is a plan that helps you manage your money!",
-        wrong: "A budget is a plan for how you'll spend and save your money!"
+        correct: "Right! Budget helps plan spending!",
+        wrong: "Budget is a plan for money!"
       }
     },
     {
       id: 2,
-      title: "Why Make a Budget?",
-      text: "Why is it important to make a budget?",
-      emoji: "🎯",
+      title: "Why Budget?",
+      question: "Why make a budget?",
+      icon: Target,
       options: [
-        { 
-          id: "a", 
-          text: "To track your money and reach goals", 
-          emoji: "💾",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "To spend all your money quickly", 
-          emoji: "💸",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "To avoid saving money", 
-          emoji: "🚫",
-          isCorrect: false
-        }
+        { text: "Track expenses and save", correct: true, coins: 15 },
+        { text: "Spend all money fast", correct: false, coins: 0 },
+        { text: "Just for fun", correct: false, coins: 0 }
       ],
       feedback: {
-        correct: "Perfect! Budgets help you track money and achieve your goals!",
-        wrong: "Budgets help you keep track of your money and save for things you want!"
+        correct: "Perfect! Budgets help save!",
+        wrong: "Budgets help track money!"
       }
     },
     {
       id: 3,
-      title: "Spending More Than You Have",
-      text: "You earn ₹100 but spend ₹120. What happens?",
-      emoji: "⚠️",
+      title: "Over Spending",
+      question: "Earn ₹100, spend ₹120. What happens?",
+      icon: TrendingUp,
       options: [
-        { 
-          id: "a", 
-          text: "You go into debt", 
-          emoji: "📉",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "You save ₹20", 
-          emoji: "💰",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "You get extra money", 
-          emoji: "🎁",
-          isCorrect: false
-        }
+        { text: "You go into debt", correct: true, coins: 20 },
+        { text: "You save ₹20", correct: false, coins: 0 },
+        { text: "You win a prize", correct: false, coins: 0 }
       ],
       feedback: {
-        correct: "Correct! Spending more than you earn creates debt. Always spend less than you have!",
-        wrong: "If you spend more than you earn, you go into debt. Always stay within your budget!"
+        correct: "Correct! Never spend more than you earn!",
+        wrong: "Spending more = debt!"
       }
     },
     {
       id: 4,
-      title: "Good Budgeting Habit",
-      text: "Which is a good budgeting habit?",
-      emoji: "✅",
+      title: "Good Habits",
+      question: "Which is a good budgeting habit?",
+      icon: CheckCircle,
       options: [
-        { 
-          id: "a", 
-          text: "Write down expenses and plan before spending", 
-          emoji: "📝",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Spend money without planning", 
-          emoji: "🎲",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Never check how much you spend", 
-          emoji: "🙈",
-          isCorrect: false
-        }
+        { text: "List expenses and plan", correct: true, coins: 25 },
+        { text: "Guess and spend randomly", correct: false, coins: 0 },
+        { text: "Ignore spending", correct: false, coins: 0 }
       ],
       feedback: {
-        correct: "Great! Planning and tracking expenses is the key to good budgeting!",
-        wrong: "Good budgeting means planning your expenses and tracking where your money goes!"
+        correct: "Great! Planning is key!",
+        wrong: "Always plan expenses!"
       }
     },
     {
       id: 5,
       title: "Budget Benefits",
-      text: "If you follow a budget, what can you do?",
-      emoji: "🏆",
+      question: "If you follow budget, you can...",
+      icon: PiggyBank,
       options: [
-        { 
-          id: "a", 
-          text: "Save money and achieve your goals", 
-          emoji: "🎯",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Buy everything you want immediately", 
-          emoji: "🛍️",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Lose track of your money", 
-          emoji: "😵",
-          isCorrect: false
-        }
+        { text: "Achieve goals stress-free", correct: true, coins: 30 },
+        { text: "Buy unnecessary things", correct: false, coins: 0 },
+        { text: "Lose track of money", correct: false, coins: 0 }
       ],
       feedback: {
-        correct: "Excellent! Following a budget helps you save money and reach your goals!",
-        wrong: "Budgets help you save money and achieve your goals by planning your spending!"
+        correct: "Excellent! Budgets = success!",
+        wrong: "Budgets help reach goals!"
       }
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
-    if (choice !== null) return; // Prevent multiple selections
+  const currentLevelData = levels[currentLevel - 1];
+  const Icon = currentLevelData.icon;
+
+  const handleAnswer = (option) => {
+    setSelectedAnswer(option);
+    setAnswered(true);
+    resetFeedback();
     
-    const currentQ = questions[currentQuestion];
-    const selectedOption = currentQ.options.find(opt => opt.id === selectedChoice);
-    const isCorrect = selectedOption?.isCorrect || false;
-    
-    setChoice(selectedChoice);
-    const newAnswers = [...answers, { questionId: currentQ.id, choice: selectedChoice, isCorrect }];
-    setAnswers(newAnswers);
-    
-    if (isCorrect) {
-      // Update coins in real-time for correct answers
-      setCoins(prevCoins => prevCoins + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-    
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setChoice(null);
-        resetFeedback();
-      } else {
-        // Calculate final score
-        const correctAnswers = newAnswers.filter(a => a.isCorrect).length;
-        setFinalScore(correctAnswers);
-        setShowResult(true);
+    if (option.correct) {
+      setTotalCoins(totalCoins + option.coins);
+      showCorrectAnswerFeedback(option.coins, true);
+      
+      if (currentLevel === 5) {
+        setEarnedBadge(true);
       }
-    }, isCorrect ? 1500 : 1000);
+    }
   };
 
   const handleNext = () => {
-    navigate(resolvedBackPath);
+    // clear any pending auto-advance timer when user manually navigates
+    if (autoAdvanceTimer.current) {
+      clearTimeout(autoAdvanceTimer.current);
+      autoAdvanceTimer.current = null;
+    }
+
+    if (currentLevel < 5) {
+      setCurrentLevel(currentLevel + 1);
+      setAnswered(false);
+      setSelectedAnswer(null);
+    } else {
+      navigate("/games/financial-literacy/kids");
+    }
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentQuestion(0);
-    setAnswers([]);
-    setChoice(null);
-    setCoins(0);
-    setFinalScore(0);
-    resetFeedback();
-  };
+  // Auto-advance to next question after a short delay when an answer is given.
+  useEffect(() => {
+    if (!answered) return;
 
-  const allQuestionsAnswered = answers.length === questions.length;
+    // set a timer to auto-advance after 2 seconds
+    autoAdvanceTimer.current = setTimeout(() => {
+      if (currentLevel < levels.length) {
+        setCurrentLevel((prev) => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      } else {
+        navigate("/games/financial-literacy/kids");
+      }
+      autoAdvanceTimer.current = null;
+    }, 2000);
+
+    // cleanup if answered changes again or component unmounts
+    return () => {
+      if (autoAdvanceTimer.current) {
+        clearTimeout(autoAdvanceTimer.current);
+        autoAdvanceTimer.current = null;
+      }
+    };
+  }, [answered, currentLevel, levels.length, navigate]);
 
   return (
-    <div className="h-screen w-full bg-gradient-to-br from-purple-100 via-indigo-50 to-pink-100 flex flex-col relative overflow-hidden">
-      {/* Floating Budget Elements Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 15 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute text-lg sm:text-2xl opacity-10"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `float ${Math.random() * 6 + 4}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 2}s`,
-            }}
-          >
-            {['📊', '💰', '📋', '🎯', '📝', '💾'][i % 6]}
-          </div>
-        ))}
-      </div>
-
-      {/* Header */}
-      <div className="flex items-center justify-between px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 relative z-30 bg-white/30 backdrop-blur-sm border-b border-purple-200 flex-shrink-0 gap-2 sm:gap-4">
-        <button
-          onClick={() => navigate(resolvedBackPath)}
-          className="bg-white/80 hover:bg-white text-purple-600 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-purple-300 shadow-md transition-all cursor-pointer font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base flex-shrink-0"
-        >
-          ← <span className="hidden sm:inline">Back</span>
-        </button>
-        <div className="flex-1 flex items-center justify-center min-w-0">
-          <h1 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold px-2 flex items-center justify-center gap-1 sm:gap-2 truncate">
-            <span className="text-sm sm:text-base md:text-lg lg:text-xl flex-shrink-0">📊</span>
-            <span className="bg-gradient-to-r from-purple-500 via-indigo-500 to-pink-500 bg-clip-text text-transparent truncate">
-              <span className="hidden xs:inline">Quiz on Budgeting</span>
-              <span className="xs:hidden">Budgeting Quiz</span>
-            </span>
-          </h1>
+    <GameShell
+      title={`Question ${currentLevel} – ${currentLevelData.title}`}
+      subtitle={currentLevelData.question}
+      coins={totalCoins}
+      currentLevel={currentLevel}
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      showConfetti={answered && selectedAnswer?.correct}
+      gameId="finance-kids-42"
+      gameType="finance"
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={totalCoins}
+    
+      maxScore={5} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-4">
+        {/* Icon Display */}
+        <div className="flex justify-center mb-3">
+          <Icon className="w-16 h-16 text-purple-400 animate-pulse" />
         </div>
-        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-          <div className="flex items-center gap-1 sm:gap-2 bg-white/80 backdrop-blur-md px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-purple-300 shadow-md">
-            <span className="text-lg sm:text-xl md:text-2xl">📊</span>
-            <span className="text-purple-700 font-bold text-xs sm:text-sm md:text-lg">Coins: {coins}</span>
-          </div>
-        </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col justify-center items-center text-center px-2 sm:px-4 md:px-6 z-10 py-2 sm:py-4 overflow-y-auto min-h-0">
-        {!showResult ? (
-          <div className="w-full max-w-3xl space-y-3 sm:space-y-4">
-            {/* Progress Dots */}
-            <div className="flex justify-center gap-2 mb-2 sm:mb-3">
-              {questions.map((_, index) => (
-                <div
-                  key={index}
-                  className={`h-2 w-2 sm:h-2.5 sm:w-2.5 rounded-full transition-all ${
-                    index === currentQuestion
-                      ? 'bg-purple-500 w-6 sm:w-8'
-                      : index < currentQuestion
-                      ? 'bg-purple-300'
-                      : 'bg-purple-200'
-                  }`}
-                />
-              ))}
-            </div>
-
-            {/* Question Counter */}
-            <p className="text-gray-600 text-xs sm:text-sm mb-2 sm:mb-3 font-medium">
-              Question {currentQuestion + 1} of {questions.length}
-            </p>
-
-            {/* Question Card */}
-            <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-purple-300 shadow-xl">
-              <div className="text-3xl sm:text-4xl md:text-5xl mb-3 sm:mb-4">{questions[currentQuestion].emoji}</div>
-              
-              <h3 className="text-base sm:text-lg md:text-xl font-bold text-purple-700 mb-2 sm:mb-3">
-                {questions[currentQuestion].title}
-              </h3>
-              
-              <p className="text-gray-800 text-sm sm:text-base md:text-lg mb-4 sm:mb-6 font-semibold leading-relaxed px-1">
-                {questions[currentQuestion].text}
-              </p>
-
-              {/* Options */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                {questions[currentQuestion].options.map((option) => {
-                  const isSelected = choice === option.id;
-                  const isCorrect = option.isCorrect;
-                  const showFeedback = choice !== null;
-                  
-                  let buttonClass = "bg-gradient-to-r from-purple-400 via-indigo-400 to-pink-400 hover:from-purple-500 hover:via-indigo-500 hover:to-pink-500 text-white";
-                  
-                  if (showFeedback) {
-                    if (isSelected) {
-                      buttonClass = isCorrect
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white ring-4 ring-green-200"
-                        : "bg-gradient-to-r from-red-500 to-rose-600 text-white ring-4 ring-red-200";
-                    } else if (isCorrect) {
-                      buttonClass = "bg-gradient-to-r from-green-500 to-emerald-600 text-white ring-4 ring-green-200";
-                    }
-                  }
-
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleChoice(option.id)}
-                      disabled={choice !== null}
-                      className={`${buttonClass} p-4 sm:p-5 rounded-xl sm:rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-75 disabled:cursor-not-allowed disabled:transform-none`}
-                    >
-                      <div className="text-3xl sm:text-4xl mb-2">{option.emoji}</div>
-                      <h3 className="font-bold text-sm sm:text-base md:text-lg">{option.text}</h3>
-                      {showFeedback && isSelected && (
-                        <div className="mt-2 text-2xl">
-                          {isCorrect ? "✓" : "✗"}
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+        {!answered ? (
+          <div className="space-y-2">
+            {currentLevelData.options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => handleAnswer(option)}
+                className="w-full bg-gradient-to-r from-purple-600 to-pink-600 px-6 py-3 rounded-full text-white font-bold hover:scale-105 transition-transform text-sm"
+              >
+                {option.text}
+              </button>
+            ))}
           </div>
         ) : (
-          <>
-            {/* Results Card */}
-            <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-purple-300 shadow-xl text-center max-w-2xl w-full">
-              {finalScore >= 3 ? (
-                <div>
-                  <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4 animate-bounce">📊</div>
-                  <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">✨</div>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mb-2 sm:mb-3">Budget Master!</h3>
-                  <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
-                    You got {finalScore} out of {questions.length} questions correct!
-                    You understand budgeting well! 🎯
-                  </p>
-                  <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
-                    <span className="text-xl sm:text-2xl">💰</span>
-                    <span className="text-base sm:text-lg md:text-xl font-bold">+{coins} Coins</span>
-                  </div>
-                  <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 px-1">
-                    Budget = Plan your money wisely! 💡
-                  </p>
-                  {allQuestionsAnswered && (
-                    <button
-                      onClick={handleNext}
-                      className="bg-gradient-to-r from-purple-500 via-indigo-500 to-pink-500 hover:from-purple-600 hover:via-indigo-600 hover:to-pink-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
-                    >
-                      <span className="hidden sm:inline">Continue to Next Level</span>
-                      <span className="sm:hidden">Next Level</span> →
-                    </button>
-                  )}
+          <div className={`p-4 rounded-xl border-2 ${
+            selectedAnswer.correct 
+              ? 'bg-green-500/20 border-green-400' 
+              : 'bg-red-500/20 border-red-400'
+          }`}>
+            <Trophy className={`mx-auto w-12 h-12 mb-2 ${
+              selectedAnswer.correct ? 'text-yellow-400' : 'text-gray-400'
+            }`} />
+            <h3 className="text-lg font-bold mb-1">
+              {selectedAnswer.correct ? `+${selectedAnswer.coins} Coins!` : 'Learn More!'}
+            </h3>
+            <p className="text-white/90 text-sm">
+              {selectedAnswer.correct 
+                ? currentLevelData.feedback.correct 
+                : currentLevelData.feedback.wrong}
+            </p>
+            
+            {earnedBadge && (
+              <div className="mt-3 p-3 bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-xl border-2 border-purple-400">
+                <div className="flex items-center justify-center gap-2 mb-1">
+                  <Trophy className="w-8 h-8 text-yellow-400" />
+                  <Calculator className="w-8 h-8 text-purple-400" />
                 </div>
-              ) : (
-                <div>
-                  <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">😔</div>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-700 mb-2 sm:mb-3">Keep Learning!</h3>
-                  <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
-                    You got {finalScore} out of {questions.length} questions correct.
-                    Remember, a budget is a plan for your money!
-                  </p>
-                  <button
-                    onClick={handleTryAgain}
-                    className="bg-gradient-to-r from-purple-500 via-indigo-500 to-pink-500 hover:from-purple-600 hover:via-indigo-600 hover:to-pink-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105 mb-3 sm:mb-4"
-                  >
-                    Try Again 📊
-                  </button>
-                  <p className="text-gray-600 text-xs sm:text-sm px-1">
-                    Try to understand what a budget is and why it's important!
-                  </p>
-                </div>
-              )}
-            </div>
-          </>
+                <p className="text-lg font-bold text-purple-300 mb-1">
+                  📊 Budget Master! 📊
+                </p>
+                <p className="text-white/90 text-xs mb-1">
+                  You understand budgeting!
+                </p>
+                <p className="text-green-200 font-bold text-sm">
+                  Total: {totalCoins} Coins
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Progress Icons */}
+        <div className="flex justify-center gap-1">
+          {levels.map((level) => {
+            const LevelIcon = level.icon;
+            return (
+              <LevelIcon
+                key={level.id}
+                className={`w-5 h-5 ${
+                  level.id < currentLevel
+                    ? 'text-green-400'
+                    : level.id === currentLevel
+                    ? 'text-purple-400 animate-pulse'
+                    : 'text-gray-600'
+                }`}
+              />
+            );
+          })}
+        </div>
+
+        {/* Compact Stats */}
+        <div className="flex gap-2 justify-center">
+          <div className="bg-white/5 rounded-lg p-2 backdrop-blur-sm flex-1 max-w-[120px]">
+            <p className="text-white/70 text-xs">Questions</p>
+            <p className="text-purple-400 font-bold">{currentLevel}/5</p>
+          </div>
+          <div className="bg-white/5 rounded-lg p-2 backdrop-blur-sm flex-1 max-w-[120px]">
+            <p className="text-white/70 text-xs">Coins</p>
+            <p className="text-yellow-400 font-bold">{totalCoins}</p>
+          </div>
+        </div>
+
+        {currentLevel === 5 && answered && (
+          <div className="p-2 bg-purple-500/20 rounded-lg border border-purple-400">
+            <p className="text-xs text-purple-200">
+              💡 Budget = Plan your money wisely!
+            </p>
+          </div>
         )}
       </div>
-
-      {/* Confetti and Score Flash */}
-      {showAnswerConfetti && <Confetti duration={2000} />}
-      {flashPoints > 0 && <ScoreFlash points={flashPoints} />}
-
-      {/* Game Over Modal */}
-      {showResult && finalScore >= 3 && (
-        <GameOverModal
-          score={5}
-          gameId="finance-kids-22"
-          gameType="finance"
-          totalLevels={1}
-          coinsPerLevel={5}
-          isReplay={location?.state?.isReplay || false}
-          onClose={handleGameOverClose}
-        />
-      )}
-
-      {/* Animations CSS */}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(10deg); }
-        }
-      `}</style>
-    </div>
+    </GameShell>
   );
 };
 

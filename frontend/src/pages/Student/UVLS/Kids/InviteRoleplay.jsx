@@ -110,11 +110,15 @@ const InviteRoleplay = () => {
   return (
     <GameShell
       title="Invite Roleplay"
+      score={coins}
       subtitle={`Scene ${currentScene + 1} of ${scenes.length}`}
       onNext={handleNext}
       nextEnabled={showResult && inclusiveCount >= 2}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && inclusiveCount >= 2}
-      score={coins}
+      
       gameId="uvls-kids-18"
       gameType="uvls"
       totalLevels={20}

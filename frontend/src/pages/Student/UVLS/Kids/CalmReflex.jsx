@@ -114,11 +114,15 @@ const CalmReflex = () => {
   return (
     <GameShell
       title="Calm Reflex"
+      score={coins}
       subtitle={`Level ${currentLevel + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 3}
-      score={coins}
+      
       gameId="uvls-kids-48"
       gameType="uvls"
       totalLevels={50}

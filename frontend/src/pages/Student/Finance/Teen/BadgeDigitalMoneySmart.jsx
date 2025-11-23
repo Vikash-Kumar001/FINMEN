@@ -208,6 +208,9 @@ const BadgeDigitalMoneySmart = () => {
       score={totalScore}
       totalScore={800} // Max possible score
       onGameComplete={() => navigate("/games/financial-literacy/teen")}
+      maxScore={scenarios.length} // Max score is total number of questions (all correct)    
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="text-center text-white space-y-6">
         <h3 className="text-3xl font-bold mb-4">Digital Money Safety Challenge</h3>

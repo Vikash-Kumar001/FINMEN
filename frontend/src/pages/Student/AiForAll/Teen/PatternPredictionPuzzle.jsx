@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PatternPredictionPuzzle = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [score, setScore] = useState(0);
@@ -66,11 +71,15 @@ const PatternPredictionPuzzle = () => {
   return (
     <GameShell
       title="Pattern Prediction Puzzle"
+      score={coins}
       subtitle={`Puzzle ${currentPuzzle + 1} of ${puzzles.length}`}
       onNext={handleNext}
       nextEnabled={showResult && score >= 5}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && score >= 5}
-      score={coins}
+      
       gameId="ai-teen-2"
       gameType="ai"
       totalLevels={20}

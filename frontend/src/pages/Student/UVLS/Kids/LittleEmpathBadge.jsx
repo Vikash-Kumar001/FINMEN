@@ -104,7 +104,10 @@ const LittleEmpathBadge = () => {
       currentLevel={10}
       showConfetti={showResult}
       backPath="/games/uvls/kids"
-    >
+    
+      maxScore={10} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8">
         {!showResult ? (
           <div className="space-y-6">

@@ -139,11 +139,15 @@ const RightsMatch = () => {
   return (
     <GameShell
       title="Rights Match"
+      score={coins}
       subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 4}
-      score={coins}
+      
       gameId="uvls-kids-24"
       gameType="uvls"
       totalLevels={30}

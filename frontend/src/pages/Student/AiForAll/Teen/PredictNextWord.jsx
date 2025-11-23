@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PredictNextWord = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentSentence, setCurrentSentence] = useState(0);
   const [userAnswer, setUserAnswer] = useState("");
   const [score, setScore] = useState(0);
@@ -76,11 +81,15 @@ const PredictNextWord = () => {
   return (
     <GameShell
       title="Predict the Next Word"
+      score={coins}
       subtitle={`Sentence ${currentSentence + 1} of ${sentences.length}`}
       onNext={handleNext}
       nextEnabled={showResult && score >= 7}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && score >= 7}
-      score={coins}
+      
       gameId="ai-teen-5"
       gameType="ai"
       totalLevels={100}

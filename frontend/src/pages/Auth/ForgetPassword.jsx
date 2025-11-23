@@ -29,8 +29,8 @@ const ForgotPassword = () => {
             );
 
             setMessage(res.data.message || 'OTP sent successfully!');
-            localStorage.setItem('reset_email', email);
-            navigate('/reset-password');
+            localStorage.setItem('reset_password_email', email);
+            navigate('/verify-otp');
         } catch (err) {
             console.error(err);
             setError(err.response?.data?.message || 'Failed to send OTP.');

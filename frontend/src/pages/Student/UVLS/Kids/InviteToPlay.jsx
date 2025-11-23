@@ -115,11 +115,15 @@ const InviteToPlay = () => {
   return (
     <GameShell
       title="Invite to Play"
+      score={coins}
       subtitle={`Scene ${currentScene + 1} of ${scenes.length}`}
       onNext={handleNext}
       nextEnabled={showResult && invitingCount >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && invitingCount >= 3}
-      score={coins}
+      
       gameId="uvls-kids-15"
       gameType="uvls"
       totalLevels={20}

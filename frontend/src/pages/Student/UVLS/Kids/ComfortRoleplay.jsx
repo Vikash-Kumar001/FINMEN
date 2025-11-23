@@ -130,11 +130,15 @@ const ComfortRoleplay = () => {
   return (
     <GameShell
       title="Comfort Roleplay"
+      score={coins}
       subtitle={`Situation ${currentVignette + 1} of ${vignettes.length}`}
       onNext={handleNext}
       nextEnabled={showResult && totalGood >= 2}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && totalGood >= 2}
-      score={coins}
+      
       gameId="uvls-kids-8"
       gameType="uvls"
       totalLevels={10}

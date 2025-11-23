@@ -75,6 +75,16 @@ export const verifyOTP = async (req, res) => {
       return res.status(400).json({ message: "Invalid OTP type" });
     }
 
+    // For password reset, don't clear OTP yet (will be cleared after password reset)
+    // For email verification, clear OTP and log user in
+    if (type === "reset") {
+      // Just verify the OTP is valid, but keep it for password reset
+      return res.status(200).json({
+        message: "OTP verified successfully. You can now reset your password.",
+      });
+    }
+
+    // For email verification (registration)
     await User.findByIdAndUpdate(user._id, {
       isVerified: true,
       otp: null,
@@ -107,6 +117,38 @@ export const verifyOTP = async (req, res) => {
   }
 };
 
+export const resendOTP = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) return res.status(400).json({ message: "Email is required" });
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) return res.status(400).json({ message: "User not found" });
+
+    if (user.role === "admin") {
+      return res.status(400).json({ message: "Admin accounts don't require OTP verification" });
+    }
+
+    // Resend OTP for email verification (registration)
+    const result = await sendOTP(user.email, "verify");
+
+    if (result.success) {
+      res.status(200).json({
+        message: "OTP resent successfully",
+        email: user.email,
+      });
+    } else {
+      res.status(500).json({
+        message: result.message || "Failed to resend OTP",
+      });
+    }
+  } catch (error) {
+    console.error("Resend OTP error:", error);
+    res.status(500).json({ message: "Failed to resend OTP" });
+  }
+};
+
 export const forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
@@ -122,12 +164,18 @@ export const forgotPassword = async (req, res) => {
       return res.status(400).json({ message: "Admin accounts cannot reset password via OTP. Please contact your administrator." });
     }
 
-    await sendOTP(user.email, "reset");
+    const result = await sendOTP(user.email, "reset");
 
-    res.status(200).json({
-      message: "OTP sent to email for password reset",
-      email: user.email,
-    });
+    if (result.success) {
+      res.status(200).json({
+        message: "OTP sent to email for password reset",
+        email: user.email,
+      });
+    } else {
+      res.status(500).json({
+        message: result.message || "Failed to send reset OTP",
+      });
+    }
   } catch (error) {
     console.error("Forgot password error:", error);
     res.status(500).json({ message: "Failed to send reset OTP" });

@@ -194,7 +194,10 @@ const BadgeSmartSpenderTeen = () => {
       score={score}
       totalScore={questions.length * 10}
       onGameComplete={handleGameComplete}
-    >
+    
+      maxScore={questions.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="game-content">
         <h3 className="text-2xl font-bold mb-6 text-indigo-700 text-center">Smart Spender Challenge</h3>
         

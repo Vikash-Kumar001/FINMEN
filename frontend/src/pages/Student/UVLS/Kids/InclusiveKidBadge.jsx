@@ -125,7 +125,10 @@ const InclusiveKidBadge = () => {
       currentLevel={20}
       showConfetti={showResult}
       backPath="/games/uvls/kids"
-    >
+    
+      maxScore={20} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8">
         {!showResult ? (
           <div className="space-y-6">

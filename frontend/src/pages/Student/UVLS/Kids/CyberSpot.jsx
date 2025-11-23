@@ -117,11 +117,15 @@ const CyberSpot = () => {
   return (
     <GameShell
       title="Cyber Spot"
+      score={coins}
       subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 3}
-      score={coins}
+      
       gameId="uvls-kids-39"
       gameType="uvls"
       totalLevels={50}

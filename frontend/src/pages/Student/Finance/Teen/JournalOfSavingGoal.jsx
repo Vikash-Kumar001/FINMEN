@@ -59,7 +59,10 @@ const JournalOfSavingGoal = () => {
       showConfetti={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-    >
+    
+      maxScore={20} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8 max-w-3xl mx-auto">
         {!showResult ? (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">

@@ -1,10 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 
 const ReflexHygieneAlert = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [gameStarted, setGameStarted] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [score, setScore] = useState(0);
@@ -98,7 +103,10 @@ const ReflexHygieneAlert = () => {
         title="Reflex Hygiene Alert"
         subtitle="Loading..."
         backPath="/games/health-female/kids"
-      >
+      
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="animate-pulse text-center">
             <div className="text-6xl mb-4">👕</div>

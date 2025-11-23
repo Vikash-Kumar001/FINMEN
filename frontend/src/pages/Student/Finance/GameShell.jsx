@@ -203,10 +203,12 @@ export const FeedbackBubble = ({ message, type }) => (
 );
 
 /* --------------------- Game Over Modal --------------------- */
-export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1, coinsPerLevel = null, isReplay = false, onClose }) => {
+export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1, maxScore = null, coinsPerLevel = null, totalCoins = null, totalXp = null, isReplay = false, onClose, nextGamePath = null }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coinsEarned, setCoinsEarned] = useState(0);
   const [submissionComplete, setSubmissionComplete] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const submitGameCompletion = async () => {
@@ -228,16 +230,19 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
 
         // Always call the backend to save progress, even for replays
         // The backend will handle locking the game after replay
+        const resolvedMaxScore = maxScore || (totalLevels * 20);
         const result = await gameCompletionService.completeGame({
           gameId,
           gameType,
           score,
-          maxScore: totalLevels * 20,
+          maxScore: resolvedMaxScore,
           levelsCompleted: totalLevels,
           totalLevels,
           timePlayed: 0,
           isFullCompletion: true,
-          coinsPerLevel: coinsPerLevel, // Pass coins per question/level
+          coinsPerLevel: coinsPerLevel, // Pass coins per question/level (for backward compatibility)
+          totalCoins: totalCoins, // Total coins from game card
+          totalXp: totalXp, // Total XP from game card
           isReplay: isReplayAttempt // Pass replay flag - this is important!
         });
 
@@ -285,7 +290,7 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
     };
 
     submitGameCompletion();
-  }, [gameId, gameType, score, totalLevels, coinsPerLevel, isReplay, submissionComplete]);
+  }, [gameId, gameType, score, totalLevels, maxScore, coinsPerLevel, totalCoins, totalXp, isReplay, submissionComplete]);
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -317,13 +322,42 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
           </div>
         )}
 
-        <button
-          onClick={onClose}
-          disabled={isSubmitting}
-          className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-full font-semibold shadow-md hover:opacity-90 transition cursor-pointer disabled:opacity-50"
-        >
-          {isSubmitting ? 'Saving...' : 'Continue'}
-        </button>
+        <div className="flex gap-4 justify-center">
+          <button
+            onClick={onClose}
+            disabled={isSubmitting}
+            className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-3 rounded-full font-semibold shadow-md hover:opacity-90 transition cursor-pointer disabled:opacity-50"
+          >
+            Back
+          </button>
+          <button
+            onClick={() => {
+              // Get nextGamePath from prop or location.state
+              const resolvedNextGamePath = nextGamePath || location.state?.nextGamePath;
+              
+              if (resolvedNextGamePath) {
+                // Navigate to next game with return path
+                const returnPath = location.state?.returnPath || '/games';
+                navigate(resolvedNextGamePath, {
+                  state: {
+                    returnPath: returnPath,
+                    coinsPerLevel: location.state?.coinsPerLevel || null,
+                    totalCoins: location.state?.totalCoins || null,
+                    totalXp: location.state?.totalXp || null,
+                    maxScore: location.state?.maxScore || null,
+                  }
+                });
+              } else {
+                // No next game, just close (go back to game cards)
+                onClose();
+              }
+            }}
+            disabled={isSubmitting}
+            className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-full font-semibold shadow-md hover:opacity-90 transition cursor-pointer disabled:opacity-50"
+          >
+            {isSubmitting ? 'Saving...' : 'Continue'}
+          </button>
+        </div>
       </div>
 
       {/* Animations */}
@@ -355,7 +389,10 @@ const GameShell = ({
   gameId,
   gameType = 'ai',
   totalLevels = 1,
-  coinsPerLevel = null, // Coins per question/level (from game card)
+  coinsPerLevel = null, // Coins per question/level (from game card) - for backward compatibility
+  totalCoins = null, // Total coins from game card for full completion
+  totalXp = null, // Total XP from game card for full completion
+  maxScore = null, // Maximum score for the game
   // currentLevel = 1,
   showConfetti = false,
   flashPoints = null,
@@ -364,6 +401,11 @@ const GameShell = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get totalCoins and totalXp from location.state if not provided as props
+  const resolvedTotalCoins = totalCoins || location.state?.totalCoins || null;
+  const resolvedTotalXp = totalXp || location.state?.totalXp || null;
+  const resolvedMaxScore = maxScore || location.state?.maxScore || (totalLevels * 20);
 
   const resolvedBackPath = useMemo(() => {
     if (backPathProp) {
@@ -447,7 +489,7 @@ const GameShell = ({
         </button>
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1 rounded-full">
-            <span className="text-white font-medium">Score: {score || 0}</span>
+            <span className="text-white font-medium">Coins: {score || 0}</span>
           </div>
           
         </div>
@@ -499,9 +541,13 @@ const GameShell = ({
           gameId={gameId}
           gameType={gameType}
           totalLevels={totalLevels}
+          maxScore={resolvedMaxScore}
           coinsPerLevel={coinsPerLevel}
+          totalCoins={resolvedTotalCoins}
+          totalXp={resolvedTotalXp}
           isReplay={location?.state?.isReplay || false}
           onClose={handleGameOverClose}
+          nextGamePath={location?.state?.nextGamePath || null}
         />
       )}
 

@@ -109,11 +109,15 @@ const EqualityQuiz = () => {
   return (
     <GameShell
       title="Equality Quiz"
+      score={coins}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 3}
-      score={coins}
+      
       gameId="uvls-kids-22"
       gameType="uvls"
       totalLevels={30}

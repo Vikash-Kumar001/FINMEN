@@ -205,11 +205,15 @@ const SimulationMonthlyMoney = () => {
   return (
     <GameShell
       title="Simulation: Monthly Money"
+      score={coins}
       subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct
+      nextEnabled={showResult && finalScore >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp} // Pass if 3 or more correct
       showGameOver={showResult && finalScore >= 3}
-      score={coins}
+      
       gameId="finance-teens-8"
       gameType="finance"
       totalLevels={20}

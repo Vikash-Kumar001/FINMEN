@@ -108,7 +108,10 @@ const ReflexAttention = () => {
       nextEnabled={levelCompleted}
       nextLabel="Complete"
       backPath="/games/brain-health/kids"
-    >
+    
+      maxScore={1} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <GameCard>
         <h3 className="text-2xl font-bold text-white mb-6 text-center">Attention Reflex</h3>
         

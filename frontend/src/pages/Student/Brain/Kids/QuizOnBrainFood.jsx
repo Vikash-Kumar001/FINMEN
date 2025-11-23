@@ -149,7 +149,10 @@ const QuizOnBrainFood = () => {
       nextLabel="Next"
       showAnswerConfetti={showConfetti}
       backPath="/games/brain-health/kids"
-    >
+    
+      maxScore={questions.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       {/* Removed LevelCompleteHandler */}
       <GameCard>
         <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>

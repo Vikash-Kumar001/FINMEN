@@ -124,11 +124,15 @@ const FeelingsQuiz = () => {
   return (
     <GameShell
       title="Feelings Quiz"
+      score={coins}
       subtitle={`Question ${currentQuestion + 1} of ${vignettes.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 4}
-      score={coins}
+      
       gameId="uvls-kids-2"
       gameType="uvls"
       totalLevels={10}

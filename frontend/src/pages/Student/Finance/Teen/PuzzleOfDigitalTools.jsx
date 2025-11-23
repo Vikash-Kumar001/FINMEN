@@ -100,18 +100,22 @@ const PuzzleOfDigitalTools = () => {
   return (
     <GameShell
       title="Puzzle of Digital Tools"
+      score={coins}
       subtitle={`Puzzle ${currentPuzzle + 1} of ${puzzles.length}`}
       coins={coins}
       currentLevel={currentPuzzle + 1}
       totalLevels={puzzles.length}
       coinsPerLevel={coinsPerLevel}
       onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore >= 3}
+      nextEnabled={showResult && finalScore>= 3}
+      maxScore={puzzles.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 3}
       showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
+      
       gameId="finance-teens-94"
       gameType="finance"
     >

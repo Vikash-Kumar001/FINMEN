@@ -343,6 +343,9 @@ const BadgeConsumerProtector = () => {
       score={totalScore}
       totalScore={1000} // Max possible score
       onNext={() => navigate("/games/financial-literacy/teen")}
+      maxScore={scenarios.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       nextEnabled={gameState === 'completed'}
       showGameOver={gameState === 'completed'}
       showConfetti={gameState === 'completed' && totalScore >= 700}

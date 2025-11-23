@@ -1,16 +1,20 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ChatbotFriend = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [userMessage, setUserMessage] = useState("");
   const [botReply, setBotReply] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
-  const [totalCoins, setTotalCoins] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // 5 chatbot interaction questions
@@ -94,11 +98,15 @@ const ChatbotFriend = () => {
   return (
     <GameShell
       title="Chatbot Friend"
+      score={coins}
       subtitle="Interact with AI"
       onNext={handleNextQuestion}
       nextEnabled={showFeedback && coins > 0}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showFeedback && currentQuestion === chats.length - 1 && coins > 0}
-      score={totalCoins}
+      
       gameId="ai-kids-31"
       gameType="ai"
       totalLevels={100}

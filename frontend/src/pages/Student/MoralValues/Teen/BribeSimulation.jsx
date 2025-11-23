@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const BribeSimulation = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentScenario, setCurrentScenario] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -106,11 +111,15 @@ const BribeSimulation = () => {
   return (
     <GameShell
       title="Bribe Simulation"
+      score={coins}
       subtitle="Testing Your Integrity"
       onNext={handleNext}
       nextEnabled={quizComplete && coins > 0}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={quizComplete && coins > 0}
-      score={coins}
+      
       gameId="moral-teen-5"
       gameType="moral"
       totalLevels={20}

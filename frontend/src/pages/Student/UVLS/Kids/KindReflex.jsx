@@ -91,11 +91,15 @@ const KindReflex = () => {
   return (
     <GameShell
       title="Kind Reflex"
+      score={coins}
       subtitle={gameStarted ? `Action ${currentRound + 1} of ${actions.length}` : "Quick Tap Game"}
       onNext={handleNext}
       nextEnabled={showResult && accuracy >= 70}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && accuracy >= 70}
-      score={coins}
+      
       gameId="uvls-kids-3"
       gameType="uvls"
       totalLevels={10}

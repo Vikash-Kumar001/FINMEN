@@ -109,11 +109,15 @@ const CauseEffectQuiz = () => {
   return (
     <GameShell
       title="Cause & Effect Quiz"
+      score={coins}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 4}
-      score={coins}
+      
       gameId="uvls-kids-52"
       gameType="uvls"
       totalLevels={70}

@@ -171,11 +171,15 @@ const ShareYourToy = () => {
   return (
     <GameShell
       title="Share Your Toy"
+      score={coins}
       subtitle={`Scenario ${currentQuestion + 1} of ${scenarios.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 3}
-      score={coins}
+      
       gameId="uvls-kids-1"
       gameType="uvls"
       totalLevels={10}

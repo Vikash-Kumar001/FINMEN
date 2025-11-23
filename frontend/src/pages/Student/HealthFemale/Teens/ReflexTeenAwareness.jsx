@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ReflexTeenAwareness = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [gameState, setGameState] = useState("ready"); // ready, playing, feedback, completed
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
@@ -134,6 +139,10 @@ const ReflexTeenAwareness = () => {
       totalLevels={40}
       currentLevel={33}
       showConfetti={gameFinished && score >= 3}
+      maxScore={40} // Max score is total number of questions (all correct)
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       flashPoints={flashPoints}
       backPath="/games/health-female/teens"
       showAnswerConfetti={showAnswerConfetti}

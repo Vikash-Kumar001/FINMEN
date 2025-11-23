@@ -108,11 +108,15 @@ const CommunityRolesPuzzle = () => {
   return (
     <GameShell
       title="Community Roles Puzzle"
+      score={coins}
       subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 4}
-      score={coins}
+      
       gameId="uvls-kids-84"
       gameType="uvls"
       totalLevels={100}

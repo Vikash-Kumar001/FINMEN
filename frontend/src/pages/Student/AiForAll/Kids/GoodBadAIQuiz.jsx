@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const GoodBadAIQuiz = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -63,11 +68,15 @@ const GoodBadAIQuiz = () => {
   return (
     <GameShell
       title="Good AI vs Bad AI Quiz"
+      score={coins}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleFinish}
       nextEnabled={isLastQuestion && showFeedback && coins > 0}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={isLastQuestion && showFeedback && coins > 0}
-      score={coins}
+      
       gameId="ai-kids-76"
       gameType="ai"
       totalLevels={100}

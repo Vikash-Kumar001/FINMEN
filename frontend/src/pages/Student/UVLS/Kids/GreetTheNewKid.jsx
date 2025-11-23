@@ -115,11 +115,15 @@ const GreetTheNewKid = () => {
   return (
     <GameShell
       title="Greet the New Kid"
+      score={coins}
       subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
       onNext={handleNext}
       nextEnabled={showResult && friendlyCount >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && friendlyCount >= 3}
-      score={coins}
+      
       gameId="uvls-kids-11"
       gameType="uvls"
       totalLevels={20}

@@ -76,11 +76,15 @@ const RespectSignals = () => {
   return (
     <GameShell
       title="Respect Signals"
+      score={coins}
       subtitle={gameStarted ? `Signal ${currentSignal + 1} of ${signals.length}` : "Recognition Game"}
       onNext={handleNext}
       nextEnabled={showResult && accuracy >= 70}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && accuracy >= 70}
-      score={coins}
+      
       gameId="uvls-kids-19"
       gameType="uvls"
       totalLevels={20}

@@ -3,6 +3,7 @@ import {
   registerByAdmin,
   sendOTP,
   verifyOTP,
+  resendOTP,
   forgotPassword,
   resetPasswordWithOTP,
   checkVerificationStatus,
@@ -172,6 +173,9 @@ router.post("/setup-admin", async (req, res) => {
 
 // ✅ Verify OTP
 router.post("/verify-otp", verifyOTP);
+
+// ✅ Resend OTP
+router.post("/resend-otp", resendOTP);
 
 // ✅ Check Verification Status
 router.post("/check-verification", checkVerificationStatus);

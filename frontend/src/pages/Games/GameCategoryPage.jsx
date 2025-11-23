@@ -39,8 +39,9 @@ const GameCategoryPage = () => {
   const location = useLocation();
   const { user } = useAuth();
   const { canAccessPillar, canAccessGame: canAccessGameBySubscription, getGamesPerPillar } = useSubscription();
-  const { wallet, refreshWallet } = useWallet();
-  const { socket } = useSocket();
+  const { wallet, refreshWallet, setWallet } = useWallet();
+  const socketContext = useSocket();
+  const socket = socketContext?.socket || null;
   const { category, ageGroup } = useParams();
   const [userAge, setUserAge] = useState(null);
   const [completedGames, setCompletedGames] = useState(new Set());
@@ -470,8 +471,10 @@ const GameCategoryPage = () => {
   useEffect(() => {
     loadGameCompletionStatus();
 
-    // Listen for game completion events
-    const handleGameCompleted = () => {
+    // Listen for game completion events from GameShell (custom window event)
+    const handleGameCompleted = (event) => {
+      console.log('🎮 Game completed window event received:', event?.detail);
+      
       if (
         (category === "financial-literacy" ||
           category === "brain-health" ||
@@ -493,7 +496,13 @@ const GameCategoryPage = () => {
           ageGroup === "water-and-energy")
       ) {
         // Reload game completion status and progress when a game is completed
+        // This will update stats automatically since stats depend on gameProgressData
         loadGameCompletionStatus();
+        
+        // Also refresh wallet to show updated balance
+        if (refreshWallet) {
+          refreshWallet();
+        }
       }
     };
 
@@ -573,9 +582,33 @@ const GameCategoryPage = () => {
     window.addEventListener("gameReplayed", handleGameReplayedEvent);
 
     // Listen for wallet updates and replay events from socket
-    const handleWalletUpdate = () => {
+    const handleWalletUpdate = (data) => {
+      console.log('💰 Wallet updated via socket in GameCategoryPage:', data);
+      
+      // Update wallet balance directly from socket data for immediate UI update
+      if (data?.balance !== undefined || data?.newBalance !== undefined) {
+        const newBalance = data.balance || data.newBalance;
+        console.log('💰 Updating wallet balance to:', newBalance);
+        if (setWallet) {
+          setWallet(prev => {
+            const updatedWallet = prev ? {
+              ...prev,
+              balance: newBalance
+            } : {
+              balance: newBalance,
+              userId: user?._id || user?.id
+            };
+            console.log('💰 Wallet state updated:', updatedWallet);
+            return updatedWallet;
+          });
+        }
+      }
+      
+      // Also refresh from API to ensure consistency (with a small delay to let socket update first)
       if (refreshWallet) {
-        refreshWallet();
+        setTimeout(() => {
+          refreshWallet();
+        }, 200);
       }
     };
 
@@ -594,20 +627,127 @@ const GameCategoryPage = () => {
       }
     };
 
-    if (socket?.socket) {
-      socket.socket.on('wallet:updated', handleWalletUpdate);
-      socket.socket.on('game-replayed', handleGameReplayedSocket);
+    // Listen for game completion events from socket for real-time updates
+    const handleGameCompletedSocket = (data) => {
+      console.log('🎮 Game completed via socket, updating stats in real-time:', data);
+      
+      const { gameId, coinsEarned, xpEarned } = data || {};
+      
+      if (!gameId) return;
+      
+      // Check if this game belongs to the current category
+      const isCurrentCategory = 
+        (category === "financial-literacy" ||
+         category === "brain-health" ||
+         category === "uvls" ||
+         category === "digital-citizenship" ||
+         category === "moral-values" ||
+         category === "ai-for-all" ||
+         category === "ehe" ||
+         category === "health-male" ||
+         category === "health-female" ||
+         category === "civic-responsibility" ||
+         category === "sustainability") &&
+        (ageGroup === "kids" ||
+         ageGroup === "teens" ||
+         ageGroup === "teen" ||
+         ageGroup === "solar-and-city" ||
+         ageGroup === "water-and-recycle" ||
+         ageGroup === "carbon-and-climate" ||
+         ageGroup === "water-and-energy");
+      
+      if (!isCurrentCategory) {
+        // Not for current category, ignore
+        return;
+      }
+      
+      // Update game progress data immediately for real-time stats
+      setGameProgressData(prev => {
+        const currentProgress = prev[gameId];
+        if (!currentProgress) {
+          // Game was just completed - add it to progress data
+          return {
+            ...prev,
+            [gameId]: {
+              totalCoinsEarned: coinsEarned || 0,
+              fullyCompleted: true,
+              replayUnlocked: false,
+              totalLevels: 1
+            }
+          };
+        } else {
+          // Update existing progress - only add coins if it's a new completion
+          // Don't double-count if game was already completed
+          if (!currentProgress.fullyCompleted && coinsEarned) {
+            return {
+              ...prev,
+              [gameId]: {
+                ...currentProgress,
+                totalCoinsEarned: (currentProgress.totalCoinsEarned || 0) + (coinsEarned || 0),
+                fullyCompleted: true
+              }
+            };
+          }
+          return prev;
+        }
+      });
+      
+      // Update game completion status immediately
+      setGameCompletionStatus(prev => ({
+        ...prev,
+        [gameId]: true
+      }));
+      
+      // Update wallet balance directly from socket data for immediate UI update
+      if (data?.newBalance !== undefined && setWallet) {
+        setWallet(prev => {
+          if (prev) {
+            return {
+              ...prev,
+              balance: data.newBalance
+            };
+          } else {
+            return {
+              balance: data.newBalance,
+              userId: user?._id || user?.id
+            };
+          }
+        });
+      }
+      
+      // Also refresh wallet from API to ensure consistency
+      if (refreshWallet) {
+        refreshWallet();
+        // Refresh again after a delay to ensure backend has saved
+        setTimeout(() => {
+          refreshWallet();
+        }, 500);
+      }
+      
+      // Reload from backend after a short delay to ensure consistency
+      // This ensures we have the latest data from the database
+      setTimeout(() => {
+        loadGameCompletionStatus();
+      }, 1000);
+    };
+
+    // Set up socket listeners
+    if (socket) {
+      socket.on('wallet:updated', handleWalletUpdate);
+      socket.on('game-replayed', handleGameReplayedSocket);
+      socket.on('game-completed', handleGameCompletedSocket);
     }
 
     return () => {
       window.removeEventListener("gameCompleted", handleGameCompleted);
       window.removeEventListener("gameReplayed", handleGameReplayedEvent);
-      if (socket?.socket) {
-        socket.socket.off('wallet:updated', handleWalletUpdate);
-        socket.socket.off('game-replayed', handleGameReplayedSocket);
+      if (socket) {
+        socket.off('wallet:updated', handleWalletUpdate);
+        socket.off('game-replayed', handleGameReplayedSocket);
+        socket.off('game-completed', handleGameCompletedSocket);
       }
     };
-  }, [category, ageGroup, loadGameCompletionStatus, socket, refreshWallet]);
+  }, [category, ageGroup, loadGameCompletionStatus, socket, refreshWallet, setWallet, user]);
   // Generate mock games data
   const generateGamesData = () => {
     const games = [];
@@ -906,18 +1046,24 @@ const GameCategoryPage = () => {
         // Use progress data if available (from loadGameCompletionStatus)
         const progress = gameProgressData[game.id];
         
-        if (progress && progress.totalCoinsEarned > 0) {
-          // Use actual coins earned from backend (calculated as totalLevels × coinsPerLevel)
-          totalCoinsEarned += progress.totalCoinsEarned;
+        if (progress) {
+          // Use actual coins earned from backend (should be 5 per game from game card)
+          // If totalCoinsEarned is available, use it; otherwise use game card coins
+          if (progress.totalCoinsEarned > 0) {
+            totalCoinsEarned += progress.totalCoinsEarned;
+          } else {
+            // Fallback to game card coins if progress doesn't have coins yet
+            totalCoinsEarned += game.coins || 5;
+          }
           
-          // XP should match the XP on the game card
+          // XP should match the XP on the game card (10 XP per game)
           // Use game.xp from the game card, which is the correct XP value
-          totalXPGained += game.xp || 0;
+          totalXPGained += game.xp || 10;
         } else {
-          // Fallback: if progress data not loaded yet, try to get it
-          // This should only happen during initial load
-          // For now, we'll skip it and wait for progress data to load
-          console.warn(`Progress data not available for game ${game.id}, skipping from stats calculation`);
+          // Fallback: if progress data not loaded yet, use game card values
+          // This ensures stats are shown even during initial load
+          totalCoinsEarned += game.coins || 5;
+          totalXPGained += game.xp || 10;
         }
       });
 
@@ -1089,11 +1235,16 @@ const GameCategoryPage = () => {
         if (progress && progress.replayUnlocked === true) {
           // Game is replayable, allow playing
           if (game.isSpecial && game.path) {
+            // Find next game in the sequence
+            const nextGame = games.find(g => g.index === game.index + 1 && g.isSpecial && g.path);
+            const nextGamePath = nextGame ? nextGame.path : null;
+            
             navigate(game.path, { 
               state: { 
                 coinsPerLevel: game.coins || null,
                 isReplay: true,
                 returnPath: location.pathname,
+                nextGamePath: nextGamePath, // Path to next game for Continue button
               } 
             });
             return;
@@ -1119,12 +1270,19 @@ const GameCategoryPage = () => {
       const progress = gameProgressData[game.id];
       const isReplay = progress && progress.replayUnlocked === true && progress.fullyCompleted;
       
-      // Pass coinsPerLevel (coins per question) and replay status via navigation state
+      // Find next game in the sequence
+      const nextGame = games.find(g => g.index === game.index + 1 && g.isSpecial && g.path);
+      const nextGamePath = nextGame ? nextGame.path : null;
+      
+      // Pass coinsPerLevel, totalCoins, totalXp, replay status, and next game path via navigation state
       navigate(game.path, { 
         state: { 
-          coinsPerLevel: game.coins || null,
+          coinsPerLevel: game.coins || null, // For backward compatibility
+          totalCoins: game.coins || 5, // Total coins for full completion
+          totalXp: game.xp || 10, // Total XP for full completion
           isReplay: isReplay || false,
           returnPath: location.pathname,
+          nextGamePath: nextGamePath, // Path to next game for Continue button
         } 
       });
       return;
@@ -1590,22 +1748,7 @@ const GameCategoryPage = () => {
               <span className="text-gray-600 font-medium">Coins Earned</span>
             </div>
             <p className="text-2xl font-bold text-gray-900">
-              {(category === 'financial-literacy' ||
-                category === 'brain-health' ||
-                category === 'uvls' ||
-                category === 'digital-citizenship' ||
-                category === 'moral-values' ||
-                category === 'ai-for-all' ||
-                category === 'civic-responsibility' ||
-                category === 'health-male' ||
-                category === 'health-female' ||
-                category === 'ehe' ||
-                category === 'sustainability') && 
-                (ageGroup === 'kids' || ageGroup === 'teens' || ageGroup === 'teen')
-
-                ? Object.values(gameCompletionStatus).filter((status) => status)
-                    .length * 3
-                : completedGames.size * 3}
+              {categoryStats.coinsEarned}
             </p>
           </div>
 
@@ -1615,22 +1758,7 @@ const GameCategoryPage = () => {
               <span className="text-gray-600 font-medium">XP Gained</span>
             </div>
             <p className="text-2xl font-bold text-gray-900">
-              {(category === 'financial-literacy' ||
-                category === 'brain-health' ||
-                category === 'uvls' ||
-                category === 'digital-citizenship' ||
-                category === 'moral-values' ||
-                category === 'ai-for-all' ||
-                category === 'civic-responsibility' ||
-                category === 'health-male' ||
-                category === 'health-female' ||
-                category === 'ehe' ||
-                category === 'sustainability') && 
-                (ageGroup === 'kids' || ageGroup === 'teens' || ageGroup === 'teen')
-
-                ? Object.values(gameCompletionStatus).filter((status) => status)
-                    .length * 20
-                : completedGames.size * 20}
+              {categoryStats.xpGained}
             </p>
           </div>
         </motion.div>

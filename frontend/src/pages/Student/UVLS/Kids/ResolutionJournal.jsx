@@ -82,11 +82,15 @@ const ResolutionJournal = () => {
   return (
     <GameShell
       title="Resolution Journal"
+      score={coins}
       subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 3}
-      score={coins}
+      
       gameId="uvls-kids-77"
       gameType="uvls"
       totalLevels={100}

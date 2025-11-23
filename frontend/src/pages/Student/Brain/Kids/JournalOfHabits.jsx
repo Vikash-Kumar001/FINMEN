@@ -106,7 +106,10 @@ const JournalOfHabits = () => {
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/kids"
-    >
+    
+      maxScore={journalPrompts.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <LevelCompleteHandler
         gameId="brain-kids-7"
         gameType="brain-health"

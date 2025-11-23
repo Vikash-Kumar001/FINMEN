@@ -81,11 +81,15 @@ const RespectTap = () => {
   return (
     <GameShell
       title="Respect Tap"
+      score={coins}
       subtitle={gameStarted ? `Action ${currentRound + 1} of ${actions.length}` : "Tap Game"}
       onNext={handleNext}
       nextEnabled={showResult && accuracy >= 70}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && accuracy >= 70}
-      score={coins}
+      
       gameId="uvls-kids-13"
       gameType="uvls"
       totalLevels={20}

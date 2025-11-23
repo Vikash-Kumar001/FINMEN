@@ -99,6 +99,9 @@ const ReflexWiseUse = () => {
       coinsPerLevel={coinsPerLevel}
       currentLevel={9}
       showConfetti={gameState === "finished" && score >= 15}
+      maxScore={20} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
     >

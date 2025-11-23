@@ -112,7 +112,10 @@ const ReflexBrainBoost = () => {
       gameType="brain"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/kids"
-    >
+    
+      maxScore={1} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <GameCard>
         {gameState === 'waiting' && (
           <div 

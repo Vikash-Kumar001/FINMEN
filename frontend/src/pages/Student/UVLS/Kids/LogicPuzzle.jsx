@@ -89,11 +89,15 @@ const LogicPuzzle = () => {
   return (
     <GameShell
       title="Logic Puzzle"
+      score={coins}
   subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 3}
-      score={coins}
+      
       gameId="uvls-kids-54"
       gameType="uvls"
       totalLevels={70}

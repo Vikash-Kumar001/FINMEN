@@ -209,7 +209,10 @@ const SimulationShoppingMall = () => {
       score={calculateTotalScore()}
       totalScore={scenarios.length * 3} // Max 3 points per scenario
       onGameComplete={handleGameComplete}
-    >
+    
+      maxScore={scenarios.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="game-content">
         <h3 className="text-xl font-bold mb-6 text-indigo-700">Shopping Mall Simulation</h3>
         

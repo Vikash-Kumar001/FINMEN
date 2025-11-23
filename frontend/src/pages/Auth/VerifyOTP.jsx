@@ -48,6 +48,7 @@ const VerifyOTP = () => {
             const res = await api.post('/api/auth/verify-otp', {
                 email,
                 otp,
+                type: mode === "forgot" ? "reset" : "verify",
             });
 
             // If this is registration verification
@@ -59,7 +60,9 @@ const VerifyOTP = () => {
 
             // If this is forgot password verification
             if (mode === "forgot") {
+                // Store verified email and OTP for password reset
                 localStorage.setItem("verified_reset_email", email);
+                localStorage.setItem("verified_reset_otp", otp);
                 localStorage.removeItem("reset_password_email");
                 setSuccess("OTP verified! Redirecting to password reset...");
                 setTimeout(() => navigate("/reset-password"), 1500);
@@ -74,7 +77,13 @@ const VerifyOTP = () => {
         setSuccess("");
 
         try {
-            await api.post('/api/auth/resend-otp', { email });
+            if (mode === "forgot") {
+                // For password reset, use forgot-password endpoint
+                await api.post('/api/auth/forgot-password', { email });
+            } else {
+                // For registration, use resend-otp endpoint
+                await api.post('/api/auth/resend-otp', { email });
+            }
             setResendTimer(60);
             setResendDisabled(true);
             setSuccess("OTP resent successfully");

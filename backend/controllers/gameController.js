@@ -800,9 +800,14 @@ export const completeUnifiedGame = async (req, res) => {
     achievements = [],
     isFullCompletion = true,
     coinsPerLevel = null,
+    totalCoins = null, // Total coins from game card for full completion
+    totalXp = null, // Total XP from game card for full completion
     previousProgress = {},
     isReplay = false
   } = req.body;
+  
+  // Log the received values for debugging
+  console.log(`🎮 Received game completion request - gameId: ${gameId}, totalCoins: ${totalCoins}, coinsPerLevel: ${coinsPerLevel}, totalLevels: ${totalLevels}, isFullCompletion: ${isFullCompletion}`);
 
   try {
     // Find or create unified game progress
@@ -896,9 +901,29 @@ export const completeUnifiedGame = async (req, res) => {
     const resolvedType = gameDefinition?.type || gameType || getGameType(gameId);
     const pillarLabel = getPillarLabel(resolvedType);
 
+    // Check if all answers are correct (perfect score)
+    const allAnswersCorrect = maxScore > 0 && score >= maxScore;
+    
     if (isFullCompletion && !gameProgress.fullyCompleted) {
-      // Award full completion: totalLevels × coinsPerLevel (coins per question)
-      coinsToAward = totalLevels * coinsPerQuestion;
+      // Always use totalCoins from game card - DO NOT use any fallback calculations
+      // totalCoins should always be provided from game card via navigation state (typically 5)
+      console.log(`💰 Game completion - gameId: ${gameId}, totalCoins: ${totalCoins}, coinsPerLevel: ${coinsPerLevel}, totalLevels: ${totalLevels}`);
+      
+      // STRICT: Use totalCoins if provided (even if 0), otherwise use coinsPerLevel, otherwise default to 5
+      // DO NOT calculate coins based on totalLevels * coinsPerLevel or any other multiplication
+      if (totalCoins !== null && totalCoins !== undefined) {
+        // Use the exact value from totalCoins (should be 5 from game card)
+        coinsToAward = Math.max(0, totalCoins); // Ensure non-negative
+        console.log(`✅ Using totalCoins from game card: ${coinsToAward}`);
+      } else if (coinsPerLevel !== null && coinsPerLevel !== undefined && coinsPerLevel > 0) {
+        // Fallback: use coinsPerLevel as single value (NOT multiplied by totalLevels)
+        coinsToAward = coinsPerLevel;
+        console.warn(`⚠️ totalCoins not provided for game ${gameId}, using coinsPerLevel: ${coinsToAward}`);
+      } else {
+        // Final fallback: default to 5 coins (should not normally happen)
+        coinsToAward = 5;
+        console.warn(`⚠️ Neither totalCoins nor coinsPerLevel provided for game ${gameId}, using default: ${coinsToAward}`);
+      }
     } else if (coinsPerLevel && newLevelsCompleted > 0) {
       // Award coins for new levels completed: newLevelsCompleted × coinsPerLevel
       coinsToAward = newLevelsCompleted * coinsPerLevel;
@@ -968,8 +993,12 @@ export const completeUnifiedGame = async (req, res) => {
     let xpEarned = 0;
     
     if (coinsToAward > 0) {
-      // Award XP (2 XP per coin)
-      xpEarned = Math.floor(coinsToAward * 2);
+      // Award XP: always use totalXp from game card if provided and isFullCompletion, otherwise calculate (2 XP per coin)
+      if (totalXp !== null && totalXp > 0 && isFullCompletion && !gameProgress.fullyCompleted) {
+        xpEarned = totalXp;
+      } else {
+        xpEarned = Math.floor(coinsToAward * 2);
+      }
       userProgress.xp += xpEarned;
       
       // Calculate level (100 XP per level)
@@ -1051,6 +1080,7 @@ export const completeUnifiedGame = async (req, res) => {
     // Emit socket event for real-time updates
     const io = req.app.get('io');
     if (io && coinsToAward > 0) {
+      // Emit game completion event
       io.to(userId.toString()).emit('game-completed', {
         gameId,
         coinsEarned: coinsToAward,
@@ -1062,6 +1092,12 @@ export const completeUnifiedGame = async (req, res) => {
         gameStreak: gameProgress.currentStreak,
         achievements: gameProgress.achievements,
         message: 'Game completed and rewards granted!'
+      });
+      
+      // Emit wallet update event for real-time wallet balance update
+      io.to(userId.toString()).emit('wallet:updated', {
+        balance: newBalance,
+        coinsEarned: coinsToAward
       });
     }
 

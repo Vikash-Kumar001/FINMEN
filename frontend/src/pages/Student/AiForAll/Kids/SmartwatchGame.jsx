@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const SmartwatchGame = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentAlert, setCurrentAlert] = useState(0);
   const [score, setScore] = useState(0);
   const [coins, setCoins] = useState(0);
@@ -84,11 +89,15 @@ const SmartwatchGame = () => {
   return (
     <GameShell
       title="Smartwatch Game"
+      score={coins}
       subtitle={`Alert ${currentAlert + 1} of ${alerts.length}`}
       onNext={handleNext}
       nextEnabled={showResult && score >= 4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && score >= 4}
-      score={coins}
+      
       gameId="ai-kids-39"
       gameType="ai"
       totalLevels={100}

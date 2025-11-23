@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const RobotHonestyStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const stories = [
@@ -104,11 +109,15 @@ const RobotHonestyStory = () => {
   return (
     <GameShell
       title="Robot Honesty Stories"
+      score={coins}
       subtitle={`Scenario ${currentStory + 1} of ${stories.length}`}
       onNext={handleFinish}
       nextEnabled={isLastStory && showFeedback && coins > 0}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={isLastStory && showFeedback && coins > 0}
-      score={coins}
+      
       gameId="ai-kids-77"
       gameType="ai"
       totalLevels={100}

@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const SchoolCleanUpStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -107,11 +112,15 @@ const SchoolCleanUpStory = () => {
   return (
     <GameShell
       title="School Clean-Up Story"
+      score={coins}
       subtitle={`Story Choice ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={currentQuestion === questions.length - 1 && showFeedback && coins > 0}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={currentQuestion === questions.length - 1 && showFeedback && coins > 0}
-      score={coins}
+      
       gameId="moral-kids-75"
       gameType="educational"
       totalLevels={100}

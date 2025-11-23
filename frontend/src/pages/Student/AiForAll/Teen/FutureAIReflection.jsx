@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const FutureAIReflection = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [userInput, setUserInput] = useState("");
   const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
@@ -34,11 +39,15 @@ const FutureAIReflection = () => {
   return (
     <GameShell
       title="Future of AI Reflection ✍️"
+      score={coins}
       subtitle="AI in 2050"
       onNext={handleNext}
       nextEnabled={showFeedback && coins > 0}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showFeedback && coins > 0}
-      score={coins}
+      
       gameId="ai-teen-24"
       gameType="input"
       totalLevels={20}

@@ -82,11 +82,15 @@ const MatchFaces = () => {
   return (
     <GameShell
       title="Match Faces"
+      score={coins}
       subtitle={`Face ${currentMatch + 1} of ${faceMatches.length}`}
       onNext={handleNext}
       nextEnabled={showResult && correctMatches >= 8}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && correctMatches >= 8}
-      score={coins}
+      
       gameId="uvls-kids-4"
       gameType="uvls"
       // totalLevels={10}

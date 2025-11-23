@@ -90,11 +90,15 @@ const RoleModelJournal = () => {
   return (
     <GameShell
       title="Role Model Journal"
+      score={coins}
       subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 3}
-      score={coins}
+      
       gameId="uvls-kids-27"
       gameType="uvls"
       totalLevels={30}

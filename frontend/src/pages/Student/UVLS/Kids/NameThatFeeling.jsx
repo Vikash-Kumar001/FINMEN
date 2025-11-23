@@ -104,11 +104,15 @@ const NameThatFeeling = () => {
   return (
     <GameShell
       title="Name That Feeling"
+      score={coins}
   subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 3}
-      score={coins}
+      
       gameId="uvls-kids-41"
       gameType="uvls"
       totalLevels={50}

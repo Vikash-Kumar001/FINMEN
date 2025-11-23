@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ReflexRespect1 = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentWord, setCurrentWord] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
@@ -59,11 +64,15 @@ const ReflexRespect1 = () => {
   return (
     <GameShell
       title="Reflex Respect"
+      score={coins}
       subtitle="Tap Fast for Respect!"
       onNext={handleNext}
       nextEnabled={showFeedback && coins > 0}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showFeedback && coins > 0}
-      score={coins}
+      
       gameId="dcos-kids-82"
       gameType="educational"
       totalLevels={100}

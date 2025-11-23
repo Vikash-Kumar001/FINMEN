@@ -178,7 +178,10 @@ const SimulationLoanRepayment = () => {
       onNext={showResult ? handleFinish : null}
       nextEnabled={showResult}
       showGameOver={showResult}
-      showConfetti={showResult && totalScore >= 60}
+      maxScore={stages.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && totalScore>= 60}
       score={totalScore}
       gameId="finance-teens-118"
       gameType="simulation"

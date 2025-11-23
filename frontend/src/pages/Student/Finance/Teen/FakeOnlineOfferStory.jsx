@@ -100,18 +100,22 @@ const FakeOnlineOfferStory = () => {
   return (
     <GameShell
       title="Fake Online Offer Story"
+      score={coins}
       subtitle={`Stage ${currentStage + 1} of ${stages.length}`}
       coins={coins}
       currentLevel={currentStage + 1}
       totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
       onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore >= 3}
+      nextEnabled={showResult && finalScore>= 3}
+      maxScore={stages.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 3}
       showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
+      
       gameId="finance-teens-171"
       gameType="finance"
     >

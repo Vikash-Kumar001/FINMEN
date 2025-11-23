@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const AINewsStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -139,6 +144,7 @@ const AINewsStory = () => {
   return (
     <GameShell
       title="AI News Story"
+      score={coins}
       subtitle={
         isGameOver
           ? "Game Complete!"
@@ -146,8 +152,11 @@ const AINewsStory = () => {
       }
       onNext={handleNext}
       nextEnabled={isGameOver && coins > 0}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={isGameOver && coins > 0}
-      score={coins}
+      
       gameId="ai-kids-47"
       gameType="ai"
       totalLevels={100}

@@ -49,7 +49,7 @@ export const mockFeatures = [
     icon: "❓",
     path: "/learn/financial-quiz",
     color: "bg-red-500",
-    category: "education",
+    category: "finance",
     xpReward: 55
   },
   // Financial Literacy Game Cards - Moved to the beginning of finance category

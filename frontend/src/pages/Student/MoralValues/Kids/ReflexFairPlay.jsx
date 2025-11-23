@@ -1,10 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ReflexFairPlay = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [gameStarted, setGameStarted] = useState(false);
   const [currentAction, setCurrentAction] = useState(0);
   const [score, setScore] = useState(0);
@@ -89,11 +94,15 @@ const ReflexFairPlay = () => {
   return (
     <GameShell
       title="Reflex Fair Play"
+      score={coins}
       subtitle={gameStarted ? `Action ${currentAction + 1} of ${actions.length}` : "Quick Response Game"}
       onNext={handleNext}
       nextEnabled={showResult && accuracy >= 70}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && accuracy >= 70}
-      score={coins}
+      
       gameId="moral-kids-43"
       gameType="educational"
       totalLevels={100}

@@ -37,7 +37,10 @@ const BadgeBrainCareKid = () => {
       gameType="brain-health"
       showGameOver={true}
       backPath="/games/brain-health/kids"
-    >
+    
+      maxScore={1} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <GameCard>
         <div className="text-center">
           <h3 className="text-2xl font-bold mb-6 text-white">Brain Care Kid Badge</h3>

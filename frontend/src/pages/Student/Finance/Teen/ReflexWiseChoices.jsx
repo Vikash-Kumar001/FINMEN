@@ -98,7 +98,10 @@ const ReflexWiseChoices = () => {
       totalLevels={20}
       coinsPerLevel={coinsPerLevel}
       currentLevel={13}
-      showConfetti={gameState === "finished" && score >= 15}
+      maxScore={20} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={gameState === "finished" && score>= 15}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
     >

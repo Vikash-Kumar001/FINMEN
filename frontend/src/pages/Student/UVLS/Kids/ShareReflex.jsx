@@ -100,11 +100,15 @@ const ShareReflex = () => {
   return (
     <GameShell
       title="Share Reflex"
+      score={coins}
       subtitle={gameStarted ? `Round ${currentRound + 1} of ${actions.length}` : "Fast Tapping Game"}
       onNext={handleNext}
       nextEnabled={showResult && accuracy >= 70}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && accuracy >= 70}
-      score={coins}
+      
       gameId="uvls-kids-9"
       gameType="uvls"
       totalLevels={10}

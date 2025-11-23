@@ -225,6 +225,9 @@ const BadgeBudgetHero = () => {
       score={totalScore}
       totalScore={500} // Max possible score
       onGameComplete={() => navigate("/games/financial-literacy/teen")}
+      maxScore={challenges.length} // Max score is total number of questions (all correct)   
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="text-center text-white space-y-6">
         <h3 className="text-3xl font-bold mb-4">Budget Hero Challenge</h3>

@@ -8,11 +8,15 @@ import React, {
 import { toast } from "react-hot-toast";
 import api from "../utils/api";
 import { useAuth } from "../hooks/useAuth";
+import { useSocket } from "./SocketContext";
 
 const WalletContext = createContext();
 
 export const WalletProvider = ({ children }) => {
     const { user } = useAuth();
+    // Safely get socket context - useSocket() returns null if SocketProvider is not in the tree
+    const socketContext = useSocket();
+    const socket = socketContext?.socket || null;
     const [wallet, setWallet] = useState(null);
     const [loading, setLoading] = useState(true);
     const [triggerRefresh, setTriggerRefresh] = useState(false);
@@ -55,6 +59,55 @@ export const WalletProvider = ({ children }) => {
     }, [fetchWallet, triggerRefresh, user]);
 
     const refreshWallet = () => setTriggerRefresh(prev => !prev);
+
+    // Listen to socket events for real-time wallet updates
+    useEffect(() => {
+        if (!socket || !user) return;
+
+        const handleWalletUpdate = (data) => {
+            console.log('💰 Wallet updated via socket in WalletContext:', data);
+            
+            // Update wallet balance directly from socket data
+            if (data?.balance !== undefined || data?.newBalance !== undefined) {
+                const newBalance = data.balance || data.newBalance;
+                setWallet(prev => {
+                    if (prev) {
+                        return {
+                            ...prev,
+                            balance: newBalance
+                        };
+                    } else {
+                        return {
+                            balance: newBalance,
+                            userId: user._id || user.id
+                        };
+                    }
+                });
+            } else {
+                // If balance not in data, refresh from API
+                fetchWallet();
+            }
+        };
+
+        const handleGameCompleted = (data) => {
+            if (data?.newBalance !== undefined) {
+                handleWalletUpdate({ balance: data.newBalance });
+            }
+        };
+
+        // Listen for wallet update events
+        socket.on('wallet:updated', handleWalletUpdate);
+        
+        // Also listen for game-completed events which include newBalance
+        socket.on('game-completed', handleGameCompleted);
+
+        return () => {
+            if (socket) {
+                socket.off('wallet:updated', handleWalletUpdate);
+                socket.off('game-completed', handleGameCompleted);
+            }
+        };
+    }, [socket, user, fetchWallet]);
 
     return (
         <WalletContext.Provider

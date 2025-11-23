@@ -6,8 +6,10 @@ import { Brain, Moon, Apple, Book, Dumbbell, Zap } from 'lucide-react';
 const PosterBrainHealth = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [selectedPoster, setSelectedPoster] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -64,7 +66,7 @@ const PosterBrainHealth = () => {
   ];
 
   const handlePosterSelect = (poster) => {
-    if (!isSubmitted) {
+    if (!isSubmitted && !levelCompleted) {
       setSelectedPoster(poster);
     }
   };
@@ -75,8 +77,12 @@ const PosterBrainHealth = () => {
       setFeedbackType("correct");
       setFeedbackMessage("Great choice! This poster shows excellent brain care habits.");
       setShowFeedback(true);
-      setScore(15); // 15 coins for creative activity (max allowed)
-      setLevelCompleted(true);
+      setScore(1); // Score: 1 for correct answer (max score is 1 for single question)
+      
+      // Auto-complete after delay to show feedback
+      setTimeout(() => {
+        setLevelCompleted(true);
+      }, 1500);
     } else {
       setFeedbackType("wrong");
       setFeedbackMessage("Please select a poster first!");
@@ -89,19 +95,17 @@ const PosterBrainHealth = () => {
     }
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
-
   return (
     <GameShell
       title="Brain Health Poster"
       score={score}
-      currentLevel={1}
-      totalLevels={1}
-      coinsPerLevel={coinsPerLevel}
       gameId="brain-kids-6"
       gameType="brain-health"
+      totalLevels={1}
+      maxScore={1} // Max score is 1 (single question)
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={levelCompleted}
       backPath="/games/brain-health/kids"
     >
@@ -145,14 +149,14 @@ const PosterBrainHealth = () => {
           <div className="mt-8 text-center">
             <button
               onClick={handleSubmit}
-              disabled={!selectedPoster || isSubmitted}
+              disabled={!selectedPoster || isSubmitted || levelCompleted}
               className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedPoster && !isSubmitted
+                selectedPoster && !isSubmitted && !levelCompleted
                   ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
                   : 'bg-white/20 text-white/50 cursor-not-allowed'
               }`}
             >
-              {isSubmitted ? 'Poster Submitted!' : 'Submit My Choice'}
+              {isSubmitted || levelCompleted ? 'Poster Submitted!' : 'Submit My Choice'}
             </button>
           </div>
         </div>

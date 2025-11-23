@@ -241,7 +241,10 @@ const ReflexControl = () => {
       score={calculateTotalScore()}
       totalScore={500} // Adjust based on max possible score
       onGameComplete={handleGameComplete}
-    >
+    
+      maxScore={1} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="game-content">
         <h3 className="text-xl font-bold mb-6 text-indigo-700">Spending Control Reflex</h3>
         

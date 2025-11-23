@@ -99,7 +99,10 @@ const JournalOfSpending = () => {
       score={calculateTotalScore()}
       totalScore={journalPrompts.length}
       onGameComplete={handleGameComplete}
-    >
+    
+      maxScore={journalPrompts.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="game-content">
         <h3 className="text-xl font-bold mb-6 text-indigo-700">Spending Habits Journal</h3>
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">

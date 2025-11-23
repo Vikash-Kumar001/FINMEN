@@ -1,365 +1,199 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Confetti, ScoreFlash, GameOverModal } from "../GameShell";
+import { Trophy, CreditCard, PiggyBank, Wallet, ShoppingCart, Coins } from "lucide-react";
+import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ATMStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
+  // Get coinsPerLevel from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [totalCoins, setTotalCoins] = useState(0);
+  const [answered, setAnswered] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [showResult, setShowResult] = useState(false);
-  const [isCorrect, setIsCorrect] = useState(false);
-  const [answers, setAnswers] = useState([]);
-  const [finalScore, setFinalScore] = useState(0);
-  const {
-    flashPoints,
-    showAnswerConfetti,
-    showCorrectAnswerFeedback,
-    resetFeedback,
-  } = useGameFeedback();
 
-  // Calculate back path
-  const resolvedBackPath = useMemo(() => {
-    if (location.state?.returnPath) {
-      return location.state.returnPath;
-    }
-
-    const pathSegments = location.pathname.split("/").filter(Boolean);
-    if (pathSegments[0] === "student" && pathSegments.length >= 3) {
-      const categoryKey = pathSegments[1];
-      const ageKey = pathSegments[2];
-
-      const categorySlugMap = {
-        finance: "financial-literacy",
-        "financial-literacy": "financial-literacy",
-      };
-
-      const ageSlugMap = {
-        kid: "kids",
-        kids: "kids",
-      };
-
-      const mappedCategory = categorySlugMap[categoryKey] || categoryKey;
-      const mappedAge = ageSlugMap[ageKey] || ageKey;
-
-      return `/games/${mappedCategory}/${mappedAge}`;
-    }
-
-    return "/games";
-  }, [location.pathname, location.state]);
-
-  const handleGameOverClose = () => {
-    navigate(resolvedBackPath);
-  };
-
-  const questions = [
+  const levels = [
     {
       id: 1,
-      text: "Your parent shows you their ATM card. What should you do?",
-      choices: [
-        { id: "a", text: "Ask how it works and listen carefully", emoji: "👂", correct: true },
-        { id: "b", text: "Play with the card like a toy", emoji: "🃏", correct: false },
-        { id: "c", text: "Throw it in your bag", emoji: "👜", correct: false },
+      title: "ATM Card Discovery",
+      question: "Your parent shows you their ATM card. What should you do?",
+      icon: CreditCard,
+      options: [
+        { text: "Learn how it works", correct: true, coins: 5 },
+        { text: "Ignore it", correct: false, coins: 0 },
+        { text: "Play with it", correct: false, coins: 0 }
       ],
+      feedback: {
+        correct: "Great! Learning about money management is important!",
+        wrong: "Always show interest in learning about money!"
+      }
     },
     {
       id: 2,
-      text: "Your parent is entering their PIN at the ATM. What is the right thing to do?",
-      choices: [
-        { id: "a", text: "Look away and give them privacy", emoji: "🙈", correct: true },
-        { id: "b", text: "Watch the screen to learn the PIN", emoji: "👀", correct: false },
-        { id: "c", text: "Tell friends the PIN later", emoji: "🗣️", correct: false },
+      title: "PIN Code Safety",
+      question: "Your parent is entering their PIN at the ATM. What should you do?",
+      icon: Wallet,
+      options: [
+        { text: "Look away to give privacy", correct: true, coins: 10 },
+        { text: "Try to memorize the PIN", correct: false, coins: 0 },
+        { text: "Tell friends about it", correct: false, coins: 0 }
       ],
+      feedback: {
+        correct: "Perfect! PIN codes should always be kept private!",
+        wrong: "PINs are secret and should never be shared or watched!"
+      }
     },
     {
       id: 3,
-      text: "You have ₹100. What is the smartest money choice?",
-      choices: [
-        { id: "a", text: "Save ₹50 in the bank and spend ₹50", emoji: "🏦", correct: true },
-        { id: "b", text: "Spend all on toys right now", emoji: "🧸", correct: false },
-        { id: "c", text: "Give all to random people", emoji: "🎁", correct: false },
+      title: "Saving Money",
+      question: "You have 100 rupees. What's the smartest choice?",
+      icon: PiggyBank,
+      options: [
+        { text: "Save 50 rupees, spend 50", correct: true, coins: 15 },
+        { text: "Spend all on toys", correct: false, coins: 0 },
+        { text: "Give all to friends", correct: false, coins: 0 }
       ],
+      feedback: {
+        correct: "Excellent! Saving money helps you buy bigger things later!",
+        wrong: "Saving some money is always a smart idea!"
+      }
     },
     {
       id: 4,
-      text: "A toy costs ₹200 but you only have ₹150. What should you do?",
-      choices: [
-        { id: "a", text: "Save more money and buy it later", emoji: "⏳", correct: true },
-        { id: "b", text: "Borrow from friends to buy now", emoji: "🙄", correct: false },
-        { id: "c", text: "Shout at parents to get it", emoji: "😡", correct: false },
+      title: "Smart Shopping",
+      question: "You want to buy a toy that costs 200 rupees but you have 150. What should you do?",
+      icon: ShoppingCart,
+      options: [
+        { text: "Save more money first", correct: true, coins: 20 },
+        { text: "Borrow from friends", correct: false, coins: 0 },
+        { text: "Demand it from parents", correct: false, coins: 0 }
       ],
+      feedback: {
+        correct: "Smart thinking! Patience and saving helps you achieve your goals!",
+        wrong: "Saving up and waiting is better than borrowing!"
+      }
     },
     {
       id: 5,
-      text: "Your friend lost their lunch money. What's the best action?",
-      choices: [
-        { id: "a", text: "Share your lunch or help them", emoji: "🤝", correct: true },
-        { id: "b", text: "Laugh and walk away", emoji: "😅", correct: false },
-        { id: "c", text: "Tell everyone and make fun of them", emoji: "📢", correct: false },
+      title: "Money Values",
+      question: "Your friend lost their lunch money. What should you do?",
+      icon: Coins,
+      options: [
+        { text: "Share your lunch with them", correct: true, coins: 25 },
+        { text: "Ignore them", correct: false, coins: 0 },
+        { text: "Laugh at them", correct: false, coins: 0 }
       ],
-    },
+      feedback: {
+        correct: "Wonderful! Helping others is the best use of money!",
+        wrong: "Kindness and helping others is more valuable than money!"
+      }
+    }
   ];
 
-  const handleSelect = (choice) => {
-    if (showResult) return;
-    setSelectedAnswer(choice.id);
-    const correct = choice.correct;
-    setIsCorrect(correct);
+  const currentLevelData = levels[currentLevel - 1];
+  const Icon = currentLevelData.icon;
 
-    const newAnswers = [
-      ...answers,
-      { questionId: questions[currentQuestion].id, correct },
-    ];
-    setAnswers(newAnswers);
-
-    if (correct) {
-      // Update coins in real-time for correct answers
-      setCoins(prevCoins => prevCoins + 1);
-      showCorrectAnswerFeedback(1, true);
+  const handleAnswer = (option) => {
+    setSelectedAnswer(option);
+    setAnswered(true);
+    
+    if (option.correct) {
+      setTotalCoins(totalCoins + option.coins);
+      showCorrectAnswerFeedback(option.coins, true);
     }
-
-    setTimeout(() => {
-      setShowResult(true);
-    }, correct ? 1000 : 0);
   };
 
-  const handleNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion((prev) => prev + 1);
+  const handleNext = () => {
+    if (currentLevel < 5) {
+      setCurrentLevel(currentLevel + 1);
+      setAnswered(false);
       setSelectedAnswer(null);
-      setShowResult(false);
-      setIsCorrect(false);
-      resetFeedback();
     } else {
-      const correctCount = answers.filter((a) => a.correct).length;
-      setFinalScore(correctCount);
+      navigate("/games/financial-literacy/kids");
     }
   };
-
-  // useEffect removed to prevent overriding real-time coin updates
-
-  const currentQuestionData = questions[currentQuestion];
-  const allQuestionsAnswered = answers.length === questions.length;
 
   return (
-    <div className="h-screen w-full bg-gradient-to-br from-blue-100 via-sky-50 to-indigo-100 flex flex-col relative overflow-hidden">
-      {/* Floating Background Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 15 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute text-lg sm:text-2xl opacity-10"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `float ${Math.random() * 6 + 4}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 2}s`,
-            }}
-          >
-            {["🏦", "💳", "💰", "🔒", "✅", "🎯"][i % 6]}
-          </div>
-        ))}
-      </div>
-
-      {/* Header */}
-      <div className="flex items-center justify-between px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 relative z-30 bg-white/30 backdrop-blur-sm border-b border-blue-200 flex-shrink-0 gap-2 sm:gap-4">
-        <button
-          onClick={() => navigate(resolvedBackPath)}
-          className="bg-white/80 hover:bg-white text-blue-600 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-blue-300 shadow-md transition-all cursor-pointer font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base flex-shrink-0"
-        >
-          ← <span className="hidden sm:inline">Back</span>
-        </button>
-        <div className="flex-1 flex items-center justify-center min-w-0">
-          <h1 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold px-2 flex items-center justify-center gap-1 sm:gap-2 truncate">
-            <span className="text-sm sm:text-base md:text-lg lg:text-xl flex-shrink-0">
-              💳
-            </span>
-            <span className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 bg-clip-text text-transparent truncate">
-              <span className="hidden xs:inline">ATM Story</span>
-              <span className="xs:hidden">ATM</span>
-            </span>
-          </h1>
+    <GameShell
+      title={`Question ${currentLevel} – ${currentLevelData.title}`}
+      subtitle={currentLevelData.question}
+      coins={totalCoins}
+      currentLevel={currentLevel}
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      showConfetti={answered && selectedAnswer?.correct}
+      score={totalCoins}
+      gameId="finance-kids-88"
+      gameType="finance"
+    
+      maxScore={5} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
+        <div className="flex justify-center mb-6">
+          <Icon className="w-24 h-24 text-yellow-400 animate-pulse" />
         </div>
-        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-          <div className="flex items-center gap-1 sm:gap-2 bg-white/80 backdrop-blur-md px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-blue-300 shadow-md">
-            <span className="text-lg sm:text-xl md:text-2xl">💰</span>
-            <span className="text-blue-700 font-bold text-xs sm:text-sm md:text-lg">
-              Coins: {coins}
-            </span>
-          </div>
-        </div>
-      </div>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col justify-center items-center text-center px-2 sm:px-4 md:px-6 z-10 py-2 sm:py-4 overflow-y-auto min-h-0">
-        {!showResult && finalScore === 0 && (
-          <div className="mb-1 sm:mb-2 md:mb-3 relative z-20 flex-shrink-0">
-            <p className="text-gray-700 text-xs sm:text-sm mt-0.5 sm:mt-1 font-medium">
-              Question {currentQuestion + 1} of {questions.length}
+        {!answered ? (
+          <div className="space-y-4">
+            {currentLevelData.options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => handleAnswer(option)}
+                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 px-8 py-4 rounded-full text-white font-bold hover:scale-105 transition-transform hover:shadow-lg"
+              >
+                {option.text}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <div className={`p-8 rounded-2xl border-2 mt-4 ${
+            selectedAnswer.correct 
+              ? 'bg-green-500/20 border-green-400' 
+              : 'bg-red-500/20 border-red-400'
+          }`}>
+            <Trophy className={`mx-auto w-16 h-16 mb-3 ${
+              selectedAnswer.correct ? 'text-yellow-400' : 'text-gray-400'
+            }`} />
+            <h3 className="text-2xl font-bold mb-2">
+              {selectedAnswer.correct ? `+${selectedAnswer.coins} Coins!` : 'Try Better Next Time!'}
+            </h3>
+            <p className="text-white/90 text-lg">
+              {selectedAnswer.correct 
+                ? currentLevelData.feedback.correct 
+                : currentLevelData.feedback.wrong}
             </p>
+            
+            {currentLevel === 5 && selectedAnswer.correct && (
+              <div className="mt-6 p-4 bg-yellow-500/20 rounded-lg border border-yellow-400">
+                <p className="text-xl font-bold text-yellow-300">
+                  🎉 Game Complete! Total Coins: {totalCoins} 🎉
+                </p>
+              </div>
+            )}
           </div>
         )}
 
-        {/* Game Content */}
-        <div className="w-full max-w-3xl flex-1 flex flex-col justify-center min-h-0">
-          {finalScore === 0 ? (
-            !showResult ? (
-              <div className="space-y-2 sm:space-y-3">
-                {/* Question Card */}
-                <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-blue-300 shadow-xl">
-                  <div className="text-3xl sm:text-4xl md:text-5xl mb-3 sm:mb-4">
-                    💳
-                  </div>
-                  <p className="text-gray-800 text-sm sm:text-base md:text-lg mb-4 sm:mb-6 font-semibold leading-relaxed px-1">
-                    {currentQuestionData.text}
-                  </p>
-
-                  {/* Options - Single Row */}
-                  <div className="flex flex-row gap-2 sm:gap-3 md:gap-4 justify-center flex-wrap mb-3 sm:mb-4">
-                    {currentQuestionData.choices.map((choice) => {
-                      const isSelected = selectedAnswer === choice.id;
-
-                      return (
-                        <button
-                          key={choice.id}
-                          onClick={() => handleSelect(choice)}
-                          disabled={showResult}
-                          className={`flex-1 min-w-[120px] sm:min-w-[150px] p-3 sm:p-4 md:p-5 rounded-xl sm:rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-75 disabled:cursor-not-allowed disabled:transform-none ${
-                            !showResult
-                              ? "bg-gradient-to-r from-blue-400 via-indigo-400 to-purple-400 hover:from-blue-500 hover:via-indigo-500 hover:to-purple-500 text-white border-2 border-white/30"
-                              : isSelected && choice.correct
-                              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white border-2 border-green-400 ring-4 ring-green-200"
-                              : isSelected && !choice.correct
-                              ? "bg-gradient-to-r from-red-500 to-rose-600 text-white border-2 border-red-400 ring-4 ring-red-200"
-                              : choice.correct && showResult
-                              ? "bg-gradient-to-r from-green-500/50 to-emerald-600/50 text-white border-2 border-green-400/50"
-                              : "bg-gradient-to-r from-blue-400/50 via-indigo-400/50 to-purple-400/50 text-white/70 border-2 border-white/20"
-                          }`}
-                        >
-                          <div className="text-2xl sm:text-3xl md:text-4xl mb-2">
-                            {choice.emoji}
-                          </div>
-                          <h3 className="font-bold text-xs sm:text-sm md:text-base">
-                            {choice.text}
-                          </h3>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Progress Indicator - Inside Card */}
-                  <div className="mt-3 sm:mt-4 flex justify-center gap-1 sm:gap-1.5 flex-wrap">
-                    {questions.map((_, index) => (
-                      <div
-                        key={index}
-                        className={`h-2 rounded-full transition-all ${
-                          index < currentQuestion
-                            ? "bg-green-500 w-5 sm:w-6"
-                            : index === currentQuestion
-                            ? "bg-blue-500 w-5 sm:w-6 animate-pulse"
-                            : "bg-gray-300 w-2"
-                        }`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-            ) : (
-              <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-blue-300 shadow-xl text-center">
-                <div
-                  className={`text-6xl sm:text-7xl md:text-8xl mb-4 ${
-                    isCorrect ? "animate-bounce" : ""
-                  }`}
-                >
-                  {isCorrect ? "✅" : "❌"}
-                </div>
-                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-2 sm:mb-4">
-                  {isCorrect ? "Correct!" : "Incorrect"}
-                </h3>
-                <p className="text-lg sm:text-xl text-gray-700 mb-6 sm:mb-8">
-                  {isCorrect
-                    ? "Great choice! You're learning how to use ATMs and money safely!"
-                    : "The correct answer is: " +
-                      currentQuestionData.choices.find((opt) => opt.correct)?.text}
-                </p>
-                <button
-                  onClick={handleNextQuestion}
-                  className="px-8 sm:px-10 py-3 sm:py-4 bg-blue-500 hover:bg-blue-600 text-white rounded-xl sm:rounded-2xl font-bold text-lg sm:text-xl transition-all hover:scale-105 shadow-lg"
-                >
-                  {currentQuestion < questions.length - 1
-                    ? "Next Question"
-                    : "Finish"}
-                </button>
-              </div>
-            )
-          ) : (
-            <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-blue-300 shadow-xl text-center max-w-2xl w-full">
-              <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4 animate-bounce">
-                💳🎉
-              </div>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mb-2 sm:mb-3">
-                ATM Star!
-              </h3>
-              <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
-                You scored {finalScore} out of {questions.length} — awesome ATM manners and
-                money choices!
-                <br />
-                You learned how to stay safe, save smart, and help others. 🎯
-              </p>
-              <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 shadow-lg">
-                <span className="text-xl sm:text-2xl">💰</span>
-                <span className="text-base sm:text-lg md:text-xl font-bold">
-                  +{coins} Coins
-                </span>
-              </div>
-              <p className="text-gray-600 text-xs sm:text-sm mb-3 sm:mb-4 px-1">
-                Lesson: ATMs and banks are helpful when you use them safely, protect PINs,
-                and make kind money choices.
-              </p>
-              {allQuestionsAnswered && (
-                <button
-                  onClick={() => navigate(resolvedBackPath)}
-                  className="bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 hover:from-blue-600 hover:via-indigo-600 hover:to-purple-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
-                >
-                  <span className="hidden sm:inline">
-                    Continue to Next Level
-                  </span>
-                  <span className="sm:hidden">Next Level</span> →
-                </button>
-              )}
-            </div>
-          )}
+        <div className="flex justify-center gap-2 mt-6">
+          {levels.map((level) => (
+            <div
+              key={level.id}
+              className={`w-3 h-3 rounded-full ${
+                level.id < currentLevel
+                  ? 'bg-green-400'
+                  : level.id === currentLevel
+                  ? 'bg-yellow-400 animate-pulse'
+                  : 'bg-gray-600'
+              }`}
+            />
+          ))}
         </div>
       </div>
-
-      {/* Confetti and Score Flash */}
-      {showAnswerConfetti && <Confetti duration={2000} />}
-      {flashPoints > 0 && <ScoreFlash points={flashPoints} />}
-
-      {/* Game Over Modal */}
-      {finalScore > 0 && coins === 5 && (
-        <GameOverModal
-          score={finalScore}
-          totalQuestions={questions.length}
-          coinsPerLevel={5}
-          totalLevels={1}
-          onClose={handleGameOverClose}
-          gameId="finance-kids-48"
-          gameType="finance"
-          showConfetti={true}
-        />
-      )}
-
-      {/* Animations CSS */}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(10deg); }
-        }
-      `}</style>
-    </div>
+    </GameShell>
   );
 };
 

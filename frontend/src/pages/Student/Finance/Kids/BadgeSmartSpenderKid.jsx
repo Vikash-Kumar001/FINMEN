@@ -1,55 +1,20 @@
-import React, { useState, useMemo, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Confetti, ScoreFlash, GameOverModal } from "../GameShell";
+import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const BadgeSmartSpenderKid = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [showBadge, setShowBadge] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [choice, setChoice] = useState(null);
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const [scenario, setScenario] = useState(0);
+  const [decisions, setDecisions] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [answers, setAnswers] = useState([]);
   const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  // Calculate back path
-  const resolvedBackPath = useMemo(() => {
-    if (location.state?.returnPath) {
-      return location.state.returnPath;
-    }
-
-    const pathSegments = location.pathname.split("/").filter(Boolean);
-    if (pathSegments[0] === "student" && pathSegments.length >= 3) {
-      const categoryKey = pathSegments[1];
-      const ageKey = pathSegments[2];
-
-      const categorySlugMap = {
-        finance: "financial-literacy",
-        "financial-literacy": "financial-literacy",
-      };
-
-      const ageSlugMap = {
-        kid: "kids",
-        kids: "kids",
-      };
-
-      const mappedCategory = categorySlugMap[categoryKey] || categoryKey;
-      const mappedAge = ageSlugMap[ageKey] || ageKey;
-
-      return `/games/${mappedCategory}/${mappedAge}`;
-    }
-
-    return "/games";
-  }, [location.pathname, location.state]);
-
-  const handleGameOverClose = () => {
-    navigate(resolvedBackPath);
-  };
 
   const scenarios = [
     {
@@ -159,328 +124,166 @@ const BadgeSmartSpenderKid = () => {
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
-    const currentS = scenarios[currentScenario];
-    const selectedOption = currentS.choices.find(opt => opt.id === selectedChoice);
-    const isCorrect = selectedOption?.isCorrect || false;
+  const handleDecision = (selectedChoice) => {
+    const newDecisions = [...decisions, { 
+      scenarioId: scenarios[scenario].id, 
+      choice: selectedChoice,
+      isCorrect: scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setChoice(selectedChoice);
+    setDecisions(newDecisions);
     
-    // Save the answer
-    const newAnswers = [...answers, { scenarioId: currentS.id, choice: selectedChoice, isCorrect }];
-    setAnswers(newAnswers);
-    
+    // If the choice is correct, show flash/confetti
+    const isCorrect = scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      // Update coins in real-time for correct answers
-      setCoins(prevCoins => prevCoins + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
-    // Show result
-    setTimeout(() => {
-      setShowResult(true);
-    }, isCorrect ? 1000 : 0);
-  };
-
-  const handleNextScenario = () => {
-    if (currentScenario < scenarios.length - 1) {
-      setCurrentScenario(prev => prev + 1);
-      setChoice(null);
-      setShowResult(false);
-      resetFeedback();
+    // Move to next scenario or show results
+    if (scenario < scenarios.length - 1) {
+      setTimeout(() => {
+        setScenario(prev => prev + 1);
+      }, isCorrect ? 1000 : 0); // Delay if correct to show animation
     } else {
-      // Last scenario - the useEffect will handle final score and badge
+      // Calculate final score
+      const correctDecisions = newDecisions.filter(decision => decision.isCorrect).length;
+      setFinalScore(correctDecisions);
       setShowResult(true);
     }
   };
 
-  const handleRestart = () => {
-    setCurrentScenario(0);
-    setChoice(null);
+  const handleTryAgain = () => {
     setShowResult(false);
-    setAnswers([]);
-    setCoins(0);
+    setScenario(0);
+    setDecisions([]);
     setFinalScore(0);
-    setShowBadge(false);
     resetFeedback();
   };
 
   const handleNext = () => {
+    // This is the last game, so navigate back to the finance games page
     navigate("/games/financial-literacy/kids");
   };
 
-  const getCurrentScenarioData = () => {
-    return scenarios[currentScenario];
-  };
+  const getCurrentScenario = () => scenarios[scenario];
 
-  const currentScenarioData = getCurrentScenarioData();
-  const isLastScenario = currentScenario === scenarios.length - 1;
-  const allScenariosAnswered = answers.length === scenarios.length;
-  const isCorrect = choice && currentScenarioData?.choices.find(opt => opt.id === choice)?.isCorrect;
-
-  // Calculate final score when all scenarios are answered
-  useEffect(() => {
-    if (allScenariosAnswered && answers.length === scenarios.length && !showBadge && finalScore === 0) {
-      const correctCount = answers.filter(a => a.isCorrect).length;
-      setFinalScore(correctCount);
-      if (correctCount === scenarios.length) {
-        // All correct - show badge
-        setTimeout(() => {
-          setShowBadge(true);
-          showCorrectAnswerFeedback(5, true);
-        }, 500);
-      } else {
-        // Not all correct - show results
-        setShowResult(true);
-      }
-    }
-  }, [allScenariosAnswered, answers.length, scenarios.length, showBadge, finalScore]);
+  // Calculate progress
+  const progress = Math.round(((scenario + 1) / scenarios.length) * 100);
 
   return (
-    <div className="h-screen w-full bg-gradient-to-br from-purple-100 via-pink-50 to-indigo-100 flex flex-col relative overflow-hidden">
-      {/* Floating Celebration Elements Background */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {Array.from({ length: 15 }).map((_, i) => (
-          <div
-            key={i}
-            className="absolute text-lg sm:text-2xl opacity-10"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animation: `float ${Math.random() * 4 + 2}s ease-in-out infinite`,
-              animationDelay: `${Math.random() * 2}s`,
-            }}
-          >
-            {['🏆', '🎉', '⭐', '✨', '🎊'][i % 5]}
+    <GameShell
+      title="Badge: Smart Spender Kid"
+      subtitle={showResult ? "Achievement Complete!" : `Scenario ${scenario + 1} of ${scenarios.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult}
+      showGameOver={showResult}
+      score={finalScore}
+      gameId="finance-kids-20"
+      gameType="finance"
+      totalLevels={scenarios.length}
+      maxScore={scenarios.length} // Max score is total number of scenarios (all correct)
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      currentLevel={scenario + 1}
+      showConfetti={showResult && finalScore >= 4}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="mb-4">
+                <div className="flex justify-between text-white/80 mb-1">
+                  <span>Progress</span>
+                  <span>{progress}%</span>
+                </div>
+                <div className="w-full bg-white/20 rounded-full h-2">
+                  <div 
+                    className="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full transition-all duration-500" 
+                    style={{ width: `${progress}%` }}
+                  ></div>
+                </div>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{getCurrentScenario().title}</h3>
+              <p className="text-white text-lg mb-6">
+                {getCurrentScenario().description}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {getCurrentScenario().choices.map(choice => (
+                  <button
+                    key={choice.id}
+                    onClick={() => handleDecision(choice.id)}
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{choice.emoji}</div>
+                    <h4 className="font-bold text-xl mb-2">{choice.text}</h4>
+                    <p className="text-white/90">{choice.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        ))}
-      </div>
-
-      {/* Animations */}
-      {flashPoints !== null && <ScoreFlash points={flashPoints} />}
-      {showAnswerConfetti && <Confetti duration={2000} />}
-      {showBadge && <Confetti />}
-      {allScenariosAnswered && finalScore === scenarios.length && <Confetti />}
-
-      {/* Header */}
-      <div className="flex items-center justify-between px-2 sm:px-4 md:px-6 py-2 sm:py-3 md:py-4 relative z-30 bg-white/30 backdrop-blur-sm border-b border-purple-200 flex-shrink-0 gap-2 sm:gap-4">
-        <button
-          onClick={() => navigate(resolvedBackPath)}
-          className="bg-white/80 hover:bg-white text-purple-600 px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-purple-300 shadow-md transition-all cursor-pointer font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-sm md:text-base flex-shrink-0"
-        >
-          ← <span className="hidden sm:inline">Back</span>
-        </button>
-        <div className="flex-1 flex items-center justify-center min-w-0">
-          <h1 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold px-2 flex items-center justify-center gap-1 sm:gap-2 truncate">
-            <span className="text-sm sm:text-base md:text-lg lg:text-xl flex-shrink-0">🏅</span>
-            <span className="bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 bg-clip-text text-transparent truncate">
-              <span className="hidden xs:inline">Badge: Smart Spender Kid</span>
-              <span className="xs:hidden">Smart Spender</span>
-            </span>
-          </h1>
-        </div>
-        <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
-          <div className="flex items-center gap-1 sm:gap-2 bg-white/80 backdrop-blur-md px-2 sm:px-3 md:px-4 py-1.5 sm:py-2 rounded-full border border-purple-300 shadow-md">
-            <span className="text-lg sm:text-xl md:text-2xl">🏅</span>
-            <span className="text-purple-700 font-bold text-xs sm:text-sm md:text-lg">Coins: {coins}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Main Game Area */}
-      <div className="flex-1 flex flex-col justify-center items-center text-center px-2 sm:px-4 md:px-6 z-10 py-2 sm:py-4 overflow-y-auto min-h-0">
-        {!showBadge && !allScenariosAnswered && (
-          <div className="mb-2 sm:mb-3 relative z-20 flex-shrink-0">
-            <p className="text-gray-700 text-xs sm:text-sm mt-1 font-medium">
-              Scenario {currentScenario + 1} of {scenarios.length}
-            </p>
-          </div>
-        )}
-        {allScenariosAnswered && !showBadge && (
-          <div className="mb-2 sm:mb-3 relative z-20 flex-shrink-0">
-            <p className="text-gray-700 text-xs sm:text-sm mt-1 font-medium">
-              Complete! Earn your badge by making smart spending decisions in all scenarios.
-            </p>
-          </div>
-        )}
-        {showBadge && (
-          <div className="mb-2 sm:mb-3 relative z-20 flex-shrink-0">
-            <p className="text-gray-700 text-xs sm:text-sm mt-1 font-medium">
-              Badge Unlocked! 🎉
-            </p>
-          </div>
-        )}
-
-        {/* Game Content */}
-        <div className="w-full max-w-2xl flex-1 flex flex-col justify-center min-h-0">
-          {!allScenariosAnswered && !showResult && currentScenarioData ? (
-            <div className="space-y-3 sm:space-y-4">
-              {/* Scenario Card */}
-              <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-purple-300 shadow-xl">
-                {/* Medal Icon */}
-                <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">🏅</div>
-                
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold text-purple-700 mb-2 sm:mb-3">{currentScenarioData.title}</h3>
-                
-                <p className="text-gray-800 text-sm sm:text-base md:text-lg mb-3 sm:mb-4 font-semibold leading-relaxed px-1">
-                  {currentScenarioData.description}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 4 ? (
+              <div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Smart Spender Kid!</h3>
+                <p className="text-white/90 text-lg mb-6">
+                  You made {finalScore} smart spending decisions out of {scenarios.length} scenarios!
                 </p>
                 
-                {/* Options */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 md:gap-4">
-                  {currentScenarioData.choices.map(option => (
-                    <button
-                      key={option.id}
-                      onClick={() => handleChoice(option.id)}
-                      disabled={showResult}
-                      className={`p-3 sm:p-4 md:p-5 rounded-lg sm:rounded-xl shadow-lg transition-all transform hover:scale-105 active:scale-95 border-2 ${
-                        showResult && choice === option.id
-                          ? option.isCorrect
-                            ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white border-green-400"
-                            : "bg-gradient-to-r from-red-500 to-orange-600 text-white border-red-400"
-                          : "bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 hover:from-purple-600 hover:via-pink-600 hover:to-indigo-600 text-white border-purple-400"
-                      } ${showResult ? "opacity-75 cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-2xl sm:text-3xl md:text-4xl mb-1 sm:mb-2">{option.emoji}</div>
-                      <h3 className="font-bold text-sm sm:text-base md:text-lg mb-1 sm:mb-2">{option.text}</h3>
-                      <p className="text-white/95 text-xs sm:text-sm">{option.description}</p>
-                    </button>
-                  ))}
+                <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl mb-6">
+                  <h4 className="text-2xl font-bold mb-2">🎉 Achievement Unlocked!</h4>
+                  <p className="text-xl">Badge: Smart Spender Kid</p>
                 </div>
-
-                {/* Progress Indicator */}
-                <div className="mt-3 sm:mt-4 flex justify-center gap-1 sm:gap-1.5 flex-wrap">
-                  {scenarios.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`h-2 rounded-full transition-all ${
-                        index < currentScenario
-                          ? "bg-green-500 w-5 sm:w-6"
-                          : index === currentScenario
-                          ? "bg-purple-500 w-5 sm:w-6 animate-pulse"
-                          : "bg-gray-300 w-2"
-                      }`}
-                    />
-                  ))}
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                  <div className="bg-green-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-green-300 mb-2">Smart Choices</h4>
+                    <p className="text-white/90">
+                      You chose to save money, make shopping lists, compare prices, and stick to needs over wants.
+                    </p>
+                  </div>
+                  <div className="bg-blue-500/20 p-4 rounded-xl">
+                    <h4 className="font-bold text-blue-300 mb-2">Financial Wisdom</h4>
+                    <p className="text-white/90">
+                      These habits will help you make smart financial decisions throughout your life!
+                    </p>
+                  </div>
                 </div>
+                
+                <p className="text-white/80 mb-6">
+                  Congratulations on completing all 10 finance games! You're well on your way to becoming financially literate.
+                </p>
               </div>
-            </div>
-          ) : !allScenariosAnswered && showResult ? (
-            /* Scenario Result */
-            <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-purple-300 shadow-xl text-center">
-              {isCorrect ? (
-                <div>
-                  <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3 animate-bounce">🎯</div>
-                  <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">💰✨</div>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-green-600 mb-2 sm:mb-3">Great Choice!</h3>
-                  <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
-                    You made a smart spending decision! Keep it up!
-                  </p>
-                  <button
-                    onClick={handleNextScenario}
-                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 hover:from-purple-600 hover:via-pink-600 hover:to-indigo-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
-                  >
-                    {isLastScenario ? "See Results" : "Next Scenario"} →
-                  </button>
-                </div>
-              ) : (
-                <div>
-                  <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3">😔</div>
-                  <div className="text-3xl sm:text-4xl md:text-5xl mb-2 sm:mb-3">💸</div>
-                  <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-700 mb-2 sm:mb-3">Think About Smart Spending!</h3>
-                  <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
-                    Remember, smart spending means saving money, comparing prices, and making plans before buying!
-                  </p>
-                  <button
-                    onClick={handleNextScenario}
-                    className="bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 hover:from-purple-600 hover:via-pink-600 hover:to-indigo-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105 mb-3 sm:mb-4"
-                  >
-                    {isLastScenario ? "See Results" : "Next Scenario"} →
-                  </button>
-                </div>
-              )}
-            </div>
-          ) : allScenariosAnswered && !showBadge ? (
-            /* Final Results - Not All Correct */
-            <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-purple-300 shadow-xl text-center">
-              <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">🏅</div>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-700 mb-3 sm:mb-4">Keep Practicing!</h3>
-              <p className="text-gray-700 text-xs sm:text-sm md:text-base mb-3 sm:mb-4 leading-relaxed px-1">
-                You got <span className="font-bold text-purple-600">{finalScore}</span> out of{" "}
-                <span className="font-bold">{scenarios.length}</span> scenarios correct.
-                <br />
-                To earn the Smart Spender Kid badge, you need to make smart spending decisions in all 5 scenarios!
-              </p>
-              <div className="bg-gradient-to-r from-yellow-400 to-orange-400 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full inline-flex items-center gap-2 mb-4 sm:mb-5 shadow-lg">
-                <span className="text-xl sm:text-2xl">💰</span>
-                <span className="text-base sm:text-lg md:text-xl font-bold">+5 Coins</span>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You made {finalScore} smart spending decisions out of {scenarios.length} scenarios.
+                </p>
+                <p className="text-white/90 mb-6">
+                  Remember, smart spending means thinking about needs vs wants, saving money, 
+                  comparing prices, and making plans before buying.
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
               </div>
-              <button
-                onClick={handleRestart}
-                className="bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 hover:from-purple-600 hover:via-pink-600 hover:to-indigo-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105 mb-3 sm:mb-4"
-              >
-                Try Again 🏅
-              </button>
-            </div>
-          ) : (
-            /* Badge Unlocked Card */
-            <div className="bg-white/90 backdrop-blur-md rounded-lg sm:rounded-xl p-4 sm:p-5 md:p-6 border-2 border-purple-300 shadow-xl">
-              <div className="text-6xl sm:text-7xl md:text-8xl mb-3 sm:mb-4 animate-bounce">🏆</div>
-              <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-purple-700 mb-3 sm:mb-4">Smart Spender Kid Badge Unlocked!</h3>
-              <p className="text-gray-700 text-sm sm:text-base md:text-lg mb-4 sm:mb-5 leading-relaxed px-1">
-                You made smart spending decisions in all <span className="font-bold text-purple-600">5 scenarios</span>! You are now a <span className="font-bold text-purple-600">certified Smart Spender Kid</span>! 🎉
-              </p>
-              
-              {/* Badge Display */}
-              <div className="bg-gradient-to-r from-purple-400 via-pink-400 to-indigo-500 text-white py-4 sm:py-5 md:py-6 px-4 sm:px-6 md:px-8 rounded-lg sm:rounded-xl inline-block mb-4 sm:mb-5 shadow-lg border-2 border-purple-300">
-                <div className="text-4xl sm:text-5xl md:text-6xl mb-2 sm:mb-3">🛒</div>
-                <h4 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Smart Spender Kid</h4>
-                <p className="text-sm sm:text-base md:text-lg">Master of Smart Spending</p>
-              </div>
-              
-              {/* Coins Display */}
-              <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full inline-flex items-center gap-2 mb-4 sm:mb-5 shadow-lg">
-                <span className="text-xl sm:text-2xl">💰</span>
-                <span className="text-base sm:text-lg md:text-xl font-bold">+5 Coins</span>
-              </div>
-              
-              <p className="text-gray-600 text-xs sm:text-sm md:text-base mb-4 sm:mb-5 px-1">
-                Congratulations on completing all finance games! You're well on your way to becoming financially literate. 🎉
-              </p>
-              
-              <button
-                onClick={handleNext}
-                className="bg-gradient-to-r from-purple-500 via-pink-500 to-indigo-500 hover:from-purple-600 hover:via-pink-600 hover:to-indigo-600 text-white py-2 sm:py-2.5 px-4 sm:px-6 rounded-full font-bold text-xs sm:text-sm md:text-base shadow-lg transition-all transform hover:scale-105"
-              >
-                <span className="hidden sm:inline">Continue to Next Level</span>
-                <span className="sm:hidden">Next Level</span> →
-              </button>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
-
-      {/* Game Over Modal */}
-      {showBadge && (
-        <GameOverModal
-          score={5}
-          gameId="finance-kids-20"
-          gameType="finance"
-          totalLevels={1}
-          coinsPerLevel={5}
-          isReplay={location?.state?.isReplay || false}
-          onClose={handleGameOverClose}
-        />
-      )}
-
-      {/* Animations CSS */}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(10deg); }
-        }
-      `}</style>
-    </div>
+    </GameShell>
   );
 };
 

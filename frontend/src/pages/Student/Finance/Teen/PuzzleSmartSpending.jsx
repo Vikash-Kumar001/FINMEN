@@ -116,11 +116,15 @@ const PuzzleSmartSpending = () => {
   return (
     <GameShell
       title="Puzzle: Smart Spending"
+      score={coins}
       subtitle={showResult ? "Game Complete!" : "Match spending concepts to their meanings"}
       onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 4} // Pass if 4 or more correct
+      nextEnabled={showResult && finalScore >= 4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp} // Pass if 4 or more correct
       showGameOver={showResult && finalScore >= 4}
-      score={coins}
+      
       gameId="finance-teens-14"
       gameType="finance"
       totalLevels={20}

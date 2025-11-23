@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const SpotThePattern = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentPattern, setCurrentPattern] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [score, setScore] = useState(0);
@@ -65,11 +70,15 @@ const SpotThePattern = () => {
   return (
     <GameShell
       title="Spot the Pattern"
+      score={coins}
       subtitle={`Pattern ${currentPattern + 1} of ${patterns.length}`}
       onNext={handleNext}
       nextEnabled={showResult && score >= 4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && score >= 4}
-      score={coins}
+      
       gameId="ai-kids-1"
       gameType="ai"
       totalLevels={20}

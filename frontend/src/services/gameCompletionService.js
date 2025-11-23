@@ -38,7 +38,9 @@ class GameCompletionService {
         timePlayed = 0,
         achievements = [],
         isFullCompletion = true,
-        coinsPerLevel = null
+        coinsPerLevel = null,
+        totalCoins = null, // Total coins from game card for full completion
+        totalXp = null // Total XP from game card for full completion
       } = gameData;
 
       // Validate required data
@@ -104,6 +106,17 @@ class GameCompletionService {
         fullyCompleted: currentProgress.fullyCompleted
       });
       
+      // Log the values being sent to backend
+      console.log(`📤 Sending game completion to backend API:`, {
+        gameId,
+        totalCoins,
+        coinsPerLevel,
+        totalLevels,
+        totalXp,
+        isFullCompletion,
+        isReplay: isReplayAttempt
+      });
+      
       const response = await api.post(`/api/game/complete-unified/${gameId}`, {
         gameType,
         score,
@@ -115,11 +128,20 @@ class GameCompletionService {
         achievements,
         isFullCompletion,
         coinsPerLevel,
+        totalCoins, // Total coins from game card (should be 5)
+        totalXp, // Total XP from game card (should be 10)
         previousProgress: currentProgress,
         isReplay: isReplayAttempt // Use the computed isReplayAttempt value, not gameData.isReplay
       });
 
       const result = response.data;
+      
+      // Log the result from backend
+      console.log(`📥 Received game completion result from backend:`, {
+        gameId,
+        coinsEarned: result.coinsEarned,
+        xpEarned: result.xpEarned
+      });
 
       // Update local cache
       this.completedGames.set(gameId, {

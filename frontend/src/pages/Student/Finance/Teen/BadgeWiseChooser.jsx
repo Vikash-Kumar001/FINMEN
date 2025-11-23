@@ -195,6 +195,9 @@ const BadgeWiseChooser = () => {
       currentLevel={currentDilemma + 1}
       score={totalScore}
       totalScore={800} // Max possible score
+      maxScore={dilemmas.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       onGameComplete={() => navigate("/games/financial-literacy/teen")}
     >
       <div className="text-center text-white space-y-6">

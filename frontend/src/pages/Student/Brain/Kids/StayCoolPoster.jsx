@@ -139,7 +139,10 @@ const StayCoolPoster = () => {
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/kids"
-    >
+    
+      maxScore={5} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <GameCard>
         <h3 className="text-2xl font-bold text-white mb-4 text-center">Poster: Stay Cool</h3>
         <p className="text-white/80 mb-6 text-center">Select a poster for staying calm.</p>

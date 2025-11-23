@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const SmartRobotStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentStory, setCurrentStory] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -106,11 +111,15 @@ const SmartRobotStory = () => {
   return (
     <GameShell
       title="Smart Robot Story"
+      score={coins}
       subtitle="Learn with Robots the Right Way"
       onNext={handleNext}
       nextEnabled={allDone && coins >= 4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={allDone && coins >= 4}
-      score={coins >= 5 ? 5 : coins}
+      
       gameId="dcos-kids-71"
       gameType="story-choice"
       totalLevels={100}

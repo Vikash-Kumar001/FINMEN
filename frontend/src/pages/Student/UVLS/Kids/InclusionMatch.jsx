@@ -82,11 +82,15 @@ const InclusionMatch = () => {
   return (
     <GameShell
       title="Inclusion Match"
+      score={coins}
       subtitle={`Match ${currentMatch + 1} of ${matchPairs.length}`}
       onNext={handleNext}
       nextEnabled={showResult && correctMatches >= 8}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && correctMatches >= 8}
-      score={coins}
+      
       gameId="uvls-kids-14"
       gameType="uvls"
       totalLevels={20}

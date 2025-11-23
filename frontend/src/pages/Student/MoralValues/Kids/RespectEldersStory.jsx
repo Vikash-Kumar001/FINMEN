@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const RespectEldersStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const stories = [
@@ -79,8 +84,6 @@ const RespectEldersStory = () => {
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
-  const [totalCoins, setTotalCoins] = useState(0);
-
   const currentStory = stories[currentIndex];
   const selectedChoiceData = currentStory.choices.find((c) => c.id === selectedChoice);
 
@@ -124,7 +127,11 @@ const RespectEldersStory = () => {
       currentLevel={11}
       showConfetti={allQuestionsDone}
       backPath="/games/moral-values/kids"
-    >
+    
+      maxScore={20} // Max score is total number of questions (all correct)
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="space-y-8">
         {!showFeedback ? (
           <>

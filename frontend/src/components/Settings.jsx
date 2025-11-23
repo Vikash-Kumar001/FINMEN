@@ -24,10 +24,13 @@ import {
 } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
 import api from "../utils/api";
-import { toast } from "react-toastify";
+import { toast } from "react-hot-toast";
+import { useSocket } from '../context/SocketContext';
 
 const Settings = () => {
     const { user, setUser } = useAuth();
+    const socketContext = useSocket();
+    const socket = socketContext?.socket || null;
     const [form, setForm] = useState({
         name: "",
         currentPassword: "",
@@ -43,7 +46,19 @@ const Settings = () => {
         privacy: "friends"
     });
 
+    const [notificationSettings, setNotificationSettings] = useState({
+        emailNotifications: true,
+        pushNotifications: true,
+        achievementUpdates: true,
+        weeklySummaries: true,
+        systemAnnouncements: true,
+        dailyReminders: true,
+        newRewards: true,
+        friendActivity: false
+    });
+
     const [loading, setLoading] = useState(false);
+    const [settingsLoading, setSettingsLoading] = useState(true);
     const [showCurrentPassword, setShowCurrentPassword] = useState(false);
     const [showNewPassword, setShowNewPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -55,18 +70,77 @@ const Settings = () => {
     const [linkingLoading, setLinkingLoading] = useState(false);
     const [copiedCode, setCopiedCode] = useState(false);
 
+    // Fetch settings from backend
     useEffect(() => {
-        if (user) {
-            setForm(prev => ({
-                ...prev,
-                name: user.name || ""
-            }));
+        fetchSettings();
+    }, [user]);
 
-            if (user.preferences) {
+    const fetchSettings = async () => {
+        try {
+            setSettingsLoading(true);
+            const [settingsRes, profileRes] = await Promise.all([
+                api.get('/api/user/settings').catch(() => ({ data: {} })),
+                api.get('/api/user/profile').catch(() => ({ data: null }))
+            ]);
+
+            // Update form with user data
+            if (profileRes.data) {
+                setForm(prev => ({
+                    ...prev,
+                    name: profileRes.data.name || profileRes.data.fullName || user?.name || ""
+                }));
+            }
+
+            // Update preferences from backend settings
+            if (settingsRes.data?.settings) {
+                const settings = settingsRes.data.settings;
+                
+                // Update notification settings
+                if (settings.notifications) {
+                    const digestFreq = settings.notifications.digestFrequency || 'daily';
+                    setNotificationSettings(prev => ({
+                        ...prev,
+                        emailNotifications: settings.notifications.emailNotifications ?? true,
+                        pushNotifications: settings.notifications.pushNotifications ?? true,
+                        achievementUpdates: settings.notifications.notifyOnWellbeing ?? true,
+                        weeklySummaries: digestFreq === 'weekly',
+                        systemAnnouncements: settings.notifications.notifyOnSystemUpdates ?? true,
+                        dailyReminders: digestFreq === 'daily',
+                        newRewards: settings.notifications.notifyOnApproval ?? true,
+                        friendActivity: settings.notifications.notifyOnNewStudent ?? false
+                    }));
+                }
+
+                // Update display/preferences
+                if (settings.display) {
+                    setPreferences(prev => ({
+                        ...prev,
+                        sounds: settings.display.soundEffects ?? true,
+                        language: settings.display.language || "english",
+                        autoSave: settings.display.autoSave ?? true,
+                        privacy: settings.privacy?.profileVisibility ? "public" : "private"
+                    }));
+                }
+
+                // Update privacy settings
+                if (settings.privacy) {
+                    const profileVisibility = settings.privacy.profileVisibility;
+                    setPreferences(prev => ({
+                        ...prev,
+                        privacy: profileVisibility === true ? "public" : profileVisibility === false ? "private" : "friends"
+                    }));
+                }
+            } else if (user?.preferences) {
+                // Fallback to user preferences if settings API fails
                 setPreferences(user.preferences);
             }
+        } catch (error) {
+            console.error('Error fetching settings:', error);
+            toast.error('Failed to load settings');
+        } finally {
+            setSettingsLoading(false);
         }
-    }, [user]);
+    };
 
     useEffect(() => {
         if (form.newPassword) {
@@ -82,6 +156,63 @@ const Settings = () => {
             fetchLinkingData();
         }
     }, [user]);
+
+    // Real-time settings updates via socket
+    useEffect(() => {
+        if (!socket) return;
+
+        const handleSettingsUpdate = (data) => {
+            if (data.userId === user?._id) {
+                console.log('🔧 Settings updated via socket:', data);
+                
+                // Update the appropriate state based on section
+                if (data.section === 'notifications') {
+                    if (data.key === 'digestFrequency') {
+                        // Handle digestFrequency specially
+                        setNotificationSettings(prev => ({
+                            ...prev,
+                            weeklySummaries: data.value === 'weekly',
+                            dailyReminders: data.value === 'daily'
+                        }));
+                    } else {
+                        // Map backend keys to frontend keys
+                        const keyMap = {
+                            'notifyOnWellbeing': 'achievementUpdates',
+                            'notifyOnSystemUpdates': 'systemAnnouncements',
+                            'notifyOnApproval': 'newRewards',
+                            'notifyOnNewStudent': 'friendActivity'
+                        };
+                        const frontendKey = keyMap[data.key] || data.key;
+                        setNotificationSettings(prev => ({
+                            ...prev,
+                            [frontendKey]: data.value
+                        }));
+                    }
+                } else if (data.section === 'display') {
+                    if (data.key === 'soundEffects') {
+                        setPreferences(prev => ({ ...prev, sounds: data.value }));
+                    } else if (data.key === 'language') {
+                        setPreferences(prev => ({ ...prev, language: data.value }));
+                    } else if (data.key === 'autoSave') {
+                        setPreferences(prev => ({ ...prev, autoSave: data.value }));
+                    }
+                } else if (data.section === 'privacy') {
+                    if (data.key === 'profileVisibility') {
+                        setPreferences(prev => ({
+                            ...prev,
+                            privacy: data.value ? 'public' : 'private'
+                        }));
+                    }
+                }
+            }
+        };
+
+        socket.on('settings:updated', handleSettingsUpdate);
+
+        return () => {
+            socket.off('settings:updated', handleSettingsUpdate);
+        };
+    }, [socket, user?._id]);
 
     const fetchLinkingData = async () => {
         try {
@@ -192,11 +323,123 @@ const Settings = () => {
         }));
     };
 
-    const handlePreferenceChange = (key, value) => {
+    const handlePreferenceChange = async (key, value) => {
+        // Optimistically update UI
         setPreferences(prev => ({
             ...prev,
             [key]: value
         }));
+
+        // Auto-save to backend
+        try {
+            let section = 'display';
+            let settingsToUpdate = {};
+
+            if (key === 'sounds') {
+                settingsToUpdate = { soundEffects: value };
+            } else if (key === 'language') {
+                settingsToUpdate = { language: value };
+            } else if (key === 'autoSave') {
+                settingsToUpdate = { autoSave: value };
+            } else if (key === 'privacy') {
+                section = 'privacy';
+                settingsToUpdate = { profileVisibility: value === 'public' };
+            }
+
+            if (Object.keys(settingsToUpdate).length > 0) {
+                await api.put('/api/user/settings', {
+                    section,
+                    settings: settingsToUpdate
+                });
+
+                // Emit socket event for real-time updates
+                if (socket) {
+                    socket.emit('settings:update', {
+                        userId: user?._id,
+                        section,
+                        key: Object.keys(settingsToUpdate)[0],
+                        value: Object.values(settingsToUpdate)[0]
+                    });
+                }
+
+                toast.success('Preference saved', { duration: 2000, position: 'bottom-center' });
+            }
+        } catch (error) {
+            console.error('Error saving preference:', error);
+            // Revert on error
+            setPreferences(prev => ({
+                ...prev,
+                [key]: !value
+            }));
+            toast.error('Failed to save preference', { duration: 2000, position: 'bottom-center' });
+        }
+    };
+
+    const handleNotificationChange = async (key, value) => {
+        // Optimistically update UI
+        setNotificationSettings(prev => ({
+            ...prev,
+            [key]: value
+        }));
+
+        // Auto-save to backend
+        try {
+            let settingsToUpdate = {};
+            
+            // Map frontend keys to backend keys
+            if (key === 'emailNotifications') {
+                settingsToUpdate = { emailNotifications: value };
+            } else if (key === 'pushNotifications') {
+                settingsToUpdate = { pushNotifications: value };
+            } else if (key === 'achievementUpdates') {
+                settingsToUpdate = { notifyOnWellbeing: value };
+            } else if (key === 'weeklySummaries') {
+                // If enabling weekly summaries, disable daily reminders
+                if (value) {
+                    setNotificationSettings(prev => ({ ...prev, dailyReminders: false }));
+                }
+                settingsToUpdate = { digestFrequency: value ? 'weekly' : (notificationSettings.dailyReminders ? 'daily' : 'never') };
+            } else if (key === 'systemAnnouncements') {
+                settingsToUpdate = { notifyOnSystemUpdates: value };
+            } else if (key === 'dailyReminders') {
+                // If enabling daily reminders, disable weekly summaries
+                if (value) {
+                    setNotificationSettings(prev => ({ ...prev, weeklySummaries: false }));
+                }
+                settingsToUpdate = { digestFrequency: value ? 'daily' : (notificationSettings.weeklySummaries ? 'weekly' : 'never') };
+            } else if (key === 'newRewards') {
+                settingsToUpdate = { notifyOnApproval: value };
+            } else if (key === 'friendActivity') {
+                settingsToUpdate = { notifyOnNewStudent: value };
+            }
+
+            if (Object.keys(settingsToUpdate).length > 0) {
+                await api.put('/api/user/settings', {
+                    section: 'notifications',
+                    settings: settingsToUpdate
+                });
+
+                // Emit socket event for real-time updates
+                if (socket) {
+                    socket.emit('settings:update', {
+                        userId: user?._id,
+                        section: 'notifications',
+                        key: Object.keys(settingsToUpdate)[0],
+                        value: Object.values(settingsToUpdate)[0]
+                    });
+                }
+
+                toast.success('Notification setting saved', { duration: 2000, position: 'bottom-center' });
+            }
+        } catch (error) {
+            console.error('Error saving notification setting:', error);
+            // Revert on error
+            setNotificationSettings(prev => ({
+                ...prev,
+                [key]: !value
+            }));
+            toast.error('Failed to save notification setting', { duration: 2000, position: 'bottom-center' });
+        }
     };
 
     const handleSubmit = async (e) => {
@@ -210,19 +453,29 @@ const Settings = () => {
         }
 
         try {
-            const data = {
-                name: form.name,
-                preferences: preferences
-            };
-
-            if (form.currentPassword && form.newPassword) {
-                data.currentPassword = form.currentPassword;
-                data.newPassword = form.newPassword;
+            // Update profile name
+            if (form.name && form.name !== user?.name) {
+                await api.put("/api/user/profile", {
+                    name: form.name
+                });
             }
 
-            const response = await api.put("/api/auth/settings", data);
+            // Update password if provided
+            if (form.currentPassword && form.newPassword) {
+                await api.put("/api/user/change-password", {
+                    currentPassword: form.currentPassword,
+                    newPassword: form.newPassword
+                });
+            }
 
-            setUser(response.data.user);
+            // Refresh user data
+            const profileRes = await api.get('/api/user/profile');
+            if (profileRes.data) {
+                setUser(prev => ({
+                    ...prev,
+                    ...profileRes.data
+                }));
+            }
 
             setForm(prev => ({
                 ...prev,
@@ -231,10 +484,10 @@ const Settings = () => {
                 confirmPassword: ""
             }));
 
-            toast.success("Settings updated successfully");
+            toast.success("Settings updated successfully", { duration: 3000, position: 'bottom-center' });
         } catch (error) {
             console.error("Settings update error:", error);
-            toast.error(error.response?.data?.message || "Failed to update settings");
+            toast.error(error.response?.data?.message || "Failed to update settings", { duration: 3000, position: 'bottom-center' });
         } finally {
             setLoading(false);
         }
@@ -542,15 +795,29 @@ const Settings = () => {
                                     </h2>
                                 </div>
 
-                                <form onSubmit={handleSubmit} className="space-y-8">
+                                <form onSubmit={(e) => e.preventDefault()} className="space-y-8">
                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                         <div className="space-y-4">
                                             <h3 className="text-lg font-semibold text-gray-700 flex items-center gap-2">
                                                 <Palette className="w-5 h-5 text-indigo-500" />
                                                 Appearance
                                             </h3>
-
-
+                                            <div className="space-y-3">
+                                                <div className="space-y-2">
+                                                    <label className="block font-medium text-gray-700">
+                                                        Theme
+                                                    </label>
+                                                    <select
+                                                        value="light"
+                                                        disabled
+                                                        className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-indigo-500 focus:outline-none transition-all bg-gray-50 text-gray-500 cursor-not-allowed"
+                                                    >
+                                                        <option value="light">Light (Coming Soon)</option>
+                                                        <option value="dark" disabled>Dark Mode (Coming Soon)</option>
+                                                    </select>
+                                                    <p className="text-xs text-gray-500">Theme customization coming soon</p>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div className="space-y-4">
@@ -566,16 +833,17 @@ const Settings = () => {
                                                         <input
                                                             type="checkbox"
                                                             id="notifications-toggle"
-                                                            checked={preferences.notifications}
-                                                            onChange={() => handlePreferenceChange("notifications", !preferences.notifications)}
+                                                            checked={notificationSettings.pushNotifications}
+                                                            onChange={(e) => handleNotificationChange("pushNotifications", e.target.checked)}
+                                                            disabled={settingsLoading}
                                                             className="absolute w-0 h-0 opacity-0"
                                                         />
                                                         <label
                                                             htmlFor="notifications-toggle"
-                                                            className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${preferences.notifications ? "bg-indigo-500" : "bg-gray-300"}`}
+                                                            className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${notificationSettings.pushNotifications ? "bg-indigo-500" : "bg-gray-300"}`}
                                                         >
                                                             <span
-                                                                className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${preferences.notifications ? "transform translate-x-6" : ""}`}
+                                                                className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${notificationSettings.pushNotifications ? "transform translate-x-6" : ""}`}
                                                             />
                                                         </label>
                                                     </div>
@@ -588,7 +856,8 @@ const Settings = () => {
                                                             type="checkbox"
                                                             id="sounds-toggle"
                                                             checked={preferences.sounds}
-                                                            onChange={() => handlePreferenceChange("sounds", !preferences.sounds)}
+                                                            onChange={(e) => handlePreferenceChange("sounds", e.target.checked)}
+                                                            disabled={settingsLoading}
                                                             className="absolute w-0 h-0 opacity-0"
                                                         />
                                                         <label
@@ -620,6 +889,7 @@ const Settings = () => {
                                                     <select
                                                         value={preferences.language}
                                                         onChange={(e) => handlePreferenceChange("language", e.target.value)}
+                                                        disabled={settingsLoading}
                                                         className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-indigo-500 focus:outline-none transition-all bg-white/50"
                                                     >
                                                         <option value="english">English</option>
@@ -647,6 +917,7 @@ const Settings = () => {
                                                     <select
                                                         value={preferences.privacy}
                                                         onChange={(e) => handlePreferenceChange("privacy", e.target.value)}
+                                                        disabled={settingsLoading}
                                                         className="w-full p-4 border-2 border-gray-200 rounded-2xl focus:border-indigo-500 focus:outline-none transition-all bg-white/50"
                                                     >
                                                         <option value="public">Public</option>
@@ -662,7 +933,8 @@ const Settings = () => {
                                                             type="checkbox"
                                                             id="autosave-toggle"
                                                             checked={preferences.autoSave}
-                                                            onChange={() => handlePreferenceChange("autoSave", !preferences.autoSave)}
+                                                            onChange={(e) => handlePreferenceChange("autoSave", e.target.checked)}
+                                                            disabled={settingsLoading}
                                                             className="absolute w-0 h-0 opacity-0"
                                                         />
                                                         <label
@@ -679,17 +951,11 @@ const Settings = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-end">
-                                        <motion.button
-                                            type="submit"
-                                            disabled={loading}
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                            className={`px-8 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg flex items-center gap-2 ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
-                                        >
-                                            {loading ? "Saving..." : "Save Preferences"}
-                                            {!loading && <Check className="w-5 h-5" />}
-                                        </motion.button>
+                                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                        <p className="text-sm text-blue-700 flex items-center gap-2">
+                                            <CheckCircle className="w-4 h-4" />
+                                            Preferences are saved automatically when you change them
+                                        </p>
                                     </div>
                                 </form>
                             </motion.div>
@@ -720,15 +986,17 @@ const Settings = () => {
                                                     <input
                                                         type="checkbox"
                                                         id="achievements-toggle"
-                                                        checked={true}
+                                                        checked={notificationSettings.achievementUpdates}
+                                                        onChange={(e) => handleNotificationChange('achievementUpdates', e.target.checked)}
+                                                        disabled={settingsLoading}
                                                         className="absolute w-0 h-0 opacity-0"
                                                     />
                                                     <label
                                                         htmlFor="achievements-toggle"
-                                                        className="absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 bg-indigo-500"
+                                                        className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${notificationSettings.achievementUpdates ? 'bg-indigo-500' : 'bg-gray-300'}`}
                                                     >
                                                         <span
-                                                            className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform translate-x-6"
+                                                            className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${notificationSettings.achievementUpdates ? 'transform translate-x-6' : ''}`}
                                                         />
                                                     </label>
                                                 </div>
@@ -743,15 +1011,17 @@ const Settings = () => {
                                                     <input
                                                         type="checkbox"
                                                         id="weekly-toggle"
-                                                        checked={true}
+                                                        checked={notificationSettings.weeklySummaries}
+                                                        onChange={(e) => handleNotificationChange('weeklySummaries', e.target.checked)}
+                                                        disabled={settingsLoading}
                                                         className="absolute w-0 h-0 opacity-0"
                                                     />
                                                     <label
                                                         htmlFor="weekly-toggle"
-                                                        className="absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 bg-indigo-500"
+                                                        className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${notificationSettings.weeklySummaries ? 'bg-indigo-500' : 'bg-gray-300'}`}
                                                     >
                                                         <span
-                                                            className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform translate-x-6"
+                                                            className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${notificationSettings.weeklySummaries ? 'transform translate-x-6' : ''}`}
                                                         />
                                                     </label>
                                                 </div>
@@ -766,15 +1036,17 @@ const Settings = () => {
                                                     <input
                                                         type="checkbox"
                                                         id="system-toggle"
-                                                        checked={true}
+                                                        checked={notificationSettings.systemAnnouncements}
+                                                        onChange={(e) => handleNotificationChange('systemAnnouncements', e.target.checked)}
+                                                        disabled={settingsLoading}
                                                         className="absolute w-0 h-0 opacity-0"
                                                     />
                                                     <label
                                                         htmlFor="system-toggle"
-                                                        className="absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 bg-indigo-500"
+                                                        className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${notificationSettings.systemAnnouncements ? 'bg-indigo-500' : 'bg-gray-300'}`}
                                                     >
                                                         <span
-                                                            className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform translate-x-6"
+                                                            className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${notificationSettings.systemAnnouncements ? 'transform translate-x-6' : ''}`}
                                                         />
                                                     </label>
                                                 </div>
@@ -797,15 +1069,17 @@ const Settings = () => {
                                                     <input
                                                         type="checkbox"
                                                         id="reminders-toggle"
-                                                        checked={true}
+                                                        checked={notificationSettings.dailyReminders}
+                                                        onChange={(e) => handleNotificationChange('dailyReminders', e.target.checked)}
+                                                        disabled={settingsLoading}
                                                         className="absolute w-0 h-0 opacity-0"
                                                     />
                                                     <label
                                                         htmlFor="reminders-toggle"
-                                                        className="absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 bg-indigo-500"
+                                                        className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${notificationSettings.dailyReminders ? 'bg-indigo-500' : 'bg-gray-300'}`}
                                                     >
                                                         <span
-                                                            className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform translate-x-6"
+                                                            className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${notificationSettings.dailyReminders ? 'transform translate-x-6' : ''}`}
                                                         />
                                                     </label>
                                                 </div>
@@ -820,15 +1094,17 @@ const Settings = () => {
                                                     <input
                                                         type="checkbox"
                                                         id="rewards-toggle"
-                                                        checked={true}
+                                                        checked={notificationSettings.newRewards}
+                                                        onChange={(e) => handleNotificationChange('newRewards', e.target.checked)}
+                                                        disabled={settingsLoading}
                                                         className="absolute w-0 h-0 opacity-0"
                                                     />
                                                     <label
                                                         htmlFor="rewards-toggle"
-                                                        className="absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 bg-indigo-500"
+                                                        className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${notificationSettings.newRewards ? 'bg-indigo-500' : 'bg-gray-300'}`}
                                                     >
                                                         <span
-                                                            className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 transform translate-x-6"
+                                                            className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${notificationSettings.newRewards ? 'transform translate-x-6' : ''}`}
                                                         />
                                                     </label>
                                                 </div>
@@ -843,15 +1119,17 @@ const Settings = () => {
                                                     <input
                                                         type="checkbox"
                                                         id="friends-toggle"
-                                                        checked={false}
+                                                        checked={notificationSettings.friendActivity}
+                                                        onChange={(e) => handleNotificationChange('friendActivity', e.target.checked)}
+                                                        disabled={settingsLoading}
                                                         className="absolute w-0 h-0 opacity-0"
                                                     />
                                                     <label
                                                         htmlFor="friends-toggle"
-                                                        className="absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 bg-gray-300"
+                                                        className={`absolute left-0 w-12 h-6 rounded-full cursor-pointer transition-colors duration-300 ${notificationSettings.friendActivity ? 'bg-indigo-500' : 'bg-gray-300'}`}
                                                     >
                                                         <span
-                                                            className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300"
+                                                            className={`absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform duration-300 ${notificationSettings.friendActivity ? 'transform translate-x-6' : ''}`}
                                                         />
                                                     </label>
                                                 </div>
@@ -859,17 +1137,11 @@ const Settings = () => {
                                         </div>
                                     </div>
 
-                                    <div className="flex justify-end">
-                                        <motion.button
-                                            type="submit"
-                                            disabled={loading}
-                                            whileHover={{ scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                            className={`px-8 py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-indigo-500 to-purple-500 shadow-lg flex items-center gap-2 ${loading ? "opacity-70 cursor-not-allowed" : ""}`}
-                                        >
-                                            {loading ? "Saving..." : "Save Notification Settings"}
-                                            {!loading && <Check className="w-5 h-5" />}
-                                        </motion.button>
+                                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                                        <p className="text-sm text-blue-700 flex items-center gap-2">
+                                            <CheckCircle className="w-4 h-4" />
+                                            Notification settings are saved automatically when you toggle them
+                                        </p>
                                     </div>
                                 </form>
                             </motion.div>

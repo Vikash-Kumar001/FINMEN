@@ -142,7 +142,10 @@ const StrongMemoryPoster = () => {
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/kids"
-    >
+    
+      maxScore={5} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <GameCard>
         <h3 className="text-2xl font-bold text-white mb-4 text-center">Strong Memory Poster</h3>
         <p className="text-white/80 mb-6 text-center">Create or select a poster for strong memory.</p>

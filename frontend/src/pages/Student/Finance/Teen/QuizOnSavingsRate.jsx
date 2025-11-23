@@ -200,11 +200,15 @@ const QuizOnSavingsRate = () => {
   return (
     <GameShell
       title="Quiz on Savings Rate"
+      score={coins}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct
+      nextEnabled={showResult && finalScore >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp} // Pass if 3 or more correct
       showGameOver={showResult && finalScore >= 3}
-      score={coins}
+      
       gameId="finance-teens-2"
       gameType="finance"
       totalLevels={20}

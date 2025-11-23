@@ -99,11 +99,15 @@ const ResolveStepsPuzzle = () => {
   return (
     <GameShell
       title="Resolve Steps Puzzle"
+      score={coins}
       subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 3}
-      score={coins}
+      
       gameId="uvls-kids-74"
       gameType="uvls"
       totalLevels={100}

@@ -89,18 +89,22 @@ const ReflexDebtControl = () => {
   return (
     <GameShell
       title="Reflex Debt Control"
+      score={coins}
       subtitle={stages[currentStage]?.prompt || "Test your debt control reflexes!"}
       coins={coins}
       currentLevel={currentStage + 1}
       totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
       onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore >= 3}
+      nextEnabled={showResult && finalScore>= 3}
+      maxScore={stages.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && finalScore >= 3}
       showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
+      
       gameId="finance-teens-119"
       gameType="finance"
     >

@@ -123,7 +123,10 @@ const PartyStory = () => {
       score={calculateTotalScore()}
       totalScore={questions.length}
       onGameComplete={handleGameComplete}
-    >
+    
+      maxScore={questions.length} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="game-content">
         {/* Completion Popup */}
         {showCompletionPopup && (

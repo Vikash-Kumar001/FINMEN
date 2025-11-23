@@ -1,15 +1,19 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const DataCollectorSimulation = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [coins, setCoins] = useState(0);
-  const [totalCoins, setTotalCoins] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   // 🧠 5 questions — all based on “Data Collection for AI”
@@ -117,11 +121,15 @@ const DataCollectorSimulation = () => {
   return (
     <GameShell
       title="Data Collector Simulation"
+      score={coins}
       subtitle={`Question ${currentQuestionIndex + 1} of ${questions.length}`}
       onNext={handleNextQuestion}
       nextEnabled={showFeedback && coins > 0}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showFeedback && currentQuestionIndex === questions.length - 1 && coins > 0}
-      score={totalCoins}
+      
       gameId="ai-kids-data-collector-74"
       gameType="ai"
       totalLevels={100}

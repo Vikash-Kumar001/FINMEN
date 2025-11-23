@@ -17,12 +17,13 @@ const ResetPassword = () => {
 
     useEffect(() => {
         const verifiedEmail = localStorage.getItem("verified_reset_email");
-        if (!verifiedEmail) {
+        const verifiedOtp = localStorage.getItem("verified_reset_otp");
+        if (!verifiedEmail || !verifiedOtp) {
             navigate("/login");
         } else {
             setEmail(verifiedEmail);
         }
-    }, []);
+    }, [navigate]);
 
     const checkStrength = (pwd) => {
         let score = 0;
@@ -66,12 +67,19 @@ const ResetPassword = () => {
         }
 
         try {
+            const verifiedOtp = localStorage.getItem("verified_reset_otp");
+            if (!verifiedOtp) {
+                return setError("Session expired. Please request a new OTP.");
+            }
+
             const res = await api.post('/api/auth/reset-password', {
                 email,
-                password,
+                otp: verifiedOtp,
+                newPassword: password,
             });
 
             localStorage.removeItem("verified_reset_email");
+            localStorage.removeItem("verified_reset_otp");
             setSuccess("Password reset successful! Redirecting to login...");
             setTimeout(() => navigate("/login"), 2000);
         } catch (err) {

@@ -137,11 +137,15 @@ const PoliteWordsQuiz = () => {
   return (
     <GameShell
       title="Polite Words Quiz"
+      score={coins}
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && percentage >= 75}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={showResult && percentage >= 75}
-      score={coins}
+      
       gameId="uvls-kids-12"
       gameType="uvls"
       totalLevels={20}

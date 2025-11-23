@@ -649,7 +649,13 @@ export const getUserSettings = async (req, res) => {
         showPhoneToTeachers: false,
         allowDataExport: true,
         twoFactorAuth: false,
-        sessionTimeout: 30
+        sessionTimeout: 30,
+        profileVisibility: true,
+        showActivity: true
+      },
+      parentShare: {
+        weeklyReports: true,
+        shareProgress: true
       },
       display: {
         theme: 'light',
@@ -659,7 +665,9 @@ export const getUserSettings = async (req, res) => {
         timezone: 'Asia/Kolkata',
         compactMode: false,
         animationsEnabled: true,
-        soundEnabled: false
+        soundEnabled: false,
+        soundEffects: true,
+        animations: true
       }
     };
 
@@ -667,6 +675,7 @@ export const getUserSettings = async (req, res) => {
       settings: {
         notifications: { ...defaultSettings.notifications, ...(user.settings?.notifications || user.preferences?.notifications || {}) },
         privacy: { ...defaultSettings.privacy, ...(user.settings?.privacy || {}) },
+        parentShare: { ...defaultSettings.parentShare, ...(user.settings?.parentShare || {}) },
         display: { ...defaultSettings.display, ...(user.settings?.display || user.preferences || {}) }
       }
     });
@@ -680,9 +689,12 @@ export const getUserSettings = async (req, res) => {
 export const updateUserSettings = async (req, res) => {
   try {
     const { section, settings } = req.body;
+    console.log('🔧 Backend: Updating settings', { section, settings, userId: req.user._id });
+    
     const user = await User.findById(req.user._id);
     
     if (!user) {
+      console.error('❌ Backend: User not found');
       return res.status(404).json({ message: 'User not found' });
     }
 
@@ -692,15 +704,36 @@ export const updateUserSettings = async (req, res) => {
       user.settings.notifications = { ...(user.settings.notifications || {}), ...settings };
     } else if (section === 'privacy') {
       user.settings.privacy = { ...(user.settings.privacy || {}), ...settings };
+    } else if (section === 'parentShare') {
+      user.settings.parentShare = { ...(user.settings.parentShare || {}), ...settings };
     } else if (section === 'display') {
       user.settings.display = { ...(user.settings.display || {}), ...settings };
       // Also update user.preferences for backward compatibility
       user.preferences = { ...(user.preferences || {}), ...settings };
+    } else {
+      console.warn('⚠️ Backend: Unknown section:', section);
+      return res.status(400).json({ message: `Unknown section: ${section}` });
     }
 
     user.markModified('settings');
     user.markModified('preferences');
     await user.save();
+    
+    console.log('✅ Backend: Settings saved successfully', user.settings);
+
+    // Emit real-time updates via Socket.IO
+    const io = req.app.get('io');
+    if (io) {
+      // Broadcast to all user sessions
+      Object.keys(settings).forEach(key => {
+        io.to(user._id.toString()).emit('settings:updated', {
+          userId: user._id.toString(),
+          section: section,
+          key: key,
+          value: settings[key]
+        });
+      });
+    }
 
     res.json({
       success: true,

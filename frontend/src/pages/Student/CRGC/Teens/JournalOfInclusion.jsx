@@ -1,10 +1,15 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const JournalOfInclusion = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
+  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
+  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
+  const totalXp = location.state?.totalXp || 10; // Total XP from game card
   const [coins, setCoins] = useState(0);
   const [currentPrompt, setCurrentPrompt] = useState(0);
   const [entries, setEntries] = useState({});
@@ -92,7 +97,11 @@ const JournalOfInclusion = () => {
         currentLevel={17}
         showConfetti={true}
         backPath="/games/civic-responsibility/teens"
-      >
+      
+      maxScore={20} // Max score is total number of questions (all correct)
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
         <div className="text-center p-8">
           <div className="text-6xl mb-6">✍️</div>
           <h2 className="text-2xl font-bold mb-4">Journal Complete!</h2>

@@ -49,6 +49,14 @@ export const sendOTP = async (email, type = "verify") => {
       if (errorMessage.includes("not configured") || errorMessage.includes("MAIL_USER") || errorMessage.includes("MAIL_PASS")) {
         return { success: false, message: "Email service is not configured. Please contact support." };
       }
+      // Check if it's a timeout error
+      if (errorMessage.includes("timeout") || errorMessage.includes("ETIMEDOUT")) {
+        return { success: false, message: "Email service connection timeout. The OTP has been generated and saved. Please try resending or contact support if the issue persists." };
+      }
+      // Check if it's an authentication error
+      if (errorMessage.includes("authentication") || errorMessage.includes("EAUTH")) {
+        return { success: false, message: "Email service authentication failed. Please contact support." };
+      }
       // Do not throw; OTP is already stored. Allow frontend to handle resend.
       return { success: false, message: "Failed to send OTP email, please try resending." };
     }

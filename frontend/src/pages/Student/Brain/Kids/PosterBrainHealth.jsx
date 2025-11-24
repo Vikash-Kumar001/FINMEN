@@ -2,14 +2,20 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
 import { Brain, Moon, Apple, Book, Dumbbell, Zap } from 'lucide-react';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const PosterBrainHealth = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "brain-kids-6";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [selectedPoster, setSelectedPoster] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [showFeedback, setShowFeedback] = useState(false);

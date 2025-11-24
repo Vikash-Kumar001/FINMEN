@@ -2,12 +2,20 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
 import { Brain, RefreshCw, XCircle, Clock } from 'lucide-react';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const TryAgainReflex = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "brain-kids-183";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [currentLevel, setCurrentLevel] = useState(1);
   const [currentItem, setCurrentItem] = useState('');
   const [isGoodChoice, setIsGoodChoice] = useState(null);

@@ -25,6 +25,7 @@ import {
     Users,
     CreditCard,
     MessageCircle,
+    CheckCircle,
 } from 'lucide-react';
 
 const loadRazorpay = () => {
@@ -75,6 +76,7 @@ const Register = () => {
     const [showPlanSelectionModal, setShowPlanSelectionModal] = useState(false);
     const [planSelectionData, setPlanSelectionData] = useState(null);
     const [showStandalonePlanSelection, setShowStandalonePlanSelection] = useState(false);
+    const [isInitializingPayment, setIsInitializingPayment] = useState(false);
     const navigate = useNavigate();
     const { fetchUser } = useAuth();
 
@@ -312,8 +314,10 @@ const Register = () => {
 
     const initializeRazorpayPayment = async (orderId, keyId, amount, registrationIntentId) => {
         try {
+            setIsInitializingPayment(true);
             const Razorpay = await loadRazorpay();
             if (!Razorpay) {
+                setIsInitializingPayment(false);
                 throw new Error('Payment gateway not available right now.');
             }
 
@@ -321,7 +325,7 @@ const Register = () => {
                 key: keyId,
                 amount: Math.round(amount * 100), // Convert to paise
                 currency: 'INR',
-                name: 'FINMEN',
+                name: 'Wise Student',
                 description: 'Student Registration Payment',
                 order_id: orderId,
                 handler: async function (response) {
@@ -370,13 +374,16 @@ const Register = () => {
             // Handle payment failure
             razorpayInstance.on('payment.failed', function (response) {
                 console.error('Payment failed:', response.error);
+                setIsInitializingPayment(false);
                 setIsProcessing(false);
                 toast.error(response.error.description || 'Payment failed. Please try again.');
             });
             
+            setIsInitializingPayment(false); // Hide initialization modal when Razorpay opens
             razorpayInstance.open();
         } catch (error) {
             console.error('Razorpay initialization error:', error);
+            setIsInitializingPayment(false);
             toast.error(error.message || 'Unable to initialize payment.');
             setIsProcessing(false);
         }
@@ -1522,6 +1529,73 @@ const Register = () => {
                                     <span className="text-sm">Processing...</span>
                                 </div>
                             )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Professional Loading Overlay - Shows when payment is being initialized - Covers entire page */}
+            <AnimatePresence>
+                {isInitializingPayment && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center"
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-white rounded-3xl p-8 shadow-2xl max-w-md w-full mx-4 relative overflow-hidden"
+                        >
+                            {/* Animated Background */}
+                            <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 opacity-50"></div>
+                            <div className="absolute top-0 right-0 w-64 h-64 bg-purple-200 rounded-full -mr-32 -mt-32 opacity-20 animate-pulse"></div>
+                            <div className="absolute bottom-0 left-0 w-48 h-48 bg-pink-200 rounded-full -ml-24 -mb-24 opacity-20 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                            
+                            <div className="relative z-10 text-center">
+                                {/* Animated Spinner */}
+                                <div className="relative w-20 h-20 mx-auto mb-6">
+                                    <div className="absolute inset-0 border-4 border-purple-200 rounded-full"></div>
+                                    <div className="absolute inset-0 border-4 border-transparent border-t-purple-600 rounded-full animate-spin"></div>
+                                    <div className="absolute inset-2 border-4 border-pink-200 rounded-full"></div>
+                                    <div className="absolute inset-2 border-4 border-transparent border-t-pink-600 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                                </div>
+                                
+                                {/* Loading Text */}
+                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Initializing Payment</h3>
+                                <p className="text-gray-600 mb-6">Please wait while we prepare your secure checkout...</p>
+                                
+                                {/* Progress Steps */}
+                                <div className="space-y-3 text-left">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                                            <CheckCircle className="w-4 h-4 text-white" />
+                                        </div>
+                                        <span className="text-sm text-gray-700">Validating registration details</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0 animate-pulse">
+                                            <Loader2 className="w-4 h-4 text-white animate-spin" />
+                                        </div>
+                                        <span className="text-sm text-gray-700">Connecting to payment gateway</span>
+                                    </div>
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                                            <Lock className="w-4 h-4 text-gray-500" />
+                                        </div>
+                                        <span className="text-sm text-gray-500">Opening secure checkout</span>
+                                    </div>
+                                </div>
+                                
+                                {/* Security Badge */}
+                                <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-center gap-2 text-xs text-gray-500">
+                                    <Shield className="w-4 h-4" />
+                                    <span>256-bit SSL Encrypted</span>
+                                </div>
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}

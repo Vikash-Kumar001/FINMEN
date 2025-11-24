@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { motion } from 'framer-motion'; // eslint-disable-line no-unused-vars
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  CreditCard, Crown, ArrowRight, Zap, CheckCircle, Calendar, TrendingUp, ArrowUp, ArrowDown, RefreshCw, Lock, Unlock, Sparkles, Loader2
+  CreditCard, Crown, ArrowRight, Zap, CheckCircle, Calendar, TrendingUp, ArrowUp, ArrowDown, RefreshCw, Lock, Unlock, Sparkles, Loader2, Shield
 } from 'lucide-react';
 import api from '../../utils/api';
 import { toast } from 'react-hot-toast';
@@ -30,17 +30,8 @@ const loadRazorpay = () => {
   });
 };
 
-const SubscriptionManagement = () => {
-  const [subscription, setSubscription] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [upgrading, setUpgrading] = useState(false);
-  const socket = useSocket();
-  const navigate = useNavigate();
-  const { user } = useAuth();
-  const availableUpgradesRef = useRef(null);
-
-  // Plan configurations
-  const plans = {
+// Plan configurations - moved outside component to prevent recreation on every render
+const PLANS = {
     free: {
       name: 'Free Plan',
       price: 0,
@@ -95,6 +86,29 @@ const SubscriptionManagement = () => {
     },
   };
 
+const SubscriptionManagement = ({ onUpgradingChange, onPlanChange }) => {
+  const [subscription, setSubscription] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [upgrading, setUpgrading] = useState(false);
+  const [currentUpgradingPlan, setCurrentUpgradingPlan] = useState(null);
+  const socket = useSocket();
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const availableUpgradesRef = useRef(null);
+
+  // Notify parent when upgrading state changes
+  useEffect(() => {
+    if (onUpgradingChange) {
+      onUpgradingChange(upgrading);
+    }
+    if (onPlanChange && currentUpgradingPlan) {
+      onPlanChange(currentUpgradingPlan);
+    }
+  }, [upgrading, currentUpgradingPlan, onUpgradingChange, onPlanChange]);
+
+  // Memoize plans to prevent recreation
+  const plans = useMemo(() => PLANS, []);
+
   // Define functions first before using them in useEffect
   const fetchSubscription = useCallback(async () => {
     try {
@@ -104,21 +118,28 @@ const SubscriptionManagement = () => {
       }
     } catch (error) {
       console.error('Error fetching subscription:', error);
-      // Set default free plan if error
+      // Set default free plan if error - use static features array
       setSubscription({
         planType: 'free',
         planName: 'Free Plan',
         status: 'active',
-        features: plans.free.features,
+        features: ['5 Games per Pillar', 'Basic Dashboard', 'HealCoins Rewards'],
       });
     } finally {
       setLoading(false);
     }
-  }, [plans.free.features]);
+  }, []); // Empty dependency array - only fetch once on mount
 
-  // Initial data fetch
+  // Initial data fetch - only run once on mount
   useEffect(() => {
     fetchSubscription();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run on mount
+
+  // Store fetchSubscription in a ref to avoid stale closures
+  const fetchSubscriptionRef = useRef(fetchSubscription);
+  useEffect(() => {
+    fetchSubscriptionRef.current = fetchSubscription;
   }, [fetchSubscription]);
 
   // Listen for real-time subscription updates
@@ -129,7 +150,7 @@ const SubscriptionManagement = () => {
       // Check if this update is for the current user
       if (data && data.subscription) {
         toast.success('Subscription updated!', { icon: '🎉' });
-        fetchSubscription();
+        fetchSubscriptionRef.current();
       }
     };
 
@@ -137,7 +158,7 @@ const SubscriptionManagement = () => {
       // Check if this update is for the current user
       if (data && data.subscription) {
         toast.info('Subscription cancelled');
-        fetchSubscription();
+        fetchSubscriptionRef.current();
       }
     };
 
@@ -148,7 +169,7 @@ const SubscriptionManagement = () => {
       socket.socket.off('subscription:activated', handleSubscriptionActivated);
       socket.socket.off('subscription:cancelled', handleSubscriptionCancelled);
     };
-  }, [socket, fetchSubscription]);
+  }, [socket?.socket]); // Only depend on socket
 
   const handleUpgrade = async (planType) => {
     const plan = plans[planType];
@@ -176,6 +197,14 @@ const SubscriptionManagement = () => {
     const amount = isFirstYear
       ? plan.firstYearPrice || plan.renewalPrice || 0
       : plan.renewalPrice || plan.firstYearPrice || 0;
+
+    // Set the upgrading plan info for the parent component
+    setCurrentUpgradingPlan({
+      planType,
+      planName: plan.name,
+      amount,
+      isFirstYear,
+    });
 
     // For free plan, activate immediately
     if (planType === 'free' || amount === 0) {
@@ -205,6 +234,14 @@ const SubscriptionManagement = () => {
     try {
       setUpgrading(true);
       
+      // Set the upgrading plan info for the parent component
+      setCurrentUpgradingPlan({
+        planType,
+        planName: plan.name,
+        amount,
+        isFirstYear,
+      });
+      
       // Determine context based on user role and plan type
       const context = (user?.role === 'parent' || planType === 'student_parent_premium_pro') ? 'parent' : 'student';
       
@@ -229,7 +266,7 @@ const SubscriptionManagement = () => {
           key: keyId,
           amount: Math.round(amount * 100), // Convert to paise
           currency: 'INR',
-          name: 'FINMEN',
+          name: 'Wise Student',
           description: `Subscription: ${plan.name}`,
           order_id: orderId,
           handler: async function (paymentResponse) {
@@ -263,6 +300,7 @@ const SubscriptionManagement = () => {
               toast.error(verifyError.response?.data?.message || 'Payment succeeded but subscription activation failed. Please contact support.');
             } finally {
               setUpgrading(false);
+              setCurrentUpgradingPlan(null);
             }
           },
           prefill: {
@@ -275,6 +313,7 @@ const SubscriptionManagement = () => {
           modal: {
             ondismiss: function () {
               setUpgrading(false);
+              setCurrentUpgradingPlan(null);
               toast.info('Payment was cancelled');
             },
           },
@@ -291,10 +330,19 @@ const SubscriptionManagement = () => {
         toast.error('Please login to continue');
         navigate('/login');
       } else {
-        toast.error(error.response?.data?.message || error.message || 'Failed to initialize payment');
+        const errorMessage = error.response?.data?.message || error.message || 'Failed to initialize payment';
+        // Check if it's a payment gateway configuration error
+        if (errorMessage.toLowerCase().includes('payment gateway not configured')) {
+          toast.error('Payment gateway is not configured. Please contact support or try again later.', {
+            duration: 5000,
+          });
+        } else {
+          toast.error(errorMessage);
+        }
       }
     } finally {
       setUpgrading(false);
+      setCurrentUpgradingPlan(null);
     }
   };
 
@@ -342,9 +390,71 @@ const SubscriptionManagement = () => {
 
   if (loading) {
     return (
-      <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/50 mb-8">
-        <div className="flex items-center justify-center py-8">
-          <Loader2 className="w-8 h-8 animate-spin text-purple-600" />
+      <div className="space-y-6">
+        {/* Skeleton for Header */}
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/50">
+          <div className="flex items-center justify-between mb-6">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 bg-gradient-to-br from-purple-200 to-pink-200 rounded-xl animate-pulse"></div>
+              <div>
+                <div className="h-6 w-48 bg-gray-200 rounded-lg animate-pulse mb-2"></div>
+                <div className="h-4 w-64 bg-gray-100 rounded-lg animate-pulse"></div>
+              </div>
+            </div>
+            <div className="w-10 h-10 bg-gray-100 rounded-lg animate-pulse"></div>
+          </div>
+
+          {/* Skeleton for Current Subscription Card */}
+          <div className="bg-gradient-to-br from-purple-200 to-pink-200 rounded-2xl p-6 mb-6 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16"></div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white/30 rounded-lg animate-pulse"></div>
+                  <div>
+                    <div className="h-6 w-40 bg-white/30 rounded-lg animate-pulse mb-2"></div>
+                    <div className="h-5 w-24 bg-white/20 rounded-full animate-pulse"></div>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <div className="h-8 w-32 bg-white/30 rounded-lg animate-pulse mb-2"></div>
+                  <div className="h-4 w-20 bg-white/20 rounded-lg animate-pulse ml-auto"></div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-4">
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex items-center gap-2">
+                    <div className="w-4 h-4 bg-white/30 rounded-full animate-pulse"></div>
+                    <div className="h-4 w-48 bg-white/20 rounded-lg animate-pulse"></div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Skeleton for Plan Comparison Table */}
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-6 shadow-2xl border border-white/50">
+          <div className="flex items-center gap-2 mb-6">
+            <div className="w-6 h-6 bg-purple-200 rounded animate-pulse"></div>
+            <div className="h-6 w-40 bg-gray-200 rounded-lg animate-pulse"></div>
+          </div>
+          <div className="space-y-4">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div key={i} className="flex items-center gap-4">
+                <div className="h-5 w-48 bg-gray-200 rounded-lg animate-pulse"></div>
+                <div className="h-5 w-24 bg-gray-100 rounded-lg animate-pulse"></div>
+                <div className="h-5 w-24 bg-gray-100 rounded-lg animate-pulse"></div>
+                <div className="h-5 w-24 bg-gray-100 rounded-lg animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Loading Indicator */}
+        <div className="flex items-center justify-center gap-3 text-purple-600">
+          <Loader2 className="w-5 h-5 animate-spin" />
+          <span className="text-sm font-medium">Loading subscription plans...</span>
         </div>
       </div>
     );

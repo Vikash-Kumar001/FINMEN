@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   CreditCard,
@@ -19,6 +20,8 @@ import {
   BadgeCheck,
   Clock,
   AlertCircle,
+  Loader2,
+  CheckCircle,
 } from 'lucide-react';
 import SubscriptionManagement from '../../components/Student/SubscriptionManagement';
 import api from '../../utils/api';
@@ -29,12 +32,7 @@ const PaymentPage = () => {
   const [paymentHistory, setPaymentHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(false);
   const [historyFilter, setHistoryFilter] = useState('all'); // 'all', 'completed', 'pending', 'failed'
-
-  useEffect(() => {
-    if (activeTab === 'history') {
-      fetchPaymentHistory();
-    }
-  }, [activeTab, historyFilter]);
+  const [isUpgrading, setIsUpgrading] = useState(false);
 
   const fetchPaymentHistory = async () => {
     try {
@@ -64,6 +62,13 @@ const PaymentPage = () => {
     }
   };
 
+  useEffect(() => {
+    if (activeTab === 'history') {
+      fetchPaymentHistory();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab, historyFilter]);
+
   const downloadReceipt = async (transaction) => {
     if (transaction.receiptUrl) {
       window.open(transaction.receiptUrl, '_blank');
@@ -92,7 +97,74 @@ const PaymentPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4 sm:px-6 lg:px-8 relative">
+      {/* Professional Loading Overlay - Shows when payment is being initialized - Covers entire page */}
+      <AnimatePresence>
+        {isUpgrading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9999] flex items-center justify-center"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              className="bg-white rounded-3xl p-8 shadow-2xl max-w-md w-full mx-4 relative overflow-hidden"
+            >
+              {/* Animated Background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-50 via-pink-50 to-blue-50 opacity-50"></div>
+              <div className="absolute top-0 right-0 w-64 h-64 bg-purple-200 rounded-full -mr-32 -mt-32 opacity-20 animate-pulse"></div>
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-pink-200 rounded-full -ml-24 -mb-24 opacity-20 animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+              
+              <div className="relative z-10 text-center">
+                {/* Animated Spinner */}
+                <div className="relative w-20 h-20 mx-auto mb-6">
+                  <div className="absolute inset-0 border-4 border-purple-200 rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-transparent border-t-purple-600 rounded-full animate-spin"></div>
+                  <div className="absolute inset-2 border-4 border-pink-200 rounded-full"></div>
+                  <div className="absolute inset-2 border-4 border-transparent border-t-pink-600 rounded-full animate-spin" style={{ animationDirection: 'reverse', animationDuration: '1.5s' }}></div>
+                </div>
+                
+                {/* Loading Text */}
+                <h3 className="text-2xl font-bold text-gray-900 mb-2">Initializing Payment</h3>
+                <p className="text-gray-600 mb-6">Please wait while we prepare your secure checkout...</p>
+                
+                {/* Progress Steps */}
+                <div className="space-y-3 text-left">
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-sm text-gray-700">Validating subscription details</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-purple-500 flex items-center justify-center flex-shrink-0 animate-pulse">
+                      <Loader2 className="w-4 h-4 text-white animate-spin" />
+                    </div>
+                    <span className="text-sm text-gray-700">Connecting to payment gateway</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-6 h-6 rounded-full bg-gray-300 flex items-center justify-center flex-shrink-0">
+                      <Lock className="w-4 h-4 text-gray-500" />
+                    </div>
+                    <span className="text-sm text-gray-500">Opening secure checkout</span>
+                  </div>
+                </div>
+                
+                {/* Security Badge */}
+                <div className="mt-6 pt-6 border-t border-gray-200 flex items-center justify-center gap-2 text-xs text-gray-500">
+                  <Shield className="w-4 h-4" />
+                  <span>256-bit SSL Encrypted</span>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="max-w-7xl mx-auto">
         {/* Hero Section */}
         <motion.div
@@ -177,7 +249,9 @@ const PaymentPage = () => {
                   exit={{ opacity: 0, x: 20 }}
                   transition={{ duration: 0.3 }}
                 >
-                  <SubscriptionManagement />
+                  <SubscriptionManagement 
+                    onUpgradingChange={setIsUpgrading}
+                  />
                 </motion.div>
               )}
               {activeTab === 'history' && (

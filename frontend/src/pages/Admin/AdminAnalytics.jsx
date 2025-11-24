@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
 import {
   BarChart3, TrendingUp, TrendingDown, Users, Building, Activity,
   Target, Award, Globe, Download, Filter, Calendar, Eye, RefreshCw
@@ -36,19 +36,11 @@ ChartJS.register(
 );
 
 const AdminAnalytics = () => {
-  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState(null);
   const [timeRange, setTimeRange] = useState('month');
 
-  useEffect(() => {
-    fetchAnalyticsData();
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(fetchAnalyticsData, 30000);
-    return () => clearInterval(interval);
-  }, [timeRange]);
-
-  const fetchAnalyticsData = async () => {
+  const fetchAnalyticsData = useCallback(async () => {
     try {
       setLoading(true);
       const res = await api.get(`/api/admin/analytics?range=${timeRange}`).catch(() => ({ data: { data: null } }));
@@ -61,18 +53,27 @@ const AdminAnalytics = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [timeRange]);
 
-  const StatCard = ({ title, value, icon: IconComponent, color, trend, subtitle }) => (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6`}
-    >
-      <div className="flex items-center justify-between mb-4">
-        <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
-          <IconComponent className="w-8 h-8 text-white" />
-        </div>
+  useEffect(() => {
+    fetchAnalyticsData();
+    // Auto-refresh every 30 seconds
+    const interval = setInterval(fetchAnalyticsData, 30000);
+    return () => clearInterval(interval);
+  }, [fetchAnalyticsData]);
+
+  const StatCard = ({ title, value, icon: IconComponent, color, trend, subtitle }) => {
+    const Icon = IconComponent;
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className={`bg-white rounded-2xl shadow-lg border-2 border-gray-100 p-6`}
+      >
+        <div className="flex items-center justify-between mb-4">
+          <div className={`p-4 rounded-xl bg-gradient-to-br ${color}`}>
+            <Icon className="w-8 h-8 text-white" />
+          </div>
         {trend && (
           <div className={`flex items-center gap-1 ${trend.startsWith('+') ? 'text-green-600' : 'text-red-600'}`}>
             {trend.startsWith('+') ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}
@@ -80,11 +81,12 @@ const AdminAnalytics = () => {
           </div>
         )}
       </div>
-      <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
-      <p className="text-3xl font-black text-gray-900">{value || 0}</p>
-      {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
-    </motion.div>
-  );
+        <p className="text-sm font-medium text-gray-600 mb-1">{title}</p>
+        <p className="text-3xl font-black text-gray-900">{value || 0}</p>
+        {subtitle && <p className="text-xs text-gray-500 mt-1">{subtitle}</p>}
+      </motion.div>
+    );
+  };
 
   if (loading) {
     return (

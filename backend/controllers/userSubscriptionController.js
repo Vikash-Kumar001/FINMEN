@@ -3,18 +3,41 @@ import User from '../models/User.js';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
 
-// Initialize Razorpay only if keys are available
+// Initialize Razorpay lazily (when first needed) to ensure dotenv has loaded
 let razorpay = null;
-try {
-  if (process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET) {
-    razorpay = new Razorpay({
-      key_id: process.env.RAZORPAY_KEY_ID,
-      key_secret: process.env.RAZORPAY_KEY_SECRET,
-    });
+let razorpayInitialized = false;
+
+const initializeRazorpay = () => {
+  if (razorpayInitialized) {
+    return razorpay;
   }
-} catch (error) {
-  console.error('Razorpay initialization error:', error);
-}
+
+  razorpayInitialized = true;
+  
+  try {
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    
+    if (keyId && keySecret) {
+      // Check if values are not placeholders
+      if (keyId !== 'your_razorpay_key_id' && keySecret !== 'your_razorpay_key_secret') {
+        razorpay = new Razorpay({
+          key_id: keyId,
+          key_secret: keySecret,
+        });
+        console.log('✅ Razorpay initialized successfully for subscriptions');
+      } else {
+        console.warn('⚠️ Razorpay credentials appear to be placeholders. Please update with actual values.');
+      }
+    } else {
+      console.warn('⚠️ Razorpay environment variables not found. RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET missing.');
+    }
+  } catch (error) {
+    console.error('❌ Razorpay initialization error:', error.message);
+  }
+  
+  return razorpay;
+};
 
 // Plan configurations
 const YEAR_IN_MS = 365 * 24 * 60 * 60 * 1000;
@@ -275,10 +298,12 @@ export const createSubscriptionPayment = async (req, res) => {
       });
     }
 
-    if (!razorpay) {
+    // Initialize Razorpay lazily
+    const razorpayInstance = initializeRazorpay();
+    if (!razorpayInstance) {
       return res.status(500).json({
         success: false,
-        message: 'Payment gateway not configured. Please contact support.',
+        message: 'Payment gateway is not configured. Please ensure RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are set in your .env file and restart the server. If you need help, please contact support.',
       });
     }
 
@@ -292,7 +317,7 @@ export const createSubscriptionPayment = async (req, res) => {
     }
 
     // Create Razorpay order
-    const order = await razorpay.orders.create({
+    const order = await razorpayInstance.orders.create({
       amount: Math.round(amount * 100), // Convert to paise
       currency: 'INR',
       receipt: `receipt_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`,
@@ -393,9 +418,26 @@ export const verifySubscriptionPayment = async (req, res) => {
       });
     }
 
+    // Initialize Razorpay
+    const razorpayInstance = initializeRazorpay();
+    if (!razorpayInstance) {
+      return res.status(500).json({
+        success: false,
+        message: 'Payment gateway is not configured. Please ensure RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET are set in your .env file and restart the server.',
+      });
+    }
+
     // Verify Razorpay payment signature
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+    if (!keySecret) {
+      return res.status(500).json({
+        success: false,
+        message: 'Payment gateway configuration error. RAZORPAY_KEY_SECRET is missing.',
+      });
+    }
+
     const expectedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .createHmac('sha256', keySecret)
       .update(razorpayOrderId + '|' + razorpayPaymentId)
       .digest('hex');
 
@@ -407,7 +449,7 @@ export const verifySubscriptionPayment = async (req, res) => {
     }
 
     // Verify payment with Razorpay
-    const payment = await razorpay.payments.fetch(razorpayPaymentId);
+    const payment = await razorpayInstance.payments.fetch(razorpayPaymentId);
 
     if (payment.status !== 'captured' && payment.status !== 'authorized') {
       return res.status(400).json({
@@ -797,7 +839,8 @@ export const cancelSubscription = async (req, res) => {
 
 // Handle Razorpay webhook
 export const handleRazorpayWebhook = async (req, res) => {
-  if (!razorpay) {
+  const razorpayInstance = initializeRazorpay();
+  if (!razorpayInstance) {
     return res.status(500).json({ error: 'Razorpay not configured' });
   }
 

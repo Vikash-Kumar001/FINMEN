@@ -222,7 +222,7 @@ const SubscriptionCheckout = () => {
         key: keyId,
         amount: Math.round(amount * 100), // Convert to paise
         currency: 'INR',
-        name: 'FINMEN',
+        name: 'Wise Student',
         description: `Subscription: ${planConfig.name}`,
         order_id: orderId,
         handler: async function (response) {

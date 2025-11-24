@@ -213,7 +213,7 @@ const CheckoutModal = ({ isOpen, onClose, planType, planName, amount, isFirstYea
         key: keyId,
         amount: Math.round(amount * 100), // Convert to paise
         currency: 'INR',
-        name: 'FINMEN',
+        name: 'Wise Student',
         description: `Subscription: ${planName}`,
         order_id: orderId,
         handler: async function (response) {

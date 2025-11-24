@@ -45,7 +45,7 @@ const GoodThingsJournal = () => {
       setIsSubmitted(true);
       setFeedbackType("correct");
       setFeedbackMessage("Positive entry! Good job.");
-      setScore(prev => prev + 5);
+      setScore(prev => prev + 1);
       setShowFeedback(true);
       setTimeout(() => {
         setShowFeedback(false);

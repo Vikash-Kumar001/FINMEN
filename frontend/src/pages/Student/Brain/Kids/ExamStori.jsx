@@ -77,7 +77,7 @@ const ExamStori = () => {
       if (selectedChoice === currentLevelData.correct) {
         setFeedbackType("correct");
         setFeedbackMessage("Right! Sleep is key.");
-        setScore(prev => prev + 5);
+        setScore(prev => prev + 1);
         setShowFeedback(true);
         setTimeout(() => {
           setShowFeedback(false);

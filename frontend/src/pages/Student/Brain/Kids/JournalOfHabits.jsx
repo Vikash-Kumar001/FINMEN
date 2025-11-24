@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble, LevelCompleteHandler } from '../../Finance/GameShell';
 import { getGameDataById } from '../../../../utils/getGameData';
 
 const JournalOfHabits = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -65,7 +64,7 @@ const JournalOfHabits = () => {
       setFeedbackType("correct");
       setFeedbackMessage("Great journal entry!");
       setShowFeedback(true);
-      setScore(score + 20);
+      setScore(score + 1); // 1 coin per valid entry
       
       // Check if all entries are completed
       if (newCompleted.length === journalPrompts.length) {
@@ -91,27 +90,16 @@ const JournalOfHabits = () => {
     }
   };
 
-  const calculateTotalScore = () => {
-    return completedEntries.length * 20;
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
-
-  const isEntryCompleted = (index) => {
-    return completedEntries.includes(index);
-  };
 
   return (
     <GameShell
       title="Brain Health Journal"
-      score={calculateTotalScore()}
+      score={score}
       currentLevel={completedEntries.length + 1}
       totalLevels={journalPrompts.length}
       coinsPerLevel={coinsPerLevel}
       gameId="brain-kids-7"
-      gameType="brain-health"
+      gameType="brain"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/kids"
     
@@ -120,33 +108,33 @@ const JournalOfHabits = () => {
       totalXp={totalXp}>
       <LevelCompleteHandler
         gameId="brain-kids-7"
-        gameType="brain-health"
+        gameType="brain"
         levelNumber={completedEntries.length + 1}
-        levelScore={20}
-        maxLevelScore={20}
+        levelScore={1}
+        maxLevelScore={1}
       >
         <GameCard>
-          <h3 className="text-2xl font-bold text-white mb-4">Brain Health Journal</h3>
-          <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-            <h4 className="text-xl font-semibold mb-4 text-white">Journal Prompt:</h4>
-            <p className="mb-4 text-white/90">{journalPrompts[currentEntry].prompt}</p>
+          <h3 className="text-2xl font-bold text-white mb-2">Brain Health Journal</h3>
+          <div className="rounded-2xl p-4 mb-4 bg-white/10 backdrop-blur-sm">
+            <h4 className="text-lg font-semibold mb-2 text-white">Journal Prompt:</h4>
+            <p className="mb-3 text-white/90 text-sm">{journalPrompts[currentEntry].prompt}</p>
             
-            <div className="bg-blue-500/20 border border-blue-400/30 rounded-xl p-4 mb-6">
-              <h5 className="font-medium text-blue-300 mb-2">Guidance:</h5>
-              <p className="text-white/80 text-sm">{journalPrompts[currentEntry].guidance}</p>
+            <div className="bg-blue-500/20 border border-blue-400/30 rounded-xl p-3 mb-4">
+              <h5 className="font-medium text-blue-300 mb-1 text-sm">Guidance:</h5>
+              <p className="text-white/80 text-xs">{journalPrompts[currentEntry].guidance}</p>
             </div>
             
             <textarea
               value={journalEntries[currentEntry]}
               onChange={handleEntryChange}
               placeholder="Write your journal entry here..."
-              className="w-full h-40 p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
+              className="w-full h-28 p-3 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-sm"
             />
             
             <button
               onClick={handleSubmitEntry}
               disabled={!journalEntries[currentEntry].trim()}
-              className={`mt-4 px-6 py-3 rounded-full font-bold transition duration-200 ${
+              className={`mt-3 px-6 py-2 rounded-full font-bold transition duration-200 text-sm ${
                 journalEntries[currentEntry].trim()
                   ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
                   : 'bg-white/20 text-white/50 cursor-not-allowed'
@@ -163,12 +151,12 @@ const JournalOfHabits = () => {
             />
           )}
           
-          <div className="flex justify-between items-center text-white mt-4">
+          <div className="flex justify-between items-center text-white mt-3 text-sm">
             <span>
               Entry {completedEntries.length + 1} of {journalPrompts.length}
             </span>
             <span className="font-bold text-yellow-300">
-              Completed: {calculateTotalScore()}
+              Completed: {score}
             </span>
           </div>
         </GameCard>

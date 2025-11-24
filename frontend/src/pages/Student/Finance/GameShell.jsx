@@ -390,6 +390,7 @@ const GameShell = ({
   flashPoints = null,
   showAnswerConfetti = false,
   backPath: backPathProp,
+  nextGamePath: nextGamePathProp = null, // Optional next game path prop to override location.state
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -439,7 +440,7 @@ const GameShell = ({
         adult: "adults",
         adults: "adults",
         "solar-and-city": "solar-and-city",
-        "water-and-recycle": "water-and-recycle",
+        "waste-and-recycle": "waste-and-recycle",
         "carbon-and-climate": "carbon-and-climate",
         "water-and-energy": "water-and-energy",
       };
@@ -539,7 +540,7 @@ const GameShell = ({
           totalXp={resolvedTotalXp}
           isReplay={location?.state?.isReplay || false}
           onClose={handleGameOverClose}
-          nextGamePath={location?.state?.nextGamePath || null}
+          nextGamePath={nextGamePathProp || location?.state?.nextGamePath || null}
         />
       )}
 

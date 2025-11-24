@@ -66,7 +66,7 @@ const PuzzleOfFocus = () => {
       if (isCorrect) {
         const newMatchedPairs = [...matchedPairs, { conceptId: selectedConcept.id, benefitId: benefit.id }];
         setMatchedPairs(newMatchedPairs);
-        setScore(score + 2.5); // 2.5 coins per correct match (max 15 coins for 6 matches)
+        setScore(score + 1); // 1 coin per correct match
         
         // Check if all pairs are matched
         if (newMatchedPairs.length === concepts.length) {
@@ -99,9 +99,9 @@ const PuzzleOfFocus = () => {
     return matchedPairs.some(pair => pair.benefitId === benefitId);
   };
 
-  // Calculate total coins (max 15 coins for 6 matches)
+  // Calculate total coins (1 coin per match)
   const calculateTotalCoins = () => {
-    return matchedPairs.length * 2.5;
+    return matchedPairs.length * 1;
   };
 
   return (

@@ -78,7 +78,7 @@ const SharingStory = () => {
       if (selectedChoice === currentLevelData.correct) {
         setFeedbackType("correct");
         setFeedbackMessage("Great choice! Sharing helps.");
-        setScore(prev => prev + 5);
+        setScore(prev => prev + 1);
         setShowFeedback(true);
         setTimeout(() => {
           setShowFeedback(false);

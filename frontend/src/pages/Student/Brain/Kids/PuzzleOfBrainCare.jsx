@@ -71,7 +71,7 @@ const PuzzleOfBrainCare = () => {
         setFeedbackType("correct");
         setFeedbackMessage('Correct match!');
         setShowFeedback(true);
-        setScore(score + 8.33); // 8.33 coins per correct match (max 50 coins for 6 matches)
+        setScore(score + 1); // 1 coin per correct match
         
         // Check if all pairs are matched
         if (matchedPairs.length + 1 === concepts.length) {

@@ -72,10 +72,10 @@ export default function CategoryView() {
                     },
                     {
                         id: 'sustainability-2',
-                        title: 'Water & Recycle Games',
-                        description: 'Learn about water conservation and recycling',
+                        title: 'Waste & Recycle Games',
+                        description: 'Learn about waste conservation and recycling',
                         icon: '💧',
-                        path: '/games/sustainability/water-and-recycle',
+                        path: '/games/sustainability/waste-and-recycle',
                         color: 'bg-blue-500',
                         category: 'sustainability',
                         xpReward: 45

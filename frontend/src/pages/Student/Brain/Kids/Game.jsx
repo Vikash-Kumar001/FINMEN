@@ -78,7 +78,7 @@ const Game = () => {
       if (selectedChoice === currentLevelData.correct) {
         setFeedbackType("correct");
         setFeedbackMessage("Yes! Games help brain.");
-        setScore(prev => prev + 5);
+        setScore(prev => prev + 1);
         setShowFeedback(true);
         setTimeout(() => {
           setShowFeedback(false);

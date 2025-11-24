@@ -74,7 +74,7 @@ const ProblemSolverReflex = () => {
     if (response === correct) {
       setFeedbackType("correct");
       setFeedbackMessage("Great problem-solving!");
-      setScore(prev => prev + 3);
+      setScore(prev => prev + 1);
     } else {
       setFeedbackType("wrong");
       setFeedbackMessage("Not the best choice!");

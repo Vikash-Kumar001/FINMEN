@@ -74,7 +74,7 @@ const RestAlertReflex = () => {
     if (response === correct) {
       setFeedbackType("correct");
       setFeedbackMessage("Good rest habit!");
-      setScore(prev => prev + 3);
+      setScore(prev => prev + 1);
     } else {
       setFeedbackType("wrong");
       setFeedbackMessage("Bad for rest!");

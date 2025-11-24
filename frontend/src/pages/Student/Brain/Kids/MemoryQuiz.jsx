@@ -78,7 +78,7 @@ const MemoryQuiz = () => {
       if (selectedAnswer === currentLevelData.correct) {
         setFeedbackType("correct");
         setFeedbackMessage("Correct! Well done.");
-        setScore(prev => prev + 3);
+        setScore(prev => prev + 1);
         setShowFeedback(true);
         setTimeout(() => {
           setShowFeedback(false);

@@ -77,7 +77,7 @@ const OutdoorStory = () => {
       if (selectedChoice === currentLevelData.correct) {
         setFeedbackType("correct");
         setFeedbackMessage("Great! Choose balance.");
-        setScore(prev => prev + 5);
+        setScore(prev => prev + 1);
         setShowFeedback(true);
         setTimeout(() => {
           setShowFeedback(false);

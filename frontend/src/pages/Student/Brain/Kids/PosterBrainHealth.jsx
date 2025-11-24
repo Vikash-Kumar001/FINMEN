@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Moon, Apple, Book, Dumbbell, Zap } from 'lucide-react';
+import { Brain, Heart, Apple, Droplet, Zap, Target } from 'lucide-react';
 import { getGameDataById } from '../../../../utils/getGameData';
+import { getBrainKidsGames } from '../../../Games/GameCategories/Brain/kidGamesData';
 
 const PosterBrainHealth = () => {
   const navigate = useNavigate();
@@ -18,56 +19,75 @@ const PosterBrainHealth = () => {
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [selectedPoster, setSelectedPoster] = useState(null);
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [score, setScore] = useState(0);
   const [levelCompleted, setLevelCompleted] = useState(false);
+
+  // Find next game path if not provided in location.state
+  const nextGamePath = useMemo(() => {
+    // First, check if nextGamePath is already in location.state
+    if (location.state?.nextGamePath) {
+      return location.state.nextGamePath;
+    }
+    
+    // Otherwise, find the next game programmatically
+    try {
+      const games = getBrainKidsGames({});
+      const currentGameIndex = games.findIndex(g => g.id === gameId);
+      if (currentGameIndex !== -1 && currentGameIndex < games.length - 1) {
+        const nextGame = games[currentGameIndex + 1];
+        return nextGame?.path || null;
+      }
+    } catch (error) {
+      console.error('Error finding next game:', error);
+    }
+    
+    return null;
+  }, [location.state, gameId]);
 
   const posters = [
     {
       id: 1,
-      title: "Eat, Sleep, Think Well",
-      description: "A poster showing the three pillars of brain health",
+      title: "Healthy Brain = Happy You",
+      description: "A poster showing how brain health leads to happiness",
       elements: [
-        { icon: <Apple className="w-8 h-8" />, text: "Eat Healthy" },
-        { icon: <Moon className="w-8 h-8" />, text: "Sleep Well" },
-        { icon: <Brain className="w-8 h-8" />, text: "Think Well" }
+        { icon: <Brain className="w-8 h-8" />, text: "Think Clearly" },
+        { icon: <Heart className="w-8 h-8" />, text: "Feel Good" },
+        { icon: <Zap className="w-8 h-8" />, text: "Stay Active" }
       ],
-      color: "bg-gradient-to-r from-green-500 to-blue-500"
+      color: "bg-gradient-to-r from-blue-400 to-purple-500"
     },
     {
       id: 2,
-      title: "Fuel Your Brain",
+      title: "Feed Your Brain",
       description: "A poster showing brain-healthy foods",
       elements: [
-        { icon: <Apple className="w-8 h-8" />, text: "Fruits & Veggies" },
-        { icon: <Book className="w-8 h-8" />, text: "Learn Daily" },
-        { icon: <Dumbbell className="w-8 h-8" />, text: "Stay Active" }
+        { icon: <Apple className="w-8 h-8" />, text: "Eat Fruits" },
+        { icon: <Droplet className="w-8 h-8" />, text: "Drink Water" },
+        { icon: <Brain className="w-8 h-8" />, text: "Stay Healthy" }
       ],
-      color: "bg-gradient-to-r from-yellow-500 to-red-500"
+      color: "bg-gradient-to-r from-green-400 to-blue-500"
     },
     {
       id: 3,
-      title: "Brain Power Habits",
-      description: "A poster showing daily brain-boosting habits",
+      title: "Brain Power",
+      description: "A poster showing ways to boost brain power",
       elements: [
-        { icon: <Moon className="w-8 h-8" />, text: "8 Hours Sleep" },
-        { icon: <Zap className="w-8 h-8" />, text: "Stay Hydrated" },
-        { icon: <Brain className="w-8 h-8" />, text: "Mindfulness" }
+        { icon: <Target className="w-8 h-8" />, text: "Set Goals" },
+        { icon: <Zap className="w-8 h-8" />, text: "Stay Active" },
+        { icon: <Brain className="w-8 h-8" />, text: "Learn Daily" }
       ],
-      color: "bg-gradient-to-r from-purple-500 to-pink-500"
+      color: "bg-gradient-to-r from-purple-400 to-pink-500"
     },
     {
       id: 4,
-      title: "My Brain Care Plan",
-      description: "Create your own brain care poster",
+      title: "My Brain Health Plan",
+      description: "Create your own brain health poster",
       elements: [
-        { icon: <Book className="w-8 h-8" />, text: "Read Books" },
-        { icon: <Dumbbell className="w-8 h-8" />, text: "Play Outside" },
-        { icon: <Zap className="w-8 h-8" />, text: "Drink Water" }
+        { icon: <Droplet className="w-8 h-8" />, text: "Stay Hydrated" },
+        { icon: <Apple className="w-8 h-8" />, text: "Eat Healthy" },
+        { icon: <Target className="w-8 h-8" />, text: "Exercise Daily" }
       ],
-      color: "bg-gradient-to-r from-blue-500 to-green-500"
+      color: "bg-gradient-to-r from-yellow-400 to-red-500"
     }
   ];
 
@@ -80,97 +100,90 @@ const PosterBrainHealth = () => {
   const handleSubmit = () => {
     if (selectedPoster) {
       setIsSubmitted(true);
-      setFeedbackType("correct");
-      setFeedbackMessage("Great choice! This poster shows excellent brain care habits.");
-      setShowFeedback(true);
-      setScore(1); // Score: 1 for correct answer (max score is 1 for single question)
+      setScore(1); // 1 coin for completing the activity
       
-      // Auto-complete after delay to show feedback
+      // Auto-complete after delay
       setTimeout(() => {
         setLevelCompleted(true);
       }, 1500);
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Please select a poster first!");
-      setShowFeedback(true);
-      
-      // Hide feedback after delay
-      setTimeout(() => {
-        setShowFeedback(false);
-      }, 2000);
     }
+  };
+
+  const handleNext = () => {
+    // This is a single-level game, so completing it moves to the next game
+    navigate('/games/brain-health/kids');
   };
 
   return (
     <GameShell
       title="Brain Health Poster"
       score={score}
-      gameId="brain-kids-6"
-      gameType="brain-health"
+      currentLevel={1}
       totalLevels={1}
-      maxScore={1} // Max score is 1 (single question)
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      gameId="brain-kids-6"
+      gameType="brain"
       showGameOver={levelCompleted}
+      onNext={handleNext}
+      nextEnabled={levelCompleted}
+      nextLabel="Complete"
       backPath="/games/brain-health/kids"
-    >
+      nextGamePath={nextGamePath}
+      maxScore={1} // Max score is total number of questions (all correct)
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Brain Health Poster</h3>
-        <p className="text-white/80 mb-6 text-center">Create or select a poster that shows how to keep your brain healthy</p>
+        <h3 className="text-2xl font-bold text-white mb-6 text-center">Brain Health Poster</h3>
+        <p className="text-white/80 mb-8 text-center">Create or select a poster that shows how to keep your brain healthy</p>
         
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <h4 className="text-xl font-semibold mb-4 text-white text-center">Choose Your Favorite Poster</h4>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {posters.map((poster) => (
-              <div
-                key={poster.id}
-                onClick={() => handlePosterSelect(poster)}
-                className={`border-2 rounded-2xl p-6 cursor-pointer transition-all duration-200 ${
-                  selectedPoster?.id === poster.id
-                    ? 'border-white ring-2 ring-white/30 bg-white/20'
-                    : 'border-white/30 hover:border-white/50 bg-white/10'
-                }`}
-              >
-                <div className={`rounded-lg p-4 mb-4 ${poster.color}`}>
-                  <h5 className="text-white font-bold text-center">{poster.title}</h5>
-                </div>
-                <p className="text-white/80 text-sm mb-4">{poster.description}</p>
-                
-                <div className="space-y-3">
-                  {poster.elements.map((element, index) => (
-                    <div key={index} className="flex items-center">
-                      <div className="text-white mr-3">
-                        {element.icon}
-                      </div>
-                      <span className="text-white">{element.text}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-          
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedPoster || isSubmitted || levelCompleted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedPoster && !isSubmitted && !levelCompleted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          {posters.map((poster) => (
+            <div
+              key={poster.id}
+              onClick={() => handlePosterSelect(poster)}
+              className={`border-2 rounded-xl p-6 cursor-pointer transition-all duration-200 ${
+                selectedPoster?.id === poster.id
+                  ? 'border-blue-400 ring-2 ring-blue-200 bg-blue-500/10'
+                  : 'border-white/20 hover:border-blue-300/50'
               }`}
             >
-              {isSubmitted || levelCompleted ? 'Poster Submitted!' : 'Submit My Choice'}
-            </button>
-          </div>
+              <div className={`rounded-lg p-4 mb-4 ${poster.color}`}>
+                <h4 className="text-white font-bold text-center text-lg">{poster.title}</h4>
+              </div>
+              <p className="text-white/70 text-sm mb-4">{poster.description}</p>
+              
+              <div className="space-y-3">
+                {poster.elements.map((element, index) => (
+                  <div key={index} className="flex items-center">
+                    <div className="text-blue-400 mr-3">
+                      {element.icon}
+                    </div>
+                    <span className="text-white/90">{element.text}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
         
-        {showFeedback && (
+        <div className="text-center">
+          <button
+            onClick={handleSubmit}
+            disabled={!selectedPoster || isSubmitted || levelCompleted}
+            className={`px-8 py-3 rounded-lg font-medium transition duration-200 ${
+              selectedPoster && !isSubmitted && !levelCompleted
+                ? 'bg-blue-500 text-white hover:bg-blue-600'
+                : 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
+            }`}
+          >
+            {isSubmitted ? 'Submitted!' : 'Submit My Choice'}
+          </button>
+        </div>
+        
+        {isSubmitted && (
           <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
+            message="Great choice! This poster shows excellent brain health principles. 🎉"
+            type="correct"
           />
         )}
       </GameCard>
@@ -179,3 +192,4 @@ const PosterBrainHealth = () => {
 };
 
 export default PosterBrainHealth;
+

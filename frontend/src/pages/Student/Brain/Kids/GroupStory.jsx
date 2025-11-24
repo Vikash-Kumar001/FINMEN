@@ -77,7 +77,7 @@ const GroupStory = () => {
       if (selectedChoice === currentLevelData.correct) {
         setFeedbackType("correct");
         setFeedbackMessage("Teamwork solves it!");
-        setScore(prev => prev + 5);
+        setScore(prev => prev + 1);
         setShowFeedback(true);
         setTimeout(() => {
           setShowFeedback(false);

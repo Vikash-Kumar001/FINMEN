@@ -117,8 +117,8 @@ const ExamStoryy = () => {
       
       if (selectedChoice === currentLevelData.correct) {
         setFeedbackType("correct");
-        setFeedbackMessage("Excellent! That helps. +10 points");
-        setScore(prev => prev + 10 + streak * 2);
+        setFeedbackMessage("Excellent! That helps. +1 coin");
+        setScore(prev => prev + 1); // 1 coin per correct answer
         setStreak(streak + 1);
         setBestStreak(Math.max(bestStreak, streak + 1));
         setShowFeedback(true);

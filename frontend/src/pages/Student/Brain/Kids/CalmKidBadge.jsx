@@ -119,13 +119,12 @@ const CalmKidBadge = () => {
     setIsTimerActive(false);
     setProgress(prev => prev + 1);
     
-    const points = selectedScenario.points + streak * 2;
-    setScore(prev => prev + points);
+    setScore(prev => prev + 1); // 1 coin per completed scenario
     setStreak(streak + 1);
     setBestStreak(Math.max(bestStreak, streak + 1));
     
     setFeedbackType("correct");
-    setFeedbackMessage(`Scenario completed! +${points} points`);
+    setFeedbackMessage(`Scenario completed! +1 coin`);
     setShowFeedback(true);
     
     setTimeout(() => {
@@ -345,7 +344,7 @@ const CalmKidBadge = () => {
                 Back
               </button>
               <div className="text-sm text-white/70">
-                Points: {selectedScenario.points} + {streak * 2} streak
+                Streak: {streak}x
               </div>
             </div>
           </motion.div>

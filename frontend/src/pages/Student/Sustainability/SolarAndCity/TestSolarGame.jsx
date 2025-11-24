@@ -95,7 +95,7 @@ const TestSolarGame = () => {
 
   const handleNext = () => {
     // Navigate to next sustainability game
-    navigate("/student/sustainability/water-and-recycle/test-water-recycle-game");
+    navigate("/student/sustainability/waste-and-recycle/test-waste-recycle-game");
   };
 
   const getCurrentQuestion = () => questions[currentQuestion];

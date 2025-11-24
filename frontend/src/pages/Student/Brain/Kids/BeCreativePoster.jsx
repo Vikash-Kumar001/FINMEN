@@ -111,7 +111,7 @@ const BeCreativePoster = () => {
       setIsSubmitted(true);
       setFeedbackType("correct");
       setFeedbackMessage("Awesome creative poster!");
-      setScore(prev => prev + 5);
+      setScore(prev => prev + 1);
       setShowFeedback(true);
       setTimeout(() => {
         setShowFeedback(false);

@@ -112,7 +112,7 @@ const StayPositivePoster = () => {
       setIsSubmitted(true);
       setFeedbackType("correct");
       setFeedbackMessage("Positive poster! Awesome.");
-      setScore(prev => prev + 5);
+      setScore(prev => prev + 1);
       setShowFeedback(true);
       setTimeout(() => {
         setShowFeedback(false);

@@ -104,7 +104,7 @@ const ReflexBrainBoost = () => {
     navigate('/games/brain-health/kids');
   };
 
-  // Calculate coins based on correct answers (max 50 coins)
+  // Calculate coins based on correct answers (1 coin per correct answer)
   const calculateTotalCoins = () => {
     return Math.min(totalCorrect * 2, 50); // 2 coins per correct answer, max 50
   };

@@ -114,13 +114,12 @@ const EmotionKidBadge = () => {
     setIsTimerActive(false);
     setProgress(prev => prev + 1);
     
-    const points = 10 + streak * 2;
-    setScore(prev => prev + points);
+    setScore(prev => prev + 1); // 1 coin per completed task
     setStreak(streak + 1);
     setBestStreak(Math.max(bestStreak, streak + 1));
     
     setFeedbackType("correct");
-    setFeedbackMessage(`Task completed! +${points} points`);
+    setFeedbackMessage(`Task completed! +1 coin`);
     setShowFeedback(true);
     
     setTimeout(() => {

@@ -47,7 +47,7 @@ const ReflexSequence = () => {
       if (newInput.every((c, i) => c === sequence[i])) {
         setFeedbackType("correct");
         setFeedbackMessage("Correct sequence!");
-        setScore(prev => prev + 3);
+        setScore(prev => prev + 1);
         setShowFeedback(true);
         setTimeout(() => {
           setShowFeedback(false);

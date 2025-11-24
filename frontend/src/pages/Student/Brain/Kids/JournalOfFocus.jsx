@@ -57,7 +57,7 @@ const JournalOfFocus = () => {
 
   const handleSubmitEntry = () => {
     if (journalEntries[currentEntry].trim().length > 10) {
-      setScore(score + 3); // 3 coins per completed entry (max 15 coins for 5 entries)
+      setScore(score + 1); // 1 coin per completed entry (max 5 coins for 5 entries)
       setSubmitted(true);
       
       // Auto-advance to next entry after delay

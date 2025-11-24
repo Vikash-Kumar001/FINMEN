@@ -77,7 +77,7 @@ const PosterFocusMatters = () => {
   const handleSubmit = () => {
     if (selectedPoster) {
       setIsSubmitted(true);
-      setScore(15); // 15 coins for completing the activity (max allowed)
+      setScore(1); // 1 coin for completing the activity
       
       // Auto-complete after delay
       setTimeout(() => {

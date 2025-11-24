@@ -3,7 +3,7 @@
 
 // Import all sustainability games (organized by theme, not age)
 import TestSolarGame from './SolarAndCity/TestSolarGame';
-import TestWaterRecycleGame from './WaterAndRecycle/TestWaterRecycleGame';
+import TestWasteRecycleGame from './WasteAndRecycle/TestWasteRecycleGame';
 import TestCarbonGame from './CarbonAndClimate/TestCarbonGame';
 import TestWaterEnergyGame from './WaterAndEnergy/TestWaterEnergyGame';
 
@@ -13,7 +13,7 @@ const sustainabilityGames = {
   // All games available for both kids and teens
   all: {
     'test-solar-game': TestSolarGame,
-    'test-water-recycle-game': TestWaterRecycleGame,
+    'test-waste-recycle-game': TestWasteRecycleGame,
     'test-carbon-game': TestCarbonGame,
     'test-water-energy-game': TestWaterEnergyGame
   },
@@ -21,16 +21,16 @@ const sustainabilityGames = {
   // For compatibility with universal renderer, mirror in both age groups
   kids: {
     'test-solar-game': TestSolarGame,
-    'test-water-recycle-game': TestWaterRecycleGame,
+    'test-waste-recycle-game': TestWasteRecycleGame,
     'test-carbon-game': TestCarbonGame,
     'test-water-energy-game': TestWaterEnergyGame
   },
 
   teen: {
     'test-solar-game': TestSolarGame,
-    'test-water-recycle-game': TestWaterRecycleGame,
+    'test-waste-recycle-game': TestWasteRecycleGame,
     'test-carbon-game': TestCarbonGame,
-    'test-water-energy-game': TestWaterEnergyGame
+'test-water-energy-game': TestWaterEnergyGame
   }
 };
 

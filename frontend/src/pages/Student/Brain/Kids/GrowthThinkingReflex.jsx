@@ -74,7 +74,7 @@ const GrowthThinkingReflex = () => {
     if (response === correct) {
       setFeedbackType("correct");
       setFeedbackMessage("Growth mindset choice!");
-      setScore(prev => prev + 3);
+      setScore(prev => prev + 1);
     } else {
       setFeedbackType("wrong");
       setFeedbackMessage("Keep learning!");

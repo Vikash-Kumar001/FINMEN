@@ -78,7 +78,7 @@ const PositivityQuiz = () => {
       if (selectedAnswer === currentLevelData.correct) {
         setFeedbackType("correct");
         setFeedbackMessage("Positive answer! Correct.");
-        setScore(prev => prev + 3);
+        setScore(prev => prev + 1);
         setShowFeedback(true);
         setTimeout(() => {
           setShowFeedback(false);

@@ -95,7 +95,7 @@ const HomeworkStory = () => {
     }));
     
     if (isCorrect) {
-      setScore(score + 3); // 3 coins for correct answer (max 15 coins for 5 questions)
+      setScore(score + 1); // 1 coin for correct answer (max 5 coins for 5 questions)
       setShowConfetti(true);
       // Hide confetti after animation
       setTimeout(() => setShowConfetti(false), 1000);
@@ -131,10 +131,10 @@ const HomeworkStory = () => {
 
   const currentQuestionData = questions[currentQuestion];
 
-  // Calculate coins based on correct answers (max 15 coins for 5 questions)
+  // Calculate coins based on correct answers (max 5 coins for 5 questions)
   const calculateTotalCoins = () => {
     const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 3;
+    return correctAnswers * 1;
   };
 
   return (

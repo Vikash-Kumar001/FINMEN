@@ -75,7 +75,7 @@ const PositiveNegativeReflex = () => {
     if (response === correct) {
       setFeedbackType("correct");
       setFeedbackMessage("Positive word!");
-      setScore(prev => prev + 3);
+      setScore(prev => prev + 1);
     } else {
       setFeedbackType("wrong");
       setFeedbackMessage("Negative word!");

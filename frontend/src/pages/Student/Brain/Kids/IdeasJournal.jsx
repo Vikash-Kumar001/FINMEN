@@ -44,7 +44,7 @@ const IdeasJournal = () => {
       setIsSubmitted(true);
       setFeedbackType("correct");
       setFeedbackMessage("Great creative idea!");
-      setScore(prev => prev + 5);
+      setScore(prev => prev + 1);
       setShowFeedback(true);
       setTimeout(() => {
         setShowFeedback(false);

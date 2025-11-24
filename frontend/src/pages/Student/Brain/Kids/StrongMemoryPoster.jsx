@@ -115,7 +115,7 @@ const StrongMemoryPoster = () => {
       setIsSubmitted(true);
       setFeedbackType("correct");
       setFeedbackMessage("Awesome poster choice!");
-      setScore(prev => prev + 5); // Adjusted for badge-like
+      setScore(prev => prev + 1); // 1 coin per correct answer
       setShowFeedback(true);
       setTimeout(() => {
         setShowFeedback(false);

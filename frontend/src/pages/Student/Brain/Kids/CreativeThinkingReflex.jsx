@@ -74,7 +74,7 @@ const CreativeThinkingReflex = () => {
     if (response === correct) {
       setFeedbackType("correct");
       setFeedbackMessage("Creative choice!");
-      setScore(prev => prev + 3);
+      setScore(prev => prev + 1);
     } else {
       setFeedbackType("wrong");
       setFeedbackMessage("Think original!");

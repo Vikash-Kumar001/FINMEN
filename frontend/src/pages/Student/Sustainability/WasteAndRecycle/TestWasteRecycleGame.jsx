@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
-const TestWaterRecycleGame = () => {
+const TestWasteRecycleGame = () => {
   const navigate = useNavigate();
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
@@ -102,13 +102,13 @@ const TestWaterRecycleGame = () => {
 
   return (
     <GameShell
-      title="Water & Recycle Challenge"
+      title="Waste & Recycle Challenge"
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 1} // Pass if 1 or more correct
       showGameOver={showResult && finalScore >= 1}
       score={coins}
-      gameId="sustainability-water-1"
+      gameId="sustainability-waste-1"
       gameType="sustainability"
       totalLevels={4}
       currentLevel={2}
@@ -188,4 +188,4 @@ const TestWaterRecycleGame = () => {
   );
 };
 
-export default TestWaterRecycleGame;
+export default TestWasteRecycleGame;

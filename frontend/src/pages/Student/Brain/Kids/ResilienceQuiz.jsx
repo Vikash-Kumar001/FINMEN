@@ -77,7 +77,7 @@ const ResilienceQuiz = () => {
       if (selectedAnswer === currentLevelData.correct) {
         setFeedbackType("correct");
         setFeedbackMessage("Correct! That's resilience!");
-        setScore(prev => prev + 3);
+        setScore(prev => prev + 1);
       } else {
         setFeedbackType("wrong");
         setFeedbackMessage("Not quite! Try again.");

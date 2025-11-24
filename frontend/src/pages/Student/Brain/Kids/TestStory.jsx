@@ -77,7 +77,7 @@ const TestStory = () => {
       if (selectedChoice === currentLevelData.correct) {
         setFeedbackType("correct");
         setFeedbackMessage("Resilient choice!");
-        setScore(prev => prev + 5);
+        setScore(prev => prev + 1);
       } else {
         setFeedbackType("wrong");
         setFeedbackMessage("Bounce back! Try again.");

@@ -119,12 +119,12 @@ const MatchFeelingsPuzzle = () => {
         setCards(updatedCards);
         
         setMatched([...matched, firstId, secondId]);
-        setScore(prev => prev + 10 + streak * 2); // Bonus points for streaks
+        setScore(prev => prev + 1); // 1 coin per correct match
         setStreak(streak + 1);
         setBestStreak(Math.max(bestStreak, streak + 1));
         
         setFeedbackType("correct");
-        setFeedbackMessage(`Feelings matched! +${10 + streak * 2} points`);
+        setFeedbackMessage(`Feelings matched! +1 coin`);
         setShowFeedback(true);
         
         // Reset flipped state immediately after match

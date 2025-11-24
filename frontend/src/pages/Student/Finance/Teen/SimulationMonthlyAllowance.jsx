@@ -113,4 +113,4 @@ const SimulationMonthlyAllowance = () => {
   );
 };
 
-export default ReflexBudgetSmarts;
+export default SimulationMonthlyAllowance;

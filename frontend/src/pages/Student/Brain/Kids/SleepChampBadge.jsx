@@ -113,13 +113,12 @@ const SleepChampBadge = () => {
     setIsTimerActive(false);
     setProgress(prev => prev + 1);
     
-    const points = 10 + streak * 2;
-    setScore(prev => prev + points);
+    setScore(prev => prev + 1); // 1 coin per completed habit
     setStreak(streak + 1);
     setBestStreak(Math.max(bestStreak, streak + 1));
     
     setFeedbackType("correct");
-    setFeedbackMessage(`Habit completed! +${points} points`);
+    setFeedbackMessage(`Habit completed! +1 coin`);
     setShowFeedback(true);
     
     setTimeout(() => {

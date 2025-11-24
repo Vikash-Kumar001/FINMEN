@@ -114,7 +114,7 @@ const GameCategoryPage = () => {
         // Adult games: only accessible to users 18 and above
         return userAge >= 18;
       case "solar-and-city":
-      case "water-and-recycle":
+      case "waste-and-recycle":
       case "carbon-and-climate":
       case "water-and-energy":
         // Sustainability subcategories: accessible to all users
@@ -152,7 +152,7 @@ const GameCategoryPage = () => {
         ageGroup === "teens" ||
         ageGroup === "teen" ||
         ageGroup === "solar-and-city" ||
-        ageGroup === "water-and-recycle" ||
+        ageGroup === "waste-and-recycle" ||
         ageGroup === "carbon-and-climate" ||
         ageGroup === "water-and-energy")
     ) {
@@ -243,13 +243,13 @@ const GameCategoryPage = () => {
                 'sustainability-solar-17', 'sustainability-solar-18', 'sustainability-solar-19', 'sustainability-solar-20'
             ];
             return gameIds[index];
-        } else if (ageGroup === 'water-and-recycle') {
+        } else if (ageGroup === 'waste-and-recycle') {
             const gameIds = [
-                'sustainability-water-1', 'sustainability-water-2', 'sustainability-water-3', 'sustainability-water-4',
-                'sustainability-water-5', 'sustainability-water-6', 'sustainability-water-7', 'sustainability-water-8',
-                'sustainability-water-9', 'sustainability-water-10', 'sustainability-water-11', 'sustainability-water-12',
-                'sustainability-water-13', 'sustainability-water-14', 'sustainability-water-15', 'sustainability-water-16',
-                'sustainability-water-17', 'sustainability-water-18', 'sustainability-water-19', 'sustainability-water-20'
+            'sustainability-waste-1', 'sustainability-waste-2', 'sustainability-waste-3', 'sustainability-waste-4',
+                'sustainability-waste-5', 'sustainability-waste-6', 'sustainability-waste-7', 'sustainability-waste-8',
+                'sustainability-waste-9', 'sustainability-waste-10', 'sustainability-waste-11', 'sustainability-waste-12',
+                'sustainability-waste-13', 'sustainability-waste-14', 'sustainability-waste-15', 'sustainability-waste-16',
+                'sustainability-waste-17', 'sustainability-waste-18', 'sustainability-waste-19', 'sustainability-waste-20'
             ];
             return gameIds[index];
         } else if (ageGroup === 'carbon-and-climate') {
@@ -327,7 +327,7 @@ const GameCategoryPage = () => {
       teens: "Teen Games",
       adults: "Adult Games",
       "solar-and-city": "Solar & City Games",
-      "water-and-recycle": "Water & Recycle Games",
+      "waste-and-recycle": "Waste & Recycle Games",
       "carbon-and-climate": "Carbon & Climate Games",
       "water-and-energy": "Water & Energy Games",
     };
@@ -361,8 +361,8 @@ const GameCategoryPage = () => {
     if (category === "sustainability") {
       if (ageGroup === "solar-and-city") {
         return "sustainability-solar";
-      } else if (ageGroup === "water-and-recycle") {
-        return "sustainability-water";
+        } else if (ageGroup === "waste-and-recycle") {
+        return "sustainability-waste";
       } else if (ageGroup === "carbon-and-climate") {
         return "sustainability-carbon";
       } else if (ageGroup === "water-and-energy") {
@@ -395,7 +395,7 @@ const GameCategoryPage = () => {
           ageGroup === "teens" ||
           ageGroup === "teen" ||
           ageGroup === "solar-and-city" ||
-          ageGroup === "water-and-recycle" ||
+          ageGroup === "waste-and-recycle" ||
           ageGroup === "carbon-and-climate" ||
           ageGroup === "water-and-energy")
       ) {
@@ -491,7 +491,7 @@ const GameCategoryPage = () => {
           ageGroup === "teens" ||
           ageGroup === "teen" ||
           ageGroup === "solar-and-city" ||
-          ageGroup === "water-and-recycle" ||
+          ageGroup === "waste-and-recycle" ||
           ageGroup === "carbon-and-climate" ||
           ageGroup === "water-and-energy")
       ) {
@@ -652,7 +652,7 @@ const GameCategoryPage = () => {
          ageGroup === "teens" ||
          ageGroup === "teen" ||
          ageGroup === "solar-and-city" ||
-         ageGroup === "water-and-recycle" ||
+         ageGroup === "waste-and-recycle" ||
          ageGroup === "carbon-and-climate" ||
          ageGroup === "water-and-energy");
       
@@ -904,12 +904,12 @@ const GameCategoryPage = () => {
           // Add more games here as they are created
         ];
         games.push(...solarAndCityGames);
-      } else if (ageGroup === "water-and-recycle") {
-        const waterAndRecycleGames = [
+      } else if (ageGroup === "waste-and-recycle") {
+        const wasteAndRecycleGames = [
           {
             id: "sustainability-2",
-            title: "Water & Recycle Challenge",
-            description: "Learn about water conservation and recycling",
+            title: "Waste & Recycle Challenge",
+            description: "Learn about waste conservation and recycling",
             icon: <Droplets className="w-6 h-6" />,
             difficulty: "Easy",
             duration: "5 min",
@@ -917,12 +917,12 @@ const GameCategoryPage = () => {
             xp: 10,
             completed: gameCompletionStatus["sustainability-2"] || false,
             isSpecial: true,
-            path: "/student/sustainability/water-and-recycle/test-water-recycle-game",
+            path: "/student/sustainability/waste-and-recycle/test-waste-recycle-game",
             index: 0,
           },
           // Add more games here as they are created
         ];
-        games.push(...waterAndRecycleGames);
+        games.push(...wasteAndRecycleGames);
       } else if (ageGroup === "carbon-and-climate") {
         const carbonAndClimateGames = [
           {

@@ -114,13 +114,12 @@ const PositiveKidBadge = () => {
     setIsTimerActive(false);
     setProgress(prev => prev + 1);
     
-    const points = 10 + streak * 2;
-    setScore(prev => prev + points);
+    setScore(prev => prev + 1); // 1 coin per completed case
     setStreak(streak + 1);
     setBestStreak(Math.max(bestStreak, streak + 1));
     
     setFeedbackType("correct");
-    setFeedbackMessage(`Case completed! +${points} points`);
+    setFeedbackMessage(`Case completed! +1 coin`);
     setShowFeedback(true);
     
     setTimeout(() => {

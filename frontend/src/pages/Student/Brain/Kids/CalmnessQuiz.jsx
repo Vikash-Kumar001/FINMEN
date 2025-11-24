@@ -78,7 +78,7 @@ const CalmnessQuiz = () => {
       if (selectedAnswer === currentLevelData.correct) {
         setFeedbackType("correct");
         setFeedbackMessage("Correct! Good job.");
-        setScore(prev => prev + 3);
+        setScore(prev => prev + 1);
         setShowFeedback(true);
         setTimeout(() => {
           setShowFeedback(false);

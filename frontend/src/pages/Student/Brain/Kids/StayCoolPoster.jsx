@@ -112,7 +112,7 @@ const StayCoolPoster = () => {
       setIsSubmitted(true);
       setFeedbackType("correct");
       setFeedbackMessage("Cool poster! Great choice.");
-      setScore(prev => prev + 5);
+      setScore(prev => prev + 1);
       setShowFeedback(true);
       setTimeout(() => {
         setShowFeedback(false);

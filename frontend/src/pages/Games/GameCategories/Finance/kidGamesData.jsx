@@ -11,7 +11,7 @@ export const getFinanceKidsGames = (gameCompletionStatus)=> {
     const financeGamesKids = [
         {
           id: "finance-kids-1",
-          title: "Smart Saver Stories",
+          title: "Money Bank Story",
           description: "You get ₹10. Do you save ₹5 or spend all?",
           icon: <Wallet className="w-6 h-6" />,
           difficulty: "Easy",
@@ -20,7 +20,7 @@ export const getFinanceKidsGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["finance-kids-1"] || false,
           isSpecial: true,
-          path: "/student/finance/kids/piggy-bank-story",
+          path: "/student/finance/kids/money-bank-story",
           index: 0,
         },
         {

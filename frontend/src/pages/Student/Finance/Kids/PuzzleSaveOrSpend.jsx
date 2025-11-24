@@ -2,12 +2,20 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleSaveOrSpend = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "finance-kids-4";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
   const [draggedItem, setDraggedItem] = useState(null);
   const [droppedItems, setDroppedItems] = useState([]);
@@ -15,12 +23,12 @@ const PuzzleSaveOrSpend = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const items = [
-    { id: 1, name: "Piggy Bank", type: "save", emoji: "💰" },
+    { id: 1, name: "Money Bank", type: "save", emoji: "💰" },
     { id: 2, name: "Ice Cream", type: "spend", emoji: "🍦" },
     { id: 3, name: "New Bicycle", type: "save", emoji: "🚲" },
     { id: 4, name: "Candy", type: "spend", emoji: "🍬" },
     { id: 5, name: "School Books", type: "save", emoji: "📚" },
-    { id: 6, name: "Video Game", type: "spend", emoji: "🎮" }
+    { id: 6, name: "Study Desk", type: "save", emoji: "🪑" }
   ];
 
   const categories = [
@@ -88,7 +96,6 @@ const PuzzleSaveOrSpend = () => {
     <GameShell
       title="Puzzle: Save or Spend"
       subtitle="Drag items to the correct category!"
-      coins={coins}
       currentLevel={4}
       totalLevels={10}
       coinsPerLevel={coinsPerLevel}
@@ -100,8 +107,7 @@ const PuzzleSaveOrSpend = () => {
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      maxScore={items.length}
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="space-y-8">
@@ -112,56 +118,84 @@ const PuzzleSaveOrSpend = () => {
                 Drag each item to the correct category: Save or Spend
               </p>
               
-              {/* Items to drag */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-8">
-                {items.map(item => (
-                  !isItemDropped(item.id) && (
-                    <div
-                      key={item.id}
-                      draggable
-                      onDragStart={(e) => handleDragStart(e, item)}
-                      className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-xl shadow-lg cursor-move transition-all hover:scale-105"
-                    >
-                      <div className="text-2xl mb-2">{item.emoji}</div>
-                      <h3 className="font-bold">{item.name}</h3>
-                    </div>
-                  )
-                ))}
-              </div>
-              
-              {/* Drop zones */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {categories.map(category => (
-                  <div
-                    key={category.id}
-                    onDragOver={handleDragOver}
-                    onDrop={(e) => handleDrop(e, category)}
-                    className={`bg-gradient-to-r ${category.color} p-6 rounded-2xl border-2 border-dashed border-white/30 min-h-[200px]`}
-                  >
-                    <div className="flex items-center justify-center mb-4">
-                      <div className="text-3xl mr-3">{category.emoji}</div>
-                      <h3 className="text-2xl font-bold text-white">{category.name}</h3>
-                    </div>
-                    
-                    <div className="space-y-3">
-                      {getItemsForCategory(category.id).map(item => (
-                        <div
-                          key={item.id}
-                          className="bg-white/20 backdrop-blur-sm p-3 rounded-lg flex items-center"
-                        >
-                          <div className="text-xl mr-2">{item.emoji}</div>
-                          <span className="text-white font-medium">{item.name}</span>
-                        </div>
-                      ))}
-                      
-                      {getItemsForCategory(category.id).length === 0 && (
-                        <div className="text-white/70 text-center py-8">
-                          Drop items here
-                        </div>
-                      )}
-                    </div>
+              {/* Single row layout: Save | Items | Spend */}
+              <div className="flex flex-wrap items-start justify-center gap-4 mb-8">
+                {/* Save Category - Left */}
+                <div
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, categories[0])}
+                  className={`bg-gradient-to-r ${categories[0].color} p-6 rounded-2xl border-2 border-dashed border-white/30 min-h-[200px] min-w-[150px] flex-shrink-0`}
+                >
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="text-3xl mr-3">{categories[0].emoji}</div>
+                    <h3 className="text-2xl font-bold text-white">{categories[0].name}</h3>
                   </div>
-                ))}
+                  
+                  <div className="space-y-3">
+                    {getItemsForCategory(categories[0].id).map(item => (
+                      <div
+                        key={item.id}
+                        className="bg-white/20 backdrop-blur-sm p-3 rounded-lg flex items-center"
+                      >
+                        <div className="text-xl mr-2">{item.emoji}</div>
+                        <span className="text-white font-medium text-sm">{item.name}</span>
+                      </div>
+                    ))}
+                    
+                    {getItemsForCategory(categories[0].id).length === 0 && (
+                      <div className="text-white/70 text-center py-8 text-sm">
+                        Drop items here
+                      </div>
+                    )}
+                  </div>
+                </div>
+                
+                {/* Items to drag - Middle */}
+                <div className="flex flex-wrap gap-4 justify-center items-start">
+                  {items.map(item => (
+                    !isItemDropped(item.id) && (
+                      <div
+                        key={item.id}
+                        draggable
+                        onDragStart={(e) => handleDragStart(e, item)}
+                        className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-xl shadow-lg cursor-move transition-all hover:scale-105 min-w-[120px]"
+                      >
+                        <div className="text-2xl mb-2 text-center">{item.emoji}</div>
+                        <h3 className="font-bold text-center text-sm">{item.name}</h3>
+                      </div>
+                    )
+                  ))}
+                </div>
+                
+                {/* Spend Category - Right */}
+                <div
+                  onDragOver={handleDragOver}
+                  onDrop={(e) => handleDrop(e, categories[1])}
+                  className={`bg-gradient-to-r ${categories[1].color} p-6 rounded-2xl border-2 border-dashed border-white/30 min-h-[200px] min-w-[150px] flex-shrink-0`}
+                >
+                  <div className="flex items-center justify-center mb-4">
+                    <div className="text-3xl mr-3">{categories[1].emoji}</div>
+                    <h3 className="text-2xl font-bold text-white">{categories[1].name}</h3>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {getItemsForCategory(categories[1].id).map(item => (
+                      <div
+                        key={item.id}
+                        className="bg-white/20 backdrop-blur-sm p-3 rounded-lg flex items-center"
+                      >
+                        <div className="text-xl mr-2">{item.emoji}</div>
+                        <span className="text-white font-medium text-sm">{item.name}</span>
+                      </div>
+                    ))}
+                    
+                    {getItemsForCategory(categories[1].id).length === 0 && (
+                      <div className="text-white/70 text-center py-8 text-sm">
+                        Drop items here
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
               
               <div className="flex justify-center mt-6 space-x-4">

@@ -2,14 +2,20 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const QuizOnSaving = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "finance-kids-2";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [coins, setCoins] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -24,10 +30,9 @@ const QuizOnSaving = () => {
       text: "Who is the best saver?",
       options: [
         { id: "a", text: "Someone who spends all their money", correct: false },
-        { id: "b", text: "Someone who saves part of their money", correct: true },
-        { id: "c", text: "Someone who wastes money", correct: false }
+        { id: "b", text: "Someone who wastes money", correct: false },
+        { id: "c", text: "Someone who saves part of their money", correct: true }
       ],
-      reward: 3
     },
     {
       id: 2,
@@ -37,7 +42,6 @@ const QuizOnSaving = () => {
         { id: "b", text: "Save some and spend some", correct: true },
         { id: "c", text: "Hide it and never use it", correct: false }
       ],
-      reward: 3
     },
     {
       id: 3,
@@ -47,17 +51,15 @@ const QuizOnSaving = () => {
         { id: "b", text: "So you can show off to friends", correct: false },
         { id: "c", text: "It's not important at all", correct: false }
       ],
-      reward: 4
     },
     {
       id: 4,
-      text: "What is a piggy bank used for?",
+      text: "What is a money bank used for?",
       options: [
         { id: "a", text: "Keeping toys", correct: false },
         { id: "b", text: "Saving money", correct: true },
         { id: "c", text: "Storing food", correct: false }
       ],
-      reward: 4
     },
     {
       id: 5,
@@ -67,7 +69,6 @@ const QuizOnSaving = () => {
         { id: "b", text: "₹30", correct: false },
         { id: "c", text: "₹40", correct: true }
       ],
-      reward: 5
     }
   ];
 
@@ -79,8 +80,8 @@ const QuizOnSaving = () => {
     setChoices([...choices, { questionId: question.id, choice: option.id, isCorrect: correct }]);
     
     if (correct) {
-      setCoins(prev => prev + question.reward);
-      showCorrectAnswerFeedback(question.reward, true);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
     // Move to next question or finish game
@@ -107,12 +108,11 @@ const QuizOnSaving = () => {
     <GameShell
       title="Quiz on Saving"
       subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      coins={coins}
       currentLevel={2}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={finalScore}
+      score={coins}
       gameId="finance-kids-2"
       gameType="finance"
       totalLevels={questions.length}

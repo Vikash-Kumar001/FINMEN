@@ -2,14 +2,20 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
-const PiggyBankStory = () => {
+const MoneyBankStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "finance-kids-1";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
@@ -23,17 +29,24 @@ const PiggyBankStory = () => {
       text: "You received ₹10 as a gift from your grandmother. What would you like to do?",
       options: [
         { 
-          id: "save", 
-          text: "Save ₹5", 
-          emoji: "💰", 
-          description: "Put ₹5 in your piggy bank for later",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Spend All", 
           emoji: "🛍️", 
           description: "Buy toys and treats right now",
+          isCorrect: false
+        },
+        { 
+          id: "save", 
+          text: "Save ₹5", 
+          emoji: "💰", 
+          description: "Put ₹5 in your money bank for later",
+          isCorrect: true
+        },
+        { 
+          id: "save-all", 
+          text: "Save All ₹10", 
+          emoji: "🏦", 
+          description: "Save the entire ₹10 for future",
           isCorrect: false
         }
       ]
@@ -55,6 +68,13 @@ const PiggyBankStory = () => {
           emoji: "🎬", 
           description: "Spend ₹15 on the movie",
           isCorrect: false
+        },
+        { 
+          id: "split", 
+          text: "Split the Cost", 
+          emoji: "🤝", 
+          description: "Ask friend to share the cost",
+          isCorrect: false
         }
       ]
     },
@@ -63,18 +83,25 @@ const PiggyBankStory = () => {
       text: "You found ₹5 on the street. What's the best thing to do with it?",
       options: [
         { 
-          id: "save", 
-          text: "Save It", 
-          emoji: "🫙", 
-          description: "Add it to your savings",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Buy Candy", 
           emoji: "🍬", 
           description: "Buy sweets from the shop",
           isCorrect: false
+        },
+        { 
+          id: "give", 
+          text: "Give to Parents", 
+          emoji: "👨‍👩‍👧", 
+          description: "Give the money to your parents",
+          isCorrect: false
+        },
+        { 
+          id: "save", 
+          text: "Save It", 
+          emoji: "🫙", 
+          description: "Add it to your savings",
+          isCorrect: true
         }
       ]
     },
@@ -95,6 +122,13 @@ const PiggyBankStory = () => {
           emoji: "🛒", 
           description: "Ask parents to buy it now",
           isCorrect: false
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow Money", 
+          emoji: "💳", 
+          description: "Borrow ₹300 from parents",
+          isCorrect: false
         }
       ]
     },
@@ -103,6 +137,13 @@ const PiggyBankStory = () => {
       text: "You have ₹30 saved and see a toy you really want for ₹25. What's the smart choice?",
       options: [
         { 
+          id: "spend", 
+          text: "Buy the Toy", 
+          emoji: "🧸", 
+          description: "Buy the toy you want now",
+          isCorrect: false
+        },
+        { 
           id: "save", 
           text: "Save for Bigger", 
           emoji: "🎯", 
@@ -110,10 +151,10 @@ const PiggyBankStory = () => {
           isCorrect: true
         },
         { 
-          id: "spend", 
-          text: "Buy the Toy", 
-          emoji: "🧸", 
-          description: "Buy the toy you want now",
+          id: "wait", 
+          text: "Wait for Sale", 
+          emoji: "⏰", 
+          description: "Wait for the toy to go on sale",
           isCorrect: false
         }
       ]
@@ -183,16 +224,15 @@ const PiggyBankStory = () => {
 
   // If no current question, show loading or return early
   if (!currentQuestionData && !showResult) {
-    return (
-      <GameShell
-        title="Piggy Bank Story"
-        subtitle="Loading..."
-        score={coins}
-        gameId="finance-kids-1"
-        gameType="finance"
-        totalLevels={questions.length}
-        coinsPerLevel={coinsPerLevel}
-      
+  return (
+    <GameShell
+      title="Money Bank Story"
+      subtitle="Loading..."
+      score={coins}
+      gameId="finance-kids-1"
+      gameType="finance"
+      totalLevels={questions.length}
+      coinsPerLevel={coinsPerLevel}
       maxScore={questions.length} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -203,12 +243,12 @@ const PiggyBankStory = () => {
 
   return (
     <GameShell
-      title="Piggy Bank Story"
+      title="Money Bank Story"
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct
       showGameOver={showResult && finalScore >= 3}
-       // Use finalScore (number of correct answers) as score
+      score={coins} // Pass coins state to update header
       gameId="finance-kids-1"
       gameType="finance"
       totalLevels={questions.length}
@@ -234,7 +274,7 @@ const PiggyBankStory = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}
@@ -292,4 +332,5 @@ const PiggyBankStory = () => {
   );
 };
 
-export default PiggyBankStory;
+export default MoneyBankStory;
+

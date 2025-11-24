@@ -120,7 +120,7 @@ const FinancialLiteracy = () => {
             <ul className="grid grid-cols-1 md:grid-cols-2 gap-2">
               <li className="flex items-center">
                 <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
-                <span>Level 1: Piggy Bank Story</span>
+                <span>Level 1: Money Bank Story</span>
               </li>
               <li className="flex items-center">
                 <CheckCircle className="w-5 h-5 text-green-500 mr-2" />
@@ -162,10 +162,10 @@ const FinancialLiteracy = () => {
           </div>
           
           <button
-            onClick={() => navigate('/student/finance/kids/piggy-bank-story')}
+            onClick={() => navigate('/student/finance/kids/money-bank-story')}
             className="w-full mt-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:scale-105"
           >
-            Start Level 1: Piggy Bank Story
+            Start Level 1: Money Bank Story
           </button>
         </div>
       )

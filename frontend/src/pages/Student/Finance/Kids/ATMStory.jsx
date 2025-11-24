@@ -3,15 +3,23 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Trophy, CreditCard, PiggyBank, Wallet, ShoppingCart, Coins } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ATMStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "finance-kids-48";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { showCorrectAnswerFeedback } = useGameFeedback();
   const [currentLevel, setCurrentLevel] = useState(1);
-  const [totalCoins, setTotalCoins] = useState(0);
+  const [earnedCoins, setEarnedCoins] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
 
@@ -101,7 +109,7 @@ const ATMStory = () => {
     setAnswered(true);
     
     if (option.correct) {
-      setTotalCoins(totalCoins + option.coins);
+      setEarnedCoins(earnedCoins + option.coins);
       showCorrectAnswerFeedback(option.coins, true);
     }
   };
@@ -120,13 +128,13 @@ const ATMStory = () => {
     <GameShell
       title={`Question ${currentLevel} – ${currentLevelData.title}`}
       subtitle={currentLevelData.question}
-      coins={totalCoins}
+      coins={earnedCoins}
       currentLevel={currentLevel}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
       onNext={handleNext}
       showConfetti={answered && selectedAnswer?.correct}
-      score={totalCoins}
+      score={earnedCoins}
       gameId="finance-kids-88"
       gameType="finance"
     
@@ -171,7 +179,7 @@ const ATMStory = () => {
             {currentLevel === 5 && selectedAnswer.correct && (
               <div className="mt-6 p-4 bg-yellow-500/20 rounded-lg border border-yellow-400">
                 <p className="text-xl font-bold text-yellow-300">
-                  🎉 Game Complete! Total Coins: {totalCoins} 🎉
+                  🎉 Game Complete! Total Coins: {earnedCoins} 🎉
                 </p>
               </div>
             )}

@@ -2,24 +2,200 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BirthdayMoneyStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "finance-kids-5";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const [choice, setChoice] = useState(null);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
+  const questions = [
+    {
+      id: 1,
+      text: "It's your birthday and you received ₹50 from your relatives. What would you like to do?",
+      options: [
+        { 
+          id: "save", 
+          text: "Save Some", 
+          emoji: "🏦", 
+          description: "Put ₹30 in savings for something bigger later",
+          isCorrect: true
+        },
+        { 
+          id: "spend", 
+          text: "Spend All", 
+          emoji: "🛍️", 
+          description: "Buy toys and treats right now with all ₹50",
+          isCorrect: false
+        },
+        { 
+          id: "give", 
+          text: "Give to Parents", 
+          emoji: "👨‍👩‍👧", 
+          description: "Give all the money to your parents",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "You saved ₹30 from your birthday money. A friend invites you to a movie that costs ₹25. What do you do?",
+      options: [
+        { 
+          id: "spend", 
+          text: "Go to Movie", 
+          emoji: "🎬", 
+          description: "Spend ₹25 on the movie ticket",
+          isCorrect: false
+        },
+        { 
+          id: "save", 
+          text: "Keep Saving", 
+          emoji: "💰", 
+          description: "Continue saving for something bigger",
+          isCorrect: true
+        },
+        { 
+          id: "borrow", 
+          text: "Ask for More", 
+          emoji: "💳", 
+          description: "Ask parents for extra money",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "After 3 months, you have ₹90 saved. You see a toy you want for ₹80. What's the best choice?",
+      options: [
+        { 
+          id: "spend", 
+          text: "Buy the Toy", 
+          emoji: "🧸", 
+          description: "Buy the toy you want now",
+          isCorrect: false
+        },
+        { 
+          id: "split", 
+          text: "Buy Half", 
+          emoji: "🤝", 
+          description: "Spend ₹40 and save the rest",
+          isCorrect: false
+        },
+        { 
+          id: "save", 
+          text: "Save More", 
+          emoji: "📈", 
+          description: "Keep saving for something more important",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "Your friend wants to borrow ₹20 from your savings. What should you do?",
+      options: [
+        { 
+          id: "save", 
+          text: "Keep Your Savings", 
+          emoji: "🔒", 
+          description: "Politely say no and keep your savings safe",
+          isCorrect: true
+        },
+        { 
+          id: "lend", 
+          text: "Lend the Money", 
+          emoji: "🤲", 
+          description: "Give your friend the ₹20",
+          isCorrect: false
+        },
+        { 
+          id: "ask", 
+          text: "Ask Parents", 
+          emoji: "👨‍👩‍👧", 
+          description: "Ask your parents what to do",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "You've saved ₹100! Your parents offer to match it if you save for 2 more months. What do you do?",
+      options: [
+        { 
+          id: "spend", 
+          text: "Spend Now", 
+          emoji: "🛒", 
+          description: "Spend the ₹100 right away",
+          isCorrect: false
+        },
+        { 
+          id: "save", 
+          text: "Keep Saving", 
+          emoji: "🎯", 
+          description: "Continue saving to get the match",
+          isCorrect: true
+        },
+        { 
+          id: "half", 
+          text: "Spend Half", 
+          emoji: "⚖️", 
+          description: "Spend ₹50 and save ₹50",
+          isCorrect: false
+        }
+      ]
+    }
+  ];
+
   const handleChoice = (selectedChoice) => {
-    setChoice(selectedChoice);
-    setShowResult(true);
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    if (selectedChoice === "save") {
-      setCoins(5);
-      showCorrectAnswerFeedback(5, true);
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0); // Delay if correct to show animation
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
     }
   };
 
@@ -29,82 +205,93 @@ const BirthdayMoneyStory = () => {
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setChoice(null);
+    setCurrentQuestion(0);
+    setChoices([]);
     setCoins(0);
+    setFinalScore(0);
     resetFeedback();
   };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Birthday Money Story"
-      subtitle="It's your birthday! What do you do with the gift money?"
-      coins={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       currentLevel={5}
       totalLevels={10}
       coinsPerLevel={coinsPerLevel}
       onNext={handleNext}
-      nextEnabled={showResult && choice === "save"}
-      showGameOver={showResult && choice === "save"}
+      nextEnabled={showResult && finalScore >= 3}
+      showGameOver={showResult && finalScore >= 3}
       score={coins}
       gameId="finance-kids-5"
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore >= 3}>
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
               <p className="text-white text-lg mb-6">
-                It's your birthday and you received ₹50 from your relatives. What would you like to do?
+                {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleChoice("save")}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-                >
-                  <div className="text-2xl mb-2">🏦</div>
-                  <h3 className="font-bold text-xl mb-2">Save Some</h3>
-                  <p className="text-white/90">Put ₹30 in savings for something bigger later</p>
-                </button>
-                
-                <button
-                  onClick={() => handleChoice("spend")}
-                  className="bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-                >
-                  <div className="text-2xl mb-2">🛍️</div>
-                  <h3 className="font-bold text-xl mb-2">Spend All</h3>
-                  <p className="text-white/90">Buy toys and treats right now with all ₹50</p>
-                </button>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
-            {choice === "save" ? (
+            {finalScore >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Smart Choice!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  Great decision! Saving ₹30 means you can buy something bigger later.
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning smart financial decisions!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+5 Coins</span>
+                  <span>+{coins} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  You're learning to balance enjoying today with planning for tomorrow!
+                  You correctly chose to save money in most situations. That's a smart habit!
                 </p>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Think Again!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  Spending all your money feels good now, but saving some helps you get bigger rewards later!
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, saving some money for later is usually a smart choice!
                 </p>
                 <button
                   onClick={handleTryAgain}
@@ -113,7 +300,7 @@ const BirthdayMoneyStory = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Try choosing to save some money for later.
+                  Try to choose the option that saves money for later in most situations.
                 </p>
               </div>
             )}

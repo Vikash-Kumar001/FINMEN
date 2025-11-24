@@ -2,12 +2,20 @@ import React, { useState, useEffect, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ReflexNeedsFirst = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "finance-kids-19";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [gameState, setGameState] = useState("waiting"); // waiting, playing, finished
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);

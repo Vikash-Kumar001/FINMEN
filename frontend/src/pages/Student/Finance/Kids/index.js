@@ -1,5 +1,5 @@
 // Import all components
-import PiggyBankStory from './PiggyBankStory';
+import MoneyBankStory from './MoneyBankStory';
 import QuizOnSaving from './QuizOnSaving';
 import ReflexSavings from './ReflexSavings';
 import PuzzleSaveOrSpend from './PuzzleSaveOrSpend';
@@ -101,7 +101,7 @@ import ReflexMoneyTruthGame from './ReflexMoneyTruthGame';
 import HonestKidBadgeGame from './HonestKidBadgeGame';
 
 // Export named exports for backward compatibility
-export { default as PiggyBankStory } from './PiggyBankStory';
+export { default as MoneyBankStory } from './MoneyBankStory';
 export { default as QuizOnSaving } from './QuizOnSaving';
 export { default as ReflexSavings } from './ReflexSavings';
 export { default as PuzzleSaveOrSpend } from './PuzzleSaveOrSpend';
@@ -205,7 +205,7 @@ export { default as HonestKidBadgeGame } from './HonestKidBadgeGame';
 // Create the games object mapping path segments (normalized to lowercase) to components
 const kidFinanceGames = {
   // First set of 10 games (saving focused)
-  'piggy-bank-story': PiggyBankStory,
+  'money-bank-story': MoneyBankStory,
   'quiz-on-saving': QuizOnSaving,
   'reflex-savings': ReflexSavings,
   'puzzle-save-or-spend': PuzzleSaveOrSpend,

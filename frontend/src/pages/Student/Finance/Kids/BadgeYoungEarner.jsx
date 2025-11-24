@@ -3,15 +3,23 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Trophy, Coins, Sparkles, Star, Award, DollarSign } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeYoungEarner = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "finance-kids-80";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { showCorrectAnswerFeedback } = useGameFeedback();
   const [currentLevel, setCurrentLevel] = useState(1);
-  const [totalCoins, setTotalCoins] = useState(0);
+  const [earnedCoins, setEarnedCoins] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [earnedBadge, setEarnedBadge] = useState(false);
@@ -102,7 +110,7 @@ const BadgeYoungEarner = () => {
     setAnswered(true);
     
     if (option.correct) {
-      setTotalCoins(totalCoins + option.coins);
+      setEarnedCoins(earnedCoins + option.coins);
       showCorrectAnswerFeedback(option.coins, true);
       
       if (currentLevel === 5) {
@@ -139,7 +147,7 @@ const BadgeYoungEarner = () => {
     <GameShell
       title={`Question ${currentLevel} – ${currentLevelData.title}`}
       subtitle={currentLevelData.question}
-      coins={totalCoins}
+      coins={earnedCoins}
       currentLevel={currentLevel}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
@@ -150,7 +158,7 @@ const BadgeYoungEarner = () => {
       nextEnabled={currentLevel === 5 && answered}
       nextLabel={"Claim Badge"}
       showConfetti={answered && selectedAnswer?.correct}
-      score={totalCoins}
+      score={earnedCoins}
       gameId="finance-kids-150"
       gameType="finance"
     >
@@ -203,7 +211,7 @@ const BadgeYoungEarner = () => {
                   You know 5 smart ways to earn!
                 </p>
                 <p className="text-green-200 font-bold text-sm">
-                  Total: {totalCoins} Coins
+                  Total: {earnedCoins} Coins
                 </p>
               </div>
             )}
@@ -234,7 +242,7 @@ const BadgeYoungEarner = () => {
           </div>
           <div className="bg-white/5 rounded-lg p-2 backdrop-blur-sm flex-1 max-w-[120px]">
             <p className="text-white/70 text-xs">Coins Earned</p>
-            <p className="text-green-400 font-bold">{totalCoins}</p>
+            <p className="text-green-400 font-bold">{earnedCoins}</p>
           </div>
         </div>
 

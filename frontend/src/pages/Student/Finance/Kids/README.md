@@ -4,7 +4,7 @@ A collection of 10 interactive games designed to teach financial literacy to chi
 
 ## Games Overview
 
-### Level 1 – Piggy Bank Story
+### Level 1 – Money Bank Story
 - **Story**: You get ₹10. Do you save ₹5 or spend all?
 - **Mechanic**: Story Choice
 - **Reward**: +5 Coins
@@ -67,7 +67,7 @@ All games use the `GameShell` component which provides:
 ## Routes
 
 - `/student/finance/kids` - Main landing page
-- `/student/finance/kids/piggy-bank-story` - Level 1: Piggy Bank Story
+- `/student/finance/kids/money-bank-story` - Level 1: Money Bank Story
 - `/student/finance/kids/quiz-on-saving` - Level 2: Quiz on Saving
 - `/student/finance/kids/reflex-savings` - Level 3: Reflex Savings
 - `/student/finance/kids/puzzle-save-or-spend` - Level 4: Puzzle: Save or Spend

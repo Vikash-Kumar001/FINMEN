@@ -3,15 +3,23 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Trophy, Shield, AlertTriangle, Eye, Phone, Mail } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeScamSpotterKid = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "finance-kids-90";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { showCorrectAnswerFeedback } = useGameFeedback();
   const [currentLevel, setCurrentLevel] = useState(1);
-  const [totalCoins, setTotalCoins] = useState(0);
+  const [earnedCoins, setEarnedCoins] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [earnedBadge, setEarnedBadge] = useState(false);
@@ -108,7 +116,7 @@ const BadgeScamSpotterKid = () => {
     setAnswered(true);
     
     if (option.correct) {
-      setTotalCoins(totalCoins + option.coins);
+      setEarnedCoins(earnedCoins + option.coins);
       setScamsSpotted(scamsSpotted + 1);
       showCorrectAnswerFeedback(option.coins, true);
       
@@ -146,7 +154,7 @@ const BadgeScamSpotterKid = () => {
     <GameShell
       title={`Round ${currentLevel} – ${currentLevelData.title}`}
       subtitle={currentLevelData.question}
-      coins={totalCoins}
+      coins={earnedCoins}
       currentLevel={currentLevel}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
@@ -157,7 +165,7 @@ const BadgeScamSpotterKid = () => {
       nextEnabled={currentLevel === 5 && answered}
       nextLabel={"Finish & Claim Badge"}
       showConfetti={answered && selectedAnswer?.correct}
-      score={totalCoins}
+      score={earnedCoins}
       gameId="finance-kids-170"
       gameType="finance"
     >
@@ -222,7 +230,7 @@ const BadgeScamSpotterKid = () => {
                   You can spot scams and stay safe!
                 </p>
                 <p className="text-green-200 font-bold text-xs">
-                  Coins: {totalCoins} 💰
+                  Coins: {earnedCoins} 💰
                 </p>
               </div>
             )}
@@ -261,7 +269,7 @@ const BadgeScamSpotterKid = () => {
           </div>
           <div className="bg-white/5 rounded-lg p-2 backdrop-blur-sm">
             <p className="text-white/70 text-xs">Safety Score</p>
-            <p className="text-yellow-400 font-bold text-base">{totalCoins}</p>
+            <p className="text-yellow-400 font-bold text-base">{earnedCoins}</p>
           </div>
         </div>
       </div>

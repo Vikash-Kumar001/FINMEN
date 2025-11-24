@@ -2,7 +2,7 @@
 // These games are not stored in the Game model but are defined in the frontend
 export const gameIdToTitleMap = {
   // Financial Literacy - Kids
-  'finance-kids-1': 'Piggy Bank Story',
+  'finance-kids-1': 'Money Bank Story',
   'finance-kids-2': 'Quiz on Saving',
   'finance-kids-3': 'Reflex Savings',
   'finance-kids-4': 'Puzzle: Save or Spend',

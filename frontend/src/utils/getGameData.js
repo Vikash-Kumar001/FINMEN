@@ -1,0 +1,131 @@
+/**
+ * Utility function to get game data (coins, xp) from game category folders
+ * This ensures games always fetch coins and XP from the source of truth (game category data)
+ */
+
+// Import all game category data functions
+import { getFinanceKidsGames } from "../pages/Games/GameCategories/Finance/kidGamesData";
+import { getFinanceTeenGames } from "../pages/Games/GameCategories/Finance/teenGamesData";
+import { getBrainKidsGames } from "../pages/Games/GameCategories/Brain/kidGamesData";
+import { getBrainTeenGames } from "../pages/Games/GameCategories/Brain/teenGamesData";
+import { getUvlsKidsGames } from "../pages/Games/GameCategories/UVLS/kidGamesData";
+import { getUvlsTeenGames } from "../pages/Games/GameCategories/UVLS/teenGamesData";
+import { getDcosKidsGames } from "../pages/Games/GameCategories/DCOS/kidGamesData";
+import { getDcosTeenGames } from "../pages/Games/GameCategories/DCOS/teenGamesData";
+import { getMoralKidsGames } from "../pages/Games/GameCategories/MoralValues/kidGamesData";
+import { getMoralTeenGames } from "../pages/Games/GameCategories/MoralValues/teenGamesData";
+import { getAiKidsGames } from "../pages/Games/GameCategories/AiForAll/kidGamesData";
+import { getAiTeenGames } from "../pages/Games/GameCategories/AiForAll/teenGamesData";
+import { getEheKidsGames } from "../pages/Games/GameCategories/EHE/kidGamesData";
+import { getEheTeenGames } from "../pages/Games/GameCategories/EHE/teenGamesData";
+import { getCrgcKidsGames } from "../pages/Games/GameCategories/CRGC/kidGamesData";
+import { getCrgcTeensGames } from "../pages/Games/GameCategories/CRGC/teenGamesData";
+import { getHealthMaleKidsGames } from "../pages/Games/GameCategories/HealthMale/kidGamesData";
+import { getHealthMaleTeenGames } from "../pages/Games/GameCategories/HealthMale/teenGamesData";
+import { getHealthFemaleKidsGames } from "../pages/Games/GameCategories/HealthFemale/kidGamesData";
+import getHealthFemaleTeenGames from "../pages/Games/GameCategories/HealthFemale/teenGamesData";
+
+/**
+ * Get game data by gameId from the appropriate game category folder
+ * @param {string} gameId - The game ID (e.g., "finance-kids-6", "ai-kids-1")
+ * @returns {Object|null} - Game data object with coins, xp, and other properties, or null if not found
+ */
+export const getGameDataById = (gameId) => {
+  if (!gameId || typeof gameId !== 'string') {
+    console.warn('Invalid gameId provided to getGameDataById:', gameId);
+    return null;
+  }
+
+  // Parse gameId to extract category and age group
+  // Format: "category-age-number" (e.g., "finance-kids-6", "ai-teens-1")
+  const parts = gameId.split('-');
+  if (parts.length < 3) {
+    console.warn('Invalid gameId format:', gameId);
+    return null;
+  }
+
+  const category = parts[0]; // e.g., "finance", "ai"
+  const ageGroup = parts[1]; // e.g., "kids", "teens", "teen"
+  const normalizedAge = ageGroup === 'teen' ? 'teens' : ageGroup; // Normalize "teen" to "teens"
+
+  // Map category names to their data functions
+  const categoryMap = {
+    finance: {
+      kids: getFinanceKidsGames,
+      teens: getFinanceTeenGames,
+    },
+    brain: {
+      kids: getBrainKidsGames,
+      teens: getBrainTeenGames,
+    },
+    uvls: {
+      kids: getUvlsKidsGames,
+      teens: getUvlsTeenGames,
+    },
+    dcos: {
+      kids: getDcosKidsGames,
+      teens: getDcosTeenGames,
+    },
+    moral: {
+      kids: getMoralKidsGames,
+      teens: getMoralTeenGames,
+    },
+    ai: {
+      kids: getAiKidsGames,
+      teens: getAiTeenGames,
+    },
+    ehe: {
+      kids: getEheKidsGames,
+      teens: getEheTeenGames,
+    },
+    crgc: {
+      kids: getCrgcKidsGames,
+      teens: getCrgcTeensGames,
+    },
+    healthMale: {
+      kids: getHealthMaleKidsGames,
+      teens: getHealthMaleTeenGames,
+    },
+    healthFemale: {
+      kids: getHealthFemaleKidsGames,
+      teens: getHealthFemaleTeenGames,
+    },
+  };
+
+  // Get the appropriate data function
+  const getGamesFunction = categoryMap[category]?.[normalizedAge];
+  
+  if (!getGamesFunction) {
+    console.warn(`No game data function found for category: ${category}, age: ${normalizedAge}`);
+    return null;
+  }
+
+  try {
+    // Call the function with empty completion status (we just need the game data)
+    const games = getGamesFunction({});
+    
+    // Find the game by id
+    const game = games.find(g => g.id === gameId);
+    
+    if (!game) {
+      console.warn(`Game not found with id: ${gameId}`);
+      return null;
+    }
+
+    // Return the game data with coins and xp
+    return {
+      coins: game.coins || 5, // Default to 5 if not specified
+      xp: game.xp || 10, // Default to 10 if not specified
+      title: game.title,
+      description: game.description,
+      difficulty: game.difficulty,
+      duration: game.duration,
+      ...game // Include all other game properties
+    };
+  } catch (error) {
+    console.error(`Error fetching game data for ${gameId}:`, error);
+    return null;
+  }
+};
+
+

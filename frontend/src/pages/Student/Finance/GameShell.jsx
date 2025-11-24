@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import gameCompletionService from "../../../services/gameCompletionService";
 import { toast } from "react-toastify";
@@ -90,20 +90,17 @@ export const Confetti = ({ duration = 3000 }) => {
 /* --------------------- Level Complete Component with Instant Coins --------------------- */
 export const LevelCompleteHandler = ({
   gameId,
-  gameType = 'ai',
   levelNumber,
   levelScore,
   maxLevelScore = 20,
   onComplete,
   children
 }) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmitted, setHasSubmitted] = useState(false);
 
-  const handleLevelComplete = async () => {
+  const handleLevelComplete = useCallback(async () => {
     if (hasSubmitted || !gameId) return;
 
-    setIsSubmitting(true);
     setHasSubmitted(true);
 
     try {
@@ -123,16 +120,14 @@ export const LevelCompleteHandler = ({
       }
     } catch (error) {
       console.error('Failed to submit level completion:', error);
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+  }, [hasSubmitted, gameId, levelNumber, levelScore, maxLevelScore, onComplete]);
 
   useEffect(() => {
     if (levelScore > 0 && !hasSubmitted) {
       handleLevelComplete();
     }
-  }, [levelScore, hasSubmitted]);
+  }, [levelScore, hasSubmitted, handleLevelComplete]);
 
   return children;
 };
@@ -381,9 +376,6 @@ const GameShell = ({
   subtitle,
   rightSlot,
   children,
-  onNext,
-  nextEnabled,
-  nextLabel = "Next Level",
   showGameOver = false,
   score,
   gameId,

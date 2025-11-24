@@ -3,12 +3,20 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Trophy, Coins, AlertTriangle, CheckCircle, XCircle, Wallet, CreditCard, PiggyBank, User, School, Home, Car, Smartphone } from "lucide-react";
 import GameShell from "../GameShell";
 import { useGameFeedback } from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeDebtSmart = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "finance-teens-120";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [gameState, setGameState] = useState('intro'); // intro, challenge, completed
   const [currentScenario, setCurrentScenario] = useState(0);

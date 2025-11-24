@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const QuizOnAttention = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "brain-teens-12";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -92,7 +98,7 @@ const QuizOnAttention = () => {
     }));
     
     if (isCorrect) {
-      setScore(score + 3); // 3 coins for correct answer (max 15 coins for 5 questions)
+      setScore(score + 1); // 1 coin for correct answer
       setShowConfetti(true);
       // Hide confetti after animation
       setTimeout(() => setShowConfetti(false), 1000);
@@ -127,10 +133,10 @@ const QuizOnAttention = () => {
 
   const currentQuestionData = questions[currentQuestion];
 
-  // Calculate coins based on correct answers (max 15 coins for 5 questions)
+  // Calculate coins based on correct answers (1 coin per question)
   const calculateTotalCoins = () => {
     const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 3;
+    return correctAnswers * 1;
   };
 
   return (
@@ -140,8 +146,10 @@ const QuizOnAttention = () => {
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-teens-12"
-      gameType="brain-health"
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="brain"
       showGameOver={levelCompleted}
       onNext={handleNext}
       nextEnabled={currentQuestion < questions.length - 1}

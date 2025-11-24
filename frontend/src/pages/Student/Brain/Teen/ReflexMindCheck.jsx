@@ -2,12 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
 import { Brain, Coffee, Heart, Zap, Book, Gamepad2, Users, Moon } from 'lucide-react';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const ReflexMindCheck = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "brain-teens-3";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [gameState, setGameState] = useState('waiting'); // waiting, active, finished
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(30);
@@ -70,15 +76,11 @@ const ReflexMindCheck = () => {
     const isCorrect = actionType === 'good';
     
     if (isCorrect) {
-      // Cap the total coins at 15 (0.5 coins per correct answer, max 30 correct answers)
-      if (totalCorrect < 30) {
-        const points = 1 + Math.min(streak, 4); // More points for longer streaks (max 5)
-        setScore(score + points);
-        setStreak(streak + 1);
-        setTotalCorrect(totalCorrect + 1); // Track correct answers
-        setFeedbackMessage(`+${points} coins! ${currentAction.explanation}`);
-        setShowFeedback(true);
-      }
+      setScore(score + 1); // 1 coin per correct answer
+      setStreak(streak + 1);
+      setTotalCorrect(totalCorrect + 1); // Track correct answers
+      setFeedbackMessage(`+1 coin! ${currentAction.explanation}`);
+      setShowFeedback(true);
     } else {
       setStreak(0);
       setFeedbackMessage(`Not ideal! ${currentAction.explanation}`);
@@ -99,9 +101,9 @@ const ReflexMindCheck = () => {
     navigate('/games/brain-health/teens');
   };
 
-  // Calculate coins based on correct answers (max 50 coins)
+  // Calculate coins based on correct answers (1 coin per correct answer)
   const calculateTotalCoins = () => {
-    return Math.min(totalCorrect * 2, 50); // 2 coins per correct answer, max 50
+    return totalCorrect * 1;
   };
 
   return (
@@ -111,7 +113,9 @@ const ReflexMindCheck = () => {
       currentLevel={1}
       totalLevels={1}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-teens-3"
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId={gameId}
       gameType="brain"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/teens"

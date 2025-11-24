@@ -88,7 +88,7 @@ const JournalOfTricks = () => {
     }));
     
     if (isCorrect) {
-      setScore(score + 10);
+      setScore(score + 1); // 1 coin for correct answer
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 1000);
     }
@@ -116,14 +116,14 @@ const JournalOfTricks = () => {
   };
 
   const handleGameComplete = () => {
-    navigate('/games/memory/teens');
+    navigate('/games/brain-health/teens');
   };
 
   const currentQuestionData = questions[currentQuestion];
 
   const calculateTotalCoins = () => {
     const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 10;
+    return correctAnswers * 1;
   };
 
   return (
@@ -133,14 +133,16 @@ const JournalOfTricks = () => {
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="memory-teens-57"
-      gameType="memory"
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="brain"
       showGameOver={levelCompleted}
       onNext={handleNext}
       nextEnabled={currentQuestion < questions.length - 1}
       nextLabel="Next"
       showAnswerConfetti={showConfetti}
-      backPath="/games/memory/teens"
+      backPath="/games/brain-health/teens"
     >
       <GameCard>
         <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>

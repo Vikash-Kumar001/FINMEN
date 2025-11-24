@@ -70,7 +70,7 @@ const JournalOfAttention = () => {
       setFeedbackType("correct");
       setFeedbackMessage("Great journal entry!");
       setShowFeedback(true);
-      setScore(prevScore => prevScore + 5); // 5 coins per entry
+      setScore(prevScore => prevScore + 1); // 1 coin per entry
       
       // Move to next prompt or complete
       setTimeout(() => {
@@ -104,17 +104,19 @@ const JournalOfAttention = () => {
       currentLevel={currentPrompt + 1}
       totalLevels={prompts.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-teens-17"
-      gameType="brain-health"
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="brain"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/teens"
     >
       <LevelCompleteHandler
-        gameId="brain-teens-17"
-        gameType="brain-health"
+        gameId={gameId}
+        gameType="brain"
         levelNumber={currentPrompt + 1}
-        levelScore={5}
-        maxLevelScore={5}
+        levelScore={1}
+        maxLevelScore={1}
       >
         <GameCard>
           <h3 className="text-2xl font-bold text-white mb-4">Attention Journal</h3>

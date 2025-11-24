@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, OptionButton, FeedbackBubble, LevelCompleteHandler } from '../../Finance/GameShell';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const DebateBrainVsBody = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "brain-teens-6";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -94,7 +100,7 @@ const DebateBrainVsBody = () => {
     }));
     
     if (isCorrect) {
-      setScore(prevScore => prevScore + 10); // 10 coins for correct answer
+      setScore(prevScore => prevScore + 1); // 1 coin for correct answer
       setShowConfetti(true);
       // Hide confetti after animation
       setTimeout(() => setShowConfetti(false), 1000);
@@ -124,18 +130,20 @@ const DebateBrainVsBody = () => {
       currentLevel={currentQuestion + 1}
       totalLevels={debateTopics.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-teens-6"
-      gameType="brain-health"
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="brain"
       showGameOver={levelCompleted}
       showAnswerConfetti={showConfetti}
       backPath="/games/brain-health/teens"
     >
       <LevelCompleteHandler
-        gameId="brain-teens-6"
-        gameType="brain-health"
+        gameId={gameId}
+        gameType="brain"
         levelNumber={currentQuestion + 1}
-        levelScore={selectedOption === currentTopic.correct ? 10 : 0}
-        maxLevelScore={10}
+        levelScore={selectedOption === currentTopic.correct ? 1 : 0}
+        maxLevelScore={1}
       >
         <GameCard>
           <h3 className="text-2xl font-bold text-white mb-6 text-center">Debate Topic</h3>

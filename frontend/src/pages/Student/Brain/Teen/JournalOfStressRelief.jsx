@@ -2,12 +2,18 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const JournalOfStressRelief = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "brain-teens-37";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -88,7 +94,7 @@ const JournalOfStressRelief = () => {
     }));
     
     if (isCorrect) {
-      setScore(score + 10);
+      setScore(score + 1); // 1 coin for correct answer
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 1000);
     }
@@ -116,7 +122,7 @@ const JournalOfStressRelief = () => {
   };
 
   const handleGameComplete = () => {
-    navigate('/games/stress/teens');
+    navigate('/games/brain-health/teens');
   };
 
   const currentQuestionData = questions[currentQuestion];
@@ -133,14 +139,16 @@ const JournalOfStressRelief = () => {
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="stress-teens-77"
-      gameType="stress"
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="brain"
       showGameOver={levelCompleted}
       onNext={handleNext}
       nextEnabled={currentQuestion < questions.length - 1}
       nextLabel="Next"
       showAnswerConfetti={showConfetti}
-      backPath="/games/stress/teens"
+      backPath="/games/brain-health/teens"
     >
       <GameCard>
         <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>

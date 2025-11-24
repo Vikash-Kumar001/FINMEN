@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const JournalOfBrainFitness = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "brain-teens-7";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [currentPrompt, setCurrentPrompt] = useState(0);
   const [journalEntries, setJournalEntries] = useState({});
   const [currentEntry, setCurrentEntry] = useState('');
@@ -70,7 +76,7 @@ const JournalOfBrainFitness = () => {
       setFeedbackType("correct");
       setFeedbackMessage("Great journal entry!");
       setShowFeedback(true);
-      setScore(prevScore => prevScore + 3); // 3 coins per entry (max 15 coins for 5 entries)
+      setScore(prevScore => prevScore + 1); // 1 coin per entry
       
       // Move to next prompt or complete
       setTimeout(() => {
@@ -97,10 +103,10 @@ const JournalOfBrainFitness = () => {
     navigate('/games/brain-health/teens');
   };
 
-  // Calculate coins based on completed entries (max 15 coins for 5 entries)
+  // Calculate coins based on completed entries (1 coin per entry)
   const calculateTotalCoins = () => {
     const completedEntries = Object.keys(journalEntries).length + (isSubmitted ? 1 : 0);
-    return completedEntries * 3;
+    return completedEntries * 1;
   };
 
   return (
@@ -110,8 +116,10 @@ const JournalOfBrainFitness = () => {
       currentLevel={currentPrompt + 1}
       totalLevels={prompts.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-teens-7"
-      gameType="brain-health"
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="brain"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/teens"
     >

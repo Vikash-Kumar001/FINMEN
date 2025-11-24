@@ -1,12 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const SimulationDailyRoutine = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "brain-teens-8";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -179,7 +185,7 @@ const SimulationDailyRoutine = () => {
     }));
     
     if (isCorrect) {
-      setScore(prevScore => prevScore + 3); // 3 coins for correct answer (max 15 coins for 5 questions)
+      setScore(prevScore => prevScore + 1); // 1 coin for correct answer
       setShowConfetti(true);
       // Hide confetti after animation
       setTimeout(() => setShowConfetti(false), 1000);
@@ -202,10 +208,10 @@ const SimulationDailyRoutine = () => {
     navigate('/games/brain-health/teens');
   };
 
-  // Calculate coins based on correct answers (max 15 coins for 5 questions)
+  // Calculate coins based on correct answers (1 coin per question)
   const calculateTotalCoins = () => {
     const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 3;
+    return correctAnswers * 1;
   };
 
   return (
@@ -215,8 +221,10 @@ const SimulationDailyRoutine = () => {
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-teens-8"
-      gameType="brain-health"
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="brain"
       showGameOver={levelCompleted}
       showAnswerConfetti={showConfetti}
       backPath="/games/brain-health/teens"

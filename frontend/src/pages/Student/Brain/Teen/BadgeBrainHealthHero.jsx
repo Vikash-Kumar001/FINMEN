@@ -1,12 +1,18 @@
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard } from '../../Finance/GameShell';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const BadgeBrainHealthHero = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "brain-teens-10";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
 
   const handleGameComplete = () => {
     navigate('/games/brain-health/teens');
@@ -32,8 +38,10 @@ const BadgeBrainHealthHero = () => {
       currentLevel={1}
       totalLevels={1}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-teens-10"
-      gameType="brain-health"
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="brain"
       showGameOver={true}
       backPath="/games/brain-health/teens"
     >

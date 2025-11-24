@@ -3,12 +3,18 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard } from '../../Finance/GameShell';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Check, Star, Trophy, Zap, Target, Award, Play, RotateCcw, ChevronRight } from 'lucide-react';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const BadgeFocusHero = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "brain-teens-20";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [showConfetti, setShowConfetti] = useState(true);
   const [completedCriteria, setCompletedCriteria] = useState([]);
   const [currentSkillIndex, setCurrentSkillIndex] = useState(0);
@@ -537,8 +543,10 @@ const BadgeFocusHero = () => {
       currentLevel={1}
       totalLevels={1}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-teens-20"
-      gameType="brain-health"
+      gameId={gameId}
+      gameType="brain"
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showGameOver={false}
       backPath="/games/brain-health/teens"
     >

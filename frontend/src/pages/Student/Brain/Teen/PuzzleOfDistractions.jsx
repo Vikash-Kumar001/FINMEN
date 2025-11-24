@@ -2,12 +2,18 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
 import { VolumeX, Coffee, Zap, Gamepad2, Phone, Book, Sun } from 'lucide-react';
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const PuzzleOfDistractions = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "brain-teens-14";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [matchedPairs, setMatchedPairs] = useState([]);
   const [selectedConcept, setSelectedConcept] = useState(null);
   const [selectedBenefit, setSelectedBenefit] = useState(null);
@@ -63,7 +69,7 @@ const PuzzleOfDistractions = () => {
         setFeedbackType("correct");
         setFeedbackMessage('Correct match! Great job identifying focus factors!');
         setShowFeedback(true);
-        setScore(score + 2.5); // 2.5 coins per correct match (max 15 coins for 6 matches)
+        setScore(score + 1); // 1 coin per correct match
         
         // Check if all pairs are matched
         if (matchedPairs.length + 1 === concepts.length) {
@@ -98,16 +104,16 @@ const PuzzleOfDistractions = () => {
   };
 
   const calculateScore = () => {
-    return matchedPairs.length * 2.5; // 2.5 coins per correct match (max 15 coins for 6 matches)
+    return matchedPairs.length * 1; // 1 coin per correct match
   };
 
   const handleGameComplete = () => {
     navigate('/games/brain-health/teens');
   };
 
-  // Calculate coins based on matched pairs (max 15 coins for 6 pairs)
+  // Calculate coins based on matched pairs (1 coin per pair)
   const calculateTotalCoins = () => {
-    return Math.min(matchedPairs.length * 2.5, 15); // Cap at 15 coins
+    return matchedPairs.length * 1;
   };
 
   return (
@@ -117,8 +123,10 @@ const PuzzleOfDistractions = () => {
       currentLevel={matchedPairs.length + 1}
       totalLevels={concepts.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-teens-14"
-      gameType="brain-health"
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId={gameId}
+      gameType="brain"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/teens"
     >
@@ -197,7 +205,7 @@ const PuzzleOfDistractions = () => {
             Matches: {matchedPairs.length}/{concepts.length}
           </span>
           <span className="font-bold text-yellow-300">
-            Score: {Math.round(calculateScore())}/15
+            Score: {calculateScore()}/{concepts.length}
           </span>
         </div>
       </GameCard>

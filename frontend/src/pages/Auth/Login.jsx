@@ -37,6 +37,8 @@ const Login = () => {
     const { fetchUser } = useAuth();
 
     const handleGoogleLogin = useGoogleLogin({
+        // Note: The app name shown in Google OAuth consent screen is configured in Google Cloud Console
+        // Go to: APIs & Services > OAuth consent screen > Edit App > App name: "Wise Student"
         onSuccess: async (tokenResponse) => {
             try {
                 setIsLoading(true);

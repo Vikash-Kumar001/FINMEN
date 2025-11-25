@@ -359,11 +359,9 @@ GOOGLE_CLIENT_ID=your_google_client_id
 GOOGLE_CLIENT_SECRET=your_google_client_secret
 GOOGLE_CALLBACK_URL=http://localhost:5000/api/auth/google/callback
 
-# Email Services
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
+# Email Services (Resend API)
+RESEND_API_KEY=re_your_resend_api_key_here
+RESEND_FROM_EMAIL=noreply@yourdomain.com
 
 # CORS Configuration
 CLIENT_URL=http://localhost:3000,http://localhost:5173

@@ -34,143 +34,125 @@ export const sendOTP = async (email, type = "verify", sendEmailSync = false) => 
       }
     );
 
-    const subject = type === "verify" ? "Verify Your Email" : "Reset Your Password";
+    const subject = type === "verify" ? "Verify Your Email - Wise Student" : "Reset Your Password - Wise Student";
+    const isPasswordReset = type === "reset";
     const message = `
-      <h2>${subject}</h2>
-      <p>Your OTP is: <strong>${otp}</strong></p>
-      <p>This OTP will expire in 10 minutes.</p>
-      <p>If you didn't request this, please ignore this email.</p>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+        <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table role="presentation" style="max-width: 600px; width: 100%; border-collapse: collapse; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <!-- Header -->
+                <tr>
+                  <td style="padding: 40px 40px 30px; text-align: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 8px 8px 0 0;">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600; letter-spacing: -0.5px;">Wise Student</h1>
+                    <p style="margin: 8px 0 0; color: rgba(255,255,255,0.9); font-size: 14px;">Digital Wellness & Financial Literacy Platform</p>
+                  </td>
+                </tr>
+                
+                <!-- Content -->
+                <tr>
+                  <td style="padding: 40px 40px 30px;">
+                    <h2 style="margin: 0 0 20px; color: #1f2937; font-size: 24px; font-weight: 600;">${isPasswordReset ? 'Reset Your Password' : 'Verify Your Email'}</h2>
+                    <p style="margin: 0 0 30px; color: #4b5563; font-size: 16px; line-height: 1.6;">
+                      ${isPasswordReset 
+                        ? 'We received a request to reset your password. Use the verification code below to proceed with resetting your password.' 
+                        : 'Thank you for signing up! Please verify your email address by entering the verification code below.'}
+                    </p>
+                    
+                    <!-- OTP Box -->
+                    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 30px; text-align: center; margin: 30px 0;">
+                      <p style="margin: 0 0 10px; color: rgba(255,255,255,0.9); font-size: 14px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px;">Verification Code</p>
+                      <p style="margin: 0; color: #ffffff; font-size: 42px; font-weight: 700; letter-spacing: 8px; font-family: 'Courier New', monospace;">${otp}</p>
+                    </div>
+                    
+                    <p style="margin: 20px 0 0; color: #6b7280; font-size: 14px; line-height: 1.6;">
+                      <strong>⏱️ Valid for 10 minutes</strong><br>
+                      This code will expire in 10 minutes for security reasons. If you didn't request this code, please ignore this email or contact our support team if you have concerns.
+                    </p>
+                  </td>
+                </tr>
+                
+                <!-- Security Notice -->
+                <tr>
+                  <td style="padding: 0 40px 30px;">
+                    <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; border-radius: 4px;">
+                      <p style="margin: 0; color: #92400e; font-size: 13px; line-height: 1.5;">
+                        <strong>🔒 Security Tip:</strong> Never share this code with anyone. Wise Student staff will never ask for your verification code.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+                
+                <!-- Footer -->
+                <tr>
+                  <td style="padding: 30px 40px; background-color: #f9fafb; border-top: 1px solid #e5e7eb; border-radius: 0 0 8px 8px;">
+                    <p style="margin: 0 0 10px; color: #6b7280; font-size: 13px; line-height: 1.6;">
+                      If you're having trouble, please contact our support team at 
+                      <a href="mailto:support@wisestudent.org" style="color: #667eea; text-decoration: none;">support@wisestudent.org</a>
+                    </p>
+                    <p style="margin: 15px 0 0; color: #9ca3af; font-size: 12px; line-height: 1.5;">
+                      © ${new Date().getFullYear()} Wise Student. All rights reserved.<br>
+                      This is an automated message, please do not reply to this email.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
     `;
 
-    // Send email asynchronously in the background (non-blocking)
-    // This ensures the API responds quickly even if email service is slow
-    const sendEmailAsync = async () => {
-      try {
-        console.log(`📧 Starting to send email to ${email} for ${type}...`);
-        const startTime = Date.now();
-        
-        await sendEmail({ to: email, subject, html: message });
-        
-        const duration = Date.now() - startTime;
-        console.log(`✅ Email sent successfully to ${email} for ${type} (took ${duration}ms)`);
-        console.log(`📩 Email details: Subject="${subject}", OTP=${otp}`);
-        
-        return { success: true, duration };
-      } catch (emailErr) {
-        const errorMessage = emailErr?.message || "Unknown error";
-        const errorCode = emailErr?.code || "UNKNOWN";
-        
-        console.error(`❌ Background email send error for ${email}:`, errorMessage);
-        console.error(`❌ Error code: ${errorCode}`);
-        console.error(`❌ Full error:`, emailErr);
-        
-        // Log specific error types
-        if (errorCode === 'ETIMEDOUT' || errorMessage.includes('timeout')) {
-          console.error(`⏱️ Email timeout for ${email} - SMTP connection timed out`);
-        } else if (errorCode === 'EAUTH') {
-          console.error(`🔐 Email auth failed for ${email} - Check MAIL_USER and MAIL_PASS`);
-        } else if (errorMessage.includes('not configured')) {
-          console.error(`⚙️ Email not configured - Missing environment variables`);
-        }
-        
-        // Email failure is logged but doesn't affect the response
-        // OTP is already saved, so user can still use it or request resend
-        return { success: false, error: errorMessage, code: errorCode };
-      }
-    };
-
-    // Hybrid approach: Try synchronous with short timeout, fallback to async
-    // This ensures quick response while still attempting to send email
-    const isProduction = process.env.NODE_ENV === 'production';
-    const shouldSendSync = sendEmailSync || isProduction;
-
-    if (shouldSendSync) {
-      // Try to send synchronously with timeout
-      // SMTP can be slow (10-30 seconds), use appropriate timeout
-      try {
-        console.log(`📧 Attempting to send email ${isProduction ? 'synchronously (production)' : 'synchronously'} to ${email} for ${type}...`);
-        const startTime = Date.now();
-        
-        // Use appropriate timeout based on email service
-        // SMTP can be slow, use 20 second timeout
-        const timeoutDuration = 20000; // 20 seconds for SMTP
-        
-        const emailPromise = sendEmail({ to: email, subject, html: message });
-        const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error(`Email sending timeout after ${timeoutDuration/1000} seconds`)), timeoutDuration)
-        );
-        
-        await Promise.race([emailPromise, timeoutPromise]);
-        
-        const duration = Date.now() - startTime;
-        console.log(`✅ Email sent successfully to ${email} for ${type} (took ${duration}ms)`);
-        console.log(`📩 Email details: Subject="${subject}", OTP=${otp}`);
-        
-        return { success: true, message: "OTP sent successfully. Please check your email inbox." };
-      } catch (emailErr) {
-        const errorMessage = emailErr?.message || "Unknown email error";
-        const errorCode = emailErr?.code || "UNKNOWN";
-        const isTimeout = errorMessage.includes("timeout") || errorCode === 'ETIMEDOUT';
-        
-        // Log the error
-        console.warn(`⚠️ Synchronous email send ${isTimeout ? 'timed out' : 'failed'} for ${email}:`, errorMessage);
-        
-        // Check if it's a configuration error
-        if (errorMessage.includes("not configured") || errorMessage.includes("MAIL_USER") || errorMessage.includes("MAIL_PASS")) {
-          return { 
-            success: false, 
-            message: "Email service is not configured properly. Please contact support." 
-          };
-        }
-        
-        // If timeout or other error, send email asynchronously as fallback
-        // OTP is already saved, so we can return success and send email in background
-        console.log(`🔄 Falling back to async email sending for ${email}...`);
-        
-        // Send email asynchronously in background
-        process.nextTick(() => {
-          sendEmailAsync()
-            .then(result => {
-              if (result && result.success) {
-                console.log(`✅ Background email sent successfully for ${email} (took ${result.duration}ms)`);
-              } else {
-                console.error(`❌ Background email failed for ${email}:`, result?.error || 'Unknown error');
-                console.error(`❌ Error code: ${result?.code || 'UNKNOWN'}`);
-              }
-            })
-            .catch(err => {
-              console.error(`❌ Unexpected error in background email for ${email}:`, err);
-            });
-        });
-        
-        // Return success immediately - OTP is saved, email will be sent in background
+    // Resend API is fast and reliable, so we can send synchronously
+    // This provides real-time feedback to users
+    try {
+      console.log(`📧 Sending OTP email to ${email} for ${type} via Resend...`);
+      const startTime = Date.now();
+      
+      // Resend API is typically very fast (1-3 seconds), use 10 second timeout
+      const timeoutDuration = 10000; // 10 seconds for Resend API
+      
+      const emailPromise = sendEmail({ to: email, subject, html: message });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error(`Email sending timeout after ${timeoutDuration/1000} seconds`)), timeoutDuration)
+      );
+      
+      await Promise.race([emailPromise, timeoutPromise]);
+      
+      const duration = Date.now() - startTime;
+      console.log(`✅ OTP email sent successfully to ${email} for ${type} (took ${duration}ms)`);
+      
+      return { success: true, message: "OTP sent successfully. Please check your email inbox." };
+    } catch (emailErr) {
+      const errorMessage = emailErr?.message || "Unknown email error";
+      const isTimeout = errorMessage.includes("timeout");
+      
+      // Log the error
+      console.error(`❌ Email send error for ${email}:`, errorMessage);
+      
+      // Check if it's a configuration error
+      if (errorMessage.includes("not configured") || errorMessage.includes("RESEND_API_KEY")) {
         return { 
-          success: true, 
-          message: "OTP generated successfully. Email is being sent. Please check your inbox in a few moments." 
+          success: false, 
+          message: "Email service is not configured properly. Please contact support." 
         };
       }
-    } else {
-      // Development mode: Start email sending in background (fire and forget)
-      // Use process.nextTick to ensure it runs in the next event loop iteration
-      process.nextTick(() => {
-        sendEmailAsync()
-          .then(result => {
-            if (result && result.success) {
-              console.log(`✅ Background email completed successfully for ${email} (took ${result.duration}ms)`);
-            } else {
-              console.error(`❌ Background email failed for ${email}:`, result?.error || 'Unknown error');
-              console.error(`❌ Error code: ${result?.code || 'UNKNOWN'}`);
-            }
-          })
-          .catch(err => {
-            console.error(`❌ Unexpected error in background email for ${email}:`, err);
-            console.error(`❌ Error stack:`, err?.stack);
-          });
-      });
       
-      // Return success immediately - OTP is saved, email will be sent in background
-      console.log(`✅ OTP generated and saved for ${email}. Email sending started in background.`);
-      return { success: true, message: "OTP generated and email is being sent" };
+      // For other errors, still return success since OTP is saved
+      // User can request resend if email doesn't arrive
+      console.warn(`⚠️ Email send failed for ${email}, but OTP is saved. User can request resend.`);
+      return { 
+        success: true, 
+        message: "OTP generated successfully. If you don't receive the email, please try resending." 
+      };
     }
   } catch (error) {
     console.error("Send OTP error:", error);
@@ -293,11 +275,8 @@ export const forgotPassword = async (req, res) => {
       return res.status(400).json({ message: "Admin accounts cannot reset password via OTP. Please contact your administrator." });
     }
 
-    // Send OTP with hybrid approach (try sync with timeout, fallback to async)
-    // In production, use synchronous sending (SMTP can be slow)
-    // This ensures emails are actually sent before responding
-    const isProduction = process.env.NODE_ENV === 'production';
-    const result = await sendOTP(user.email, "reset", isProduction);
+    // Send OTP synchronously - Resend API is fast and reliable
+    const result = await sendOTP(user.email, "reset", true);
 
     if (result && result.success) {
       res.status(200).json({

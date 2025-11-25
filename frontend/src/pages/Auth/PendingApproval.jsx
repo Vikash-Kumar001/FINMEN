@@ -119,8 +119,8 @@ const PendingApproval = () => {
                     
                     <p className="text-xs text-gray-500">
                         Need help? Contact support at{" "}
-                        <a href="mailto:support@finmen.com" className="text-indigo-600 hover:underline">
-                            support@finmen.com
+                        <a href="mailto:support@wisestudent.org" className="text-indigo-600 hover:underline">
+                            support@wisestudent.org
                         </a>
                     </p>
                 </motion.div>

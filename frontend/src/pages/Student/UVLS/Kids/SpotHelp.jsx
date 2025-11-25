@@ -2,12 +2,18 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const SpotHelp = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "uvls-kids-5";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [currentScenario, setCurrentScenario] = useState(0);
   const [selectedKid, setSelectedKid] = useState(null);
   const [selectedAction, setSelectedAction] = useState(null);
@@ -89,6 +95,7 @@ const SpotHelp = () => {
     setResults(newResults);
     
     if (isCorrect) {
+      setCoins(prev => prev + 1); // 1 coin for correct answer
       showCorrectAnswerFeedback(5, true);
     }
     
@@ -100,10 +107,6 @@ const SpotHelp = () => {
         setCurrentScenario(prev => prev + 1);
       }, isCorrect ? 1000 : 0);
     } else {
-      const correctChoices = newResults.filter(r => r.isCorrect).length;
-      if (correctChoices >= 2) {
-        setCoins(3); // +3 Coins for correct help choices (minimum for progress)
-      }
       setShowResult(true);
     }
   };

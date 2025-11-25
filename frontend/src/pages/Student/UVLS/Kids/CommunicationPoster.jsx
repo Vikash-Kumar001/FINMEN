@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const CommunicationPoster = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-kids-66";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [coins, setCoins] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [posters, setPosters] = useState([]);
@@ -65,6 +69,7 @@ const CommunicationPoster = () => {
 
     const isComplete = posterSteps.length >= 3;
     if (isComplete) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
@@ -77,9 +82,6 @@ const CommunicationPoster = () => {
     } else {
       const completePosters = newPosters.filter(sel => sel.length >= 3).length;
       setFinalScore(completePosters);
-      if (completePosters >= 3) {
-        setCoins(5); // Badge
-      }
       setShowResult(true);
     }
   };

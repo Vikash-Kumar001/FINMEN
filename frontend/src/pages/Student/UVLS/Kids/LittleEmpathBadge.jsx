@@ -2,15 +2,22 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const LittleEmpathBadge = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "uvls-kids-10";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [completedTasks, setCompletedTasks] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [earnedBadge, setEarnedBadge] = useState(false);
+  const [coins, setCoins] = useState(0);
   const { showCorrectAnswerFeedback } = useGameFeedback();
 
   const empathyTasks = [
@@ -73,8 +80,9 @@ const LittleEmpathBadge = () => {
       setCompletedTasks(newCompletedTasks);
       
       if (newCompletedTasks.length === 5) {
-        showCorrectAnswerFeedback(3, false);
+        setCoins(1); // 1 coin for earning the badge
         setEarnedBadge(true);
+        showCorrectAnswerFeedback(1, false);
         setTimeout(() => {
           setShowResult(true);
         }, 1000);
@@ -96,7 +104,7 @@ const LittleEmpathBadge = () => {
       onNext={handleNext}
       nextEnabled={showResult}
       showGameOver={showResult}
-      score={earnedBadge ? 3 : 0}
+      score={coins}
       gameId="uvls-kids-10"
       gameType="uvls"
       totalLevels={10}

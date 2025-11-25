@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const InviteToPlay = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-kids-15";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentScene, setCurrentScene] = useState(0);
   const [invitations, setInvitations] = useState([]);
   const [showResult, setShowResult] = useState(false);
@@ -80,8 +84,8 @@ const InviteToPlay = () => {
     setInvitations(newInvitations);
     
     if (phrase.isInviting) {
-      setCoins(prev => prev + 5);
-      showCorrectAnswerFeedback(5, true);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
     if (currentScene < scenes.length - 1) {
@@ -89,11 +93,6 @@ const InviteToPlay = () => {
         setCurrentScene(prev => prev + 1);
       }, phrase.isInviting ? 1000 : 0);
     } else {
-      const invitingCount = newInvitations.filter(inv => inv.isInviting).length;
-      // Award bonus if passing
-      if (invitingCount >= 3 && coins < 3) {
-        setCoins(3); // Minimum 3 coins for passing
-      }
       setShowResult(true);
     }
   };

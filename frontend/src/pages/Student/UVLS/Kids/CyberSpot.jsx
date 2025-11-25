@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const CyberSpot = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-kids-39";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [coins, setCoins] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [spots, setSpots] = useState([]);
@@ -77,6 +81,7 @@ const CyberSpot = () => {
     const correctSpots = questions[currentLevel].posts.filter(p => p.isMalicious).length;
     const isCorrect = selectedPosts.length === correctSpots && selectedPosts.every(s => questions[currentLevel].posts[s].isMalicious);
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
@@ -91,9 +96,6 @@ const CyberSpot = () => {
         return sel.length === corr && sel.every(s => questions[idx].posts[s].isMalicious);
       }).length;
       setFinalScore(correctLevels);
-      if (correctLevels >= 3) {
-        setCoins(3);
-      }
       setShowResult(true);
     }
   };

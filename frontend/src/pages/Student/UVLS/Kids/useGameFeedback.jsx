@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const CleanUpStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-kids-81";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [coins, setCoins] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [choices, setChoices] = useState([]);
@@ -67,8 +70,9 @@ const CleanUpStory = () => {
     const newChoices = [...choices, selectedOption];
     setChoices(newChoices);
 
-  const isHelpful = questions[currentLevel].tasks.find(opt => opt.id === selectedOption)?.isHelpful;
+    const isHelpful = questions[currentLevel].tasks.find(opt => opt.id === selectedOption)?.isHelpful;
     if (isHelpful) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
@@ -79,9 +83,6 @@ const CleanUpStory = () => {
     } else {
       const helpfulChoices = newChoices.filter((sel, idx) => questions[idx].tasks.find(opt => opt.id === sel)?.isHelpful).length;
       setFinalScore(helpfulChoices);
-      if (helpfulChoices >= 3) {
-        setCoins(5);
-      }
       setShowResult(true);
     }
   };
@@ -99,7 +100,7 @@ const CleanUpStory = () => {
     navigate("/games/uvls/kids");
   };
 
-  const getCurrentLevel = () => questions[currentLevel];
+  const getCurrentQuestion = () => questions[currentLevel];
 
   return (
     <GameShell
@@ -152,7 +153,7 @@ const CleanUpStory = () => {
               You chose helpfully {finalScore} times!
             </p>
             <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned 5 Coins! 🪙" : "Try again!"}
+              {finalScore >= 3 ? `You earned ${coins} Coins! 🪙` : "Try again!"}
             </p>
             {finalScore < 3 && (
               <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">

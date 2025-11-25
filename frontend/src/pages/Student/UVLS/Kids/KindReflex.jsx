@@ -2,12 +2,18 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const KindReflex = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "uvls-kids-3";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [gameStarted, setGameStarted] = useState(false);
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
@@ -46,6 +52,7 @@ const KindReflex = () => {
     
     if (isCorrect) {
       setScore(prev => prev + 1);
+      setCoins(prev => prev + 1); // 1 coin for correct answer
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -56,10 +63,6 @@ const KindReflex = () => {
       }, 300);
     } else {
       const finalScore = score + (isCorrect ? 1 : 0);
-      const accuracy = (finalScore / actions.length) * 100;
-      if (accuracy >= 70) {
-        setCoins(3); // +3 Coins for ≥70% accuracy (minimum for progress)
-      }
       setScore(finalScore);
       setShowResult(true);
     }

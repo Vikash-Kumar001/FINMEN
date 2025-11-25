@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const WinWinQuiz = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-kids-72";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
@@ -74,6 +78,7 @@ const WinWinQuiz = () => {
     
     const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isWinWin;
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -84,9 +89,6 @@ const WinWinQuiz = () => {
     } else {
       const correctAnswers = newAnswers.filter(ans => ans.isCorrect).length;
       setFinalScore(correctAnswers);
-      if (correctAnswers >= 4) {
-        setCoins(3);
-      }
       setShowResult(true);
     }
   };

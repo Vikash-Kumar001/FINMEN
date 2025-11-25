@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PoliteWordsQuiz = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-kids-12";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [showResult, setShowResult] = useState(false);
@@ -102,6 +106,7 @@ const PoliteWordsQuiz = () => {
     setAnswers(newAnswers);
     
     if (option.isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -110,11 +115,6 @@ const PoliteWordsQuiz = () => {
         setCurrentQuestion(prev => prev + 1);
       }, option.isCorrect ? 800 : 0);
     } else {
-      const correctCount = newAnswers.filter(a => a.isCorrect).length;
-      const percentage = (correctCount / questions.length) * 100;
-      if (percentage >= 75) {
-        setCoins(3); // +3 Coins for ≥75% (minimum for progress)
-      }
       setShowResult(true);
     }
   };

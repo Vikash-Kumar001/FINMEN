@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ReportReflex = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-kids-33";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [coins, setCoins] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [reports, setReports] = useState([]);
@@ -77,6 +81,7 @@ const ReportReflex = () => {
     const correctReports = questions[currentLevel].contexts.filter(c => c.isBullying).length;
     const isCorrect = selectedContexts.length === correctReports && selectedContexts.every(s => questions[currentLevel].contexts[s].isBullying);
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
@@ -91,9 +96,6 @@ const ReportReflex = () => {
         return sel.length === corr && sel.every(s => questions[idx].contexts[s].isBullying);
       }).length;
       setFinalScore(correctLevels);
-      if (correctLevels >= 3) {
-        setCoins(3);
-      }
       setShowResult(true);
     }
   };

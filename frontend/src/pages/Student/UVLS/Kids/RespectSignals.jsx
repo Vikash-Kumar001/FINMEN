@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const RespectSignals = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-kids-19";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [gameStarted, setGameStarted] = useState(false);
   const [currentSignal, setCurrentSignal] = useState(0);
   const [score, setScore] = useState(0);
@@ -40,6 +44,7 @@ const RespectSignals = () => {
     
     if (isCorrect) {
       setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -49,10 +54,6 @@ const RespectSignals = () => {
       }, 400);
     } else {
       const finalScore = score + (isCorrect ? 1 : 0);
-      const accuracy = (finalScore / signals.length) * 100;
-      if (accuracy >= 70) {
-        setCoins(3); // +3 Coins for ≥70% (minimum for progress)
-      }
       setScore(finalScore);
       setShowResult(true);
     }

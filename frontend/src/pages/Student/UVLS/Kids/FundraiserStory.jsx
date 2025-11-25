@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const FundraiserStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-kids-85";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [coins, setCoins] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [plans, setPlans] = useState([]);
@@ -78,6 +82,7 @@ const FundraiserStory = () => {
 
     const isFeasible = selectedActions.every(sa => questions[currentLevel].actions.find(act => act.id === sa)?.isFeasible);
     if (isFeasible) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
@@ -89,9 +94,6 @@ const FundraiserStory = () => {
     } else {
       const feasiblePlans = newPlans.filter((sa, idx) => sa.every(s => questions[idx].actions.find(act => act.id === s)?.isFeasible)).length;
       setFinalScore(feasiblePlans);
-      if (feasiblePlans >= 3) {
-        setCoins(5);
-      }
       setShowResult(true);
     }
   };

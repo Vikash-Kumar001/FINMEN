@@ -2,12 +2,18 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const KindPoster = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "uvls-kids-6";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [selectedBackground, setSelectedBackground] = useState(null);
   const [selectedStickers, setSelectedStickers] = useState([]);
   const [showResult, setShowResult] = useState(false);
@@ -50,8 +56,8 @@ const KindPoster = () => {
 
   const handleSavePoster = () => {
     if (selectedBackground && selectedStickers.length === 3) {
-      showCorrectAnswerFeedback(3, false);
-      setCoins(3); // +3 Coins for creative poster (minimum for progress)
+      setCoins(1); // 1 coin for completing the poster
+      showCorrectAnswerFeedback(1, false);
       setTimeout(() => {
         setShowResult(true);
       }, 500);

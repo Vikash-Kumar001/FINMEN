@@ -2,12 +2,18 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const ShareYourToy = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "uvls-kids-1";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
@@ -145,10 +151,6 @@ const ShareYourToy = () => {
     } else {
       const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
       setFinalScore(correctAnswers);
-      // Award bonus coins for passing
-      if (correctAnswers >= 3 && coins < 3) {
-        setCoins(3); // Minimum 3 coins for passing
-      }
       setShowResult(true);
     }
   };

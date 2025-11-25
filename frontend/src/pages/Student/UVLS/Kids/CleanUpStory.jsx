@@ -1,13 +1,17 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const CleanUpStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-kids-81";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [coins, setCoins] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(0);
   const [choices, setChoices] = useState([]);
@@ -67,21 +71,19 @@ const CleanUpStory = () => {
     const newChoices = [...choices, selectedOption];
     setChoices(newChoices);
 
-  const isHelpful = questions[currentLevel].tasks.find(opt => opt.id === selectedOption)?.isHelpful;
+    const isHelpful = questions[currentLevel].tasks.find(opt => opt.id === selectedOption)?.isHelpful;
     if (isHelpful) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
-  if (currentLevel < questions.length - 1) {
+    if (currentLevel < questions.length - 1) {
       setTimeout(() => {
         setCurrentLevel(prev => prev + 1);
       }, isHelpful ? 800 : 0);
     } else {
-  const helpfulChoices = newChoices.filter((sel, idx) => questions[idx].tasks.find(opt => opt.id === sel)?.isHelpful).length;
+      const helpfulChoices = newChoices.filter((sel, idx) => questions[idx].tasks.find(opt => opt.id === sel)?.isHelpful).length;
       setFinalScore(helpfulChoices);
-      if (helpfulChoices >= 3) {
-        setCoins(5);
-      }
       setShowResult(true);
     }
   };

@@ -2,12 +2,18 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from '../../../../utils/getGameData';
 
 const ComfortRoleplay = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "uvls-kids-8";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || 5;
+  const totalCoins = gameData?.coins || 5;
+  const totalXp = gameData?.xp || 10;
   const [currentVignette, setCurrentVignette] = useState(0);
   const [selectedPhrases, setSelectedPhrases] = useState([]);
   const [showResult, setShowResult] = useState(false);
@@ -92,7 +98,8 @@ const ComfortRoleplay = () => {
     setVignetteResults([...vignetteResults, result]);
 
     if (isGood) {
-      showCorrectAnswerFeedback(5, true);
+      setCoins(prev => prev + 1); // 1 coin for correct vignette
+      showCorrectAnswerFeedback(1, true);
     }
 
     if (currentVignette < vignettes.length - 1) {
@@ -101,10 +108,6 @@ const ComfortRoleplay = () => {
         setSelectedPhrases([]);
       }, 1500);
     } else {
-      const totalGood = [...vignetteResults, result].filter(r => r.isGood).length;
-      if (totalGood >= 2) {
-        setCoins(3); // +3 Coins if picks validating phrases (minimum for progress)
-      }
       setTimeout(() => {
         setShowResult(true);
       }, 1500);

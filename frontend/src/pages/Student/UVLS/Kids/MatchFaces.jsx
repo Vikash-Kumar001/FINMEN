@@ -26,12 +26,7 @@ const MatchFaces = () => {
     { id: 2, emoji: "😢", correct: "Sad", options: ["Excited", "Sad", "Sleepy"] },
     { id: 3, emoji: "😡", correct: "Angry", options: ["Happy", "Angry", "Scared"] },
     { id: 4, emoji: "😨", correct: "Scared", options: ["Scared", "Bored", "Happy"] },
-    { id: 5, emoji: "😴", correct: "Sleepy", options: ["Angry", "Sleepy", "Excited"] },
-    { id: 6, emoji: "😮", correct: "Surprised", options: ["Surprised", "Sad", "Calm"] },
-    { id: 7, emoji: "🤔", correct: "Thinking", options: ["Happy", "Thinking", "Angry"] },
-    { id: 8, emoji: "😰", correct: "Worried", options: ["Worried", "Excited", "Sleepy"] },
-    { id: 9, emoji: "🥳", correct: "Excited", options: ["Sad", "Scared", "Excited"] },
-    { id: 10, emoji: "😌", correct: "Calm", options: ["Angry", "Calm", "Worried"] }
+    { id: 5, emoji: "😴", correct: "Sleepy", options: ["Angry", "Sleepy", "Excited"] }
   ];
 
   const handleEmotionSelect = (emotion) => {
@@ -66,14 +61,6 @@ const MatchFaces = () => {
     }
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentMatch(0);
-    setMatches([]);
-    setSelectedEmotion(null);
-    setCoins(0);
-    resetFeedback();
-  };
 
   const handleNext = () => {
     navigate("/games/uvls/kids");
@@ -81,30 +68,31 @@ const MatchFaces = () => {
 
   const currentFace = faceMatches[currentMatch];
   const correctMatches = matches.filter(m => m.isCorrect).length;
+  // Score should be the number of correct answers for backend
+  const finalScore = showResult ? correctMatches : coins;
 
   return (
     <GameShell
       title="Match Faces"
-      score={coins}
+      score={finalScore}
       subtitle={`Face ${currentMatch + 1} of ${faceMatches.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && correctMatches >= 8}
+      nextEnabled={showResult && correctMatches === 5}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && correctMatches >= 8}
-      
+      showGameOver={showResult}
+      totalLevels={5}
+      maxScore={5}
       gameId="uvls-kids-4"
       gameType="uvls"
-      // totalLevels={10}
-      // currentLevel={4}
-      showConfetti={showResult && correctMatches >= 8}
+      showConfetti={showResult && correctMatches === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/uvls/kids"
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
@@ -146,26 +134,6 @@ const MatchFaces = () => {
                 Confirm Choice
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {correctMatches >= 8 ? "🎉 Excellent Matching!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You matched {correctMatches} out of {faceMatches.length} faces correctly!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {correctMatches >= 8 ? "You earned 3 Coins! 🪙" : "Get 8 or more correct to earn coins!"}
-            </p>
-            {correctMatches < 8 && (
-              <button
-                onClick={handleTryAgain}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
           </div>
         )}
       </div>

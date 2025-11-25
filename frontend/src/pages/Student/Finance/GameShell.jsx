@@ -201,8 +201,10 @@ export const FeedbackBubble = ({ message, type }) => (
 export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1, maxScore = null, coinsPerLevel = null, totalCoins = null, totalXp = null, isReplay = false, onClose, nextGamePath = null }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coinsEarned, setCoinsEarned] = useState(0);
+  const [xpEarned, setXpEarned] = useState(0);
   const [submissionComplete, setSubmissionComplete] = useState(false);
   const [wasReplay, setWasReplay] = useState(false);
+  const [allAnswersCorrect, setAllAnswersCorrect] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -238,7 +240,11 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
 
         if (result.success) {
           setCoinsEarned(result.coinsEarned || 0);
+          setXpEarned(result.xpEarned || 0);
           setWasReplay(result.isReplay === true);
+          // Check allAnswersCorrect from result, or calculate from score vs maxScore
+          const calculatedAllCorrect = maxScore && score >= maxScore;
+          setAllAnswersCorrect(result.allAnswersCorrect === true || calculatedAllCorrect);
           setSubmissionComplete(true);
           
           // Use fullyCompleted from result, default to true if not provided
@@ -249,6 +255,7 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
             isReplay: result.isReplay,
             replayUnlocked: result.replayUnlocked,
             coinsEarned: result.coinsEarned,
+            allAnswersCorrect: result.allAnswersCorrect,
             fullyCompleted: fullyCompleted
           });
           
@@ -292,11 +299,24 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
       <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
 
       <div className="relative bg-white rounded-3xl shadow-2xl p-8 z-10 text-center max-w-md w-full mx-4 animate-pop">
-        <h2 className="text-3xl font-bold text-gray-800 mb-4">🎉 Congratulations!</h2>
+        <h2 className="text-3xl font-bold text-gray-800 mb-4">
+          {allAnswersCorrect && submissionComplete ? '🎉 Congratulations!' : '👍 Great Try!'}
+        </h2>
         <p className="text-gray-600 text-lg mb-4">
           You finished the game with a score of{" "}
-          <span className="font-bold text-gray-900">{score}</span> ⭐
+          <span className="font-bold text-gray-900">{score}</span> out of{" "}
+          <span className="font-bold text-gray-900">{maxScore || totalLevels}</span> ⭐
         </p>
+        {allAnswersCorrect && submissionComplete && (
+          <p className="text-green-600 font-semibold mb-4">
+            Perfect! All answers correct! 🎊
+          </p>
+        )}
+        {!allAnswersCorrect && submissionComplete && (
+          <p className="text-orange-600 font-semibold mb-4">
+            Try again to get all answers correct and earn rewards! 💪
+          </p>
+        )}
 
         {isSubmitting ? (
           <div className="mb-6">
@@ -305,20 +325,42 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
           </div>
         ) : (
           <div className="mb-6">
-            <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-2xl p-4 mb-4">
-              <h3 className="text-xl font-bold text-green-700 mb-2">💰 HealCoins Earned!</h3>
-              <p className="text-3xl font-black text-green-600">+{coinsEarned}</p>
-              {coinsEarned === 0 && wasReplay && (
+            {coinsEarned > 0 && (
+              <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-2xl p-4 mb-4">
+                <h3 className="text-xl font-bold text-green-700 mb-2">💰 HealCoins Earned!</h3>
+                <p className="text-3xl font-black text-green-600">+{coinsEarned}</p>
+                {xpEarned > 0 && (
+                  <p className="text-lg font-bold text-blue-600 mt-2">+{xpEarned} XP</p>
+                )}
+              </div>
+            )}
+            {coinsEarned === 0 && wasReplay && (
+              <div className="bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl p-4 mb-4">
+                <h3 className="text-xl font-bold text-gray-700 mb-2">💰 HealCoins Earned!</h3>
+                <p className="text-3xl font-black text-gray-600">+{coinsEarned}</p>
                 <p className="text-sm text-gray-600 mt-2">
                   You've already earned all coins for this game. This game is now locked.
                 </p>
-              )}
-              {coinsEarned === 0 && !wasReplay && submissionComplete && (
+              </div>
+            )}
+            {coinsEarned === 0 && !wasReplay && submissionComplete && !allAnswersCorrect && (
+              <div className="bg-gradient-to-r from-orange-100 to-yellow-100 rounded-2xl p-4 mb-4">
+                <h3 className="text-xl font-bold text-orange-700 mb-2">💰 HealCoins Earned!</h3>
+                <p className="text-3xl font-black text-orange-600">+{coinsEarned}</p>
+                <p className="text-sm text-orange-700 mt-2 font-semibold">
+                  Answer all questions correctly to earn HealCoins and XP!
+                </p>
+              </div>
+            )}
+            {coinsEarned === 0 && !wasReplay && submissionComplete && allAnswersCorrect && (
+              <div className="bg-gradient-to-r from-gray-100 to-gray-200 rounded-2xl p-4 mb-4">
+                <h3 className="text-xl font-bold text-gray-700 mb-2">💰 HealCoins Earned!</h3>
+                <p className="text-3xl font-black text-gray-600">+{coinsEarned}</p>
                 <p className="text-sm text-yellow-600 mt-2">
                   No coins earned. Please try again or contact support if this persists.
                 </p>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -330,33 +372,47 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
           >
             Back
           </button>
-          <button
-            onClick={() => {
-              // Get nextGamePath from prop or location.state
-              const resolvedNextGamePath = nextGamePath || location.state?.nextGamePath;
-              
-              if (resolvedNextGamePath) {
-                // Navigate to next game with return path
-                const returnPath = location.state?.returnPath || '/games';
-                navigate(resolvedNextGamePath, {
-                  state: {
-                    returnPath: returnPath,
-                    coinsPerLevel: location.state?.coinsPerLevel || null,
-                    totalCoins: location.state?.totalCoins || null,
-                    totalXp: location.state?.totalXp || null,
-                    maxScore: location.state?.maxScore || null,
-                  }
-                });
-              } else {
-                // No next game, just close (go back to game cards)
-                onClose();
-              }
-            }}
-            disabled={isSubmitting}
-            className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-full font-semibold shadow-md hover:opacity-90 transition cursor-pointer disabled:opacity-50"
-          >
-            {isSubmitting ? 'Saving...' : 'Continue'}
-          </button>
+          {/* Show Replay button if not all answers correct, Continue button if all correct */}
+          {!allAnswersCorrect && submissionComplete ? (
+            <button
+              onClick={() => {
+                // Reload the page to restart the game
+                window.location.reload();
+              }}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-6 py-3 rounded-full font-semibold shadow-md hover:opacity-90 transition cursor-pointer disabled:opacity-50"
+            >
+              {isSubmitting ? 'Saving...' : 'Replay'}
+            </button>
+          ) : (
+            <button
+              onClick={() => {
+                // Get nextGamePath from prop or location.state
+                const resolvedNextGamePath = nextGamePath || location.state?.nextGamePath;
+                
+                if (resolvedNextGamePath) {
+                  // Navigate to next game with return path
+                  const returnPath = location.state?.returnPath || '/games';
+                  navigate(resolvedNextGamePath, {
+                    state: {
+                      returnPath: returnPath,
+                      coinsPerLevel: location.state?.coinsPerLevel || null,
+                      totalCoins: location.state?.totalCoins || null,
+                      totalXp: location.state?.totalXp || null,
+                      maxScore: location.state?.maxScore || null,
+                    }
+                  });
+                } else {
+                  // No next game, just close (go back to game cards)
+                  onClose();
+                }
+              }}
+              disabled={isSubmitting}
+              className="bg-gradient-to-r from-pink-500 to-purple-500 text-white px-6 py-3 rounded-full font-semibold shadow-md hover:opacity-90 transition cursor-pointer disabled:opacity-50"
+            >
+              {isSubmitting ? 'Saving...' : 'Continue'}
+            </button>
+          )}
         </div>
       </div>
 

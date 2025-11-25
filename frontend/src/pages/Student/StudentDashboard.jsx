@@ -269,13 +269,30 @@ export default function StudentDashboard() {
             // Update individual state with fetched data
             if (data.stats) {
                 console.log("✅ Stats data:", data.stats);
+                
+                // Fetch leaderboard snippet to get accurate rank (same as Profile page)
+                let userRank = data.stats.rank || 0;
+                try {
+                    const leaderboardData = await fetchLeaderboardSnippet().catch(() => ({ currentUserRank: null }));
+                    if (leaderboardData?.currentUserRank !== undefined && leaderboardData?.currentUserRank !== null) {
+                        userRank = leaderboardData.currentUserRank;
+                    } else if (data.stats.rank !== undefined) {
+                        userRank = data.stats.rank;
+                    }
+                } catch (err) {
+                    console.warn("Could not fetch leaderboard rank, using stats rank:", err);
+                    if (data.stats.rank !== undefined) {
+                        userRank = data.stats.rank;
+                    }
+                }
+                
                 setStats({
                     xp: data.stats.xp || 0,
                     level: data.stats.level || 1,
                     nextLevelXp: data.stats.nextLevelXp || 100,
                     todayMood: data.stats.todayMood || "😊",
                     streak: data.stats.streak || 0,
-                    rank: data.stats.rank || 0,
+                    rank: userRank,
                     weeklyXP: data.stats.weeklyXP || 0,
                 });
             } else {
@@ -375,6 +392,14 @@ export default function StudentDashboard() {
             setLeaderboardData(leaderboardSnippet);
             setAchievementTimeline(achievementsData);
             setDailyActions(dailyActionsData);
+            
+            // Update rank from leaderboard data (same as Profile page)
+            if (leaderboardSnippet?.currentUserRank !== undefined && leaderboardSnippet?.currentUserRank !== null) {
+                setStats((prev) => ({
+                    ...prev,
+                    rank: leaderboardSnippet.currentUserRank
+                }));
+            }
         } catch (err) {
             console.error("❌ Failed to load analytics data", err);
         }
@@ -560,14 +585,23 @@ export default function StudentDashboard() {
         const handleGameCompleted = (data) => {
             console.log('🎮 Game completed event:', data);
             
-            // Update stats with new values from backend
+            // Update stats with new values from backend - real-time updates
             setStats((prev) => ({ 
                 ...prev, 
                 xp: data.totalXP || prev.xp,
                 level: data.level || prev.level,
                 nextLevelXp: (data.level || prev.level) * 100,
-                streak: data.streak || prev.streak
+                streak: data.streak || prev.streak,
+                weeklyXP: data.weeklyXP !== undefined ? data.weeklyXP : prev.weeklyXP,
+                rank: data.rank !== undefined ? data.rank : prev.rank
             }));
+            
+            // Refresh analytics data for real-time engagement and achievements
+            if (data.totalXP || data.level || data.streak) {
+                setTimeout(() => {
+                    loadAnalyticsData();
+                }, 500);
+            }
             
             // Update wallet balance immediately if provided in the event
             if (data?.newBalance !== undefined && setWallet) {
@@ -654,14 +688,45 @@ export default function StudentDashboard() {
             setStats((prev) => ({ 
                 ...prev, 
                 level: data.newLevel, 
-                xp: data.totalXP 
+                xp: data.totalXP,
+                weeklyXP: data.weeklyXP !== undefined ? data.weeklyXP : prev.weeklyXP,
+                rank: data.rank !== undefined ? data.rank : prev.rank
             }));
+            
+            // Refresh analytics for real-time updates
+            setTimeout(() => {
+                loadAnalyticsData();
+            }, 500);
+            
             toast.success(
                 <div>
                     <p>🎉 Level Up! You're now Level {data.newLevel}!</p>
                     <p>+{data.coinsEarned} HealCoins bonus!</p>
                 </div>
             );
+        };
+        
+        // Handle real-time stats updates
+        const handleStatsUpdate = (data) => {
+            if (data.userId === (user?._id || user?.id)) {
+                setStats((prev) => ({
+                    ...prev,
+                    ...(data.xp !== undefined && { xp: data.xp }),
+                    ...(data.level !== undefined && { level: data.level }),
+                    ...(data.streak !== undefined && { streak: data.streak }),
+                    ...(data.weeklyXP !== undefined && { weeklyXP: data.weeklyXP }),
+                    ...(data.rank !== undefined && { rank: data.rank })
+                }));
+            }
+        };
+        
+        // Handle real-time achievement updates
+        const handleAchievementUpdate = (data) => {
+            if (data.userId === (user?._id || user?.id)) {
+                setTimeout(() => {
+                    loadAnalyticsData();
+                }, 300);
+            }
         };
         
         const handleSettingsUpdate = (data) => {
@@ -680,14 +745,18 @@ export default function StudentDashboard() {
         socket.on('wallet:updated', handleWalletUpdate);
         socket.on('level-up', handleLevelUp);
         socket.on('settings:updated', handleSettingsUpdate);
+        socket.on('stats:updated', handleStatsUpdate);
+        socket.on('achievement:earned', handleAchievementUpdate);
         
         return () => {
             socket.off('game-completed', handleGameCompleted);
             socket.off('wallet:updated', handleWalletUpdate);
             socket.off('level-up', handleLevelUp);
             socket.off('settings:updated', handleSettingsUpdate);
+            socket.off('stats:updated', handleStatsUpdate);
+            socket.off('achievement:earned', handleAchievementUpdate);
         };
-    }, [socket, stats.level, setWallet, refreshWallet, user]);
+    }, [socket, stats.level, setWallet, refreshWallet, user, loadAnalyticsData]);
 
     const allCategories = [
         { key: "finance", label: "Financial Literacy" },
@@ -1032,46 +1101,95 @@ export default function StudentDashboard() {
                                 </motion.div>
                             </div>
 
-                            {/* Achievement Badges */}
-                            <div className="flex flex-wrap gap-2 justify-center lg:justify-end">
-                                {achievements.map((achievement, i) => (
-                                    <motion.div
-                                        key={i}
-                                        whileHover={{ scale: 1.1 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        className="bg-gradient-to-r from-yellow-400 to-orange-400 p-3 rounded-xl shadow-lg cursor-pointer group relative border border-yellow-300"
-                                        onClick={() => {
-                                            // Log achievement badge interaction
-                            logActivity({
-                                activityType: "ui_interaction",
-                                description: `Viewed achievement: ${achievement.title}`,
-                                metadata: {
-                                    achievementTitle: achievement.title,
-                                    achievementDescription: achievement.description,
-                                    section: "achievement_badges",
-                                    timestamp: new Date().toISOString()
-                                },
-                                pageUrl: window.location.pathname
-                            });
-                            
-                            // Show toast for achievement view
-                            toast.success(`${achievement.title} - ${achievement.description}`, {
-                                duration: 3000,
-                                position: "bottom-center",
-                                icon: "🏆"
-                            });
-                                        }}
-                                    >
-                                        <div className="text-white">{achievement.icon}</div>
-                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity bg-gray-900 text-white text-xs rounded-lg px-3 py-2 whitespace-nowrap z-50 shadow-xl">
-                                            <div className="font-bold">{achievement.title}</div>
-                                            <div className="text-gray-300">
-                                                {achievement.description}
-                                            </div>
-                                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-gray-900"></div>
-                                        </div>
-                                    </motion.div>
-                                ))}
+                            {/* Professional Performance Metrics Showcase */}
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                                {/* Weekly Progress */}
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.1 }}
+                                    whileHover={{ scale: 1.05 }}
+                                    className="bg-gradient-to-br from-indigo-100 to-purple-100 p-3 rounded-2xl text-center shadow-lg border border-indigo-200"
+                                >
+                                    <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                                        <BarChart3 className="w-4 h-4 text-indigo-600" />
+                                        <span className="text-xs font-bold text-indigo-700">
+                                            Weekly XP
+                                        </span>
+                                    </div>
+                                    <div className="text-xl font-black text-indigo-700">
+                                        {stats.weeklyXP || 0}
+                                    </div>
+                                    <div className="text-[10px] text-indigo-600 font-medium mt-0.5">
+                                        Points
+                                    </div>
+                                </motion.div>
+
+                                {/* Global Rank */}
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.2 }}
+                                    whileHover={{ scale: 1.05 }}
+                                    className="bg-gradient-to-br from-amber-100 to-yellow-100 p-3 rounded-2xl text-center shadow-lg border border-amber-200"
+                                >
+                                    <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                                        <Trophy className="w-4 h-4 text-amber-600" />
+                                        <span className="text-xs font-bold text-amber-700">
+                                            Rank
+                                        </span>
+                                    </div>
+                                    <div className="text-xl font-black text-amber-700">
+                                        {stats.rank !== null && stats.rank !== undefined && stats.rank > 0 ? `#${stats.rank}` : 'N/A'}
+                                    </div>
+                                    <div className="text-[10px] text-amber-600 font-medium mt-0.5">
+                                        Global
+                                    </div>
+                                </motion.div>
+
+                                {/* Engagement Score */}
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.3 }}
+                                    whileHover={{ scale: 1.05 }}
+                                    className="bg-gradient-to-br from-emerald-100 to-teal-100 p-3 rounded-2xl text-center shadow-lg border border-emerald-200"
+                                >
+                                    <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                                        <Activity className="w-4 h-4 text-emerald-600" />
+                                        <span className="text-xs font-bold text-emerald-700">
+                                            Active
+                                        </span>
+                                    </div>
+                                    <div className="text-xl font-black text-emerald-700">
+                                        {engagementMinutes ? `${Math.round(engagementMinutes.totalMinutes || 0)}m` : '0m'}
+                                    </div>
+                                    <div className="text-[10px] text-emerald-600 font-medium mt-0.5">
+                                        This Week
+                                    </div>
+                                </motion.div>
+
+                                {/* Achievement Count */}
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    transition={{ delay: 0.4 }}
+                                    whileHover={{ scale: 1.05 }}
+                                    className="bg-gradient-to-br from-pink-100 to-rose-100 p-3 rounded-2xl text-center shadow-lg border border-pink-200"
+                                >
+                                    <div className="flex items-center justify-center gap-1.5 mb-1.5">
+                                        <Medal className="w-4 h-4 text-pink-600" />
+                                        <span className="text-xs font-bold text-pink-700">
+                                            Badges
+                                        </span>
+                                    </div>
+                                    <div className="text-xl font-black text-pink-700">
+                                        {achievementTimeline?.totalAchievements || achievements?.length || 0}
+                                    </div>
+                                    <div className="text-[10px] text-pink-600 font-medium mt-0.5">
+                                        Earned
+                                    </div>
+                                </motion.div>
                             </div>
                         </div>
                     )}

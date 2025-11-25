@@ -904,10 +904,11 @@ export const completeUnifiedGame = async (req, res) => {
     // Check if all answers are correct (perfect score)
     const allAnswersCorrect = maxScore > 0 && score >= maxScore;
     
-    if (isFullCompletion && !gameProgress.fullyCompleted) {
+    // Only award coins if all answers are correct AND it's a full completion AND not already fully completed
+    if (isFullCompletion && !gameProgress.fullyCompleted && allAnswersCorrect) {
       // Always use totalCoins from game card - DO NOT use any fallback calculations
       // totalCoins should always be provided from game card via navigation state (typically 5)
-      console.log(`💰 Game completion - gameId: ${gameId}, totalCoins: ${totalCoins}, coinsPerLevel: ${coinsPerLevel}, totalLevels: ${totalLevels}`);
+      console.log(`💰 Game completion - gameId: ${gameId}, totalCoins: ${totalCoins}, coinsPerLevel: ${coinsPerLevel}, totalLevels: ${totalLevels}, allAnswersCorrect: ${allAnswersCorrect}`);
       
       // STRICT: Use totalCoins if provided (even if 0), otherwise use coinsPerLevel, otherwise default to 5
       // DO NOT calculate coins based on totalLevels * coinsPerLevel or any other multiplication
@@ -924,11 +925,15 @@ export const completeUnifiedGame = async (req, res) => {
         coinsToAward = 5;
         console.warn(`⚠️ Neither totalCoins nor coinsPerLevel provided for game ${gameId}, using default: ${coinsToAward}`);
       }
-    } else if (coinsPerLevel && newLevelsCompleted > 0) {
-      // Award coins for new levels completed: newLevelsCompleted × coinsPerLevel
+    } else if (!allAnswersCorrect && isFullCompletion && !gameProgress.fullyCompleted) {
+      // Game completed but not all answers correct - no coins awarded
+      console.log(`⚠️ Game completed but not all answers correct - gameId: ${gameId}, score: ${score}, maxScore: ${maxScore}`);
+      coinsToAward = 0;
+    } else if (coinsPerLevel && newLevelsCompleted > 0 && allAnswersCorrect) {
+      // Award coins for new levels completed: newLevelsCompleted × coinsPerLevel (only if all answers correct)
       coinsToAward = newLevelsCompleted * coinsPerLevel;
-    } else if (newLevelsCompleted > 0) {
-      // Fallback: award coins for new levels completed
+    } else if (newLevelsCompleted > 0 && allAnswersCorrect) {
+      // Fallback: award coins for new levels completed (only if all answers correct)
       coinsToAward = newLevelsCompleted * defaultCoinsPerLevel;
     }
 
@@ -940,8 +945,9 @@ export const completeUnifiedGame = async (req, res) => {
     gameProgress.totalTimePlayed += timePlayed;
     gameProgress.lastPlayedAt = new Date();
 
-    // Mark as fully completed if applicable
-    if (isFullCompletion && !gameProgress.fullyCompleted) {
+    // Mark as fully completed only if all answers are correct
+    // This ensures users can replay if they didn't get all answers correct
+    if (isFullCompletion && !gameProgress.fullyCompleted && allAnswersCorrect) {
       gameProgress.fullyCompleted = true;
       gameProgress.firstCompletedAt = new Date();
     }
@@ -1102,13 +1108,14 @@ export const completeUnifiedGame = async (req, res) => {
     }
 
     res.status(200).json({
-      message: coinsToAward > 0 ? '🎉 Game completed successfully!' : 'Game completed! Thanks for playing again!',
+      message: coinsToAward > 0 ? '🎉 Game completed successfully!' : (allAnswersCorrect ? 'Game completed! Thanks for playing again!' : 'Game completed! Try again to earn all rewards!'),
       coinsEarned: coinsToAward,
       xpEarned,
       totalCoinsEarned: gameProgress.totalCoinsEarned,
       newLevelsCompleted,
       totalLevelsCompleted: gameProgress.levelsCompleted,
       fullyCompleted: gameProgress.fullyCompleted,
+      allAnswersCorrect: allAnswersCorrect, // Include in response for frontend
       newBalance,
       streak: userProgress.streak,
       level: userProgress.level,

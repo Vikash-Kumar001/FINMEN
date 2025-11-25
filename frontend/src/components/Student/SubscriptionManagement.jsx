@@ -49,7 +49,7 @@ const PLANS = {
         'Advanced Analytics',
         'Certificates & Achievements',
         'WiseClub Community Access',
-        'Inavora Presentation Tool',
+        'Presentation Tool',
       ],
       color: 'from-blue-500 to-cyan-500',
       icon: '⭐',
@@ -530,7 +530,7 @@ const SubscriptionManagement = ({ onUpgradingChange, onPlanChange }) => {
                     advancedAnalytics: 'Advanced Analytics',
                     certificates: 'Certificates & Achievements',
                     wiseClubAccess: 'WiseClub Community Access',
-                    inavoraAccess: 'Inavora Presentation Tool',
+                    inavoraAccess: 'Presentation Tool',
                   };
                   features = Object.entries(subscription.features)
                     .filter(([, value]) => value === true)
@@ -665,7 +665,7 @@ const SubscriptionManagement = ({ onUpgradingChange, onPlanChange }) => {
                   { feature: 'Advanced Analytics', free: false, premium: true, pro: true },
                   { feature: 'Certificates & Achievements', free: false, premium: true, pro: true },
                   { feature: 'WiseClub Community Access', free: false, premium: true, pro: true },
-                  { feature: 'Inavora Presentation Tool', free: false, premium: true, pro: true },
+                  { feature: 'Presentation Tool', free: false, premium: true, pro: true },
                   { feature: 'Parent Dashboard', free: false, premium: false, pro: true },
                   { feature: 'Family Progress Tracking', free: false, premium: false, pro: true },
                   { feature: 'Parent Mental Health Care', free: false, premium: false, pro: true },

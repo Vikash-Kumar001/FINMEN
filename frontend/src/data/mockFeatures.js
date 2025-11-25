@@ -14,7 +14,7 @@ export const mockFeatures = [
   // Digital Citizenship & Online Safety Game Cards - Moved to the beginning of education category
   {
     id: 21,
-    title: "Kids Games",
+    title: "Kids Module",
     description: "Fun and educational digital citizenship games for children",
     icon: "🧸",
     path: "/games/digital-citizenship/kids",
@@ -24,7 +24,7 @@ export const mockFeatures = [
   },
   {
     id: 22,
-    title: "Teen Games",
+    title: "Teen Module",
     description: "Engaging digital citizenship games designed for teenagers",
     icon: "📱",
     path: "/games/digital-citizenship/teens",
@@ -34,7 +34,7 @@ export const mockFeatures = [
   },
   {
     id: 23,
-    title: "Adult Games",
+    title: "Adult Module",
     description: "Challenging digital citizenship games for adults",
     icon: "🧩",
     path: "/games/digital-citizenship/adults",
@@ -55,7 +55,7 @@ export const mockFeatures = [
   // Financial Literacy Game Cards - Moved to the beginning of finance category
   {
     id: 12,
-    title: "Kids Games",
+    title: "Kids Module",
     description: "Fun and educational financial games for children",
     icon: "🧸",
     path: "/games/financial-literacy/kids",
@@ -65,7 +65,7 @@ export const mockFeatures = [
   },
   {
     id: 13,
-    title: "Teen Games",
+    title: "Teen Module",
     description: "Engaging financial games designed for teenagers",
     icon: "📱",
     path: "/games/financial-literacy/teens",
@@ -75,7 +75,7 @@ export const mockFeatures = [
   },
   {
     id: 14,
-    title: "Adult Games",
+    title: "Adult Module",
     description: "Challenging financial games for adults",
     icon: "🧩",
     path: "/games/financial-literacy/adults",
@@ -117,7 +117,7 @@ export const mockFeatures = [
   // Brain Health Game Cards - Moved to the beginning of wellness category
   {
     id: 15,
-    title: "Kids Games",
+    title: "Kids Module",
     description: "Fun and educational brain health games for children",
     icon: "🧸",
     path: "/games/brain-health/kids",
@@ -127,7 +127,7 @@ export const mockFeatures = [
   },
   {
     id: 16,
-    title: "Teen Games",
+    title: "Teen Module",
     description: "Engaging brain health games designed for teenagers",
     icon: "📱",
     path: "/games/brain-health/teens",
@@ -137,7 +137,7 @@ export const mockFeatures = [
   },
   {
     id: 17,
-    title: "Adult Games",
+    title: "Adult Module",
     description: "Challenging brain health games for adults",
     icon: "🧩",
     path: "/games/brain-health/adults",
@@ -158,7 +158,7 @@ export const mockFeatures = [
   // UVLS (Life Skills & Values) Game Cards - Moved to the beginning of personal category
   {
     id: 18,
-    title: "Kids Games",
+    title: "Kids Module",
     description: "Fun and educational life skills games for children",
     icon: "🧸",
     path: "/games/uvls/kids",
@@ -168,7 +168,7 @@ export const mockFeatures = [
   },
   {
     id: 19,
-    title: "Teen Games",
+    title: "Teen Module",
     description: "Engaging life skills games designed for teenagers",
     icon: "📱",
     path: "/games/uvls/teens",
@@ -178,7 +178,7 @@ export const mockFeatures = [
   },
   {
     id: 20,
-    title: "Adult Games",
+    title: "Adult Module",
     description: "Challenging life skills games for adults",
     icon: "🧩",
     path: "/games/uvls/adults",
@@ -231,7 +231,7 @@ export const mockFeatures = [
   // Moral Values Game Cards
   {
     id: 24,
-    title: "Kids Games",
+    title: "Kids Module",
     description: "Fun and educational moral values games for children",
     icon: "🧸",
     path: "/games/moral-values/kids",
@@ -241,7 +241,7 @@ export const mockFeatures = [
   },
   {
     id: 25,
-    title: "Teen Games",
+    title: "Teen Module",
     description: "Engaging moral values games designed for teenagers",
     icon: "📱",
     path: "/games/moral-values/teens",
@@ -251,7 +251,7 @@ export const mockFeatures = [
   },
   {
     id: 26,
-    title: "Adult Games",
+    title: "Adult Module",
     description: "Challenging moral values games for adults",
     icon: "🧩",
     path: "/games/moral-values/adults",
@@ -262,7 +262,7 @@ export const mockFeatures = [
   // AI for All Game Cards
   {
     id: 27,
-    title: "Kids Games",
+    title: "Kids Module",
     description: "Fun and educational AI games for children",
     icon: "🧸",
     path: "/games/ai-for-all/kids",
@@ -272,7 +272,7 @@ export const mockFeatures = [
   },
   {
     id: 28,
-    title: "Teen Games",
+    title: "Teen Module",
     description: "Engaging AI games designed for teenagers",
     icon: "📱",
     path: "/games/ai-for-all/teens",
@@ -282,7 +282,7 @@ export const mockFeatures = [
   },
   {
     id: 29,
-    title: "Adult Games",
+    title: "Adult Module",
     description: "Challenging AI games for adults",
     icon: "🧩",
     path: "/games/ai-for-all/adults",
@@ -293,7 +293,7 @@ export const mockFeatures = [
   // Health - Male Game Cards
   {
     id: 30,
-    title: "Kids Games",
+    title: "Kids Module",
     description: "Fun and educational male health games for children",
     icon: "🧸",
     path: "/games/health-male/kids",
@@ -303,7 +303,7 @@ export const mockFeatures = [
   },
   {
     id: 31,
-    title: "Teen Games",
+    title: "Teen Module",
     description: "Engaging male health games designed for teenagers",
     icon: "📱",
     path: "/games/health-male/teens",
@@ -313,7 +313,7 @@ export const mockFeatures = [
   },
   {
     id: 32,
-    title: "Adult Games",
+    title: "Adult Module",
     description: "Challenging male health games for adults",
     icon: "🧩",
     path: "/games/health-male/adults",
@@ -324,7 +324,7 @@ export const mockFeatures = [
   // Health - Female Game Cards
   {
     id: 33,
-    title: "Kids Games",
+    title: "Kids Module",
     description: "Fun and educational female health games for children",
     icon: "🧸",
     path: "/games/health-female/kids",
@@ -334,7 +334,7 @@ export const mockFeatures = [
   },
   {
     id: 34,
-    title: "Teen Games",
+    title: "Teen Module",
     description: "Engaging female health games designed for teenagers",
     icon: "📱",
     path: "/games/health-female/teens",
@@ -344,7 +344,7 @@ export const mockFeatures = [
   },
   {
     id: 35,
-    title: "Adult Games",
+    title: "Adult Module",
     description: "Challenging female health games for adults",
     icon: "🧩",
     path: "/games/health-female/adults",
@@ -355,7 +355,7 @@ export const mockFeatures = [
   // Entrepreneurship & Higher Education Game Cards
   {
     id: 36,
-    title: "Kids Games",
+    title: "Kids Module",
     description: "Fun and educational entrepreneurship games for children",
     icon: "🧸",
     path: "/games/ehe/kids",
@@ -365,7 +365,7 @@ export const mockFeatures = [
   },
   {
     id: 37,
-    title: "Teen Games",
+    title: "Teen Module",
     description: "Engaging entrepreneurship games designed for teenagers",
     icon: "📱",
     path: "/games/ehe/teens",
@@ -375,7 +375,7 @@ export const mockFeatures = [
   },
   {
     id: 38,
-    title: "Adult Games",
+    title: "Adult Module",
     description: "Challenging entrepreneurship games for adults",
     icon: "🧩",
     path: "/games/ehe/adults",
@@ -386,7 +386,7 @@ export const mockFeatures = [
   // Civic Responsibility & Global Citizenship Game Cards
   {
     id: 39,
-    title: "Kids Games",
+    title: "Kids Module",
     description: "Fun and educational civic responsibility games for children",
     icon: "🧸",
     path: "/games/civic-responsibility/kids",
@@ -396,7 +396,7 @@ export const mockFeatures = [
   },
   {
     id: 40,
-    title: "Teen Games",
+    title: "Teen Module",
     description: "Engaging civic responsibility games designed for teenagers",
     icon: "📱",
     path: "/games/civic-responsibility/teens",
@@ -406,7 +406,7 @@ export const mockFeatures = [
   },
   {
     id: 41,
-    title: "Adult Games",
+    title: "Adult Module",
     description: "Challenging civic responsibility games for adults",
     icon: "🧩",
     path: "/games/civic-responsibility/adults",

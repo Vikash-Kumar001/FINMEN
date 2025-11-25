@@ -15,6 +15,7 @@ const WalkInShoes = () => {
   const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [coins, setCoins] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const decisionNodes = [
@@ -65,10 +66,45 @@ const WalkInShoes = () => {
         supportive: "You find allies and the situation is addressed! 🤝",
         negative: "The exclusion continues and affects your wellbeing... 😞"
       }
+    },
+    {
+      id: 4,
+      scenario: "You're dealing with family financial struggles and can't afford school supplies. Others seem to have everything they need.",
+      emoji: "💰",
+      question: "How do you respond?",
+      options: [
+        { id: "share", text: "Ask the school counselor for resources (help-seeking)", isHelpful: true },
+        { id: "shame", text: "Feel ashamed and try to hide your situation", isHelpful: false },
+        { id: "steal", text: "Take supplies from others without asking", isHelpful: false },
+        { id: "connect", text: "Connect with a teacher or counselor who can help (supportive)", isHelpful: true }
+      ],
+      outcome: {
+        supportive: "You receive the help you need and feel supported! ✨",
+        negative: "The stress continues to build and affects your studies... 😓"
+      }
+    },
+    {
+      id: 5,
+      scenario: "You're experiencing mental health challenges and feel like you're the only one struggling. Others seem happy and carefree.",
+      emoji: "🧠",
+      question: "What action do you take?",
+      options: [
+        { id: "therapy", text: "Seek help from a school counselor or therapist (help-seeking)", isHelpful: true },
+        { id: "isolate", text: "Withdraw and isolate yourself from everyone", isHelpful: false },
+        { id: "deny", text: "Pretend everything is fine and ignore your feelings", isHelpful: false },
+        { id: "trust", text: "Talk to a trusted adult or friend about your feelings (supportive)", isHelpful: true }
+      ],
+      outcome: {
+        supportive: "You find support and start feeling better! 🌈",
+        negative: "Your struggles continue to grow in silence... 💙"
+      }
     }
   ];
 
   const handleChoice = (optionId) => {
+    if (isProcessing || showResult) return; // Prevent double clicks
+    
+    setIsProcessing(true);
     const node = decisionNodes[currentNode];
     const option = node.options.find(opt => opt.id === optionId);
     
@@ -88,50 +124,47 @@ const WalkInShoes = () => {
     if (currentNode < decisionNodes.length - 1) {
       setTimeout(() => {
         setCurrentNode(prev => prev + 1);
+        setIsProcessing(false);
       }, 1500);
     } else {
       setTimeout(() => {
         setShowResult(true);
+        setIsProcessing(false);
       }, 1500);
     }
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentNode(0);
-    setChoices([]);
-    setCoins(0);
-    resetFeedback();
-  };
 
   const handleNext = () => {
     navigate("/games/uvls/teens");
   };
 
   const helpfulCount = choices.filter(c => c.isHelpful).length;
+  // Score should be the number of correct answers for backend
+  const finalScore = showResult ? helpfulCount : coins;
 
   return (
     <GameShell
       title="Walk in Their Shoes"
       subtitle={`Situation ${currentNode + 1} of ${decisionNodes.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && helpfulCount >= 2}
-      showGameOver={showResult && helpfulCount >= 2}
-      score={coins}
+      nextEnabled={showResult && helpfulCount === 5}
+      showGameOver={showResult}
+      score={finalScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       gameId="uvls-teen-4"
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={4}
-      showConfetti={showResult && helpfulCount >= 2}
+      totalLevels={5}
+      maxScore={5}
+      showConfetti={showResult && helpfulCount === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/uvls/teens"
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="bg-yellow-500/20 border-2 border-yellow-400/50 rounded-lg p-3 mb-4">
@@ -157,7 +190,12 @@ const WalkInShoes = () => {
                   <button
                     key={option.id}
                     onClick={() => handleChoice(option.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102 text-left"
+                    disabled={isProcessing || choices.length > currentNode}
+                    className={`w-full backdrop-blur-sm border-2 rounded-xl p-4 transition-all transform text-left ${
+                      isProcessing || choices.length > currentNode
+                        ? 'bg-gray-500/20 border-gray-400/40 cursor-not-allowed opacity-50'
+                        : 'bg-white/20 border-white/40 hover:bg-white/30 hover:scale-102'
+                    }`}
                   >
                     <div className="text-white font-medium">{option.text}</div>
                   </button>
@@ -178,35 +216,6 @@ const WalkInShoes = () => {
                 </div>
               )}
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {helpfulCount >= 2 ? "🎉 Empathetic Choices!" : "💪 Try Different Choices!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You made {helpfulCount} out of {decisionNodes.length} supportive choices!
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                <strong>Reflection:</strong> How did it feel to experience these challenges? 
-                What can we do to support others facing similar situations?
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {helpfulCount >= 2 ? "You earned 3 Coins! 🪙" : "Make 2 or more supportive choices to earn coins!"}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Debrief with students about their experiences and feelings during the simulation.
-            </p>
-            {helpfulCount < 2 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
           </div>
         )}
       </div>

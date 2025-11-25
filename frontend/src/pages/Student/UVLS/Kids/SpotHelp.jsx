@@ -64,6 +64,34 @@ const SpotHelp = () => {
         { id: "help", text: "Get napkins to clean up", isCorrect: true },
         { id: "ignore", text: "Eat my lunch", isCorrect: false }
       ]
+    },
+    {
+      id: 4,
+      description: "Library Scene - Who needs assistance?",
+      kids: [
+        { id: 1, name: "Maya", emoji: "😊", status: "Reading a book", needsHelp: false },
+        { id: 2, name: "Noah", emoji: "😕", status: "Can't find a book", needsHelp: true },
+        { id: 3, name: "Olivia", emoji: "😄", status: "Writing notes", needsHelp: false },
+        { id: 4, name: "Peter", emoji: "🙂", status: "Studying quietly", needsHelp: false }
+      ],
+      helpActions: [
+        { id: "help", text: "Help find the book", isCorrect: true },
+        { id: "ignore", text: "Continue reading", isCorrect: false }
+      ]
+    },
+    {
+      id: 5,
+      description: "Art Room Scene - Look for someone who needs help",
+      kids: [
+        { id: 1, name: "Quinn", emoji: "😁", status: "Painting happily", needsHelp: false },
+        { id: 2, name: "Ruby", emoji: "😟", status: "Can't reach supplies", needsHelp: true },
+        { id: 3, name: "Sam", emoji: "😊", status: "Drawing a picture", needsHelp: false },
+        { id: 4, name: "Tina", emoji: "🙂", status: "Coloring quietly", needsHelp: false }
+      ],
+      helpActions: [
+        { id: "help", text: "Offer to get the supplies", isCorrect: true },
+        { id: "ignore", text: "Keep working on my art", isCorrect: false }
+      ]
     }
   ];
 
@@ -96,7 +124,7 @@ const SpotHelp = () => {
     
     if (isCorrect) {
       setCoins(prev => prev + 1); // 1 coin for correct answer
-      showCorrectAnswerFeedback(5, true);
+      showCorrectAnswerFeedback(1, true);
     }
     
     setSelectedKid(null);
@@ -111,15 +139,6 @@ const SpotHelp = () => {
     }
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentScenario(0);
-    setSelectedKid(null);
-    setSelectedAction(null);
-    setResults([]);
-    setCoins(0);
-    resetFeedback();
-  };
 
   const handleNext = () => {
     navigate("/games/uvls/kids");
@@ -127,30 +146,31 @@ const SpotHelp = () => {
 
   const scenario = scenarios[currentScenario];
   const correctChoices = results.filter(r => r.isCorrect).length;
+  // Score should be the number of correct answers for backend
+  const finalScore = showResult ? correctChoices : coins;
 
   return (
     <GameShell
       title="Spot Help"
-      score={coins}
+      score={finalScore}
       subtitle={`Scene ${currentScenario + 1} of ${scenarios.length}`}
       onNext={handleNext}
-      nextEnabled={showResult && correctChoices >= 2}
+      nextEnabled={showResult && correctChoices === 5}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && correctChoices >= 2}
-      
+      showGameOver={showResult}
+      totalLevels={5}
+      maxScore={5}
       gameId="uvls-kids-5"
       gameType="uvls"
-      totalLevels={10}
-      currentLevel={5}
-      showConfetti={showResult && correctChoices >= 2}
+      showConfetti={showResult && correctChoices === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/uvls/kids"
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <p className="text-white/90 text-lg mb-6 text-center font-semibold">
@@ -208,26 +228,6 @@ const SpotHelp = () => {
                 Confirm Choice
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {correctChoices >= 2 ? "🎉 Great Helping!" : "💪 Keep Trying!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You made {correctChoices} out of {scenarios.length} correct help choices!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {correctChoices >= 2 ? "You earned 3 Coins! 🪙" : "Get 2 or more correct to earn coins!"}
-            </p>
-            {correctChoices < 2 && (
-              <button
-                onClick={handleTryAgain}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
           </div>
         )}
       </div>

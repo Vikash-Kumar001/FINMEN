@@ -323,9 +323,9 @@ const GameCategoryPage = () => {
   // Get age group title
   const getAgeGroupTitle = (ageGroup) => {
     const titleMap = {
-      kids: "Kids Games",
-      teens: "Teen Games",
-      adults: "Adult Games",
+      kids: "Kids Module",
+      teens: "Teen Module",
+      adults: "Adult Module",
       "solar-and-city": "Solar & City Games",
       "waste-and-recycle": "Waste & Recycle Games",
       "carbon-and-climate": "Carbon & Climate Games",

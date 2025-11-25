@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from '../../../../utils/getGameData';
 
 const MatchFaces = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   
   // Get game data from game category folder (source of truth)
   const gameId = "uvls-kids-4";
@@ -19,7 +18,7 @@ const MatchFaces = () => {
   const [selectedEmotion, setSelectedEmotion] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const faceMatches = [
     { id: 1, emoji: "😊", correct: "Happy", options: ["Happy", "Sad", "Angry"] },
@@ -94,7 +93,7 @@ const MatchFaces = () => {
       <div className="space-y-8">
         {!showResult && (
           <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <div className="max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Face {currentMatch + 1}/{faceMatches.length}</span>
                 <span className="text-yellow-400 font-bold">Matches: {correctMatches}/{currentMatch}</span>

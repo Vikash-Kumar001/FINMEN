@@ -36,6 +36,16 @@ window.addEventListener("beforeinstallprompt", (e) => {
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
+// Development warning about Google OAuth configuration
+if (import.meta.env.DEV && !googleClientId) {
+  console.warn("⚠️ VITE_GOOGLE_CLIENT_ID is not set. Google OAuth will not work.");
+} else if (import.meta.env.PROD && googleClientId) {
+  // Production reminder about redirect URI configuration
+  const currentOrigin = window.location.origin;
+  console.log(`🔐 Google OAuth configured for: ${currentOrigin}`);
+  console.log(`📝 Ensure ${currentOrigin} is added to Authorized JavaScript origins in Google Cloud Console`);
+}
+
 ReactDOM.createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <GoogleOAuthProvider clientId={googleClientId}>

@@ -285,7 +285,7 @@ export default function CategoryView() {
                     >
                         {featureCards.map((card, i) => {
                             const cardKey = card.id ? `${card.id}-${i}` : `${card.title}-${card.category}-${i}`;
-                            const isGameCard = ['Kids Games', 'Teen Games', 'Adult Games'].includes(card.title);
+                            const isGameCard = ['Kids Module', 'Teen Module', 'Adult Module'].includes(card.title);
                             const gameAccess = getGameAccessStatus();
                             const userAge = gameAccess.userAge;
                             
@@ -295,18 +295,18 @@ export default function CategoryView() {
                             
                             if (isGameCard && userAge !== null) {
                                 // Check age restrictions for game cards
-                                // Below 14: Only Kids and Teen games
-                                // 14-17: All games (Kids, Teen, Adult)
-                                // 18+: Only Teen and Adult games
-                                if (card.title === "Adult Games" && userAge < 14) {
+                                // Below 13: Only Kids games
+                                // 13-17: Kids and Teen games (no Adult Module)
+                                // 18+: Teen and Adult games (no Kids Module)
+                                if (card.title === "Adult Module" && userAge < 18) {
                                     isDisabled = true;
                                     disabledMessage = "Age restriction applies";
-                                    lockReason = "14+";
-                                } else if (card.title === "Teen Games" && userAge < 13) {
+                                    lockReason = "18+";
+                                } else if (card.title === "Teen Module" && userAge < 13) {
                                     isDisabled = true;
                                     disabledMessage = "Age restriction applies";
                                     lockReason = "13+";
-                                } else if (card.title === "Kids Games" && userAge >= 18) {
+                                } else if (card.title === "Kids Module" && userAge >= 18) {
                                     isDisabled = true;
                                     disabledMessage = "Available for learners under 18";
                                     lockReason = "Under 18";
@@ -327,12 +327,12 @@ export default function CategoryView() {
                                     onClick={() => {
                                         if (isDisabled) {
                                             // Show professional modal for age restrictions
-                                            if (card.title === "Adult Games" && userAge !== null && userAge < 14) {
+                                            if (card.title === "Adult Module" && userAge !== null && userAge < 18) {
                                                 setRestrictedUserAge(userAge);
                                                 setRestrictedCategorySlug(categorySlug);
                                                 setRestrictionType('adult');
                                                 setShowAgeRestrictionModal(true);
-                                            } else if (card.title === "Kids Games" && userAge !== null && userAge >= 18) {
+                                            } else if (card.title === "Kids Module" && userAge !== null && userAge >= 18) {
                                                 setRestrictedUserAge(userAge);
                                                 setRestrictedCategorySlug(categorySlug);
                                                 setRestrictionType('kids');
@@ -478,31 +478,40 @@ export default function CategoryView() {
                                     {restrictionType === 'adult' ? (
                                         <>
                                             <p className="text-gray-700 text-base leading-relaxed mb-3">
-                                                Thank you for your interest in accessing our Adult Games content{categoryInfo ? ` in ${categoryInfo.label}` : ''}. 
+                                                Thank you for your interest in accessing our Adult Module content{categoryInfo ? ` in ${categoryInfo.label}` : ''}. 
                                                 We appreciate your enthusiasm for learning!
                                             </p>
                                             <p className="text-gray-700 text-base leading-relaxed mb-3">
                                                 <strong className="text-red-600">Age Requirement:</strong> This content is 
-                                                designed for users who are <strong>14 years of age or older</strong>. 
+                                                designed for users who are <strong>18 years of age or older</strong>. 
                                                 Our age restrictions are in place to ensure that all content is 
                                                 age-appropriate and aligns with educational standards.
                                             </p>
                                             {restrictedUserAge !== null && (
                                                 <p className="text-gray-700 text-base leading-relaxed mb-3">
                                                     Your current age is <strong className="text-red-600">{restrictedUserAge} years</strong>. 
-                                                    You will be eligible to access this content when you reach 14 years of age.
+                                                    {restrictedUserAge < 14 
+                                                        ? " You will be eligible to access this content when you reach 18 years of age."
+                                                        : restrictedUserAge >= 14 && restrictedUserAge < 18
+                                                        ? " This content is only available for users aged 18 and above. We encourage you to continue exploring our Kids and Teen Modules until you reach the required age."
+                                                        : " You will be eligible to access this content when you reach 18 years of age."
+                                                    }
                                                 </p>
                                             )}
                                             <p className="text-gray-700 text-base leading-relaxed">
-                                                In the meantime, we encourage you to explore our <strong>Kids Games</strong> and 
-                                                <strong> Teen Games</strong> sections{categoryInfo ? ` in ${categoryInfo.label}` : ''}, which are specifically tailored to your age group 
+                                                {restrictedUserAge !== null && restrictedUserAge >= 14 && restrictedUserAge < 18
+                                                    ? "We encourage you to explore our "
+                                                    : "In the meantime, we encourage you to explore our "
+                                                }
+                                                <strong>Kids Module</strong> and 
+                                                <strong> Teen Module</strong> sections{categoryInfo ? ` in ${categoryInfo.label}` : ''}, which are specifically tailored to your age group 
                                                 and offer engaging, educational experiences designed to support your learning journey.
                                             </p>
                                         </>
                                     ) : (
                                         <>
                                             <p className="text-gray-700 text-base leading-relaxed mb-3">
-                                                Thank you for your interest in accessing our Kids Games content{categoryInfo ? ` in ${categoryInfo.label}` : ''}. 
+                                                Thank you for your interest in accessing our Kids Module content{categoryInfo ? ` in ${categoryInfo.label}` : ''}. 
                                                 We appreciate your enthusiasm for learning!
                                             </p>
                                             <p className="text-gray-700 text-base leading-relaxed mb-3">
@@ -519,8 +528,8 @@ export default function CategoryView() {
                                                 </p>
                                             )}
                                             <p className="text-gray-700 text-base leading-relaxed">
-                                                We encourage you to explore our <strong>Teen Games</strong> and 
-                                                <strong> Adult Games</strong> sections{categoryInfo ? ` in ${categoryInfo.label}` : ''}, which are specifically tailored to your age group 
+                                                We encourage you to explore our <strong>Teen Module</strong> and 
+                                                <strong> Adult Module</strong> sections{categoryInfo ? ` in ${categoryInfo.label}` : ''}, which are specifically tailored to your age group 
                                                 and offer more advanced, engaging educational experiences designed to support your learning journey.
                                             </p>
                                         </>
@@ -540,7 +549,7 @@ export default function CategoryView() {
                                         }}
                                         className="flex-1 bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 py-3 rounded-xl font-semibold hover:from-indigo-600 hover:to-purple-600 transition-all shadow-lg hover:shadow-xl"
                                     >
-                                        {restrictionType === 'adult' ? 'Explore Kids & Teen Games' : 'Explore Teen & Adult Games'}
+                                        {restrictionType === 'adult' ? 'Explore Kids & Teen Module' : 'Explore Teen & Adult Module'}
                                     </button>
                                     <button
                                         onClick={() => setShowAgeRestrictionModal(false)}

@@ -58,7 +58,7 @@ const PLAN_CONFIG = {
       'Advanced Analytics & Reports',
       'Certificates & Achievements',
       'WiseClub Community Access',
-      'Inavora Presentation Tool',
+      'Presentation Tool',
     ],
   },
   student_parent_premium_pro: {

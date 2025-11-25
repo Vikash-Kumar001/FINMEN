@@ -1102,7 +1102,7 @@ export default function StudentDashboard() {
                             </div>
 
                             {/* Professional Performance Metrics Showcase */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 mt-3">
                                 {/* Weekly Progress */}
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.9 }}
@@ -1146,29 +1146,6 @@ export default function StudentDashboard() {
                                         Global
                                     </div>
                                 </motion.div>
-
-                                {/* Engagement Score */}
-                                <motion.div
-                                    initial={{ opacity: 0, scale: 0.9 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    transition={{ delay: 0.3 }}
-                                    whileHover={{ scale: 1.05 }}
-                                    className="bg-gradient-to-br from-emerald-100 to-teal-100 p-3 rounded-2xl text-center shadow-lg border border-emerald-200"
-                                >
-                                    <div className="flex items-center justify-center gap-1.5 mb-1.5">
-                                        <Activity className="w-4 h-4 text-emerald-600" />
-                                        <span className="text-xs font-bold text-emerald-700">
-                                            Active
-                                        </span>
-                                    </div>
-                                    <div className="text-xl font-black text-emerald-700">
-                                        {engagementMinutes ? `${Math.round(engagementMinutes.totalMinutes || 0)}m` : '0m'}
-                                    </div>
-                                    <div className="text-[10px] text-emerald-600 font-medium mt-0.5">
-                                        This Week
-                                    </div>
-                                </motion.div>
-
                                 {/* Achievement Count */}
                                 <motion.div
                                     initial={{ opacity: 0, scale: 0.9 }}

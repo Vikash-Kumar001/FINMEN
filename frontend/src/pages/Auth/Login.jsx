@@ -39,6 +39,11 @@ const Login = () => {
     const handleGoogleLogin = useGoogleLogin({
         // Note: The app name shown in Google OAuth consent screen is configured in Google Cloud Console
         // Go to: APIs & Services > OAuth consent screen > Edit App > App name: "Wise Student"
+        // 
+        // IMPORTANT: For production, ensure your production domain is added to:
+        // Google Cloud Console > APIs & Services > Credentials > [Your OAuth Client ID] > 
+        // Authorized JavaScript origins: https://your-production-domain.com
+        // See GOOGLE_OAUTH_FIX.md for detailed instructions
         onSuccess: async (tokenResponse) => {
             try {
                 setIsLoading(true);
@@ -114,9 +119,24 @@ const Login = () => {
                 setIsLoading(false);
             }
         },
-        onError: () => {
-            setError("Google sign-in was cancelled or failed. Please try again.");
+        onError: (error) => {
+            // Handle OAuth errors with more specific messages
+            let errorMessage = "Google sign-in was cancelled or failed. Please try again.";
+            
+            // Check if it's a redirect_uri_mismatch error
+            if (error?.error === "redirect_uri_mismatch" || 
+                error?.error_description?.includes("redirect_uri_mismatch") ||
+                error?.message?.includes("redirect_uri_mismatch")) {
+                errorMessage = "OAuth configuration error: Please ensure your production domain is added to Google Cloud Console. See GOOGLE_OAUTH_FIX.md for instructions.";
+            }
+            
+            setError(errorMessage);
             setIsLoading(false);
+            
+            // Log detailed error in development
+            if (import.meta.env.DEV) {
+                console.error("Google OAuth Error:", error);
+            }
         },
     });
 
@@ -267,7 +287,7 @@ const Login = () => {
                             {/* Adjusted padding for mobile */}
                             <div className="bg-white/10 backdrop-blur-2xl border border-white/20 rounded-3xl p-5 sm:p-6 md:p-7 shadow-2xl hover:shadow-purple-500/10 transition-all duration-500 h-full flex flex-col">
                                 {/* Back to Home Button - Adjusted for mobile */}
-                                <div className="flex justify-start mb-3 z-50">
+                    <div className="absolute top-4 left-4 flex justify-start mb-3 z-50">
                                     <button
                                         onClick={() => navigate("/")}
                                         className="group flex items-center gap-1.5 sm:gap-2 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 text-white p-2 sm:p-2.5 rounded-xl transition-all duration-300 hover:scale-105 active:scale-95"
@@ -317,10 +337,10 @@ const Login = () => {
                                                 <input
                                                     type="email"
                                                     value={email}
-                                                    onChange={(e) => setEmail(e.target.value)}
+                                                onChange={(e) => setEmail(e.target.value)}
                                                     placeholder="you@example.com"
                                                     required
-                                                    className="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 text-xs sm:text-sm focus:bg-white/10 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all duration-300"
+                                                    className="w-full pl-9 sm:pl-10 pr-3 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 text-xs sm:text-sm focus:bg-white/10 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all duration-300"
                                                 />
                                             </div>
                                         </div>
@@ -340,7 +360,7 @@ const Login = () => {
                                                     onChange={(e) => setPassword(e.target.value)}
                                                     placeholder="Enter your password"
                                                     required
-                                                    className="w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2 sm:py-2.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 text-xs sm:text-sm focus:bg-white/10 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all duration-300"
+                                                    className="w-full pl-9 sm:pl-10 pr-9 sm:pr-10 py-2 sm:py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 text-xs sm:text-sm focus:bg-white/10 focus:border-purple-500/50 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all duration-300"
                                                 />
                                                 <button
                                                     type="button"
@@ -361,7 +381,7 @@ const Login = () => {
                                             <button
                                                 type="button"
                                                 onClick={() => navigate("/forgot-password")}
-                                                className="text-purple-400 hover:text-purple-300 text-xs font-medium transition-colors duration-300"
+                                            className="text-purple-400 hover:text-purple-300 text-xs sm:text-sm font-medium transition-colors duration-300"
                                             >
                                                 Forgot Password?
                                             </button>
@@ -371,7 +391,7 @@ const Login = () => {
                                         <button
                                             type="submit"
                                             disabled={isLoading}
-                                            className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 text-xs sm:text-sm cursor-pointer"
+                                            className="w-full py-2.5 sm:py-3.5 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 bg-size-200 bg-pos-0 hover:bg-pos-100 text-white font-semibold rounded-xl shadow-lg shadow-purple-500/30 hover:shadow-purple-500/50 hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 text-xs sm:text-sm cursor-pointer"
                                             style={{
                                                 backgroundSize: "200% auto",
                                                 backgroundPosition: isLoading
@@ -410,7 +430,7 @@ const Login = () => {
                                                     type="button"
                                                     onClick={handleGoogleLogin}
                                                     disabled={isLoading}
-                                                    className="bg-white/5 border-r-2 border-white/20 rounded-l-lg px-3 sm:px-4 py-2 sm:py-2.5 w-full hover:bg-white/10 hover:border-white/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 text-xs sm:text-sm cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2"
+                                                    className="bg-white/5 border-r-2 border-white/20 rounded-l-lg px-3 sm:px-4 py-2 sm:py-3 w-full hover:bg-white/10 hover:border-white/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 text-xs sm:text-sm cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2"
                                                 >
                                                     <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" viewBox="0 0 24 24">
                                                         <path
@@ -436,8 +456,8 @@ const Login = () => {
 
                                             {/* Warning Message - Half Width */}
                                             <div className="w-1/2 flex items-center justify-center">
-                                                <div className="bg-amber-500/5 border-l-2 border-amber-500/40 rounded-r-lg px-3 sm:px-4 py-2 sm:py-2.5 w-full flex items-center justify-center gap-1.5 sm:gap-2">
-                                                    <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 flex-shrink-0" />
+                                                <div className="bg-amber-500/5 border-l-2 border-amber-500/40 rounded-r-lg px-3 sm:px-4 py-2 sm:py-3 w-full flex items-center justify-center gap-1.5 sm:gap-2">
+                                                    <AlertCircle className="w-3.5 h-3.5 hidden sm:block sm:w-4 sm:h-4 text-amber-400 flex-shrink-0" />
                                                     <p className="text-amber-200/90 text-xs sm:text-sm font-medium text-center">
                                                         For Students Only
                                                     </p>

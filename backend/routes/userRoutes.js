@@ -2,7 +2,8 @@ import express from 'express';
 import { requireAuth } from '../middlewares/requireAuth.js';
 import { 
   getUserProfile, updateUserProfile, getAllStudents, updateUserAvatar, updateUserPassword,
-  getUserSettings, updateUserSettings, exportUserData, getAdminProfileStats, uploadAvatar
+  getUserSettings, updateUserSettings, exportUserData, getAdminProfileStats, uploadAvatar,
+  completeGoogleUserProfile
 } from '../controllers/userController.js';
 import multer from 'multer';
 import fs from 'fs';
@@ -41,6 +42,9 @@ router.get('/profile', getUserProfile);
 
 // 📝 PUT /api/user/profile — Update user profile
 router.put('/profile', updateUserProfile);
+
+// ✅ POST /api/user/complete-google-profile — Complete Google user profile (DOB and Gender)
+router.post('/complete-google-profile', completeGoogleUserProfile);
 
 // 🖼️ POST /api/user/avatar — Update avatar (multipart form or preset URL)
 router.post('/avatar', upload.single('avatar'), updateUserAvatar);

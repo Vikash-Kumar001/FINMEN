@@ -27,31 +27,34 @@ const PuzzleOfSavingGoals = () => {
   // Saving goals and their purposes
   const leftItems = [
     { id: 1, name: "Education", emoji: "📚", description: "Saving for college or university" },
-    { id: 2, name: "Piggy Bank", emoji: "💰", description: "Saving for a toy or small item" },
-    { id: 3, name: "Emergency Fund", emoji: "🚑", description: "Money for unexpected expenses" },
-    { id: 4, name: "Car", emoji: "🚗", description: "Saving for transportation" },
-    { id: 5, name: "House", emoji: "🏠", description: "Saving for a down payment" },
-    { id: 6, name: "Retirement", emoji: "🌅", description: "Saving for your future" }
+    { id: 2, name: "Emergency Fund", emoji: "🚑", description: "Money for unexpected expenses" },
+    { id: 3, name: "Car", emoji: "🚗", description: "Saving for transportation" },
+    { id: 4, name: "House", emoji: "🏠", description: "Saving for a down payment" },
+    { id: 5, name: "Retirement", emoji: "🌅", description: "Saving for your future" }
   ];
 
+  // Purposes - shuffled order to make it harder
   const rightItems = [
-    { id: 1, name: "Future", emoji: "🔮", description: "Long-term benefit" },
-    { id: 2, name: "Toy", emoji: "🧸", description: "Short-term pleasure" },
-    { id: 3, name: "Security", emoji: "🛡️", description: "Financial safety net" },
+    { id: 1, name: "Security", emoji: "🛡️", description: "Financial safety net" },
+    { id: 2, name: "Peace", emoji: "🕊️", description: "Worry-free old age" },
+    { id: 3, name: "Future", emoji: "🔮", description: "Long-term benefit" },
     { id: 4, name: "Independence", emoji: "🔓", description: "Freedom to move around" },
-    { id: 5, name: "Stability", emoji: "🏛️", description: "Permanent shelter" },
-    { id: 6, name: "Peace", emoji: "🕊️", description: "Worry-free old age" }
+    { id: 5, name: "Stability", emoji: "🏛️", description: "Permanent shelter" }
   ];
 
-  // Correct matches
+  // Correct matches (with shuffled right items)
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Education → Future
-    { leftId: 2, rightId: 2 }, // Piggy Bank → Toy
-    { leftId: 3, rightId: 3 }, // Emergency Fund → Security
-    { leftId: 4, rightId: 4 }, // Car → Independence
-    { leftId: 5, rightId: 5 }, // House → Stability
-    { leftId: 6, rightId: 6 }  // Retirement → Peace
+    { leftId: 1, rightId: 3 }, // Education → Future
+    { leftId: 2, rightId: 1 }, // Emergency Fund → Security
+    { leftId: 3, rightId: 4 }, // Car → Independence
+    { leftId: 4, rightId: 5 }, // House → Stability
+    { leftId: 5, rightId: 2 }  // Retirement → Peace
   ];
+
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
+  };
 
   const handleLeftSelect = (item) => {
     if (showResult) return;
@@ -60,6 +63,8 @@ const PuzzleOfSavingGoals = () => {
 
   const handleRightSelect = (item) => {
     if (showResult) return;
+    // Don't allow selecting already matched right items
+    if (isRightItemMatched(item.id)) return;
     setSelectedRight(item);
   };
 
@@ -110,12 +115,12 @@ const PuzzleOfSavingGoals = () => {
     navigate("/student/finance/teen/salary-story");
   };
 
-  // Check if an item is already matched
+  // Check if a left item is already matched
   const isItemMatched = (itemId) => {
     return matches.some(match => match.leftId === itemId);
   };
 
-  // Get match result for an item
+  // Get match result for a left item
   const getMatchResult = (itemId) => {
     const match = matches.find(m => m.leftId === itemId);
     return match ? match.isCorrect : null;
@@ -127,17 +132,17 @@ const PuzzleOfSavingGoals = () => {
       score={coins}
       subtitle={showResult ? "Game Complete!" : "Match saving goals to their purposes"}
       onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 4}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp} // Pass if 4 or more correct
-      showGameOver={showResult && finalScore >= 4}
+      showGameOver={showResult && finalScore >= 3}
       
       gameId="finance-teens-4"
       gameType="finance"
       totalLevels={20}
       currentLevel={4}
-      showConfetti={showResult && finalScore >= 4}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
     >
@@ -205,31 +210,42 @@ const PuzzleOfSavingGoals = () => {
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <h3 className="text-xl font-bold text-white mb-4 text-center">Purposes</h3>
               <div className="space-y-4">
-                {rightItems.map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleRightSelect(item)}
-                    className={`w-full p-4 rounded-xl text-left transition-all ${
-                      selectedRight?.id === item.id
-                        ? "bg-purple-500/50 border-2 border-purple-400"
-                        : "bg-white/10 hover:bg-white/20 border border-white/20"
-                    }`}
-                  >
-                    <div className="flex items-center">
-                      <div className="text-2xl mr-3">{item.emoji}</div>
-                      <div>
-                        <h4 className="font-bold text-white">{item.name}</h4>
-                        <p className="text-white/80 text-sm">{item.description}</p>
+                {rightItems.map(item => {
+                  const isMatched = isRightItemMatched(item.id);
+                  const matchedLeft = matches.find(m => m.rightId === item.id);
+                  const isCorrectMatch = matchedLeft?.isCorrect;
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleRightSelect(item)}
+                      disabled={isMatched}
+                      className={`w-full p-4 rounded-xl text-left transition-all ${
+                        isMatched
+                          ? isCorrectMatch
+                            ? "bg-green-500/30 border-2 border-green-500"
+                            : "bg-red-500/30 border-2 border-red-500"
+                          : selectedRight?.id === item.id
+                          ? "bg-purple-500/50 border-2 border-purple-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className="text-2xl mr-3">{item.emoji}</div>
+                        <div>
+                          <h4 className="font-bold text-white">{item.name}</h4>
+                          <p className="text-white/80 text-sm">{item.description}</p>
+                        </div>
                       </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 4 ? (
+            {finalScore >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>

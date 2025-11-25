@@ -5,7 +5,6 @@ import {
   Calendar,
   CheckCircle,
   Copy,
-  Globe,
   GraduationCap,
   Loader2,
   Lock,
@@ -203,7 +202,7 @@ const Profile = () => {
     email: "",
     phone: "",
     location: "",
-    website: "",
+    gender: "",
     bio: "",
     dateOfBirth: "",
   });
@@ -262,6 +261,10 @@ const Profile = () => {
           next.location = data.location || data.city || "";
         }
         if (data.website !== undefined) next.website = data.website || "";
+        if (data.gender !== undefined) {
+          // Only update if gender exists and is not empty string
+          next.gender = (data.gender && data.gender.trim() !== '') ? data.gender.trim() : (next.gender || '');
+        }
         if (data.bio !== undefined) next.bio = data.bio || "";
         if (data.avatar) next.avatar = data.avatar;
         if (data.dateOfBirth !== undefined || data.dob !== undefined) {
@@ -308,6 +311,10 @@ const Profile = () => {
             : prev.location || "",
         website:
           data.website !== undefined ? data.website || "" : prev.website || "",
+        gender:
+          data.gender !== undefined 
+            ? ((data.gender && data.gender.trim() !== '') ? data.gender.trim() : prev.gender || '')
+            : prev.gender || "",
         bio: data.bio !== undefined ? data.bio || "" : prev.bio || "",
         dateOfBirth:
           data.dateOfBirth || data.dob
@@ -354,6 +361,30 @@ const Profile = () => {
         }
       }
 
+      // Helper to get gender with proper fallback - try multiple sources
+      const getGender = async () => {
+        // First check profile response data - handle both null and empty string
+        if (data.gender != null && data.gender !== '' && typeof data.gender === 'string' && data.gender.trim() !== '') {
+          return data.gender.trim();
+        }
+        // Check user object from auth context
+        if (user?.gender != null && user.gender !== '' && typeof user.gender === 'string' && user.gender.trim() !== '') {
+          return user.gender.trim();
+        }
+        // If still not found, try fetching from /api/auth/me endpoint
+        try {
+          const meResponse = await api.get('/api/auth/me');
+          if (meResponse.data?.gender != null && meResponse.data.gender !== '' && typeof meResponse.data.gender === 'string' && meResponse.data.gender.trim() !== '') {
+            return meResponse.data.gender.trim();
+          }
+        } catch (err) {
+          console.warn('Could not fetch gender from /api/auth/me:', err);
+        }
+        return null;
+      };
+
+      const userGender = await getGender();
+
       setProfile({
         id: data._id || user._id || user.id,
         fullName:
@@ -363,6 +394,7 @@ const Profile = () => {
         phone: data.phone || "",
         location: data.location || data.city || "",
         website: data.website || "",
+        gender: userGender,
         bio: data.bio || "",
         avatar: data.avatar || "",
         dateOfBirth: data.dateOfBirth || data.dob || "",
@@ -384,6 +416,7 @@ const Profile = () => {
         phone: data.phone || "",
         location: data.location || data.city || "",
         website: data.website || "",
+        gender: userGender,
         bio: data.bio || "",
         dateOfBirth: toDateInputValue(data.dateOfBirth || data.dob),
       });
@@ -548,16 +581,13 @@ const Profile = () => {
           name: personalForm.name.trim(),
           phone: personalForm.phone?.trim() || "",
           location: personalForm.location?.trim() || "",
-          website: personalForm.website?.trim() || "",
           bio: personalForm.bio || "",
         },
-        dateOfBirth: personalForm.dateOfBirth || null,
       };
       const res = await updateUserProfile(payload);
       applyProfilePatch(
         {
           ...payload.personal,
-          dateOfBirth: payload.dateOfBirth,
           fullName: payload.personal.name,
           ...res?.user,
         },
@@ -1063,29 +1093,48 @@ const Profile = () => {
                   placeholder="City, Country"
                   icon={MapPin}
                 />
-                <TextField
-                  label="Portfolio or website"
-                  name="website"
-                  value={personalForm.website}
-                  onChange={(event) =>
-                    setPersonalForm((prev) => ({
-                      ...prev,
-                      website: event.target.value,
-                    }))
+                <ReadOnlyField
+                  label="Gender"
+                  value={
+                    personalForm.gender
+                      ? (() => {
+                          const genderMap = {
+                            male: "Male",
+                            female: "Female",
+                            non_binary: "Non-binary",
+                            prefer_not_to_say: "Prefer not to say",
+                            other: "Other",
+                          };
+                          return genderMap[personalForm.gender.toLowerCase()] || 
+                                 personalForm.gender
+                                   .split("_")
+                                   .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                                   .join(" ");
+                        })()
+                      : null
                   }
-                  placeholder="https://"
-                  icon={Globe}
+                  icon={User}
                 />
-                <TextField
+                <ReadOnlyField
                   label="Date of birth"
-                  name="dateOfBirth"
-                  type="date"
-                  value={personalForm.dateOfBirth}
-                  onChange={(event) =>
-                    setPersonalForm((prev) => ({
-                      ...prev,
-                      dateOfBirth: event.target.value,
-                    }))
+                  value={
+                    personalForm.dateOfBirth
+                      ? (() => {
+                          try {
+                            const date = new Date(personalForm.dateOfBirth);
+                            if (!isNaN(date.getTime())) {
+                              return date.toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              });
+                            }
+                          } catch (e) {
+                            console.warn("Invalid date format:", personalForm.dateOfBirth);
+                          }
+                          return personalForm.dateOfBirth;
+                        })()
+                      : null
                   }
                   icon={Calendar}
                 />

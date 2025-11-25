@@ -175,9 +175,19 @@ const PosterSavingHabit = () => {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
       
+      // Automatically move to next question after showing feedback
       setTimeout(() => {
-        setShowResult(true);
-      }, 1000);
+        if (currentStage < stages.length - 1) {
+          // Move to next question
+          setCurrentStage(currentStage + 1);
+          setSelectedPoster(null);
+          setShowResult(false);
+          resetFeedback();
+        } else {
+          // Game complete, navigate to next game
+          navigate("/student/finance/kids/journal-of-saving");
+        }
+      }, 1500);
     } else {
       // Show result immediately for incorrect
       setShowResult(true);

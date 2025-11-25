@@ -2,9 +2,11 @@ import bcrypt from "bcryptjs";
 import User from "../models/User.js";
 import Wallet from "../models/Wallet.js";
 import Transaction from "../models/Transaction.js";
+import UserSubscription from "../models/UserSubscription.js";
 import { generateToken } from "../utils/generateToken.js";
 import { sendEmail } from "../utils/sendMail.js";
 import { generateAvatar } from "../utils/avatarGenerator.js";
+import { verifyGoogleAccessToken } from "../utils/googleAuth.js";
 
 
 const generateOTP = () => {
@@ -654,5 +656,200 @@ export const login = async (req, res) => {
   } catch (err) {
     console.error("Login error:", err);
     res.status(500).json({ message: "Login failed" });
+  }
+};
+
+// Google Login
+export const googleLogin = async (req, res) => {
+  try {
+    const { accessToken } = req.body;
+
+    if (!accessToken) {
+      return res.status(400).json({ message: "Google access token is required" });
+    }
+
+    // Verify Google access token and get user info
+    const googleUser = await verifyGoogleAccessToken(accessToken);
+
+    if (!googleUser.email) {
+      return res.status(400).json({ message: "Unable to retrieve email from Google account" });
+    }
+
+    const normalizedEmail = googleUser.email.toLowerCase();
+
+    // Find existing user by email
+    let user = await User.findOne({ email: normalizedEmail });
+
+    if (user) {
+      // User exists - update Google info if needed
+      if (!user.fromGoogle) {
+        user.fromGoogle = true;
+        if (googleUser.avatar && !user.avatar) {
+          user.avatar = googleUser.avatar;
+        }
+        await user.save();
+      }
+
+      // Check approval status for certain roles
+      if (["parent", "seller", "school_admin"].includes(user.role)) {
+        if (user.approvalStatus === "pending") {
+          return res.status(403).json({
+            message: `Your ${user.role === "school_admin" ? "school" : user.role} account is currently under review. You will be notified once approved.`,
+            approvalStatus: "pending",
+          });
+        }
+
+        if (user.approvalStatus === "rejected") {
+          return res.status(403).json({
+            message: `Your ${user.role === "school_admin" ? "school" : user.role} account has been rejected. Please contact administration.`,
+            approvalStatus: "rejected",
+          });
+        }
+      }
+    } else {
+      // New user - create account
+      // Generate avatar for new user
+      const avatarData = await generateAvatar(googleUser.name || googleUser.email);
+
+      user = await User.create({
+        name: googleUser.name || googleUser.email.split("@")[0],
+        fullName: googleUser.name || googleUser.email.split("@")[0],
+        email: normalizedEmail,
+        avatar: googleUser.avatar || avatarData.url,
+        avatarData: avatarData,
+        role: "student", // Default role for Google sign-in
+        isVerified: true, // Google accounts are pre-verified
+        fromGoogle: true,
+      });
+
+      // Create freemium subscription for new student
+      try {
+        await UserSubscription.create({
+          userId: user._id,
+          planType: 'free',
+          planName: 'Free Plan',
+          amount: 0,
+          firstYearAmount: 0,
+          renewalAmount: 0,
+          isFirstYear: true,
+          status: 'active',
+          startDate: new Date(),
+          features: {
+            fullAccess: false,
+            parentDashboard: false,
+            advancedAnalytics: false,
+            certificates: false,
+            wiseClubAccess: false,
+            inavoraAccess: false,
+            gamesPerPillar: 5,
+            totalGames: 50,
+          },
+        });
+        console.log(`✅ Created freemium subscription for Google user: ${user._id}`);
+      } catch (subError) {
+        console.error('Error creating freemium subscription for Google user:', subError);
+        // Don't fail login if subscription creation fails
+      }
+    }
+
+    // Generate JWT token
+    const token = generateToken(user._id);
+
+    // Daily login reward for students
+    if (user.role === "student" || user.role === "school_student") {
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const lastActive = user.lastActive ? new Date(user.lastActive) : null;
+      let lastActiveDay = null;
+      if (lastActive) {
+        lastActiveDay = new Date(lastActive);
+        lastActiveDay.setHours(0, 0, 0, 0);
+      }
+      
+      // Check if this is a new day login
+      let loginReward = null;
+      if (!lastActiveDay || today.getTime() > lastActiveDay.getTime()) {
+        // Award 5 HealCoins for daily login
+        const dailyReward = 5;
+        
+        // Update user's last active timestamp
+        user.lastActive = new Date();
+        await user.save();
+        
+        // Add coins to wallet
+        let wallet = await Wallet.findOne({ userId: user._id });
+        
+        if (!wallet) {
+          wallet = await Wallet.create({
+            userId: user._id,
+            balance: dailyReward
+          });
+        } else {
+          wallet.balance += dailyReward;
+          await wallet.save();
+        }
+        
+        // Create transaction record
+        await Transaction.create({
+          userId: user._id,
+          type: "credit",
+          amount: dailyReward,
+          description: "Daily login reward"
+        });
+        
+        loginReward = {
+          received: true,
+          amount: dailyReward
+        };
+      }
+
+      // Return response with login reward
+      return res
+        .cookie("finmen_token", token, {
+          httpOnly: true,
+          sameSite: "Lax",
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        })
+        .json({
+          message: "Google login successful",
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            approvalStatus: user.approvalStatus,
+          },
+          token,
+          loginReward: loginReward || null
+        });
+    } else {
+      // Non-student login (no rewards)
+      return res
+        .cookie("finmen_token", token, {
+          httpOnly: true,
+          sameSite: "Lax",
+          secure: process.env.NODE_ENV === "production",
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        })
+        .json({
+          message: "Google login successful",
+          user: {
+            id: user._id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            approvalStatus: user.approvalStatus,
+          },
+          token
+        });
+    }
+  } catch (err) {
+    console.error("Google login error:", err);
+    if (err.message === "Invalid Google access token") {
+      return res.status(401).json({ message: "Invalid Google access token" });
+    }
+    res.status(500).json({ message: "Google login failed" });
   }
 };

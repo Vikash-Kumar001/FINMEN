@@ -304,12 +304,14 @@ export const getUserProfile = async (req, res) => {
       avatar: user.avatar || '',
       dateOfBirth: user.dateOfBirth || user.dob || null,
       dob: user.dob || null,
+      gender: user.gender || null,
       role: user.role || '',
       createdAt: user.createdAt || null,
       subject: user.subject || '', // Include subject for school teachers
       academic: user.academic || {},
       linkingCode: user.linkingCode || null, // Include linking code for all users
       linkingCodeIssuedAt: user.linkingCodeIssuedAt || null,
+      fromGoogle: user.fromGoogle || false, // Include fromGoogle flag
       preferences: user.preferences || {
         language: 'en',
         notifications: { email: true, push: true, sms: false },
@@ -409,28 +411,19 @@ export const updateUserProfile = async (req, res) => {
     const user = await User.findById(userId);
     if (!user) return res.status(404).json({ message: 'User not found' });
 
-    // Basic fields
+    // Basic fields (gender and dateOfBirth are excluded - they cannot be updated through profile)
     ['name', 'dob', 'institution', 'username', 'city', 'language', 'guardianEmail', 'phone', 'location', 'website', 'bio', 'avatar']
       .forEach((field) => {
         if (body[field] !== undefined) user[field] = body[field];
       });
 
-    // Handle dateOfBirth - convert string to Date if provided
-    if (body.dateOfBirth !== undefined) {
-      if (body.dateOfBirth === '' || body.dateOfBirth === null) {
-        user.dateOfBirth = null;
-        user.dob = null;
-      } else {
-        const dobDate = new Date(body.dateOfBirth);
-        if (!isNaN(dobDate.getTime())) {
-          user.dateOfBirth = dobDate;
-          user.dob = body.dateOfBirth; // Keep string format for backward compatibility
-        }
-      }
-    }
+    // Note: dateOfBirth and gender are set during account creation and cannot be updated through profile
 
-    // Nested objects from tabs
-    if (body.personal) Object.assign(user, body.personal);
+    // Nested objects from tabs - exclude gender and dateOfBirth from personal updates
+    if (body.personal) {
+      const { gender, dateOfBirth, dob, ...personalFields } = body.personal;
+      Object.assign(user, personalFields);
+    }
     if (body.academic) user.academic = { ...(user.academic || {}), ...body.academic };
 
     if (user.role !== 'student' && user.role !== 'school_student') {
@@ -487,6 +480,7 @@ export const updateUserProfile = async (req, res) => {
       avatar: user.avatar,
       dob: user.dob,
       dateOfBirth: user.dateOfBirth || user.dob,
+      gender: user.gender || null,
       username: user.username,
       language: user.language,
       guardianEmail: user.guardianEmail,
@@ -587,6 +581,85 @@ export const updateUserAvatar = async (req, res) => {
   } catch (err) {
     console.error('❌ Avatar update error:', err);
     res.status(500).json({ message: 'Failed to update avatar' });
+  }
+};
+
+export const completeGoogleUserProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+    const { dateOfBirth, gender } = req.body;
+
+    if (!dateOfBirth || !gender) {
+      return res.status(400).json({ 
+        message: 'Date of birth and gender are required' 
+      });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // Only allow Google users to complete their profile
+    if (!user.fromGoogle) {
+      return res.status(403).json({ 
+        message: 'This endpoint is only for Google sign-in users' 
+      });
+    }
+
+    // Check if profile is already completed
+    if (user.dateOfBirth && user.gender) {
+      return res.status(400).json({ 
+        message: 'Profile already completed' 
+      });
+    }
+
+    // Validate date of birth
+    const parsedDob = new Date(dateOfBirth);
+    if (isNaN(parsedDob.getTime())) {
+      return res.status(400).json({ message: 'Invalid date of birth format' });
+    }
+    const now = new Date();
+    if (parsedDob > now) {
+      return res.status(400).json({ message: 'Date of birth cannot be in the future' });
+    }
+
+    // Validate gender
+    const validGenders = ['male', 'female', 'non_binary', 'prefer_not_to_say', 'other'];
+    if (!validGenders.includes(gender.toLowerCase())) {
+      return res.status(400).json({ 
+        message: `Gender must be one of: ${validGenders.join(', ')}` 
+      });
+    }
+
+    // Update user profile
+    user.dateOfBirth = parsedDob;
+    user.dob = dateOfBirth; // Also update legacy field
+    user.gender = gender.toLowerCase();
+
+    await user.save();
+
+    // Emit real-time update
+    const io = req.app.get('io');
+    if (io) {
+      io.to(user._id.toString()).emit('user:profile:updated', {
+        userId: user._id,
+        dateOfBirth: user.dateOfBirth,
+        gender: user.gender,
+      });
+    }
+
+    res.status(200).json({ 
+      message: 'Profile completed successfully',
+      user: {
+        id: user._id,
+        dateOfBirth: user.dateOfBirth,
+        gender: user.gender,
+      }
+    });
+  } catch (err) {
+    console.error('❌ Complete Google profile error:', err);
+    res.status(500).json({ message: 'Failed to complete profile' });
   }
 };
 

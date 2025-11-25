@@ -115,6 +115,14 @@ export default function StudentDashboard() {
     const [achievementTimeline, setAchievementTimeline] = useState(null);
     const [dailyActions, setDailyActions] = useState(null);
     
+    // Profile completion modal state
+    const [showProfileModal, setShowProfileModal] = useState(false);
+    const [profileForm, setProfileForm] = useState({
+        dateOfBirth: "",
+        gender: "",
+    });
+    const [profileErrors, setProfileErrors] = useState({});
+    const [savingProfile, setSavingProfile] = useState(false);
     
     // Calculate user's age from date of birth
     const calculateUserAge = (dob) => {
@@ -416,6 +424,89 @@ export default function StudentDashboard() {
     };
 
 
+    // Check if profile needs to be completed (for Google users)
+    useEffect(() => {
+        if (user && (user.role === "student" || user.role === "school_student")) {
+            // Check if user is from Google and missing DOB or gender
+            if (user.fromGoogle && (!user.dateOfBirth || !user.gender)) {
+                setShowProfileModal(true);
+            }
+        }
+    }, [user]);
+
+    // Reload pillar data when user gender changes (for real-time updates)
+    useEffect(() => {
+        if (user?.gender && (user.role === "student" || user.role === "school_student")) {
+            loadAnalyticsData(); // Reload pillar mastery data
+        }
+    }, [user?.gender]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    // Prevent body scroll when modal is open
+    useEffect(() => {
+        if (showProfileModal) {
+            // Save current overflow style
+            const originalStyle = window.getComputedStyle(document.body).overflow;
+            // Disable scrolling
+            document.body.style.overflow = 'hidden';
+            // Cleanup function to restore scrolling when modal closes
+            return () => {
+                document.body.style.overflow = originalStyle;
+            };
+        }
+    }, [showProfileModal]);
+
+    // Handle profile completion
+    const handleCompleteProfile = async () => {
+        setProfileErrors({});
+        
+        if (!profileForm.dateOfBirth) {
+            setProfileErrors({ dateOfBirth: "Date of birth is required" });
+            return;
+        }
+        
+        if (!profileForm.gender) {
+            setProfileErrors({ gender: "Gender is required" });
+            return;
+        }
+
+        // Validate date of birth
+        const dobDate = new Date(profileForm.dateOfBirth);
+        if (isNaN(dobDate.getTime())) {
+            setProfileErrors({ dateOfBirth: "Invalid date format" });
+            return;
+        }
+        
+        const today = new Date();
+        if (dobDate > today) {
+            setProfileErrors({ dateOfBirth: "Date of birth cannot be in the future" });
+            return;
+        }
+
+        setSavingProfile(true);
+        try {
+            const response = await api.post('/api/user/complete-google-profile', {
+                dateOfBirth: profileForm.dateOfBirth,
+                gender: profileForm.gender,
+            });
+
+            toast.success("Profile completed successfully!");
+            setShowProfileModal(false);
+            
+            // Refresh user data and reload pillar mastery to reflect gender-based filtering
+            const { fetchUser } = useAuth();
+            await fetchUser(); // Refresh user context
+            loadAnalyticsData(); // Reload pillar mastery with gender filtering
+        } catch (err) {
+            console.error("Profile completion error:", err);
+            toast.error(err.response?.data?.message || "Failed to complete profile");
+            if (err.response?.data?.errors) {
+                setProfileErrors(err.response.data.errors);
+            }
+        } finally {
+            setSavingProfile(false);
+        }
+    };
+
     useEffect(() => {
         // Only run once on mount or when user changes
         if (user && (user.role === "student" || user.role === "school_student")) {
@@ -598,7 +689,7 @@ export default function StudentDashboard() {
         };
     }, [socket, stats.level, setWallet, refreshWallet, user]);
 
-    const categories = [
+    const allCategories = [
         { key: "finance", label: "Financial Literacy" },
         { key: "wellness", label: "Brain Health" },
         { key: "personal", label: "UVLS (Life Skills & Values)" },
@@ -611,6 +702,24 @@ export default function StudentDashboard() {
         { key: "shopping", label: "Civic Responsibility & Global Citizenship" },
         { key: "sustainability", label: "Sustainability" },
     ];
+
+    // Filter categories based on user gender
+    const userGender = user?.gender?.toLowerCase();
+    const categories = allCategories.filter((category) => {
+        // Hide Health - Female for male users
+        if (userGender === 'male' && category.label === 'Health - Female') {
+            return false;
+        }
+        // Hide Health - Male for female users
+        if (userGender === 'female' && category.label === 'Health - Male') {
+            return false;
+        }
+        // If gender is not set, hide both health pillars for existing users
+        if (!userGender && (category.label === 'Health - Male' || category.label === 'Health - Female')) {
+            return false;
+        }
+        return true;
+    });
 
     // Show all cards on dashboard (excluding special game categories)
     const filteredCards = featureCards.filter((card) => 
@@ -1055,7 +1164,26 @@ export default function StudentDashboard() {
                                 {/* Top 3 Weak Pillars */}
                                 <div className="space-y-3">
                                     <h4 className="text-sm font-bold text-purple-700 mb-2">Focus Areas:</h4>
-                                    {pillarMastery.weakPillars.map((pillar, index) => (
+                                    {pillarMastery.weakPillars
+                                        .filter((pillar) => {
+                                            // Filter weak pillars based on user gender
+                                            const userGender = user?.gender?.toLowerCase();
+                                            
+                                            // Hide Health - Female for male users
+                                            if (userGender === 'male' && (pillar.pillar === 'Health - Female' || pillar.pillarKey === 'health-female')) {
+                                                return false;
+                                            }
+                                            // Hide Health - Male for female users
+                                            if (userGender === 'female' && (pillar.pillar === 'Health - Male' || pillar.pillarKey === 'health-male')) {
+                                                return false;
+                                            }
+                                            // If gender is not set, hide both health pillars for existing users
+                                            if (!userGender && (pillar.pillar === 'Health - Male' || pillar.pillar === 'Health - Female' || pillar.pillarKey === 'health-male' || pillar.pillarKey === 'health-female')) {
+                                                return false;
+                                            }
+                                            return true;
+                                        })
+                                        .map((pillar, index) => (
                                         <motion.div
                                             key={index}
                                             initial={{ x: -20, opacity: 0 }}
@@ -1449,7 +1577,26 @@ export default function StudentDashboard() {
                         </div>
                         
                         <div className="grid grid-cols-2 sm:grid-cols-[repeat(auto-fit,minmax(180px,1fr))] gap-4 sm:gap-8 justify-center items-stretch">
-                            {pillarMastery.pillars.map((pillar, index) => {
+                            {pillarMastery.pillars
+                                .filter((pillar) => {
+                                    // Filter pillars based on user gender
+                                    const userGender = user?.gender?.toLowerCase();
+                                    
+                                    // Hide Health - Female for male users
+                                    if (userGender === 'male' && (pillar.pillar === 'Health - Female' || pillar.pillarKey === 'health-female')) {
+                                        return false;
+                                    }
+                                    // Hide Health - Male for female users
+                                    if (userGender === 'female' && (pillar.pillar === 'Health - Male' || pillar.pillarKey === 'health-male')) {
+                                        return false;
+                                    }
+                                    // If gender is not set, hide both health pillars for existing users
+                                    if (!userGender && (pillar.pillar === 'Health - Male' || pillar.pillar === 'Health - Female' || pillar.pillarKey === 'health-male' || pillar.pillarKey === 'health-female')) {
+                                        return false;
+                                    }
+                                    return true;
+                                })
+                                .map((pillar, index) => {
                                 const colorSchemes = [
                                     { 
                                         gradient: 'from-purple-400 to-pink-400',
@@ -2177,6 +2324,88 @@ export default function StudentDashboard() {
                             }}
                         />
                     </div>
+                </div>
+            )}
+
+            {/* Profile Completion Modal */}
+            {showProfileModal && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 overflow-hidden">
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="bg-white rounded-3xl shadow-2xl max-w-md w-full p-8 border border-purple-100"
+                    >
+                        <div className="text-center mb-6">
+                            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-purple-500 via-pink-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
+                                <User className="w-8 h-8 text-white" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                                Complete Your Profile
+                            </h2>
+                            <p className="text-gray-600 text-sm">
+                                Please provide your date of birth and gender to continue
+                            </p>
+                        </div>
+
+                        <div className="space-y-4">
+                            {/* Date of Birth */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Date of Birth <span className="text-red-500">*</span>
+                                </label>
+                                <input
+                                    type="date"
+                                    value={profileForm.dateOfBirth}
+                                    onChange={(e) => setProfileForm({ ...profileForm, dateOfBirth: e.target.value })}
+                                    max={new Date().toISOString().split('T')[0]}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all ${
+                                        profileErrors.dateOfBirth ? 'border-red-500' : 'border-gray-300'
+                                    }`}
+                                />
+                                {profileErrors.dateOfBirth && (
+                                    <p className="text-red-500 text-xs mt-1">{profileErrors.dateOfBirth}</p>
+                                )}
+                            </div>
+
+                            {/* Gender */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-2">
+                                    Gender <span className="text-red-500">*</span>
+                                </label>
+                                <select
+                                    value={profileForm.gender}
+                                    onChange={(e) => setProfileForm({ ...profileForm, gender: e.target.value })}
+                                    className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all ${
+                                        profileErrors.gender ? 'border-red-500' : 'border-gray-300'
+                                    }`}
+                                >
+                                    <option value="">Select Gender</option>
+                                    <option value="male">Male</option>
+                                    <option value="female">Female</option>
+                                </select>
+                                {profileErrors.gender && (
+                                    <p className="text-red-500 text-xs mt-1">{profileErrors.gender}</p>
+                                )}
+                            </div>
+                        </div>
+
+                        <div className="mt-6 flex gap-3">
+                            <button
+                                onClick={handleCompleteProfile}
+                                disabled={savingProfile}
+                                className="flex-1 bg-gradient-to-r from-purple-600 via-pink-600 to-purple-600 text-white font-semibold py-3 rounded-xl hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300"
+                            >
+                                {savingProfile ? (
+                                    <span className="flex items-center justify-center gap-2">
+                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                                        Saving...
+                                    </span>
+                                ) : (
+                                    "Complete Profile"
+                                )}
+                            </button>
+                        </div>
+                    </motion.div>
                 </div>
             )}
         </div>

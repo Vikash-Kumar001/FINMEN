@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -16,78 +16,132 @@ const ReflexSmartSaver = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [gameState, setGameState] = useState("waiting"); // waiting, playing, finished
-  const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [currentWord, setCurrentWord] = useState(null);
-  const [streak, setStreak] = useState(0);
-  const [bestStreak, setBestStreak] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(5);
+  const timerRef = useRef(null);
 
-  const words = [
-    { text: "Plan Savings", type: "correct", emoji: "📝" },
-    { text: "Spend Instantly", type: "wrong", emoji: "⚡" },
-    { text: "Budget First", type: "correct", emoji: "📊" },
-    { text: "Impulse Buy", type: "wrong", emoji: "💥" },
-    { text: "Save Regularly", type: "correct", emoji: "💰" },
-    { text: "Buy on Credit", type: "wrong", emoji: "💳" },
-    { text: "Set Goals", type: "correct", emoji: "🎯" },
-    { text: "Spend All", type: "wrong", emoji: "💸" },
-    { text: "Track Expenses", type: "correct", emoji: "📈" },
-    { text: "No Plan", type: "wrong", emoji: "❌" }
+  const stages = [
+    {
+      id: 1,
+      action: "Plan Savings",
+      wrong: "Spend Instantly",
+      prompt: "Tap to plan your savings!",
+      emoji: "📝"
+    },
+    {
+      id: 2,
+      action: "Budget First",
+      wrong: "Impulse Buy",
+      prompt: "Tap to budget first!",
+      emoji: "📊"
+    },
+    {
+      id: 3,
+      action: "Save Regularly",
+      wrong: "Buy on Credit",
+      prompt: "Tap to save regularly!",
+      emoji: "💰"
+    },
+    {
+      id: 4,
+      action: "Set Goals",
+      wrong: "Spend All",
+      prompt: "Tap to set goals!",
+      emoji: "🎯"
+    },
+    {
+      id: 5,
+      action: "Track Expenses",
+      wrong: "No Plan",
+      prompt: "Tap to track expenses!",
+      emoji: "📈"
+    }
   ];
 
-  // Generate a random word
-  const generateWord = useCallback(() => {
-    const randomWord = words[Math.floor(Math.random() * words.length)];
-    setCurrentWord(randomWord);
-  }, []);
+  // Timer for each stage (5 seconds)
+  useEffect(() => {
+    if (currentStage < stages.length && !showResult) {
+      setTimeLeft(5);
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            // Time's up - move to next stage without scoring
+            if (currentStage < stages.length - 1) {
+              setTimeout(() => {
+                setCurrentStage(prev => prev + 1);
+                resetFeedback();
+              }, 500);
+            } else {
+              // Last stage - show results
+              setFinalScore(coins);
+              setTimeout(() => {
+                setShowResult(true);
+              }, 500);
+            }
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
 
-  // Handle word tap
-  const handleWordTap = (wordType) => {
-    if (gameState !== "playing") return;
+      return () => {
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+      };
+    }
+  }, [currentStage, showResult, coins]);
 
-    if (wordType === "correct") {
-      const newScore = score + 1;
-      setScore(newScore);
-      const newStreak = streak + 1;
-      setStreak(newStreak);
-      if (newStreak > bestStreak) {
-        setBestStreak(newStreak);
-      }
+  const handleTap = (choice) => {
+    // Clear the timer when user makes a choice
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    resetFeedback();
+    const isCorrect = choice === stages[currentStage].action;
+
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
-      // Reset streak on wrong answer
-      setStreak(0);
+      showCorrectAnswerFeedback(0, false);
     }
 
-    // Generate next word
-    generateWord();
+    // Move to next stage after a short delay
+    if (currentStage < stages.length - 1) {
+      setTimeout(() => {
+        setCurrentStage(prev => prev + 1);
+        resetFeedback();
+      }, 800);
+    } else {
+      // Last stage - show results
+      const finalCoins = isCorrect ? coins + 1 : coins;
+      setFinalScore(finalCoins);
+      setTimeout(() => {
+        setShowResult(true);
+      }, 800);
+    }
   };
 
-  // Start the game
-  const startGame = () => {
-    setGameState("playing");
-    setScore(0);
-    setTimeLeft(30);
-    setStreak(0);
-    setBestStreak(0);
+  const handleTryAgain = () => {
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    setShowResult(false);
+    setCurrentStage(0);
+    setCoins(0);
+    setFinalScore(0);
+    setTimeLeft(5);
     resetFeedback();
-    generateWord();
   };
-
-  // Game timer
-  useEffect(() => {
-    let timer;
-    if (gameState === "playing" && timeLeft > 0) {
-      timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
-      }, 1000);
-    } else if (timeLeft === 0 && gameState === "playing") {
-      setGameState("finished");
-    }
-    return () => clearTimeout(timer);
-  }, [gameState, timeLeft]);
 
   const handleNext = () => {
     navigate("/student/finance/teen/puzzle-of-saving-goals");
@@ -96,150 +150,73 @@ const ReflexSmartSaver = () => {
   return (
     <GameShell
       title="Reflex Smart Saver"
-      subtitle={gameState === "playing" ? `Time: ${timeLeft}s | Score: ${score}` : "Test your reflexes!"}
-      onNext={handleNext}
-      nextEnabled={gameState === "finished"}
-      showGameOver={gameState === "finished"}
-      score={score}
+      subtitle={stages[currentStage]?.prompt || "Test your saving reflexes!"}
+      onNext={showResult ? handleNext : null}
+      nextEnabled={showResult && finalScore >= 3}
+      showGameOver={showResult && finalScore >= 3}
+      score={coins}
       gameId="finance-teens-3"
       gameType="finance"
-      totalLevels={20}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      currentLevel={3}
-      showConfetti={gameState === "finished" && score >= 15}
-      maxScore={20} // Max score is total number of questions (all correct)
+      currentLevel={currentStage + 1}
+      showConfetti={showResult && finalScore >= 3}
+      maxScore={stages.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
     >
-      <div className="space-y-8 max-w-2xl mx-auto">
-        {gameState === "waiting" && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Reflex Smart Saver Challenge</h2>
-            <p className="text-white/90 mb-6">
-              Tap the words that represent smart saving habits as fast as you can!
-            </p>
-            <div className="grid grid-cols-2 gap-4 mb-6">
-              <div className="bg-green-500/20 p-4 rounded-xl">
-                <h3 className="font-bold text-green-300 mb-2">Smart Choices</h3>
-                <p className="text-white/80 text-sm">Plan Savings, Budget First, Save Regularly, Set Goals, Track Expenses</p>
-              </div>
-              <div className="bg-red-500/20 p-4 rounded-xl">
-                <h3 className="font-bold text-red-300 mb-2">Impulse Choices</h3>
-                <p className="text-white/80 text-sm">Spend Instantly, Impulse Buy, Buy on Credit, Spend All, No Plan</p>
+      <div className="text-center text-white space-y-8">
+        {!showResult ? (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-3xl font-bold">Stage {currentStage + 1} of {stages.length}</h3>
+              <div className={`text-4xl font-bold ${timeLeft <= 2 ? 'text-red-500 animate-pulse' : 'text-yellow-400'}`}>
+                {timeLeft}s
               </div>
             </div>
-            <button
-              onClick={startGame}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full font-bold text-lg shadow-lg transition-all transform hover:scale-105"
-            >
-              Start Game
-            </button>
-          </div>
-        )}
-
-        {gameState === "playing" && (
-          <div className="space-y-8">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-6">
-                <div className="text-white/80">
-                  <span className="font-bold">Time:</span> {timeLeft}s
-                </div>
-                <div className="text-white/80">
-                  <span className="font-bold">Score:</span> {score}
-                </div>
-                <div className="text-white/80">
-                  <span className="font-bold">Streak:</span> {streak}
-                </div>
-              </div>
-              
-              {currentWord && (
-                <div className="flex flex-col items-center">
-                  <div className="text-6xl mb-4">{currentWord.emoji}</div>
+            
+            {stages[currentStage] && (
+              <>
+                <div className="text-6xl mb-6">{stages[currentStage].emoji}</div>
+                <div className="flex justify-center gap-6 mb-6">
                   <button
-                    onClick={() => handleWordTap(currentWord.type)}
-                    className={`py-6 px-12 rounded-2xl font-bold text-2xl shadow-lg transition-all transform hover:scale-105 mb-6 ${
-                      currentWord.type === "correct"
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700"
-                        : "bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700"
-                    }`}
+                    onClick={() => handleTap(stages[currentStage].action)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 px-8 py-6 rounded-full text-xl font-bold transition-transform hover:scale-105 shadow-lg"
                   >
-                    {currentWord.text}
+                    {stages[currentStage].action}
                   </button>
-                  <p className="text-white/80 text-center">
-                    Tap {currentWord.type === "correct" ? "✅ Smart Choice" : "❌ Impulse Choice"}
-                  </p>
+                  <button
+                    onClick={() => handleTap(stages[currentStage].wrong)}
+                    className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 px-8 py-6 rounded-full text-xl font-bold transition-transform hover:scale-105 shadow-lg"
+                  >
+                    {stages[currentStage].wrong}
+                  </button>
                 </div>
-              )}
-            </div>
-            
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
-              <h3 className="text-white font-bold mb-2 text-center">Smart Saving Habits</h3>
-              <div className="flex flex-wrap justify-center gap-2">
-                {words.filter(w => w.type === "correct").map((word, index) => (
-                  <span key={index} className="bg-green-500/30 text-green-200 px-3 py-1 rounded-full text-sm">
-                    {word.text}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {gameState === "finished" && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">Game Over!</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-gradient-to-r from-blue-500/30 to-indigo-500/30 p-4 rounded-xl">
-                <p className="text-3xl font-bold text-white">{score}</p>
-                <p className="text-white/80">Final Score</p>
-              </div>
-              <div className="bg-gradient-to-r from-green-500/30 to-emerald-500/30 p-4 rounded-xl">
-                <p className="text-3xl font-bold text-white">{bestStreak}</p>
-                <p className="text-white/80">Best Streak</p>
-              </div>
-              <div className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 p-4 rounded-xl">
-                <p className="text-3xl font-bold text-white">{Math.round((score / 30) * 60)}</p>
-                <p className="text-white/80">Words/Min</p>
-              </div>
-            </div>
-            
-            {score >= 15 ? (
-              <div>
-                <div className="text-5xl mb-4">🏆</div>
-                <h3 className="text-2xl font-bold text-white mb-2">Amazing Reflexes!</h3>
-                <p className="text-white/90 mb-4">
-                  You scored {score} points! You know your smart saving habits well.
+                <p className="text-white/80 text-lg">
+                  Choose the smart saving habit quickly!
                 </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+3 Coins</span>
-                </div>
-              </div>
-            ) : score >= 10 ? (
-              <div>
-                <div className="text-5xl mb-4">👍</div>
-                <h3 className="text-2xl font-bold text-white mb-2">Good Job!</h3>
-                <p className="text-white/90 mb-4">
-                  You scored {score} points. Keep practicing to improve your reflexes!
-                </p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-2">Keep Practicing!</h3>
-                <p className="text-white/90 mb-4">
-                  You scored {score} points. Try again to improve your score!
-                </p>
-              </div>
+              </>
             )}
-            
-            <button
-              onClick={startGame}
-              className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mr-4"
-            >
-              Play Again
-            </button>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <div className="text-5xl mb-4">🏆</div>
+            <h3 className="text-3xl font-bold mb-4">Smart Saver Star!</h3>
+            <p className="text-white/90 text-lg mb-6">You scored {finalScore} out of {stages.length}!</p>
+            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+              <span>+{coins} Coins</span>
+            </div>
+            <p className="text-white/80 mt-4">Lesson: Quick decisions on smart saving habits!</p>
+            {finalScore < 3 && (
+              <button
+                onClick={handleTryAgain}
+                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105 mt-4"
+              >
+                Try Again
+              </button>
+            )}
           </div>
         )}
       </div>

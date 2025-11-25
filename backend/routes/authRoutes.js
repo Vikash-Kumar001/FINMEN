@@ -7,7 +7,8 @@ import {
   forgotPassword,
   resetPasswordWithOTP,
   checkVerificationStatus,
-  login
+  login,
+  googleLogin
 } from "../controllers/authController.js";
 import {
   initiateParentRegistration,
@@ -182,6 +183,9 @@ router.post("/check-verification", checkVerificationStatus);
 
 // ✅ Login with role-based checks
 router.post("/login", login);
+
+// ✅ Google Login
+router.post("/google", googleLogin);
 
 // ✅ Forgot Password (sends OTP)
 router.post("/forgot-password", forgotPassword);

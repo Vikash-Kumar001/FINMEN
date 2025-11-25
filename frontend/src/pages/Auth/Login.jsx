@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import api from "../../utils/api";
+import { useGoogleLogin } from "@react-oauth/google";
 import {
     Eye,
     EyeOff,
@@ -34,6 +35,88 @@ const Login = () => {
 
     const navigate = useNavigate();
     const { fetchUser } = useAuth();
+
+    const handleGoogleLogin = useGoogleLogin({
+        onSuccess: async (tokenResponse) => {
+            try {
+                setIsLoading(true);
+                setError("");
+
+                // Send the Google access token to your backend
+                const response = await api.post(`/api/auth/google`, {
+                    accessToken: tokenResponse.access_token,
+                });
+
+                const { token, user } = response.data;
+                localStorage.setItem("finmen_token", token);
+
+                await fetchUser();
+
+                // Check for pending subscription from pricing page
+                const pendingSubscription = localStorage.getItem('pending_subscription');
+                if (pendingSubscription) {
+                    try {
+                        const subscriptionData = JSON.parse(pendingSubscription);
+                        localStorage.removeItem('pending_subscription');
+                        
+                        navigate("/", { 
+                            state: { 
+                                pendingSubscription: subscriptionData,
+                                autoOpenModal: true
+                            } 
+                        });
+                        return;
+                    } catch (e) {
+                        console.error('Error parsing pending subscription:', e);
+                        localStorage.removeItem('pending_subscription');
+                    }
+                }
+
+                // Navigate based on user role
+                switch (user.role) {
+                    case "admin":
+                        navigate("/admin/dashboard");
+                        break;
+                    case "school_admin":
+                        navigate("/school/admin/dashboard");
+                        break;
+                    case "school_teacher":
+                        navigate("/school-teacher/overview");
+                        break;
+                    case "parent":
+                        navigate("/parent/dashboard");
+                        break;
+                    case "seller":
+                        navigate("/seller/dashboard");
+                        break;
+                    case "csr":
+                        navigate("/csr/dashboard");
+                        break;
+                    case "student":
+                    case "school_student":
+                    default:
+                        navigate("/student/dashboard");
+                        break;
+                }
+            } catch (err) {
+                if (err.response?.status === 403 && err.response?.data?.approvalStatus) {
+                    // Handle pending/rejected approval status
+                    setPendingModal({
+                        message: err.response?.data?.message || "Your account is currently under review.",
+                        email: err.response?.data?.email || "",
+                    });
+                } else {
+                    setError(err.response?.data?.message || "Google sign-in failed. Please try again.");
+                }
+            } finally {
+                setIsLoading(false);
+            }
+        },
+        onError: () => {
+            setError("Google sign-in was cancelled or failed. Please try again.");
+            setIsLoading(false);
+        },
+    });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -306,6 +389,59 @@ const Login = () => {
                                                 </span>
                                             )}
                                         </button>
+
+                                        {/* Divider */}
+                                        <div className="relative my-3 sm:my-4">
+                                            <div className="absolute inset-0 flex items-center">
+                                                <div className="w-full border-t border-white/20"></div>
+                                            </div>
+                                            <div className="relative flex justify-center text-xs sm:text-sm">
+                                            <span className="px-2 bg-transparent text-gray-400">OR</span>
+                                            </div>
+                                        </div>
+
+                                    {/* Google Sign In Button and Warning - Side by Side */}
+                                    <div className="flex gap-0.5 w-full">
+                                            {/* Google Sign In Button - Half Width */}
+                                            <div className="w-1/2 flex items-center justify-center">
+                                                <button
+                                                    type="button"
+                                                    onClick={handleGoogleLogin}
+                                                    disabled={isLoading}
+                                                    className="bg-white/5 border-r-2 border-white/20 rounded-l-lg px-3 sm:px-4 py-2 sm:py-2.5 w-full hover:bg-white/10 hover:border-white/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-300 text-xs sm:text-sm cursor-pointer flex items-center justify-center gap-1.5 sm:gap-2"
+                                                >
+                                                    <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" viewBox="0 0 24 24">
+                                                        <path
+                                                            fill="#4285F4"
+                                                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                                                        />
+                                                        <path
+                                                            fill="#34A853"
+                                                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                                                        />
+                                                        <path
+                                                            fill="#FBBC05"
+                                                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                                                        />
+                                                        <path
+                                                            fill="#EA4335"
+                                                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                                                        />
+                                                    </svg>
+                                                    <span className="text-white text-xs sm:text-sm whitespace-nowrap font-medium">Continue with Google</span>
+                                                </button>
+                                            </div>
+
+                                            {/* Warning Message - Half Width */}
+                                            <div className="w-1/2 flex items-center justify-center">
+                                                <div className="bg-amber-500/5 border-l-2 border-amber-500/40 rounded-r-lg px-3 sm:px-4 py-2 sm:py-2.5 w-full flex items-center justify-center gap-1.5 sm:gap-2">
+                                                    <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-400 flex-shrink-0" />
+                                                    <p className="text-amber-200/90 text-xs sm:text-sm font-medium text-center">
+                                                        For Students Only
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </form>
                                 </div>
                             </div>

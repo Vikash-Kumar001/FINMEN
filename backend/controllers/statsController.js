@@ -102,6 +102,14 @@ export const getPillarMastery = async (req, res) => {
   try {
     const userId = req.user._id;
 
+    // Get user to check gender
+    const User = (await import('../models/User.js')).default;
+    const user = await User.findById(userId).select('gender');
+    const userGender = user?.gender?.toLowerCase();
+    
+    // Debug logging
+    console.log(`🔍 Pillar filtering - User ID: ${userId}, Gender: ${userGender || 'not set'}`);
+
     // Get user subscription to determine access level
     const { getUserSubscription } = await import('../utils/subscriptionUtils.js');
     const subscription = await getUserSubscription(userId);
@@ -125,9 +133,22 @@ export const getPillarMastery = async (req, res) => {
       { key: 'sustainability', name: 'Sustainability', icon: '🌱', order: 11 }
     ];
 
-    // Fetch total game counts dynamically for each pillar
+    // Filter pillars based on user gender
+    // If user is male, hide health-female; if female, hide health-male
+    // If gender is not set, hide both health pillars (for existing users without gender)
+    let filteredPillarDefinitions = pillarDefinitions;
+    if (userGender === 'male') {
+      filteredPillarDefinitions = pillarDefinitions.filter(p => p.key !== 'health-female');
+    } else if (userGender === 'female') {
+      filteredPillarDefinitions = pillarDefinitions.filter(p => p.key !== 'health-male');
+    } else {
+      // If gender is not set, hide both health pillars for existing users
+      filteredPillarDefinitions = pillarDefinitions.filter(p => p.key !== 'health-male' && p.key !== 'health-female');
+    }
+
+    // Fetch total game counts dynamically for each pillar (using filtered definitions)
     const allPillars = await Promise.all(
-      pillarDefinitions.map(async (pillar) => {
+      filteredPillarDefinitions.map(async (pillar) => {
         const totalGames = await getPillarGameCount(pillar.key, UnifiedGameProgress);
         return {
           ...pillar,
@@ -239,22 +260,39 @@ export const getPillarMastery = async (req, res) => {
       };
     });
 
+    // Filter pillars based on gender before selecting weak pillars
+    let filteredPillarMastery = pillarMasteryWithDelta;
+    if (userGender === 'male') {
+      filteredPillarMastery = pillarMasteryWithDelta.filter(p => p.pillarKey !== 'health-female');
+    } else if (userGender === 'female') {
+      filteredPillarMastery = pillarMasteryWithDelta.filter(p => p.pillarKey !== 'health-male');
+    } else {
+      // If gender is not set, hide both health pillars for existing users
+      filteredPillarMastery = pillarMasteryWithDelta.filter(p => p.pillarKey !== 'health-male' && p.pillarKey !== 'health-female');
+    }
+
     // Get top 3 weak pillars (lowest mastery) - show all pillars regardless of locked status
     // This helps users see which areas need the most improvement
-    const weakPillars = [...pillarMasteryWithDelta]
+    const weakPillars = [...filteredPillarMastery]
       .filter(p => p.totalGames > 0) // Only include pillars with games
       .sort((a, b) => a.mastery - b.mastery) // Sort by mastery (lowest first)
       .slice(0, 3); // Get top 3 weakest
 
-    // Count accessible pillars for subscription info
-    const accessiblePillars = pillarMastery.filter(p => !p.locked && !p.upgradeRequired && p.totalGames > 0);
+    // Count accessible pillars for subscription info (use filtered pillars)
+    const accessiblePillars = filteredPillarMastery.filter(p => !p.locked && !p.upgradeRequired && p.totalGames > 0);
+    
+    // Calculate overall mastery using filtered pillars
+    const filteredPillarsWithGames = filteredPillarMastery.filter(p => p.totalGames > 0);
+    const filteredOverallMastery = filteredPillarsWithGames.length > 0
+      ? Math.round(filteredPillarsWithGames.reduce((sum, p) => sum + p.mastery, 0) / filteredPillarsWithGames.length)
+      : 0;
 
     res.status(200).json({
-      overallMastery,
-      totalPillars: pillarsWithGames.length, // Total pillars with games (all pillars)
+      overallMastery: filteredOverallMastery,
+      totalPillars: filteredPillarsWithGames.length, // Total pillars with games (filtered by gender)
       totalPillarsAvailable: allPillars.length, // Total pillars in system (11)
-      pillars: pillarMasteryWithDelta,
-      weakPillars: weakPillars, // Show actual weakest pillars (not filtered by locked status)
+      pillars: filteredPillarMastery, // Return filtered pillars
+      weakPillars: weakPillars, // Show actual weakest pillars (filtered by gender)
       subscription: {
         planType: subscription.planType,
         hasFullAccess: hasFullAccess,

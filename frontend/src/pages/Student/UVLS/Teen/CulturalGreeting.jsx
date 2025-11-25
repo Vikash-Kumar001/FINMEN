@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const CulturalGreeting = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-11";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentContext, setCurrentContext] = useState(0);
   const [responses, setResponses] = useState([]);
   const [showResult, setShowResult] = useState(false);
@@ -91,7 +94,8 @@ const CulturalGreeting = () => {
     setResponses(newResponses);
     
     if (greeting.isRespectful) {
-      showCorrectAnswerFeedback(5, true);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
     if (currentContext < contexts.length - 1) {
@@ -99,10 +103,6 @@ const CulturalGreeting = () => {
         setCurrentContext(prev => prev + 1);
       }, greeting.isRespectful ? 1500 : 1000);
     } else {
-      const respectfulCount = newResponses.filter(r => r.isRespectful).length;
-      if (respectfulCount >= 5) {
-        setCoins(3); // +3 Coins for respectful greetings (minimum for progress)
-      }
       setTimeout(() => {
         setShowResult(true);
       }, 1500);
@@ -133,6 +133,9 @@ const CulturalGreeting = () => {
       nextEnabled={showResult && respectfulCount >= 5}
       showGameOver={showResult && respectfulCount >= 5}
       score={coins}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       gameId="uvls-teen-11"
       gameType="uvls"
       totalLevels={20}

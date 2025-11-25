@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ImpactJournal = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-62";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [baseline, setBaseline] = useState("");
   const [action, setAction] = useState("");
   const [result, setResult] = useState("");
@@ -40,7 +43,7 @@ const ImpactJournal = () => {
     } else {
       setShowResult(true);
       if (values.every(v => v.trim() !== "")) {
-        setCoins(5);
+        setCoins(prev => prev + 1);
       }
     }
   };
@@ -59,11 +62,13 @@ const ImpactJournal = () => {
       nextEnabled={showResult && isComplete}
       showGameOver={showResult && isComplete}
       score={coins}
-      gameId="civic-186"
-      gameType="civic"
-      totalLevels={10}
       coinsPerLevel={coinsPerLevel}
-      currentLevel={6}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-62"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={62}
       showConfetti={showResult && isComplete}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

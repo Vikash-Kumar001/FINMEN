@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const InclusionQuiz = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-12";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState([]);
   const [showResult, setShowResult] = useState(false);
@@ -110,6 +113,7 @@ const InclusionQuiz = () => {
     setAnswers(newAnswers);
     
     if (option.isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -118,11 +122,6 @@ const InclusionQuiz = () => {
         setCurrentQuestion(prev => prev + 1);
       }, option.isCorrect ? 1000 : 800);
     } else {
-      const correctCount = newAnswers.filter(a => a.isCorrect).length;
-      const percentage = (correctCount / questions.length) * 100;
-      if (percentage >= 75) {
-        setCoins(3); // +3 Coins for ≥75% (minimum for progress)
-      }
       setShowResult(true);
     }
   };
@@ -136,7 +135,7 @@ const InclusionQuiz = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/teen/accessibility-puzzle");
+    navigate("/games/uvls/teens");
   };
 
   const correctCount = answers.filter(a => a.isCorrect).length;
@@ -150,6 +149,9 @@ const InclusionQuiz = () => {
       nextEnabled={showResult && percentage >= 75}
       showGameOver={showResult && percentage >= 75}
       score={coins}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       gameId="uvls-teen-12"
       gameType="uvls"
       totalLevels={20}

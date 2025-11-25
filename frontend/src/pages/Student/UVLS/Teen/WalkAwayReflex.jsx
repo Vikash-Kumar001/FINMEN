@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const WalkAwayReflex = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-35";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentScenario, setCurrentScenario] = useState(0);
   const [flagged, setFlagged] = useState(false);
   const [score, setScore] = useState(0);
@@ -47,6 +50,7 @@ const WalkAwayReflex = () => {
     const scenario = scenarios[currentScenario];
     if (scenario.justify) {
       setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     setFlagged(true);
@@ -57,6 +61,7 @@ const WalkAwayReflex = () => {
     const scenario = scenarios[currentScenario];
     if (!scenario.justify) {
       setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     setFlagged(true);
@@ -69,10 +74,6 @@ const WalkAwayReflex = () => {
       if (currentScenario < scenarios.length - 1) {
         setCurrentScenario(prev => prev + 1);
       } else {
-        const percentage = (score / scenarios.length) * 100;
-        if (percentage >= 70) {
-          setCoins(3);
-        }
         setShowResult(true);
       }
     }, 1500);
@@ -90,10 +91,13 @@ const WalkAwayReflex = () => {
       nextEnabled={showResult && (score / scenarios.length * 100 >= 70)}
       showGameOver={showResult && (score / scenarios.length * 100 >= 70)}
       score={coins}
-      gameId="conflict-178"
-      gameType="conflict"
-      totalLevels={10}
-      currentLevel={8}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-35"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={35}
       showConfetti={showResult && (score / scenarios.length * 100 >= 70)}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

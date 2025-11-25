@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const InterventionSimulation = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-61";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedStep, setSelectedStep] = useState(null);
   const [responses, setResponses] = useState([]);
@@ -101,6 +104,7 @@ const InterventionSimulation = () => {
     setResponses(newResponses);
     
     if (isSafe) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -110,10 +114,6 @@ const InterventionSimulation = () => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(prev => prev + 1);
     } else {
-      const safeCount = newResponses.filter(r => r.isSafe).length;
-      if (safeCount >= 4) {
-        setCoins(5);
-      }
       setShowResult(true);
     }
   };
@@ -132,10 +132,13 @@ const InterventionSimulation = () => {
       nextEnabled={showResult && safeCount >= 4}
       showGameOver={showResult && safeCount >= 4}
       score={coins}
-      gameId="bully-134"
-      gameType="bully"
-      totalLevels={10}
-      currentLevel={4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-61"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={61}
       showConfetti={showResult && safeCount >= 4}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const TradeOffsPuzzle = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-40";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentChoice, setCurrentChoice] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [responses, setResponses] = useState([]);
@@ -95,6 +98,7 @@ const TradeOffsPuzzle = () => {
     setResponses(newResponses);
     
     if (isBalanced) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -105,10 +109,6 @@ const TradeOffsPuzzle = () => {
         setCurrentChoice(prev => prev + 1);
       }, 1500);
     } else {
-      const balancedCount = newResponses.filter(r => r.isBalanced).length;
-      if (balancedCount >= 4) {
-        setCoins(5);
-      }
       setTimeout(() => {
         setShowResult(true);
       }, 1500);
@@ -129,10 +129,13 @@ const TradeOffsPuzzle = () => {
       nextEnabled={showResult && balancedCount >= 4}
       showGameOver={showResult && balancedCount >= 4}
       score={coins}
-      gameId="decision-153"
-      gameType="decision"
-      totalLevels={10}
-      currentLevel={3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-40"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={40}
       showConfetti={showResult && balancedCount >= 4}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

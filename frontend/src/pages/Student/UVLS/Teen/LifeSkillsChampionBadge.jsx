@@ -1,15 +1,19 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const LifeSkillsChampionBadge = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-86";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [challenges, setChallenges] = useState([false, false, false, false, false]);
   const [showResult, setShowResult] = useState(false);
+  const [coins, setCoins] = useState(0);
   const [badge, setBadge] = useState(false);
   const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
 
@@ -17,6 +21,7 @@ const LifeSkillsChampionBadge = () => {
     const newChallenges = [...challenges];
     newChallenges[index] = true;
     setChallenges(newChallenges);
+    setCoins(prev => prev + 1);
     showCorrectAnswerFeedback(1, false);
     if (newChallenges.every(c => c)) {
       setBadge(true);
@@ -35,12 +40,14 @@ const LifeSkillsChampionBadge = () => {
       onNext={handleNext}
       nextEnabled={showResult && badge}
       showGameOver={showResult && badge}
-      score={0}
-      gameId="life-200"
-      gameType="life"
-      totalLevels={10}
+      score={coins}
       coinsPerLevel={coinsPerLevel}
-      currentLevel={10}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-86"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={86}
       showConfetti={showResult && badge}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

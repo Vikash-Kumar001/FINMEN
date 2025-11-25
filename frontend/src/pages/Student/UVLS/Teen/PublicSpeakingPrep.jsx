@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PublicSpeakingPrep = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-47";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [opening, setOpening] = useState("");
   const [showResult, setShowResult] = useState(false);
   const [coins, setCoins] = useState(0);
@@ -21,11 +24,11 @@ const PublicSpeakingPrep = () => {
     if (opening.trim() === "") return;
     // Simulate scoring, assume good if has hook and structure
     const hasStructure = opening.length > 100;
+    if (hasStructure) {
+      setCoins(prev => prev + 1);
+    }
     showCorrectAnswerFeedback(1, false);
     setShowResult(true);
-    if (hasStructure) {
-      setCoins(5);
-    }
   };
 
   const handleNext = () => {
@@ -40,11 +43,13 @@ const PublicSpeakingPrep = () => {
       nextEnabled={showResult}
       showGameOver={showResult}
       score={coins}
-      gameId="communication-168"
-      gameType="communication"
-      totalLevels={10}
       coinsPerLevel={coinsPerLevel}
-      currentLevel={8}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-47"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={47}
       showConfetti={showResult}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const AllyJournal = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-27";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [action, setAction] = useState("");
   const [steps, setSteps] = useState(["", "", "", "", ""]);
   const [currentStep, setCurrentStep] = useState(0);
@@ -52,7 +55,7 @@ const AllyJournal = () => {
     } else {
       setShowResult(true);
       if (action.trim() !== "" && steps.every(s => s.trim() !== "") && date.trim() !== "") {
-        setCoins(5);
+        setCoins(prev => prev + 1);
       }
     }
   };
@@ -71,11 +74,13 @@ const AllyJournal = () => {
       nextEnabled={showResult && isComplete}
       showGameOver={showResult && isComplete}
       score={coins}
-      gameId="gender-127"
-      gameType="gender"
-      totalLevels={10}
       coinsPerLevel={coinsPerLevel}
-      currentLevel={7}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-27"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={27}
       showConfetti={showResult && isComplete}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

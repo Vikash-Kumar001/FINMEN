@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ClarifyReflex = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-76";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentClip, setCurrentClip] = useState(0);
   const [flagged, setFlagged] = useState(false);
   const [score, setScore] = useState(0);
@@ -57,6 +60,7 @@ const ClarifyReflex = () => {
     const clip = clips[currentClip];
     if (!clip.ambiguous) {
       setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     setFlagged(true);
@@ -69,10 +73,6 @@ const ClarifyReflex = () => {
       if (currentClip < clips.length - 1) {
         setCurrentClip(prev => prev + 1);
       } else {
-        const percentage = (score / clips.length) * 100;
-        if (percentage >= 75) {
-          setCoins(3);
-        }
         setShowResult(true);
       }
     }, 1500);
@@ -90,10 +90,13 @@ const ClarifyReflex = () => {
       nextEnabled={showResult && (score / clips.length * 100 >= 75)}
       showGameOver={showResult && (score / clips.length * 100 >= 75)}
       score={coins}
-      gameId="communication-163"
-      gameType="communication"
-      totalLevels={10}
-      currentLevel={3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-76"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={76}
       showConfetti={showResult && (score / clips.length * 100 >= 75)}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

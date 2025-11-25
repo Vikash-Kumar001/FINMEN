@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const WalkInShoes = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-4";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentNode, setCurrentNode] = useState(0);
   const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
@@ -78,6 +81,7 @@ const WalkInShoes = () => {
     setChoices(newChoices);
     
     if (option.isHelpful) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -86,10 +90,6 @@ const WalkInShoes = () => {
         setCurrentNode(prev => prev + 1);
       }, 1500);
     } else {
-      const helpfulCount = newChoices.filter(c => c.isHelpful).length;
-      if (helpfulCount >= 2) {
-        setCoins(3); // +3 Coins for supportive choices (minimum for progress)
-      }
       setTimeout(() => {
         setShowResult(true);
       }, 1500);
@@ -118,6 +118,9 @@ const WalkInShoes = () => {
       nextEnabled={showResult && helpfulCount >= 2}
       showGameOver={showResult && helpfulCount >= 2}
       score={coins}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       gameId="uvls-teen-4"
       gameType="uvls"
       totalLevels={20}

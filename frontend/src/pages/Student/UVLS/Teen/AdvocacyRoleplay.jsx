@@ -1,17 +1,21 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const AdvocacyRoleplay = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-97";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentPart, setCurrentPart] = useState(0);
   const [selectedElement, setSelectedElement] = useState(null);
   const [responses, setResponses] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [coins, setCoins] = useState(0);
   const [badge, setBadge] = useState(false);
   const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
 
@@ -95,6 +99,7 @@ const AdvocacyRoleplay = () => {
     setResponses(newResponses);
     
     if (isPersuasive) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -128,11 +133,14 @@ const AdvocacyRoleplay = () => {
       onNext={handleNext}
       nextEnabled={showResult && persuasiveCount >= 4}
       showGameOver={showResult && persuasiveCount >= 4}
-      score={0}
-      gameId="civic-185"
-      gameType="civic"
-      totalLevels={10}
-      currentLevel={5}
+      score={coins}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-97"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={97}
       showConfetti={showResult && persuasiveCount >= 4}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const MediationSimulation = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-59";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedMediation, setSelectedMediation] = useState(null);
   const [responses, setResponses] = useState([]);
@@ -95,6 +98,7 @@ const MediationSimulation = () => {
     setResponses(newResponses);
     
     if (isConsensus) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -105,10 +109,6 @@ const MediationSimulation = () => {
         setCurrentStep(prev => prev + 1);
       }, 1500);
     } else {
-      const consensusCount = newResponses.filter(r => r.isConsensus).length;
-      if (consensusCount >= 4) {
-        setCoins(5);
-      }
       setTimeout(() => {
         setShowResult(true);
       }, 1500);
@@ -129,10 +129,13 @@ const MediationSimulation = () => {
       nextEnabled={showResult && consensusCount >= 4}
       showGameOver={showResult && consensusCount >= 4}
       score={coins}
-      gameId="conflict-173"
-      gameType="conflict"
-      totalLevels={10}
-      currentLevel={3}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-59"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={59}
       showConfetti={showResult && consensusCount >= 4}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

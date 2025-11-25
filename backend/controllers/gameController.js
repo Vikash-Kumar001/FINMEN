@@ -1262,9 +1262,26 @@ export const getBatchGameProgress = async (req, res) => {
   const { categoryPrefix } = req.params; // e.g., "finance-kids", "brain-health-teens"
   
   try {
+    // Normalize category prefix: handle "teens" -> "teen" for UVLS games
+    // The frontend sends "uvls-teens" but gameIds are "uvls-teen-1", "uvls-teen-2", etc.
+    let normalizedPrefix = categoryPrefix;
+    if (categoryPrefix.includes('uvls-teens')) {
+      normalizedPrefix = categoryPrefix.replace('uvls-teens', 'uvls-teen');
+    } else if (categoryPrefix.includes('brain-teens')) {
+      normalizedPrefix = categoryPrefix.replace('brain-teens', 'brain-teen');
+    } else if (categoryPrefix.includes('finance-teens')) {
+      normalizedPrefix = categoryPrefix.replace('finance-teens', 'finance-teen');
+    }
+    // Add similar normalization for other categories if needed
+    
     // Query all progress documents where gameId starts with the category prefix
     // Using regex to match gameIds like "finance-kids-1", "finance-kids-2", etc.
-    const regex = new RegExp(`^${categoryPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}-\\d+$`);
+    // Also try the original prefix in case some games use "teens" format
+    const escapedPrefix = normalizedPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const escapedOriginal = categoryPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    
+    // Match either normalized or original prefix
+    const regex = new RegExp(`^(${escapedPrefix}|${escapedOriginal})-\\d+$`);
     
     const allProgress = await UnifiedGameProgress.find({
       userId,

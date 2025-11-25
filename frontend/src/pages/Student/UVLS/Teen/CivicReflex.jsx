@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const CivicReflex = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-78";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentCard, setCurrentCard] = useState(0);
   const [flagged, setFlagged] = useState(false);
   const [score, setScore] = useState(0);
@@ -57,6 +60,7 @@ const CivicReflex = () => {
     const card = cards[currentCard];
     if (!card.urgent) {
       setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     setFlagged(true);
@@ -69,10 +73,6 @@ const CivicReflex = () => {
       if (currentCard < cards.length - 1) {
         setCurrentCard(prev => prev + 1);
       } else {
-        const percentage = (score / cards.length) * 100;
-        if (percentage >= 75) {
-          setCoins(3);
-        }
         setShowResult(true);
       }
     }, 1500);
@@ -90,10 +90,13 @@ const CivicReflex = () => {
       nextEnabled={showResult && (score / cards.length * 100 >= 75)}
       showGameOver={showResult && (score / cards.length * 100 >= 75)}
       score={coins}
-      gameId="civic-189"
-      gameType="civic"
-      totalLevels={10}
-      currentLevel={9}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-78"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={78}
       showConfetti={showResult && (score / cards.length * 100 >= 75)}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

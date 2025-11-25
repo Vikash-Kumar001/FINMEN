@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const TimedDebate = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-98";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentRound, setCurrentRound] = useState(0);
   const [selectedArgument, setSelectedArgument] = useState(null);
   const [responses, setResponses] = useState([]);
@@ -95,6 +98,7 @@ const TimedDebate = () => {
     setResponses(newResponses);
     
     if (isLogical) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -105,10 +109,6 @@ const TimedDebate = () => {
         setCurrentRound(prev => prev + 1);
       }, 1500);
     } else {
-      const logicalCount = newResponses.filter(r => r.isLogical).length;
-      if (logicalCount >= 4) {
-        setCoins(10);
-      }
       setTimeout(() => {
         setShowResult(true);
       }, 1500);
@@ -129,10 +129,13 @@ const TimedDebate = () => {
       nextEnabled={showResult && logicalCount >= 4}
       showGameOver={showResult && logicalCount >= 4}
       score={coins}
-      gameId="decision-158"
-      gameType="decision"
-      totalLevels={10}
-      currentLevel={8}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-98"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={98}
       showConfetti={showResult && logicalCount >= 4}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

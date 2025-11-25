@@ -1,17 +1,21 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const FeedbackRoleplay = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-87";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentScenario, setCurrentScenario] = useState(0);
   const [selectedFeedback, setSelectedFeedback] = useState(null);
   const [responses, setResponses] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [coins, setCoins] = useState(0);
   const [badge, setBadge] = useState(false);
   const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
 
@@ -95,6 +99,7 @@ const FeedbackRoleplay = () => {
     setResponses(newResponses);
     
     if (isEffective) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -128,11 +133,14 @@ const FeedbackRoleplay = () => {
       onNext={handleNext}
       nextEnabled={showResult && effectiveCount >= 4}
       showGameOver={showResult && effectiveCount >= 4}
-      score={0}
-      gameId="communication-165"
-      gameType="communication"
-      totalLevels={10}
-      currentLevel={5}
+      score={coins}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-87"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={87}
       showConfetti={showResult && effectiveCount >= 4}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

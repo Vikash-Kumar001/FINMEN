@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const InterviewSimulation = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-60";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answer, setAnswer] = useState("");
   const [responses, setResponses] = useState([]);
@@ -59,6 +62,7 @@ const InterviewSimulation = () => {
     setResponses(newResponses);
     
     if (isStructured) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -69,10 +73,6 @@ const InterviewSimulation = () => {
         setCurrentQuestion(prev => prev + 1);
       }, 1500);
     } else {
-      const structuredCount = newResponses.filter(r => r.isStructured).length;
-      if (structuredCount >= 4) {
-        setCoins(5);
-      }
       setTimeout(() => {
         setShowResult(true);
       }, 1500);
@@ -93,10 +93,13 @@ const InterviewSimulation = () => {
       nextEnabled={showResult && structuredCount >= 4}
       showGameOver={showResult && structuredCount >= 4}
       score={coins}
-      gameId="communication-164"
-      gameType="communication"
-      totalLevels={10}
-      currentLevel={4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-60"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={60}
       showConfetti={showResult && structuredCount >= 4}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

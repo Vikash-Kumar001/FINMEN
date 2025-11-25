@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ListenDeep = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-1";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentVignette, setCurrentVignette] = useState(0);
   const [responses, setResponses] = useState([]);
   const [showResult, setShowResult] = useState(false);
@@ -47,6 +50,28 @@ const ListenDeep = () => {
         { id: 3, text: "Just join a club or something.", hasActiveListening: false, hasValidation: false },
         { id: 4, text: "That sounds really isolating. I'd like to get to know you better.", hasActiveListening: true, hasValidation: true }
       ]
+    },
+    {
+      id: 4,
+      problem: "I've been feeling really down lately. Nothing seems to make me happy anymore, even things I used to enjoy.",
+      emoji: "😢",
+      replies: [
+        { id: 1, text: "Just cheer up and think positive!", hasActiveListening: false, hasValidation: false },
+        { id: 2, text: "I'm sorry you're going through this. That sounds really difficult. Have you talked to anyone about how you're feeling?", hasActiveListening: true, hasValidation: true },
+        { id: 3, text: "Everyone gets sad sometimes, just get over it.", hasActiveListening: false, hasValidation: false },
+        { id: 4, text: "I can hear how much this is weighing on you. Your feelings are valid. I'm here for you.", hasActiveListening: true, hasValidation: true }
+      ]
+    },
+    {
+      id: 5,
+      problem: "I got rejected from my dream college. I worked so hard and now I feel like all my effort was wasted.",
+      emoji: "😓",
+      replies: [
+        { id: 1, text: "It's not the end of the world, there are other colleges.", hasActiveListening: false, hasValidation: false },
+        { id: 2, text: "I can imagine how disappointing that must feel after all your hard work. That really stings. Want to talk about what's next?", hasActiveListening: true, hasValidation: true },
+        { id: 3, text: "Maybe you just weren't good enough for that school.", hasActiveListening: false, hasValidation: false },
+        { id: 4, text: "That must be heartbreaking after putting in so much effort. I'm here to listen if you want to process this together.", hasActiveListening: true, hasValidation: true }
+      ]
     }
   ];
 
@@ -65,7 +90,8 @@ const ListenDeep = () => {
     setResponses(newResponses);
     
     if (isGoodResponse) {
-      showCorrectAnswerFeedback(5, true);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
     if (currentVignette < vignettes.length - 1) {
@@ -73,11 +99,11 @@ const ListenDeep = () => {
         setCurrentVignette(prev => prev + 1);
       }, isGoodResponse ? 1500 : 1000);
     } else {
+      // Last question answered - calculate final score
       const goodCount = newResponses.filter(r => r.isGoodResponse).length;
-      if (goodCount >= 2) {
-        setCoins(3); // +3 Coins for supportive responses (minimum for progress)
-      }
+      // Ensure coins match the actual number of correct answers
       setTimeout(() => {
+        setCoins(goodCount);
         setShowResult(true);
       }, 1500);
     }
@@ -97,6 +123,8 @@ const ListenDeep = () => {
 
   const vignette = vignettes[currentVignette];
   const goodCount = responses.filter(r => r.isGoodResponse).length;
+  // Ensure score matches the number of correct answers
+  const finalScore = showResult ? goodCount : coins;
 
   return (
     <GameShell
@@ -105,19 +133,23 @@ const ListenDeep = () => {
       onNext={handleNext}
       nextEnabled={showResult && goodCount >= 2}
       showGameOver={showResult && goodCount >= 2}
-      score={coins}
+      score={finalScore}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       gameId="uvls-teen-1"
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={1}
+      totalLevels={vignettes.length}
+      currentLevel={currentVignette + 1}
+      maxScore={vignettes.length}
       showConfetti={showResult && goodCount >= 2}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/uvls/teens"
     >
-      <div className="space-y-8">
+      <div className="space-y-8 flex justify-center items-start">
         {!showResult ? (
-          <div className="space-y-6">
+      <div className="space-y-6 max-w-4xl w-full">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="text-6xl mb-4 text-center">{vignette.emoji}</div>
               
@@ -143,7 +175,7 @@ const ListenDeep = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 max-w-2xl w-full">
             <h2 className="text-3xl font-bold text-white mb-4">
               {goodCount >= 2 ? "🎉 Great Listener!" : "💪 Keep Practicing!"}
             </h2>

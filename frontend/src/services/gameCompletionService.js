@@ -63,38 +63,11 @@ class GameCompletionService {
       // Calculate new levels completed (only count new ones)
       const newLevelsCompleted = Math.max(0, levelsCompleted - currentProgress.levelsCompleted);
       
-      // If no new progress and not a replay, don't award coins but allow replay
-      if (newLevelsCompleted === 0 && !currentProgress.fullyCompleted && isFullCompletion && !isReplayAttempt) {
-        // Mark as fully completed for first time
-        await this.updateGameProgress(gameId, {
-          ...gameData,
-          levelsCompleted: currentProgress.levelsCompleted,
-          newCoinsEarned: 0,
-          isProgressUpdate: true
-        });
-        
-        return {
-          success: true,
-          coinsEarned: 0,
-          totalCoinsEarned: currentProgress.totalCoinsEarned,
-          newLevelsCompleted: 0,
-          canReplay: true,
-          message: 'Game completed! You can replay for fun, but no additional coins.'
-        };
-      }
-
-      // If game is fully completed and it's NOT a replay attempt, return early
-      // BUT if it IS a replay attempt, we MUST call the backend to lock it again
-      if (newLevelsCompleted === 0 && currentProgress.fullyCompleted && !isReplayAttempt) {
-        return {
-          success: true,
-          coinsEarned: 0,
-          totalCoinsEarned: currentProgress.totalCoinsEarned,
-          newLevelsCompleted: 0,
-          canReplay: true,
-          message: 'Thanks for playing again! You already earned coins for this game.'
-        };
-      }
+      // Always call the backend to handle game completion logic
+      // The backend will determine if coins should be awarded based on:
+      // - Whether it's a first-time completion
+      // - Whether it's a replay
+      // - The totalCoins value provided
 
       // Send completion data to backend
       // IMPORTANT: For replay attempts, we MUST call the backend to lock the game again
@@ -112,9 +85,18 @@ class GameCompletionService {
         totalCoins,
         coinsPerLevel,
         totalLevels,
+        levelsCompleted,
         totalXp,
         isFullCompletion,
-        isReplay: isReplayAttempt
+        isReplay: isReplayAttempt,
+        score,
+        maxScore,
+        currentProgress: {
+          fullyCompleted: currentProgress.fullyCompleted,
+          replayUnlocked: currentProgress.replayUnlocked,
+          levelsCompleted: currentProgress.levelsCompleted,
+          totalCoinsEarned: currentProgress.totalCoinsEarned
+        }
       });
       
       const response = await api.post(`/api/game/complete-unified/${gameId}`, {

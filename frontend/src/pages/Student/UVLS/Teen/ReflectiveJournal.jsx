@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ReflectiveJournal = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-6";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [selectedPrompt, setSelectedPrompt] = useState(0);
   const [journalEntry, setJournalEntry] = useState("");
   const [actionStep, setActionStep] = useState("");
@@ -55,8 +58,8 @@ const ReflectiveJournal = () => {
 
   const handleSubmit = () => {
     if (wordCount >= 150 && wordCount <= 250 && actionWordCount >= 10) {
-      showCorrectAnswerFeedback(3, false);
-      setCoins(3); // +3 Coins for reflection (minimum for progress)
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, false);
       setTimeout(() => {
         setShowResult(true);
       }, 500);
@@ -77,10 +80,12 @@ const ReflectiveJournal = () => {
       nextEnabled={showResult}
       showGameOver={showResult}
       score={coins}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       gameId="uvls-teen-6"
       gameType="uvls"
       totalLevels={20}
-      coinsPerLevel={coinsPerLevel}
       currentLevel={6}
       showConfetti={showResult}
       backPath="/games/uvls/teens"

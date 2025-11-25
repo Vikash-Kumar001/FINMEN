@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const TriggerQuiz = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 3; // Default 3 for this game
+  const gameId = "uvls-teen-33";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [score, setScore] = useState(0);
@@ -88,6 +91,7 @@ const TriggerQuiz = () => {
     
     if (answer.correct) {
       setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -97,10 +101,6 @@ const TriggerQuiz = () => {
     if (currentQuestion < questions.length - 1) {
       setCurrentQuestion(prev => prev + 1);
     } else {
-      const percentage = (score / questions.length) * 100;
-      if (percentage >= 70) {
-        setCoins(3);
-      }
       setShowResult(true);
     }
   };
@@ -117,10 +117,13 @@ const TriggerQuiz = () => {
       nextEnabled={showResult && (score / questions.length * 100 >= 70)}
       showGameOver={showResult && (score / questions.length * 100 >= 70)}
       score={coins}
-      gameId="emotion-142"
-      gameType="emotion"
-      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-33"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={33}
       showConfetti={showResult && (score / questions.length * 100 >= 70)}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const InclusiveClassSimulation = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-14";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [designChoices, setDesignChoices] = useState({
     roles: null,
     time: null,
@@ -53,8 +56,8 @@ const InclusiveClassSimulation = () => {
     setInclusionScore(totalScore);
     
     if (totalScore >= 80) {
-      showCorrectAnswerFeedback(3, false);
-      setCoins(3); // +3 Coins for inclusive design (minimum for progress)
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, false);
     }
     
     setSimulationRun(true);
@@ -82,6 +85,9 @@ const InclusiveClassSimulation = () => {
       nextEnabled={showResult && inclusionScore >= 80}
       showGameOver={showResult && inclusionScore >= 80}
       score={coins}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       gameId="uvls-teen-14"
       gameType="uvls"
       totalLevels={20}

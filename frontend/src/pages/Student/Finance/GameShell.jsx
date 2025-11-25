@@ -202,6 +202,7 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coinsEarned, setCoinsEarned] = useState(0);
   const [submissionComplete, setSubmissionComplete] = useState(false);
+  const [wasReplay, setWasReplay] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -214,17 +215,11 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
         const progress = await gameCompletionService.getGameProgress(gameId);
 
         // Check if this is a replay attempt
-        const isReplayAttempt = isReplay || (progress?.fullyCompleted && progress?.replayUnlocked === true);
+        // Only treat as replay if explicitly marked as replay OR if game is fully completed AND replay is unlocked
+        const isReplayAttempt = isReplay === true || (progress?.fullyCompleted === true && progress?.replayUnlocked === true);
         
-        // If game is fully completed but replay is not unlocked, don't allow playing
-        if (progress?.fullyCompleted && !progress?.replayUnlocked && !isReplay) {
-          setCoinsEarned(0);
-          setSubmissionComplete(true);
-          return;
-        }
-
-        // Always call the backend to save progress, even for replays
-        // The backend will handle locking the game after replay
+        // Always call the backend to save progress and let it determine coins
+        // The backend will handle the logic for first completion vs replay
         const resolvedMaxScore = maxScore || (totalLevels * 20);
         const result = await gameCompletionService.completeGame({
           gameId,
@@ -242,21 +237,26 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
         });
 
         if (result.success) {
-          setCoinsEarned(result.coinsEarned);
+          setCoinsEarned(result.coinsEarned || 0);
+          setWasReplay(result.isReplay === true);
           setSubmissionComplete(true);
+          
+          // Use fullyCompleted from result, default to true if not provided
+          const fullyCompleted = result.fullyCompleted !== undefined ? result.fullyCompleted : true;
           
           console.log('✅ Game completion result:', {
             gameId,
             isReplay: result.isReplay,
             replayUnlocked: result.replayUnlocked,
-            coinsEarned: result.coinsEarned
+            coinsEarned: result.coinsEarned,
+            fullyCompleted: fullyCompleted
           });
           
-          // Dispatch event with replay status
+          // Dispatch event with replay status - always dispatch even if coinsEarned is 0
           window.dispatchEvent(new CustomEvent('gameCompleted', { 
             detail: { 
               gameId, 
-              fullyCompleted: true,
+              fullyCompleted: fullyCompleted,
               isReplay: result.isReplay === true,
               replayUnlocked: result.replayUnlocked === true
             } 
@@ -308,9 +308,14 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
             <div className="bg-gradient-to-r from-green-100 to-blue-100 rounded-2xl p-4 mb-4">
               <h3 className="text-xl font-bold text-green-700 mb-2">💰 HealCoins Earned!</h3>
               <p className="text-3xl font-black text-green-600">+{coinsEarned}</p>
-              {coinsEarned === 0 && (
+              {coinsEarned === 0 && wasReplay && (
                 <p className="text-sm text-gray-600 mt-2">
                   You've already earned all coins for this game. This game is now locked.
+                </p>
+              )}
+              {coinsEarned === 0 && !wasReplay && submissionComplete && (
+                <p className="text-sm text-yellow-600 mt-2">
+                  No coins earned. Please try again or contact support if this persists.
                 </p>
               )}
             </div>

@@ -1,13 +1,16 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SpotDistressReflex = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-9";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [gameStarted, setGameStarted] = useState(false);
   const [currentCard, setCurrentCard] = useState(0);
   const [score, setScore] = useState(0);
@@ -49,10 +52,6 @@ const SpotDistressReflex = () => {
       setCurrentCard(prev => prev + 1);
       setCardTimer(3);
     } else if (gameStarted && cardTimer === 0 && currentCard === distressCues.length - 1) {
-      const accuracy = (score / distressCues.length) * 100;
-      if (accuracy >= 70) {
-        setCoins(3); // +3 Coins for ≥70% detection (minimum for progress)
-      }
       setShowResult(true);
     }
   }, [gameStarted, showResult, cardTimer, currentCard, score]);
@@ -62,6 +61,7 @@ const SpotDistressReflex = () => {
     
     if (isCorrect) {
       setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -72,10 +72,6 @@ const SpotDistressReflex = () => {
       }, 300);
     } else {
       const finalScore = score + (isCorrect ? 1 : 0);
-      const accuracy = (finalScore / distressCues.length) * 100;
-      if (accuracy >= 70) {
-        setCoins(3); // +3 Coins for ≥70% detection (minimum for progress)
-      }
       setScore(finalScore);
       setShowResult(true);
     }
@@ -105,6 +101,9 @@ const SpotDistressReflex = () => {
       nextEnabled={showResult && accuracy >= 70}
       showGameOver={showResult && accuracy >= 70}
       score={coins}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       gameId="uvls-teen-9"
       gameType="uvls"
       totalLevels={20}

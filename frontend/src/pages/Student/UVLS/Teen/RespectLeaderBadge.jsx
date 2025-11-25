@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const RespectLeaderBadge = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-20";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [completedTasks, setCompletedTasks] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [earnedBadge, setEarnedBadge] = useState(false);
@@ -88,8 +91,8 @@ const RespectLeaderBadge = () => {
       setCompletedTasks(newCompletedTasks);
       
       if (newCompletedTasks.length === 5) {
-        showCorrectAnswerFeedback(3, false);
         setEarnedBadge(true);
+        showCorrectAnswerFeedback(1, false);
         setTimeout(() => {
           setShowResult(true);
         }, 1000);
@@ -111,11 +114,13 @@ const RespectLeaderBadge = () => {
       onNext={handleNext}
       nextEnabled={showResult}
       showGameOver={showResult}
-      score={earnedBadge ? 3 : 0}
+      score={earnedBadge ? 1 : 0}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       gameId="uvls-teen-20"
       gameType="uvls"
       totalLevels={20}
-      coinsPerLevel={coinsPerLevel}
       currentLevel={20}
       showConfetti={showResult}
       backPath="/games/uvls/teens"

@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const CampaignStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-79";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentStep, setCurrentStep] = useState(0);
   const [selections, setSelections] = useState([]);
   const [impact, setImpact] = useState(0);
@@ -72,6 +75,7 @@ const CampaignStory = () => {
     const step = steps[currentStep];
     const option = step.options.find(o => o.id === optionId);
     setSelections([...selections, option.value]);
+    setCoins(prev => prev + 1);
     showCorrectAnswerFeedback(1, false);
     if (currentStep < steps.length - 1) {
       setTimeout(() => {
@@ -81,7 +85,7 @@ const CampaignStory = () => {
       const total = selections.reduce((sum, val) => sum + val, 0);
       setImpact(total);
       if (total > 100) {
-        setCoins(5);
+        setCoins(prev => prev + 1);
       }
       setTimeout(() => {
         setShowResult(true);

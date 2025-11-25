@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const CaseResponsePuzzle = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-8";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentStep, setCurrentStep] = useState(0);
   const [responses, setResponses] = useState([]);
   const [showResult, setShowResult] = useState(false);
@@ -124,6 +127,7 @@ const CaseResponsePuzzle = () => {
     setResponses(newResponses);
     
     if (option.isAppropriate) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
@@ -132,11 +136,6 @@ const CaseResponsePuzzle = () => {
         setCurrentStep(prev => prev + 1);
       }, option.isAppropriate ? 1000 : 800);
     } else {
-      const appropriateCount = newResponses.filter(r => r.isAppropriate).length;
-      const percentage = (appropriateCount / caseStudy.steps.length) * 100;
-      if (percentage >= 80) {
-        setCoins(3); // +3 Coins for appropriate responses (minimum for progress)
-      }
       setShowResult(true);
     }
   };
@@ -156,6 +155,9 @@ const CaseResponsePuzzle = () => {
       nextEnabled={showResult && percentage >= 80}
       showGameOver={showResult && percentage >= 80}
       score={coins}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       gameId="uvls-teen-8"
       gameType="uvls"
       totalLevels={20}

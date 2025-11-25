@@ -473,7 +473,8 @@ const GameCategoryPage = () => {
 
     // Listen for game completion events from GameShell (custom window event)
     const handleGameCompleted = (event) => {
-      console.log('🎮 Game completed window event received:', event?.detail);
+      const { gameId, fullyCompleted } = event?.detail || {};
+      console.log('🎮 Game completed window event received:', { gameId, fullyCompleted, detail: event?.detail });
       
       if (
         (category === "financial-literacy" ||
@@ -495,9 +496,21 @@ const GameCategoryPage = () => {
           ageGroup === "carbon-and-climate" ||
           ageGroup === "water-and-energy")
       ) {
+        // Immediately update the game completion status for instant UI feedback
+        if (gameId && fullyCompleted !== false) {
+          console.log(`✅ Immediately marking game ${gameId} as completed`);
+          setGameCompletionStatus(prev => ({
+            ...prev,
+            [gameId]: true
+          }));
+        }
+        
         // Reload game completion status and progress when a game is completed
         // This will update stats automatically since stats depend on gameProgressData
-        loadGameCompletionStatus();
+        // Add a small delay to ensure backend has saved the changes
+        setTimeout(() => {
+          loadGameCompletionStatus();
+        }, 500);
         
         // Also refresh wallet to show updated balance
         if (refreshWallet) {

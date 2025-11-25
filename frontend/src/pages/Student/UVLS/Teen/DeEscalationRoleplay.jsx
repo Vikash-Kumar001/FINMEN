@@ -1,17 +1,21 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const DeEscalationRoleplay = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-91";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedLanguage, setSelectedLanguage] = useState(null);
   const [responses, setResponses] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [coins, setCoins] = useState(0);
   const [badge, setBadge] = useState(false);
   const [timeLeft, setTimeLeft] = useState(30);
   const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
@@ -101,6 +105,7 @@ const DeEscalationRoleplay = () => {
     setResponses(newResponses);
     
     if (isDeescalate) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, false);
     }
     
@@ -131,11 +136,14 @@ const DeEscalationRoleplay = () => {
       onNext={handleNext}
       nextEnabled={showResult && deescalateCount >= 3}
       showGameOver={showResult && deescalateCount >= 3}
-      score={0}
-      gameId="emotion-145"
-      gameType="emotion"
-      totalLevels={10}
-      currentLevel={5}
+      score={coins}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-91"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={91}
       showConfetti={showResult && deescalateCount >= 3}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

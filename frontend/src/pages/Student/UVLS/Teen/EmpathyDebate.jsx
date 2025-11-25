@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const EmpathyDebate = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-5";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [debateStage, setDebateStage] = useState("prep"); // prep, debate, judging, result
   const [selectedEvidence, setSelectedEvidence] = useState([]);
   const [selectedRebuttal, setSelectedRebuttal] = useState(null);
@@ -60,8 +63,8 @@ const EmpathyDebate = () => {
     const score = strongEvidence + (rebuttal.respectful ? 2 : 0);
     
     if (score >= 4) {
-      setCoins(5); // +5 Coins for good debate (double points for complex activity)
-      showCorrectAnswerFeedback(5, false);
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, false);
     }
     
     setTimeout(() => {
@@ -88,6 +91,9 @@ const EmpathyDebate = () => {
       nextEnabled={showResult && finalScore >= 4}
       showGameOver={showResult && finalScore >= 4}
       score={coins}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       gameId="uvls-teen-5"
       gameType="uvls"
       totalLevels={20}

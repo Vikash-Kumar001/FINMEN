@@ -1,13 +1,16 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const CrisisSimulation = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question
+  const gameId = "uvls-teen-73";
+  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
+  const coinsPerLevel = gameData?.coins || 1;
+  const totalCoins = gameData?.coins || 1;
+  const totalXp = gameData?.xp || 1;
   const [currentTask, setCurrentTask] = useState(0);
   const [selectedPriority, setSelectedPriority] = useState(null);
   const [responses, setResponses] = useState([]);
@@ -78,6 +81,7 @@ const CrisisSimulation = () => {
     
     setResponses(newResponses);
     
+    setCoins(prev => prev + 1);
     showCorrectAnswerFeedback(1, false);
     
     setSelectedPriority(null);
@@ -87,11 +91,6 @@ const CrisisSimulation = () => {
         setCurrentTask(prev => prev + 1);
       }, 1500);
     } else {
-      const study = responses.reduce((sum, r) => sum + (r.studyScore || 0), 0);
-      const sleep = responses.reduce((sum, r) => sum + (r.sleep || 0), 0);
-      if (study >= 70 && sleep >= 6) {
-        setCoins(5);
-      }
       setTimeout(() => {
         setShowResult(true);
       }, 1500);
@@ -113,10 +112,13 @@ const CrisisSimulation = () => {
       nextEnabled={showResult && study >= 70 && sleep >= 6}
       showGameOver={showResult && study >= 70 && sleep >= 6}
       score={coins}
-      gameId="life-194"
-      gameType="life"
-      totalLevels={10}
-      currentLevel={4}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId="uvls-teen-73"
+      gameType="uvls"
+      totalLevels={20}
+      currentLevel={73}
       showConfetti={showResult && study >= 70 && sleep >= 6}
       flashPoints={flashPoints}
       backPath="/games/uvls/teens"

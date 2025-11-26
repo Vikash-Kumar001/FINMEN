@@ -16,194 +16,120 @@ const PosterSmartShopping = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [selectedPoster, setSelectedPoster] = useState(null);
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const posters = [
+  const stages = [
     {
-      id: 1,
-      title: "Think Before You Spend",
-      design: "📝💰",
-      message: "Always consider if you really need something before buying it",
-      isCorrect: true
+      question: 'Choose the best poster for smart shopping:',
+      choices: [
+        { text: "Think Before You Spend 📝💰", design: "📝💰", correct: true },
+        { text: "Spend All You Want 💸🛍️", design: "💸🛍️", correct: false },
+        { text: "Buy Everything Now 🛒", design: "🛒", correct: false },
+      ],
     },
     {
-      id: 2,
-      title: "Save First, Spend Later",
-      design: "🏦⏰",
-      message: "Put money aside for savings before spending on wants",
-      isCorrect: false
+      question: 'Which poster promotes smart shopping habits?',
+      choices: [
+        { text: "Make a Shopping List 📋🛒", design: "📋🛒", correct: true },
+        { text: "Buy Without Thinking 🎯", design: "🎯", correct: false },
+        { text: "Spend Immediately ⚡", design: "⚡", correct: false },
+      ],
     },
     {
-      id: 3,
-      title: "Make a Shopping List",
-      design: "📋🛒",
-      message: "Plan purchases ahead of time to avoid impulse buys",
-      isCorrect: true
+      question: 'Select the best shopping poster:',
+      choices: [
+        { text: "Compare Prices 🔍📊", design: "🔍📊", correct: true },
+        { text: "Buy First, Think Later 🛍️", design: "🛍️", correct: false },
+        { text: "Spend Without Plan 💸", design: "💸", correct: false },
+      ],
     },
     {
-      id: 4,
-      title: "Compare Prices",
-      design: "🔍📊",
-      message: "Look for the best deals before making a purchase",
-      isCorrect: true
+      question: 'Choose the smart shopping poster:',
+      choices: [
+        { text: "Buy What's on Sale 🏷️🎉", design: "🏷️🎉", correct: true },
+        { text: "Pay Full Price Always 💵", design: "💵", correct: false },
+        { text: "Never Save Money 🎲", design: "🎲", correct: false },
+      ],
     },
     {
-      id: 5,
-      title: "Buy What's on Sale",
-      design: "🏷️🎉",
-      message: "Wait for discounts to get better value for your money",
-      isCorrect: true
+      question: 'Which is the best poster for smart shopping?',
+      choices: [
+        { text: "Plan Purchases Ahead 📅💰", design: "📅💰", correct: true },
+        { text: "Impulse Buy Everything 🎁", design: "🎁", correct: false },
+        { text: "Spend Without Budget 💳", design: "💳", correct: false },
+      ],
     },
-    {
-      id: 6,
-      title: "Spend All You Want",
-      design: "💸🛍️",
-      message: "Buy anything that catches your eye without thinking",
-      isCorrect: false
-    }
   ];
 
-  const handlePosterSelect = (poster) => {
-    if (showResult) return;
-    
-    setSelectedPoster(poster);
-    
-    // If the poster is correct, show feedback
-    if (poster.isCorrect) {
+  const handleSelect = (isCorrect) => {
+    if (isCorrect) {
+      const newScore = score + 1;
+      setScore(newScore);
       showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleSubmit = () => {
-    if (!selectedPoster) return;
     
-    // For this activity, we'll consider it complete if they select a correct poster
-    const isCorrect = selectedPoster.isCorrect;
-    setFinalScore(isCorrect ? 1 : 0);
-    setShowResult(true);
-  };
-
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setSelectedPoster(null);
-    setFinalScore(0);
-    resetFeedback();
+    if (currentStage < stages.length - 1) {
+      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    } else {
+      setTimeout(() => setShowResult(true), 800);
+    }
   };
 
   const handleNext = () => {
     navigate("/student/finance/kids/journal-of-smart-buy");
   };
 
+  const finalScore = score;
+
   return (
     <GameShell
       title="Poster: Smart Shopping"
-      subtitle={showResult ? "Activity Complete!" : "Choose the best poster for smart shopping"}
+      subtitle={showResult ? "Activity Complete!" : `Question ${currentStage + 1} of ${stages.length}`}
       onNext={handleNext}
-      nextEnabled={showResult}
+      nextEnabled={false}
       showGameOver={showResult}
-      score={selectedPoster?.isCorrect ? 1 : 0}
+      score={finalScore}
       gameId="finance-kids-16"
       gameType="finance"
-      totalLevels={10}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
       currentLevel={6}
-      showConfetti={showResult && selectedPoster?.isCorrect}
+      maxScore={5}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">
-                Select the best poster that promotes smart shopping habits
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {stages[currentStage].question}
               </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {posters.map(poster => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {stages[currentStage].choices.map((choice, index) => (
                   <button
-                    key={poster.id}
-                    onClick={() => handlePosterSelect(poster)}
-                    className={`p-6 rounded-2xl text-left transition-all transform hover:scale-105 ${
-                      selectedPoster?.id === poster.id
-                        ? "ring-4 ring-yellow-400 bg-gradient-to-br from-purple-600/50 to-pink-600/50"
-                        : "bg-white/10 hover:bg-white/20"
-                    }`}
+                    key={index}
+                    onClick={() => handleSelect(choice.correct)}
+                    className="p-6 rounded-2xl text-center transition-all transform hover:scale-105 bg-white/10 hover:bg-white/20 border border-white/20"
                   >
-                    <div className="text-4xl mb-3">{poster.design}</div>
-                    <h4 className="font-bold text-white text-lg mb-2">{poster.title}</h4>
-                    <p className="text-white/90">{poster.message}</p>
-                    
-                    {selectedPoster?.id === poster.id && (
-                      <div className="mt-4 p-3 bg-black/20 rounded-lg">
-                        <p className="text-yellow-300 font-bold">
-                          {poster.isCorrect ? "✅ Great choice!" : "❌ Not the best option"}
-                        </p>
-                      </div>
-                    )}
+                    <div className="text-5xl mb-3">{choice.design}</div>
+                    <h4 className="font-bold text-white text-lg">{choice.text}</h4>
                   </button>
                 ))}
               </div>
               
-              <div className="mt-8 flex justify-center">
-                <button
-                  onClick={handleSubmit}
-                  disabled={!selectedPoster}
-                  className={`py-3 px-8 rounded-full font-bold text-lg transition-all ${
-                    selectedPoster
-                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
-                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  Submit Choice
-                </button>
+              <div className="mt-6 text-center text-white/80">
+                <p>Score: {score}/{stages.length}</p>
               </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {selectedPoster?.isCorrect ? (
-              <div>
-                <div className="text-5xl mb-4">🎨</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Creative Choice!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You selected "{selectedPoster.title}" which promotes smart shopping habits!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>Badge Earned!</span>
-                </div>
-                <p className="text-white/80">
-                  This poster encourages thinking before spending, making shopping lists, 
-                  comparing prices, and buying on sale - all smart shopping habits!
-                </p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">🤔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Think Again!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  "{selectedPoster?.title}" doesn't promote the best shopping habits.
-                </p>
-                <p className="text-white/90 mb-4">
-                  Better choices would be posters about thinking before spending, 
-                  making shopping lists, comparing prices, or buying on sale.
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
-              </div>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

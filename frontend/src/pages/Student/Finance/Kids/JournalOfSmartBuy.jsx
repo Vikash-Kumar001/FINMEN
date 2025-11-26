@@ -16,99 +16,99 @@ const JournalOfSmartBuy = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [journalEntry, setJournalEntry] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const examples = [
-    "One smart thing I bought was a water bottle instead of buying plastic bottles every day.",
-    "I saved money by waiting for the laptop sale instead of buying it immediately.",
-    "I compared prices at three stores before buying my school supplies.",
-    "I made a shopping list and stuck to it, avoiding impulse purchases.",
-    "I bought generic brands instead of name brands to save money."
+  const stages = [
+    {
+      question: 'Write: "One smart purchase I made was ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "Comparing prices helped me because ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I saved money by ___ and felt ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "A smart shopping tip I learned is ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "Making smart buying choices makes me feel ___."',
+      minLength: 10,
+    },
   ];
 
   const handleSubmit = () => {
-    if (journalEntry.trim().length < 10) return;
-    
-    setSubmitted(true);
-    setFinalScore(1); // For journaling, we'll give credit for participation
-    setShowResult(true);
-    showCorrectAnswerFeedback(1, true);
-  };
-
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setJournalEntry("");
-    setSubmitted(false);
-    setFinalScore(0);
-    resetFeedback();
+    if (entry.trim().length >= stages[currentStage].minLength) {
+      const newScore = score + 1;
+      setScore(newScore);
+      showCorrectAnswerFeedback(1, true);
+      if (currentStage < stages.length - 1) {
+        setTimeout(() => {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }, 800);
+      } else {
+        setTimeout(() => setShowResult(true), 800);
+      }
+    }
   };
 
   const handleNext = () => {
     navigate("/student/finance/kids/candy-offer-story");
   };
 
+  const finalScore = score;
+
   return (
     <GameShell
       title="Journal of Smart Buy"
-      subtitle={showResult ? "Journal Complete!" : "Write about a smart purchase you made"}
+      subtitle={showResult ? "Journal Complete!" : `Question ${currentStage + 1} of ${stages.length}`}
       onNext={handleNext}
-      nextEnabled={showResult}
+      nextEnabled={false}
       showGameOver={showResult}
       score={finalScore}
       gameId="finance-kids-17"
       gameType="finance"
-      totalLevels={10}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
       currentLevel={7}
-      showConfetti={showResult}
+      maxScore={5}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="space-y-8 max-w-3xl mx-auto">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <h3 className="text-xl font-bold text-white mb-4">
-              Write about one smart purchase or spending decision you made
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <h3 className="text-2xl font-bold text-white mb-6 text-center">
+              {stages[currentStage].question}
             </h3>
             
-            <p className="text-white/90 mb-6">
-              Think of a time when you made a smart spending choice. It could be comparing prices, 
-              waiting for a sale, buying generic brands, or making a shopping list. Write 2-3 sentences 
-              about what you did and why it was smart.
-            </p>
-            
-            <div className="bg-purple-500/20 p-4 rounded-xl mb-6">
-              <h4 className="font-bold text-purple-300 mb-2">Example Entries:</h4>
-              <ul className="list-disc pl-5 space-y-1 text-white/80">
-                {examples.map((example, index) => (
-                  <li key={index}>{example}</li>
-                ))}
-              </ul>
-            </div>
-            
             <textarea
-              value={journalEntry}
-              onChange={(e) => setJournalEntry(e.target.value)}
-              placeholder="Write your journal entry here... (minimum 10 characters)"
-              className="w-full h-40 p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-purple-500"
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full h-40 p-4 rounded-xl bg-white/10 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-emerald-400"
             />
             
-            <div className="flex justify-between items-center mt-4">
+            <div className="mt-4 flex justify-between items-center">
               <span className="text-white/80">
-                {journalEntry.length}/10 characters
+                {entry.length}/{stages[currentStage].minLength} characters
               </span>
               <button
                 onClick={handleSubmit}
-                disabled={journalEntry.trim().length < 10}
+                disabled={entry.trim().length < stages[currentStage].minLength}
                 className={`py-3 px-6 rounded-full font-bold transition-all ${
-                  journalEntry.trim().length >= 10
+                  entry.trim().length >= stages[currentStage].minLength
                     ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
                     : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                 }`}
@@ -116,28 +116,12 @@ const JournalOfSmartBuy = () => {
                 Submit Entry
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-4">📖</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Great Reflection!</h3>
-            <p className="text-white/90 text-lg mb-4">
-              You've written about a smart spending decision you made. 
-              Reflecting on our choices helps us make better decisions in the future!
-            </p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-              <span>+5 Coins</span>
-            </div>
-            <p className="text-white/80 mb-6">
-              Your entry shows that you're thinking about your spending habits and learning from them.
-            </p>
             
-            <div className="bg-blue-500/20 p-4 rounded-xl">
-              <h4 className="font-bold text-blue-300 mb-2">Your Entry:</h4>
-              <p className="text-white/90 italic">"{journalEntry}"</p>
+            <div className="mt-6 text-center text-white/80">
+              <p>Score: {score}/{stages.length}</p>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

@@ -22,7 +22,7 @@ const PuzzleSmartVsWaste = () => {
   const [selectedRight, setSelectedRight] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   // Items that represent needs (smart spending) vs wants (waste)
   const leftItems = [
@@ -30,8 +30,7 @@ const PuzzleSmartVsWaste = () => {
     { id: 2, name: "School Uniform", emoji: "👕", category: "need" },
     { id: 3, name: "Medicine", emoji: "💊", category: "need" },
     { id: 4, name: "Healthy Food", emoji: "🍎", category: "need" },
-    { id: 5, name: "Extra Candy", emoji: "🍬", category: "want" },
-    { id: 6, name: "Luxury Watch", emoji: "⌚", category: "want" }
+    { id: 5, name: "Extra Candy", emoji: "🍬", category: "want" }
   ];
 
   const rightItems = [
@@ -45,8 +44,7 @@ const PuzzleSmartVsWaste = () => {
     { leftId: 2, rightId: 1 }, // School Uniform → Need
     { leftId: 3, rightId: 1 }, // Medicine → Need
     { leftId: 4, rightId: 1 }, // Healthy Food → Need
-    { leftId: 5, rightId: 2 }, // Extra Candy → Waste
-    { leftId: 6, rightId: 2 }  // Luxury Watch → Waste
+    { leftId: 5, rightId: 2 }  // Extra Candy → Waste
   ];
 
   const handleLeftSelect = (item) => {
@@ -92,16 +90,6 @@ const PuzzleSmartVsWaste = () => {
     setSelectedRight(null);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setMatches([]);
-    setSelectedLeft(null);
-    setSelectedRight(null);
-    setCoins(0);
-    setFinalScore(0);
-    resetFeedback();
-  };
-
   const handleNext = () => {
     navigate("/student/finance/kids/shop-story-2");
   };
@@ -120,20 +108,21 @@ const PuzzleSmartVsWaste = () => {
   return (
     <GameShell
       title="Puzzle: Smart vs Waste"
-      score={coins}
+      score={finalScore}
       subtitle={showResult ? "Game Complete!" : "Match items to Needs or Wants"}
       onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 4}
+      nextEnabled={false}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp} // Pass if 4 or more correct
-      showGameOver={showResult && finalScore >= 4}
+      totalXp={totalXp}
+      showGameOver={showResult}
       
       gameId="finance-kids-14"
       gameType="finance"
-      totalLevels={10}
+      totalLevels={5}
+      maxScore={5}
       currentLevel={4}
-      showConfetti={showResult && finalScore >= 4}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
     >
@@ -222,44 +211,7 @@ const PuzzleSmartVsWaste = () => {
               </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 4 ? (
-              <div>
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You correctly matched {finalScore} out of {leftItems.length} items!
-                  You understand the difference between needs and wants!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{coins} Coins</span>
-                </div>
-                <p className="text-white/80">
-                  You know that items like notebooks and medicine are needs, while extra candy is a want!
-                </p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You matched {finalScore} out of {leftItems.length} items correctly.
-                  Remember, needs are important for life while wants are things we'd like to have!
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
-                <p className="text-white/80 text-sm">
-                  Try to distinguish between essential items (needs) and non-essential items (wants).
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

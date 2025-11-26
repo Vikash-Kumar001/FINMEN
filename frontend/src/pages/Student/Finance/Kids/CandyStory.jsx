@@ -16,11 +16,10 @@ const CandyStory = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
 
   const stages = [
@@ -67,9 +66,9 @@ const CandyStory = () => {
   ];
 
   const handleChoice = (isCorrect) => {
-    resetFeedback();
     if (isCorrect) {
-      setCoins((prev) => prev + 1);
+      const newScore = score + 1;
+      setScore(newScore);
       showCorrectAnswerFeedback(1, true);
     }
     if (currentStage < stages.length - 1) {
@@ -79,29 +78,29 @@ const CandyStory = () => {
     }
   };
 
-  const handleFinish = () => {
+  const handleNext = () => {
     navigate("/games/financial-literacy/kids");
   };
+
+  const finalScore = score;
 
   return (
     <GameShell
       title="Candy Story"
-      subtitle="Plan your money wisely!"
-      coins={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentStage + 1} of ${stages.length}`}
       currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      gameId="finance-kids-41"
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      gameId="finance-kids-21"
       gameType="finance"
-      showConfetti={showResult}
+      maxScore={5}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      score={finalScore}
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="space-y-8">
@@ -122,22 +121,11 @@ const CandyStory = () => {
                 </button>
               ))}
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-6xl mb-6">🍬🎉</div>
-            <h3 className="text-3xl font-bold text-white mb-4">Candy Master!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              You earned {coins} out of 5 — awesome planning!
-            </p>
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              <span>+{coins} Coins</span>
+            <div className="mt-6 text-center text-white/80">
+              <p>Score: {score}/{stages.length}</p>
             </div>
-            <p className="text-white/80 mb-6">
-              Lesson: Planning your budget brings more joy than spending fast!
-            </p>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

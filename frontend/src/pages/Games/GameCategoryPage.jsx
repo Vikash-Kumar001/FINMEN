@@ -1394,11 +1394,38 @@ const GameCategoryPage = () => {
         // Reload game completion status to update UI
         loadGameCompletionStatus();
 
-        toast.success(response.data.message || 'Replay unlocked!', {
-          duration: 3000,
+        toast.success(response.data.message || 'Replay unlocked! Opening game...', {
+          duration: 2000,
           position: "bottom-center",
           icon: "🎮",
         });
+
+        // Navigate to the game after a short delay
+        if (game.path) {
+          // Find next game in the sequence (if applicable)
+          let nextGamePath = null;
+          let nextGameId = null;
+          
+          if (game.isSpecial) {
+            const nextGame = games.find(g => g.index === game.index + 1 && g.isSpecial && g.path);
+            nextGamePath = nextGame ? nextGame.path : null;
+            nextGameId = nextGame ? nextGame.id : null;
+          }
+          
+          setTimeout(() => {
+            navigate(game.path, { 
+              state: { 
+                coinsPerLevel: game.coins || null,
+                totalCoins: game.coins || 5,
+                totalXp: game.xp || 10,
+                isReplay: true, // Mark as replay since we just unlocked it
+                returnPath: location.pathname,
+                nextGamePath: nextGamePath,
+                nextGameId: nextGameId,
+              } 
+            });
+          }, 500); // Small delay to let toast show
+        }
       } else {
         console.warn('⚠️ Response did not indicate replay was unlocked:', response.data);
         toast.error('Failed to unlock replay. Please try again.', {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from "react";
+import React, { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import gameCompletionService from "../../../services/gameCompletionService";
 import { toast } from "react-toastify";
@@ -520,6 +520,8 @@ const GameShell = ({
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [confettiKey, setConfettiKey] = useState(0);
+  const prevShowConfettiRef = useRef(false);
   
   // Get totalCoins and totalXp from location.state if not provided as props
   const resolvedTotalCoins = totalCoins || location.state?.totalCoins || null;
@@ -527,6 +529,14 @@ const GameShell = ({
   // Note: maxScore is kept for backward compatibility, but performance is now measured by coins
   // The score prop represents coins performance (number of correct answers/coins earned)
   const resolvedMaxScore = maxScore || location.state?.maxScore || resolvedTotalCoins || totalLevels;
+
+  // Track confetti trigger to remount component
+  useEffect(() => {
+    if (showConfetti && !prevShowConfettiRef.current) {
+      setConfettiKey(prev => prev + 1);
+    }
+    prevShowConfettiRef.current = showConfetti;
+  }, [showConfetti]);
 
   const resolvedBackPath = useMemo(() => {
     if (backPathProp) {
@@ -597,8 +607,8 @@ const GameShell = ({
 
       <FloatingParticles />
       {flashPoints !== null && <ScoreFlash points={flashPoints} />}
-      {showAnswerConfetti && <Confetti duration={1000} />}
-      {showConfetti && <Confetti />}
+      {showAnswerConfetti && <Confetti key={`answer-confetti-${showAnswerConfetti}`} duration={1000} />}
+      {showConfetti && <Confetti key={`confetti-${confettiKey}`} />}
 
       {/* Header */}
       <div className="flex items-center justify-between px-6 py-4 relative z-30">

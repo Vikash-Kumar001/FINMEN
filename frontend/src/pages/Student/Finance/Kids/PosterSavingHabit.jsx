@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const PosterSavingHabit = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -203,9 +202,6 @@ const PosterSavingHabit = () => {
       setSelectedPoster(null);
       setShowResult(false);
       resetFeedback();
-    } else {
-      // Game complete, navigate to next game
-      navigate("/student/finance/kids/journal-of-saving");
     }
   };
 
@@ -222,7 +218,7 @@ const PosterSavingHabit = () => {
   return (
     <GameShell
       title="Poster: Saving Habit"
-      subtitle={currentStageData?.question || "Create a poster that promotes good saving habits!"}
+      subtitle={`Question ${currentStage + 1} of ${stages.length}`}
       currentLevel={currentStage + 1}
       totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
@@ -230,7 +226,7 @@ const PosterSavingHabit = () => {
       nextEnabled={showResult && selectedPoster && isCorrect && !isLastStage}
       showGameOver={showResult && isLastStage && isCorrect}
       score={coins}
-      gameId="finance-kids-6"
+      gameId={gameId}
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
@@ -242,8 +238,8 @@ const PosterSavingHabit = () => {
         {!showResult ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-6 text-center">
-                {currentStageData?.question}
+              <p className="text-white text-xl font-bold mb-6 text-center">
+                Question {currentStage + 1}: {currentStageData?.question}
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

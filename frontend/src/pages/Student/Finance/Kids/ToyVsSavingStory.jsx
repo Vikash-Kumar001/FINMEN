@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const ToyVsSavingStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -41,6 +40,13 @@ const ToyVsSavingStory = () => {
           emoji: "🧸", 
           description: "Buy toy immediately",
           isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore Decision", 
+          emoji: "😴", 
+          description: "Don't decide",
+          isCorrect: false
         }
       ]
     },
@@ -60,6 +66,13 @@ const ToyVsSavingStory = () => {
           text: "Spend Now", 
           emoji: "💸", 
           description: "Spend immediately",
+          isCorrect: false
+        },
+        { 
+          id: "waste", 
+          text: "Waste Money", 
+          emoji: "🔥", 
+          description: "Throw it away",
           isCorrect: false
         }
       ]
@@ -81,6 +94,13 @@ const ToyVsSavingStory = () => {
           emoji: "📱", 
           description: "Buy it right away",
           isCorrect: false
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow Money", 
+          emoji: "🤲", 
+          description: "Borrow to buy it",
+          isCorrect: false
         }
       ]
     },
@@ -101,6 +121,13 @@ const ToyVsSavingStory = () => {
           emoji: "🍬", 
           description: "Spend on treats",
           isCorrect: false
+        },
+        { 
+          id: "lose", 
+          text: "Lose It", 
+          emoji: "😞", 
+          description: "Lose the money",
+          isCorrect: false
         }
       ]
     },
@@ -120,6 +147,13 @@ const ToyVsSavingStory = () => {
           text: "Quick Spend", 
           emoji: "⚡", 
           description: "Spend quickly",
+          isCorrect: false
+        },
+        { 
+          id: "forget", 
+          text: "Forget About It", 
+          emoji: "🤷", 
+          description: "Don't think about it",
           isCorrect: false
         }
       ]
@@ -166,9 +200,6 @@ const ToyVsSavingStory = () => {
     }
   };
 
-  const handleNext = () => {
-    navigate("/games/financial-literacy/kids");
-  };
 
   const getCurrentQuestion = () => {
     if (currentQuestion >= 0 && currentQuestion < questions.length) {
@@ -183,14 +214,12 @@ const ToyVsSavingStory = () => {
     <GameShell
       title="Toy vs Saving Story"
       subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      currentLevel={5}
+      currentLevel={currentQuestion + 1}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={false}
       showGameOver={showResult}
       score={coins}
-      gameId="finance-kids-68"
+      gameId={gameId}
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
@@ -211,7 +240,7 @@ const ToyVsSavingStory = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}

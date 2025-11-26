@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const ShopStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -41,6 +40,13 @@ const ShopStory = () => {
           emoji: "🍬", 
           description: "Spend ₹10 on candy now",
           isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore Decision", 
+          emoji: "😴", 
+          description: "Don't make a choice",
+          isCorrect: false
         }
       ]
     },
@@ -49,6 +55,13 @@ const ShopStory = () => {
       text: "You see a cool sticker book that costs ₹25. You have ₹30 saved for a larger toy. What's the smart choice?",
       options: [
         { 
+          id: "spend", 
+          text: "Buy sticker book", 
+          emoji: "📚", 
+          description: "Buy the sticker book now",
+          isCorrect: false
+        },
+        { 
           id: "save", 
           text: "Continue saving", 
           emoji: "🎯", 
@@ -56,10 +69,10 @@ const ShopStory = () => {
           isCorrect: true
         },
         { 
-          id: "spend", 
-          text: "Buy sticker book", 
-          emoji: "📚", 
-          description: "Buy the sticker book now",
+          id: "borrow", 
+          text: "Borrow Money", 
+          emoji: "🤲", 
+          description: "Borrow to buy both",
           isCorrect: false
         }
       ]
@@ -69,18 +82,25 @@ const ShopStory = () => {
       text: "You see friends buying snacks at the shop. You have ₹15 saved for a science kit. What should you do?",
       options: [
         { 
-          id: "save", 
-          text: "Stick to your goal", 
-          emoji: "🔬", 
-          description: "Keep saving for the science kit",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Join friends", 
           emoji: "🍟", 
           description: "Buy snacks to join your friends",
           isCorrect: false
+        },
+        { 
+          id: "give", 
+          text: "Give Up Saving", 
+          emoji: "😞", 
+          description: "Stop saving completely",
+          isCorrect: false
+        },
+        { 
+          id: "save", 
+          text: "Stick to your goal", 
+          emoji: "🔬", 
+          description: "Keep saving for the science kit",
+          isCorrect: true
         }
       ]
     },
@@ -101,6 +121,13 @@ const ShopStory = () => {
           emoji: "🧸", 
           description: "Take advantage of the sale",
           isCorrect: false
+        },
+        { 
+          id: "delay", 
+          text: "Delay Decision", 
+          emoji: "⏰", 
+          description: "Wait and think later",
+          isCorrect: false
         }
       ]
     },
@@ -109,6 +136,13 @@ const ShopStory = () => {
       text: "You've saved ₹45 for a ₹50 toy. You see candy that costs ₹5. You're almost at your goal! What do you choose?",
       options: [
         { 
+          id: "spend", 
+          text: "Buy candy", 
+          emoji: "🍬", 
+          description: "Buy candy and delay your goal",
+          isCorrect: false
+        },
+        { 
           id: "save", 
           text: "Complete your goal", 
           emoji: "🎉", 
@@ -116,10 +150,10 @@ const ShopStory = () => {
           isCorrect: true
         },
         { 
-          id: "spend", 
-          text: "Buy candy", 
-          emoji: "🍬", 
-          description: "Buy candy and delay your goal",
+          id: "waste", 
+          text: "Waste Money", 
+          emoji: "💸", 
+          description: "Spend on something useless",
           isCorrect: false
         }
       ]
@@ -166,9 +200,6 @@ const ShopStory = () => {
     }
   };
 
-  const handleNext = () => {
-    navigate("/games/financial-literacy/kids");
-  };
 
   const getCurrentQuestion = () => {
     if (currentQuestion >= 0 && currentQuestion < questions.length) {
@@ -183,14 +214,12 @@ const ShopStory = () => {
     <GameShell
       title="Shop Story"
       subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      currentLevel={5}
+      currentLevel={currentQuestion + 1}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={false}
       showGameOver={showResult}
       score={coins}
-      gameId="finance-kids-8"
+      gameId={gameId}
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
@@ -211,16 +240,16 @@ const ShopStory = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}
                     onClick={() => handleChoice(option.id)}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
+                    <p className="text-white/90 text-sm">{option.description}</p>
                   </button>
                 ))}
               </div>

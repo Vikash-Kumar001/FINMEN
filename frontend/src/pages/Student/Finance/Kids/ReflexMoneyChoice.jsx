@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
+
 const ReflexMoneyChoice = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -16,101 +18,220 @@ const ReflexMoneyChoice = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [coins, setCoins] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
   const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [currentWord, setCurrentWord] = useState("");
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
   const timerRef = useRef(null);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const currentRoundRef = useRef(0);
 
-  const words = [
-    { word: "DEPOSIT", isCorrect: true, emoji: "📥" },
-    { word: "THROW AWAY", isCorrect: false, emoji: "🗑️" },
-    { word: "SAVE", isCorrect: true, emoji: "💰" },
-    { word: "WASTE", isCorrect: false, emoji: "❌" },
-    { word: "BANK", isCorrect: true, emoji: "🏦" },
-    { word: "SPEND", isCorrect: false, emoji: "💸" },
-    { word: "INVEST", isCorrect: true, emoji: "📈" },
-    { word: "LOSE", isCorrect: false, emoji: "📉" }
+  const questions = [
+    {
+      id: 1,
+      question: "What should you do with your money to keep it safe?",
+      correctAnswer: "Deposit",
+      options: [
+        { text: "Deposit", isCorrect: true, emoji: "📥" },
+        { text: "Throw Away", isCorrect: false, emoji: "🗑️" },
+        { text: "Lose It", isCorrect: false, emoji: "😞" },
+        { text: "Forget About It", isCorrect: false, emoji: "😴" }
+      ]
+    },
+    {
+      id: 2,
+      question: "What is the smart way to handle your money?",
+      correctAnswer: "Save",
+      options: [
+        { text: "Save", isCorrect: true, emoji: "💰" },
+        { text: "Waste", isCorrect: false, emoji: "❌" },
+        { text: "Spend All", isCorrect: false, emoji: "💸" },
+        { text: "Ignore It", isCorrect: false, emoji: "🤷" }
+      ]
+    },
+    {
+      id: 3,
+      question: "Where should you keep your money safely?",
+      correctAnswer: "Bank",
+      options: [
+        { text: "Bank", isCorrect: true, emoji: "🏦" },
+        { text: "Spend", isCorrect: false, emoji: "💸" },
+        { text: "Lose", isCorrect: false, emoji: "📉" },
+        { text: "Hide", isCorrect: false, emoji: "🙈" }
+      ]
+    },
+    {
+      id: 4,
+      question: "What helps your money grow over time?",
+      correctAnswer: "Invest",
+      options: [
+        { text: "Invest", isCorrect: true, emoji: "📈" },
+        { text: "Lose", isCorrect: false, emoji: "📉" },
+        { text: "Waste", isCorrect: false, emoji: "🔥" },
+        { text: "Spend Fast", isCorrect: false, emoji: "⚡" }
+      ]
+    },
+    {
+      id: 5,
+      question: "What is the best choice for your money?",
+      correctAnswer: "Save & Grow",
+      options: [
+        { text: "Save & Grow", isCorrect: true, emoji: "🌱" },
+        { text: "Spend All", isCorrect: false, emoji: "💸" },
+        { text: "Waste Money", isCorrect: false, emoji: "🔥" },
+        { text: "Lose It", isCorrect: false, emoji: "😞" }
+      ]
+    }
   ];
 
+  // Update ref when currentRound changes
   useEffect(() => {
-    if (gameState === "playing" && timeLeft > 0) {
-      timerRef.current = setInterval(() => {
-        setTimeLeft(prev => prev - 1);
-      }, 1000);
-    } else if (timeLeft === 0) {
-      setGameState("finished");
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timer when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  // Handle time up - move to next question or show results
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
+    
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 1000);
+  }, [resetFeedback]);
+
+  // Timer effect - countdown from 10 seconds for each question
+  useEffect(() => {
+    if (gameState !== "playing") {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
     }
 
+    // Check if game should be finished
+    if (currentRoundRef.current > TOTAL_ROUNDS) {
+      setGameState("finished");
+      return;
+    }
+
+    // Clear any existing timer
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    // Start countdown timer
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          // Time's up for this round
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
+
     return () => {
-      if (timerRef.current) clearInterval(timerRef.current);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     };
-  }, [gameState, timeLeft]);
+  }, [gameState, handleTimeUp]);
 
   const startGame = () => {
     setGameState("playing");
-    setTimeLeft(30);
+    setTimeLeft(ROUND_TIME);
     setScore(0);
-    showNextWord();
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
   };
 
-  const showNextWord = () => {
-    if (gameState !== "playing") return;
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
     
-    const randomWord = words[Math.floor(Math.random() * words.length)];
-    setCurrentWord(randomWord);
-  };
-
-  const handleTap = (isSave) => {
-    if (gameState !== "playing") return;
+    // Clear the timer immediately when user answers
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
     
-    if (isSave === currentWord.isCorrect) {
-      setScore(prev => prev + 1);
-      setCoins(prev => prev + 1);
+    setAnswered(true);
+    resetFeedback();
+    
+    const isCorrect = option.isCorrect;
+    const isLastQuestion = currentRound === questions.length;
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
-    // Show next word after a short delay
-    setTimeout(showNextWord, 300);
+    // Move to next round or show results after a short delay
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleNext = () => {
-    navigate("/student/finance/kids/badge-saver-kid");
-  };
+  const finalScore = score;
 
   return (
     <GameShell
       title="Reflex Money Choice"
-      subtitle="Quickly tap the right action for each word!"
-      coins={coins}
-      currentLevel={9}
-      totalLevels={10}
+      subtitle={gameState === "playing" ? `Question ${currentRound} of ${questions.length}: Test your money choice reflexes!` : "Test your money choice reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={gameState === "finished"}
       showGameOver={gameState === "finished"}
-      score={Math.min(score, 3)}
-      gameId="finance-kids-9"
-      gameType="finance"
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      score={finalScore}
+      gameId={gameId}
+      gameType="finance"
+      maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="space-y-8">
+      <div className="text-center text-white space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-6">⚡</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <div className="text-5xl mb-6">💰</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Ready to Test Your Money Choices?</h3>
             <p className="text-white/90 text-lg mb-6">
-              Tap "DEPOSIT" when you see words related to saving money.<br />
-              Tap "THROW AWAY" when you see words related to wasting money.
+              Choose the smart money choice for each question.
             </p>
             <p className="text-white/80 mb-6">
-              You have 30 seconds to get as many correct as possible!
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
             </p>
             <button
               onClick={startGame}
@@ -121,56 +242,37 @@ const ReflexMoneyChoice = () => {
           </div>
         )}
 
-        {gameState === "playing" && (
+        {gameState === "playing" && questions[currentRound - 1] && (
           <div className="space-y-8">
             <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
               <div className="text-white">
-                <span className="font-bold">Time:</span> {timeLeft}s
+                <span className="font-bold">Question:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
               </div>
               <div className="text-white">
                 <span className="font-bold">Score:</span> {score}
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-12 border border-white/20 text-center">
-              <div className="text-6xl mb-4">{currentWord.emoji}</div>
-              <div className="text-5xl font-bold text-white mb-8">
-                {currentWord.word}
-              </div>
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {questions[currentRound - 1].question}
+              </h3>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <button
-                  onClick={() => handleTap(true)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">📥</div>
-                  <h3 className="font-bold text-xl mb-2">DEPOSIT</h3>
-                </button>
-                
-                <button
-                  onClick={() => handleTap(false)}
-                  className="bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">🗑️</div>
-                  <h3 className="font-bold text-xl mb-2">THROW AWAY</h3>
-                </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {questions[currentRound - 1].options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
-            </div>
-          </div>
-        )}
-
-        {gameState === "finished" && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-4">🏆</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Game Over!</h3>
-            <p className="text-white/90 text-lg mb-2">
-              You got {score} correct answers!
-            </p>
-            <p className="text-white/80 mb-6">
-              Great job testing your money knowledge!
-            </p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              <span>+{Math.min(score, 3)} Coins</span>
             </div>
           </div>
         )}

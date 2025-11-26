@@ -191,9 +191,9 @@ const ReflexBorrowSteal = () => {
     setTimeout(() => {
       if (currentRound >= TOTAL_ROUNDS) {
         setGameState("finished");
-      } else {
+    } else {
         setCurrentRound((prev) => prev + 1);
-      }
+    }
     }, 500);
   };
 
@@ -259,7 +259,7 @@ const ReflexBorrowSteal = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentQuestion.options.map((option, index) => (
-                  <button
+            <button
                     key={index}
                     onClick={() => handleAnswer(option)}
                     disabled={answered}
@@ -267,10 +267,10 @@ const ReflexBorrowSteal = () => {
                   >
                     <div className="text-4xl mr-3">{option.emoji}</div>
                     <h3 className="font-bold text-xl">{option.text}</h3>
-                  </button>
+            </button>
                 ))}
-              </div>
-            </div>
+          </div>
+        </div>
           </div>
         )}
       </div>

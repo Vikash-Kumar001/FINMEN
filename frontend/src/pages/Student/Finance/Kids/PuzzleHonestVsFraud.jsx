@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Puzzle } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleHonestVsFraud = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -92,7 +91,7 @@ const PuzzleHonestVsFraud = () => {
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       score={finalScore}
-      gameId="finance-kids-164"
+      gameId={gameId}
       gameType="finance"
       maxScore={5}
       totalCoins={totalCoins}

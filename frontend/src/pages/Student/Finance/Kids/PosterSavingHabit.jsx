@@ -175,19 +175,21 @@ const PosterSavingHabit = () => {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
       
-      // Automatically move to next question after showing feedback
-      setTimeout(() => {
-        if (currentStage < stages.length - 1) {
-          // Move to next question
+      // Check if this is the last stage
+      const isLastStage = currentStage === stages.length - 1;
+      
+      if (isLastStage) {
+        // Last stage - show result and game over modal
+        setShowResult(true);
+      } else {
+        // Automatically move to next question after showing feedback
+        setTimeout(() => {
           setCurrentStage(currentStage + 1);
           setSelectedPoster(null);
           setShowResult(false);
           resetFeedback();
-        } else {
-          // Game complete, navigate to next game
-          navigate("/student/finance/kids/journal-of-saving");
-        }
-      }, 1500);
+        }, 1500);
+      }
     } else {
       // Show result immediately for incorrect
       setShowResult(true);
@@ -225,7 +227,7 @@ const PosterSavingHabit = () => {
       totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
       onNext={handleNext}
-      nextEnabled={showResult && selectedPoster && isCorrect}
+      nextEnabled={showResult && selectedPoster && isCorrect && !isLastStage}
       showGameOver={showResult && isLastStage && isCorrect}
       score={coins}
       gameId="finance-kids-6"

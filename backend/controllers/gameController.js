@@ -901,8 +901,14 @@ export const completeUnifiedGame = async (req, res) => {
     const resolvedType = gameDefinition?.type || gameType || getGameType(gameId);
     const pillarLabel = getPillarLabel(resolvedType);
 
-    // Check if all answers are correct (perfect score)
-    const allAnswersCorrect = maxScore > 0 && score >= maxScore;
+    // Check if all answers are correct using coins as performance measure
+    // score represents coins performance (number of coins earned/correct answers)
+    // Compare against totalCoins instead of maxScore to avoid issues with large score values
+    const coinsPerformance = score; // score is actually coins performance from frontend
+    const targetCoins = totalCoins !== null && totalCoins !== undefined ? totalCoins : (coinsPerLevel || 5);
+    const allAnswersCorrect = targetCoins > 0 && coinsPerformance >= targetCoins;
+    
+    console.log(`💰 Performance check - gameId: ${gameId}, coinsPerformance: ${coinsPerformance}, targetCoins: ${targetCoins}, allAnswersCorrect: ${allAnswersCorrect}`);
     
     // Only award coins if all answers are correct AND it's a full completion AND not already fully completed
     if (isFullCompletion && !gameProgress.fullyCompleted && allAnswersCorrect) {
@@ -927,7 +933,7 @@ export const completeUnifiedGame = async (req, res) => {
       }
     } else if (!allAnswersCorrect && isFullCompletion && !gameProgress.fullyCompleted) {
       // Game completed but not all answers correct - no coins awarded
-      console.log(`⚠️ Game completed but not all answers correct - gameId: ${gameId}, score: ${score}, maxScore: ${maxScore}`);
+      console.log(`⚠️ Game completed but not all answers correct - gameId: ${gameId}, coinsPerformance: ${coinsPerformance}, targetCoins: ${targetCoins}`);
       coinsToAward = 0;
     } else if (coinsPerLevel && newLevelsCompleted > 0 && allAnswersCorrect) {
       // Award coins for new levels completed: newLevelsCompleted × coinsPerLevel (only if all answers correct)

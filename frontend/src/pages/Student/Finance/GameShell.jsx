@@ -222,12 +222,14 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
         
         // Always call the backend to save progress and let it determine coins
         // The backend will handle the logic for first completion vs replay
-        const resolvedMaxScore = maxScore || (totalLevels * 20);
+        // score represents coins performance (number of correct answers/coins earned)
+        // maxScore is kept for backward compatibility but backend now uses totalCoins for comparison
+        const resolvedMaxScore = maxScore || totalCoins || totalLevels;
         const result = await gameCompletionService.completeGame({
           gameId,
           gameType,
-          score,
-          maxScore: resolvedMaxScore,
+          score, // This is coins performance from the game
+          maxScore: resolvedMaxScore, // Kept for backward compatibility
           levelsCompleted: totalLevels,
           totalLevels,
           timePlayed: 0,
@@ -242,8 +244,9 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
           setCoinsEarned(result.coinsEarned || 0);
           setXpEarned(result.xpEarned || 0);
           setWasReplay(result.isReplay === true);
-          // Check allAnswersCorrect from result, or calculate from score vs maxScore
-          const calculatedAllCorrect = maxScore && score >= maxScore;
+          // Check allAnswersCorrect from result, or calculate from coins performance vs totalCoins
+          // score represents coins performance (number of correct answers/coins earned)
+          const calculatedAllCorrect = totalCoins && score >= totalCoins;
           setAllAnswersCorrect(result.allAnswersCorrect === true || calculatedAllCorrect);
           setSubmissionComplete(true);
           
@@ -303,9 +306,9 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
           {allAnswersCorrect && submissionComplete ? '🎉 Congratulations!' : '👍 Great Try!'}
         </h2>
         <p className="text-gray-600 text-lg mb-4">
-          You finished the game with a score of{" "}
+          You finished the game with{" "}
           <span className="font-bold text-gray-900">{score}</span> out of{" "}
-          <span className="font-bold text-gray-900">{maxScore || totalLevels}</span> ⭐
+          <span className="font-bold text-gray-900">{totalCoins || totalLevels}</span> correct answers! ⭐
         </p>
         {allAnswersCorrect && submissionComplete && (
           <p className="text-green-600 font-semibold mb-4">
@@ -386,12 +389,77 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
             </button>
           ) : (
             <button
-              onClick={() => {
+              onClick={async () => {
                 // Get nextGamePath from prop or location.state
                 const resolvedNextGamePath = nextGamePath || location.state?.nextGamePath;
                 
-                if (resolvedNextGamePath) {
-                  // Navigate to next game with return path
+                if (!resolvedNextGamePath) {
+                  // No next game, just close (go back to game cards)
+                  onClose();
+                  return;
+                }
+
+                try {
+                  // Get next game ID from location.state (passed from GameCategoryPage)
+                  const nextGameId = location.state?.nextGameId || null;
+                  
+                  // If we have the next game ID, check its status before navigating
+                  if (nextGameId) {
+                    // Wait a moment to ensure current game completion is saved
+                    await new Promise(resolve => setTimeout(resolve, 300));
+                    
+                    // Check next game status
+                    const nextGameProgress = await gameCompletionService.getGameProgress(nextGameId);
+                    
+                    // Check if next game is fully completed
+                    if (nextGameProgress?.fullyCompleted) {
+                      // Check if replay is unlocked
+                      if (!nextGameProgress?.replayUnlocked) {
+                        // Game is completed but replay not unlocked
+                        toast.error(
+                          "You've already collected all HealCoins for this game. Unlock replay to play again!",
+                          {
+                            duration: 4000,
+                            position: "bottom-center",
+                            icon: "🔒",
+                          }
+                        );
+                        // Don't navigate - close modal instead
+                        onClose();
+                        return;
+                      }
+                      // Replay is unlocked - allow navigation (will be treated as replay)
+                    }
+                    // Game is not completed or replay is unlocked - allow navigation
+                    
+                    // Navigate to next game
+                    const returnPath = location.state?.returnPath || '/games';
+                    navigate(resolvedNextGamePath, {
+                      state: {
+                        returnPath: returnPath,
+                        coinsPerLevel: location.state?.coinsPerLevel || null,
+                        totalCoins: location.state?.totalCoins || null,
+                        totalXp: location.state?.totalXp || null,
+                        maxScore: location.state?.maxScore || null,
+                        isReplay: nextGameProgress?.fullyCompleted && nextGameProgress?.replayUnlocked || false,
+                      }
+                    });
+                  } else {
+                    // No game ID available - navigate directly (fallback for games without sequential unlocking)
+                    const returnPath = location.state?.returnPath || '/games';
+                    navigate(resolvedNextGamePath, {
+                      state: {
+                        returnPath: returnPath,
+                        coinsPerLevel: location.state?.coinsPerLevel || null,
+                        totalCoins: location.state?.totalCoins || null,
+                        totalXp: location.state?.totalXp || null,
+                        maxScore: location.state?.maxScore || null,
+                      }
+                    });
+                  }
+                } catch (error) {
+                  console.error('Failed to check game status:', error);
+                  // On error, allow navigation (fallback behavior)
                   const returnPath = location.state?.returnPath || '/games';
                   navigate(resolvedNextGamePath, {
                     state: {
@@ -402,9 +470,6 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
                       maxScore: location.state?.maxScore || null,
                     }
                   });
-                } else {
-                  // No next game, just close (go back to game cards)
-                  onClose();
                 }
               }}
               disabled={isSubmitting}
@@ -459,7 +524,9 @@ const GameShell = ({
   // Get totalCoins and totalXp from location.state if not provided as props
   const resolvedTotalCoins = totalCoins || location.state?.totalCoins || null;
   const resolvedTotalXp = totalXp || location.state?.totalXp || null;
-  const resolvedMaxScore = maxScore || location.state?.maxScore || (totalLevels * 20);
+  // Note: maxScore is kept for backward compatibility, but performance is now measured by coins
+  // The score prop represents coins performance (number of correct answers/coins earned)
+  const resolvedMaxScore = maxScore || location.state?.maxScore || resolvedTotalCoins || totalLevels;
 
   const resolvedBackPath = useMemo(() => {
     if (backPathProp) {

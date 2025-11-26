@@ -13,31 +13,15 @@ const StrongPasswordReflex = () => {
   const [gameStarted, setGameStarted] = useState(false);
   const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const passwords = [
     { id: 1, password: "12345", emoji: "❌", isStrong: false },
     { id: 2, password: "Tiger@2025", emoji: "✓", isStrong: true },
     { id: 3, password: "password", emoji: "❌", isStrong: false },
     { id: 4, password: "Star#123!", emoji: "✓", isStrong: true },
-    { id: 5, password: "abc123", emoji: "❌", isStrong: false },
-    { id: 6, password: "Secure$99", emoji: "✓", isStrong: true },
-    { id: 7, password: "qwerty", emoji: "❌", isStrong: false },
-    { id: 8, password: "Blue@Sky7", emoji: "✓", isStrong: true },
-    { id: 9, password: "111111", emoji: "❌", isStrong: false },
-    { id: 10, password: "Safe&Pass8", emoji: "✓", isStrong: true },
-    { id: 11, password: "myname", emoji: "❌", isStrong: false },
-    { id: 12, password: "Jump$Moon3", emoji: "✓", isStrong: true },
-    { id: 13, password: "123456789", emoji: "❌", isStrong: false },
-    { id: 14, password: "Rain@Day15", emoji: "✓", isStrong: true },
-    { id: 15, password: "admin", emoji: "❌", isStrong: false },
-    { id: 16, password: "Lock#Key99", emoji: "✓", isStrong: true },
-    { id: 17, password: "hello", emoji: "❌", isStrong: false },
-    { id: 18, password: "Cool@Kid24", emoji: "✓", isStrong: true },
-    { id: 19, password: "1234567", emoji: "❌", isStrong: false },
-    { id: 20, password: "Fire!Fly88", emoji: "✓", isStrong: true }
+    { id: 5, password: "Secure$99", emoji: "✓", isStrong: true }
   ];
 
   const currentPassword = passwords[currentRound];
@@ -46,57 +30,57 @@ const StrongPasswordReflex = () => {
     const isCorrect = currentPassword.isStrong === isStrong;
     
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      const newScore = score + 1;
+      setScore(newScore);
       showCorrectAnswerFeedback(1, false);
-    }
-    
-    if (currentRound < passwords.length - 1) {
-      setTimeout(() => {
-        setCurrentRound(prev => prev + 1);
-      }, 300);
-    } else {
-      const finalScore = score + (isCorrect ? 1 : 0);
-      const accuracy = (finalScore / passwords.length) * 100;
-      if (accuracy >= 70) {
-        setCoins(3);
+      
+      if (currentRound < passwords.length - 1) {
+        setTimeout(() => {
+          setCurrentRound(prev => prev + 1);
+        }, 300);
+      } else {
+        // All questions answered - check if all correct
+        const finalScore = newScore;
+        setScore(finalScore);
+        setShowResult(true);
       }
-      setScore(finalScore);
-      setShowResult(true);
+    } else {
+      if (currentRound < passwords.length - 1) {
+        setTimeout(() => {
+          setCurrentRound(prev => prev + 1);
+        }, 300);
+      } else {
+        // All questions answered
+        setShowResult(true);
+      }
     }
-  };
-
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setGameStarted(false);
-    setCurrentRound(0);
-    setScore(0);
-    setCoins(0);
-    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/student/dcos/kids/stranger-chat-story");
   };
 
-  const accuracy = Math.round((score / passwords.length) * 100);
+  // Calculate final score (number of correct answers)
+  const finalScore = score;
 
   return (
     <GameShell
       title="Strong Password Reflex"
-      score={coins}
+      score={finalScore}
       subtitle={gameStarted ? `Password ${currentRound + 1} of ${passwords.length}` : "Password Security Game"}
       onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      nextEnabled={false}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
+      showGameOver={showResult}
       
       gameId="dcos-kids-1"
       gameType="educational"
-      totalLevels={20}
+      totalLevels={5}
+      maxScore={5}
       currentLevel={1}
-      showConfetti={showResult && accuracy >= 70}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/digital-citizenship/kids"
@@ -147,32 +131,7 @@ const StrongPasswordReflex = () => {
               </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {accuracy >= 70 ? "🎉 Password Expert!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You got {score} out of {passwords.length} correct ({accuracy}%)
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Strong passwords have: letters, numbers, symbols, and are at least 8 characters long!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {accuracy >= 70 ? "You earned 3 Coins! 🪙" : "Get 70% or higher to earn coins!"}
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

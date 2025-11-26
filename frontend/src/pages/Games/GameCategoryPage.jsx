@@ -1251,6 +1251,7 @@ const GameCategoryPage = () => {
             // Find next game in the sequence
             const nextGame = games.find(g => g.index === game.index + 1 && g.isSpecial && g.path);
             const nextGamePath = nextGame ? nextGame.path : null;
+            const nextGameId = nextGame ? nextGame.id : null;
             
             navigate(game.path, { 
               state: { 
@@ -1258,6 +1259,7 @@ const GameCategoryPage = () => {
                 isReplay: true,
                 returnPath: location.pathname,
                 nextGamePath: nextGamePath, // Path to next game for Continue button
+                nextGameId: nextGameId, // Next game ID for status checking
               } 
             });
             return;
@@ -1286,6 +1288,7 @@ const GameCategoryPage = () => {
       // Find next game in the sequence
       const nextGame = games.find(g => g.index === game.index + 1 && g.isSpecial && g.path);
       const nextGamePath = nextGame ? nextGame.path : null;
+      const nextGameId = nextGame ? nextGame.id : null;
       
       // Pass coinsPerLevel, totalCoins, totalXp, replay status, and next game path via navigation state
       navigate(game.path, { 
@@ -1296,6 +1299,7 @@ const GameCategoryPage = () => {
           isReplay: isReplay || false,
           returnPath: location.pathname,
           nextGamePath: nextGamePath, // Path to next game for Continue button
+          nextGameId: nextGameId, // Next game ID for status checking
         } 
       });
       return;

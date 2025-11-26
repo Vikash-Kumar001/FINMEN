@@ -90,14 +90,9 @@ const ReflexMoneyTruthGame = () => {
     currentRoundRef.current = currentRound;
   }, [currentRound]);
 
-  useEffect(() => {
-    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
-      setTimeLeft(ROUND_TIME);
-      setAnswered(false);
-    }
-  }, [currentRound, gameState]);
-
   const handleTimeUp = useCallback(() => {
+    if (answered) return;
+    
     setAnswered(true);
     resetFeedback();
     
@@ -110,10 +105,12 @@ const ReflexMoneyTruthGame = () => {
         setCurrentRound((prev) => prev + 1);
       }
     }, 1000);
-  }, []);
+  }, [answered, resetFeedback]);
 
+  // Timer effect - restarts when gameState, currentRound, or answered changes
   useEffect(() => {
-    if (gameState !== "playing") {
+    // Clear timer if not playing or if already answered
+    if (gameState !== "playing" || answered) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -121,20 +118,24 @@ const ReflexMoneyTruthGame = () => {
       return;
     }
 
-    if (currentRoundRef.current > TOTAL_ROUNDS) {
-      setGameState("finished");
+    // Don't start timer if round is invalid
+    if (currentRound < 1 || currentRound > TOTAL_ROUNDS) {
       return;
     }
 
+    // Reset timeLeft when round changes
+    setTimeLeft(ROUND_TIME);
+
+    // Clear any existing timer
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
 
+    // Start new timer
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
-        const newTime = prev - 1;
-        if (newTime <= 0) {
+        if (prev <= 1) {
           if (timerRef.current) {
             clearInterval(timerRef.current);
             timerRef.current = null;
@@ -142,17 +143,18 @@ const ReflexMoneyTruthGame = () => {
           handleTimeUp();
           return 0;
         }
-        return newTime;
+        return prev - 1;
       });
     }, 1000);
 
+    // Cleanup function
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
     };
-  }, [gameState, handleTimeUp]);
+  }, [gameState, currentRound, answered, handleTimeUp]);
 
   const startGame = () => {
     setGameState("playing");
@@ -239,12 +241,22 @@ const ReflexMoneyTruthGame = () => {
               <div className="text-white">
                 <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500 animate-pulse' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
                 <span className="text-white">Time:</span> {timeLeft}s
               </div>
               <div className="text-white">
-                <span className="font-bold">Score:</span> {score}
+                <span className="font-bold">Score:</span> {score}/{TOTAL_ROUNDS}
               </div>
+            </div>
+
+            {/* Progress bar */}
+            <div className="w-full bg-white/20 rounded-full h-2">
+              <div
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  timeLeft <= 2 ? 'bg-red-500' : timeLeft <= 3 ? 'bg-yellow-500' : 'bg-green-500'
+                }`}
+                style={{ width: `${(timeLeft / ROUND_TIME) * 100}%` }}
+              />
             </div>
 
             <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
@@ -258,13 +270,52 @@ const ReflexMoneyTruthGame = () => {
                     key={index}
                     onClick={() => handleAnswer(option)}
                     disabled={answered}
-                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
                   >
                     <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
                 ))}
               </div>
             </div>
+          </div>
+        )}
+
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 4 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Excellent Work!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {TOTAL_ROUNDS} questions correct!
+                  You understand the importance of being fair and truthful with money!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{finalScore} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Remember: Always be fair, honest, and ethical with money!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {TOTAL_ROUNDS} questions correct.
+                  Remember to always be fair and truthful with money!
+                </p>
+                <button
+                  onClick={startGame}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Remember: Always be fair, honest, and ethical with money!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

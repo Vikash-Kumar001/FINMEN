@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeSmartSaver = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -17,229 +16,276 @@ const BadgeSmartSaver = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [challenge, setChallenge] = useState(0);
-  const [decisions, setDecisions] = useState([]);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const challenges = [
     {
       id: 1,
       title: "Emergency Situation",
-      description: "Your bike needs urgent repairs costing ₹500. You have ₹300 saved. What do you do?",
-      choices: [
+      question: "Your bike needs urgent repairs costing ₹500. You have ₹300 saved. What do you do?",
+      options: [
         { 
-          id: "save", 
           text: "Use savings + earn more", 
           emoji: "🛠️", 
-          description: "Use ₹300 savings and do extra work to earn the remaining ₹200",
           isCorrect: true
         },
         { 
-          id: "spend", 
           text: "Borrow from friends", 
           emoji: "👥", 
-          description: "Ask friends to lend you the full amount",
+          isCorrect: false
+        },
+        { 
+          text: "Use credit card", 
+          emoji: "💳", 
+          isCorrect: false
+        },
+        { 
+          text: "Ignore the repair", 
+          emoji: "🚫", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Smart choice! Using savings and earning more shows financial responsibility!",
+        wrong: "Remember: Use your savings first and earn more rather than borrowing unnecessarily."
+      }
     },
     {
       id: 2,
       title: "Investment Opportunity",
-      description: "A friend offers 50% return on ₹1000 investment in 1 month. What's your choice?",
-      choices: [
+      question: "A friend offers 50% return on ₹1000 investment in 1 month. What's your choice?",
+      options: [
         { 
-          id: "save", 
           text: "Decline risky offer", 
           emoji: "🛡️", 
-          description: "Avoid high-risk investments with unrealistic returns",
           isCorrect: true
         },
         { 
-          id: "spend", 
           text: "Invest the money", 
           emoji: "🎰", 
-          description: "Take the chance for quick profit",
+          isCorrect: false
+        },
+        { 
+          text: "Invest half", 
+          emoji: "⚖️", 
+          isCorrect: false
+        },
+        { 
+          text: "Ask for more details", 
+          emoji: "❓", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Excellent! High returns in short time are usually too good to be true!",
+        wrong: "Be cautious! Unrealistic returns often indicate scams or high risk."
+      }
     },
     {
       id: 3,
       title: "Shopping Temptation",
-      description: "You see a ₹2000 gadget you want, but you're saving for college fees. Do you buy it?",
-      choices: [
+      question: "You see a ₹2000 gadget you want, but you're saving for college fees. Do you buy it?",
+      options: [
         { 
-          id: "save", 
           text: "Stick to college goal", 
           emoji: "🎓", 
-          description: "Continue saving for the more important college fees",
           isCorrect: true
         },
         { 
-          id: "spend", 
           text: "Buy the gadget", 
           emoji: "📱", 
-          description: "Buy the gadget because you want it now",
+          isCorrect: false
+        },
+        { 
+          text: "Buy on credit", 
+          emoji: "💳", 
+          isCorrect: false
+        },
+        { 
+          text: "Borrow money", 
+          emoji: "💸", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Perfect! Prioritizing important goals over wants is smart saving!",
+        wrong: "Remember: Important goals like education should come before wants."
+      }
     },
     {
       id: 4,
       title: "Bonus Dilemma",
-      description: "You receive ₹1000 bonus. Should you save it all or spend some?",
-      choices: [
+      question: "You receive ₹1000 bonus. Should you save it all or spend some?",
+      options: [
         { 
-          id: "save", 
           text: "Save 80%, spend 20%", 
           emoji: "💰", 
-          description: "Save ₹800 and use ₹200 for a small reward",
           isCorrect: true
         },
         { 
-          id: "spend", 
           text: "Spend 50% on fun", 
           emoji: "🎉", 
-          description: "Spend ₹500 on entertainment and save ₹500",
+          isCorrect: false
+        },
+        { 
+          text: "Spend it all", 
+          emoji: "🛍️", 
+          isCorrect: false
+        },
+        { 
+          text: "Save it all", 
+          emoji: "🏦", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Great balance! Saving most while enjoying a small reward is wise!",
+        wrong: "A good rule: Save most of unexpected money, but allow a small reward for motivation."
+      }
     },
     {
       id: 5,
       title: "Peer Pressure",
-      description: "Friends are planning an expensive trip. You can't afford it but don't want to miss out. What do you do?",
-      choices: [
+      question: "Friends are planning an expensive trip. You can't afford it but don't want to miss out. What do you do?",
+      options: [
         { 
-          id: "save", 
           text: "Plan affordable alternative", 
           emoji: "🧭", 
-          description: "Suggest a less expensive activity you can all enjoy",
           isCorrect: true
         },
         { 
-          id: "spend", 
           text: "Borrow to join", 
           emoji: "💸", 
-          description: "Use credit to join the trip and pay later",
+          isCorrect: false
+        },
+        { 
+          text: "Use credit card", 
+          emoji: "💳", 
+          isCorrect: false
+        },
+        { 
+          text: "Skip and stay home", 
+          emoji: "🏠", 
           isCorrect: false
         }
-      ]
+      ],
+      feedback: {
+        correct: "Smart! Finding affordable alternatives shows financial maturity!",
+        wrong: "Don't let peer pressure lead to poor financial decisions. Suggest affordable options!"
+      }
     }
   ];
 
-  const handleDecision = (selectedChoice) => {
-    const newDecisions = [...decisions, { 
-      challengeId: challenges[challenge].id, 
-      choice: selectedChoice,
-      isCorrect: challenges[challenge].choices.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
+  const handleAnswer = (isCorrect, optionIndex) => {
+    if (answered) return;
     
-    setDecisions(newDecisions);
+    setAnswered(true);
+    setSelectedAnswer(optionIndex);
+    resetFeedback();
     
-    // If the choice is correct, show flash/confetti
-    const isCorrect = challenges[challenge].choices.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
-    // Move to next challenge or show results
-    if (challenge < challenges.length - 1) {
-      setTimeout(() => {
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
         setChallenge(prev => prev + 1);
-      }, isCorrect ? 1000 : 0); // Delay if correct to show animation
-    } else {
-      // Calculate final score
-      const correctDecisions = newDecisions.filter(decision => decision.isCorrect).length;
-      setFinalScore(correctDecisions);
-      setShowResult(true);
-    }
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
     setChallenge(0);
-    setDecisions([]);
-    setFinalScore(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/student/finance/teen/allowance-story");
-  };
-
-  const getCurrentChallenge = () => challenges[challenge];
-
-  // Calculate progress
-  const progress = Math.round(((challenge + 1) / challenges.length) * 100);
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
       title="Badge: Smart Saver"
-      subtitle={showResult ? "Achievement Complete!" : `Challenge ${challenge + 1} of ${challenges.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult}
+      subtitle={showResult ? "Badge Earned!" : `Challenge ${challenge + 1} of ${challenges.length}`}
       showGameOver={showResult}
-      score={finalScore}
-      gameId="finance-teens-10"
+      score={score}
+      gameId={gameId}
       gameType="finance"
-      totalLevels={20}
+      totalLevels={challenges.length}
       coinsPerLevel={coinsPerLevel}
-      currentLevel={10}
-      maxScore={20} // Max score is total number of questions (all correct)
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && finalScore>= 4}
+      showConfetti={showResult && score >= 4}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && currentChallenge ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="mb-4">
-                <div className="flex justify-between text-white/80 mb-1">
-                  <span>Progress</span>
-                  <span>{progress}%</span>
-                </div>
-                <div className="w-full bg-white/20 rounded-full h-2">
-                  <div 
-                    className="bg-gradient-to-r from-green-400 to-emerald-500 h-2 rounded-full transition-all duration-500" 
-                    style={{ width: `${progress}%` }}
-                  ></div>
-                </div>
-              </div>
-              
-              <h3 className="text-xl font-bold text-white mb-2">{getCurrentChallenge().title}</h3>
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallenge.title}</h3>
               <p className="text-white text-lg mb-6">
-                {getCurrentChallenge().description}
+                {currentChallenge.question}
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {getCurrentChallenge().choices.map(choice => (
+                {currentChallenge.options.map((option, idx) => (
                   <button
-                    key={choice.id}
-                    onClick={() => handleDecision(choice.id)}
-                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect, idx)}
+                    disabled={answered}
+                    className={`bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3 ${
+                      answered && selectedAnswer === idx
+                        ? option.isCorrect
+                          ? "ring-4 ring-green-400"
+                          : "ring-4 ring-red-400"
+                        : ""
+                    }`}
                   >
-                    <div className="text-2xl mb-2">{choice.emoji}</div>
-                    <h4 className="font-bold text-xl mb-2">{choice.text}</h4>
-                    <p className="text-white/90">{choice.description}</p>
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="font-bold text-lg">{option.text}</span>
                   </button>
                 ))}
               </div>
+              
+              {answered && (
+                <div className={`mt-4 p-4 rounded-xl ${
+                  currentChallenge.options[selectedAnswer]?.isCorrect
+                    ? "bg-green-500/20 border border-green-500/30"
+                    : "bg-red-500/20 border border-red-500/30"
+                }`}>
+                  <p className="text-white font-semibold">
+                    {currentChallenge.options[selectedAnswer]?.isCorrect
+                      ? currentChallenge.feedback.correct
+                      : currentChallenge.feedback.wrong}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 4 ? (
+            {score >= 4 ? (
               <div>
                 <div className="text-6xl mb-4">🏆</div>
-                <h3 className="text-3xl font-bold text-white mb-4">Smart Saver!</h3>
+                <h3 className="text-3xl font-bold text-white mb-4">Smart Saver Badge Earned!</h3>
                 <p className="text-white/90 text-lg mb-6">
-                  You made {finalScore} smart saving decisions out of {challenges.length} challenges!
+                  You made {score} smart saving decisions out of {challenges.length} challenges!
                 </p>
                 
                 <div className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white p-6 rounded-2xl mb-6">
@@ -250,29 +296,25 @@ const BadgeSmartSaver = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                   <div className="bg-green-500/20 p-4 rounded-xl">
                     <h4 className="font-bold text-green-300 mb-2">Smart Choices</h4>
-                    <p className="text-white/90">
+                    <p className="text-white/90 text-sm">
                       You chose to save for emergencies, avoid risky investments, prioritize important goals, 
                       and resist peer pressure spending.
                     </p>
                   </div>
                   <div className="bg-blue-500/20 p-4 rounded-xl">
                     <h4 className="font-bold text-blue-300 mb-2">Financial Wisdom</h4>
-                    <p className="text-white/90">
+                    <p className="text-white/90 text-sm">
                       These habits will help you build wealth and achieve your long-term financial goals!
                     </p>
                   </div>
                 </div>
-                
-                <p className="text-white/80 mb-6">
-                  Congratulations on completing the first 10 finance games! You're well on your way to becoming financially literate.
-                </p>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">💪</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You made {finalScore} smart saving decisions out of {challenges.length} challenges.
+                  You made {score} smart saving decisions out of {challenges.length} challenges.
                 </p>
                 <p className="text-white/90 mb-6">
                   Remember, smart saving means prioritizing important goals, avoiding risky investments, 

@@ -1,11 +1,10 @@
 import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from '../GameShell';
-import { useGameFeedback } from '../../../../hooks/useGameFeedback';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 
 const PartyStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -16,199 +15,268 @@ const PartyStory = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [scores, setScores] = useState(Array(5).fill(0));
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [explanation, setExplanation] = useState('');
-  const [showCompletionPopup, setShowCompletionPopup] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You're planning a birthday party with a $200 budget. Which approach shows responsible financial planning?",
-      choices: [
-        { id: 'a', text: "Spend all $200 on decorations and ignore food costs", explanation: "This could leave guests hungry and isn't financially responsible." },
-        { id: 'b', text: "Allocate $100 for venue, $50 for food, $30 for decorations, $20 for contingencies", explanation: "This balanced approach allocates funds appropriately across all needs with a contingency fund." },
-        { id: 'c', text: "Spend everything on expensive entertainment and skip decorations", explanation: "This ignores important aspects of party planning and overspends in one area." },
-        { id: 'd', text: "Ask parents to cover extra costs if you overspend", explanation: "Relying on others to cover your overspending doesn't teach financial responsibility." }
-      ],
-      correct: 'b'
+      text: "You're planning a birthday party with a ₹2000 budget. Which approach shows responsible financial planning?",
+      options: [
+        { 
+          id: "a", 
+          text: "Allocate ₹1000 for venue, ₹500 for food, ₹300 for decorations, ₹200 for contingencies", 
+          emoji: "📋", 
+          description: "Balanced approach with contingency fund",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Spend all ₹2000 on decorations", 
+          emoji: "🎨", 
+          description: "Ignores other important costs",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ask parents to cover extra costs", 
+          emoji: "💸", 
+          description: "Doesn't teach financial responsibility",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      text: "You receive gifts worth $150 for your party. How should you handle the monetary gifts?",
-      choices: [
-        { id: 'a', text: "Spend it all immediately on something you want", explanation: "This misses an opportunity to build financial discipline." },
-        { id: 'b', text: "Split it: save 60% ($90) and spend 40% ($60) on something meaningful", explanation: "This balances enjoying your gift with building savings habits." },
-        { id: 'c', text: "Give it all to friends who helped with the party", explanation: "While generous, this doesn't help you learn to manage your own finances." },
-        { id: 'd', text: "Ask parents to hold it for you until you're older", explanation: "This avoids learning how to manage money responsibly." }
-      ],
-      correct: 'b'
+      text: "You receive ₹1500 in gifts for your party. How should you handle the monetary gifts?",
+      options: [
+        { 
+          id: "a", 
+          text: "Spend it all immediately", 
+          emoji: "🛍️", 
+          description: "Misses opportunity to build savings",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Split it: save 60% (₹900) and spend 40% (₹600)", 
+          emoji: "💰", 
+          description: "Balances enjoyment with savings",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Give it all to friends", 
+          emoji: "👥", 
+          description: "Doesn't help learn money management",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "After the party, you realize you spent $50 more than planned. What's the best way to handle this?",
-      choices: [
-        { id: 'a', text: "Ignore it since it was a special occasion", explanation: "Not acknowledging overspending makes it harder to improve financial habits." },
-        { id: 'b', text: "Review what caused the overspending and adjust future budgets accordingly", explanation: "This helps you learn from mistakes and improve financial planning." },
-        { id: 'c', text: "Blame parents for not giving you a bigger budget", explanation: "This shifts responsibility away from developing financial skills." },
-        { id: 'd', text: "Cancel your next social event to compensate", explanation: "This extreme reaction isn't necessary or helpful for learning balance." }
-      ],
-      correct: 'b'
+      text: "After the party, you realize you spent ₹500 more than planned. What's the best way to handle this?",
+      options: [
+        { 
+          id: "a", 
+          text: "Ignore it since it was special", 
+          emoji: "🙈", 
+          description: "Doesn't help improve financial habits",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Review what caused overspending and adjust future budgets", 
+          emoji: "📊", 
+          description: "Helps learn from mistakes",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Cancel your next social event", 
+          emoji: "🚫", 
+          description: "Extreme reaction not helpful",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      text: "A friend asks you to host a party too. Your monthly entertainment budget is $75. What should you do?",
-      choices: [
-        { id: 'a', text: "Host a big party anyway since it's your friend", explanation: "This ignores your financial limits and could cause stress." },
-        { id: 'b', text: "Politely decline because of budget constraints", explanation: "This respects both your financial boundaries and friendship." },
-        { id: 'c', text: "Host a small gathering within your budget ($75)", explanation: "This shows financial responsibility while still being a good friend." },
-        { id: 'd', text: "Ask parents to sponsor another party", explanation: "This relies on others instead of learning to manage within your means." }
-      ],
-      correct: 'c'
+      text: "A friend asks you to host another party. Your monthly entertainment budget is ₹750. What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Host a small gathering within your budget (₹750)", 
+          emoji: "🎉", 
+          description: "Shows financial responsibility",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Host a big party anyway", 
+          emoji: "💸", 
+          description: "Ignores financial limits",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ask parents to sponsor it", 
+          emoji: "👨‍👩‍👧‍👦", 
+          description: "Relies on others instead of managing",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "You saved $100 from your part-time job for a party. How should you evaluate if hosting is worth it?",
-      choices: [
-        { id: 'a', text: "Focus only on having fun regardless of cost", explanation: "This approach doesn't consider long-term financial goals." },
-        { id: 'b', text: "Compare the joy of hosting with alternative uses of that $100", explanation: "This balanced approach considers opportunity cost and personal values." },
-        { id: 'c', text: "Only consider hosting if others are paying most of the costs", explanation: "This avoids taking responsibility for financial decisions." },
-        { id: 'd', text: "Host the biggest party possible to impress everyone", explanation: "This focuses on external validation rather than personal financial health." }
-      ],
-      correct: 'b'
+      text: "You saved ₹1000 from your part-time job for a party. How should you evaluate if hosting is worth it?",
+      options: [
+        { 
+          id: "a", 
+          text: "Compare the joy of hosting with alternative uses of ₹1000", 
+          emoji: "⚖️", 
+          description: "Considers opportunity cost",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Focus only on having fun", 
+          emoji: "🎉", 
+          description: "Doesn't consider long-term goals",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Host the biggest party to impress", 
+          emoji: "💎", 
+          description: "Focuses on external validation",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleChoiceSelect = (choiceId) => {
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
-    setSelectedChoice(choiceId);
-    const isCorrect = choiceId === questions[currentQuestion].correct;
     
     if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      const newScores = [...scores];
-      newScores[currentQuestion] = 1;
-      setScores(newScores);
     }
     
-    // Find the explanation for the selected choice
-    const selectedChoiceObj = questions[currentQuestion].choices.find(choice => choice.id === choiceId);
-    setExplanation(selectedChoiceObj?.explanation || '');
-    setShowExplanation(true);
-
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      setShowExplanation(false);
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedChoice(null);
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        // For the last question, show completion popup
-        setTimeout(() => {
-          setShowCompletionPopup(true);
-        }, 2000);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    }, 2000);
+    }, 500);
   };
 
-  const calculateTotalScore = () => {
-    return scores.reduce((total, score) => total + score, 0);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
   };
 
-  const handleGameComplete = () => {
-    navigate('/student/finance');
-  };
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
-      gameId="finance-teens-15"
-      gameType="story"
-      totalLevels={questions.length}
+      title="Party Story"
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       coinsPerLevel={coinsPerLevel}
-      currentLevel={currentQuestion + 1}
-      score={calculateTotalScore()}
-      totalScore={questions.length}
-      onGameComplete={handleGameComplete}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="game-content">
-        {/* Completion Popup */}
-        {showCompletionPopup && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-            <div className="bg-white rounded-xl shadow-xl p-8 max-w-md w-full mx-4">
-              <div className="text-center">
-                <h3 className="text-2xl font-bold text-indigo-700 mb-4">Congratulations!</h3>
-                <div className="bg-green-100 rounded-full w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                  <span className="text-2xl">💰</span>
-                </div>
-                <p className="text-lg text-gray-700 mb-2">You've completed the Party Planning Challenge!</p>
-                <p className="text-xl font-bold text-indigo-700 mb-6">
-                  Total HealCoins Earned: {calculateTotalScore()}
-                </p>
-                <button
-                  onClick={() => {
-                    setShowCompletionPopup(false);
-                    setTimeout(() => {
-                      navigate('/games/financial-literacy/kids');
-                    }, 500);
-                  }}
-                  className="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-6 rounded-lg transition duration-200"
-                >
-                  OK
-                </button>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="finance"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option, idx) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        )}
-
-        <h3 className="text-xl font-bold mb-6 text-indigo-700">Party Planning Financial Decisions</h3>
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h4 className="text-lg font-semibold mb-4 text-gray-800">{questions[currentQuestion].text}</h4>
-          <div className="space-y-3">
-            {questions[currentQuestion].choices.map((choice) => (
-              <button
-                key={choice.id}
-                onClick={() => handleChoiceSelect(choice.id)}
-                className={`w-full text-left p-4 rounded-lg transition duration-200 border ${
-                  selectedChoice === choice.id 
-                    ? (choice.id === questions[currentQuestion].correct 
-                        ? 'bg-green-100 border-green-300' 
-                        : 'bg-red-100 border-red-300')
-                    : 'bg-blue-50 hover:bg-blue-100 border-blue-200 hover:border-blue-300'
-                }`}
-                disabled={showExplanation || showCompletionPopup}
-              >
-                {choice.text}
-              </button>
-            ))}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct!
+                  You're learning smart party planning and financial decisions!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  You understand the importance of budgeting, saving, and making thoughtful financial decisions for parties!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct.
+                  Remember, smart party planning means budgeting and making thoughtful financial decisions!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that shows responsible budgeting and financial planning.
+                </p>
+              </div>
+            )}
           </div>
-        </div>
-      
-        {showExplanation && (
-          <div className={`p-4 rounded-lg mb-4 ${
-            selectedChoice === questions[currentQuestion].correct 
-              ? 'bg-green-100 text-green-800' 
-              : 'bg-red-100 text-red-800'
-          }`}>
-            <p className="font-medium">
-              {selectedChoice === questions[currentQuestion].correct ? 'Correct!' : 'Incorrect!'}
-            </p>
-            <p className="mt-2 text-sm">{explanation}</p>
-          </div>
         )}
-      
-        <div className="flex justify-between items-center mt-6">
-          <span className="text-gray-600">
-            Question {currentQuestion + 1} of {questions.length}
-          </span>
-          <span className="font-medium text-indigo-700">
-            Score: {calculateTotalScore()}/{questions.length}
-          </span>
-        </div>
       </div>
     </GameShell>
   );

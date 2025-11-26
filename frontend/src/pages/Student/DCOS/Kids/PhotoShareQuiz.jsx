@@ -1,19 +1,24 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PhotoShareQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "dcos-kids-3";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
@@ -21,8 +26,8 @@ const PhotoShareQuiz = () => {
       id: 1,
       text: "Should you post a photo of your home address online?",
       options: [
-        { id: "yes", text: "Yes, it's fine", isCorrect: false },
         { id: "no", text: "No, never!", isCorrect: true },
+        { id: "yes", text: "Yes, it's fine", isCorrect: false },
         { id: "maybe", text: "Only to friends", isCorrect: false }
       ]
     },
@@ -31,16 +36,16 @@ const PhotoShareQuiz = () => {
       text: "Is it safe to post your school uniform with school name visible?",
       options: [
         { id: "yes", text: "Yes, I'm proud of my school", isCorrect: false },
-        { id: "no", text: "No, it reveals where I go", isCorrect: true },
-        { id: "crop", text: "Yes, but crop the name", isCorrect: false }
+        { id: "crop", text: "Yes, but crop the name", isCorrect: false },
+        { id: "no", text: "No, it reveals where I go", isCorrect: true }
       ]
     },
     {
       id: 3,
       text: "Should you share photos of your birthday party with strangers?",
       options: [
-        { id: "yes", text: "Yes, to show fun", isCorrect: false },
         { id: "no", text: "No, keep private", isCorrect: true },
+        { id: "yes", text: "Yes, to show fun", isCorrect: false },
         { id: "some", text: "Only some photos", isCorrect: false }
       ]
     },
@@ -58,131 +63,126 @@ const PhotoShareQuiz = () => {
       text: "Is it okay to post vacation photos while you're still on vacation?",
       options: [
         { id: "yes", text: "Yes, to share my fun", isCorrect: false },
-        { id: "no", text: "No, wait until I'm back home", isCorrect: true },
-        { id: "some", text: "Yes, just a few", isCorrect: false }
-      ]
-    },
-    {
-      id: 6,
-      text: "Should you share photos of your younger siblings without parent permission?",
-      options: [
-        { id: "yes", text: "Yes, they're family", isCorrect: false },
-        { id: "no", text: "No, ask parent first", isCorrect: true },
-        { id: "cute", text: "Only cute ones", isCorrect: false }
+        { id: "some", text: "Yes, just a few", isCorrect: false },
+        { id: "no", text: "No, wait until I'm back home", isCorrect: true }
       ]
     }
   ];
 
   const handleAnswer = (optionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
     const question = questions[currentQuestion];
     const option = question.options.find(opt => opt.id === optionId);
     
-    const newAnswers = [...answers, {
-      questionId: question.id,
-      answer: optionId,
-      isCorrect: option.isCorrect
-    }];
-    
-    setAnswers(newAnswers);
-    
     if (option.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
         setCurrentQuestion(prev => prev + 1);
-      }, option.isCorrect ? 800 : 600);
-    } else {
-      const correctCount = newAnswers.filter(a => a.isCorrect).length;
-      const percentage = (correctCount / questions.length) * 100;
-      if (percentage >= 70) {
-        setCoins(3);
+        setAnswered(false);
       }
-      setShowResult(true);
-    }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
     setCurrentQuestion(0);
-    setAnswers([]);
-    setCoins(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/student/dcos/kids/personal-info-puzzle");
-  };
-
-  const correctCount = answers.filter(a => a.isCorrect).length;
-  const percentage = Math.round((correctCount / questions.length) * 100);
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Photo Share Quiz"
-      score={coins}
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && percentage >= 70}
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && percentage >= 70}
-      
-      gameId="dcos-kids-3"
-      gameType="educational"
-      totalLevels={20}
-      currentLevel={3}
-      showConfetti={showResult && percentage >= 70}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 4}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/digital-citizenship/kids"
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
               <p className="text-white text-lg mb-6 font-semibold text-center">
-                {questions[currentQuestion].text}
+                {currentQuestionData.text}
               </p>
               
-              <div className="space-y-3">
-                {questions[currentQuestion].options.map(option => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => (
                   <button
                     key={option.id}
                     onClick={() => handleAnswer(option.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102"
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
-                    <div className="text-white font-medium">{option.text}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
                   </button>
                 ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {percentage >= 70 ? "🎉 Photo Safety Expert!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You got {correctCount} out of {questions.length} correct ({percentage}%)
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Never post photos that show where you live, go to school, or reveal personal details!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {percentage >= 70 ? "You earned 3 Coins! 🪙" : "Get 70% or higher to earn coins!"}
-            </p>
-            {percentage < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 4 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Photo Safety Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct!
+                  Great job protecting your privacy online!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  💡 Never post photos that show where you live, go to school, or reveal personal details!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct.
+                  Remember to protect your privacy when sharing photos online!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  💡 Never post photos that show where you live, go to school, or reveal personal details!
+                </p>
+              </div>
             )}
           </div>
         )}

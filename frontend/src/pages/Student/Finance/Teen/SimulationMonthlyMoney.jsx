@@ -58,18 +58,18 @@ const SimulationMonthlyMoney = () => {
       description: "Your phone breaks and needs ₹300 repair. You have ₹200 saved. What do you do?",
       choices: [
         { 
-          id: "save", 
-          text: "Use savings + earn more", 
-          emoji: "🏦", 
-          description: "Use ₹200 savings and do extra chores to earn the remaining ₹100",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Borrow from parents", 
           emoji: "👨‍👩‍👧‍👦", 
           description: "Ask parents to pay for the full repair",
           isCorrect: false
+        },
+        { 
+          id: "save", 
+          text: "Use savings + earn more", 
+          emoji: "🏦", 
+          description: "Use ₹200 savings and do extra chores to earn the remaining ₹100",
+          isCorrect: true
         },
         { 
           id: "lend", 
@@ -86,13 +86,6 @@ const SimulationMonthlyMoney = () => {
       description: "You get ₹200 bonus for good grades. How should you use it?",
       choices: [
         { 
-          id: "save", 
-          text: "Save most, small treat", 
-          emoji: "🎯", 
-          description: "Save ₹150 and use ₹50 for a small reward",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Spend all on treats", 
           emoji: "🎉", 
@@ -105,6 +98,13 @@ const SimulationMonthlyMoney = () => {
           emoji: "👥", 
           description: "Lend to friends who promised to return",
           isCorrect: false
+        },
+        { 
+          id: "save", 
+          text: "Save most, small treat", 
+          emoji: "🎯", 
+          description: "Save ₹150 and use ₹50 for a small reward",
+          isCorrect: true
         }
       ]
     },
@@ -114,18 +114,18 @@ const SimulationMonthlyMoney = () => {
       description: "You earn ₹1000 from a part-time job. What's the best approach?",
       choices: [
         { 
-          id: "save", 
-          text: "Save 50%, use 50%", 
-          emoji: "📈", 
-          description: "Save ₹500 for future goals, use ₹500 for necessary expenses",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Spend on lifestyle", 
           emoji: "🛍️", 
           description: "Upgrade your lifestyle with better clothes and gadgets",
           isCorrect: false
+        },
+        { 
+          id: "save", 
+          text: "Save 50%, use 50%", 
+          emoji: "📈", 
+          description: "Save ₹500 for future goals, use ₹500 for necessary expenses",
+          isCorrect: true
         },
         { 
           id: "lend", 
@@ -142,6 +142,13 @@ const SimulationMonthlyMoney = () => {
       description: "You want ₹800 shoes but need ₹500 textbooks. What do you prioritize?",
       choices: [
         { 
+          id: "lend", 
+          text: "Buy both on credit", 
+          emoji: "💸", 
+          description: "Buy both items using credit cards",
+          isCorrect: false
+        },
+        { 
           id: "save", 
           text: "Buy textbooks first", 
           emoji: "📚", 
@@ -153,13 +160,6 @@ const SimulationMonthlyMoney = () => {
           text: "Buy shoes first", 
           emoji: "👟", 
           description: "Buy the shoes you want now",
-          isCorrect: false
-        },
-        { 
-          id: "lend", 
-          text: "Buy both on credit", 
-          emoji: "💸", 
-          description: "Buy both items using credit cards",
           isCorrect: false
         }
       ]

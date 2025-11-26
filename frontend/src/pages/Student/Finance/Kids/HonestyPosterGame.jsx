@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Image, Trophy } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { Image } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const HonestyPosterGame = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -26,40 +25,47 @@ const HonestyPosterGame = () => {
 
   const stages = [
     {
-      question: 'Create a slogan: “Be Fair with Money because ___.”',
+      question: 'Create a slogan: "Be Fair with Money because ___."',
       minLength: 10,
     },
     {
-      question: 'Write a poster tagline: “Honesty with money is ___.”',
+      question: 'Write a poster tagline: "Honesty with money is ___."',
       minLength: 10,
     },
     {
-      question: 'Design a message: “I stay honest with money by ___.”',
+      question: 'Design a message: "I stay honest with money by ___."',
       minLength: 10,
     },
     {
-      question: 'Write a motto: “Money and honesty go together because ___.”',
+      question: 'Write a motto: "Money and honesty go together because ___."',
       minLength: 10,
     },
     {
-      question: 'Create a final slogan: “Honest money choices make me ___.”',
+      question: 'Create a final slogan: "Honest money choices make me ___."',
       minLength: 10,
     },
   ];
 
   const handleSubmit = () => {
+    if (showResult) return; // Prevent multiple submissions
+    
     resetFeedback();
-    if (entry.trim().length >= stages[currentStage].minLength) {
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      if (currentStage < stages.length - 1) {
-        setTimeout(() => {
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
           setEntry("");
           setCurrentStage((prev) => prev + 1);
-        }, 800);
-      } else {
-        setTimeout(() => setShowResult(true), 800);
-      }
+        }
+      }, 1500);
     }
   };
 
@@ -68,8 +74,7 @@ const HonestyPosterGame = () => {
   return (
     <GameShell
       title="Poster: Honesty Pays"
-      subtitle={`Question ${currentStage + 1} of ${stages.length}: Create posters to promote fair money choices.`}
-      coins={score}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Create posters to promote fair money choices.` : "Poster Complete!"}
       currentLevel={currentStage + 1}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
@@ -77,33 +82,45 @@ const HonestyPosterGame = () => {
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       score={finalScore}
-      gameId="finance-kids-186"
+      gameId={gameId}
       gameType="finance"
       maxScore={5}
       totalCoins={totalCoins}
       totalXp={totalXp}
       showConfetti={showResult && finalScore === 5}>
       <div className="text-center text-white space-y-8">
-        <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-          <Image className="mx-auto w-10 h-10 text-yellow-400 mb-4" />
-          <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-          <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
-          <textarea
-            className="w-full p-4 rounded-xl text-black bg-white/90"
-            rows={4}
-            placeholder="Write your poster slogan here..."
-            value={entry}
-            onChange={(e) => setEntry(e.target.value)}
-            disabled={showResult}
-          />
-          <button
-            onClick={handleSubmit}
-            className="bg-gradient-to-r from-pink-500 to-orange-500 px-8 py-4 rounded-full font-bold text-white hover:scale-105 transition-transform mt-4"
-            disabled={entry.trim().length < stages[currentStage].minLength || showResult}
-          >
-            Submit Poster
-          </button>
-        </div>
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <Image className="mx-auto mb-4 w-10 h-10 text-yellow-400" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
+            <textarea
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your poster slogan here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
+              rows={4}
+              disabled={showResult}
+            />
+            <div className="mt-2 text-white/50 text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
+            </div>
+            <button
+              onClick={handleSubmit}
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-gradient-to-r from-pink-500 to-orange-500 hover:from-pink-600 hover:to-orange-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
+            >
+              {currentStage === stages.length - 1 ? 'Submit Final Poster' : 'Submit & Continue'}
+            </button>
+          </div>
+        )}
       </div>
     </GameShell>
   );

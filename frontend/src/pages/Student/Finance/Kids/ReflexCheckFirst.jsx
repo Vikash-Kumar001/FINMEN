@@ -1,11 +1,13 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
+
 const ReflexCheckFirst = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -17,74 +19,254 @@ const ReflexCheckFirst = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [showWord, setShowWord] = useState("");
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
-  const stages = [
-    { action: "Ask Price", wrong: "Trust Blindly", prompt: "Tap when 'Ask Price' appears!" },
-    { action: "Check Cost", wrong: "Buy Now", prompt: "Tap when 'Check Cost' appears!" },
-    { action: "Compare Prices", wrong: "Pay Fast", prompt: "Tap when 'Compare Prices' appears!" },
-    { action: "Verify Quality", wrong: "Ignore", prompt: "Tap when 'Verify Quality' appears!" },
-    { action: "Read Reviews", wrong: "Rush", prompt: "Tap when 'Read Reviews' appears!" },
+  const questions = [
+    {
+      id: 1,
+      question: "What should you do before buying something?",
+      correctAnswer: "Ask Price",
+      options: [
+        { text: "Ask Price", isCorrect: true, emoji: "💰" },
+        { text: "Trust Blindly", isCorrect: false, emoji: "🙈" },
+        { text: "Buy Immediately", isCorrect: false, emoji: "⚡" },
+        { text: "Ignore Cost", isCorrect: false, emoji: "🚫" }
+      ]
+    },
+    {
+      id: 2,
+      question: "What should you check before making a purchase?",
+      correctAnswer: "Check Cost",
+      options: [
+        { text: "Check Cost", isCorrect: true, emoji: "💵" },
+        { text: "Buy Now", isCorrect: false, emoji: "🛒" },
+        { text: "Skip Checking", isCorrect: false, emoji: "⏭️" },
+        { text: "Guess Price", isCorrect: false, emoji: "🎲" }
+      ]
+    },
+    {
+      id: 3,
+      question: "What's the smart way to shop?",
+      correctAnswer: "Compare Prices",
+      options: [
+        { text: "Compare Prices", isCorrect: true, emoji: "⚖️" },
+        { text: "Pay Fast", isCorrect: false, emoji: "💸" },
+        { text: "Buy First Store", isCorrect: false, emoji: "🏪" },
+        { text: "Don't Compare", isCorrect: false, emoji: "🙈" }
+      ]
+    },
+    {
+      id: 4,
+      question: "What should you verify before buying?",
+      correctAnswer: "Verify Quality",
+      options: [
+        { text: "Verify Quality", isCorrect: true, emoji: "🔍" },
+        { text: "Ignore", isCorrect: false, emoji: "🙈" },
+        { text: "Buy Without Checking", isCorrect: false, emoji: "⚡" },
+        { text: "Trust Seller Only", isCorrect: false, emoji: "🤝" }
+      ]
+    },
+    {
+      id: 5,
+      question: "What should you do before buying online?",
+      correctAnswer: "Read Reviews",
+      options: [
+        { text: "Read Reviews", isCorrect: true, emoji: "⭐" },
+        { text: "Rush", isCorrect: false, emoji: "⚡" },
+        { text: "Skip Reviews", isCorrect: false, emoji: "⏭️" },
+        { text: "Buy Instantly", isCorrect: false, emoji: "🛒" }
+      ]
+    }
   ];
 
   useEffect(() => {
-    if (currentStage < stages.length) {
-      const interval = setInterval(() => {
-        setShowWord((prev) => (prev === stages[currentStage].action ? stages[currentStage].wrong : stages[currentStage].action));
-      }, 1200);
-      return () => clearInterval(interval);
-    }
-  }, [currentStage]);
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-  const handleTap = () => {
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
     resetFeedback();
-    if (showWord === stages[currentStage].action) {
+    
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+      }
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    if (gameState !== "playing") {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+
+    if (currentRoundRef.current > TOTAL_ROUNDS) {
+      setGameState("finished");
+      return;
+    }
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
+          }
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+    
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const isCorrect = option.isCorrect;
+    const isLastQuestion = currentRound === questions.length;
+    
+    if (isCorrect) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      if (currentStage < stages.length - 1) {
-        setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
-      } else {
-        setTimeout(() => setShowResult(true), 800);
-      }
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+      }
+    }, 500);
   };
 
   const finalScore = score;
 
+  const currentQuestion = questions[currentRound - 1];
+
   return (
     <GameShell
       title="Reflex Check First"
-      subtitle={`Question ${currentStage + 1} of ${stages.length}: ${stages[currentStage]?.prompt || "Test your checking reflexes!"}`}
-      coins={score}
-      currentLevel={currentStage + 1}
-      totalLevels={5}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your checking reflexes!` : "Test your checking reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       score={finalScore}
-      gameId="finance-kids-169"
+      gameId={gameId}
       gameType="finance"
-      maxScore={5}
+      maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
-      totalXp={totalXp}
-      showConfetti={showResult && finalScore === 5}>
+      totalXp={totalXp}>
       <div className="text-center text-white space-y-8">
-        <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-          <h3 className="text-3xl font-bold mb-4">Round {currentStage + 1}</h3>
-          <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
-          <div
-            onClick={handleTap}
-            className="bg-white/10 text-3xl font-bold px-12 py-8 rounded-2xl border border-white/20 cursor-pointer select-none hover:scale-105 transition-transform"
-          >
-            {showWord}
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🔍</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about checking before buying!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
           </div>
-        </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

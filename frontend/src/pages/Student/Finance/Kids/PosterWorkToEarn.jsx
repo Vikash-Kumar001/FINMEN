@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Trophy } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const PosterWorkToEarn = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -93,7 +92,7 @@ const PosterWorkToEarn = () => {
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       score={finalScore}
-      gameId="finance-kids-146"
+      gameId={gameId}
       gameType="finance"
       maxScore={5}
       totalCoins={totalCoins}

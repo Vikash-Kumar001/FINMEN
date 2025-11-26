@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
 import {
@@ -26,17 +26,35 @@ import {
     Calendar
 } from "lucide-react";
 import { useSocket } from "../../context/SocketContext";
+import { useAuth } from "../../hooks/useAuth";
 import api from "../../utils/api";
 
 const Leaderboard = () => {
     const navigate = useNavigate();
+    const { user: currentUser } = useAuth();
     const [leaders, setLeaders] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [selectedPeriod, setSelectedPeriod] = useState('weekly');
+    const [selectedPeriod, setSelectedPeriod] = useState('allTime');
     const [challenges, setChallenges] = useState([]);
     const [games, setGames] = useState([]);
     const [showPlayOptions, setShowPlayOptions] = useState(null);
+    const [error, setError] = useState(null);
     const { socket } = useSocket();
+    const dropdownRef = useRef(null);
+
+    // Close dropdown when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+                setShowPlayOptions(null);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
     // Fetch challenges and games data
     useEffect(() => {
@@ -44,49 +62,116 @@ const Leaderboard = () => {
             try {
                 // Fetch active challenges
                 const challengesResponse = await api.get('/api/challenges/active');
-                setChallenges(challengesResponse.data);
+                setChallenges(Array.isArray(challengesResponse.data) ? challengesResponse.data : []);
                 
                 // Fetch games
                 const gamesResponse = await api.get('/api/game/games');
-                setGames(gamesResponse.data);
+                setGames(Array.isArray(gamesResponse.data) ? gamesResponse.data : []);
             } catch (error) {
                 console.error('Error fetching play options:', error);
+                // Set empty arrays on error
+                setChallenges([]);
+                setGames([]);
             }
         };
         
         fetchData();
     }, []);
 
+    // Socket connection for leaderboard
     useEffect(() => {
-        if (!socket) return;
+        if (!socket) {
+            // Fallback to API if socket is not available
+            const fetchLeaderboard = async () => {
+                try {
+                    setLoading(true);
+                    const response = await api.get('/api/stats/leaderboard-snippet');
+                    if (response.data && response.data.leaderboard) {
+                        setLeaders(response.data.leaderboard);
+                    }
+                    setLoading(false);
+                } catch (err) {
+                    console.error('Error fetching leaderboard:', err);
+                    setError('Failed to load leaderboard');
+                    setLoading(false);
+                }
+            };
+            fetchLeaderboard();
+            return;
+        }
+
         setLoading(true);
+        setError(null);
+        
         try {
             socket.emit('student:leaderboard:subscribe', { period: selectedPeriod });
         } catch (err) {
             console.error("❌ Error subscribing to leaderboard:", err.message);
+            setError('Failed to connect to leaderboard');
             setLoading(false);
             return;
         }
 
         const handleData = (payload) => {
-            // Accept both legacy array and new { period, leaderboard }
-            const list = Array.isArray(payload) ? payload : Array.isArray(payload?.leaderboard) ? payload.leaderboard : [];
-            setLeaders(list);
+            try {
+                // Accept both legacy array and new { period, leaderboard } format
+                let list = [];
+                if (Array.isArray(payload)) {
+                    list = payload;
+                } else if (payload?.leaderboard && Array.isArray(payload.leaderboard)) {
+                    list = payload.leaderboard;
+                }
+                
+                // Ensure all entries have required fields
+                list = list.map((entry, index) => ({
+                    ...entry,
+                    rank: entry.rank || index + 1,
+                    xp: entry.xp || 0,
+                    level: entry.level || Math.floor((entry.xp || 0) / 100) + 1,
+                    name: entry.name || 'Unknown',
+                    username: entry.username || 'user',
+                    isCurrentUser: entry.isCurrentUser || 
+                        (currentUser && (
+                            entry._id?.toString() === currentUser._id?.toString() ||
+                            entry.name === currentUser.name
+                        ))
+                }));
+                
+                setLeaders(list);
+                setLoading(false);
+                setError(null);
+            } catch (err) {
+                console.error('Error processing leaderboard data:', err);
+                setError('Failed to process leaderboard data');
+                setLoading(false);
+            }
+        };
+
+        const handleError = (errorPayload) => {
+            console.error('Leaderboard error:', errorPayload);
+            setError(errorPayload?.message || 'Failed to load leaderboard');
             setLoading(false);
         };
 
         socket.on('student:leaderboard:data', handleData);
+        socket.on('student:leaderboard:error', handleError);
+
         return () => {
-            try { socket.off('student:leaderboard:data', handleData); } catch {}
+            try {
+                socket.off('student:leaderboard:data', handleData);
+                socket.off('student:leaderboard:error', handleError);
+            } catch (err) {
+                console.error('Error cleaning up socket listeners:', err);
+            }
         };
-    }, [socket, selectedPeriod]);
+    }, [socket, selectedPeriod, currentUser]);
 
     const getRankIcon = (rank) => {
         switch (rank) {
             case 1: return <Crown className="w-6 h-6 text-yellow-500" />;
             case 2: return <Medal className="w-6 h-6 text-gray-400" />;
             case 3: return <Award className="w-6 h-6 text-amber-600" />;
-            default: return <Trophy className="w-5 h-5 text-gray-500" />;
+            default: return null;
         }
     };
 
@@ -100,8 +185,6 @@ const Leaderboard = () => {
     };
 
     const getPositionChange = (user) => {
-        // This will be calculated based on previous leaderboard data
-        // which will be included in the API response
         const change = user.positionChange || 0;
         
         if (change > 0) {
@@ -110,6 +193,12 @@ const Leaderboard = () => {
             return { icon: <ArrowDown className="w-3 h-3 sm:w-4 sm:h-4 text-red-500" />, text: `${change}`, color: "text-red-500" };
         }
         return { icon: <Minus className="w-3 h-3 sm:w-4 sm:h-4 text-gray-400" />, text: "0", color: "text-gray-400" };
+    };
+
+    const formatXP = (xp) => {
+        if (xp >= 1000000) return `${(xp / 1000000).toFixed(1)}M`;
+        if (xp >= 1000) return `${(xp / 1000).toFixed(1)}K`;
+        return xp?.toLocaleString() || '0';
     };
 
     const containerVariants = {
@@ -136,21 +225,32 @@ const Leaderboard = () => {
         },
     };
 
-    const periods = ['daily', 'weekly', 'monthly', 'all-time'];
+    const periods = [
+        { value: 'daily', label: 'Daily' },
+        { value: 'weekly', label: 'Weekly' },
+        { value: 'monthly', label: 'Monthly' },
+        { value: 'allTime', label: 'All Time' }
+    ];
     
     // Navigation functions
-    const navigateToChallenge = () => {
-        navigate('/student/challenges');
+    const navigateToChallenge = (challengeId) => {
+        if (challengeId) {
+            navigate(`/student/challenges/${challengeId}`);
+        } else {
+            navigate('/student/challenges');
+        }
     };
     
     const navigateToGame = (gameId) => {
-        navigate(`/student/games/${gameId}`);
+        if (gameId) {
+            navigate(`/student/games/${gameId}`);
+        } else {
+            navigate('/student/games');
+        }
     };
     
-    // navigateToDailyChallenge removed - daily challenges functionality removed
-    
-    const togglePlayOptions = (userId) => {
-        setShowPlayOptions(showPlayOptions === userId ? null : userId);
+    const togglePlayOptions = (index) => {
+        setShowPlayOptions(showPlayOptions === index ? null : index);
     };
 
     if (loading) {
@@ -183,6 +283,8 @@ const Leaderboard = () => {
 
     // Only show top 3 podium if there are at least 3 valid leaders
     const hasTopThree = Array.isArray(leaders) && leaders.filter(l => l && l.name && l.xp !== undefined).length >= 3;
+    const topThree = hasTopThree ? leaders.slice(0, 3) : [];
+    const restLeaders = hasTopThree ? leaders.slice(3) : leaders;
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 relative overflow-hidden">
@@ -281,20 +383,27 @@ const Leaderboard = () => {
                         Battle for the top spot and claim your glory! ⚡
                     </p>
 
+                    {/* Error Message */}
+                    {error && (
+                        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                            {error}
+                        </div>
+                    )}
+
                     {/* Period Selector */}
                     <div className="flex flex-wrap gap-2 justify-center mb-6">
                         {periods.map((period) => (
                             <motion.button
-                                key={period}
-                                onClick={() => setSelectedPeriod(period)}
+                                key={period.value}
+                                onClick={() => setSelectedPeriod(period.value)}
                                 whileHover={{ scale: 1.05 }}
                                 whileTap={{ scale: 0.95 }}
-                                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-semibold transition-all ${selectedPeriod === period
+                                className={`px-3 sm:px-4 py-1.5 sm:py-2 rounded-full font-semibold transition-all ${selectedPeriod === period.value
                                         ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg'
                                         : 'bg-white/80 text-gray-700 hover:bg-white shadow-md'
                                     }`}
                             >
-                                {period.charAt(0).toUpperCase() + period.slice(1).replace('-', ' ')}
+                                {period.label}
                             </motion.button>
                         ))}
                     </div>
@@ -323,11 +432,12 @@ const Leaderboard = () => {
                                     <Medal className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                                 </div>
                                 <div className="mt-2 sm:mt-3">
-                                    <h3 className="text-sm sm:text-base font-bold text-gray-800">{leaders[1]?.name || '-'}</h3>
+                                    <h3 className="text-sm sm:text-base font-bold text-gray-800">{topThree[1]?.name || '-'}</h3>
                                     <p className="text-xs sm:text-sm text-gray-600 flex items-center justify-center gap-1">
                                         <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
-                                        {leaders[1]?.xp ?? 0} XP
+                                        {formatXP(topThree[1]?.xp || 0)} XP
                                     </p>
+                                    <p className="text-xs text-gray-500 mt-1">Level {topThree[1]?.level || 1}</p>
                                 </div>
                             </motion.div>
 
@@ -352,11 +462,12 @@ const Leaderboard = () => {
                                     <Trophy className="w-8 h-8 sm:w-10 sm:h-10 text-white" />
                                 </div>
                                 <div className="mt-2 sm:mt-3">
-                                    <h3 className="font-bold text-gray-800 text-base sm:text-lg">{leaders[0]?.name || '-'}</h3>
+                                    <h3 className="font-bold text-gray-800 text-base sm:text-lg">{topThree[0]?.name || '-'}</h3>
                                     <p className="text-xs sm:text-sm text-gray-600 flex items-center justify-center gap-1">
                                         <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
-                                        {leaders[0]?.xp ?? 0} XP
+                                        {formatXP(topThree[0]?.xp || 0)} XP
                                     </p>
+                                    <p className="text-xs text-gray-500 mt-1">Level {topThree[0]?.level || 1}</p>
                                 </div>
                             </motion.div>
 
@@ -374,11 +485,12 @@ const Leaderboard = () => {
                                     <Award className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
                                 </div>
                                 <div className="mt-2 sm:mt-3">
-                                    <h3 className="text-sm sm:text-base font-bold text-gray-800">{leaders[2]?.name || '-'}</h3>
+                                    <h3 className="text-sm sm:text-base font-bold text-gray-800">{topThree[2]?.name || '-'}</h3>
                                     <p className="text-xs sm:text-sm text-gray-600 flex items-center justify-center gap-1">
                                         <Zap className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-500" />
-                                        {leaders[2]?.xp ?? 0} XP
+                                        {formatXP(topThree[2]?.xp || 0)} XP
                                     </p>
+                                    <p className="text-xs text-gray-500 mt-1">Level {topThree[2]?.level || 1}</p>
                                 </div>
                             </motion.div>
                         </div>
@@ -392,52 +504,57 @@ const Leaderboard = () => {
                     animate="visible"
                     className="space-y-4"
                 >
-                    {leaders.map((user, index) => {
+                    {restLeaders.map((user, index) => {
+                        const actualRank = hasTopThree ? index + 4 : index + 1;
                         const position = getPositionChange(user);
-                        const isTopThree = index < 3;
+                        const isCurrentUser = user.isCurrentUser || 
+                            (currentUser && (
+                                user._id?.toString() === currentUser._id?.toString() ||
+                                user.name === currentUser.name
+                            ));
 
                         return (
                             <motion.div
-                                key={user.id || index}
+                                key={user._id || user.id || index}
                                 variants={itemVariants}
                                 whileHover={{
                                     scale: 1.02,
                                     y: -2,
                                     transition: { duration: 0.2 }
                                 }}
-                                className={`bg-white/90 backdrop-blur-sm rounded-2xl p-3 sm:p-4 shadow-lg border border-white/40 hover:shadow-xl transition-all duration-300 relative overflow-hidden ${isTopThree ? 'ring-2 ring-yellow-200' : ''}`}
+                                className={`bg-white/90 backdrop-blur-sm rounded-2xl p-3 sm:p-4 shadow-lg border transition-all duration-300 relative overflow-hidden ${
+                                    isCurrentUser 
+                                        ? 'ring-2 ring-yellow-400 border-yellow-300 bg-gradient-to-r from-yellow-50 to-orange-50' 
+                                        : 'border-white/40 hover:shadow-xl'
+                                }`}
                             >
-                                {isTopThree && (
+                                {isCurrentUser && (
                                     <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-yellow-400 to-orange-400" />
                                 )}
 
                                 <div className="flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4">
                                     {/* Rank Badge */}
-                                    <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl ${getRankBadge(index + 1)} flex items-center justify-center shadow-lg relative flex-shrink-0`}>
-                                        <span className="text-white font-black text-base sm:text-xl">#{index + 1}</span>
-                                        {isTopThree && (
-                                            <div className="absolute -top-1 -right-1">
-                                                {getRankIcon(index + 1)}
-                                            </div>
-                                        )}
+                                    <div className={`w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl ${getRankBadge(actualRank)} flex items-center justify-center shadow-lg relative flex-shrink-0`}>
+                                        <span className="text-white font-black text-base sm:text-xl">#{actualRank}</span>
                                     </div>
 
                                     {/* User Info */}
                                     <div className="flex-1 min-w-0">
                                         <div className="flex items-center gap-2 sm:gap-3 mb-0.5 sm:mb-1">
-                                            <h3 className="text-base sm:text-lg font-bold text-gray-800 truncate">
+                                            <h3 className={`text-base sm:text-lg font-bold truncate ${
+                                                isCurrentUser ? 'text-yellow-700' : 'text-gray-800'
+                                            }`}>
                                                 {user.name}
+                                                {isCurrentUser && (
+                                                    <span className="ml-2 text-xs bg-yellow-400 text-yellow-900 px-2 py-0.5 rounded-full font-semibold">
+                                                        YOU
+                                                    </span>
+                                                )}
                                             </h3>
-                                            {isTopThree && (
-                                                <div className="flex items-center gap-1">
-                                                    <Flame className="w-3 h-3 sm:w-4 sm:h-4 text-orange-500" />
-                                                    <span className="text-xs font-semibold text-orange-600 hidden sm:inline">HOT</span>
-                                                </div>
-                                            )}
                                         </div>
                                         <p className="text-xs sm:text-sm text-gray-600 flex items-center gap-1 truncate">
                                             <User className="w-3 h-3 sm:w-4 sm:h-4" />
-                                            {user.email}
+                                            @{user.username || 'user'}
                                         </p>
                                     </div>
 
@@ -454,9 +571,9 @@ const Leaderboard = () => {
                                         <div className="text-right">
                                             <div className="flex items-center gap-1 text-indigo-600 font-bold">
                                                 <Zap className="w-4 h-4 sm:w-5 sm:h-5" />
-                                                <span className="text-base sm:text-lg">{user.xp} XP</span>
+                                                <span className="text-base sm:text-lg">{formatXP(user.xp)}</span>
                                             </div>
-                                            <div className="text-xs text-gray-500">Experience</div>
+                                            <div className="text-xs text-gray-500">Level {user.level || 1}</div>
                                         </div>
                                     </div>
                                 </div>
@@ -464,7 +581,7 @@ const Leaderboard = () => {
                                 {/* Achievement badges and Play button */}
                                 <div className="mt-3 flex flex-wrap justify-between items-center gap-2">
                                     <div className="flex flex-wrap gap-2">
-                                        {isTopThree && (
+                                        {actualRank <= 3 && (
                                             <>
                                                 <div className="bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
                                                     <Star className="w-3 h-3" />
@@ -479,49 +596,60 @@ const Leaderboard = () => {
                                     </div>
                                     
                                     {/* Play Button */}
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => togglePlayOptions(index)}
-                                        className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 shadow-md hover:shadow-lg transition-all"
-                                    >
-                                        <Play className="w-3 h-3" />
-                                        Play Now
-                                    </motion.button>
-                                    
-                                    {/* Play Options Dropdown */}
-                                    {showPlayOptions === index && (
-                                        <motion.div 
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            className="absolute right-4 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 p-2 z-20"
-                                            style={{ top: '100%' }}
+                                    <div className="relative" ref={dropdownRef}>
+                                        <motion.button
+                                            whileHover={{ scale: 1.05 }}
+                                            whileTap={{ scale: 0.95 }}
+                                            onClick={() => togglePlayOptions(actualRank - 1)}
+                                            className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 shadow-md hover:shadow-lg transition-all"
                                         >
-                                            <div className="flex flex-col gap-1 min-w-[150px]">
-                                                {challenges.length > 0 && (
-                                                    <button 
-                                                        onClick={() => navigateToChallenge(challenges[0]._id)}
-                                                        className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-left"
-                                                    >
-                                                        <Target className="w-4 h-4 text-indigo-500" />
-                                                        Weekly Challenge
-                                                    </button>
-                                                )}
-                                                
-                                                {/* Daily Challenge button removed - functionality removed */}
-                                                
-                                                {games.length > 0 && (
-                                                    <button 
-                                                        onClick={() => navigateToGame(games[0]._id)}
-                                                        className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-left"
-                                                    >
-                                                        <GamepadIcon className="w-4 h-4 text-purple-500" />
-                                                        Play Game
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </motion.div>
-                                    )}
+                                            <Play className="w-3 h-3" />
+                                            Play Now
+                                        </motion.button>
+                                        
+                                        {/* Play Options Dropdown */}
+                                        {showPlayOptions === actualRank - 1 && (
+                                            <motion.div 
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                className="absolute right-0 mt-2 bg-white rounded-xl shadow-xl border border-gray-100 p-2 z-20 min-w-[180px]"
+                                            >
+                                                <div className="flex flex-col gap-1">
+                                                    {challenges.length > 0 && (
+                                                        <button 
+                                                            onClick={() => {
+                                                                navigateToChallenge(challenges[0]._id || challenges[0].id);
+                                                                setShowPlayOptions(null);
+                                                            }}
+                                                            className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-left transition-colors"
+                                                        >
+                                                            <Target className="w-4 h-4 text-indigo-500" />
+                                                            Weekly Challenge
+                                                        </button>
+                                                    )}
+                                                    
+                                                    {games.length > 0 && (
+                                                        <button 
+                                                            onClick={() => {
+                                                                navigateToGame(games[0]._id || games[0].id);
+                                                                setShowPlayOptions(null);
+                                                            }}
+                                                            className="flex items-center gap-2 px-3 py-2 hover:bg-gray-50 rounded-lg text-sm text-left transition-colors"
+                                                        >
+                                                            <GamepadIcon className="w-4 h-4 text-purple-500" />
+                                                            Play Game
+                                                        </button>
+                                                    )}
+                                                    
+                                                    {challenges.length === 0 && games.length === 0 && (
+                                                        <div className="px-3 py-2 text-sm text-gray-500">
+                                                            No games available
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </div>
                                 </div>
                             </motion.div>
                         );
@@ -529,7 +657,7 @@ const Leaderboard = () => {
                 </motion.div>
 
                 {/* Empty State */}
-                {leaders.length === 0 && (
+                {leaders.length === 0 && !loading && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
@@ -545,7 +673,7 @@ const Leaderboard = () => {
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => navigateToChallenge(challenges[0]._id)}
+                                    onClick={() => navigateToChallenge(challenges[0]._id || challenges[0].id)}
                                     className="bg-gradient-to-r from-indigo-500 to-purple-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
                                 >
                                     <Target className="w-4 h-4" />
@@ -553,13 +681,11 @@ const Leaderboard = () => {
                                 </motion.button>
                             )}
                             
-                            {/* Daily Challenge button removed - functionality removed */}
-                            
                             {games.length > 0 && (
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => navigateToGame(games[0]._id)}
+                                    onClick={() => navigateToGame(games[0]._id || games[0].id)}
                                     className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 sm:px-6 py-2 sm:py-3 rounded-full text-sm font-semibold shadow-lg hover:shadow-xl transition-all flex items-center justify-center gap-2"
                                 >
                                     <GamepadIcon className="w-4 h-4" />

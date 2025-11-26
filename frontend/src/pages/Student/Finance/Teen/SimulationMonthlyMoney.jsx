@@ -123,7 +123,7 @@ const SimulationMonthlyMoney = () => {
         { 
           id: "spend", 
           text: "Spend on lifestyle", 
-          emoji: "消费升级", 
+          emoji: "🛍️", 
           description: "Upgrade your lifestyle with better clothes and gadgets",
           isCorrect: false
         },
@@ -244,19 +244,17 @@ const SimulationMonthlyMoney = () => {
                 {getCurrentScenario().description}
               </p>
               
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {getCurrentScenario().choices.map(choice => (
                   <button
                     key={choice.id}
                     onClick={() => handleChoice(choice.id)}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-center"
                   >
-                    <div className="flex items-center">
-                      <div className="text-2xl mr-4">{choice.emoji}</div>
-                      <div>
-                        <h4 className="font-bold text-xl mb-1">{choice.text}</h4>
-                        <p className="text-white/90">{choice.description}</p>
-                      </div>
+                    <div className="flex flex-col items-center">
+                      <div className="text-3xl mb-3">{choice.emoji}</div>
+                      <h4 className="font-bold text-lg mb-2">{choice.text}</h4>
+                      <p className="text-white/90 text-sm">{choice.description}</p>
                     </div>
                   </button>
                 ))}

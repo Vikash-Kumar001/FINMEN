@@ -1,12 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { Shield, AlertTriangle, Eye, Phone, Mail } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeScamSpotterKid = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -107,22 +106,16 @@ const BadgeScamSpotterKid = () => {
     }
   };
 
-  const handleNext = () => {
-    navigate("/games/financial-literacy/kids");
-  };
-
   return (
     <GameShell
       title="Badge: Scam Spotter Kid"
-      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={showResult ? "Badge Earned!" : `Question ${currentQuestion + 1} of ${questions.length}: Test your scam spotting skills!`}
       currentLevel={currentQuestion + 1}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={false}
       showGameOver={showResult}
       score={score}
-      gameId="finance-kids-90"
+      gameId={gameId}
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
@@ -138,11 +131,11 @@ const BadgeScamSpotterKid = () => {
                 <Icon className="w-16 h-16 text-red-400" />
               </div>
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+                <span className="text-white/80 text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-base">Score: {score}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-lg mb-6 text-center">
+              <p className="text-white text-xl md:text-2xl mb-6 text-center font-semibold">
                 {currentQuestionData.text}
               </p>
               
@@ -151,7 +144,7 @@ const BadgeScamSpotterKid = () => {
                   <button
                     key={index}
                     onClick={() => handleAnswer(option)}
-                    className="w-full bg-gradient-to-r from-red-600 to-orange-600 px-5 py-2.5 rounded-full text-white font-bold hover:scale-105 transition-transform hover:shadow-lg text-xs"
+                    className="w-full bg-gradient-to-r from-red-600 to-orange-600 px-6 py-4 rounded-full text-white font-bold hover:scale-105 transition-transform hover:shadow-lg text-base md:text-lg"
                   >
                     {option.text}
                   </button>

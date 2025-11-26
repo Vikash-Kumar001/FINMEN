@@ -1,11 +1,13 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
+
 const ReflexSmartSaver = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -17,206 +19,252 @@ const ReflexSmartSaver = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(5);
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
   const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
-  const stages = [
+  const questions = [
     {
       id: 1,
-      action: "Plan Savings",
-      wrong: "Spend Instantly",
-      prompt: "Tap to plan your savings!",
-      emoji: "📝"
+      question: "What should you do to build savings?",
+      correctAnswer: "Plan Savings",
+      options: [
+        { text: "Plan Savings", isCorrect: true, emoji: "📝" },
+        { text: "Spend Instantly", isCorrect: false, emoji: "💸" },
+        { text: "Ignore Budget", isCorrect: false, emoji: "🙈" },
+        { text: "Buy Everything", isCorrect: false, emoji: "🛍️" }
+      ]
     },
     {
       id: 2,
-      action: "Budget First",
-      wrong: "Impulse Buy",
-      prompt: "Tap to budget first!",
-      emoji: "📊"
+      question: "What should you do before spending?",
+      correctAnswer: "Budget First",
+      options: [
+        { text: "Budget First", isCorrect: true, emoji: "📊" },
+        { text: "Impulse Buy", isCorrect: false, emoji: "⚡" },
+        { text: "Spend Randomly", isCorrect: false, emoji: "🎲" },
+        { text: "No Planning", isCorrect: false, emoji: "🚫" }
+      ]
     },
     {
       id: 3,
-      action: "Save Regularly",
-      wrong: "Buy on Credit",
-      prompt: "Tap to save regularly!",
-      emoji: "💰"
+      question: "What's the best saving habit?",
+      correctAnswer: "Save Regularly",
+      options: [
+        { text: "Save Regularly", isCorrect: true, emoji: "💰" },
+        { text: "Buy on Credit", isCorrect: false, emoji: "💳" },
+        { text: "Never Save", isCorrect: false, emoji: "❌" },
+        { text: "Spend All", isCorrect: false, emoji: "💸" }
+      ]
     },
     {
       id: 4,
-      action: "Set Goals",
-      wrong: "Spend All",
-      prompt: "Tap to set goals!",
-      emoji: "🎯"
+      question: "What helps you stay focused on saving?",
+      correctAnswer: "Set Goals",
+      options: [
+        { text: "Set Goals", isCorrect: true, emoji: "🎯" },
+        { text: "Spend All", isCorrect: false, emoji: "💸" },
+        { text: "No Direction", isCorrect: false, emoji: "🤷" },
+        { text: "Ignore Planning", isCorrect: false, emoji: "🙈" }
+      ]
     },
     {
       id: 5,
-      action: "Track Expenses",
-      wrong: "No Plan",
-      prompt: "Tap to track expenses!",
-      emoji: "📈"
+      question: "What should you monitor for smart saving?",
+      correctAnswer: "Track Expenses",
+      options: [
+        { text: "Track Expenses", isCorrect: true, emoji: "📈" },
+        { text: "No Plan", isCorrect: false, emoji: "🚫" },
+        { text: "Ignore Spending", isCorrect: false, emoji: "🙈" },
+        { text: "Forget Budget", isCorrect: false, emoji: "💭" }
+      ]
     }
   ];
 
-  // Timer for each stage (5 seconds)
   useEffect(() => {
-    if (currentStage < stages.length && !showResult) {
-      setTimeLeft(5);
-      timerRef.current = setInterval(() => {
-        setTimeLeft(prev => {
-          if (prev <= 1) {
-            // Time's up - move to next stage without scoring
-            if (currentStage < stages.length - 1) {
-              setTimeout(() => {
-                setCurrentStage(prev => prev + 1);
-                resetFeedback();
-              }, 500);
-            } else {
-              // Last stage - show results
-              setFinalScore(coins);
-              setTimeout(() => {
-                setShowResult(true);
-              }, 500);
-            }
-            return 0;
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
+    
+    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+      }
+    }, 1000);
+  }, []);
+
+  useEffect(() => {
+    if (gameState !== "playing") {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
+
+    if (currentRoundRef.current > TOTAL_ROUNDS) {
+      setGameState("finished");
+      return;
+    }
+
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = null;
           }
-          return prev - 1;
-        });
-      }, 1000);
-
-      return () => {
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
+          handleTimeUp();
+          return 0;
         }
-      };
-    }
-  }, [currentStage, showResult, coins]);
+        return newTime;
+      });
+    }, 1000);
 
-  const handleTap = (choice) => {
-    // Clear the timer when user makes a choice
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+    
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-
+    
+    setAnswered(true);
     resetFeedback();
-    const isCorrect = choice === stages[currentStage].action;
-
+    
+    const isCorrect = option.isCorrect;
+    const isLastQuestion = currentRound === questions.length;
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
-
-    // Move to next stage after a short delay
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => {
-        setCurrentStage(prev => prev + 1);
-        resetFeedback();
-      }, 800);
-    } else {
-      // Last stage - show results
-      const finalCoins = isCorrect ? coins + 1 : coins;
-      setFinalScore(finalCoins);
-      setTimeout(() => {
-        setShowResult(true);
-      }, 800);
-    }
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+      }
+    }, 500);
   };
 
-  const handleTryAgain = () => {
-    // Clear any existing timer
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    setShowResult(false);
-    setCurrentStage(0);
-    setCoins(0);
-    setFinalScore(0);
-    setTimeLeft(5);
-    resetFeedback();
-  };
+  const finalScore = score;
 
-  const handleNext = () => {
-    navigate("/student/finance/teen/puzzle-of-saving-goals");
-  };
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Smart Saver"
-      subtitle={stages[currentStage]?.prompt || "Test your saving reflexes!"}
-      onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore >= 3}
-      showGameOver={showResult && finalScore >= 3}
-      score={coins}
-      gameId="finance-teens-3"
-      gameType="finance"
-      totalLevels={stages.length}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your smart saving reflexes!` : "Test your smart saving reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      currentLevel={currentStage + 1}
-      showConfetti={showResult && finalScore >= 3}
-      maxScore={stages.length}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-    >
+      score={finalScore}
+      gameId={gameId}
+      gameType="finance"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
       <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="flex justify-between items-center mb-6">
-              <h3 className="text-3xl font-bold">Stage {currentStage + 1} of {stages.length}</h3>
-              <div className={`text-4xl font-bold ${timeLeft <= 2 ? 'text-red-500 animate-pulse' : 'text-yellow-400'}`}>
-                {timeLeft}s
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">💰</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about smart saving habits!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
               </div>
             </div>
-            
-            {stages[currentStage] && (
-              <>
-                <div className="text-6xl mb-6">{stages[currentStage].emoji}</div>
-                <div className="flex justify-center gap-6 mb-6">
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    onClick={() => handleTap(stages[currentStage].action)}
-                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 px-8 py-6 rounded-full text-xl font-bold transition-transform hover:scale-105 shadow-lg"
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    {stages[currentStage].action}
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
-                  <button
-                    onClick={() => handleTap(stages[currentStage].wrong)}
-                    className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 px-8 py-6 rounded-full text-xl font-bold transition-transform hover:scale-105 shadow-lg"
-                  >
-                    {stages[currentStage].wrong}
-                  </button>
-                </div>
-                <p className="text-white/80 text-lg">
-                  Choose the smart saving habit quickly!
-                </p>
-              </>
-            )}
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-5xl mb-4">🏆</div>
-            <h3 className="text-3xl font-bold mb-4">Smart Saver Star!</h3>
-            <p className="text-white/90 text-lg mb-6">You scored {finalScore} out of {stages.length}!</p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-              <span>+{coins} Coins</span>
+                ))}
+              </div>
             </div>
-            <p className="text-white/80 mt-4">Lesson: Quick decisions on smart saving habits!</p>
-            {finalScore < 3 && (
-              <button
-                onClick={handleTryAgain}
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105 mt-4"
-              >
-                Try Again
-              </button>
-            )}
           </div>
         )}
       </div>

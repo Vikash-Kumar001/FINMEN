@@ -734,11 +734,16 @@ export const getLeaderboardSnippet = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // Get top 5 users by XP
+    // Get top 5 users by XP with populated user data
     const topUsers = await UserProgress.find()
       .sort({ xp: -1 })
-      .limit(5)
-      .populate('userId', 'name username');
+      .limit(10) // Get more to filter out invalid users
+      .populate('userId', 'name username email fullName');
+
+    // Filter out entries with null/invalid userId and get top 5 valid ones
+    const validTopUsers = topUsers
+      .filter(progress => progress.userId && progress.userId._id)
+      .slice(0, 5);
 
     // Get current user's rank
     const userProgress = await UserProgress.findOne({ userId });
@@ -746,14 +751,37 @@ export const getLeaderboardSnippet = async (req, res) => {
       xp: { $gt: userProgress?.xp || 0 }
     }) + 1;
 
-    const leaderboard = topUsers.map((progress, index) => ({
-      rank: index + 1,
-      name: progress.userId?.name || 'Anonymous',
-      username: progress.userId?.username || 'user',
-      xp: progress.xp,
-      level: progress.level,
-      isCurrentUser: progress.userId?._id.toString() === userId.toString()
-    }));
+    const leaderboard = validTopUsers.map((progress, index) => {
+      const user = progress.userId;
+      
+      // Better fallback strategy for name
+      let displayName = user.name;
+      if (!displayName || displayName.trim() === '') {
+        displayName = user.fullName;
+      }
+      if (!displayName || displayName.trim() === '') {
+        displayName = user.username;
+      }
+      if (!displayName || displayName.trim() === '') {
+        // Extract name from email if available
+        displayName = user.email ? user.email.split('@')[0] : 'User';
+      }
+      
+      // Better fallback for username
+      let displayUsername = user.username;
+      if (!displayUsername || displayUsername.trim() === '') {
+        displayUsername = user.email ? user.email.split('@')[0] : 'user';
+      }
+
+      return {
+        rank: index + 1,
+        name: displayName,
+        username: displayUsername,
+        xp: progress.xp,
+        level: progress.level,
+        isCurrentUser: user._id.toString() === userId.toString()
+      };
+    });
 
     res.status(200).json({
       leaderboard,

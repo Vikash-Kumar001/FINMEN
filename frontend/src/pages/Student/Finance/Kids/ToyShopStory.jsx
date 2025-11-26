@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const ToyShopStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -41,6 +40,13 @@ const ToyShopStory = () => {
           emoji: "⚡", 
           description: "Buy immediately",
           isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore Seller", 
+          emoji: "🤷", 
+          description: "Don't pay attention",
+          isCorrect: false
         }
       ]
     },
@@ -60,6 +66,13 @@ const ToyShopStory = () => {
           text: "Pay Now", 
           emoji: "💸", 
           description: "Pay at first store",
+          isCorrect: false
+        },
+        { 
+          id: "skip", 
+          text: "Skip Both", 
+          emoji: "🚶", 
+          description: "Don't buy anything",
           isCorrect: false
         }
       ]
@@ -81,6 +94,13 @@ const ToyShopStory = () => {
           emoji: "🏃", 
           description: "Buy quickly",
           isCorrect: false
+        },
+        { 
+          id: "guess", 
+          text: "Guess Quality", 
+          emoji: "🎲", 
+          description: "Buy without checking",
+          isCorrect: false
         }
       ]
     },
@@ -101,6 +121,13 @@ const ToyShopStory = () => {
           emoji: "⚡", 
           description: "Buy immediately",
           isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore Sale", 
+          emoji: "🙈", 
+          description: "Don't check anything",
+          isCorrect: false
         }
       ]
     },
@@ -120,6 +147,13 @@ const ToyShopStory = () => {
           text: "Spend All", 
           emoji: "💸", 
           description: "Spend all your money",
+          isCorrect: false
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow Money", 
+          emoji: "💳", 
+          description: "Ask someone for money",
           isCorrect: false
         }
       ]
@@ -166,10 +200,6 @@ const ToyShopStory = () => {
     }
   };
 
-  const handleNext = () => {
-    navigate("/games/financial-literacy/kids");
-  };
-
   const getCurrentQuestion = () => {
     if (currentQuestion >= 0 && currentQuestion < questions.length) {
       return questions[currentQuestion];
@@ -183,14 +213,12 @@ const ToyShopStory = () => {
     <GameShell
       title="Toy Shop Story"
       subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      currentLevel={5}
+      currentLevel={currentQuestion + 1}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={false}
       showGameOver={showResult}
       score={coins}
-      gameId="finance-kids-88"
+      gameId={gameId}
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
@@ -211,12 +239,12 @@ const ToyShopStory = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}
                     onClick={() => handleChoice(option.id)}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>

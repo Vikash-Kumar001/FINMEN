@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const ShopStoryGame = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -41,6 +40,13 @@ const ShopStoryGame = () => {
           emoji: "🤫", 
           description: "Keep the extra money",
           isCorrect: false
+        },
+        { 
+          id: "spend", 
+          text: "Spend Immediately", 
+          emoji: "🛍️", 
+          description: "Use it right away",
+          isCorrect: false
         }
       ]
     },
@@ -60,6 +66,13 @@ const ShopStoryGame = () => {
           text: "Lie About Price", 
           emoji: "🙊", 
           description: "Say it costs more",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore It", 
+          emoji: "🙈", 
+          description: "Don't say anything",
           isCorrect: false
         }
       ]
@@ -81,6 +94,13 @@ const ShopStoryGame = () => {
           emoji: "😈", 
           description: "Try to pay less unfairly",
           isCorrect: false
+        },
+        { 
+          id: "refuse", 
+          text: "Refuse to Pay", 
+          emoji: "🚫", 
+          description: "Don't pay at all",
+          isCorrect: false
         }
       ]
     },
@@ -101,6 +121,13 @@ const ShopStoryGame = () => {
           emoji: "🙈", 
           description: "Don't check the bill",
           isCorrect: false
+        },
+        { 
+          id: "throw", 
+          text: "Throw Away", 
+          emoji: "🗑️", 
+          description: "Discard it immediately",
+          isCorrect: false
         }
       ]
     },
@@ -120,6 +147,13 @@ const ShopStoryGame = () => {
           text: "Stay Silent", 
           emoji: "😶", 
           description: "Don't say anything",
+          isCorrect: false
+        },
+        { 
+          id: "accept", 
+          text: "Accept It", 
+          emoji: "😔", 
+          description: "Just accept the overcharge",
           isCorrect: false
         }
       ]
@@ -166,10 +200,6 @@ const ShopStoryGame = () => {
     }
   };
 
-  const handleNext = () => {
-    navigate("/games/financial-literacy/kids");
-  };
-
   const getCurrentQuestion = () => {
     if (currentQuestion >= 0 && currentQuestion < questions.length) {
       return questions[currentQuestion];
@@ -183,14 +213,12 @@ const ShopStoryGame = () => {
     <GameShell
       title="Shop Story"
       subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      currentLevel={5}
+      currentLevel={currentQuestion + 1}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={false}
       showGameOver={showResult}
       score={coins}
-      gameId="finance-kids-98"
+      gameId={gameId}
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
@@ -211,12 +239,12 @@ const ShopStoryGame = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}
                     onClick={() => handleChoice(option.id)}
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
                   >
                     <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>

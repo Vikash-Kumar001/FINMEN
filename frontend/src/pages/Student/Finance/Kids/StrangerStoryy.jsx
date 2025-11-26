@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const StrangerStoryy = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -41,6 +40,13 @@ const StrangerStoryy = () => {
           emoji: "🎁", 
           description: "Take the offer",
           isCorrect: false
+        },
+        { 
+          id: "delay", 
+          text: "Delay Decision", 
+          emoji: "⏰", 
+          description: "Wait and think later",
+          isCorrect: false
         }
       ]
     },
@@ -60,6 +66,13 @@ const StrangerStoryy = () => {
           text: "Give Info", 
           emoji: "💳", 
           description: "Share your details",
+          isCorrect: false
+        },
+        { 
+          id: "partial", 
+          text: "Give Partial Info", 
+          emoji: "🤷", 
+          description: "Share some details only",
           isCorrect: false
         }
       ]
@@ -81,6 +94,13 @@ const StrangerStoryy = () => {
           emoji: "💬", 
           description: "Talk to them",
           isCorrect: false
+        },
+        { 
+          id: "wait", 
+          text: "Wait & See", 
+          emoji: "⏳", 
+          description: "Wait to see what happens",
+          isCorrect: false
         }
       ]
     },
@@ -101,6 +121,13 @@ const StrangerStoryy = () => {
           emoji: "🤫", 
           description: "Don't tell anyone",
           isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore It", 
+          emoji: "🙈", 
+          description: "Pretend you didn't see it",
+          isCorrect: false
         }
       ]
     },
@@ -120,6 +147,13 @@ const StrangerStoryy = () => {
           text: "Reply", 
           emoji: "💬", 
           description: "Reply to the message",
+          isCorrect: false
+        },
+        { 
+          id: "forward", 
+          text: "Forward to Friends", 
+          emoji: "📤", 
+          description: "Share with friends first",
           isCorrect: false
         }
       ]
@@ -166,10 +200,6 @@ const StrangerStoryy = () => {
     }
   };
 
-  const handleNext = () => {
-    navigate("/games/financial-literacy/kids");
-  };
-
   const getCurrentQuestion = () => {
     if (currentQuestion >= 0 && currentQuestion < questions.length) {
       return questions[currentQuestion];
@@ -183,14 +213,12 @@ const StrangerStoryy = () => {
     <GameShell
       title="Stranger Story"
       subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      currentLevel={5}
+      currentLevel={currentQuestion + 1}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={false}
       showGameOver={showResult}
       score={coins}
-      gameId="finance-kids-85"
+      gameId={gameId}
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
@@ -211,7 +239,7 @@ const StrangerStoryy = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}

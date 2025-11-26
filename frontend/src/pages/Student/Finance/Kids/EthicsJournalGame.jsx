@@ -1,11 +1,11 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { PenSquare } from "lucide-react";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const EthicsJournalGame = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -19,98 +19,107 @@ const EthicsJournalGame = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
   const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [entry, setEntry] = useState("");
   const [showResult, setShowResult] = useState(false);
 
   const stages = [
     {
-      question: 'Write: “One time I used money honestly was ___.”',
+      question: 'Write: "One time I used money honestly was ___."',
       minLength: 10,
     },
     {
-      question: 'Write: “I helped someone with money by ___.”',
+      question: 'Write: "I helped someone with money by ___."',
       minLength: 10,
     },
     {
-      question: 'Write: “A time I felt good about saving money was ___.”',
+      question: 'Write: "A time I felt good about saving money was ___."',
       minLength: 10,
     },
     {
-      question: 'Write: “I avoided spending money wrongly by ___.”',
+      question: 'Write: "I avoided spending money wrongly by ___."',
       minLength: 10,
     },
     {
-      question: 'Write: “Being honest with money makes me feel ___.”',
+      question: 'Write: "Being honest with money makes me feel ___."',
       minLength: 10,
     },
   ];
 
   const handleSubmit = () => {
+    if (showResult) return; // Prevent multiple submissions
+    
     resetFeedback();
-    if (entry.trim().length >= stages[currentStage].minLength) {
-      setCoins((prev) => prev + 1);
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      if (currentStage < stages.length - 1) {
-        setTimeout(() => {
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
           setEntry("");
           setCurrentStage((prev) => prev + 1);
-        }, 800);
-      } else {
-        setTimeout(() => setShowResult(true), 800);
-      }
+        }
+      }, 1500);
     }
   };
 
-  const handleFinish = () => {
-    navigate("/games/financial-literacy/kids");
-  };
+  const finalScore = score;
 
   return (
     <GameShell
       title="Journal of Ethics"
-      coins={coins}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on ethical money choices!` : "Journal Complete!"}
       currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleFinish}
-      nextEnabled={false}
       showGameOver={showResult}
-      showConfetti={showResult && coins === stages.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-97"
+      score={finalScore}
+      gameId={gameId}
       gameType="finance"
-      maxScore={stages.length}
+      maxScore={5}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      subtitle={showResult ? "Journal Complete!" : `Entry ${currentStage + 1} of ${stages.length}`}>
-      <div className="text-center text-white space-y-6">
-        {!showResult && stages[currentStage] ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Entry {currentStage + 1}/{stages.length}</span>
-              <span className="text-yellow-400 font-bold">Score: {coins}/{stages.length}</span>
-            </div>
-            <div className="text-4xl mb-4">📝</div>
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-10 h-10 text-yellow-300" />
             <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
             <textarea
-              className="w-full p-4 rounded-xl text-black bg-white/90"
-              rows={4}
-              placeholder="Write your journal entry here..."
               value={entry}
               onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
+              disabled={showResult}
             />
+            <div className="mt-2 text-white/50 text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
+            </div>
             <button
               onClick={handleSubmit}
-              className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white px-8 py-3 rounded-full mt-4 font-semibold transition-transform hover:scale-105"
-              disabled={entry.trim().length < stages[currentStage].minLength}
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
             >
-              Submit Journal
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
             </button>
           </div>
-        ) : null}
+        )}
       </div>
     </GameShell>
   );

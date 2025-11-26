@@ -194,17 +194,43 @@ export const setupGameSocket = (io, socket, user) => {
       const top = await UserProgress.find()
         .sort({ xp: -1 })
         .limit(20)
-        .populate('userId', 'name avatar');
+        .populate('userId', 'name username email fullName avatar');
 
-      const leaderboard = top.map((entry, index) => ({
-        rank: index + 1,
-        _id: entry.userId?._id,
-        name: entry.userId?.name || 'Unknown',
-        avatar: entry.userId?.avatar,
-        xp: entry.xp || 0,
-        level: Math.floor((entry.xp || 0) / 100) + 1,
-        isCurrentUser: entry.userId?._id?.toString() === user._id.toString()
-      }));
+      // Filter out entries with null/invalid userId
+      const validTop = top.filter(entry => entry.userId && entry.userId._id);
+
+      const leaderboard = validTop.map((entry, index) => {
+        const userData = entry.userId;
+        
+        // Better fallback strategy for name
+        let displayName = userData.name;
+        if (!displayName || displayName.trim() === '') {
+          displayName = userData.fullName;
+        }
+        if (!displayName || displayName.trim() === '') {
+          displayName = userData.username;
+        }
+        if (!displayName || displayName.trim() === '') {
+          displayName = userData.email ? userData.email.split('@')[0] : 'User';
+        }
+
+        // Better fallback for username
+        let displayUsername = userData.username;
+        if (!displayUsername || displayUsername.trim() === '') {
+          displayUsername = userData.email ? userData.email.split('@')[0] : 'user';
+        }
+
+        return {
+          rank: index + 1,
+          _id: userData._id,
+          name: displayName,
+          username: displayUsername,
+          avatar: userData.avatar,
+          xp: entry.xp || 0,
+          level: Math.floor((entry.xp || 0) / 100) + 1,
+          isCurrentUser: userData._id?.toString() === user._id.toString()
+        };
+      });
 
       socket.emit('student:leaderboard:data', {
         period,
@@ -223,16 +249,35 @@ export const setupGameSocket = (io, socket, user) => {
       const top = await UserProgress.find()
         .sort({ xp: -1 })
         .limit(20)
-        .populate('userId', 'name avatar');
+        .populate('userId', 'name username email fullName avatar');
 
-      const leaderboard = top.map((entry, index) => ({
-        rank: index + 1,
-        _id: entry.userId?._id,
-        name: entry.userId?.name || 'Unknown',
-        avatar: entry.userId?.avatar,
-        xp: entry.xp || 0,
-        level: Math.floor((entry.xp || 0) / 100) + 1
-      }));
+      // Filter out entries with null/invalid userId
+      const validTop = top.filter(entry => entry.userId && entry.userId._id);
+
+      const leaderboard = validTop.map((entry, index) => {
+        const userData = entry.userId;
+        
+        // Better fallback strategy for name
+        let displayName = userData.name;
+        if (!displayName || displayName.trim() === '') {
+          displayName = userData.fullName;
+        }
+        if (!displayName || displayName.trim() === '') {
+          displayName = userData.username;
+        }
+        if (!displayName || displayName.trim() === '') {
+          displayName = userData.email ? userData.email.split('@')[0] : 'User';
+        }
+
+        return {
+          rank: index + 1,
+          _id: userData._id,
+          name: displayName,
+          avatar: userData.avatar,
+          xp: entry.xp || 0,
+          level: Math.floor((entry.xp || 0) / 100) + 1
+        };
+      });
 
       // Broadcast to all leaderboard subscribers
       ['daily', 'weekly', 'monthly', 'allTime'].forEach(period => {

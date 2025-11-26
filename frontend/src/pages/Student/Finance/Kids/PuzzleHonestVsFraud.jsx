@@ -19,7 +19,7 @@ const PuzzleHonestVsFraud = () => {
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
 
   const stages = [
@@ -68,7 +68,7 @@ const PuzzleHonestVsFraud = () => {
   const handleSelect = (isCorrect) => {
     resetFeedback();
     if (isCorrect) {
-      setCoins((prev) => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     if (currentStage < stages.length - 1) {
@@ -78,59 +78,44 @@ const PuzzleHonestVsFraud = () => {
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const finalScore = score;
 
   return (
     <GameShell
       title="Puzzle: Honest vs Fraud"
-      subtitle="Match shop types to their outcomes!"
-      coins={coins}
+      subtitle={`Question ${currentStage + 1} of ${stages.length}: Match shop types to their outcomes!`}
+      coins={score}
       currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
+      score={finalScore}
       gameId="finance-kids-164"
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
       <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <Puzzle className="mx-auto w-10 h-10 text-purple-500 mb-4" />
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {stages[currentStage].choices.map((choice, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleSelect(choice.correct)}
-                  className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-blue-500 transition-transform hover:scale-105"
-                >
-                  <div className="text-lg font-semibold">{choice.text}</div>
-                </button>
-              ))}
-            </div>
+        <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+          <Puzzle className="mx-auto w-10 h-10 text-purple-500 mb-4" />
+          <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+          <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            {stages[currentStage].choices.map((choice, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleSelect(choice.correct)}
+                className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-blue-500 transition-transform hover:scale-105"
+                disabled={showResult}
+              >
+                <div className="text-lg font-semibold">{choice.text}</div>
+              </button>
+            ))}
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <Puzzle className="mx-auto w-16 h-16 text-purple-500 mb-3" />
-            <h3 className="text-3xl font-bold mb-4">Honesty Puzzle Master!</h3>
-            <p className="text-white/90 text-lg mb-6">
-              You earned {coins} out of 5 for spotting honest shops!
-            </p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Honest shops build trust!</p>
-          </div>
-        )}
+        </div>
       </div>
     </GameShell>
   );

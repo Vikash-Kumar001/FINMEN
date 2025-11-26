@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const JournalOfNeeds = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -19,7 +18,7 @@ const JournalOfNeeds = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
   const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [text, setText] = useState("");
   const [showResult, setShowResult] = useState(false);
 
@@ -47,74 +46,80 @@ const JournalOfNeeds = () => {
   ];
 
   const handleSubmit = () => {
+    if (showResult) return; // Prevent multiple submissions
+    
     resetFeedback();
-    if (text.trim().length >= stages[currentStage].minLength) {
-      setCoins((prev) => prev + 1);
+    const entryText = text.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      if (currentStage < stages.length - 1) {
-        setTimeout(() => {
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      // Show feedback for 1.5 seconds, then move to next question or show results
+      setTimeout(() => {
+        if (isLastQuestion) {
+          // This is the last question (5th), show results
+          setShowResult(true);
+        } else {
+          // Move to next question
           setText("");
           setCurrentStage((prev) => prev + 1);
-        }, 800);
-      } else {
-        setTimeout(() => setShowResult(true), 800);
-      }
+        }
+      }, 1500);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const finalScore = score;
 
   return (
     <GameShell
       title="Journal of Needs"
-      subtitle="Reflect on prioritizing your needs!"
-      coins={coins}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on prioritizing your needs!` : "Journal Complete!"}
       currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-67"
+      score={finalScore}
+      gameId={gameId}
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
       <div className="text-center text-white space-y-8">
-        {!showResult ? (
+        {!showResult && stages[currentStage] && (
           <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
             <div className="text-4xl mb-4">📝</div>
             <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
             <textarea
               value={text}
               onChange={(e) => setText(e.target.value)}
               placeholder="Write your journal entry here..."
               className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
+              disabled={showResult}
             />
+            <div className="mt-2 text-white/50 text-sm">
+              {text.trim().length}/{stages[currentStage].minLength} characters
+            </div>
             <button
               onClick={handleSubmit}
-              className="bg-green-500 hover:bg-green-600 text-white py-3 px-6 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105 mt-4"
-              disabled={text.trim().length < stages[currentStage].minLength}
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${
+                text.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={text.trim().length < stages[currentStage].minLength || showResult}
             >
-              Submit
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
             </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-6xl mb-4">📝🎉</div>
-            <h3 className="text-3xl font-bold mb-4">Needs Expert!</h3>
-            <p className="text-white/90 text-lg mb-6">
-              You earned {coins} out of 5 for prioritizing needs!
-            </p>
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Needs come first for smart spending!</p>
           </div>
         )}
       </div>

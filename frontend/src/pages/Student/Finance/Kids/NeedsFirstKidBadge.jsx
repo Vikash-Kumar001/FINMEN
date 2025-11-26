@@ -78,32 +78,37 @@ const NeedsFirstKidBadge = () => {
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleFinish = () => {
+    navigate("/games/financial-literacy/kids");
+  };
 
   return (
     <GameShell
       title="Badge: Needs First Kid"
-      subtitle="Choose needs correctly to earn the badge!"
       coins={coins}
       currentLevel={currentStage + 1}
       totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleFinish}
+      nextEnabled={false}
+      showGameOver={showResult}
+      showConfetti={showResult && coins === stages.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       score={coins}
-      gameId="finance-kids-70"
+      gameId="finance-kids-40"
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={stages.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentStage + 1} of ${stages.length}`}>
       <div className="text-center text-white space-y-8">
-        {!showResult ? (
+        {!showResult && stages[currentStage] ? (
           <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Question {currentStage + 1}/{stages.length}</span>
+              <span className="text-yellow-400 font-bold">Score: {coins}/{stages.length}</span>
+            </div>
             <div className="text-4xl mb-4">🏆</div>
             <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
             <div className="flex justify-center gap-6 flex-wrap">
@@ -118,19 +123,7 @@ const NeedsFirstKidBadge = () => {
               ))}
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-8xl mb-4">🏆</div>
-            <h3 className="text-3xl font-bold mb-4">Needs First Kid Badge!</h3>
-            <p className="text-white/90 text-lg mb-6">
-              You earned {coins} out of 5 for prioritizing needs!
-            </p>
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Needs come first for smart choices!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

@@ -1,12 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const ReflexMoneyTruthGame = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -19,9 +17,8 @@ const ReflexMoneyTruthGame = () => {
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [target, setTarget] = useState("");
 
   const stages = [
     { action: "Be Fair", wrong: "Be Greedy", prompt: "Tap for Be Fair!" },
@@ -31,16 +28,10 @@ const ReflexMoneyTruthGame = () => {
     { action: "Be Ethical", wrong: "Be Dishonest", prompt: "Tap for Be Ethical!" },
   ];
 
-  useEffect(() => {
-    if (currentStage < stages.length) {
-      setTarget(Math.random() < 0.7 ? stages[currentStage].action : stages[currentStage].wrong);
-    }
-  }, [currentStage]);
-
   const handleTap = (choice) => {
     resetFeedback();
     if (choice === stages[currentStage].action) {
-      setCoins((prev) => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     if (currentStage < stages.length - 1) {
@@ -50,59 +41,46 @@ const ReflexMoneyTruthGame = () => {
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const finalScore = score;
 
   return (
     <GameShell
       title="Reflex Money Truth"
-      subtitle={stages[currentStage]?.prompt || "Test your fairness reflexes!"}
-      coins={coins}
+      subtitle={`Question ${currentStage + 1} of ${stages.length}: ${stages[currentStage]?.prompt || "Test your fairness reflexes!"}`}
       currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      showGameOver={showResult}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-189"
+      score={finalScore}
+      gameId={gameId}
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <h3 className="text-3xl font-bold mb-4">Round {currentStage + 1}</h3>
-            <div className="flex justify-center gap-6">
-              <button
-                onClick={() => handleTap(stages[currentStage].action)}
-                className="bg-green-500 px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform"
-              >
-                {stages[currentStage].action}
-              </button>
-              <button
-                onClick={() => handleTap(stages[currentStage].wrong)}
-                className="bg-red-500 px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform"
-              >
-                {stages[currentStage].wrong}
-              </button>
-            </div>
+        <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+          <h3 className="text-3xl font-bold mb-4">Round {currentStage + 1}</h3>
+          <div className="flex justify-center gap-6">
+            <button
+              onClick={() => handleTap(stages[currentStage].action)}
+              className="bg-green-500 px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform"
+            >
+              {stages[currentStage].action}
+            </button>
+            <button
+              onClick={() => handleTap(stages[currentStage].wrong)}
+              className="bg-red-500 px-8 py-4 rounded-full text-xl font-bold hover:scale-105 transition-transform"
+            >
+              {stages[currentStage].wrong}
+            </button>
           </div>
-        ) : (
-          <div className="bg-white/10 p-8 rounded-2xl border border-white/20">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-3" />
-            <h3 className="text-3xl font-bold mb-4">Fairness Reflex Star!</h3>
-            <p className="text-white/90 text-lg mb-6">You scored {coins} out of 5!</p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80 mt-4">Lesson: Fairness builds trust!</p>
+          <div className="mt-4 text-lg font-semibold">
+            Score: {score}/{stages.length}
           </div>
-        )}
+        </div>
       </div>
     </GameShell>
   );

@@ -16,186 +16,252 @@ const QuizOnSaving = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [coins, setCoins] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [showResult, setShowResult] = useState(false);
-  const [gameFinished, setGameFinished] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Who is the best saver?",
       options: [
-        { id: "a", text: "Someone who spends all their money", correct: false },
-        { id: "b", text: "Someone who wastes money", correct: false },
-        { id: "c", text: "Someone who saves part of their money", correct: true }
-      ],
+        { 
+          id: "a", 
+          text: "Someone who spends all their money", 
+          emoji: "💸", 
+          description: "Uses all money immediately",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Someone who wastes money", 
+          emoji: "🗑️", 
+          description: "Throws money away",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Someone who saves part of their money", 
+          emoji: "💰", 
+          description: "Saves some and spends some",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 2,
       text: "What should you do with your pocket money?",
       options: [
-        { id: "a", text: "Spend it all immediately", correct: false },
-        { id: "b", text: "Save some and spend some", correct: true },
-        { id: "c", text: "Hide it and never use it", correct: false }
-      ],
+        { 
+          id: "a", 
+          text: "Spend it all immediately", 
+          emoji: "🛍️", 
+          description: "Use all money right away",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Save some and spend some", 
+          emoji: "⚖️", 
+          description: "Balance saving and spending",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Hide it and never use it", 
+          emoji: "🙈", 
+          description: "Never spend any money",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "Why is saving money important?",
       options: [
-        { id: "a", text: "So you can buy things you need later", correct: true },
-        { id: "b", text: "So you can show off to friends", correct: false },
-        { id: "c", text: "It's not important at all", correct: false }
-      ],
+        { 
+          id: "a", 
+          text: "So you can buy things you need later", 
+          emoji: "🎯", 
+          description: "Helps you buy important things",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "So you can show off to friends", 
+          emoji: "😎", 
+          description: "Impress others",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "It's not important at all", 
+          emoji: "❌", 
+          description: "Doesn't matter",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       text: "What is a money bank used for?",
       options: [
-        { id: "a", text: "Keeping toys", correct: false },
-        { id: "b", text: "Saving money", correct: true },
-        { id: "c", text: "Storing food", correct: false }
-      ],
+        { 
+          id: "a", 
+          text: "Keeping toys", 
+          emoji: "🧸", 
+          description: "Store toys",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Saving money", 
+          emoji: "🏦", 
+          description: "Store and save money",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Storing food", 
+          emoji: "🍕", 
+          description: "Keep food",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "If you save ₹10 every week, how much will you have in 4 weeks?",
       options: [
-        { id: "a", text: "₹20", correct: false },
-        { id: "b", text: "₹30", correct: false },
-        { id: "c", text: "₹40", correct: true }
-      ],
+        { 
+          id: "a", 
+          text: "₹20", 
+          emoji: "💰", 
+          description: "10 + 10 = 20",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "₹30", 
+          emoji: "💵", 
+          description: "10 × 3 = 30",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "₹40", 
+          emoji: "💴", 
+          description: "10 × 4 = 40",
+          isCorrect: true
+        }
+      ]
     }
   ];
 
-  const handleAnswerSelect = (option) => {
-    setSelectedAnswer(option.id);
-    const correct = option.correct;
-    const question = questions[currentQuestion];
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setChoices([...choices, { questionId: question.id, choice: option.id, isCorrect: correct }]);
+    setChoices(newChoices);
     
-    if (correct) {
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
-    // Move to next question or finish game
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-        setSelectedAnswer(null);
-        resetFeedback();
-      } else {
-        setGameFinished(true);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
         setShowResult(true);
-      }
-    }, correct ? 1000 : 1500);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
   const handleNext = () => {
-    navigate("/student/finance/kids/reflex-savings");
+    navigate("/games/financial-literacy/kids");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-  const finalScore = choices.filter(c => c.isCorrect).length;
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Quiz on Saving"
-      subtitle={gameFinished ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      currentLevel={2}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
       onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
+      nextEnabled={false}
+      showGameOver={showResult}
       score={coins}
       gameId="finance-kids-2"
       gameType="finance"
-      totalLevels={questions.length}
-      maxScore={questions.length}
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      showConfetti={gameFinished && finalScore >= 3}
-    >
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
       <div className="space-y-8">
-        {!gameFinished ? (
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
               </div>
-              <h3 className="text-xl font-bold text-white mb-6">
-                {getCurrentQuestion().text}
-              </h3>
               
-              <div className="space-y-4">
-                {getCurrentQuestion().options.map((option) => (
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}
-                    onClick={() => !selectedAnswer && handleAnswerSelect(option)}
-                    disabled={!!selectedAnswer}
-                    className={`w-full text-left p-4 rounded-xl transition-all ${
-                      selectedAnswer === option.id
-                        ? option.correct
-                          ? "bg-gradient-to-r from-green-500 to-emerald-500 text-white"
-                          : "bg-gradient-to-r from-red-500 to-pink-500 text-white"
-                        : selectedAnswer
-                        ? "bg-white/5 text-white/50 cursor-not-allowed"
-                        : "bg-white/10 text-white hover:bg-white/20"
-                    }`}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
                   >
-                    <div className="flex items-center">
-                      <div className="w-8 h-8 rounded-full border-2 border-white/30 flex items-center justify-center mr-4">
-                        {option.id.toUpperCase()}
-                      </div>
-                      <span className="text-lg">{option.text}</span>
-                    </div>
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
                   </button>
                 ))}
               </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <div>
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You got {finalScore} out of {questions.length} questions correct!
-                </p>
-                <p className="text-white/80 text-base mb-4">
-                  You earned {coins} coins! Keep saving and learning about money!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2">
-                  <span>Total: {coins} Coins</span>
-                </div>
-              </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">📚</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You got {finalScore} out of {questions.length} questions correct.
-                </p>
-                <p className="text-white/80 text-base mb-4">
-                  Don't worry! Keep practicing and you'll become a saving expert!
-                </p>
-                <p className="text-white/70 text-sm mb-4">
-                  You earned {coins} coins!
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

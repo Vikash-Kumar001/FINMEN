@@ -16,121 +16,253 @@ const LunchBoxStory = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
-      question: "You borrow a friend’s lunch. Do you return/share next day?",
-      choices: [
-        { text: "Yes, share or return 🍽️", correct: true },
-        { text: "No, keep it to myself 😐", correct: false },
-        { text: "Forget about it 🙈", correct: false },
-      ],
+      id: 1,
+      text: "You borrow a friend's lunch. Do you return/share next day?",
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes, share or return", 
+          emoji: "🍽️", 
+          description: "Return or share lunch with your friend",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No, keep it to myself", 
+          emoji: "😐", 
+          description: "Keep it for yourself",
+          isCorrect: false
+        },
+        { 
+          id: "forget", 
+          text: "Forget about it", 
+          emoji: "🙈", 
+          description: "Don't return it",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Your friend shares lunch. How do you thank them?",
-      choices: [
-        { text: "Share something back 🤝", correct: true },
-        { text: "Say nothing 😶", correct: false },
-        { text: "Take more lunch 🍴", correct: false },
-      ],
+      id: 2,
+      text: "Your friend shares lunch. How do you thank them?",
+      options: [
+        { 
+          id: "share", 
+          text: "Share something back", 
+          emoji: "🤝", 
+          description: "Return the kindness",
+          isCorrect: true
+        },
+        { 
+          id: "nothing", 
+          text: "Say nothing", 
+          emoji: "😶", 
+          description: "Don't acknowledge it",
+          isCorrect: false
+        },
+        { 
+          id: "more", 
+          text: "Take more lunch", 
+          emoji: "🍴", 
+          description: "Take advantage",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "You have ₹10 for lunch. Friend needs ₹5. What do you do?",
-      choices: [
-        { text: "Share ₹5 with friend 💸", correct: true },
-        { text: "Spend all on yourself 🍔", correct: false },
-        { text: "Hide your money 💰", correct: false },
-      ],
+      id: 3,
+      text: "You have ₹10 for lunch. Friend needs ₹5. What do you do?",
+      options: [
+        { 
+          id: "share", 
+          text: "Share ₹5 with friend", 
+          emoji: "💸", 
+          description: "Help your friend",
+          isCorrect: true
+        },
+        { 
+          id: "all", 
+          text: "Spend all on yourself", 
+          emoji: "🍔", 
+          description: "Use all for yourself",
+          isCorrect: false
+        },
+        { 
+          id: "hide", 
+          text: "Hide your money", 
+          emoji: "💰", 
+          description: "Keep it secret",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "You borrow lunch money. When do you repay?",
-      choices: [
-        { text: "Next day as promised ✅", correct: true },
-        { text: "Never repay 😞", correct: false },
-        { text: "Spend it on snacks 🍟", correct: false },
-      ],
+      id: 4,
+      text: "You borrow lunch money. When do you repay?",
+      options: [
+        { 
+          id: "next", 
+          text: "Next day as promised", 
+          emoji: "✅", 
+          description: "Keep your promise",
+          isCorrect: true
+        },
+        { 
+          id: "never", 
+          text: "Never repay", 
+          emoji: "😞", 
+          description: "Don't pay it back",
+          isCorrect: false
+        },
+        { 
+          id: "snacks", 
+          text: "Spend it on snacks", 
+          emoji: "🍟", 
+          description: "Use it for something else",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Why is sharing lunch with friends important?",
-      choices: [
-        { text: "Builds trust and kindness 😊", correct: true },
-        { text: "Gets you more food 🍽️", correct: false },
-        { text: "Makes you popular 👥", correct: false },
-      ],
-    },
+      id: 5,
+      text: "Why is sharing lunch with friends important?",
+      options: [
+        { 
+          id: "trust", 
+          text: "Builds trust and kindness", 
+          emoji: "😊", 
+          description: "Strengthens friendships",
+          isCorrect: true
+        },
+        { 
+          id: "food", 
+          text: "Gets you more food", 
+          emoji: "🍽️", 
+          description: "Receive more in return",
+          isCorrect: false
+        },
+        { 
+          id: "popular", 
+          text: "Makes you popular", 
+          emoji: "👥", 
+          description: "Makes others like you",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (isCorrect) => {
-    resetFeedback();
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setCoins((prev) => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setTimeout(() => setShowResult(true), 800);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleNext = () => {
+    navigate("/games/financial-literacy/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Lunch Box Story"
-      subtitle="Make fair choices with lunch sharing!"
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-55"
+      gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-105"
-      gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-4xl mb-4">🍽️</div>
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <div className="flex justify-center gap-6 flex-wrap">
-              {stages[currentStage].choices.map((choice, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleChoice(choice.correct)}
-                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-xl text-xl font-bold transition-transform hover:scale-105"
-                >
-                  {choice.text}
-                </button>
-              ))}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <div className="text-4xl mb-4 text-center">🍽️</div>
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-6xl mb-4">🎉🍽️</div>
-            <h3 className="text-3xl font-bold mb-4">Lunch Hero!</h3>
-            <p className="text-white/90 text-lg mb-6">
-              You earned {coins} out of 5 for fair sharing!
-            </p>
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Sharing builds trust with friends!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

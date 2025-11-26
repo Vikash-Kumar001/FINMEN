@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const PosterNeedsFirst = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -19,8 +18,9 @@ const PosterNeedsFirst = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
   const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const stages = [
     {
@@ -29,6 +29,7 @@ const PosterNeedsFirst = () => {
         { text: "Put Needs Before Wants 📚", correct: true },
         { text: "Buy Wants First 🧸", correct: false },
         { text: "Spend Everything 🛍️", correct: false },
+        { text: "No Planning Needed 🎲", correct: false }
       ],
     },
     {
@@ -37,6 +38,7 @@ const PosterNeedsFirst = () => {
         { text: "Needs First, Save Smart 💰", correct: true },
         { text: "Wants Are Better 🎉", correct: false },
         { text: "No Need to Save 🏺", correct: false },
+        { text: "Spend All Today 🛒", correct: false }
       ],
     },
     {
@@ -45,6 +47,7 @@ const PosterNeedsFirst = () => {
         { text: "Choose Needs, Win Big 🥗", correct: true },
         { text: "Spend on Toys 🧸", correct: false },
         { text: "Give Money Away 🎁", correct: false },
+        { text: "Buy Everything 🎪", correct: false }
       ],
     },
     {
@@ -53,6 +56,7 @@ const PosterNeedsFirst = () => {
         { text: "Needs Keep You Strong 💪", correct: true },
         { text: "Wants Make You Happy 😊", correct: false },
         { text: "Spend Without Plan 🛒", correct: false },
+        { text: "More Toys = Better 🎮", correct: false }
       ],
     },
     {
@@ -61,74 +65,76 @@ const PosterNeedsFirst = () => {
         { text: "Teach smart spending 📚", correct: true },
         { text: "Encourage more toys 🧸", correct: false },
         { text: "Make spending fun 🎉", correct: false },
+        { text: "Help buy expensive items 💎", correct: false }
       ],
     },
   ];
 
   const handleSelect = (isCorrect) => {
+    if (answered) return; // Prevent multiple clicks
+    
+    setAnswered(true);
     resetFeedback();
+    
     if (isCorrect) {
-      setCoins((prev) => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
-    } else {
-      setTimeout(() => setShowResult(true), 800);
-    }
+    
+    const isLastQuestion = currentStage === stages.length - 1;
+    
+    // Move to next question or show results after a short delay
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentStage((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const finalScore = score;
 
   return (
     <GameShell
       title="Poster: Needs First"
-      subtitle="Choose posters that prioritize needs!"
-      coins={coins}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Choose posters that prioritize needs!` : "Game Complete!"}
       currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-66"
+      score={finalScore}
+      gameId={gameId}
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-6">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 border border-white/20">
             <div className="text-4xl mb-4">🏆</div>
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+              {stages[currentStage].question}
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
               {stages[currentStage].choices.map((choice, idx) => (
                 <button
                   key={idx}
                   onClick={() => handleSelect(choice.correct)}
-                  className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-yellow-500 transition-transform hover:scale-105"
+                  className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-blue-500 transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={answered || showResult}
                 >
                   <div className="text-lg font-semibold">{choice.text}</div>
                 </button>
               ))}
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-8xl mb-4">🏆</div>
-            <h3 className="text-3xl font-bold mb-4">Needs First Badge!</h3>
-            <p className="text-white/90 text-lg mb-6">
-              You earned {coins} out of 5 for prioritizing needs!
-            </p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
+            <div className="mt-6 text-lg font-semibold text-white/80">
+              Score: {score}/{stages.length}
             </div>
-            <p className="text-white/80">Lesson: Needs come first for smart spending!</p>
           </div>
         )}
       </div>

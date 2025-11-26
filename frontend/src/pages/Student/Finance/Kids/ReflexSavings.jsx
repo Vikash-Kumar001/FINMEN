@@ -30,7 +30,6 @@ const ReflexSavings = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [coins, setCoins] = useState(0);
   const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
   const [currentRound, setCurrentRound] = useState(0);
@@ -155,7 +154,6 @@ const ReflexSavings = () => {
     setTimeLeft(ROUND_TIME);
     setScore(0);
     setCurrentRound(1);
-    setCoins(0);
     resetFeedback();
   };
 
@@ -165,7 +163,6 @@ const ReflexSavings = () => {
       
       if (isSave === currentWord.isCorrect) {
         setScore(prev => prev + 1);
-        setCoins(prev => prev + 1);
         showCorrectAnswerFeedback(1, true);
       }
       
@@ -184,26 +181,22 @@ const ReflexSavings = () => {
     }
   };
 
-  const handleNext = () => {
-    navigate("/student/finance/kids/puzzle-save-or-spend");
-  };
 
   return (
     <GameShell
       title="Reflex Savings"
-      subtitle="Tap quickly for 'Save' words, avoid 'Waste' words!"
-      currentLevel={3}
-      totalLevels={10}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Tap quickly for 'Save' words, avoid 'Waste' words!` : "Tap quickly for 'Save' words, avoid 'Waste' words!"}
+      currentLevel={currentRound}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={gameState === "finished"}
       showGameOver={gameState === "finished"}
-      score={coins}
+      score={score}
       gameId="finance-kids-3"
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      maxScore={10}
+      totalLevels={5}
+      maxScore={5}
+      showConfetti={gameState === "finished" && score === 5}
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="space-y-8">
@@ -267,21 +260,6 @@ const ReflexSavings = () => {
           </div>
         )}
 
-        {gameState === "finished" && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-5xl mb-4">🏆</div>
-            <h3 className="text-2xl font-bold text-white mb-4">Game Over!</h3>
-            <p className="text-white/90 text-lg mb-2">
-              You got {score} correct answers!
-            </p>
-            <p className="text-white/80 mb-6">
-              Great job testing your reflexes!
-            </p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              <span>+{coins} Coins</span>
-            </div>
-          </div>
-        )}
       </div>
     </GameShell>
   );

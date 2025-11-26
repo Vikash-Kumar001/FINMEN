@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy, CreditCard, PiggyBank, Wallet, ShoppingCart, Coins } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -17,189 +16,252 @@ const ATMStory = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { showCorrectAnswerFeedback } = useGameFeedback();
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [earnedCoins, setEarnedCoins] = useState(0);
-  const [answered, setAnswered] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const levels = [
+  const questions = [
     {
       id: 1,
-      title: "ATM Card Discovery",
-      question: "Your parent shows you their ATM card. What should you do?",
-      icon: CreditCard,
+      text: "Your parent shows you their ATM card. What should you do?",
       options: [
-        { text: "Learn how it works", correct: true, coins: 5 },
-        { text: "Ignore it", correct: false, coins: 0 },
-        { text: "Play with it", correct: false, coins: 0 }
-      ],
-      feedback: {
-        correct: "Great! Learning about money management is important!",
-        wrong: "Always show interest in learning about money!"
-      }
+        { 
+          id: "learn", 
+          text: "Learn how it works", 
+          emoji: "💳", 
+          description: "Learn about money management",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "😐", 
+          description: "Pay no attention",
+          isCorrect: false
+        },
+        { 
+          id: "play", 
+          text: "Play with it", 
+          emoji: "🎮", 
+          description: "Use it as a toy",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "PIN Code Safety",
-      question: "Your parent is entering their PIN at the ATM. What should you do?",
-      icon: Wallet,
+      text: "Your parent is entering their PIN at the ATM. What should you do?",
       options: [
-        { text: "Look away to give privacy", correct: true, coins: 10 },
-        { text: "Try to memorize the PIN", correct: false, coins: 0 },
-        { text: "Tell friends about it", correct: false, coins: 0 }
-      ],
-      feedback: {
-        correct: "Perfect! PIN codes should always be kept private!",
-        wrong: "PINs are secret and should never be shared or watched!"
-      }
+        { 
+          id: "away", 
+          text: "Look away to give privacy", 
+          emoji: "👀", 
+          description: "Respect their privacy",
+          isCorrect: true
+        },
+        { 
+          id: "memorize", 
+          text: "Try to memorize the PIN", 
+          emoji: "🧠", 
+          description: "Remember their secret code",
+          isCorrect: false
+        },
+        { 
+          id: "tell", 
+          text: "Tell friends about it", 
+          emoji: "💬", 
+          description: "Share with others",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Saving Money",
-      question: "You have 100 rupees. What's the smartest choice?",
-      icon: PiggyBank,
+      text: "You have 100 rupees. What's the smartest choice?",
       options: [
-        { text: "Save 50 rupees, spend 50", correct: true, coins: 15 },
-        { text: "Spend all on toys", correct: false, coins: 0 },
-        { text: "Give all to friends", correct: false, coins: 0 }
-      ],
-      feedback: {
-        correct: "Excellent! Saving money helps you buy bigger things later!",
-        wrong: "Saving some money is always a smart idea!"
-      }
+        { 
+          id: "split", 
+          text: "Save 50 rupees, spend 50", 
+          emoji: "💰", 
+          description: "Balance saving and spending",
+          isCorrect: true
+        },
+        { 
+          id: "toys", 
+          text: "Spend all on toys", 
+          emoji: "🧸", 
+          description: "Buy toys with all money",
+          isCorrect: false
+        },
+        { 
+          id: "friends", 
+          text: "Give all to friends", 
+          emoji: "🎁", 
+          description: "Give everything away",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      title: "Smart Shopping",
-      question: "You want to buy a toy that costs 200 rupees but you have 150. What should you do?",
-      icon: ShoppingCart,
+      text: "You want to buy a toy that costs 200 rupees but you have 150. What should you do?",
       options: [
-        { text: "Save more money first", correct: true, coins: 20 },
-        { text: "Borrow from friends", correct: false, coins: 0 },
-        { text: "Demand it from parents", correct: false, coins: 0 }
-      ],
-      feedback: {
-        correct: "Smart thinking! Patience and saving helps you achieve your goals!",
-        wrong: "Saving up and waiting is better than borrowing!"
-      }
+        { 
+          id: "save", 
+          text: "Save more money first", 
+          emoji: "💾", 
+          description: "Wait and save to afford it",
+          isCorrect: true
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow from friends", 
+          emoji: "🙈", 
+          description: "Ask friends for money",
+          isCorrect: false
+        },
+        { 
+          id: "demand", 
+          text: "Demand it from parents", 
+          emoji: "😤", 
+          description: "Force parents to buy it",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Money Values",
-      question: "Your friend lost their lunch money. What should you do?",
-      icon: Coins,
+      text: "Your friend lost their lunch money. What should you do?",
       options: [
-        { text: "Share your lunch with them", correct: true, coins: 25 },
-        { text: "Ignore them", correct: false, coins: 0 },
-        { text: "Laugh at them", correct: false, coins: 0 }
-      ],
-      feedback: {
-        correct: "Wonderful! Helping others is the best use of money!",
-        wrong: "Kindness and helping others is more valuable than money!"
-      }
+        { 
+          id: "share", 
+          text: "Share your lunch with them", 
+          emoji: "🍱", 
+          description: "Help them by sharing",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore them", 
+          emoji: "😐", 
+          description: "Don't help",
+          isCorrect: false
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh at them", 
+          emoji: "😆", 
+          description: "Make fun of them",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-  const Icon = currentLevelData.icon;
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
 
-  const handleAnswer = (option) => {
-    setSelectedAnswer(option);
-    setAnswered(true);
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    if (option.correct) {
-      setEarnedCoins(earnedCoins + option.coins);
-      showCorrectAnswerFeedback(option.coins, true);
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
   const handleNext = () => {
-    if (currentLevel < 5) {
-      setCurrentLevel(currentLevel + 1);
-      setAnswered(false);
-      setSelectedAnswer(null);
-    } else {
-      navigate("/games/financial-literacy/kids");
-    }
+    navigate("/games/financial-literacy/kids");
   };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
-      title={`Question ${currentLevel} – ${currentLevelData.title}`}
-      subtitle={currentLevelData.question}
-      coins={earnedCoins}
-      currentLevel={currentLevel}
+      title="ATM Story"
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
       onNext={handleNext}
-      showConfetti={answered && selectedAnswer?.correct}
-      score={earnedCoins}
-      gameId="finance-kids-88"
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-48"
       gameType="finance"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-8">
-        <div className="flex justify-center mb-6">
-          <Icon className="w-24 h-24 text-yellow-400 animate-pulse" />
-        </div>
-
-        {!answered ? (
-          <div className="space-y-4">
-            {currentLevelData.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswer(option)}
-                className="w-full bg-gradient-to-r from-blue-500 to-purple-500 px-8 py-4 rounded-full text-white font-bold hover:scale-105 transition-transform hover:shadow-lg"
-              >
-                {option.text}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className={`p-8 rounded-2xl border-2 mt-4 ${
-            selectedAnswer.correct 
-              ? 'bg-green-500/20 border-green-400' 
-              : 'bg-red-500/20 border-red-400'
-          }`}>
-            <Trophy className={`mx-auto w-16 h-16 mb-3 ${
-              selectedAnswer.correct ? 'text-yellow-400' : 'text-gray-400'
-            }`} />
-            <h3 className="text-2xl font-bold mb-2">
-              {selectedAnswer.correct ? `+${selectedAnswer.coins} Coins!` : 'Try Better Next Time!'}
-            </h3>
-            <p className="text-white/90 text-lg">
-              {selectedAnswer.correct 
-                ? currentLevelData.feedback.correct 
-                : currentLevelData.feedback.wrong}
-            </p>
-            
-            {currentLevel === 5 && selectedAnswer.correct && (
-              <div className="mt-6 p-4 bg-yellow-500/20 rounded-lg border border-yellow-400">
-                <p className="text-xl font-bold text-yellow-300">
-                  🎉 Game Complete! Total Coins: {earnedCoins} 🎉
-                </p>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
               </div>
-            )}
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
-
-        <div className="flex justify-center gap-2 mt-6">
-          {levels.map((level) => (
-            <div
-              key={level.id}
-              className={`w-3 h-3 rounded-full ${
-                level.id < currentLevel
-                  ? 'bg-green-400'
-                  : level.id === currentLevel
-                  ? 'bg-yellow-400 animate-pulse'
-                  : 'bg-gray-600'
-              }`}
-            />
-          ))}
-        </div>
+        ) : null}
       </div>
     </GameShell>
   );

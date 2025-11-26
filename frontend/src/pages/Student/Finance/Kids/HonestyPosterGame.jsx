@@ -20,7 +20,7 @@ const HonestyPosterGame = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
   const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [entry, setEntry] = useState("");
   const [showResult, setShowResult] = useState(false);
 
@@ -50,7 +50,7 @@ const HonestyPosterGame = () => {
   const handleSubmit = () => {
     resetFeedback();
     if (entry.trim().length >= stages[currentStage].minLength) {
-      setCoins((prev) => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
       if (currentStage < stages.length - 1) {
         setTimeout(() => {
@@ -63,62 +63,47 @@ const HonestyPosterGame = () => {
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const finalScore = score;
 
   return (
     <GameShell
       title="Poster: Honesty Pays"
-      subtitle="Create posters to promote fair money choices."
-      coins={coins}
+      subtitle={`Question ${currentStage + 1} of ${stages.length}: Create posters to promote fair money choices.`}
+      coins={score}
       currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
+      score={finalScore}
       gameId="finance-kids-186"
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
       <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <Image className="mx-auto w-10 h-10 text-yellow-400 mb-4" />
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <textarea
-              className="w-full p-4 rounded-xl text-black bg-white/90"
-              rows={4}
-              placeholder="Write your poster slogan here..."
-              value={entry}
-              onChange={(e) => setEntry(e.target.value)}
-            />
-            <button
-              onClick={handleSubmit}
-              className="bg-gradient-to-r from-pink-500 to-orange-500 px-8 py-4 rounded-full font-bold text-white hover:scale-105 transition-transform mt-4"
-              disabled={entry.trim().length < stages[currentStage].minLength}
-            >
-              Submit Poster
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <Image className="mx-auto w-16 h-16 text-yellow-400 mb-3" />
-            <h3 className="text-3xl font-bold mb-4">Poster Master!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              You earned {coins} out of 5 for creative honesty posters!
-            </p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Promoting honesty inspires everyone!</p>
-          </div>
-        )}
+        <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+          <Image className="mx-auto w-10 h-10 text-yellow-400 mb-4" />
+          <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+          <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+          <textarea
+            className="w-full p-4 rounded-xl text-black bg-white/90"
+            rows={4}
+            placeholder="Write your poster slogan here..."
+            value={entry}
+            onChange={(e) => setEntry(e.target.value)}
+            disabled={showResult}
+          />
+          <button
+            onClick={handleSubmit}
+            className="bg-gradient-to-r from-pink-500 to-orange-500 px-8 py-4 rounded-full font-bold text-white hover:scale-105 transition-transform mt-4"
+            disabled={entry.trim().length < stages[currentStage].minLength || showResult}
+          >
+            Submit Poster
+          </button>
+        </div>
       </div>
     </GameShell>
   );

@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const ReflexSmartPick = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -17,89 +16,133 @@ const ReflexSmartPick = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [target, setTarget] = useState("");
+  const [answered, setAnswered] = useState(false);
 
-  const stages = [
-    { action: "Food", wrong: "Extra Ice Cream", prompt: "Tap for the smart pick!" },
-    { action: "School Supplies", wrong: "New Game", prompt: "Tap for the smart pick!" },
-    { action: "Clothes", wrong: "Fancy Toy", prompt: "Tap for the smart pick!" },
-    { action: "Books", wrong: "Candy", prompt: "Tap for the smart pick!" },
-    { action: "Bus Ticket", wrong: "Cool Gadget", prompt: "Tap for the smart pick!" },
+  const questions = [
+    {
+      id: 1,
+      question: "What is the smart pick for staying healthy?",
+      options: [
+        { text: "Food", isCorrect: true, emoji: "🍎" },
+        { text: "Extra Ice Cream", isCorrect: false, emoji: "🍦" },
+        { text: "Video Game", isCorrect: false, emoji: "🎮" },
+        { text: "Fancy Toy", isCorrect: false, emoji: "🧸" }
+      ]
+    },
+    {
+      id: 2,
+      question: "What should you choose for learning?",
+      options: [
+        { text: "New Game", isCorrect: false, emoji: "🎮" },
+        { text: "School Supplies", isCorrect: true, emoji: "📚" },
+        { text: "Candy", isCorrect: false, emoji: "🍬" },
+        { text: "Cool Gadget", isCorrect: false, emoji: "⌚" }
+      ]
+    },
+    {
+      id: 3,
+      question: "What is essential for daily life?",
+      options: [
+        { text: "Fancy Toy", isCorrect: false, emoji: "🧸" },
+        { text: "Clothes", isCorrect: true, emoji: "👕" },
+        { text: "Ice Cream", isCorrect: false, emoji: "🍦" },
+        { text: "Action Figure", isCorrect: false, emoji: "🤖" }
+      ]
+    },
+    {
+      id: 4,
+      question: "What helps you gain knowledge?",
+      options: [
+        { text: "Candy", isCorrect: false, emoji: "🍬" },
+        { text: "Books", isCorrect: true, emoji: "📖" },
+        { text: "Video Game", isCorrect: false, emoji: "🎮" },
+        { text: "Puzzle Game", isCorrect: false, emoji: "🧩" }
+      ]
+    },
+    {
+      id: 5,
+      question: "What do you need to get to school?",
+      options: [
+        { text: "Cool Gadget", isCorrect: false, emoji: "⌚" },
+        { text: "Bus Ticket", isCorrect: true, emoji: "🚌" },
+        { text: "Music Player", isCorrect: false, emoji: "🎵" },
+        { text: "Smart Watch", isCorrect: false, emoji: "⌚" }
+      ]
+    }
   ];
 
-  useEffect(() => {
-    if (currentStage < stages.length) {
-      setTarget(Math.random() < 0.7 ? stages[currentStage].action : stages[currentStage].wrong);
-    }
-  }, [currentStage]);
-
-  const handleTap = (choice) => {
+  const handleAnswer = (option) => {
+    if (answered) return; // Prevent multiple clicks
+    
+    setAnswered(true);
     resetFeedback();
-    if (choice === stages[currentStage].action) {
-      setCoins((prev) => prev + 1);
+    
+    const isCorrect = option.isCorrect;
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
-    } else {
-      setTimeout(() => setShowResult(true), 800);
-    }
+    
+    // Move to next question or show results after a short delay
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Reflex Smart Pick"
-      subtitle={stages[currentStage]?.prompt || "Test your smart choice reflexes!"}
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}: Test your knowledge about smart choices!` : "Game Complete!"}
+      currentLevel={currentQuestion + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      showGameOver={showResult}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-69"
+      score={finalScore}
+      gameId={gameId}
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-      <div className="text-center space-y-8 text-white">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <h3 className="text-3xl font-bold mb-4">Round {currentStage + 1}</h3>
-            <div className="flex justify-center gap-6">
-              <button
-                onClick={() => handleTap(stages[currentStage].action)}
-                className="bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-xl text-xl font-bold transition-transform hover:scale-105"
-              >
-                {stages[currentStage].action}
-              </button>
-              <button
-                onClick={() => handleTap(stages[currentStage].wrong)}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-4 rounded-xl text-xl font-bold transition-transform hover:scale-105"
-              >
-                {stages[currentStage].wrong}
-              </button>
+      <div className="text-center text-white space-y-6">
+        {!showResult && currentQuestionData && (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 border border-white/20">
+            <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+              {currentQuestionData.question}
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {currentQuestionData.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswer(option)}
+                  disabled={answered}
+                  className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <div className="text-4xl mb-3">{option.emoji}</div>
+                  <h3 className="font-bold text-xl">{option.text}</h3>
+                </button>
+              ))}
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-6xl mb-4">⚡🎉</div>
-            <h3 className="text-3xl font-bold mb-4">Smart Pick Reflex Star!</h3>
-            <p className="text-white/90 text-lg mb-6">You scored {coins} out of 5!</p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-              +{coins} Coins
+
+            <div className="mt-6 text-lg font-semibold text-white/80">
+              Score: {score}/{questions.length}
             </div>
-            <p className="text-white/80 mt-4">Lesson: Choose necessities first!</p>
           </div>
         )}
       </div>

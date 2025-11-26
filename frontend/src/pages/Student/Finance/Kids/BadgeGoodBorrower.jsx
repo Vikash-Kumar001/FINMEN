@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy, Book, Pencil, Smartphone, Umbrella, Gift } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Book, Pencil, Smartphone, Umbrella, Gift } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeGoodBorrower = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -17,12 +16,12 @@ const BadgeGoodBorrower = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti, resetFeedback } = useGameFeedback();
   const [currentLevel, setCurrentLevel] = useState(1);
-  const [earnedCoins, setEarnedCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [answered, setAnswered] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [earnedBadge, setEarnedBadge] = useState(false);
+  const [showResult, setShowResult] = useState(false);
 
   const levels = [
     {
@@ -111,157 +110,96 @@ const BadgeGoodBorrower = () => {
   const Icon = currentLevelData.icon;
 
   const handleAnswer = (option) => {
+    if (answered) return; // Prevent multiple clicks
+    
     setSelectedAnswer(option);
     setAnswered(true);
+    resetFeedback();
     
-    if (option.correct) {
-      setEarnedCoins(earnedCoins + option.coins);
-      showCorrectAnswerFeedback(option.coins, true);
-      
-      if (currentLevel === 5) {
-        setEarnedBadge(true);
-      }
+    const isCorrect = option.correct;
+    const isLastQuestion = currentLevel === 5;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    // Automatically advance to next question after a delay
+    // Show feedback for 2 seconds, then move to next question or show results
     setTimeout(() => {
-      if (currentLevel < 5) {
-        setCurrentLevel(currentLevel + 1);
+      if (isLastQuestion) {
+        // This is the last question (5th), show results
+        setShowResult(true);
+      } else {
+        // Move to next question
+        setCurrentLevel(prev => prev + 1);
         setAnswered(false);
         setSelectedAnswer(null);
-      } else {
-        // For the last question, show badge and then automatically navigate
-        setTimeout(() => {
-          navigate("/games/financial-literacy/kids");
-        }, 3000); // Show the badge for 3 seconds before navigating
       }
     }, 2000);
   };
 
-  const handleNext = () => {
-    if (currentLevel < 5) {
-      setCurrentLevel(currentLevel + 1);
-      setAnswered(false);
-      setSelectedAnswer(null);
-    } else {
-      navigate("/games/financial-literacy/kids");
-    }
-  };
+  const finalScore = score;
 
   return (
     <GameShell
-      title={`Question ${currentLevel} – ${currentLevelData.title}`}
-      subtitle={currentLevelData.question}
-      coins={earnedCoins}
+      title="Badge: Good Borrower"
+      subtitle={!showResult ? `Question ${currentLevel} of 5: Test your borrowing knowledge!` : "Badge Earned!"}
       currentLevel={currentLevel}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={currentLevel === 5 && answered ? () => navigate("/games/financial-literacy/kids") : null}
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="finance"
+      maxScore={5}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      nextEnabled={currentLevel === 5 && answered}
-      nextLabel={"Finish & Claim Badge"}
-      showConfetti={answered && selectedAnswer?.correct}
-      score={earnedCoins}
-      gameId="finance-kids-110"
-      gameType="finance"
-    >
-      <div className="text-center space-y-8 text-white">
-        <div className="flex justify-center mb-6">
-          <div className="relative">
-            <Icon className="w-24 h-24 text-green-400 animate-bounce" />
-            {answered && selectedAnswer?.correct && (
-              <div className="absolute -top-2 -right-2 bg-green-500 rounded-full p-2">
-                <Trophy className="w-6 h-6 text-white" />
-              </div>
-            )}
-          </div>
-        </div>
-
-        {!answered ? (
-          <div className="space-y-4">
-            {currentLevelData.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswer(option)}
-                className="w-full bg-gradient-to-r from-green-600 to-emerald-600 px-8 py-4 rounded-full text-white font-bold hover:scale-105 transition-transform hover:shadow-lg"
-              >
-                {option.text}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className={`p-8 rounded-2xl border-2 mt-4 ${
-            selectedAnswer.correct 
-              ? 'bg-green-500/20 border-green-400' 
-              : 'bg-red-500/20 border-red-400'
-          }`}>
-            <Trophy className={`mx-auto w-16 h-16 mb-3 ${
-              selectedAnswer.correct ? 'text-yellow-400' : 'text-gray-400'
-            }`} />
-            <h3 className="text-2xl font-bold mb-2">
-              {selectedAnswer.correct ? `+${selectedAnswer.coins} Coins!` : 'Think Again!'}
-            </h3>
-            <p className="text-white/90 text-lg">
-              {selectedAnswer.correct 
-                ? currentLevelData.feedback.correct 
-                : currentLevelData.feedback.wrong}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-6">
+        {!showResult && currentLevelData && (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 border border-white/20">
+            <div className="flex justify-center mb-4">
+              <Icon className="w-16 h-16 text-green-400" />
+            </div>
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Question {currentLevel} of 5</span>
+              <span className="text-yellow-400 font-bold">Score: {score}/5</span>
+            </div>
+            
+            <p className="text-white text-lg mb-6 text-center">
+              {currentLevelData.question}
             </p>
             
-            {earnedBadge && (
-              <div className="mt-6 p-6 bg-gradient-to-r from-yellow-500/30 to-green-500/30 rounded-xl border-2 border-yellow-400 animate-pulse">
-                <div className="flex items-center justify-center gap-3 mb-3">
-                  <Trophy className="w-12 h-12 text-yellow-400" />
-                  <Gift className="w-12 h-12 text-green-400" />
-                </div>
-                <p className="text-2xl font-bold text-yellow-300 mb-2">
-                  🏆 Good Borrower Badge Unlocked! 🏆
-                </p>
-                <p className="text-white/90">
-                  You've proven you're a responsible borrower!
-                </p>
-                <p className="text-green-200 font-bold mt-2">
-                  Total Coins Earned: {earnedCoins} 💰
+            <div className="space-y-4">
+              {currentLevelData.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswer(option)}
+                  disabled={answered}
+                  className="w-full min-h-[60px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-8 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {option.text}
+                </button>
+              ))}
+            </div>
+            
+            {answered && selectedAnswer && (
+              <div className={`mt-4 p-4 rounded-xl ${
+                selectedAnswer.correct
+                  ? 'bg-green-500/20 border-2 border-green-400' 
+                  : 'bg-red-500/20 border-2 border-red-400'
+              }`}>
+                <p className="text-white font-semibold">
+                  {selectedAnswer.correct
+                    ? currentLevelData.feedback.correct
+                    : currentLevelData.feedback.wrong}
                 </p>
               </div>
             )}
           </div>
         )}
-
-        <div className="flex justify-center gap-2 mt-6">
-          {levels.map((level) => (
-            <div
-              key={level.id}
-              className={`w-3 h-3 rounded-full ${
-                level.id < currentLevel
-                  ? 'bg-green-400'
-                  : level.id === currentLevel
-                  ? 'bg-yellow-400 animate-pulse'
-                  : 'bg-gray-600'
-              }`}
-            />
-          ))}
-        </div>
-
-        {currentLevel === 5 && answered && (
-          <div className="mt-4 p-4 bg-green-500/20 rounded-lg border border-green-400">
-            <p className="text-sm text-green-200">
-              💡 Remember: "Neither a borrower nor a lender be careless!" - Always be responsible!
-            </p>
-          </div>
-        )}
-
-        <div className="mt-6 p-4 bg-white/5 rounded-lg backdrop-blur-sm">
-          <p className="text-white/70 text-sm">
-            Items Returned: {currentLevel - 1}/5
-          </p>
-          <div className="mt-2 flex justify-center gap-2">
-            {levels.slice(0, currentLevel - 1).map((level) => (
-              <level.icon key={level.id} className="w-6 h-6 text-green-400" />
-            ))}
-          </div>
-        </div>
       </div>
     </GameShell>
   );

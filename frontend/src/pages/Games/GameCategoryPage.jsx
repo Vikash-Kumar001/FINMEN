@@ -751,9 +751,23 @@ const GameCategoryPage = () => {
       socket.on('game-completed', handleGameCompletedSocket);
     }
 
+    // Refresh game completion status when page becomes visible again
+    // This ensures status is updated when user navigates back from a game
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Small delay to ensure any pending state updates have completed
+        setTimeout(() => {
+          loadGameCompletionStatus();
+        }, 200);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
     return () => {
       window.removeEventListener("gameCompleted", handleGameCompleted);
       window.removeEventListener("gameReplayed", handleGameReplayedEvent);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (socket) {
         socket.off('wallet:updated', handleWalletUpdate);
         socket.off('game-replayed', handleGameReplayedSocket);
@@ -1500,7 +1514,26 @@ const GameCategoryPage = () => {
         } else {
           // Check if previous game is completed
           const prevGameId = getGameIdByIndex(idx - 1);
-          unlocked = gameCompletionStatus[prevGameId] === true;
+          // Strict check: previous game must exist and be explicitly marked as completed (true)
+          // Also check if previous game exists in the games array
+          const prevGame = games[idx - 1];
+          const prevGameCompleted = prevGameId && gameCompletionStatus[prevGameId] === true;
+          
+          // Only unlock if previous game exists and is completed
+          unlocked = prevGame && prevGameId && prevGameCompleted;
+          
+          // Debug logging for unlocking issues
+          if (idx === 44 && !unlocked) {
+            console.log('🔒 Game not unlocked:', {
+              gameId: g.id,
+              gameTitle: g.title,
+              prevGameId,
+              prevGameTitle: prevGame?.title,
+              prevGameCompleted,
+              prevGameStatus: gameCompletionStatus[prevGameId],
+              allStatuses: Object.keys(gameCompletionStatus).filter(k => k.includes('finance-kids-4'))
+            });
+          }
         }
       }
       

@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ShoppingCart } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -17,125 +16,253 @@ const CandyShopStoryy = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
-  const [stage, setStage] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
-      question: "Shopkeeper charges ₹20 instead of ₹10. Do you check the bill?",
-      choices: [
-        { text: "Yes, I check the bill 📜", correct: true },
-        { text: "No, I just pay 💸", correct: false },
-        { text: "Ask a friend to check 👥", correct: false },
-      ],
+      id: 1,
+      text: "Shopkeeper charges ₹20 instead of ₹10. Do you check the bill?",
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes, I check the bill", 
+          emoji: "📜", 
+          description: "Review the bill carefully",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No, I just pay", 
+          emoji: "💸", 
+          description: "Pay without checking",
+          isCorrect: false
+        },
+        { 
+          id: "friend", 
+          text: "Ask a friend to check", 
+          emoji: "👥", 
+          description: "Let someone else check",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "You have ₹50. The candy costs ₹15. How much change should you get?",
-      choices: [
-        { text: "₹35", correct: true },
-        { text: "₹25", correct: false },
-        { text: "₹40", correct: false },
-      ],
+      id: 2,
+      text: "You have ₹50. The candy costs ₹15. How much change should you get?",
+      options: [
+        { 
+          id: "35", 
+          text: "₹35", 
+          emoji: "💰", 
+          description: "50 - 15 = 35",
+          isCorrect: true
+        },
+        { 
+          id: "25", 
+          text: "₹25", 
+          emoji: "💸", 
+          description: "50 - 25 = 25",
+          isCorrect: false
+        },
+        { 
+          id: "40", 
+          text: "₹40", 
+          emoji: "💵", 
+          description: "50 - 10 = 40",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "The shopkeeper gives ₹30 change instead of ₹35. What do you do?",
-      choices: [
-        { text: "Politely ask for the correct change 🗣️", correct: true },
-        { text: "Take the ₹30 and leave 🚶", correct: false },
-        { text: "Buy more candy 🍬", correct: false },
-      ],
+      id: 3,
+      text: "The shopkeeper gives ₹30 change instead of ₹35. What do you do?",
+      options: [
+        { 
+          id: "ask", 
+          text: "Politely ask for the correct change", 
+          emoji: "🗣️", 
+          description: "Request the right amount",
+          isCorrect: true
+        },
+        { 
+          id: "take", 
+          text: "Take the ₹30 and leave", 
+          emoji: "🚶", 
+          description: "Accept the wrong amount",
+          isCorrect: false
+        },
+        { 
+          id: "buy", 
+          text: "Buy more candy", 
+          emoji: "🍬", 
+          description: "Spend the change on candy",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "You want to buy two candies at ₹10 each. Can you afford it with ₹15?",
-      choices: [
-        { text: "No, I need ₹20 💰", correct: true },
-        { text: "Yes, I have enough 😊", correct: false },
-        { text: "Ask for a discount 🎟️", correct: false },
-      ],
+      id: 4,
+      text: "You want to buy two candies at ₹10 each. Can you afford it with ₹15?",
+      options: [
+        { 
+          id: "no", 
+          text: "No, I need ₹20", 
+          emoji: "💰", 
+          description: "Need 20 rupees total",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes, I have enough", 
+          emoji: "😊", 
+          description: "Think you have enough",
+          isCorrect: false
+        },
+        { 
+          id: "discount", 
+          text: "Ask for a discount", 
+          emoji: "🎟️", 
+          description: "Try to get lower price",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "What’s the best way to shop smartly?",
-      choices: [
-        { text: "Check prices and bills carefully 🧾", correct: true },
-        { text: "Buy everything you see 🛒", correct: false },
-        { text: "Only shop with friends 👨‍👩‍👧", correct: false },
-      ],
-    },
+      id: 5,
+      text: "What's the best way to shop smartly?",
+      options: [
+        { 
+          id: "check", 
+          text: "Check prices and bills carefully", 
+          emoji: "🧾", 
+          description: "Review everything before paying",
+          isCorrect: true
+        },
+        { 
+          id: "everything", 
+          text: "Buy everything you see", 
+          emoji: "🛒", 
+          description: "Purchase all items",
+          isCorrect: false
+        },
+        { 
+          id: "friends", 
+          text: "Only shop with friends", 
+          emoji: "👨‍👩‍👧", 
+          description: "Shop in groups only",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (isCorrect) => {
-    resetFeedback();
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setCoins((c) => c + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (stage < stages.length - 1) {
-      setTimeout(() => setStage((s) => s + 1), 800);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setTimeout(() => setShowResult(true), 800);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleNext = () => {
+    navigate("/games/financial-literacy/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Candy Shop Story"
-      subtitle="Make smart choices at the candy shop!"
-      coins={coins}
-      currentLevel={stage + 1}
-      totalLevels={stages.length}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      gameId="finance-kids-161"
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-81"
       gameType="finance"
-      showConfetti={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8 text-white text-center">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="flex justify-center mb-6">
-              <ShoppingCart className="w-12 h-12 text-pink-400" />
-            </div>
-            <h3 className="text-2xl font-bold mb-6">{stages[stage].question}</h3>
-            <div className="flex justify-center gap-6 flex-wrap">
-              {stages[stage].choices.map((choice, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleChoice(choice.correct)}
-                  className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white py-4 px-8 rounded-xl text-lg font-semibold transition-transform hover:scale-105"
-                >
-                  {choice.text}
-                </button>
-              ))}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <div className="text-4xl mb-4 text-center">🍬</div>
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-teal-500 hover:from-green-600 hover:to-teal-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-6">🍬🛒🎉</div>
-            <h3 className="text-3xl font-bold mb-4">Smart Shopper!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              You earned {coins} out of 5 — great job checking those bills!
-            </p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">
-              Lesson: Always check prices and bills to shop wisely.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

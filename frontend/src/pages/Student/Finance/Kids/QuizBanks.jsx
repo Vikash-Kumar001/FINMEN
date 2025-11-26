@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -17,105 +16,252 @@ const QuizBanks = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
-      question: "What is a bank?",
-      options: ["Toy shop", "Place to keep money safe", "Ice cream shop"],
-      correct: "Place to keep money safe",
+      id: 1,
+      text: "What is a bank?",
+      options: [
+        { 
+          id: "toy", 
+          text: "Toy shop", 
+          emoji: "🧸", 
+          description: "A place to buy toys",
+          isCorrect: false
+        },
+        { 
+          id: "safe", 
+          text: "Place to keep money safe", 
+          emoji: "🏦", 
+          description: "A safe place to store your money",
+          isCorrect: true
+        },
+        { 
+          id: "icecream", 
+          text: "Ice cream shop", 
+          emoji: "🍦", 
+          description: "A place to buy ice cream",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "What does a bank’s savings account do?",
-      options: ["Gives you toys", "Grows your money", "Sells food"],
-      correct: "Grows your money",
+      id: 2,
+      text: "What does a bank's savings account do?",
+      options: [
+        { 
+          id: "toys", 
+          text: "Gives you toys", 
+          emoji: "🧸", 
+          description: "Provides free toys",
+          isCorrect: false
+        },
+        { 
+          id: "grows", 
+          text: "Grows your money", 
+          emoji: "📈", 
+          description: "Helps your money increase over time",
+          isCorrect: true
+        },
+        { 
+          id: "food", 
+          text: "Sells food", 
+          emoji: "🍕", 
+          description: "Sells food items",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "What can you do at a bank’s ATM?",
-      options: ["Buy clothes", "Withdraw money", "Play games"],
-      correct: "Withdraw money",
+      id: 3,
+      text: "What can you do at a bank's ATM?",
+      options: [
+        { 
+          id: "clothes", 
+          text: "Buy clothes", 
+          emoji: "👕", 
+          description: "Purchase clothing",
+          isCorrect: false
+        },
+        { 
+          id: "withdraw", 
+          text: "Withdraw money", 
+          emoji: "💰", 
+          description: "Take out your money",
+          isCorrect: true
+        },
+        { 
+          id: "games", 
+          text: "Play games", 
+          emoji: "🎮", 
+          description: "Play video games",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Why do banks offer loans?",
-      options: ["To help you borrow money", "To give free money", "To sell toys"],
-      correct: "To help you borrow money",
+      id: 4,
+      text: "Why do banks offer loans?",
+      options: [
+        { 
+          id: "borrow", 
+          text: "To help you borrow money", 
+          emoji: "💳", 
+          description: "Lend money when you need it",
+          isCorrect: true
+        },
+        { 
+          id: "free", 
+          text: "To give free money", 
+          emoji: "🎁", 
+          description: "Give money for free",
+          isCorrect: false
+        },
+        { 
+          id: "toys", 
+          text: "To sell toys", 
+          emoji: "🧸", 
+          description: "Sell toy items",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Why are banks safe for money?",
-      options: ["They protect your savings", "They give you candy", "They hide money"],
-      correct: "They protect your savings",
-    },
+      id: 5,
+      text: "Why are banks safe for money?",
+      options: [
+        { 
+          id: "protect", 
+          text: "They protect your savings", 
+          emoji: "🛡️", 
+          description: "Keep your money secure",
+          isCorrect: true
+        },
+        { 
+          id: "candy", 
+          text: "They give you candy", 
+          emoji: "🍬", 
+          description: "Provide free candy",
+          isCorrect: false
+        },
+        { 
+          id: "hide", 
+          text: "They hide money", 
+          emoji: "🫥", 
+          description: "Hide your money away",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleAnswer = (choice) => {
-    resetFeedback();
-    if (choice === stages[currentStage].correct) {
-      setCoins((prev) => prev + 1);
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setTimeout(() => setShowResult(true), 800);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleNext = () => {
+    navigate("/games/financial-literacy/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Quiz on Banks"
-      subtitle="Test your knowledge about banks!"
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-42"
+      gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-82"
-      gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-6">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <Trophy className="mx-auto w-10 h-10 text-yellow-400 mb-4" />
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {stages[currentStage].options.map((opt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleAnswer(opt)}
-                  className="bg-purple-500 hover:bg-purple-600 px-8 py-4 rounded-full text-white font-bold transition-transform hover:scale-105"
-                >
-                  {opt}
-                </button>
-              ))}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-3" />
-            <h3 className="text-3xl font-bold mb-4">Bank Quiz Master!</h3>
-            <p className="text-white/90 text-lg mb-6">
-              You earned {coins} out of 5 for banking knowledge!
-            </p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Banks keep and grow your money!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

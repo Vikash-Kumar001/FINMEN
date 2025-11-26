@@ -16,105 +16,253 @@ const QuizBorrowing = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
-      question: "What’s borrowing?",
-      options: ["Taking without asking", "Using and returning", "Stealing"],
-      correct: "Using and returning",
+      id: 1,
+      text: "What's borrowing?",
+      options: [
+        { 
+          id: "without", 
+          text: "Taking without asking", 
+          emoji: "🙈", 
+          description: "Taking something secretly",
+          isCorrect: false
+        },
+        { 
+          id: "return", 
+          text: "Using and returning", 
+          emoji: "🔄", 
+          description: "Use something and give it back",
+          isCorrect: true
+        },
+        { 
+          id: "steal", 
+          text: "Stealing", 
+          emoji: "😈", 
+          description: "Taking without permission",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "What should you do after borrowing a book?",
-      options: ["Keep it forever", "Return it", "Sell it"],
-      correct: "Return it",
+      id: 2,
+      text: "What should you do after borrowing a book?",
+      options: [
+        { 
+          id: "keep", 
+          text: "Keep it forever", 
+          emoji: "📚", 
+          description: "Never return it",
+          isCorrect: false
+        },
+        { 
+          id: "return", 
+          text: "Return it", 
+          emoji: "↩️", 
+          description: "Give it back to owner",
+          isCorrect: true
+        },
+        { 
+          id: "sell", 
+          text: "Sell it", 
+          emoji: "💰", 
+          description: "Sell for money",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Why is borrowing money from a bank okay?",
-      options: ["You repay with interest", "It’s free money", "You don’t repay"],
-      correct: "You repay with interest",
+      id: 3,
+      text: "Why is borrowing money from a bank okay?",
+      options: [
+        { 
+          id: "repay", 
+          text: "You repay with interest", 
+          emoji: "💳", 
+          description: "Pay back with extra",
+          isCorrect: true
+        },
+        { 
+          id: "free", 
+          text: "It's free money", 
+          emoji: "🎁", 
+          description: "Get money for free",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "You don't repay", 
+          emoji: "🙊", 
+          description: "Never pay back",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "What happens if you don’t return borrowed items?",
-      options: ["You lose trust", "You get more items", "You get rewards"],
-      correct: "You lose trust",
+      id: 4,
+      text: "What happens if you don't return borrowed items?",
+      options: [
+        { 
+          id: "trust", 
+          text: "You lose trust", 
+          emoji: "😞", 
+          description: "People won't trust you",
+          isCorrect: true
+        },
+        { 
+          id: "more", 
+          text: "You get more items", 
+          emoji: "🎁", 
+          description: "Receive more things",
+          isCorrect: false
+        },
+        { 
+          id: "rewards", 
+          text: "You get rewards", 
+          emoji: "🏆", 
+          description: "Get prizes",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Why is honest borrowing important?",
-      options: ["Builds trust with others", "Gets you more toys", "Makes borrowing fun"],
-      correct: "Builds trust with others",
-    },
+      id: 5,
+      text: "Why is honest borrowing important?",
+      options: [
+        { 
+          id: "trust", 
+          text: "Builds trust with others", 
+          emoji: "🤝", 
+          description: "Creates trust",
+          isCorrect: true
+        },
+        { 
+          id: "toys", 
+          text: "Gets you more toys", 
+          emoji: "🧸", 
+          description: "Receive more toys",
+          isCorrect: false
+        },
+        { 
+          id: "fun", 
+          text: "Makes borrowing fun", 
+          emoji: "😊", 
+          description: "Enjoyable activity",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleAnswer = (choice) => {
-    resetFeedback();
-    if (choice === stages[currentStage].correct) {
-      setCoins((prev) => prev + 1);
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setTimeout(() => setShowResult(true), 800);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleNext = () => {
+    navigate("/games/financial-literacy/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Quiz on Borrowing"
-      subtitle="Test your knowledge about borrowing!"
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-52"
+      gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-102"
-      gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-4xl mb-4">🤝</div>
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {stages[currentStage].options.map((opt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleAnswer(opt)}
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105"
-                >
-                  {opt}
-                </button>
-              ))}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <div className="text-4xl mb-4 text-center">🤝</div>
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-6xl mb-4">✅</div>
-            <h3 className="text-3xl font-bold mb-4">Borrowing Quiz Star!</h3>
-            <p className="text-white/90 text-lg mb-6">
-              You earned {coins} out of 5 for borrowing knowledge!
-            </p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Borrow responsibly and return!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

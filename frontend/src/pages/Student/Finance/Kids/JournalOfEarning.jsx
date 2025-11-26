@@ -19,7 +19,7 @@ const JournalOfEarning = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
   const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [entry, setEntry] = useState("");
   const [showResult, setShowResult] = useState(false);
 
@@ -49,7 +49,7 @@ const JournalOfEarning = () => {
   const submitEntry = () => {
     resetFeedback();
     if (entry.trim().length >= stages[currentStage].minLength) {
-      setCoins((prev) => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
       if (currentStage < stages.length - 1) {
         setTimeout(() => {
@@ -62,61 +62,46 @@ const JournalOfEarning = () => {
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const finalScore = score;
 
   return (
     <GameShell
       title="Journal of Earning"
-      subtitle="Reflect on ways to earn money!"
-      coins={coins}
+      subtitle={`Question ${currentStage + 1} of ${stages.length}: Reflect on ways to earn money!`}
+      coins={score}
       currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
+      score={finalScore}
       gameId="finance-kids-147"
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
       <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-4xl mb-4">💸</div>
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <textarea
-              value={entry}
-              onChange={(e) => setEntry(e.target.value)}
-              placeholder="Type your earning idea..."
-              className="p-4 rounded-lg w-full max-w-md text-black bg-white/90"
-            />
-            <button
-              onClick={submitEntry}
-              className="bg-green-500 px-8 py-3 rounded-full text-white font-bold hover:scale-105 transition-transform mt-4"
-              disabled={entry.trim().length < stages[currentStage].minLength}
-            >
-              Submit
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-4">💸🎉</div>
-            <h3 className="text-3xl font-bold mb-4">Earning Expert!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              You earned {coins} out of 5 for great ideas!
-            </p>
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Earning money builds responsibility!</p>
-          </div>
-        )}
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+          <div className="text-4xl mb-4">💸</div>
+          <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+          <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+          <textarea
+            value={entry}
+            onChange={(e) => setEntry(e.target.value)}
+            placeholder="Type your earning idea..."
+            className="p-4 rounded-lg w-full max-w-md text-black bg-white/90"
+            disabled={showResult}
+          />
+          <button
+            onClick={submitEntry}
+            className="bg-green-500 px-8 py-3 rounded-full text-white font-bold hover:scale-105 transition-transform mt-4"
+            disabled={entry.trim().length < stages[currentStage].minLength || showResult}
+          >
+            Submit
+          </button>
+        </div>
       </div>
     </GameShell>
   );

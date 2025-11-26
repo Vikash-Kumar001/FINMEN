@@ -21,7 +21,7 @@ const MoneyBankStory = () => {
   const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -162,7 +162,6 @@ const MoneyBankStory = () => {
   ];
 
   const handleChoice = (selectedChoice) => {
-    // Safety check: ensure current question exists
     if (currentQuestion < 0 || currentQuestion >= questions.length) {
       return;
     }
@@ -191,26 +190,19 @@ const MoneyBankStory = () => {
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 1000 : 0); // Delay if correct to show animation
+      }, isCorrect ? 1000 : 800);
     } else {
       // Calculate final score
       const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
       setFinalScore(correctAnswers);
-      setShowResult(true);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentQuestion(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
-    resetFeedback();
-  };
-
   const handleNext = () => {
-    navigate("/student/finance/kids/quiz-on-saving");
+    navigate("/games/financial-literacy/kids");
   };
 
   const getCurrentQuestion = () => {
@@ -222,55 +214,35 @@ const MoneyBankStory = () => {
 
   const currentQuestionData = getCurrentQuestion();
 
-  // If no current question, show loading or return early
-  if (!currentQuestionData && !showResult) {
   return (
     <GameShell
       title="Money Bank Story"
-      subtitle="Loading..."
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
       score={coins}
       gameId="finance-kids-1"
       gameType="finance"
-      totalLevels={questions.length}
-      coinsPerLevel={coinsPerLevel}
-      maxScore={questions.length} // Max score is total number of questions (all correct)
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-white text-center">Loading question...</div>
-      </GameShell>
-    );
-  }
-
-  return (
-    <GameShell
-      title="Money Bank Story"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3} // Pass if 3 or more correct
-      showGameOver={showResult && finalScore >= 3}
-      score={coins} // Pass coins state to update header
-      gameId="finance-kids-1"
-      gameType="finance"
-      totalLevels={questions.length}
-      maxScore={questions.length} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      currentLevel={currentQuestion + 1}
-      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-    >
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
       <div className="space-y-8">
         {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-lg mb-6">
+              <p className="text-white text-lg mb-6 text-center">
                 {currentQuestionData.text}
               </p>
               
@@ -289,48 +261,10 @@ const MoneyBankStory = () => {
               </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <div>
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You got {finalScore} out of {questions.length} questions correct!
-                  You're learning smart financial decisions!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{coins} Coins</span>
-                </div>
-                <p className="text-white/80">
-                  You correctly chose to save money in most situations. That's a smart habit!
-                </p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You got {finalScore} out of {questions.length} questions correct.
-                  Remember, saving some money for later is usually a smart choice!
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
-                <p className="text-white/80 text-sm">
-                  Try to choose the option that saves money for later in most situations.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default MoneyBankStory;
-

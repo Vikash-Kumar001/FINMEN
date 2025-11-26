@@ -16,123 +16,252 @@ const BirthdayMoney = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
-
-  const [stage, setStage] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
-      question: "You get ₹100 as birthday money. What will you do?",
-      choices: [
-        { text: "Spend all on toys and candies 🎮🍬", correct: false },
-        { text: "Give it all to mom for safekeeping 👩‍👧", correct: false },
-        { text: "Split it: some for fun, some for saving 💡🏦", correct: true },
-      ],
+      id: 1,
+      text: "You get ₹100 as birthday money. What will you do?",
+      options: [
+        { 
+          id: "spend", 
+          text: "Spend all on toys and candies", 
+          emoji: "🎮🍬", 
+          description: "Buy everything you want right now",
+          isCorrect: false
+        },
+        { 
+          id: "give", 
+          text: "Give it all to mom for safekeeping", 
+          emoji: "👩‍👧", 
+          description: "Let parents keep it for you",
+          isCorrect: false
+        },
+        { 
+          id: "split", 
+          text: "Split it: some for fun, some for saving", 
+          emoji: "💡🏦", 
+          description: "Balance between spending and saving",
+          isCorrect: true
+        }
+      ]
     },
     {
-      question: "What does ‘split wisely’ mean?",
-      choices: [
-        { text: "Spend half on friends' gifts 🎁", correct: false },
-        { text: "Keep some for savings and some for fun 🎯", correct: true },
-        { text: "Buy only needs, no wants 🛒", correct: false },
-      ],
+      id: 2,
+      text: "What does 'split wisely' mean?",
+      options: [
+        { 
+          id: "gifts", 
+          text: "Spend half on friends' gifts", 
+          emoji: "🎁", 
+          description: "Buy gifts for others",
+          isCorrect: false
+        },
+        { 
+          id: "balance", 
+          text: "Keep some for savings and some for fun", 
+          emoji: "🎯", 
+          description: "Balance needs, wants, and savings",
+          isCorrect: true
+        },
+        { 
+          id: "needs", 
+          text: "Buy only needs, no wants", 
+          emoji: "🛒", 
+          description: "Spend only on necessities",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Saving a part of your gift money helps you…",
-      choices: [
-        { text: "Buy bigger things later 🚀", correct: true },
-        { text: "Forget about the money 😅", correct: false },
-        { text: "Spend more now 🛍️", correct: false },
-      ],
+      id: 3,
+      text: "Saving a part of your gift money helps you…",
+      options: [
+        { 
+          id: "bigger", 
+          text: "Buy bigger things later", 
+          emoji: "🚀", 
+          description: "Reach bigger goals over time",
+          isCorrect: true
+        },
+        { 
+          id: "forget", 
+          text: "Forget about the money", 
+          emoji: "😅", 
+          description: "Lose track of your savings",
+          isCorrect: false
+        },
+        { 
+          id: "spend", 
+          text: "Spend more now", 
+          emoji: "🛍️", 
+          description: "Have more to spend immediately",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "If you want to buy something big later, what’s smart?",
-      choices: [
-        { text: "Save small amounts regularly 💰", correct: true },
-        { text: "Borrow from friends 🙈", correct: false },
-        { text: "Wait for next birthday 🎂", correct: false },
-      ],
+      id: 4,
+      text: "If you want to buy something big later, what's smart?",
+      options: [
+        { 
+          id: "save", 
+          text: "Save small amounts regularly", 
+          emoji: "💰", 
+          description: "Build savings consistently",
+          isCorrect: true
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow from friends", 
+          emoji: "🙈", 
+          description: "Ask others for money",
+          isCorrect: false
+        },
+        { 
+          id: "wait", 
+          text: "Wait for next birthday", 
+          emoji: "🎂", 
+          description: "Hope for more gift money",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "What’s a balanced decision?",
-      choices: [
-        { text: "Enjoy a treat and save the rest 🧁🏦", correct: true },
-        { text: "Spend all today 🎉", correct: false },
-        { text: "Save everything, no fun 😔", correct: false },
-      ],
-    },
+      id: 5,
+      text: "What's a balanced decision?",
+      options: [
+        { 
+          id: "enjoy", 
+          text: "Enjoy a treat and save the rest", 
+          emoji: "🧁🏦", 
+          description: "Have fun now, save for later",
+          isCorrect: true
+        },
+        { 
+          id: "all", 
+          text: "Spend all today", 
+          emoji: "🎉", 
+          description: "Use all money immediately",
+          isCorrect: false
+        },
+        { 
+          id: "none", 
+          text: "Save everything, no fun", 
+          emoji: "😔", 
+          description: "Never spend on enjoyment",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (isCorrect) => {
-    resetFeedback();
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setCoins((c) => c + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (stage < stages.length - 1) {
-      setTimeout(() => setStage((s) => s + 1), 800);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setTimeout(() => setShowResult(true), 800);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleNext = () => {
+    navigate("/games/financial-literacy/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Birthday Money Story"
-      subtitle="Make smart choices with your birthday money!"
-      coins={coins}
-      currentLevel={stage + 1}
-      totalLevels={stages.length}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      gameId="finance-kids-45"
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-25"
       gameType="finance"
-      showConfetti={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8 text-white text-center">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-2xl font-bold mb-6">{stages[stage].question}</h3>
-            <div className="flex justify-center gap-6 flex-wrap">
-              {stages[stage].choices.map((choice, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleChoice(choice.correct)}
-                  className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white py-4 px-8 rounded-xl text-lg font-semibold transition-transform hover:scale-105"
-                >
-                  {choice.text}
-                </button>
-              ))}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8 text-white">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-pink-500 to-red-500 hover:from-pink-600 hover:to-red-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-6">🎂💰🎉</div>
-            <h3 className="text-3xl font-bold mb-4">Wise Birthday Choices!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              You earned {coins} out of 5 — that’s balanced budgeting!
-            </p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">
-              Lesson: Always balance your needs, wants, and savings.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

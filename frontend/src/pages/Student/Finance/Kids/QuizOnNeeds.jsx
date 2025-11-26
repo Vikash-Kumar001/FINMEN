@@ -1,118 +1,260 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const QuizOnNeeds = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-kids-62";
+  const gameId = "finance-kids-32";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
-      question: "Which one is a need?",
-      options: ["Food", "Fancy toy", "Chocolates"],
-      correct: "Food",
+      id: 1,
+      text: "Which one is a need?",
+      options: [
+        { 
+          id: "food", 
+          text: "Food", 
+          emoji: "🍎", 
+          description: "Essential for survival",
+          isCorrect: true
+        },
+        { 
+          id: "toy", 
+          text: "Fancy toy", 
+          emoji: "🧸", 
+          description: "Something fun to play with",
+          isCorrect: false
+        },
+        { 
+          id: "chocolate", 
+          text: "Chocolates", 
+          emoji: "🍫", 
+          description: "Sweet treats",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "What’s a need for school?",
-      options: ["Books", "Video games", "Candy"],
-      correct: "Books",
+      id: 2,
+      text: "What's a need for school?",
+      options: [
+        { 
+          id: "books", 
+          text: "Books", 
+          emoji: "📚", 
+          description: "Necessary for learning",
+          isCorrect: true
+        },
+        { 
+          id: "games", 
+          text: "Video games", 
+          emoji: "🎮", 
+          description: "Fun entertainment",
+          isCorrect: false
+        },
+        { 
+          id: "candy", 
+          text: "Candy", 
+          emoji: "🍬", 
+          description: "Sweet snacks",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "What’s a need to stay healthy?",
-      options: ["Water", "Soda", "Ice cream"],
-      correct: "Water",
+      id: 3,
+      text: "What's a need to stay healthy?",
+      options: [
+        { 
+          id: "water", 
+          text: "Water", 
+          emoji: "💧", 
+          description: "Essential for life",
+          isCorrect: true
+        },
+        { 
+          id: "soda", 
+          text: "Soda", 
+          emoji: "🥤", 
+          description: "Fizzy drink",
+          isCorrect: false
+        },
+        { 
+          id: "icecream", 
+          text: "Ice cream", 
+          emoji: "🍦", 
+          description: "Cold dessert",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "What’s a need for safety?",
-      options: ["Clothes", "Toys", "Movies"],
-      correct: "Clothes",
+      id: 4,
+      text: "What's a need for safety?",
+      options: [
+        { 
+          id: "clothes", 
+          text: "Clothes", 
+          emoji: "👕", 
+          description: "Protect and cover body",
+          isCorrect: true
+        },
+        { 
+          id: "toys", 
+          text: "Toys", 
+          emoji: "🧸", 
+          description: "Play items",
+          isCorrect: false
+        },
+        { 
+          id: "movies", 
+          text: "Movies", 
+          emoji: "🎬", 
+          description: "Entertainment",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Why prioritize needs over wants?",
-      options: ["Ensures survival", "Gets more toys", "Makes you happy"],
-      correct: "Ensures survival",
-    },
+      id: 5,
+      text: "Why prioritize needs over wants?",
+      options: [
+        { 
+          id: "survival", 
+          text: "Ensures survival", 
+          emoji: "🛡️", 
+          description: "Keeps you safe and healthy",
+          isCorrect: true
+        },
+        { 
+          id: "toys", 
+          text: "Gets you more toys", 
+          emoji: "🧸", 
+          description: "More fun items",
+          isCorrect: false
+        },
+        { 
+          id: "happy", 
+          text: "Makes you happy", 
+          emoji: "😊", 
+          description: "Brings joy",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleAnswer = (choice) => {
+  const handleChoice = (option) => {
+    if (answered) return; // Prevent multiple clicks
+    
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    setAnswered(true);
     resetFeedback();
-    if (choice === stages[currentStage].correct) {
-      setCoins((prev) => prev + 1);
+    
+    const isCorrect = option.isCorrect;
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: option.id,
+      isCorrect: isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add score and show flash/confetti
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
-    } else {
-      setTimeout(() => setShowResult(true), 800);
-    }
+    
+    // Move to next question or show results after a short delay
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
+  const finalScore = score;
 
   return (
     <GameShell
       title="Quiz on Needs"
-      subtitle="Test your knowledge about needs!"
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}: Test your knowledge about needs!` : "Quiz Complete!"}
+      currentLevel={currentQuestion + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      showGameOver={showResult}
+      score={finalScore}
+      gameId={gameId}
+      gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-62"
-      gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-4xl mb-4">✅</div>
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {stages[currentStage].options.map((opt, idx) => (
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-6">
+        {!showResult && currentQuestionData && (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 border border-white/20">
+            <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+              {currentQuestionData.text}
+            </h3>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {currentQuestionData.options && currentQuestionData.options.map(option => (
                 <button
-                  key={idx}
-                  onClick={() => handleAnswer(opt)}
-                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-xl text-lg font-bold transition-transform hover:scale-105"
+                  key={option.id}
+                  onClick={() => handleChoice(option)}
+                  disabled={answered}
+                  className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {opt}
+                  <div className="text-4xl mb-3">{option.emoji}</div>
+                  <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                  <p className="text-white/90 text-sm">{option.description}</p>
                 </button>
               ))}
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-6xl mb-4">✅</div>
-            <h3 className="text-3xl font-bold mb-4">Needs Quiz Star!</h3>
-            <p className="text-white/90 text-lg mb-6">
-              You earned {coins} out of 5 for knowing needs!
-            </p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
+
+            <div className="mt-6 text-lg font-semibold text-white/80">
+              Score: {score}/{questions.length}
             </div>
-            <p className="text-white/80">Lesson: Needs come first for survival!</p>
           </div>
         )}
       </div>

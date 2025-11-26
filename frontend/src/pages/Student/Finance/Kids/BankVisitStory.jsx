@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy, Building2, User, CreditCard, Lock, Clock } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -17,229 +16,252 @@ const BankVisitStory = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { showCorrectAnswerFeedback } = useGameFeedback();
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [earnedCoins, setEarnedCoins] = useState(0);
-  const [answered, setAnswered] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [earnedBadge, setEarnedBadge] = useState(false);
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const levels = [
+  const questions = [
     {
       id: 1,
-      title: "Entering the Bank",
-      question: "Parents take you to bank. What do you do?",
-      icon: Building2,
+      text: "Parents take you to bank. What do you do?",
       options: [
-        { text: "Watch and learn quietly", correct: true, coins: 10 },
-        { text: "Run around and play", correct: false, coins: 0 },
-        { text: "Touch everything", correct: false, coins: 0 }
-      ],
-      feedback: {
-        correct: "Great! Observing helps you learn!",
-        wrong: "Banks need quiet behavior!"
-      }
+        { 
+          id: "watch", 
+          text: "Watch and learn quietly", 
+          emoji: "👀", 
+          description: "Observe and learn",
+          isCorrect: true
+        },
+        { 
+          id: "play", 
+          text: "Run around and play", 
+          emoji: "🏃", 
+          description: "Play around",
+          isCorrect: false
+        },
+        { 
+          id: "touch", 
+          text: "Touch everything", 
+          emoji: "👆", 
+          description: "Touch things around",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "Meeting Bank Staff",
-      question: "Bank staff greets you. How to respond?",
-      icon: User,
+      text: "Bank staff greets you. How to respond?",
       options: [
-        { text: "Be polite and respectful", correct: true, coins: 15 },
-        { text: "Ignore them completely", correct: false, coins: 0 },
-        { text: "Be rude to them", correct: false, coins: 0 }
-      ],
-      feedback: {
-        correct: "Perfect! Politeness matters everywhere!",
-        wrong: "Always be respectful to staff!"
-      }
+        { 
+          id: "polite", 
+          text: "Be polite and respectful", 
+          emoji: "🙏", 
+          description: "Show respect",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore them completely", 
+          emoji: "😐", 
+          description: "Don't respond",
+          isCorrect: false
+        },
+        { 
+          id: "rude", 
+          text: "Be rude to them", 
+          emoji: "😠", 
+          description: "Be mean",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "ATM Machine",
-      question: "Parent uses ATM. What should you do?",
-      icon: CreditCard,
+      text: "Parent uses ATM. What should you do?",
       options: [
-        { text: "Stand back and give privacy", correct: true, coins: 20 },
-        { text: "Watch the PIN closely", correct: false, coins: 0 },
-        { text: "Press random buttons", correct: false, coins: 0 }
-      ],
-      feedback: {
-        correct: "Smart! Privacy is important at ATM!",
-        wrong: "Never watch someone's PIN!"
-      }
+        { 
+          id: "privacy", 
+          text: "Stand back and give privacy", 
+          emoji: "🔒", 
+          description: "Respect their privacy",
+          isCorrect: true
+        },
+        { 
+          id: "watch", 
+          text: "Watch the PIN closely", 
+          emoji: "👁️", 
+          description: "Look at their secret code",
+          isCorrect: false
+        },
+        { 
+          id: "buttons", 
+          text: "Press random buttons", 
+          emoji: "🔘", 
+          description: "Press buttons randomly",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      title: "Security Check",
-      question: "Security guard checks bags. Your reaction?",
-      icon: Lock,
+      text: "Security guard checks bags. Your reaction?",
       options: [
-        { text: "Understand it's for safety", correct: true, coins: 25 },
-        { text: "Get angry at guard", correct: false, coins: 0 },
-        { text: "Refuse the check", correct: false, coins: 0 }
-      ],
-      feedback: {
-        correct: "Excellent! Security keeps everyone safe!",
-        wrong: "Security checks protect everyone!"
-      }
+        { 
+          id: "understand", 
+          text: "Understand it's for safety", 
+          emoji: "🛡️", 
+          description: "Know it's for protection",
+          isCorrect: true
+        },
+        { 
+          id: "angry", 
+          text: "Get angry at guard", 
+          emoji: "😠", 
+          description: "Be upset",
+          isCorrect: false
+        },
+        { 
+          id: "refuse", 
+          text: "Refuse the check", 
+          emoji: "❌", 
+          description: "Don't allow checking",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Waiting in Queue",
-      question: "Long queue at bank. What's best?",
-      icon: Clock,
+      text: "Long queue at bank. What's best?",
       options: [
-        { text: "Wait patiently in line", correct: true, coins: 30 },
-        { text: "Push to go first", correct: false, coins: 0 },
-        { text: "Complain loudly", correct: false, coins: 0 }
-      ],
-      feedback: {
-        correct: "Wonderful! Patience is a valuable skill!",
-        wrong: "Everyone waits their turn!"
-      }
+        { 
+          id: "wait", 
+          text: "Wait patiently in line", 
+          emoji: "⏳", 
+          description: "Wait your turn",
+          isCorrect: true
+        },
+        { 
+          id: "push", 
+          text: "Push to go first", 
+          emoji: "👊", 
+          description: "Try to skip the line",
+          isCorrect: false
+        },
+        { 
+          id: "complain", 
+          text: "Complain loudly", 
+          emoji: "😤", 
+          description: "Make noise and complain",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-  const Icon = currentLevelData.icon;
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
 
-  const handleAnswer = (option) => {
-    setSelectedAnswer(option);
-    setAnswered(true);
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    if (option.correct) {
-      setEarnedCoins(earnedCoins + option.coins);
-      showCorrectAnswerFeedback(option.coins, true);
-      
-      if (currentLevel === 5) {
-        setEarnedBadge(true);
-      }
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
   const handleNext = () => {
-    if (currentLevel < 5) {
-      setCurrentLevel(currentLevel + 1);
-      setAnswered(false);
-      setSelectedAnswer(null);
-    } else {
-      navigate("/games/financial-literacy/kids");
-    }
+    navigate("/games/financial-literacy/kids");
   };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
-      title={`Question ${currentLevel} – ${currentLevelData.title}`}
-      subtitle={currentLevelData.question}
-      coins={earnedCoins}
-      currentLevel={currentLevel}
+      title="Bank Visit Story"
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
       onNext={handleNext}
-      showConfetti={answered && selectedAnswer?.correct}
-      score={earnedCoins}
-      gameId="finance-kids-81"
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-41"
       gameType="finance"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-4">
-        {/* Icon Display */}
-        <div className="flex justify-center mb-3">
-          <Icon className="w-16 h-16 text-blue-400 animate-pulse" />
-        </div>
-
-        {!answered ? (
-          <div className="space-y-2">
-            {currentLevelData.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswer(option)}
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-3 rounded-full text-white font-bold hover:scale-105 transition-transform text-sm"
-              >
-                {option.text}
-              </button>
-            ))}
-          </div>
-        ) : (
-          <div className={`p-4 rounded-xl border-2 ${
-            selectedAnswer.correct 
-              ? 'bg-green-500/20 border-green-400' 
-              : 'bg-red-500/20 border-red-400'
-          }`}>
-            <Trophy className={`mx-auto w-12 h-12 mb-2 ${
-              selectedAnswer.correct ? 'text-yellow-400' : 'text-gray-400'
-            }`} />
-            <h3 className="text-lg font-bold mb-1">
-              {selectedAnswer.correct ? `+${selectedAnswer.coins} Coins!` : 'Try Again!'}
-            </h3>
-            <p className="text-white/90 text-sm">
-              {selectedAnswer.correct 
-                ? currentLevelData.feedback.correct 
-                : currentLevelData.feedback.wrong}
-            </p>
-            
-            {earnedBadge && (
-              <div className="mt-3 p-3 bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-xl border-2 border-blue-400">
-                <div className="flex items-center justify-center gap-2 mb-1">
-                  <Trophy className="w-8 h-8 text-yellow-400" />
-                  <Building2 className="w-8 h-8 text-blue-400" />
-                </div>
-                <p className="text-lg font-bold text-blue-300 mb-1">
-                  🏦 Bank Visit Complete! 🏦
-                </p>
-                <p className="text-white/90 text-xs mb-1">
-                  You learned bank etiquette!
-                </p>
-                <p className="text-green-200 font-bold text-sm">
-                  Total: {earnedCoins} Coins
-                </p>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
               </div>
-            )}
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
-
-        {/* Progress Icons */}
-          <div className="flex justify-center gap-1">
-          {levels.map((level) => {
-            const LevelIcon = level.icon;
-            return (
-              <LevelIcon
-                key={level.id}
-                className={`w-5 h-5 ${
-                  level.id < currentLevel
-                    ? 'text-green-400'
-                    : level.id === currentLevel
-                    ? 'text-blue-400 animate-pulse'
-                    : 'text-gray-600'
-                }`}
-              />
-            );
-          })}
-        </div>
-
-        {/* Compact Stats */}
-        <div className="flex gap-2 justify-center">
-          <div className="bg-white/5 rounded-lg p-2 backdrop-blur-sm flex-1 max-w-[120px]">
-            <p className="text-white/70 text-xs">Questions Done</p>
-            <p className="text-blue-400 font-bold">{currentLevel}/5</p>
-          </div>
-          <div className="bg-white/5 rounded-lg p-2 backdrop-blur-sm flex-1 max-w-[120px]">
-            <p className="text-white/70 text-xs">Coins</p>
-            <p className="text-yellow-400 font-bold">{earnedCoins}</p>
-          </div>
-        </div>
-
-        {currentLevel === 5 && answered && (
-          <div className="p-2 bg-blue-500/20 rounded-lg border border-blue-400">
-            <p className="text-xs text-blue-200">
-              💡 Banks are safe places for money!
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

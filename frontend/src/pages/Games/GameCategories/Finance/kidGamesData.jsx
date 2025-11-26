@@ -1,5 +1,5 @@
 import {
- Trophy, Coins, Puzzle, Zap, Wallet, Heart, Target, BookOpen, GraduationCap,  ShoppingCart, Book, Candy, ClipboardList, Gift, Paintbrush, PenSquare, PartyPopper, HelpCircle, PiggyBank, CreditCard, Brush, HeartHandshake, ShoppingBag, Image, Clipboard
+  Trophy, Coins, Puzzle, Zap, Wallet, Heart, Target, BookOpen, GraduationCap,  ShoppingCart, Book, Candy, ClipboardList, Gift, Paintbrush, PenSquare, PartyPopper, HelpCircle, PiggyBank, CreditCard, Brush, HeartHandshake, ShoppingBag, Image, Clipboard
 } from "lucide-react";
 
 import buildIds from "../buildGameIds";

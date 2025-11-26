@@ -395,6 +395,8 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
                 
                 if (!resolvedNextGamePath) {
                   // No next game, just close (go back to game cards)
+                  // Wait a moment to ensure game completion event has been dispatched and state updated
+                  await new Promise(resolve => setTimeout(resolve, 300));
                   onClose();
                   return;
                 }
@@ -592,7 +594,10 @@ const GameShell = ({
     return "/games";
   }, [backPathProp, location.pathname, location.state]);
 
-  const handleGameOverClose = () => {
+  const handleGameOverClose = async () => {
+    // Wait a moment to ensure game completion event has been dispatched and state updated
+    // This ensures the game card shows as "played" instead of "active" when navigating back
+    await new Promise(resolve => setTimeout(resolve, 300));
     navigate(resolvedBackPath);
   };
 

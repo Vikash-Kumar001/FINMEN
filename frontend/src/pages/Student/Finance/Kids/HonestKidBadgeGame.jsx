@@ -79,32 +79,37 @@ const HonestKidBadgeGame = () => {
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleFinish = () => {
+    navigate("/games/financial-literacy/kids");
+  };
 
   return (
     <GameShell
       title="Badge: Honest Kid"
-      subtitle="Handle 5 honest money cases to earn your badge."
       coins={coins}
       currentLevel={currentStage + 1}
       totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleFinish}
+      nextEnabled={false}
+      showGameOver={showResult}
+      showConfetti={showResult && coins === stages.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       score={coins}
-      gameId="finance-kids-190"
+      gameId="finance-kids-100"
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={stages.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentStage + 1} of ${stages.length}`}>
       <div className="text-center text-white space-y-8">
-        {!showResult ? (
+        {!showResult && stages[currentStage] ? (
           <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Question {currentStage + 1}/{stages.length}</span>
+              <span className="text-yellow-400 font-bold">Score: {coins}/{stages.length}</span>
+            </div>
             <Star className="mx-auto w-10 h-10 text-yellow-400 mb-4" />
             <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -119,19 +124,7 @@ const HonestKidBadgeGame = () => {
               ))}
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <Star className="mx-auto w-16 h-16 text-yellow-400 mb-3" />
-            <h3 className="text-3xl font-bold mb-4">Honest Kid Badge Earned!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              You earned {coins} out of 5 — you’re a true honest kid!
-            </p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Honesty is the best way to handle money!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

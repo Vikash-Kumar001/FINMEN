@@ -16,122 +16,253 @@ const PencilStory = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
-      question: "You borrow a pencil from a friend. Do you return it?",
-      choices: [
-        { text: "Yes, return it ✏️", correct: true },
-        { text: "No, keep it 😐", correct: false },
-        { text: "Lose it 🙈", correct: false },
-      ],
+      id: 1,
+      text: "You borrow a pencil from a friend. Do you return it?",
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes, return it", 
+          emoji: "✏️", 
+          description: "Return the pencil to your friend",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No, keep it", 
+          emoji: "😐", 
+          description: "Keep it for yourself",
+          isCorrect: false
+        },
+        { 
+          id: "lose", 
+          text: "Lose it", 
+          emoji: "🙈", 
+          description: "Don't return it and lose it",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "You need a pencil but have none. What do you do?",
-      choices: [
-        { text: "Ask to borrow and return 🤝", correct: true },
-        { text: "Take one without asking 🤫", correct: false },
-        { text: "Skip writing ✍️", correct: false },
-      ],
+      id: 2,
+      text: "You need a pencil but have none. What do you do?",
+      options: [
+        { 
+          id: "ask", 
+          text: "Ask to borrow and return", 
+          emoji: "🤝", 
+          description: "Borrow properly and return later",
+          isCorrect: true
+        },
+        { 
+          id: "take", 
+          text: "Take one without asking", 
+          emoji: "🤫", 
+          description: "Take without permission",
+          isCorrect: false
+        },
+        { 
+          id: "skip", 
+          text: "Skip writing", 
+          emoji: "✍️", 
+          description: "Don't do the work",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "You break a borrowed pencil. What’s honest?",
-      choices: [
-        { text: "Replace it with a new one ✅", correct: true },
-        { text: "Hide it 🧸", correct: false },
-        { text: "Blame someone else 🙈", correct: false },
-      ],
+      id: 3,
+      text: "You break a borrowed pencil. What's honest?",
+      options: [
+        { 
+          id: "replace", 
+          text: "Replace it with a new one", 
+          emoji: "✅", 
+          description: "Buy a new pencil to replace it",
+          isCorrect: true
+        },
+        { 
+          id: "hide", 
+          text: "Hide it", 
+          emoji: "🧸", 
+          description: "Hide what happened",
+          isCorrect: false
+        },
+        { 
+          id: "blame", 
+          text: "Blame someone else", 
+          emoji: "🙈", 
+          description: "Make someone else responsible",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Your friend lends you ₹5 for a pencil. What do you do?",
-      choices: [
-        { text: "Repay the ₹5 💸", correct: true },
-        { text: "Spend it on candy 🍬", correct: false },
-        { text: "Forget to repay 😞", correct: false },
-      ],
+      id: 4,
+      text: "Your friend lends you ₹5 for a pencil. What do you do?",
+      options: [
+        { 
+          id: "repay", 
+          text: "Repay the ₹5", 
+          emoji: "💸", 
+          description: "Pay back the money you borrowed",
+          isCorrect: true
+        },
+        { 
+          id: "candy", 
+          text: "Spend it on candy", 
+          emoji: "🍬", 
+          description: "Use the money for something else",
+          isCorrect: false
+        },
+        { 
+          id: "forget", 
+          text: "Forget to repay", 
+          emoji: "😞", 
+          description: "Don't pay it back",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Why is returning borrowed items important?",
-      choices: [
-        { text: "Builds trust with friends 😊", correct: true },
-        { text: "Gets you more pencils ✏️", correct: false },
-        { text: "Makes you popular 👥", correct: false },
-      ],
-    },
+      id: 5,
+      text: "Why is returning borrowed items important?",
+      options: [
+        { 
+          id: "trust", 
+          text: "Builds trust with friends", 
+          emoji: "😊", 
+          description: "Shows you're reliable",
+          isCorrect: true
+        },
+        { 
+          id: "pencils", 
+          text: "Gets you more pencils", 
+          emoji: "✏️", 
+          description: "People will lend you more",
+          isCorrect: false
+        },
+        { 
+          id: "popular", 
+          text: "Makes you popular", 
+          emoji: "👥", 
+          description: "Makes others like you",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (isCorrect) => {
-    resetFeedback();
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setCoins((prev) => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setTimeout(() => setShowResult(true), 800);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleNext = () => {
+    navigate("/games/financial-literacy/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Pencil Story"
-      subtitle="Make honest choices with borrowed items!"
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-51"
+      gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-101"
-      gameType="finance"
-      showGameOver={showResult}
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-4xl mb-4">✏️</div>
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <div className="flex justify-center gap-6 flex-wrap">
-              {stages[currentStage].choices.map((choice, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleChoice(choice.correct)}
-                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-xl text-xl font-bold transition-transform hover:scale-105"
-                >
-                  {choice.text}
-                </button>
-              ))}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <div className="text-4xl mb-4 text-center">✏️</div>
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-6xl mb-4">🎉✏️</div>
-            <h3 className="text-3xl font-bold mb-4">Pencil Hero!</h3>
-            <p className="text-white/90 text-lg mb-6">
-              You earned {coins} out of 5 for honest choices!
-            </p>
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Honesty with borrowed items builds trust!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

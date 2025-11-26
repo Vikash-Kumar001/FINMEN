@@ -19,7 +19,7 @@ const ReflexGrowthCheck = () => {
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [target, setTarget] = useState("");
 
@@ -40,7 +40,7 @@ const ReflexGrowthCheck = () => {
   const handleTap = (choice) => {
     resetFeedback();
     if (choice === stages[currentStage].action) {
-      setCoins((prev) => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     if (currentStage < stages.length - 1) {
@@ -50,59 +50,47 @@ const ReflexGrowthCheck = () => {
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const finalScore = score;
 
   return (
     <GameShell
       title="Reflex Growth Check"
-      subtitle={stages[currentStage]?.prompt || "Test your growth reflexes!"}
-      coins={coins}
+      subtitle={`Question ${currentStage + 1} of ${stages.length}: ${stages[currentStage]?.prompt || "Test your growth reflexes!"}`}
+      coins={score}
       currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
+      score={finalScore}
       gameId="finance-kids-129"
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
       <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <h3 className="text-2xl font-bold mb-4">Round {currentStage + 1}</h3>
-            <div className="flex justify-center gap-6">
-              <button
-                onClick={() => handleTap(stages[currentStage].action)}
-                className="bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105"
-              >
-                {stages[currentStage].action}
-              </button>
-              <button
-                onClick={() => handleTap(stages[currentStage].wrong)}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105"
-              >
-                {stages[currentStage].wrong}
-              </button>
-            </div>
+        <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+          <h3 className="text-2xl font-bold mb-4">Round {currentStage + 1}</h3>
+          <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+          <div className="flex justify-center gap-6">
+            <button
+              onClick={() => handleTap(stages[currentStage].action)}
+              className="bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105"
+              disabled={showResult}
+            >
+              {stages[currentStage].action}
+            </button>
+            <button
+              onClick={() => handleTap(stages[currentStage].wrong)}
+              className="bg-red-500 hover:bg-red-600 text-white px-6 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105"
+              disabled={showResult}
+            >
+              {stages[currentStage].wrong}
+            </button>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-6xl mb-3"><Zap className="inline w-10 h-10" /></div>
-            <h3 className="text-3xl font-bold mb-4">Growth Reflex Star!</h3>
-            <p className="text-white/90 text-lg mb-6">You scored {coins} out of 5!</p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80 mt-4">Lesson: Choose growth for wealth!</p>
-          </div>
-        )}
+        </div>
       </div>
     </GameShell>
   );

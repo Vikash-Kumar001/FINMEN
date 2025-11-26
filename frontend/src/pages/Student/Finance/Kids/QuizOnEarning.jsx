@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { CheckCircle } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -17,105 +16,252 @@ const QuizOnEarning = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
-      question: "What’s the correct way to earn money?",
-      options: ["By working", "By wasting", "By sleeping"],
-      correct: "By working",
+      id: 1,
+      text: "What's the correct way to earn money?",
+      options: [
+        { 
+          id: "working", 
+          text: "By working", 
+          emoji: "💼", 
+          description: "Doing work or jobs",
+          isCorrect: true
+        },
+        { 
+          id: "wasting", 
+          text: "By wasting", 
+          emoji: "💸", 
+          description: "Wasting time or resources",
+          isCorrect: false
+        },
+        { 
+          id: "sleeping", 
+          text: "By sleeping", 
+          emoji: "😴", 
+          description: "Sleeping all day",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "How does a farmer earn money?",
-      options: ["Selling crops", "Playing games", "Giving away food"],
-      correct: "Selling crops",
+      id: 2,
+      text: "How does a farmer earn money?",
+      options: [
+        { 
+          id: "crops", 
+          text: "Selling crops", 
+          emoji: "🌾", 
+          description: "Selling grown crops",
+          isCorrect: true
+        },
+        { 
+          id: "games", 
+          text: "Playing games", 
+          emoji: "🎮", 
+          description: "Playing video games",
+          isCorrect: false
+        },
+        { 
+          id: "give", 
+          text: "Giving away food", 
+          emoji: "🎁", 
+          description: "Giving food for free",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "What job earns money by teaching?",
-      options: ["Teacher", "Toy maker", "Candy seller"],
-      correct: "Teacher",
+      id: 3,
+      text: "What job earns money by teaching?",
+      options: [
+        { 
+          id: "teacher", 
+          text: "Teacher", 
+          emoji: "👨‍🏫", 
+          description: "Teaches students",
+          isCorrect: true
+        },
+        { 
+          id: "toymaker", 
+          text: "Toy maker", 
+          emoji: "🧸", 
+          description: "Makes toys",
+          isCorrect: false
+        },
+        { 
+          id: "candy", 
+          text: "Candy seller", 
+          emoji: "🍬", 
+          description: "Sells candy",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "How can kids earn money?",
-      options: ["Doing chores", "Watching TV", "Eating snacks"],
-      correct: "Doing chores",
+      id: 4,
+      text: "How can kids earn money?",
+      options: [
+        { 
+          id: "chores", 
+          text: "Doing chores", 
+          emoji: "🧹", 
+          description: "Helping at home",
+          isCorrect: true
+        },
+        { 
+          id: "tv", 
+          text: "Watching TV", 
+          emoji: "📺", 
+          description: "Watching television",
+          isCorrect: false
+        },
+        { 
+          id: "snacks", 
+          text: "Eating snacks", 
+          emoji: "🍪", 
+          description: "Eating food",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Why is earning money important?",
-      options: ["Meets your needs", "Gets you free toys", "Makes you sleep better"],
-      correct: "Meets your needs",
-    },
+      id: 5,
+      text: "Why is earning money important?",
+      options: [
+        { 
+          id: "needs", 
+          text: "Meets your needs", 
+          emoji: "✅", 
+          description: "Helps you get what you need",
+          isCorrect: true
+        },
+        { 
+          id: "toys", 
+          text: "Gets you free toys", 
+          emoji: "🧸", 
+          description: "Free toys",
+          isCorrect: false
+        },
+        { 
+          id: "sleep", 
+          text: "Makes you sleep better", 
+          emoji: "😴", 
+          description: "Better sleep",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleAnswer = (choice) => {
-    resetFeedback();
-    if (choice === stages[currentStage].correct) {
-      setCoins((prev) => prev + 1);
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setTimeout(() => setShowResult(true), 800);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleNext = () => {
+    navigate("/games/financial-literacy/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Quiz on Earning"
-      subtitle="Test your knowledge about earning money!"
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-72"
+      gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-142"
-      gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-6">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <CheckCircle className="mx-auto w-10 h-10 text-green-500 mb-4" />
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-              {stages[currentStage].options.map((opt, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleAnswer(opt)}
-                  className="bg-blue-500 hover:bg-blue-600 px-6 py-4 rounded-xl text-white font-bold transition-transform hover:scale-105"
-                >
-                  {opt}
-                </button>
-              ))}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <CheckCircle className="mx-auto w-16 h-16 text-green-500 mb-3" />
-            <h3 className="text-3xl font-bold mb-4">Earning Quiz Star!</h3>
-            <p className="text-white/90 text-lg mb-6">
-              You earned {coins} out of 5 for earning knowledge!
-            </p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Work hard to earn money!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

@@ -21,7 +21,7 @@ const QuizOnSpending = () => {
   const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
@@ -162,16 +162,25 @@ const QuizOnSpending = () => {
   ];
 
   const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
     const newChoices = [...choices, { 
-      questionId: questions[currentQuestion].id, 
+      questionId: currentQ.id, 
       choice: selectedChoice,
-      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
     }];
     
     setChoices(newChoices);
     
     // If the choice is correct, add coins and show flash/confetti
-    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
@@ -181,66 +190,64 @@ const QuizOnSpending = () => {
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 1000 : 0); // Delay if correct to show animation
+      }, isCorrect ? 1000 : 800);
     } else {
       // Calculate final score
       const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
       setFinalScore(correctAnswers);
-      setShowResult(true);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentQuestion(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
-    resetFeedback();
-  };
-
   const handleNext = () => {
-    navigate("/student/finance/kids/reflex-spending");
+    navigate("/games/financial-literacy/kids");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Quiz on Spending"
-      score={coins}
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp} // Pass if 3 or more correct
-      showGameOver={showResult && finalScore >= 3}
-       // Use finalScore (number of correct answers) as score
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
       gameId="finance-kids-12"
       gameType="finance"
-      totalLevels={questions.length}
-      maxScore={questions.length} // Max score is total number of questions (all correct)
-      currentLevel={currentQuestion + 1}
-      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-    >
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-lg mb-6">
-                {getCurrentQuestion().text}
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 gap-4">
-                {getCurrentQuestion().options.map(option => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}
                     onClick={() => handleChoice(option.id)}
@@ -250,7 +257,7 @@ const QuizOnSpending = () => {
                       <div className="text-2xl mr-4">{option.emoji}</div>
                       <div>
                         <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                        <p className="text-white/90">{option.description}</p>
+                        <p className="text-white/90 text-sm">{option.description}</p>
                       </div>
                     </div>
                   </button>
@@ -258,44 +265,7 @@ const QuizOnSpending = () => {
               </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <div>
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Excellent!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You got {finalScore} out of {questions.length} questions correct!
-                  You know how to make smart spending choices!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{coins} Coins</span>
-                </div>
-                <p className="text-white/80">
-                  You understand the importance of comparing options and planning before spending!
-                </p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You got {finalScore} out of {questions.length} questions correct.
-                  Remember, smart spending means thinking before you buy!
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
-                <p className="text-white/80 text-sm">
-                  Try to choose the option that involves planning and comparing before spending.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

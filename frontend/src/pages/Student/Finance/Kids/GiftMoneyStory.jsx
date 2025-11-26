@@ -9,128 +9,260 @@ const GiftMoneyStory = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-kids-68";
+  const gameId = "finance-kids-38";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
-      question: "You got ₹100 as gift money. What’s the first thing to do?",
-      choices: [
-        { text: "Spend it all on toys 🎮", correct: false },
-        { text: "Save some for later 🏦", correct: true },
-        { text: "Buy snacks 🍟", correct: false },
-      ],
+      id: 1,
+      text: "You got ₹100 as gift money. What's the first thing to do?",
+      options: [
+        { 
+          id: "spend", 
+          text: "Spend it all on toys", 
+          emoji: "🎮", 
+          description: "Buy everything you want",
+          isCorrect: false
+        },
+        { 
+          id: "save", 
+          text: "Save some for later", 
+          emoji: "🏦", 
+          description: "Keep some money for future needs",
+          isCorrect: true
+        },
+        { 
+          id: "snacks", 
+          text: "Buy snacks", 
+          emoji: "🍟", 
+          description: "Spend on food items",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "You want new shoes for ₹80. You have ₹50. What’s smart?",
-      choices: [
-        { text: "Save ₹30 more 💰", correct: true },
-        { text: "Borrow ₹30 🙈", correct: false },
-        { text: "Buy a toy instead 🧸", correct: false },
-      ],
+      id: 2,
+      text: "You want new shoes for ₹80. You have ₹50. What's smart?",
+      options: [
+        { 
+          id: "save", 
+          text: "Save ₹30 more", 
+          emoji: "💰", 
+          description: "Wait and save to afford the shoes",
+          isCorrect: true
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow ₹30", 
+          emoji: "🙈", 
+          description: "Ask someone to lend you money",
+          isCorrect: false
+        },
+        { 
+          id: "toy", 
+          text: "Buy a toy instead", 
+          emoji: "🧸", 
+          description: "Spend on something else",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "You saved ₹20. A sale offers shoes for ₹70. Can you buy them?",
-      choices: [
-        { text: "No, need ₹50 more 📉", correct: true },
-        { text: "Yes, I have enough 😊", correct: false },
-        { text: "Ask for a discount 🎟️", correct: false },
-      ],
+      id: 3,
+      text: "You saved ₹20. A sale offers shoes for ₹70. Can you buy them?",
+      options: [
+        { 
+          id: "no", 
+          text: "No, need ₹50 more", 
+          emoji: "📉", 
+          description: "You don't have enough money",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes, I have enough", 
+          emoji: "😊", 
+          description: "You can afford it",
+          isCorrect: false
+        },
+        { 
+          id: "discount", 
+          text: "Ask for a discount", 
+          emoji: "🎟️", 
+          description: "Try to negotiate the price",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Your friend suggests spending all your gift money. What do you say?",
-      choices: [
-        { text: "No, I’ll save some ✅", correct: true },
-        { text: "Okay, let’s spend it 🎉", correct: false },
-        { text: "I’ll give it to you 🎁", correct: false },
-      ],
+      id: 4,
+      text: "Your friend suggests spending all your gift money. What do you say?",
+      options: [
+        { 
+          id: "no", 
+          text: "No, I'll save some", 
+          emoji: "✅", 
+          description: "Make a smart choice",
+          isCorrect: true
+        },
+        { 
+          id: "okay", 
+          text: "Okay, let's spend it", 
+          emoji: "🎉", 
+          description: "Agree to spend everything",
+          isCorrect: false
+        },
+        { 
+          id: "give", 
+          text: "I'll give it to you", 
+          emoji: "🎁", 
+          description: "Give your money away",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Why is saving gift money a good idea?",
-      choices: [
-        { text: "Helps buy bigger things later 🚀", correct: true },
-        { text: "Lets you spend more now 🛍️", correct: false },
-        { text: "Makes you buy candy 🍬", correct: false },
-      ],
-    },
+      id: 5,
+      text: "Why is saving gift money a good idea?",
+      options: [
+        { 
+          id: "bigger", 
+          text: "Helps buy bigger things later", 
+          emoji: "🚀", 
+          description: "Reach larger goals",
+          isCorrect: true
+        },
+        { 
+          id: "more", 
+          text: "Lets you spend more now", 
+          emoji: "🛍️", 
+          description: "Have more to spend immediately",
+          isCorrect: false
+        },
+        { 
+          id: "candy", 
+          text: "Makes you buy candy", 
+          emoji: "🍬", 
+          description: "Use it for treats",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (isCorrect) => {
-    resetFeedback();
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setCoins((prev) => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setTimeout(() => setShowResult(true), 800);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleNext = () => {
+    navigate("/games/financial-literacy/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Gift Money Story"
-      subtitle="You got gift money. Spend wisely!"
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-38"
+      gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-68"
-      gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-4xl mb-4">🎁</div>
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {stages[currentStage].choices.map((choice, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleChoice(choice.correct)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105"
-                >
-                  {choice.text}
-                </button>
-              ))}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <div className="text-4xl mb-4 text-center">🎁</div>
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-6xl mb-4">🎉💰</div>
-            <h3 className="text-3xl font-bold mb-4">Wise Spender!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              You earned {coins} out of 5 — great planning!
-            </p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Saving gift money helps you plan better!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

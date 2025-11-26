@@ -20,7 +20,7 @@ const JournalOfBudgeting = () => {
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
     useGameFeedback();
   const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [entry, setEntry] = useState("");
   const [showResult, setShowResult] = useState(false);
 
@@ -48,74 +48,81 @@ const JournalOfBudgeting = () => {
   ];
 
   const handleSubmit = () => {
+    if (showResult) return; // Prevent multiple submissions
+    
     resetFeedback();
-    if (entry.trim().length >= stages[currentStage].minLength) {
-      setCoins((prev) => prev + 1);
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      if (currentStage < stages.length - 1) {
-        setTimeout(() => {
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      // Show feedback for 1.5 seconds, then move to next question or show results
+      setTimeout(() => {
+        if (isLastQuestion) {
+          // This is the last question (5th), show results
+          setShowResult(true);
+        } else {
+          // Move to next question
           setEntry("");
           setCurrentStage((prev) => prev + 1);
-        }, 800);
-      } else {
-        setTimeout(() => setShowResult(true), 800);
-      }
+        }
+      }, 1500);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const finalScore = score;
 
   return (
     <GameShell
       title="Journal of Budgeting"
-      subtitle="Reflect and write about your smart money use."
-      coins={coins}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect and write about your smart money use.` : "Journal Complete!"}
+      coins={score}
       currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
+      score={finalScore}
       gameId="finance-kids-27"
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
       <div className="text-center text-white space-y-8">
-        {!showResult ? (
+        {!showResult && stages[currentStage] && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
             <PenSquare className="mx-auto w-10 h-10 text-emerald-400 mb-4" />
             <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
             <textarea
               value={entry}
               onChange={(e) => setEntry(e.target.value)}
               placeholder="Write your journal entry here..."
-              className="w-full md:w-2/3 h-40 p-4 rounded-xl bg-white/10 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-emerald-400"
+              className="w-full md:w-2/3 h-40 p-4 rounded-xl bg-white/10 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-emerald-400 resize-none"
+              disabled={showResult}
             />
+            <div className="mt-2 text-white/50 text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
+            </div>
             <button
               onClick={handleSubmit}
-              className="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-4 rounded-full text-lg font-semibold transition-transform hover:scale-105 mt-4"
-              disabled={entry.trim().length < stages[currentStage].minLength}
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-emerald-500 hover:bg-emerald-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
             >
-              Submit Journal
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
             </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-4">📔✨</div>
-            <h3 className="text-3xl font-bold mb-4">Budgeting Pro!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              You earned {coins} out of 5 — awesome planning!
-            </p>
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Budgeting makes your money work smarter!</p>
           </div>
         )}
       </div>

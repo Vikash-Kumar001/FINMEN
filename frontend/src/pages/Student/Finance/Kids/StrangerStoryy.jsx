@@ -1,6 +1,5 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { ShoppingCart } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -17,96 +16,217 @@ const StrangerStoryy = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stages = [
-    { action: "Refuse", wrong: "Accept", prompt: "Stranger offers a toy for your address. What do you do?" },
-    { action: "Say No", wrong: "Give Info", prompt: "Someone asks for your bank details. What now?" },
-    { action: "Walk Away", wrong: "Engage", prompt: "Stranger offers a deal. What’s safer?" },
-    { action: "Tell Adult", wrong: "Stay Quiet", prompt: "You see a suspicious offer. What do you do?" },
-    { action: "Ignore", wrong: "Reply", prompt: "You get a strange message. What’s best?" },
+  const questions = [
+    {
+      id: 1,
+      text: "Stranger offers a toy for your address. What do you do?",
+      options: [
+        { 
+          id: "refuse", 
+          text: "Refuse", 
+          emoji: "❌", 
+          description: "Say no and walk away",
+          isCorrect: true
+        },
+        { 
+          id: "accept", 
+          text: "Accept", 
+          emoji: "🎁", 
+          description: "Take the offer",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "Someone asks for your bank details. What now?",
+      options: [
+        { 
+          id: "no", 
+          text: "Say No", 
+          emoji: "🚫", 
+          description: "Refuse to share",
+          isCorrect: true
+        },
+        { 
+          id: "give", 
+          text: "Give Info", 
+          emoji: "💳", 
+          description: "Share your details",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "Stranger offers a deal. What's safer?",
+      options: [
+        { 
+          id: "walk", 
+          text: "Walk Away", 
+          emoji: "🚶", 
+          description: "Leave immediately",
+          isCorrect: true
+        },
+        { 
+          id: "engage", 
+          text: "Engage", 
+          emoji: "💬", 
+          description: "Talk to them",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "You see a suspicious offer. What do you do?",
+      options: [
+        { 
+          id: "tell", 
+          text: "Tell Adult", 
+          emoji: "👨‍👩‍👧", 
+          description: "Inform an adult",
+          isCorrect: true
+        },
+        { 
+          id: "quiet", 
+          text: "Stay Quiet", 
+          emoji: "🤫", 
+          description: "Don't tell anyone",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "You get a strange message. What's best?",
+      options: [
+        { 
+          id: "ignore", 
+          text: "Ignore", 
+          emoji: "🚫", 
+          description: "Ignore the message",
+          isCorrect: true
+        },
+        { 
+          id: "reply", 
+          text: "Reply", 
+          emoji: "💬", 
+          description: "Reply to the message",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (choice) => {
-    resetFeedback();
-    if (choice === stages[currentStage].action) {
-      setCoins((prev) => prev + 1);
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
     
-    // Automatically advance to next question after a delay
-    setTimeout(() => {
-      if (currentStage < stages.length - 1) {
-        setCurrentStage((prev) => prev + 1);
-      } else {
-        // For the last question, show result and then automatically navigate
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
         setShowResult(true);
-        setTimeout(() => {
-          navigate("/games/financial-literacy/kids");
-        }, 3000); // Show the result for 3 seconds before navigating
-      }
-    }, 2000);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleNext = () => {
+    navigate("/games/financial-literacy/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Stranger Story"
-      subtitle={stages[currentStage]?.prompt || "Stay safe with strangers!"}
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-85"
+      gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-165"
-      gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <h3 className="text-3xl font-bold mb-4">Question {currentStage + 1}</h3>
-            <p className="text-lg mb-6">{stages[currentStage]?.prompt || "Stay safe with strangers!"}</p>
-            <div className="flex justify-center gap-6">
-              <button
-                onClick={() => handleChoice(stages[currentStage]?.action)}
-                className="bg-green-500 hover:bg-green-600 px-6 py-4 rounded-xl text-white font-bold transition-transform hover:scale-105"
-                disabled={!stages[currentStage]}
-              >
-                {stages[currentStage]?.action || "Safe Choice"}
-              </button>
-              <button
-                onClick={() => handleChoice(stages[currentStage]?.wrong)}
-                className="bg-red-500 hover:bg-red-600 px-6 py-4 rounded-xl text-white font-bold transition-transform hover:scale-105"
-                disabled={!stages[currentStage]}
-              >
-                {stages[currentStage]?.wrong || "Unsafe Choice"}
-              </button>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 p-8 rounded-2xl border border-white/20">
-            <ShoppingCart className="mx-auto w-10 h-10 text-yellow-400 mb-3" />
-            <h3 className="text-3xl font-bold mb-4">Safety Star!</h3>
-            <p className="text-white/90 text-lg mb-6">You scored {coins} out of 5!</p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80 mt-4">Lesson: Stay safe with strangers!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

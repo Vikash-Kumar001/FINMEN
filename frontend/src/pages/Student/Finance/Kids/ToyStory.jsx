@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const ToyStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -16,86 +15,247 @@ const ToyStory = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stages = [
-    { action: "Keep Safe", wrong: "Break", prompt: "Friend lends toy. What do you do?" },
-    { action: "Return Toy", wrong: "Keep It", prompt: "You borrowed a toy. What now?" },
-    { action: "Care for It", wrong: "Lose It", prompt: "You have a friend’s toy. What’s best?" },
-    { action: "Give Back", wrong: "Hide", prompt: "Toy’s owner asks for it. What do you do?" },
-    { action: "Be Responsible", wrong: "Be Careless", prompt: "You borrow a toy. What’s your duty?" },
+  const questions = [
+    {
+      id: 1,
+      text: "Friend lends toy. What do you do?",
+      options: [
+        { 
+          id: "safe", 
+          text: "Keep Safe", 
+          emoji: "🛡️", 
+          description: "Take care of the borrowed toy",
+          isCorrect: true
+        },
+        { 
+          id: "break", 
+          text: "Break", 
+          emoji: "💔", 
+          description: "Don't take care of it",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore It", 
+          emoji: "😴", 
+          description: "Forget about taking care",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "You borrowed a toy. What now?",
+      options: [
+        { 
+          id: "return", 
+          text: "Return Toy", 
+          emoji: "🔄", 
+          description: "Give it back to the owner",
+          isCorrect: true
+        },
+        { 
+          id: "keep", 
+          text: "Keep It", 
+          emoji: "🙈", 
+          description: "Don't return it",
+          isCorrect: false
+        },
+        { 
+          id: "lose", 
+          text: "Lose It", 
+          emoji: "😞", 
+          description: "Lose track of the toy",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "You have a friend's toy. What's best?",
+      options: [
+        { 
+          id: "care", 
+          text: "Care for It", 
+          emoji: "💝", 
+          description: "Take good care of it",
+          isCorrect: true
+        },
+        { 
+          id: "lose", 
+          text: "Lose It", 
+          emoji: "😞", 
+          description: "Lose track of it",
+          isCorrect: false
+        },
+        { 
+          id: "break", 
+          text: "Break It", 
+          emoji: "💔", 
+          description: "Damage the toy",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "Toy's owner asks for it. What do you do?",
+      options: [
+        { 
+          id: "give", 
+          text: "Give Back", 
+          emoji: "🤝", 
+          description: "Return it immediately",
+          isCorrect: true
+        },
+        { 
+          id: "hide", 
+          text: "Hide", 
+          emoji: "🫥", 
+          description: "Hide it and don't return",
+          isCorrect: false
+        },
+        { 
+          id: "delay", 
+          text: "Delay Return", 
+          emoji: "⏰", 
+          description: "Put off returning it",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "You borrow a toy. What's your duty?",
+      options: [
+        { 
+          id: "responsible", 
+          text: "Be Responsible", 
+          emoji: "✅", 
+          description: "Take responsibility and care",
+          isCorrect: true
+        },
+        { 
+          id: "careless", 
+          text: "Be Careless", 
+          emoji: "❌", 
+          description: "Don't take care",
+          isCorrect: false
+        },
+        { 
+          id: "forget", 
+          text: "Forget About It", 
+          emoji: "🤷", 
+          description: "Ignore your responsibility",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (choice) => {
-    resetFeedback();
-    if (choice === stages[currentStage].action) {
-      setCoins((prev) => prev + 1);
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setTimeout(() => setShowResult(true), 800);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Toy Story"
-      subtitle={stages[currentStage]?.prompt || "Make responsible toy choices!"}
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={currentQuestion + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      showGameOver={showResult}
+      score={coins}
+      gameId={gameId}
+      gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-108"
-      gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center space-y-8 text-white">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <h3 className="text-3xl font-bold mb-4">Round {currentStage + 1}</h3>
-            <p className="text-xl mb-6">{stages[currentStage].prompt}</p>
-            <div className="flex justify-center gap-6">
-              <button
-                onClick={() => handleChoice(stages[currentStage].action)}
-                className="bg-green-500 hover:bg-green-600 text-white px-6 py-4 rounded-xl text-xl font-bold transition-transform hover:scale-105"
-              >
-                {stages[currentStage].action}
-              </button>
-              <button
-                onClick={() => handleChoice(stages[currentStage].wrong)}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 py-4 rounded-xl text-xl font-bold transition-transform hover:scale-105"
-              >
-                {stages[currentStage].wrong}
-              </button>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-6xl mb-4">🎉</div>
-            <h3 className="text-3xl font-bold mb-4">Responsible Toy Star!</h3>
-            <p className="text-white/90 text-lg mb-6">You scored {coins} out of 5!</p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80 mt-4">Lesson: Care for borrowed items!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

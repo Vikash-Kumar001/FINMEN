@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -79,32 +78,37 @@ const HonestyPuzzleGame = () => {
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleFinish = () => {
+    navigate("/games/financial-literacy/kids");
+  };
 
   return (
     <GameShell
       title="Puzzle of Honesty"
-      subtitle="Match the right choices!"
       coins={coins}
       currentLevel={currentStage + 1}
       totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleFinish}
+      nextEnabled={false}
+      showGameOver={showResult}
+      showConfetti={showResult && coins === stages.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       score={coins}
-      gameId="finance-kids-184"
+      gameId="finance-kids-94"
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={stages.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      subtitle={showResult ? "Puzzle Complete!" : `Question ${currentStage + 1} of ${stages.length}`}>
       <div className="text-center text-white space-y-6">
-        {!showResult ? (
+        {!showResult && stages[currentStage] ? (
           <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Question {currentStage + 1}/{stages.length}</span>
+              <span className="text-yellow-400 font-bold">Score: {coins}/{stages.length}</span>
+            </div>
             <div className="text-4xl mb-4">🧩</div>
             <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -119,19 +123,7 @@ const HonestyPuzzleGame = () => {
               ))}
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-            <h3 className="text-3xl font-bold mb-4">Puzzle Master!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              You earned {coins} out of 5 — honesty wins!
-            </p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Matching honest choices builds great habits!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

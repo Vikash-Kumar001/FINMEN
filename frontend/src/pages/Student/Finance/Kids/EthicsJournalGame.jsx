@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -63,32 +62,37 @@ const EthicsJournalGame = () => {
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleFinish = () => {
+    navigate("/games/financial-literacy/kids");
+  };
 
   return (
     <GameShell
       title="Journal of Ethics"
-      subtitle="Reflect on honest money choices!"
       coins={coins}
       currentLevel={currentStage + 1}
       totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleFinish}
+      nextEnabled={false}
+      showGameOver={showResult}
+      showConfetti={showResult && coins === stages.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       score={coins}
-      gameId="finance-kids-187"
+      gameId="finance-kids-97"
       gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={stages.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      subtitle={showResult ? "Journal Complete!" : `Entry ${currentStage + 1} of ${stages.length}`}>
       <div className="text-center text-white space-y-6">
-        {!showResult ? (
+        {!showResult && stages[currentStage] ? (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Entry {currentStage + 1}/{stages.length}</span>
+              <span className="text-yellow-400 font-bold">Score: {coins}/{stages.length}</span>
+            </div>
             <div className="text-4xl mb-4">📝</div>
             <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
             <textarea
@@ -106,21 +110,7 @@ const EthicsJournalGame = () => {
               Submit Journal
             </button>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-            <h3 className="text-3xl font-bold mb-4">Honesty Champion!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              You earned {coins} out of 5 for honest reflections!
-            </p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">
-              Lesson: Reflecting on honesty builds smart money habits.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

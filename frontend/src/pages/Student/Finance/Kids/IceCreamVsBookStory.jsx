@@ -16,121 +16,253 @@ const IceCreamVsBookStory = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
-      question: "You have ₹20. Buy ice cream or a book for class?",
-      choices: [
-        { text: "Buy ice cream 🍦", correct: false },
-        { text: "Buy a book 📚", correct: true },
-        { text: "Spend on toys 🧸", correct: false },
-      ],
+      id: 1,
+      text: "You have ₹20. Buy ice cream or a book for class?",
+      options: [
+        { 
+          id: "icecream", 
+          text: "Buy ice cream", 
+          emoji: "🍦", 
+          description: "Treat yourself with ice cream",
+          isCorrect: false
+        },
+        { 
+          id: "book", 
+          text: "Buy a book", 
+          emoji: "📚", 
+          description: "Get a book you need for class",
+          isCorrect: true
+        },
+        { 
+          id: "toys", 
+          text: "Spend on toys", 
+          emoji: "🧸", 
+          description: "Buy toys instead",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "A book costs ₹15, ice cream ₹10. You have ₹12. What’s smart?",
-      choices: [
-        { text: "Save ₹3 more for the book 💰", correct: true },
-        { text: "Buy ice cream now 🍦", correct: false },
-        { text: "Borrow ₹3 🙈", correct: false },
-      ],
+      id: 2,
+      text: "A book costs ₹15, ice cream ₹10. You have ₹12. What's smart?",
+      options: [
+        { 
+          id: "save", 
+          text: "Save ₹3 more for the book", 
+          emoji: "💰", 
+          description: "Wait and save to buy the book",
+          isCorrect: true
+        },
+        { 
+          id: "icecream", 
+          text: "Buy ice cream now", 
+          emoji: "🍦", 
+          description: "Buy ice cream immediately",
+          isCorrect: false
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow ₹3", 
+          emoji: "🙈", 
+          description: "Ask someone to lend you money",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "You saved ₹20. A sale offers books for ₹18. Can you buy one?",
-      choices: [
-        { text: "Yes, and have ₹2 left 📚", correct: true },
-        { text: "No, need ₹2 more 📉", correct: false },
-        { text: "Buy ice cream instead 🍦", correct: false },
-      ],
+      id: 3,
+      text: "You saved ₹20. A sale offers books for ₹18. Can you buy one?",
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes, and have ₹2 left", 
+          emoji: "📚", 
+          description: "You can buy the book and save money",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No, need ₹2 more", 
+          emoji: "📉", 
+          description: "You don't have enough",
+          isCorrect: false
+        },
+        { 
+          id: "icecream", 
+          text: "Buy ice cream instead", 
+          emoji: "🍦", 
+          description: "Change your mind and buy ice cream",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Your friend wants ice cream but you need a book. What do you do?",
-      choices: [
-        { text: "Stick to buying the book ✅", correct: true },
-        { text: "Split money for ice cream 🎉", correct: false },
-        { text: "Give money to friend 🎁", correct: false },
-      ],
+      id: 4,
+      text: "Your friend wants ice cream but you need a book. What do you do?",
+      options: [
+        { 
+          id: "stick", 
+          text: "Stick to buying the book", 
+          emoji: "✅", 
+          description: "Prioritize your need",
+          isCorrect: true
+        },
+        { 
+          id: "split", 
+          text: "Split money for ice cream", 
+          emoji: "🎉", 
+          description: "Use money for both",
+          isCorrect: false
+        },
+        { 
+          id: "give", 
+          text: "Give money to friend", 
+          emoji: "🎁", 
+          description: "Let friend buy ice cream",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Why is choosing a book over ice cream smart?",
-      choices: [
-        { text: "Helps you learn and grow 🧠", correct: true },
-        { text: "Tastes better than ice cream 🍦", correct: false },
-        { text: "Gets you more friends 👥", correct: false },
-      ],
-    },
+      id: 5,
+      text: "Why is choosing a book over ice cream smart?",
+      options: [
+        { 
+          id: "learn", 
+          text: "Helps you learn and grow", 
+          emoji: "🧠", 
+          description: "Books help you improve",
+          isCorrect: true
+        },
+        { 
+          id: "taste", 
+          text: "Tastes better than ice cream", 
+          emoji: "🍦", 
+          description: "More enjoyable",
+          isCorrect: false
+        },
+        { 
+          id: "friends", 
+          text: "Gets you more friends", 
+          emoji: "👥", 
+          description: "Makes you popular",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (isCorrect) => {
-    resetFeedback();
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setCoins((prev) => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setTimeout(() => setShowResult(true), 800);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleNext = () => {
+    navigate("/games/financial-literacy/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Ice Cream vs School Book Story"
-      subtitle="Make the smart choice!"
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-31"
+      gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-61"
-      gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-4xl mb-4">📚🍦</div>
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {stages[currentStage].choices.map((choice, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleChoice(choice.correct)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white px-6 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105"
-                >
-                  {choice.text}
-                </button>
-              ))}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <div className="text-4xl mb-4 text-center">📚🍦</div>
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="text-6xl mb-4">🎉📚</div>
-            <h3 className="text-3xl font-bold mb-4">Smart Learner!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              You earned {coins} out of 5 — great choices!
-            </p>
-            <div className="bg-gradient-to-r from-green-500 to-emerald-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">Lesson: Choosing needs over wants helps you grow!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

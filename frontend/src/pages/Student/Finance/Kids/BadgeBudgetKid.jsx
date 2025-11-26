@@ -1,11 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeBudgetKid = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -16,161 +15,175 @@ const BadgeBudgetKid = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const [currentStep, setCurrentStep] = useState(0);
-  const [budgets, setBudgets] = useState([]);
-  const [currentBudget, setCurrentBudget] = useState({ name: "", amount: "", category: "" });
-  const [showBadge, setShowBadge] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showResult, setShowResult] = useState(false);
 
-  const categories = [
-    { name: "Food", emoji: "🍽️" },
-    { name: "School", emoji: "📚" },
-    { name: "Fun", emoji: "🎮" },
-    { name: "Savings", emoji: "💰" },
-    { name: "Transport", emoji: "🚌" },
+  const questions = [
+    {
+      id: 1,
+      question: "What is a budget?",
+      options: [
+        { text: "A plan for how to spend your money", correct: true },
+        { text: "A type of savings account", correct: false },
+        { text: "Money you get from parents", correct: false },
+        { text: "A shopping list", correct: false }
+      ],
+      feedback: {
+        correct: "Excellent! A budget helps you plan your spending wisely!",
+        wrong: "A budget is a plan for how to spend your money!"
+      }
+    },
+    {
+      id: 2,
+      question: "Why is it important to make a budget?",
+      options: [
+        { text: "To spend all your money quickly", correct: false },
+        { text: "To track your money and avoid overspending", correct: true },
+        { text: "To buy expensive things", correct: false },
+        { text: "To hide money from parents", correct: false }
+      ],
+      feedback: {
+        correct: "Perfect! Budgeting helps you manage money smartly!",
+        wrong: "Budgeting helps you track money and avoid overspending!"
+      }
+    },
+    {
+      id: 3,
+      question: "If you have ₹100 and want to save ₹30, how much can you spend?",
+      options: [
+        { text: "₹100", correct: false },
+        { text: "₹70", correct: true },
+        { text: "₹130", correct: false },
+        { text: "₹30", correct: false }
+      ],
+      feedback: {
+        correct: "Great math! ₹100 - ₹30 = ₹70 to spend!",
+        wrong: "Subtract savings from total: ₹100 - ₹30 = ₹70!"
+      }
+    },
+    {
+      id: 4,
+      question: "What should you do first when making a budget?",
+      options: [
+        { text: "Spend all your money", correct: false },
+        { text: "List your income and expenses", correct: true },
+        { text: "Buy everything you want", correct: false },
+        { text: "Ask for more money", correct: false }
+      ],
+      feedback: {
+        correct: "Smart! Knowing your income and expenses is the first step!",
+        wrong: "First, list what money you have (income) and what you need to spend (expenses)!"
+      }
+    },
+    {
+      id: 5,
+      question: "What is the best way to stick to your budget?",
+      options: [
+        { text: "Ignore it and spend freely", correct: false },
+        { text: "Track your spending and adjust when needed", correct: true },
+        { text: "Spend more than planned", correct: false },
+        { text: "Never save money", correct: false }
+      ],
+      feedback: {
+        correct: "Perfect! Tracking helps you stay on budget!",
+        wrong: "Track your spending regularly and adjust your budget when needed!"
+      }
+    }
   ];
 
-  const handleInputChange = (field, value) => {
-    setCurrentBudget({ ...currentBudget, [field]: value });
-  };
-
-  const addBudget = () => {
-    if (currentBudget.name && currentBudget.amount && currentBudget.category) {
-      setBudgets([...budgets, currentBudget]);
-      setCurrentBudget({ name: "", amount: "", category: "" });
-      setCurrentStep(currentStep + 1);
-      
-      if (budgets.length + 1 === 3) {
-        setTimeout(() => {
-          setShowBadge(true);
-          showCorrectAnswerFeedback(5, true);
-        }, 500);
-      }
-    } else {
-      alert("Please fill all fields!");
+  const handleAnswer = (option) => {
+    if (answered) return; // Prevent multiple clicks
+    
+    setSelectedAnswer(option);
+    setAnswered(true);
+    resetFeedback();
+    
+    const isCorrect = option.correct;
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
+    
+    // Show feedback for 2 seconds, then move to next question or show results
+    setTimeout(() => {
+      if (isLastQuestion) {
+        // This is the last question (5th), show results
+        setShowResult(true);
+      } else {
+        // Move to next question
+        setCurrentQuestion((prev) => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Badge: Budget Kid"
-      subtitle="Create 3 small budgets to earn your badge!"
-      coins={0}
-      currentLevel={budgets.length + 1}
-      totalLevels={3}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}: Test your budgeting knowledge!` : "Badge Earned!"}
+      currentLevel={currentQuestion + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showBadge ? handleFinish : null}
-      nextEnabled={showBadge}
-      nextLabel="Finish"
-      showConfetti={showBadge}
-      score={0}
-      gameId="finance-kids-30"
-      gameType="finance"
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={3} // Max score is total number of questions (all correct)
+      score={finalScore}
+      gameId={gameId}
+      gameType="finance"
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-8 max-w-4xl mx-auto">
-        {!showBadge ? (
-          <>
-            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-              <h3 className="text-2xl font-bold mb-4">
-                Create Budget {budgets.length + 1} of 3
-              </h3>
-              
-              {budgets.length > 0 && (
-                <div className="mb-6 bg-green-500/20 rounded-lg p-4 border border-green-500/50">
-                  <p className="text-green-400 font-semibold">✅ {budgets.length} Budget(s) Created!</p>
-                  {budgets.map((b, idx) => (
-                    <div key={idx} className="text-sm text-white/80 mt-2">
-                      {b.category} - {b.name}: ₹{b.amount}
-                    </div>
-                  ))}
-                </div>
-              )}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-6">
+        {!showResult && currentQuestionData && (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 border border-white/20">
+            <h3 className="text-2xl font-bold mb-6 text-white">
+              {currentQuestionData.question}
+            </h3>
 
-              <div className="space-y-4 text-left max-w-xl mx-auto">
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Budget Name</label>
-                  <input
-                    type="text"
-                    value={currentBudget.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
-                    placeholder="e.g., Weekly Snacks"
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Amount (₹)</label>
-                  <input
-                    type="number"
-                    value={currentBudget.amount}
-                    onChange={(e) => handleInputChange("amount", e.target.value)}
-                    placeholder="Enter amount"
-                    className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-3 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-semibold mb-2">Category</label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-                    {categories.map((cat, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => handleInputChange("category", cat.name)}
-                        className={`py-3 px-4 rounded-lg font-semibold transition-all ${
-                          currentBudget.category === cat.name
-                            ? "bg-blue-500 text-white scale-105"
-                            : "bg-white/10 text-white hover:bg-white/20"
-                        }`}
-                      >
-                        <div className="text-2xl mb-1">{cat.emoji}</div>
-                        <div className="text-xs">{cat.name}</div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+            {!answered && (
+              <div className="space-y-3">
+                {currentQuestionData.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {option.text}
+                  </button>
+                ))}
               </div>
+            )}
 
-              <button
-                onClick={addBudget}
-                disabled={!currentBudget.name || !currentBudget.amount || !currentBudget.category}
-                className="w-full max-w-xl mx-auto block bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-4 rounded-full text-xl font-bold transition-transform hover:scale-105 mt-6"
-              >
-                {budgets.length < 2 ? "Add Budget" : "Complete & Get Badge!"}
-              </button>
-            </div>
-          </>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 max-w-2xl mx-auto">
-            <div className="text-8xl mb-6">🏆</div>
-            <h3 className="text-3xl font-bold mb-4">Budget Kid Badge Unlocked!</h3>
-            <p className="text-white/90 text-lg mb-6">
-              Awesome! You created 3 budgets like a pro!
-            </p>
-            
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6 border border-blue-500/50">
-              <p className="font-semibold mb-3">Your Budgets:</p>
-              {budgets.map((b, idx) => (
-                <div key={idx} className="text-left text-white/90 mb-2 bg-white/5 p-3 rounded">
-                  <span className="font-bold">{idx + 1}.</span> {b.category} - {b.name}: ₹{b.amount}
-                </div>
-              ))}
-            </div>
+            {answered && selectedAnswer && (
+              <div className={`p-6 rounded-xl border-2 ${
+                selectedAnswer.correct 
+                  ? 'bg-green-500/20 border-green-400' 
+                  : 'bg-red-500/20 border-red-400'
+              }`}>
+                <p className="text-white/90 text-lg">
+                  {selectedAnswer.correct 
+                    ? currentQuestionData.feedback.correct 
+                    : currentQuestionData.feedback.wrong}
+                </p>
+              </div>
+            )}
 
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +5 Coins Bonus!
+            <div className="mt-6 text-lg font-semibold text-white/80">
+              Score: {score}/{questions.length}
             </div>
-
-            <p className="text-white/80">
-              💡 Lesson: Planning budgets helps you manage money wisely!
-            </p>
           </div>
         )}
       </div>

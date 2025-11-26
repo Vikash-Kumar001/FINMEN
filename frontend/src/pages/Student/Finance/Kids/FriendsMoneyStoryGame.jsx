@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -17,123 +16,253 @@ const FriendsMoneyStoryGame = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
-    useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
   const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
-      question: "Your friend drops ₹10. What do you do?",
-      choices: [
-        { text: "Return it to your friend 🤝", correct: true },
-        { text: "Keep it for yourself 💸", correct: false },
-        { text: "Spend it on snacks 🍟", correct: false },
-      ],
+      id: 1,
+      text: "Your friend drops ₹10. What do you do?",
+      options: [
+        { 
+          id: "return", 
+          text: "Return it to your friend", 
+          emoji: "🤝", 
+          description: "Give it back immediately",
+          isCorrect: true
+        },
+        { 
+          id: "keep", 
+          text: "Keep it for yourself", 
+          emoji: "💸", 
+          description: "Keep the money",
+          isCorrect: false
+        },
+        { 
+          id: "snacks", 
+          text: "Spend it on snacks", 
+          emoji: "🍟", 
+          description: "Use it for food",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Your friend needs ₹5 for lunch. You have ₹10. What do you do?",
-      choices: [
-        { text: "Lend ₹5 and ask for it later 🤲", correct: true },
-        { text: "Give all ₹10 away 🎁", correct: false },
-        { text: "Say no and keep it 😐", correct: false },
-      ],
+      id: 2,
+      text: "Your friend needs ₹5 for lunch. You have ₹10. What do you do?",
+      options: [
+        { 
+          id: "lend", 
+          text: "Lend ₹5 and ask for it later", 
+          emoji: "🤲", 
+          description: "Help them and expect repayment",
+          isCorrect: true
+        },
+        { 
+          id: "give", 
+          text: "Give all ₹10 away", 
+          emoji: "🎁", 
+          description: "Give all your money",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "Say no and keep it", 
+          emoji: "😐", 
+          description: "Refuse to help",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "You find ₹20 in class. No one claims it. What’s next?",
-      choices: [
-        { text: "Give it to the teacher 🧑‍🏫", correct: true },
-        { text: "Buy candy for everyone 🍬", correct: false },
-        { text: "Keep it quietly 🤫", correct: false },
-      ],
+      id: 3,
+      text: "You find ₹20 in class. No one claims it. What's next?",
+      options: [
+        { 
+          id: "teacher", 
+          text: "Give it to the teacher", 
+          emoji: "🧑‍🏫", 
+          description: "Turn it in to teacher",
+          isCorrect: true
+        },
+        { 
+          id: "candy", 
+          text: "Buy candy for everyone", 
+          emoji: "🍬", 
+          description: "Spend on treats",
+          isCorrect: false
+        },
+        { 
+          id: "hide", 
+          text: "Keep it quietly", 
+          emoji: "🤫", 
+          description: "Keep it secret",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Your friend owes you ₹5. They offer candy instead. What do you do?",
-      choices: [
-        { text: "Politely ask for money 💬", correct: true },
-        { text: "Take the candy 🍭", correct: false },
-        { text: "Forget about it 😌", correct: false },
-      ],
+      id: 4,
+      text: "Your friend owes you ₹5. They offer candy instead. What do you do?",
+      options: [
+        { 
+          id: "ask", 
+          text: "Politely ask for money", 
+          emoji: "💬", 
+          description: "Request the money back",
+          isCorrect: true
+        },
+        { 
+          id: "take", 
+          text: "Take the candy", 
+          emoji: "🍭", 
+          description: "Accept candy instead",
+          isCorrect: false
+        },
+        { 
+          id: "forget", 
+          text: "Forget about it", 
+          emoji: "😌", 
+          description: "Don't ask for it back",
+          isCorrect: false
+        }
+      ]
     },
     {
-      question: "Why is being honest with money important?",
-      choices: [
-        { text: "Builds trust with friends 😊", correct: true },
-        { text: "Lets you spend more 🛍️", correct: false },
-        { text: "Gets you more candy 🍫", correct: false },
-      ],
-    },
+      id: 5,
+      text: "Why is being honest with money important?",
+      options: [
+        { 
+          id: "trust", 
+          text: "Builds trust with friends", 
+          emoji: "😊", 
+          description: "Strengthens friendships",
+          isCorrect: true
+        },
+        { 
+          id: "spend", 
+          text: "Lets you spend more", 
+          emoji: "🛍️", 
+          description: "Have more to spend",
+          isCorrect: false
+        },
+        { 
+          id: "candy", 
+          text: "Gets you more candy", 
+          emoji: "🍫", 
+          description: "Receive more treats",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleChoice = (isCorrect) => {
-    resetFeedback();
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setCoins((prev) => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage((prev) => prev + 1), 800);
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      setTimeout(() => setShowResult(true), 800);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleFinish = () => navigate("/games/financial-literacy/kids");
+  const handleNext = () => {
+    navigate("/games/financial-literacy/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
-      title="Friend’s Money Story"
-      subtitle="Make honest choices with money!"
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      title="Friend's Money Story"
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
-      nextLabel="Finish"
-      showConfetti={showResult}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="finance-kids-95"
+      gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={coins}
-      gameId="finance-kids-185"
-      gameType="finance"
-    
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="text-center text-white space-y-6">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-4xl mb-4">🤝</div>
-            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              {stages[currentStage].choices.map((choice, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => handleChoice(choice.correct)}
-                  className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white py-4 px-6 rounded-xl text-lg font-semibold shadow-lg transition-all transform hover:scale-105"
-                >
-                  {choice.text}
-                </button>
-              ))}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <div className="text-4xl mb-4 text-center">🤝</div>
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-            <h3 className="text-3xl font-bold mb-4">Honest Hero!</h3>
-            <p className="text-white/90 text-xl mb-6">
-              You earned {coins} out of 5 for honest choices!
-            </p>
-            <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-6">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80">
-              Lesson: Honesty with money builds trust and respect.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

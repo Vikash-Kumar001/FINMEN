@@ -17,118 +17,216 @@ const ShopStory = () => {
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const [choice, setChoice] = useState(null);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  const questions = [
+    {
+      id: 1,
+      text: "You're walking home from school and see your favorite candy in the shop window. You have ₹10 in your pocket. You've been saving ₹5 each week for a toy that costs ₹50. You've saved ₹20 so far. What do you do?",
+      options: [
+        { 
+          id: "save", 
+          text: "Save for Toy", 
+          emoji: "🏦", 
+          description: "Keep saving for the ₹50 toy you want",
+          isCorrect: true
+        },
+        { 
+          id: "spend", 
+          text: "Buy Candy", 
+          emoji: "🍬", 
+          description: "Spend ₹10 on candy now",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "You see a cool sticker book that costs ₹25. You have ₹30 saved for a larger toy. What's the smart choice?",
+      options: [
+        { 
+          id: "save", 
+          text: "Continue saving", 
+          emoji: "🎯", 
+          description: "Keep saving for your bigger goal",
+          isCorrect: true
+        },
+        { 
+          id: "spend", 
+          text: "Buy sticker book", 
+          emoji: "📚", 
+          description: "Buy the sticker book now",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "You see friends buying snacks at the shop. You have ₹15 saved for a science kit. What should you do?",
+      options: [
+        { 
+          id: "save", 
+          text: "Stick to your goal", 
+          emoji: "🔬", 
+          description: "Keep saving for the science kit",
+          isCorrect: true
+        },
+        { 
+          id: "spend", 
+          text: "Join friends", 
+          emoji: "🍟", 
+          description: "Buy snacks to join your friends",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "You see a 'Sale: 50% Off' sign on toys. You're saving ₹100 for a bicycle. The sale toy costs ₹40. What's wise?",
+      options: [
+        { 
+          id: "save", 
+          text: "Focus on bicycle", 
+          emoji: "🚲", 
+          description: "Continue saving for your bicycle goal",
+          isCorrect: true
+        },
+        { 
+          id: "spend", 
+          text: "Buy sale toy", 
+          emoji: "🧸", 
+          description: "Take advantage of the sale",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "You've saved ₹45 for a ₹50 toy. You see candy that costs ₹5. You're almost at your goal! What do you choose?",
+      options: [
+        { 
+          id: "save", 
+          text: "Complete your goal", 
+          emoji: "🎉", 
+          description: "Save that ₹5 to reach your ₹50 goal",
+          isCorrect: true
+        },
+        { 
+          id: "spend", 
+          text: "Buy candy", 
+          emoji: "🍬", 
+          description: "Buy candy and delay your goal",
+          isCorrect: false
+        }
+      ]
+    }
+  ];
 
   const handleChoice = (selectedChoice) => {
-    setChoice(selectedChoice);
-    setShowResult(true);
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    if (selectedChoice === "save") {
-      setCoins(5);
-      showCorrectAnswerFeedback(5, true);
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
   const handleNext = () => {
-    navigate("/student/finance/kids/reflex-money-choice");
+    navigate("/games/financial-literacy/kids");
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setChoice(null);
-    setCoins(0);
-    resetFeedback();
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
   };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Shop Story"
-      subtitle="You see candy in the shop. What do you choose?"
-      coins={coins}
-      currentLevel={8}
-      totalLevels={10}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
       onNext={handleNext}
-      nextEnabled={showResult && choice === "save"}
-      showGameOver={showResult && choice === "save"}
+      nextEnabled={false}
+      showGameOver={showResult}
       score={coins}
       gameId="finance-kids-8"
       gameType="finance"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-6">
-                You're walking home from school and see your favorite candy in the shop window. 
-                You have ₹10 in your pocket. You've been saving ₹5 each week for a toy that costs ₹50. 
-                You've saved ₹20 so far. What do you do?
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleChoice("save")}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-                >
-                  <div className="text-2xl mb-2">🏦</div>
-                  <h3 className="font-bold text-xl mb-2">Save for Toy</h3>
-                  <p className="text-white/90">Keep saving for the ₹50 toy you want</p>
-                </button>
-                
-                <button
-                  onClick={() => handleChoice("spend")}
-                  className="bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
-                >
-                  <div className="text-2xl mb-2">🍬</div>
-                  <h3 className="font-bold text-xl mb-2">Buy Candy</h3>
-                  <p className="text-white/90">Spend ₹10 on candy now</p>
-                </button>
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
-            {choice === "save" ? (
-              <div>
-                <div className="text-5xl mb-4">🎯</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Goal-Oriented!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  Great choice! Staying focused on your ₹50 toy goal means you'll reach it in 6 more weeks.
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+5 Coins</span>
-                </div>
-                <p className="text-white/80">
-                  You're learning that delayed gratification leads to bigger rewards!
-                </p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Think About Goals!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  Buying candy now means you'll need to save longer to reach your ₹50 toy goal.
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
-                <p className="text-white/80 text-sm">
-                  Try choosing to stay focused on your bigger goal.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

@@ -4,160 +4,170 @@ import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
-const StartupStory = () => {
+const Simulation1000Choice = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-65");
-  const gameId = gameData?.id || "finance-teens-65";
+  const gameData = getGameDataById("finance-teens-68");
+  const gameId = gameData?.id || "finance-teens-68";
   
   // Ensure gameId is always set correctly
   if (!gameData || !gameData.id) {
-    console.warn("Game data not found for StartupStory, using fallback ID");
+    console.warn("Game data not found for Simulation1000Choice, using fallback ID");
   }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentScenario, setCurrentScenario] = useState(0);
   const [score, setScore] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
+  const scenarios = [
     {
       id: 1,
-      text: "Friend invests ₹100 in a lemonade stand. Earns ₹150. Smart?",
+      title: "₹1000 Investment Choice",
+      description: "You have ₹1000. What's the best option?",
+      amount: 1000,
       options: [
         { 
-          id: "yes", 
-          text: "Yes, good return", 
-          emoji: "✅", 
-          description: "50% profit is smart",
+          id: "fd", 
+          text: "Fixed Deposit", 
+          emoji: "🏦", 
+          description: "Safe, 5% return",
+          isCorrect: false
+        },
+        { 
+          id: "stocks", 
+          text: "Stocks", 
+          emoji: "📈", 
+          description: "Risky, 15% return",
+          isCorrect: false
+        },
+        { 
+          id: "mix", 
+          text: "Mix FD + Stocks", 
+          emoji: "⚖️", 
+          description: "Balance safety and growth",
           isCorrect: true
-        },
-        { 
-          id: "no", 
-          text: "No, too risky", 
-          emoji: "❌", 
-          description: "Small business is risky",
-          isCorrect: false
-        },
-        { 
-          id: "maybe", 
-          text: "Maybe, depends", 
-          emoji: "🤔", 
-          description: "Need more info",
-          isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "What makes a startup investment smart?",
+      title: "₹1000 Investment Strategy",
+      description: "You have ₹1000. What's the smartest choice?",
+      amount: 1000,
       options: [
         { 
-          id: "research", 
-          text: "Research and planning", 
-          emoji: "🔍", 
-          description: "Understand the business first",
-          isCorrect: true
-        },
-        { 
-          id: "luck", 
-          text: "Pure luck", 
-          emoji: "🍀", 
-          description: "Just hope it works",
+          id: "spend", 
+          text: "Spend all", 
+          emoji: "💸", 
+          description: "Use it immediately",
           isCorrect: false
         },
         { 
-          id: "quick", 
-          text: "Quick decision", 
-          emoji: "⚡", 
-          description: "Decide without thinking",
+          id: "mix2", 
+          text: "Mix FD + Stocks", 
+          emoji: "📊", 
+          description: "Diversify investments",
+          isCorrect: true
+        },
+        { 
+          id: "save", 
+          text: "Save only", 
+          emoji: "💰", 
+          description: "Keep in savings",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Should you invest all your money in one startup?",
+      title: "₹1000 Allocation",
+      description: "You have ₹1000. How should you allocate it?",
+      amount: 1000,
       options: [
         { 
-          id: "all", 
-          text: "Yes, go all in", 
-          emoji: "🎯", 
-          description: "Put everything in one",
-          isCorrect: false
-        },
-        { 
-          id: "diversify", 
-          text: "No, diversify", 
-          emoji: "📊", 
-          description: "Spread across multiple",
+          id: "mix3", 
+          text: "Mix FD + Stocks", 
+          emoji: "⚖️", 
+          description: "Best balance",
           isCorrect: true
         },
         { 
-          id: "avoid", 
-          text: "Avoid startups", 
-          emoji: "🚫", 
-          description: "Never invest in startups",
+          id: "all-stocks", 
+          text: "All in stocks", 
+          emoji: "📈", 
+          description: "Maximum risk",
+          isCorrect: false
+        },
+        { 
+          id: "all-fd", 
+          text: "All in FD", 
+          emoji: "🛡️", 
+          description: "Maximum safety",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "What's a good return on startup investment?",
+      title: "₹1000 Investment Plan",
+      description: "You have ₹1000. What's the best plan?",
+      amount: 1000,
       options: [
         { 
-          id: "high", 
-          text: "High return potential", 
-          emoji: "📈", 
-          description: "Can earn more than safe options",
-          isCorrect: true
-        },
-        { 
-          id: "guaranteed", 
-          text: "Guaranteed return", 
-          emoji: "🛡️", 
-          description: "Must be 100% safe",
+          id: "waste", 
+          text: "Spend on wants", 
+          emoji: "🛍️", 
+          description: "Buy things you want",
           isCorrect: false
         },
         { 
-          id: "low", 
-          text: "Low return only", 
-          emoji: "📉", 
-          description: "Expect small profits",
+          id: "mix4", 
+          text: "Mix FD + Stocks", 
+          emoji: "📊", 
+          description: "Smart diversification",
+          isCorrect: true
+        },
+        { 
+          id: "hide", 
+          text: "Hide at home", 
+          emoji: "🏠", 
+          description: "Keep cash at home",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "When is investing in a startup a good idea?",
+      title: "₹1000 Decision",
+      description: "You have ₹1000. What should you do?",
+      amount: 1000,
       options: [
         { 
-          id: "never", 
-          text: "Never", 
-          emoji: "❌", 
-          description: "Always avoid startups",
-          isCorrect: false
-        },
-        { 
-          id: "planned", 
-          text: "When well-planned", 
-          emoji: "📋", 
-          description: "Good business plan and research",
+          id: "mix5", 
+          text: "Mix FD + Stocks", 
+          emoji: "⚖️", 
+          description: "Best strategy",
           isCorrect: true
         },
         { 
-          id: "always", 
-          text: "Always", 
-          emoji: "✅", 
-          description: "Invest in any startup",
+          id: "gamble", 
+          text: "Gamble it", 
+          emoji: "🎲", 
+          description: "Take big risks",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "😴", 
+          description: "Do nothing",
           isCorrect: false
         }
       ]
@@ -170,8 +180,8 @@ const StartupStory = () => {
     setAnswered(true);
     resetFeedback();
     
-    const question = questions[currentQuestion];
-    const selectedOption = question.options.find(opt => opt.id === optionId);
+    const scenario = scenarios[currentScenario];
+    const selectedOption = scenario.options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption?.isCorrect;
 
     if (isCorrect) {
@@ -181,13 +191,13 @@ const StartupStory = () => {
       showCorrectAnswerFeedback(0, false);
     }
 
-    const isLastQuestion = currentQuestion === questions.length - 1;
+    const isLastScenario = currentScenario === scenarios.length - 1;
     
     setTimeout(() => {
-      if (isLastQuestion) {
+      if (isLastScenario) {
         setShowResult(true);
       } else {
-        setCurrentQuestion(prev => prev + 1);
+        setCurrentScenario(prev => prev + 1);
         setAnswered(false);
       }
     }, 500);
@@ -195,24 +205,24 @@ const StartupStory = () => {
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentQuestion(0);
+    setCurrentScenario(0);
     setScore(0);
     setAnswered(false);
     resetFeedback();
   };
 
-  const currentQ = questions[currentQuestion];
+  const current = scenarios[currentScenario];
 
   return (
     <GameShell
-      title="Startup Story"
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      title="Simulation: ₹1000 Choice"
+      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Simulation Complete!"}
       score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      currentLevel={currentScenario + 1}
+      totalLevels={scenarios.length}
       coinsPerLevel={coinsPerLevel}
       showGameOver={showResult}
-      maxScore={questions.length}
+      maxScore={scenarios.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
       showConfetti={showResult && score >= 3}
@@ -222,20 +232,28 @@ const StartupStory = () => {
       gameType="finance"
     >
       <div className="space-y-8">
-        {!showResult && currentQ ? (
+        {!showResult && current ? (
           <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+                <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{scenarios.length}</span>
               </div>
               
-              <h3 className="text-xl font-bold text-white mb-6 text-center">
-                {currentQ.text}
-              </h3>
+              <h3 className="text-xl font-bold text-white mb-2">{current.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {current.description}
+              </p>
+              
+              <div className="bg-white/5 rounded-lg p-4 mb-6">
+                <div className="text-center">
+                  <span className="text-white font-semibold text-lg">Amount: </span>
+                  <span className="text-green-400 font-bold text-2xl">₹{current.amount}</span>
+                </div>
+              </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQ.options.map((option) => (
+                {current.options.map((option) => (
                   <button
                     key={option.id}
                     onClick={() => handleAnswer(option.id)}
@@ -263,16 +281,16 @@ const StartupStory = () => {
             {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Story Complete!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Excellent Choice!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {score} out of {questions.length} correct!
-                  You understand startup investments!
+                  You got {score} out of {scenarios.length} scenarios correct!
+                  You understand smart investment allocation!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Startup investments can be smart when well-researched and planned, but always diversify and understand the risks!
+                  Lesson: The best strategy is to mix Fixed Deposit (for safety) and Stocks (for growth) to balance risk and return!
                 </p>
               </div>
             ) : (
@@ -280,8 +298,8 @@ const StartupStory = () => {
                 <div className="text-5xl mb-4">💪</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {score} out of {questions.length} correct.
-                  Remember, startup investments need research, planning, and diversification!
+                  You got {score} out of {scenarios.length} scenarios correct.
+                  Remember, mixing FD and Stocks is the best strategy!
                 </p>
                 <button
                   onClick={handleTryAgain}
@@ -290,7 +308,7 @@ const StartupStory = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Startup investments can be smart when you research, plan, and diversify. A 50% return like ₹100→₹150 is good!
+                  Tip: The best choice is to mix Fixed Deposit (safe, low return) with Stocks (risky, high return) for balanced growth!
                 </p>
               </div>
             )}
@@ -301,4 +319,5 @@ const StartupStory = () => {
   );
 };
 
-export default StartupStory;
+export default Simulation1000Choice;
+

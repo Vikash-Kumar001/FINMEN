@@ -5,16 +5,16 @@ import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
-const JournalOfResponsibility = () => {
+const JournalOfEntrepreneurDream = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-97");
-  const gameId = gameData?.id || "finance-teens-97";
+  const gameData = getGameDataById("finance-teens-77");
+  const gameId = gameData?.id || "finance-teens-77";
   
   // Ensure gameId is always set correctly
   if (!gameData || !gameData.id) {
-    console.warn("Game data not found for JournalOfResponsibility, using fallback ID");
+    console.warn("Game data not found for JournalOfEntrepreneurDream, using fallback ID");
   }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -29,11 +29,11 @@ const JournalOfResponsibility = () => {
   const [answered, setAnswered] = useState(false);
 
   const stages = [
-    { id: 1, prompt: "One way I will use money responsibly is ___.", minLength: 10 },
-    { id: 2, prompt: "One time I made a responsible financial decision was ___.", minLength: 10 },
-    { id: 3, prompt: "One way to avoid wasting money is ___.", minLength: 10 },
-    { id: 4, prompt: "One ethical way to earn money is ___.", minLength: 10 },
-    { id: 5, prompt: "One way I will help others with money is ___.", minLength: 10 }
+    { id: 1, prompt: "One business I want to start is ___.", minLength: 10 },
+    { id: 2, prompt: "One reason I want to be an entrepreneur is ___.", minLength: 10 },
+    { id: 3, prompt: "One skill I need to develop for business is ___.", minLength: 10 },
+    { id: 4, prompt: "One challenge I might face as an entrepreneur is ___.", minLength: 10 },
+    { id: 5, prompt: "One way I'll prepare to start my business is ___.", minLength: 10 }
   ];
 
   const handleSubmit = () => {
@@ -76,7 +76,7 @@ const JournalOfResponsibility = () => {
 
   return (
     <GameShell
-      title="Journal of Responsibility"
+      title="Journal of Entrepreneur Dream"
       subtitle={!showResult ? `Entry ${currentStage + 1} of ${stages.length}` : "Journal Complete!"}
       score={score}
       currentLevel={currentStage + 1}
@@ -148,4 +148,5 @@ const JournalOfResponsibility = () => {
   );
 };
 
-export default JournalOfResponsibility;
+export default JournalOfEntrepreneurDream;
+

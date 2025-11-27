@@ -1,156 +1,262 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const SimulationFraudAlert = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-178";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-88");
+  const gameId = gameData?.id || "finance-teens-88";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for SimulationFraudAlert, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
+  const [currentScenario, setCurrentScenario] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [selectedChoice, setSelectedChoice] = useState(null);
+  const [answered, setAnswered] = useState(false);
 
-  const stages = [
+  const scenarios = [
     {
       id: 1,
-      text: "Message: 'Win ₹1 lakh, click link.' Your action?",
+      title: "Fraud Alert: Win Message",
+      description: "Message: 'Win ₹1 lakh, click link.' What should you do?",
       options: [
-        { id: "delete", text: "Delete", emoji: "🗑️", description: "Avoid scams", isCorrect: true },
-        { id: "click", text: "Click link", emoji: "🔗", description: "Risky move", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "click", 
+          text: "Click the link", 
+          emoji: "🔗", 
+          description: "See what happens",
+          isCorrect: false
+        },
+        { 
+          id: "delete", 
+          text: "Delete the message", 
+          emoji: "🗑️", 
+          description: "Ignore and delete",
+          isCorrect: true
+        },
+        { 
+          id: "forward", 
+          text: "Forward to friends", 
+          emoji: "📤", 
+          description: "Share with others",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      text: "Email: '₹50,000 prize, click here.' What do you do?",
+      title: "Fraud Alert: Bank Call",
+      description: "Caller says your account is locked. Asks for OTP. What do you do?",
       options: [
-        { id: "delete", text: "Delete", emoji: "🗑️", description: "Stay safe", isCorrect: true },
-        { id: "click", text: "Click link", emoji: "📧", description: "Dangerous", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "give-otp", 
+          text: "Give OTP", 
+          emoji: "🔢", 
+          description: "Share the code",
+          isCorrect: false
+        },
+        { 
+          id: "hang-up", 
+          text: "Hang up and call bank", 
+          emoji: "📞", 
+          description: "Verify with bank",
+          isCorrect: true
+        },
+        { 
+          id: "trust", 
+          text: "Trust the caller", 
+          emoji: "😊", 
+          description: "Believe them",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "SMS: 'Free gift, visit site.' Your choice?",
+      title: "Fraud Alert: Free Offer",
+      description: "Website offers free phone for ₹50. What's your action?",
       options: [
-        { id: "delete", text: "Delete", emoji: "🗑️", description: "Protect yourself", isCorrect: true },
-        { id: "click", text: "Visit site", emoji: "📱", description: "Not safe", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "refuse", 
+          text: "Refuse, it's a scam", 
+          emoji: "🚫", 
+          description: "Too good to be true",
+          isCorrect: true
+        },
+        { 
+          id: "pay", 
+          text: "Pay ₹50", 
+          emoji: "💳", 
+          description: "It's cheap",
+          isCorrect: false
+        },
+        { 
+          id: "check", 
+          text: "Check website first", 
+          emoji: "🔍", 
+          description: "Verify authenticity",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      text: "Pop-up: 'Win ₹2 lakh, click now.' Action?",
+      title: "Fraud Alert: Urgent Email",
+      description: "Email says 'Act now or lose account.' Asks for password. What do you do?",
       options: [
-        { id: "delete", text: "Close", emoji: "❌", description: "Avoid fraud", isCorrect: true },
-        { id: "click", text: "Click now", emoji: "🖱️", description: "Risky", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "ignore", 
+          text: "Ignore and delete", 
+          emoji: "🗑️", 
+          description: "Don't respond",
+          isCorrect: true
+        },
+        { 
+          id: "reply", 
+          text: "Reply with password", 
+          emoji: "📧", 
+          description: "Share details",
+          isCorrect: false
+        },
+        { 
+          id: "forward-email", 
+          text: "Forward email", 
+          emoji: "📤", 
+          description: "Share with others",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "Message: '₹5 lakh prize, click link.' What’s your move?",
+      title: "Fraud Alert: Investment Offer",
+      description: "Someone offers 100% return in one day. What's your response?",
       options: [
-        { id: "delete", text: "Delete", emoji: "🗑️", description: "Stay secure", isCorrect: true },
-        { id: "click", text: "Click link", emoji: "🔗", description: "Potential scam", isCorrect: false }
-      ],
-      reward: 7
+        { 
+          id: "invest", 
+          text: "Invest immediately", 
+          emoji: "💰", 
+          description: "Great opportunity",
+          isCorrect: false
+        },
+        { 
+          id: "refuse2", 
+          text: "Refuse, report scam", 
+          emoji: "🚫", 
+          description: "Unrealistic offer",
+          isCorrect: true
+        },
+        { 
+          id: "think", 
+          text: "Think about it", 
+          emoji: "🤔", 
+          description: "Consider options",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleChoice = (choiceId) => {
+  const handleAnswer = (optionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
-    const stage = stages[currentStage];
-    const isCorrect = stage.options.find(opt => opt.id === choiceId)?.isCorrect;
+    
+    const scenario = scenarios[currentScenario];
+    const selectedOption = scenario.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
 
-    setSelectedChoice(choiceId);
     if (isCorrect) {
-      setScore(prev => prev + stage.reward);
-      showCorrectAnswerFeedback(stage.reward, true);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => {
-        setCurrentStage(prev => prev + 1);
-        setSelectedChoice(null);
-        resetFeedback();
-      }, 800);
-    } else {
-      setTimeout(() => setShowResult(true), 800);
-    }
+    const isLastScenario = currentScenario === scenarios.length - 1;
+    
+    setTimeout(() => {
+      if (isLastScenario) {
+        setShowResult(true);
+      } else {
+        setCurrentScenario(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleFinish = () => navigate("/student/finance/teen");
+  const current = scenarios[currentScenario];
 
   return (
     <GameShell
       title="Simulation: Fraud Alert"
-      subtitle={`Stage ${currentStage + 1} of ${stages.length}`}
-      coins={score}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Simulation Complete!"}
+      score={score}
+      currentLevel={currentScenario + 1}
+      totalLevels={scenarios.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
       showGameOver={showResult}
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={scenarios.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && score>= 15}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={score}
-      gameId="finance-teens-178"
-      gameType="simulation"
+      gameId={gameId}
+      gameType="finance"
     >
-      <div className="space-y-8 text-white">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Stage {currentStage + 1}/{stages.length}</span>
-              <span className="text-yellow-400 font-bold">Coins: {score}</span>
-            </div>
-            <p className="text-xl mb-6">{stages[currentStage].text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stages[currentStage].options.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => handleChoice(opt.id)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">{opt.emoji}</div>
-                  <h3 className="font-bold text-xl mb-2">{opt.text}</h3>
-                  <p className="text-white/90">{opt.description}</p>
-                </button>
-              ))}
+      <div className="space-y-8">
+        {!showResult && current ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{scenarios.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{current.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {current.description}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {current.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <p className="text-sm opacity-90">{option.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-            <h3 className="text-3xl font-bold mb-4">Fraud Alert Star!</h3>
-            <p className="text-white/90 text-lg mb-6">You scored {score} coins!</p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-              +{score} Coins
-            </div>
-            <p className="text-white/80 mt-4">Lesson: Delete suspicious messages!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

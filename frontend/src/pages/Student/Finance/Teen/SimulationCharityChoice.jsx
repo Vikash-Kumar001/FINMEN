@@ -1,156 +1,262 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const SimulationCharityChoice = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-198";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-98");
+  const gameId = gameData?.id || "finance-teens-98";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for SimulationCharityChoice, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
+  const [currentScenario, setCurrentScenario] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [selectedChoice, setSelectedChoice] = useState(null);
+  const [answered, setAnswered] = useState(false);
 
-  const stages = [
+  const scenarios = [
     {
       id: 1,
-      text: "You have ₹1000. Spend all on gadgets or donate ₹200 + save ₹300 + spend ₹500?",
+      title: "Charity Choice: ₹1000 Budget",
+      description: "You have ₹1000. Spend all on gadgets or donate ₹200 + save ₹300 + spend ₹500?",
       options: [
-        { id: "balanced", text: "Donate ₹200, save ₹300, spend ₹500", emoji: "🤝", description: "Balanced choice", isCorrect: true },
-        { id: "gadgets", text: "Spend all on gadgets", emoji: "📱", description: "Not balanced", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "all-gadgets", 
+          text: "Spend all on gadgets", 
+          emoji: "📱", 
+          description: "Buy everything",
+          isCorrect: false
+        },
+        { 
+          id: "balanced", 
+          text: "Donate ₹200 + Save ₹300 + Spend ₹500", 
+          emoji: "⚖️", 
+          description: "Balanced approach",
+          isCorrect: true
+        },
+        { 
+          id: "save-all", 
+          text: "Save all ₹1000", 
+          emoji: "💰", 
+          description: "Keep everything",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      text: "You get ₹1500. Spend all or donate ₹300 + save ₹500 + spend ₹700?",
+      title: "Charity Choice: ₹500 Budget",
+      description: "You have ₹500. Options: Spend all, or Donate ₹100 + Save ₹200 + Spend ₹200?",
       options: [
-        { id: "balanced", text: "Donate ₹300, save ₹500, spend ₹700", emoji: "🤝", description: "Responsible choice", isCorrect: true },
-        { id: "spend", text: "Spend all", emoji: "🛒", description: "Not wise", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "balanced2", 
+          text: "Donate ₹100 + Save ₹200 + Spend ₹200", 
+          emoji: "✨", 
+          description: "Balanced choice",
+          isCorrect: true
+        },
+        { 
+          id: "spend-all2", 
+          text: "Spend all ₹500", 
+          emoji: "💸", 
+          description: "Use everything",
+          isCorrect: false
+        },
+        { 
+          id: "donate-all", 
+          text: "Donate all ₹500", 
+          emoji: "💝", 
+          description: "Give everything",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "You have ₹2000. Spend all or donate ₹400 + save ₹600 + spend ₹1000?",
+      title: "Charity Choice: ₹2000 Budget",
+      description: "You have ₹2000. Spend all on wants or Donate ₹400 + Save ₹600 + Spend ₹1000?",
       options: [
-        { id: "balanced", text: "Donate ₹400, save ₹600, spend ₹1000", emoji: "🤝", description: "Ethical choice", isCorrect: true },
-        { id: "spend", text: "Spend all", emoji: "💸", description: "Unbalanced", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "spend-all3", 
+          text: "Spend all on wants", 
+          emoji: "🛍️", 
+          description: "Buy everything",
+          isCorrect: false
+        },
+        { 
+          id: "balanced3", 
+          text: "Donate ₹400 + Save ₹600 + Spend ₹1000", 
+          emoji: "🎯", 
+          description: "Smart balance",
+          isCorrect: true
+        },
+        { 
+          id: "save-all2", 
+          text: "Save all ₹2000", 
+          emoji: "🏦", 
+          description: "Keep everything",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      text: "You get ₹2500. Spend all or donate ₹500 + save ₹700 + spend ₹1300?",
+      title: "Charity Choice: ₹800 Budget",
+      description: "You have ₹800. Options: All on entertainment or Donate ₹150 + Save ₹250 + Spend ₹400?",
       options: [
-        { id: "balanced", text: "Donate ₹500, save ₹700, spend ₹1300", emoji: "🤝", description: "Balanced approach", isCorrect: true },
-        { id: "spend", text: "Spend all", emoji: "🎮", description: "Not responsible", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "balanced4", 
+          text: "Donate ₹150 + Save ₹250 + Spend ₹400", 
+          emoji: "⚖️", 
+          description: "Balanced plan",
+          isCorrect: true
+        },
+        { 
+          id: "entertainment", 
+          text: "All on entertainment", 
+          emoji: "🎮", 
+          description: "Fun only",
+          isCorrect: false
+        },
+        { 
+          id: "no-donate", 
+          text: "No donation, save all", 
+          emoji: "💾", 
+          description: "Keep everything",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "You have ₹3000. Spend all or donate ₹600 + save ₹900 + spend ₹1500?",
+      title: "Charity Choice: ₹1500 Budget",
+      description: "You have ₹1500. Spend all on shopping or Donate ₹300 + Save ₹450 + Spend ₹750?",
       options: [
-        { id: "balanced", text: "Donate ₹600, save ₹900, spend ₹1500", emoji: "🤝", description: "Wise decision", isCorrect: true },
-        { id: "spend", text: "Spend all", emoji: "🛍️", description: "Not ethical", isCorrect: false }
-      ],
-      reward: 7
+        { 
+          id: "shopping", 
+          text: "Spend all on shopping", 
+          emoji: "🛒", 
+          description: "Buy everything",
+          isCorrect: false
+        },
+        { 
+          id: "balanced5", 
+          text: "Donate ₹300 + Save ₹450 + Spend ₹750", 
+          emoji: "🌟", 
+          description: "Responsible choice",
+          isCorrect: true
+        },
+        { 
+          id: "only-donate", 
+          text: "Donate all ₹1500", 
+          emoji: "❤️", 
+          description: "Give everything",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleChoice = (choiceId) => {
+  const handleAnswer = (optionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
-    const stage = stages[currentStage];
-    const isCorrect = stage.options.find(opt => opt.id === choiceId)?.isCorrect;
+    
+    const scenario = scenarios[currentScenario];
+    const selectedOption = scenario.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
 
-    setSelectedChoice(choiceId);
     if (isCorrect) {
-      setScore(prev => prev + stage.reward);
-      showCorrectAnswerFeedback(stage.reward, true);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => {
-        setCurrentStage(prev => prev + 1);
-        setSelectedChoice(null);
-        resetFeedback();
-      }, 800);
-    } else {
-      setTimeout(() => setShowResult(true), 800);
-    }
+    const isLastScenario = currentScenario === scenarios.length - 1;
+    
+    setTimeout(() => {
+      if (isLastScenario) {
+        setShowResult(true);
+      } else {
+        setCurrentScenario(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleFinish = () => navigate("/student/finance/teen");
+  const current = scenarios[currentScenario];
 
   return (
     <GameShell
       title="Simulation: Charity Choice"
-      subtitle={`Stage ${currentStage + 1} of ${stages.length}`}
-      coins={score}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Simulation Complete!"}
+      score={score}
+      currentLevel={currentScenario + 1}
+      totalLevels={scenarios.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleFinish : null}
-      nextEnabled={showResult}
       showGameOver={showResult}
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      maxScore={scenarios.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && score>= 15}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      score={score}
-      gameId="finance-teens-198"
-      gameType="simulation"
+      gameId={gameId}
+      gameType="finance"
     >
-      <div className="space-y-8 text-white">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Stage {currentStage + 1}/{stages.length}</span>
-              <span className="text-yellow-400 font-bold">Coins: {score}</span>
-            </div>
-            <p className="text-xl mb-6">{stages[currentStage].text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stages[currentStage].options.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => handleChoice(opt.id)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">{opt.emoji}</div>
-                  <h3 className="font-bold text-xl mb-2">{opt.text}</h3>
-                  <p className="text-white/90">{opt.description}</p>
-                </button>
-              ))}
+      <div className="space-y-8">
+        {!showResult && current ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Scenario {currentScenario + 1}/{scenarios.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{scenarios.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{current.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {current.description}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {current.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <p className="text-sm opacity-90">{option.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-            <h3 className="text-3xl font-bold mb-4">Charity Choice Star!</h3>
-            <p className="text-white/90 text-lg mb-6">You scored {score} coins!</p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-              +{score} Coins
-            </div>
-            <p className="text-white/80 mt-4">Lesson: Balance spending, saving, and giving!</p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

@@ -1,178 +1,292 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const BorrowingStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-115";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-55");
+  const gameId = gameData?.id || "finance-teens-55";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for BorrowingStory, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [answered, setAnswered] = useState(false);
 
-  const stages = [
+  const questions = [
     {
       id: 1,
-      text: "You borrow for a new phone but can’t repay. Result?",
+      text: "Teen borrows for a new phone. Can't repay? Result →",
       options: [
-        { id: "debt", text: "Debt", emoji: "📉", description: "Unpaid loan grows", isCorrect: true },
-        { id: "fine", text: "No issue", emoji: "🤷", description: "Not realistic", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "debt", 
+          text: "Debt", 
+          emoji: "⚠️", 
+          description: "Leads to financial trouble", 
+          isCorrect: true 
+        },
+        { 
+          id: "free", 
+          text: "Free money", 
+          emoji: "🎁", 
+          description: "Never happens", 
+          isCorrect: false 
+        },
+        { 
+          id: "nothing", 
+          text: "Nothing happens", 
+          emoji: "😊", 
+          description: "Incorrect", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 2,
-      text: "You borrow ₹500 for shoes. Can’t repay on time?",
+      text: "You borrow ₹500 but can't repay. What's the consequence?",
       options: [
-        { id: "debt", text: "Accumulate debt", emoji: "💸", description: "Increases owed amount", isCorrect: true },
-        { id: "okay", text: "It’s okay", emoji: "😊", description: "Risks trust", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "interest", 
+          text: "Interest and penalties increase", 
+          emoji: "📈", 
+          description: "Debt grows larger", 
+          isCorrect: true 
+        },
+        { 
+          id: "forgiven", 
+          text: "Debt is forgiven", 
+          emoji: "✨", 
+          description: "Unlikely", 
+          isCorrect: false 
+        },
+        { 
+          id: "ignored", 
+          text: "Can be ignored", 
+          emoji: "😴", 
+          description: "Wrong approach", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      text: "You borrow for a laptop. Miss payments?",
+      text: "What should you do before borrowing for a want?",
       options: [
-        { id: "debt", text: "Debt grows", emoji: "📉", description: "Interest adds up", isCorrect: true },
-        { id: "nothing", text: "Nothing happens", emoji: "🤷", description: "Not true", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "borrow-first", 
+          text: "Borrow first, think later", 
+          emoji: "💸", 
+          description: "Risky approach", 
+          isCorrect: false 
+        },
+        { 
+          id: "plan", 
+          text: "Plan how to repay first", 
+          emoji: "📋", 
+          description: "Responsible approach", 
+          isCorrect: true 
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore repayment plan", 
+          emoji: "🚫", 
+          description: "Very wrong", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 4,
-      text: "You borrow for a trip. Can’t repay?",
+      text: "Borrowing without a repayment plan leads to?",
       options: [
-        { id: "debt", text: "Debt increases", emoji: "💸", description: "Financial stress", isCorrect: true },
-        { id: "ignore", text: "Ignore it", emoji: "🙈", description: "Worsens situation", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "success", 
+          text: "Financial success", 
+          emoji: "🎉", 
+          description: "Unlikely", 
+          isCorrect: false 
+        },
+        { 
+          id: "debt", 
+          text: "Debt problems", 
+          emoji: "⚠️", 
+          description: "Common consequence", 
+          isCorrect: true 
+        },
+        { 
+          id: "freedom", 
+          text: "Financial freedom", 
+          emoji: "🕊️", 
+          description: "Opposite happens", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 5,
-      text: "You borrow for a game console. Default on loan?",
+      text: "What's the best approach to borrowing?",
       options: [
-        { id: "debt", text: "Debt accumulates", emoji: "📉", description: "Harms credit", isCorrect: true },
-        { id: "fine", text: "No problem", emoji: "😊", description: "Unrealistic", isCorrect: false }
-      ],
-      reward: 7
+        { 
+          id: "borrow-often", 
+          text: "Borrow often for wants", 
+          emoji: "🔄", 
+          description: "Creates debt cycle", 
+          isCorrect: false 
+        },
+        { 
+          id: "borrow-wisely", 
+          text: "Borrow only when necessary and plan repayment", 
+          emoji: "✅", 
+          description: "Responsible borrowing", 
+          isCorrect: true 
+        },
+        { 
+          id: "never-repay", 
+          text: "Borrow but never repay", 
+          emoji: "🚫", 
+          description: "Very wrong", 
+          isCorrect: false 
+        }
+      ]
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
-    const stage = stages[currentStage];
-    const isCorrect = stage.options.find(opt => opt.id === selectedChoice)?.isCorrect;
-
-    setChoices([...choices, { stageId: stage.id, choice: selectedChoice, isCorrect }]);
+    
     if (isCorrect) {
-      setCoins(prev => prev + stage.reward);
-      showCorrectAnswerFeedback(stage.reward, true);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage(prev => prev + 1), 800);
-    } else {
-      const correctAnswers = [...choices, { stageId: stage.id, choice: selectedChoice, isCorrect }].filter(c => c.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
-    }
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentStage(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
-
-  const handleNext = () => navigate("/student/finance/teen");
 
   return (
     <GameShell
       title="Borrowing Story"
-      score={coins}
-      subtitle={`Stage ${currentStage + 1} of ${stages.length}`}
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore>= 3}
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      
-      gameId="finance-teens-115"
+      gameId={gameId}
       gameType="finance"
     >
-      <div className="space-y-8 text-white">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Stage {currentStage + 1}/{stages.length}</span>
-              <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-            </div>
-            <p className="text-xl mb-6">{stages[currentStage].text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stages[currentStage].options.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => handleChoice(opt.id)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">{opt.emoji}</div>
-                  <h3 className="font-bold text-xl mb-2">{opt.text}</h3>
-                  <p className="text-white/90">{opt.description}</p>
-                </button>
-              ))}
+      <div className="space-y-8">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <span className="text-sm opacity-90">{option.description}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <>
-                <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-                <h3 className="text-3xl font-bold mb-4">Borrowing Story Star!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct!</p>
-                <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-                  +{coins} Coins
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Borrowing Story Complete!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  Great job learning about responsible borrowing!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-                <p className="text-white/80 mt-4">Lesson: Borrowing leads to debt if not repaid!</p>
-              </>
+                <p className="text-white/80">
+                  Lesson: Borrowing without a repayment plan leads to debt. Always plan how to repay before borrowing, especially for wants!
+                </p>
+              </div>
             ) : (
-              <>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold mb-4">Keep Practicing!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct.</p>
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember, borrowing without a plan leads to debt problems!
+                </p>
                 <button
                   onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Tip: Always plan how to repay before borrowing. Borrowing without a repayment plan leads to debt and financial trouble!
+                </p>
+              </div>
             )}
           </div>
         )}

@@ -1,181 +1,256 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const FakeCallStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-175";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-85");
+  const gameId = gameData?.id || "finance-teens-85";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for FakeCallStory, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
       id: 1,
-      text: "Caller asks for bank details. Do you share?",
+      text: "Caller asks for your bank details. What should you do?",
       options: [
-        { id: "no", text: "No", emoji: "🚫", description: "Protect your info", isCorrect: true },
-        { id: "yes", text: "Yes", emoji: "📞", description: "Risky move", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "share", 
+          text: "Share details", 
+          emoji: "💳", 
+          description: "Trust the caller",
+          isCorrect: false
+        },
+        { 
+          id: "refuse", 
+          text: "Refuse, never share", 
+          emoji: "🚫", 
+          description: "Protect your information",
+          isCorrect: true
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe, if they sound official", 
+          emoji: "🤔", 
+          description: "Verify first",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      text: "Caller claims to be from bank, wants OTP. Share it?",
+      text: "What's a sign of a fake call?",
       options: [
-        { id: "no", text: "No", emoji: "🛑", description: "Stay safe", isCorrect: true },
-        { id: "yes", text: "Yes", emoji: "🔐", description: "Dangerous", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "urgent", 
+          text: "Urgent pressure to act", 
+          emoji: "⚠️", 
+          description: "Rushing you to decide",
+          isCorrect: true
+        },
+        { 
+          id: "polite", 
+          text: "Polite and patient", 
+          emoji: "😊", 
+          description: "Professional behavior",
+          isCorrect: false
+        },
+        { 
+          id: "normal", 
+          text: "Normal conversation", 
+          emoji: "💬", 
+          description: "Regular call",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "Unknown caller asks for credit card number. Your action?",
+      text: "What should you do if someone asks for OTP?",
       options: [
-        { id: "no", text: "No", emoji: "🙅", description: "Avoid fraud", isCorrect: true },
-        { id: "yes", text: "Yes", emoji: "💳", description: "Not safe", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "give", 
+          text: "Give OTP", 
+          emoji: "🔢", 
+          description: "Share the code",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Never share OTP", 
+          emoji: "🔒", 
+          description: "Keep it secret",
+          isCorrect: true
+        },
+        { 
+          id: "maybe2", 
+          text: "Share if they ask nicely", 
+          emoji: "🤷", 
+          description: "If they're polite",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      text: "Caller offers prize but needs bank details. Share?",
+      text: "How can you verify a bank call?",
       options: [
-        { id: "no", text: "No", emoji: "❌", description: "Protect yourself", isCorrect: true },
-        { id: "yes", text: "Yes", emoji: "🎁", description: "Risky", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "call-back", 
+          text: "Call bank directly", 
+          emoji: "📞", 
+          description: "Use official number",
+          isCorrect: true
+        },
+        { 
+          id: "trust", 
+          text: "Trust the caller", 
+          emoji: "😊", 
+          description: "Believe them",
+          isCorrect: false
+        },
+        { 
+          id: "ignore-all", 
+          text: "Ignore all calls", 
+          emoji: "😴", 
+          description: "Never answer",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "Caller demands UPI PIN for refund. Do you share?",
+      text: "What's the safest response to suspicious calls?",
       options: [
-        { id: "no", text: "No", emoji: "🚨", description: "Stay secure", isCorrect: true },
-        { id: "yes", text: "Yes", emoji: "📱", description: "Potential scam", isCorrect: false }
-      ],
-      reward: 7
+        { 
+          id: "hang-up", 
+          text: "Hang up and report", 
+          emoji: "📞", 
+          description: "End call safely",
+          isCorrect: true
+        },
+        { 
+          id: "engage", 
+          text: "Keep talking", 
+          emoji: "💬", 
+          description: "Continue conversation",
+          isCorrect: false
+        },
+        { 
+          id: "share-info", 
+          text: "Share some info", 
+          emoji: "📝", 
+          description: "Give partial details",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
+  const handleAnswer = (optionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
-    const stage = stages[currentStage];
-    const isCorrect = stage.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    
+    const question = questions[currentQuestion];
+    const selectedOption = question.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
 
-    setChoices([...choices, { stageId: stage.id, choice: selectedChoice, isCorrect }]);
     if (isCorrect) {
-      setCoins(prev => prev + stage.reward);
-      showCorrectAnswerFeedback(stage.reward, true);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage(prev => prev + 1), 800);
-    } else {
-      const correctAnswers = [...choices, { stageId: stage.id, choice: selectedChoice, isCorrect }].filter(c => c.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
-    }
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentStage(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
-    resetFeedback();
-  };
-
-  const handleNext = () => navigate("/student/finance/teen");
+  const currentQ = questions[currentQuestion];
 
   return (
     <GameShell
       title="Fake Call Story"
-      score={coins}
-      subtitle={`Stage ${currentStage + 1} of ${stages.length}`}
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore>= 3}
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      
-      gameId="finance-teens-175"
+      gameId={gameId}
       gameType="finance"
     >
-      <div className="space-y-8 text-white">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Stage {currentStage + 1}/{stages.length}</span>
-              <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-            </div>
-            <p className="text-xl mb-6">{stages[currentStage].text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stages[currentStage].options.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => handleChoice(opt.id)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">{opt.emoji}</div>
-                  <h3 className="font-bold text-xl mb-2">{opt.text}</h3>
-                  <p className="text-white/90">{opt.description}</p>
-                </button>
-              ))}
+      <div className="space-y-8">
+        {!showResult && currentQ ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {currentQ.text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQ.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <p className="text-sm opacity-90">{option.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <>
-                <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-                <h3 className="text-3xl font-bold mb-4">Fake Call Defender!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct!</p>
-                <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-                  +{coins} Coins
-                </div>
-                <p className="text-white/80 mt-4">Lesson: Never share bank details!</p>
-              </>
-            ) : (
-              <>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold mb-4">Keep Practicing!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct.</p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

@@ -1,17 +1,20 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const ConsumerQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-172";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-82");
+  const gameId = gameData?.id || "finance-teens-82";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for ConsumerQuiz, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
@@ -19,160 +22,277 @@ const ConsumerQuiz = () => {
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      text: "If a shopkeeper cheats, where can you complain?",
+      text: "If shopkeeper cheats, where can you complain?",
       options: [
-        { id: "court", text: "Consumer Court", emoji: "⚖️", description: "Official complaint body", isCorrect: true },
-        { id: "playground", text: "Playground", emoji: "⚽", description: "Not a legal body", isCorrect: false }
-      ],
-      reward: 3
+        { 
+          id: "court", 
+          text: "Consumer Court", 
+          emoji: "⚖️", 
+          description: "Legal protection for consumers", 
+          isCorrect: true 
+        },
+        { 
+          id: "playground", 
+          text: "Playground", 
+          emoji: "🏃", 
+          description: "Not the right place", 
+          isCorrect: false 
+        },
+        { 
+          id: "nowhere", 
+          text: "Nowhere", 
+          emoji: "😔", 
+          description: "No help available", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 2,
-      text: "What protects you from faulty goods?",
+      text: "What are consumer rights?",
       options: [
-        { id: "rights", text: "Consumer Rights", emoji: "🛡️", description: "Ensures quality", isCorrect: true },
-        { id: "nothing", text: "Nothing", emoji: "😔", description: "Not true", isCorrect: false }
-      ],
-      reward: 3
+        { 
+          id: "nothing", 
+          text: "No rights", 
+          emoji: "❌", 
+          description: "Consumers have no rights", 
+          isCorrect: false 
+        },
+        { 
+          id: "protection", 
+          text: "Protection from fraud", 
+          emoji: "🛡️", 
+          description: "Right to safe products", 
+          isCorrect: true 
+        },
+        { 
+          id: "spend", 
+          text: "Right to spend", 
+          emoji: "💸", 
+          description: "Just spending money", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      text: "Where can you report fake products?",
+      text: "What should you do if you get a defective product?",
       options: [
-        { id: "court", text: "Consumer Court", emoji: "🏛️", description: "Handles fraud cases", isCorrect: true },
-        { id: "friend", text: "Tell a friend", emoji: "👥", description: "Not effective", isCorrect: false }
-      ],
-      reward: 4
+        { 
+          id: "accept", 
+          text: "Accept it", 
+          emoji: "😔", 
+          description: "Keep the defective item", 
+          isCorrect: false 
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "😴", 
+          description: "Do nothing", 
+          isCorrect: false 
+        },
+        { 
+          id: "complain", 
+          text: "Complain to seller", 
+          emoji: "📢", 
+          description: "Demand replacement or refund", 
+          isCorrect: true 
+        }
+      ]
     },
     {
       id: 4,
-      text: "What ensures honest product info?",
+      text: "What's the right to information?",
       options: [
-        { id: "label", text: "Right to Information", emoji: "📋", description: "Requires honest labels", isCorrect: true },
-        { id: "guess", text: "Guesswork", emoji: "🤔", description: "Not reliable", isCorrect: false }
-      ],
-      reward: 4
+        { 
+          id: "know", 
+          text: "Know product details", 
+          emoji: "📋", 
+          description: "Get honest information", 
+          isCorrect: true 
+        },
+        { 
+          id: "hide", 
+          text: "Hide information", 
+          emoji: "🙈", 
+          description: "Keep secrets", 
+          isCorrect: false 
+        },
+        { 
+          id: "lie", 
+          text: "Accept lies", 
+          emoji: "😈", 
+          description: "Believe false claims", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 5,
-      text: "Who handles defective product complaints?",
+      text: "Where can you file a consumer complaint?",
       options: [
-        { id: "court", text: "Consumer Court", emoji: "⚖️", description: "Protects consumers", isCorrect: true },
-        { id: "shop", text: "Shop owner only", emoji: "🏪", description: "Not always enough", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "police", 
+          text: "Police Station", 
+          emoji: "🚔", 
+          description: "For criminal cases only", 
+          isCorrect: false 
+        },
+        { 
+          id: "court2", 
+          text: "Consumer Court", 
+          emoji: "⚖️", 
+          description: "Legal authority for consumers", 
+          isCorrect: true 
+        },
+        { 
+          id: "school", 
+          text: "School", 
+          emoji: "🏫", 
+          description: "Not the right place", 
+          isCorrect: false 
+        }
+      ]
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
+  const handleAnswer = (optionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
+    
     const question = questions[currentQuestion];
-    const isCorrect = question.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    const selectedOption = question.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
 
-    setChoices([...choices, { questionId: question.id, choice: selectedChoice, isCorrect }]);
     if (isCorrect) {
-      setCoins(prev => prev + question.reward);
-      showCorrectAnswerFeedback(question.reward, true);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => setCurrentQuestion(prev => prev + 1), 800);
-    } else {
-      const correctAnswers = [...choices, { questionId: question.id, choice: selectedChoice, isCorrect }].filter(c => c.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
-    }
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
     setCurrentQuestion(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => navigate("/student/finance/teen");
+  const currentQ = questions[currentQuestion];
 
   return (
     <GameShell
       title="Consumer Quiz"
-      score={coins}
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      coins={coins}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore>= 3}
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      
-      gameId="finance-teens-172"
+      gameId={gameId}
       gameType="finance"
     >
-      <div className="space-y-8 text-white">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-              <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-            </div>
-            <p className="text-xl mb-6">{questions[currentQuestion].text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {questions[currentQuestion].options.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => handleChoice(opt.id)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">{opt.emoji}</div>
-                  <h3 className="font-bold text-xl mb-2">{opt.text}</h3>
-                  <p className="text-white/90">{opt.description}</p>
-                </button>
-              ))}
+      <div className="space-y-8">
+        {!showResult && currentQ ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {currentQ.text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQ.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <p className="text-sm opacity-90">{option.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <>
-                <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-                <h3 className="text-3xl font-bold mb-4">Consumer Quiz Star!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct!</p>
-                <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-                  +{coins} Coins
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Quiz Complete!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You understand consumer rights!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-                <p className="text-white/80 mt-4">Lesson: Know where to report fraud!</p>
-              </>
+                <p className="text-white/80">
+                  Lesson: Consumers have rights! You can complain to Consumer Court if cheated, demand safe products, and get honest information!
+                </p>
+              </div>
             ) : (
-              <>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold mb-4">Keep Practicing!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct.</p>
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember, Consumer Court is where you complain if shopkeeper cheats!
+                </p>
                 <button
                   onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Tip: If a shopkeeper cheats you, you can file a complaint at Consumer Court, not playground! Consumers have rights!
+                </p>
+              </div>
             )}
           </div>
         )}

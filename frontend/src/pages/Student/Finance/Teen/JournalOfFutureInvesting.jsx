@@ -5,16 +5,16 @@ import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
-const JournalOfResponsibility = () => {
+const JournalOfFutureInvesting = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-97");
-  const gameId = gameData?.id || "finance-teens-97";
+  const gameData = getGameDataById("finance-teens-67");
+  const gameId = gameData?.id || "finance-teens-67";
   
   // Ensure gameId is always set correctly
   if (!gameData || !gameData.id) {
-    console.warn("Game data not found for JournalOfResponsibility, using fallback ID");
+    console.warn("Game data not found for JournalOfFutureInvesting, using fallback ID");
   }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -29,11 +29,11 @@ const JournalOfResponsibility = () => {
   const [answered, setAnswered] = useState(false);
 
   const stages = [
-    { id: 1, prompt: "One way I will use money responsibly is ___.", minLength: 10 },
-    { id: 2, prompt: "One time I made a responsible financial decision was ___.", minLength: 10 },
-    { id: 3, prompt: "One way to avoid wasting money is ___.", minLength: 10 },
-    { id: 4, prompt: "One ethical way to earn money is ___.", minLength: 10 },
-    { id: 5, prompt: "One way I will help others with money is ___.", minLength: 10 }
+    { id: 1, prompt: "One investment I'd like to try when older is ___.", minLength: 10 },
+    { id: 2, prompt: "One reason I want to invest is ___.", minLength: 10 },
+    { id: 3, prompt: "One way I'll prepare to invest is ___.", minLength: 10 },
+    { id: 4, prompt: "One investment goal I have is ___.", minLength: 10 },
+    { id: 5, prompt: "One thing I learned about investing is ___.", minLength: 10 }
   ];
 
   const handleSubmit = () => {
@@ -47,18 +47,11 @@ const JournalOfResponsibility = () => {
     
     setAnswered(true);
     resetFeedback();
-    
-    const isLastStage = currentStage === stages.length - 1;
-    
-    // Update score - ensure it equals stages.length for last stage
-    if (isLastStage) {
-      setScore(stages.length);
-    } else {
-      setScore(prev => prev + 1);
-    }
-    
+    setScore(prev => prev + 1);
     showCorrectAnswerFeedback(1, true);
 
+    const isLastStage = currentStage === stages.length - 1;
+    
     setTimeout(() => {
       if (isLastStage) {
         setShowResult(true);
@@ -76,7 +69,7 @@ const JournalOfResponsibility = () => {
 
   return (
     <GameShell
-      title="Journal of Responsibility"
+      title="Journal of Future Investing"
       subtitle={!showResult ? `Entry ${currentStage + 1} of ${stages.length}` : "Journal Complete!"}
       score={score}
       currentLevel={currentStage + 1}
@@ -93,7 +86,7 @@ const JournalOfResponsibility = () => {
       gameType="finance"
     >
       <div className="space-y-8">
-        {!showResult && stages[currentStage] && (
+        {!showResult && stages[currentStage] ? (
           <div className="max-w-2xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
@@ -142,10 +135,55 @@ const JournalOfResponsibility = () => {
               </button>
             </div>
           </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Journal Complete!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You completed {score} out of {stages.length} entries!
+                  Great job planning your investment future!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Planning your investment future helps you set goals, prepare, and make smart investment decisions when you're ready!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You completed {score} out of {stages.length} entries.
+                  Remember, planning your investment future helps you make better decisions!
+                </p>
+                <button
+                  onClick={() => {
+                    setShowResult(false);
+                    setCurrentStage(0);
+                    setScore(0);
+                    setEntry("");
+                    setAnswered(false);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Think about what investments you'd like to try, why you want to invest, and how you'll prepare for investing in the future!
+                </p>
+              </div>
+            )}
+          </div>
         )}
       </div>
     </GameShell>
   );
 };
 
-export default JournalOfResponsibility;
+export default JournalOfFutureInvesting;
+

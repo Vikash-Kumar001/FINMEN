@@ -4,161 +4,168 @@ import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
-const StartupStory = () => {
+const QuizOnEntrepreneurship = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-65");
-  const gameId = gameData?.id || "finance-teens-65";
+  const gameData = getGameDataById("finance-teens-72");
+  const gameId = gameData?.id || "finance-teens-72";
   
   // Ensure gameId is always set correctly
   if (!gameData || !gameData.id) {
-    console.warn("Game data not found for StartupStory, using fallback ID");
+    console.warn("Game data not found for QuizOnEntrepreneurship, using fallback ID");
   }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [score, setScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Friend invests ₹100 in a lemonade stand. Earns ₹150. Smart?",
+      text: "Who is an entrepreneur?",
       options: [
         { 
-          id: "yes", 
-          text: "Yes, good return", 
-          emoji: "✅", 
-          description: "50% profit is smart",
-          isCorrect: true
+          id: "creates", 
+          text: "Creates new business", 
+          emoji: "💡", 
+          description: "Starts and runs a business", 
+          isCorrect: true 
         },
         { 
-          id: "no", 
-          text: "No, too risky", 
-          emoji: "❌", 
-          description: "Small business is risky",
-          isCorrect: false
+          id: "spends", 
+          text: "Only spends", 
+          emoji: "💸", 
+          description: "Just uses money", 
+          isCorrect: false 
         },
         { 
-          id: "maybe", 
-          text: "Maybe, depends", 
-          emoji: "🤔", 
-          description: "Need more info",
-          isCorrect: false
+          id: "nothing", 
+          text: "Does nothing", 
+          emoji: "😴", 
+          description: "No action taken", 
+          isCorrect: false 
         }
       ]
     },
     {
       id: 2,
-      text: "What makes a startup investment smart?",
+      text: "What's the main goal of an entrepreneur?",
       options: [
         { 
-          id: "research", 
-          text: "Research and planning", 
-          emoji: "🔍", 
-          description: "Understand the business first",
-          isCorrect: true
+          id: "spend", 
+          text: "Spend money", 
+          emoji: "🛍️", 
+          description: "Use all money", 
+          isCorrect: false 
         },
         { 
-          id: "luck", 
-          text: "Pure luck", 
-          emoji: "🍀", 
-          description: "Just hope it works",
-          isCorrect: false
+          id: "profit", 
+          text: "Make profit", 
+          emoji: "💰", 
+          description: "Earn money from business", 
+          isCorrect: true 
         },
         { 
-          id: "quick", 
-          text: "Quick decision", 
-          emoji: "⚡", 
-          description: "Decide without thinking",
-          isCorrect: false
+          id: "avoid", 
+          text: "Avoid work", 
+          emoji: "😴", 
+          description: "Do nothing", 
+          isCorrect: false 
         }
       ]
     },
     {
       id: 3,
-      text: "Should you invest all your money in one startup?",
+      text: "What do entrepreneurs need?",
       options: [
         { 
-          id: "all", 
-          text: "Yes, go all in", 
-          emoji: "🎯", 
-          description: "Put everything in one",
-          isCorrect: false
+          id: "luck", 
+          text: "Just luck", 
+          emoji: "🍀", 
+          description: "Pure chance", 
+          isCorrect: false 
         },
         { 
-          id: "diversify", 
-          text: "No, diversify", 
-          emoji: "📊", 
-          description: "Spread across multiple",
-          isCorrect: true
+          id: "money", 
+          text: "Only money", 
+          emoji: "💰", 
+          description: "Just capital", 
+          isCorrect: false 
         },
         { 
-          id: "avoid", 
-          text: "Avoid startups", 
-          emoji: "🚫", 
-          description: "Never invest in startups",
-          isCorrect: false
+          id: "idea", 
+          text: "Good idea and hard work", 
+          emoji: "💪", 
+          description: "Creative idea and effort", 
+          isCorrect: true 
         }
       ]
     },
     {
       id: 4,
-      text: "What's a good return on startup investment?",
+      text: "Can anyone become an entrepreneur?",
       options: [
         { 
-          id: "high", 
-          text: "High return potential", 
-          emoji: "📈", 
-          description: "Can earn more than safe options",
-          isCorrect: true
+          id: "no", 
+          text: "No, only special people", 
+          emoji: "👑", 
+          description: "Only for elite", 
+          isCorrect: false 
         },
         { 
-          id: "guaranteed", 
-          text: "Guaranteed return", 
-          emoji: "🛡️", 
-          description: "Must be 100% safe",
-          isCorrect: false
+          id: "yes", 
+          text: "Yes, with effort", 
+          emoji: "✅", 
+          description: "Anyone can try", 
+          isCorrect: true 
         },
         { 
-          id: "low", 
-          text: "Low return only", 
-          emoji: "📉", 
-          description: "Expect small profits",
-          isCorrect: false
+          id: "maybe", 
+          text: "Maybe, if rich", 
+          emoji: "💎", 
+          description: "Need wealth first", 
+          isCorrect: false 
         }
       ]
     },
     {
       id: 5,
-      text: "When is investing in a startup a good idea?",
+      text: "What's entrepreneurship?",
       options: [
         { 
-          id: "never", 
-          text: "Never", 
-          emoji: "❌", 
-          description: "Always avoid startups",
-          isCorrect: false
+          id: "job", 
+          text: "Working for others", 
+          emoji: "💼", 
+          description: "Being an employee", 
+          isCorrect: false 
         },
         { 
-          id: "planned", 
-          text: "When well-planned", 
-          emoji: "📋", 
-          description: "Good business plan and research",
-          isCorrect: true
+          id: "business", 
+          text: "Creating and running business", 
+          emoji: "🏢", 
+          description: "Starting a venture", 
+          isCorrect: true 
         },
         { 
-          id: "always", 
-          text: "Always", 
-          emoji: "✅", 
-          description: "Invest in any startup",
-          isCorrect: false
+          id: "job", 
+          text: "Working for others", 
+          emoji: "💼", 
+          description: "Being an employee", 
+          isCorrect: false 
+        },
+        { 
+          id: "spending", 
+          text: "Spending money", 
+          emoji: "💳", 
+          description: "Using funds", 
+          isCorrect: false 
         }
       ]
     }
@@ -205,8 +212,8 @@ const StartupStory = () => {
 
   return (
     <GameShell
-      title="Startup Story"
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      title="Quiz on Entrepreneurship"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -263,16 +270,16 @@ const StartupStory = () => {
             {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Story Complete!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Quiz Complete!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {questions.length} correct!
-                  You understand startup investments!
+                  You understand entrepreneurship!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Startup investments can be smart when well-researched and planned, but always diversify and understand the risks!
+                  Lesson: An entrepreneur creates and runs a new business to make profit. Anyone can become an entrepreneur with good ideas and hard work!
                 </p>
               </div>
             ) : (
@@ -281,7 +288,7 @@ const StartupStory = () => {
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {questions.length} correct.
-                  Remember, startup investments need research, planning, and diversification!
+                  Remember, an entrepreneur creates new business, not just spends or does nothing!
                 </p>
                 <button
                   onClick={handleTryAgain}
@@ -290,7 +297,7 @@ const StartupStory = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Startup investments can be smart when you research, plan, and diversify. A 50% return like ₹100→₹150 is good!
+                  Tip: An entrepreneur is someone who creates and runs a new business to make profit. Anyone can become one with good ideas and effort!
                 </p>
               </div>
             )}
@@ -301,4 +308,5 @@ const StartupStory = () => {
   );
 };
 
-export default StartupStory;
+export default QuizOnEntrepreneurship;
+

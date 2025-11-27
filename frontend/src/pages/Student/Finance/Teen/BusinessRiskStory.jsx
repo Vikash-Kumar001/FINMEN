@@ -1,178 +1,298 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const BusinessRiskStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-155";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-75");
+  const gameId = gameData?.id || "finance-teens-75";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for BusinessRiskStory, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
       id: 1,
       text: "You invest ₹200 in snacks to sell. Earn ₹300. Good?",
       options: [
-        { id: "yes", text: "Yes", emoji: "✅", description: "Profitable venture", isCorrect: true },
-        { id: "no", text: "No", emoji: "❌", description: "Too risky", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "yes", 
+          text: "Yes, 50% profit", 
+          emoji: "✅", 
+          description: "Good return on investment",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No, too risky", 
+          emoji: "❌", 
+          description: "Business is too risky",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe, depends", 
+          emoji: "🤔", 
+          description: "Need more information",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      text: "You invest ₹150 in a lemonade stall. Earn ₹250. Smart?",
+      text: "What's a good profit margin for a small business?",
       options: [
-        { id: "yes", text: "Yes", emoji: "🍋", description: "Good profit", isCorrect: true },
-        { id: "no", text: "No", emoji: "🙅", description: "Not worth it", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "high", 
+          text: "30-50% profit", 
+          emoji: "📈", 
+          description: "Healthy profit margin",
+          isCorrect: true
+        },
+        { 
+          id: "low", 
+          text: "5% profit", 
+          emoji: "📉", 
+          description: "Very low margin",
+          isCorrect: false
+        },
+        { 
+          id: "loss", 
+          text: "Loss is okay", 
+          emoji: "💸", 
+          description: "Losing money is fine",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "You invest ₹300 in a craft sale. Earn ₹450. Wise?",
+      text: "Should you take risks in business?",
       options: [
-        { id: "yes", text: "Yes", emoji: "🎨", description: "Solid return", isCorrect: true },
-        { id: "no", text: "No", emoji: "🚫", description: "Risky move", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "calculated", 
+          text: "Yes, calculated risks", 
+          emoji: "🎯", 
+          description: "Take smart, planned risks",
+          isCorrect: true
+        },
+        { 
+          id: "all", 
+          text: "Take all risks", 
+          emoji: "🎲", 
+          description: "Risk everything",
+          isCorrect: false
+        },
+        { 
+          id: "none", 
+          text: "Avoid all risks", 
+          emoji: "🛡️", 
+          description: "Never take risks",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      text: "You invest ₹250 in a bake sale. Earn ₹400. Good choice?",
+      text: "What's important before starting a business?",
       options: [
-        { id: "yes", text: "Yes", emoji: "🍰", description: "High return", isCorrect: true },
-        { id: "no", text: "No", emoji: "❌", description: "Too much risk", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "plan", 
+          text: "Plan and research", 
+          emoji: "📋", 
+          description: "Understand market and costs",
+          isCorrect: true
+        },
+        { 
+          id: "jump", 
+          text: "Jump in immediately", 
+          emoji: "⚡", 
+          description: "Start without planning",
+          isCorrect: false
+        },
+        { 
+          id: "wait", 
+          text: "Wait forever", 
+          emoji: "⏳", 
+          description: "Never start",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "You invest ₹400 in a small shop. Earn ₹650. Smart?",
+      text: "Is ₹200→₹300 a good business result?",
       options: [
-        { id: "yes", text: "Yes", emoji: "💰", description: "Great profit", isCorrect: true },
-        { id: "no", text: "No", emoji: "🙈", description: "Risky venture", isCorrect: false }
-      ],
-      reward: 7
+        { 
+          id: "yes2", 
+          text: "Yes, 50% return", 
+          emoji: "✅", 
+          description: "Excellent profit margin",
+          isCorrect: true
+        },
+        { 
+          id: "no2", 
+          text: "No, too small", 
+          emoji: "❌", 
+          description: "Not enough profit",
+          isCorrect: false
+        },
+        { 
+          id: "maybe2", 
+          text: "Maybe, if consistent", 
+          emoji: "🤷", 
+          description: "Only if repeatable",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
+  const handleAnswer = (optionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
-    const stage = stages[currentStage];
-    const isCorrect = stage.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    
+    const question = questions[currentQuestion];
+    const selectedOption = question.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
 
-    setChoices([...choices, { stageId: stage.id, choice: selectedChoice, isCorrect }]);
     if (isCorrect) {
-      setCoins(prev => prev + stage.reward);
-      showCorrectAnswerFeedback(stage.reward, true);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage(prev => prev + 1), 800);
-    } else {
-      const correctAnswers = [...choices, { stageId: stage.id, choice: selectedChoice, isCorrect }].filter(c => c.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
-    }
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentStage(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => navigate("/student/finance/teen");
+  const currentQ = questions[currentQuestion];
 
   return (
     <GameShell
       title="Business Risk Story"
-      score={coins}
-      subtitle={`Stage ${currentStage + 1} of ${stages.length}`}
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore>= 3}
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      
-      gameId="finance-teens-155"
+      gameId={gameId}
       gameType="finance"
     >
-      <div className="space-y-8 text-white">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Stage {currentStage + 1}/{stages.length}</span>
-              <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-            </div>
-            <p className="text-xl mb-6">{stages[currentStage].text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stages[currentStage].options.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => handleChoice(opt.id)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">{opt.emoji}</div>
-                  <h3 className="font-bold text-xl mb-2">{opt.text}</h3>
-                  <p className="text-white/90">{opt.description}</p>
-                </button>
-              ))}
+      <div className="space-y-8">
+        {!showResult && currentQ ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {currentQ.text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQ.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <p className="text-sm opacity-90">{option.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <>
-                <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-                <h3 className="text-3xl font-bold mb-4">Business Risk Story Star!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct!</p>
-                <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-                  +{coins} Coins
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Story Complete!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You understand business risks and profits!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-                <p className="text-white/80 mt-4">Lesson: Calculated risks can lead to profits!</p>
-              </>
+                <p className="text-white/80">
+                  Lesson: A 50% profit (₹200→₹300) is excellent! Take calculated risks, plan before starting, and aim for healthy profit margins!
+                </p>
+              </div>
             ) : (
-              <>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold mb-4">Keep Practicing!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct.</p>
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember, a 50% profit is excellent, and calculated risks with planning are key!
+                </p>
                 <button
                   onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Tip: Investing ₹200 and earning ₹300 (50% profit) is excellent! Always plan before starting a business and take calculated risks!
+                </p>
+              </div>
             )}
           </div>
         )}

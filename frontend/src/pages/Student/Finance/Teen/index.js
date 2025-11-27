@@ -63,20 +63,20 @@ import BadgeDebtSmart from './BadgeDebtSmart';
 import SavingsAccountStory from './SavingsAccountStory';
 import InvestmentQuiz from './InvestmentQuiz';
 import ReflexInvestorSmartness from './ReflexInvestorSmartness';
-import PuzzleInvestmentTypes from './PuzzleInvestmentTypes';
+import PuzzleOfInvestmentTypes from './PuzzleOfInvestmentTypes';
 import StartupStory from './StartupStory';
 import DebateSaveVsInvest from './DebateSaveVsInvest';
-import JournalFutureInvesting from './JournalFutureInvesting';
-import SimulationChoice1000 from './SimulationChoice1000';
+import JournalOfFutureInvesting from './JournalOfFutureInvesting';
+import Simulation1000Choice from './Simulation1000Choice';
 import ReflexSmartGrowth from './ReflexSmartGrowth';
 import BadgeSmartInvestor from './BadgeSmartInvestor';
 import StartupIdeaStory from './StartupIdeaStory';
-import QuizEntrepreneurship from './QuizEntrepreneurship';
+import QuizOnEntrepreneurship from './QuizOnEntrepreneurship';
 import ReflexEntrepreneurTraits from './ReflexEntrepreneurTraits';
-import PuzzleEntrepreneurs from './PuzzleEntrepreneurs';
+import PuzzleOfEntrepreneurs from './PuzzleOfEntrepreneurs';
 import BusinessRiskStory from './BusinessRiskStory';
 import DebateJobVsBusiness from './DebateJobVsBusiness';
-import JournalEntrepreneurDream from './JournalEntrepreneurDream';
+import JournalOfEntrepreneurDream from './JournalOfEntrepreneurDream';
 import SimulationMiniStartup from './SimulationMiniStartup';
 import ReflexSmartEntrepreneur from './ReflexSmartEntrepreneur';
 import BadgeYoungEntrepreneur from './BadgeYoungEntrepreneur';
@@ -86,7 +86,7 @@ import ReflexFraudSafety from './ReflexFraudSafety';
 import PuzzleOfRights from './PuzzleOfRights';
 import FakeCallStory from './FakeCallStory';
 import DebateCashVsOnlineSafety from './DebateCashVsOnlineSafety';
-import JournalConsumerRights from './JournalConsumerRights';
+import JournalOfConsumerRights from './JournalOfConsumerRights';
 import SimulationFraudAlert from './SimulationFraudAlert';
 import ReflexScamCheck from './ReflexScamCheck';
 import BadgeConsumerProtector from './BadgeConsumerProtector';
@@ -182,22 +182,24 @@ const teenFinanceGames = {
   'savings-account-story': SavingsAccountStory,
   'investment-quiz': InvestmentQuiz,
   'reflex-investor-smartness': ReflexInvestorSmartness,
-  'puzzle-investment-types': PuzzleInvestmentTypes,
+  'puzzle-investment-types': PuzzleOfInvestmentTypes,
   'startup-story': StartupStory,
   'debate-save-vs-invest': DebateSaveVsInvest,
-  'journal-future-investing': JournalFutureInvesting,
-  'simulation-choice-1000': SimulationChoice1000,
+  'journal-future-investing': JournalOfFutureInvesting,
+  'simulation-1000-choice': Simulation1000Choice,
   'reflex-smart-growth': ReflexSmartGrowth,
   'badge-smart-investor': BadgeSmartInvestor,
 
   // Eighth set of 10 games (entrepreneurship focused)
   'startup-idea-story': StartupIdeaStory,
-  'quiz-entrepreneurship': QuizEntrepreneurship,
+  'quiz-on-entrepreneurship': QuizOnEntrepreneurship,
+  'quiz-entrepreneurship': QuizOnEntrepreneurship,
   'reflex-entrepreneur-traits': ReflexEntrepreneurTraits,
-  'puzzle-entrepreneurs': PuzzleEntrepreneurs,
+  'puzzle-of-entrepreneurs': PuzzleOfEntrepreneurs,
+  'puzzle-entrepreneurs': PuzzleOfEntrepreneurs,
   'business-risk-story': BusinessRiskStory,
   'debate-job-vs-business': DebateJobVsBusiness,
-  'journal-entrepreneur-dream': JournalEntrepreneurDream,
+  'journal-entrepreneur-dream': JournalOfEntrepreneurDream,
   'simulation-mini-startup': SimulationMiniStartup,
   'reflex-smart-entrepreneur': ReflexSmartEntrepreneur,
   'badge-young-entrepreneur': BadgeYoungEntrepreneur,
@@ -209,7 +211,7 @@ const teenFinanceGames = {
   'puzzle-of-rights': PuzzleOfRights,
   'fake-call-story': FakeCallStory,
   'debate-cash-vs-online-safety': DebateCashVsOnlineSafety,
-  'journal-consumer-rights': JournalConsumerRights,
+  'journal-consumer-rights': JournalOfConsumerRights,
   'simulation-fraud-alert': SimulationFraudAlert,
   'reflex-scam-check': ReflexScamCheck,
   'badge-consumer-protector': BadgeConsumerProtector,
@@ -220,8 +222,8 @@ const teenFinanceGames = {
   'reflex-ethical-choice': ReflexEthicalChoice,
   'puzzle-right-vs-wrong': PuzzleRightVsWrong,
   'bribery-story': BriberyStory,
-  'debate-money-and-morals': DebateMoneyAndMorals,
-  'journal-of-responsibility': JournalOfResponsibility,
+  'debate-money-morals': DebateMoneyAndMorals,
+  'journal-responsibility': JournalOfResponsibility,
   'simulation-charity-choice': SimulationCharityChoice,
   'reflex-fairness': ReflexFairness,
   'badge-ethical-financier': BadgeEthicalFinancier,

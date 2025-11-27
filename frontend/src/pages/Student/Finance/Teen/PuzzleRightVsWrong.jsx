@@ -1,181 +1,229 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleRightVsWrong = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-194";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-94");
+  const gameId = gameData?.id || "finance-teens-94";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for PuzzleRightVsWrong, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const puzzles = [
-    {
-      id: 1,
-      text: "Match: Donation → Good, Stealing → Bad",
-      options: [
-        { id: "correct", text: "Match correctly", emoji: "✅", description: "Ethical pairing", isCorrect: true },
-        { id: "wrong", text: "Match wrong", emoji: "❌", description: "Incorrect pairing", isCorrect: false }
-      ],
-      reward: 5
-    },
-    {
-      id: 2,
-      text: "Match: Honesty → Good, Cheating → Bad",
-      options: [
-        { id: "correct", text: "Match correctly", emoji: "✅", description: "Right choices", isCorrect: true },
-        { id: "wrong", text: "Match wrong", emoji: "❌", description: "Wrong pairing", isCorrect: false }
-      ],
-      reward: 5
-    },
-    {
-      id: 3,
-      text: "Match: Fair Trade → Good, Fraud → Bad",
-      options: [
-        { id: "correct", text: "Match correctly", emoji: "✅", description: "Ethical matches", isCorrect: true },
-        { id: "wrong", text: "Match wrong", emoji: "❌", description: "Incorrect", isCorrect: false }
-      ],
-      reward: 6
-    },
-    {
-      id: 4,
-      text: "Match: Charity → Good, Bribery → Bad",
-      options: [
-        { id: "correct", text: "Match correctly", emoji: "✅", description: "Correct ethics", isCorrect: true },
-        { id: "wrong", text: "Match wrong", emoji: "❌", description: "Wrong types", isCorrect: false }
-      ],
-      reward: 6
-    },
-    {
-      id: 5,
-      text: "Match: Truthfulness → Good, Deception → Bad",
-      options: [
-        { id: "correct", text: "Match correctly", emoji: "✅", description: "Perfect pairing", isCorrect: true },
-        { id: "wrong", text: "Match wrong", emoji: "❌", description: "Incorrect", isCorrect: false }
-      ],
-      reward: 7
-    }
+  // Financial actions and their ethical outcomes
+  const leftItems = [
+    { id: 1, name: "Donating to Charity", emoji: "💝", description: "Giving money to help others" },
+    { id: 2, name: "Stealing Money", emoji: "😈", description: "Taking money illegally" },
+    { id: 3, name: "Honest Financial Reporting", emoji: "✅", description: "Telling truth about finances" },
+    { id: 4, name: "Paying Bribes", emoji: "💰", description: "Giving money for illegal favors" },
+    { id: 5, name: "Fair Business Deal", emoji: "🤝", description: "Equal and honest transaction" }
   ];
 
-  const handleChoice = (selectedChoice) => {
-    resetFeedback();
-    const puzzle = puzzles[currentPuzzle];
-    const isCorrect = puzzle.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+  const rightItems = [
+    { id: 1, name: "Ethical - Helps Others", emoji: "✨", description: "Moral and beneficial action" },
+    { id: 2, name: "Unethical - Illegal", emoji: "❌", description: "Wrong and punishable action" },
+    { id: 3, name: "Ethical - Builds Trust", emoji: "✨", description: "Honest and trustworthy action" },
+    { id: 4, name: "Unethical - Corrupt", emoji: "❌", description: "Dishonest and illegal action" },
+    { id: 5, name: "Ethical - Fair Practice", emoji: "✨", description: "Just and equal action" }
+  ];
 
-    setChoices([...choices, { puzzleId: puzzle.id, choice: selectedChoice, isCorrect }]);
-    if (isCorrect) {
-      setCoins(prev => prev + puzzle.reward);
-      showCorrectAnswerFeedback(puzzle.reward, true);
+  // Correct matches
+  const correctMatches = [
+    { leftId: 1, rightId: 1 }, // Donating to Charity → Ethical - Helps Others
+    { leftId: 2, rightId: 2 }, // Stealing Money → Unethical - Illegal
+    { leftId: 3, rightId: 3 }, // Honest Financial Reporting → Ethical - Builds Trust
+    { leftId: 4, rightId: 4 }, // Paying Bribes → Unethical - Corrupt
+    { leftId: 5, rightId: 5 }  // Fair Business Deal → Ethical - Fair Practice
+  ];
+
+  // Shuffled right items for display (to split matches across positions)
+  // This ensures matches are not in the same position
+  const shuffledRightItems = [
+    rightItems[2], // Ethical - Builds Trust (id: 3) - matches Honest Financial Reporting - position 1
+    rightItems[1], // Unethical - Illegal (id: 2) - matches Stealing Money - position 2
+    rightItems[4], // Ethical - Fair Practice (id: 5) - matches Fair Business Deal - position 3
+    rightItems[0], // Ethical - Helps Others (id: 1) - matches Donating to Charity - position 4
+    rightItems[3]  // Unethical - Corrupt (id: 4) - matches Paying Bribes - position 5
+  ];
+
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    setSelectedLeft(item);
+  };
+
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentPuzzle < puzzles.length - 1) {
-      setTimeout(() => setCurrentPuzzle(prev => prev + 1), 800);
-    } else {
-      const correctAnswers = [...choices, { puzzleId: puzzle.id, choice: selectedChoice, isCorrect }].filter(c => c.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
+    // Check if all items are matched
+    if (newMatches.length === leftItems.length) {
+      setTimeout(() => {
+        setShowResult(true);
+      }, 1000);
     }
+
+    setSelectedLeft(null);
+    setSelectedRight(null);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentPuzzle(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
-    resetFeedback();
+  const isMatched = (leftId, rightId) => {
+    return matches.some(m => m.leftId === leftId && m.rightId === rightId);
   };
 
-  const handleNext = () => navigate("/student/finance/teen");
+  const isLeftMatched = (leftId) => {
+    return matches.some(m => m.leftId === leftId);
+  };
+
+  const isRightMatched = (rightId) => {
+    return matches.some(m => m.rightId === rightId);
+  };
 
   return (
     <GameShell
       title="Puzzle: Right vs Wrong"
-      score={coins}
-      subtitle={`Puzzle ${currentPuzzle + 1} of ${puzzles.length}`}
-      coins={coins}
-      currentLevel={currentPuzzle + 1}
-      totalLevels={puzzles.length}
+      subtitle={!showResult ? `Match ${matches.length + 1} of ${leftItems.length}` : "Puzzle Complete!"}
+      score={score}
+      currentLevel={matches.length + 1}
+      totalLevels={leftItems.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore>= 3}
-      maxScore={puzzles.length} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={leftItems.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      
-      gameId="finance-teens-194"
+      gameId={gameId}
       gameType="finance"
     >
-      <div className="space-y-8 text-white">
+      <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Puzzle {currentPuzzle + 1}/{puzzles.length}</span>
-              <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-            </div>
-            <p className="text-xl mb-6">{puzzles[currentPuzzle].text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {puzzles[currentPuzzle].options.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => handleChoice(opt.id)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">{opt.emoji}</div>
-                  <h3 className="font-bold text-xl mb-2">{opt.text}</h3>
-                  <p className="text-white/90">{opt.description}</p>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <>
-                <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-                <h3 className="text-3xl font-bold mb-4">Right vs Wrong Puzzle Star!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct!</p>
-                <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-                  +{coins} Coins
+          <div className="max-w-6xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Match {matches.length + 1}/{leftItems.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{leftItems.length}</span>
+              </div>
+              
+              <p className="text-white/80 text-center mb-6">
+                Match each financial action with its ethical classification
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+                {/* Left Column - Actions */}
+                <div className="space-y-3">
+                  <h3 className="text-white font-bold text-lg mb-4 text-center">Financial Actions</h3>
+                  {leftItems.map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleLeftSelect(item)}
+                      disabled={isLeftMatched(item.id)}
+                      className={`w-full p-4 rounded-xl text-left transition-all ${
+                        selectedLeft?.id === item.id
+                          ? "bg-blue-500 border-4 border-blue-300"
+                          : isLeftMatched(item.id)
+                          ? "bg-green-500/30 border-2 border-green-400 opacity-60"
+                          : "bg-white/10 hover:bg-white/20 border-2 border-white/20"
+                      } ${isLeftMatched(item.id) ? "cursor-not-allowed" : "cursor-pointer"}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{item.emoji}</span>
+                        <div>
+                          <div className="text-white font-semibold">{item.name}</div>
+                          <div className="text-white/70 text-sm">{item.description}</div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
                 </div>
-                <p className="text-white/80 mt-4">Lesson: Choose good over bad in ethics!</p>
-              </>
-            ) : (
-              <>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold mb-4">Keep Practicing!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct.</p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
+
+                {/* Middle Column - Match Button */}
+                <div className="flex items-center justify-center">
+                  <button
+                    onClick={handleMatch}
+                    disabled={!selectedLeft || !selectedRight}
+                    className={`px-6 py-3 rounded-full font-bold transition-all ${
+                      selectedLeft && selectedRight
+                        ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                        : "bg-gray-600 text-gray-400 cursor-not-allowed"
+                    }`}
+                  >
+                    Match
+                  </button>
+                </div>
+
+                {/* Right Column - Classifications */}
+                <div className="space-y-3">
+                  <h3 className="text-white font-bold text-lg mb-4 text-center">Ethical Classification</h3>
+                  {shuffledRightItems.map((item, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => handleRightSelect(item)}
+                      disabled={isRightMatched(item.id)}
+                      className={`w-full p-4 rounded-xl text-left transition-all ${
+                        selectedRight?.id === item.id
+                          ? "bg-blue-500 border-4 border-blue-300"
+                          : isRightMatched(item.id)
+                          ? "bg-green-500/30 border-2 border-green-400 opacity-60"
+                          : "bg-white/10 hover:bg-white/20 border-2 border-white/20"
+                      } ${isRightMatched(item.id) ? "cursor-not-allowed" : "cursor-pointer"}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl">{item.emoji}</span>
+                        <div>
+                          <div className="text-white font-semibold">{item.name}</div>
+                          <div className="text-white/70 text-sm">{item.description}</div>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

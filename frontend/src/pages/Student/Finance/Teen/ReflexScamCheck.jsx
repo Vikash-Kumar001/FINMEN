@@ -1,159 +1,297 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const ReflexScamCheck = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-179";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-89");
+  const gameId = gameData?.id || "finance-teens-89";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for ReflexScamCheck, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [target, setTarget] = useState("");
+  const [answered, setAnswered] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(10);
+  const timerRef = useRef(null);
 
-  const stages = [
+  const rounds = [
     {
       id: 1,
-      action: "Report Scam",
-      wrong: "Ignore Fraud",
-      prompt: "Tap for report scam!"
+      question: "Tap for 'Report Scam' or 'Ignore Fraud.'",
+      options: [
+        { 
+          id: "report", 
+          text: "Report Scam", 
+          emoji: "🚨", 
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore Fraud", 
+          emoji: "😴", 
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Wait and see", 
+          emoji: "🤔", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      action: "Verify Offer",
-      wrong: "Accept Offer",
-      prompt: "Tap to verify offer!"
+      question: "Tap for 'Verify First' or 'Trust Immediately.'",
+      options: [
+        { 
+          id: "trust", 
+          text: "Trust Immediately", 
+          emoji: "😊", 
+          isCorrect: false
+        },
+        { 
+          id: "verify", 
+          text: "Verify First", 
+          emoji: "🔍", 
+          isCorrect: true
+        },
+        { 
+          id: "ignore2", 
+          text: "Ignore completely", 
+          emoji: "🚫", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      action: "Check Source",
-      wrong: "Trust Source",
-      prompt: "Tap to check source!"
+      question: "Tap for 'Delete Suspicious' or 'Click Link.'",
+      options: [
+        { 
+          id: "delete", 
+          text: "Delete Suspicious", 
+          emoji: "🗑️", 
+          isCorrect: true
+        },
+        { 
+          id: "click", 
+          text: "Click Link", 
+          emoji: "🔗", 
+          isCorrect: false
+        },
+        { 
+          id: "forward", 
+          text: "Forward to others", 
+          emoji: "📤", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      action: "Secure Account",
-      wrong: "Share Password",
-      prompt: "Tap to secure account!"
+      question: "Tap for 'Never Share OTP' or 'Share OTP.'",
+      options: [
+        { 
+          id: "never-share", 
+          text: "Never Share OTP", 
+          emoji: "🔒", 
+          isCorrect: true
+        },
+        { 
+          id: "share-otp", 
+          text: "Share OTP", 
+          emoji: "🔢", 
+          isCorrect: false
+        },
+        { 
+          id: "maybe-otp", 
+          text: "Share if asked nicely", 
+          emoji: "🤷", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      action: "Delete Message",
-      wrong: "Click Link",
-      prompt: "Tap to delete message!"
+      question: "Tap for 'Hang Up Safely' or 'Continue Call.'",
+      options: [
+        { 
+          id: "continue", 
+          text: "Continue Call", 
+          emoji: "📞", 
+          isCorrect: false
+        },
+        { 
+          id: "hang-up", 
+          text: "Hang Up Safely", 
+          emoji: "📴", 
+          isCorrect: true
+        },
+        { 
+          id: "give-info", 
+          text: "Give some information", 
+          emoji: "📝", 
+          isCorrect: false
+        }
+      ]
     }
   ];
 
   useEffect(() => {
-    if (currentStage < stages.length) {
-      setTarget(Math.random() < 0.7 ? stages[currentStage].action : stages[currentStage].wrong);
+    if (!showResult && !answered) {
+      setTimeLeft(10);
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current);
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
-  }, [currentStage]);
 
-  const handleTap = (choice) => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, [currentRound, showResult, answered]);
+
+  const handleTimeUp = () => {
+    if (answered) return;
+    setAnswered(true);
     resetFeedback();
-    const isCorrect = choice === stages[currentStage].action;
+    showCorrectAnswerFeedback(0, false);
+    
+    const isLastRound = currentRound === rounds.length - 1;
+    setTimeout(() => {
+      if (isLastRound) {
+        setShowResult(true);
+      } else {
+        setCurrentRound(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 1500);
+  };
+
+  const handleAnswer = (optionId) => {
+    if (answered) return;
+    
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const round = rounds[currentRound];
+    const selectedOption = round.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
 
     if (isCorrect) {
-      setCoins(prev => prev + 3);
-      showCorrectAnswerFeedback(3, true);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage(prev => prev + 1), 800);
-    } else {
-      const finalCoins = isCorrect ? coins + 3 : coins;
-      setFinalScore(Math.floor(finalCoins / 3));
-      setShowResult(true);
-    }
+    const isLastRound = currentRound === rounds.length - 1;
+    
+    setTimeout(() => {
+      if (isLastRound) {
+        setShowResult(true);
+      } else {
+        setCurrentRound(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 1500);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentStage(0);
-    setCoins(0);
-    setFinalScore(0);
-    setTarget("");
-    resetFeedback();
-  };
-
-  const handleNext = () => navigate("/student/finance/teen");
+  const current = rounds[currentRound];
 
   return (
     <GameShell
       title="Reflex Scam Check"
-      score={coins}
-      subtitle={stages[currentStage]?.prompt || "Test your scam-checking reflexes!"}
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={!showResult ? `Round ${currentRound + 1} of ${rounds.length}` : "Game Complete!"}
+      score={score}
+      currentLevel={currentRound + 1}
+      totalLevels={rounds.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore>= 3}
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={rounds.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      
-      gameId="finance-teens-179"
+      gameId={gameId}
       gameType="finance"
     >
-      <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <h3 className="text-3xl font-bold mb-4">Stage {currentStage + 1}</h3>
-            <div className="flex justify-center gap-6">
-              <button
-                onClick={() => handleTap(stages[currentStage].action)}
-                className="bg-green-500 hover:bg-green-600 px-8 py-4 rounded-full text-xl font-bold transition-transform hover:scale-105"
-              >
-                {stages[currentStage].action}
-              </button>
-              <button
-                onClick={() => handleTap(stages[currentStage].wrong)}
-                className="bg-red-500 hover:bg-red-600 px-8 py-4 rounded-full text-xl font-bold transition-transform hover:scale-105"
-              >
-                {stages[currentStage].wrong}
-              </button>
+      <div className="space-y-8">
+        {!showResult && current ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Round {currentRound + 1}/{rounds.length}</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-yellow-400 font-bold">Score: {score}/{rounds.length}</span>
+                  <div className="bg-red-500/20 px-4 py-2 rounded-full">
+                    <span className="text-white font-bold">{timeLeft}s</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="w-full bg-gray-700 rounded-full h-2 mb-6">
+                <div 
+                  className="bg-gradient-to-r from-red-500 to-orange-500 h-2 rounded-full transition-all duration-1000"
+                  style={{ width: `${(timeLeft / 10) * 100}%` }}
+                />
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {current.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {current.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-            <h3 className="text-3xl font-bold mb-4">Scam Check Star!</h3>
-            <p className="text-white/90 text-lg mb-6">You scored {finalScore} out of 5!</p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80 mt-4">Lesson: Always report scams!</p>
-            {finalScore < 3 && (
-              <button
-                onClick={handleTryAgain}
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105 mt-4"
-              >
-                Try Again
-              </button>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

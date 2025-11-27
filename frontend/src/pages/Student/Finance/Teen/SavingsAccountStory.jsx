@@ -1,178 +1,298 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const SavingsAccountStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-131";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-61");
+  const gameId = gameData?.id || "finance-teens-61";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for SavingsAccountStory, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stages = [
+  const questions = [
     {
       id: 1,
       text: "You deposit ₹1000. After a year, it becomes ₹1050. Why?",
       options: [
-        { id: "interest", text: "Interest", emoji: "💰", description: "Bank pays for saving", isCorrect: true },
-        { id: "bonus", text: "Bonus", emoji: "🎁", description: "Not typical", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "interest", 
+          text: "Interest", 
+          emoji: "💰", 
+          description: "Bank pays you extra money for keeping your money",
+          isCorrect: true
+        },
+        { 
+          id: "magic", 
+          text: "Magic", 
+          emoji: "✨", 
+          description: "Money grows by itself",
+          isCorrect: false
+        },
+        { 
+          id: "error", 
+          text: "Bank error", 
+          emoji: "❌", 
+          description: "The bank made a mistake",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      text: "You save ₹500. After 6 months, it grows to ₹515. Why?",
+      text: "What happens when you keep money in a savings account?",
       options: [
-        { id: "interest", text: "Interest", emoji: "💸", description: "Savings earn over time", isCorrect: true },
-        { id: "gift", text: "Gift", emoji: "🎉", description: "Unlikely", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "loses", 
+          text: "It loses value", 
+          emoji: "📉", 
+          description: "Money decreases over time",
+          isCorrect: false
+        },
+        { 
+          id: "grows", 
+          text: "It grows with interest", 
+          emoji: "📈", 
+          description: "Bank pays interest, money increases",
+          isCorrect: true
+        },
+        { 
+          id: "stays", 
+          text: "It stays the same", 
+          emoji: "➡️", 
+          description: "No change in amount",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "You deposit ₹2000. It grows to ₹2100 in a year. Reason?",
+      text: "Why do banks pay interest on savings?",
       options: [
-        { id: "interest", text: "Interest", emoji: "📈", description: "Bank rewards saving", isCorrect: true },
-        { id: "error", text: "Bank error", emoji: "❌", description: "Not correct", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "use", 
+          text: "They use your money to lend", 
+          emoji: "🏦", 
+          description: "Banks lend your money and share profit",
+          isCorrect: true
+        },
+        { 
+          id: "gift", 
+          text: "It's a gift", 
+          emoji: "🎁", 
+          description: "Free money from bank",
+          isCorrect: false
+        },
+        { 
+          id: "rule", 
+          text: "Government rule", 
+          emoji: "📜", 
+          description: "They have to by law",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      text: "You save ₹1500. It becomes ₹1575 after a year. Why?",
+      text: "What's the benefit of a savings account?",
       options: [
-        { id: "interest", text: "Interest", emoji: "💰", description: "Savings grow", isCorrect: true },
-        { id: "tax", text: "Tax refund", emoji: "🧾", description: "Incorrect", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "safe", 
+          text: "Safe and earns interest", 
+          emoji: "🛡️", 
+          description: "Your money is safe and grows",
+          isCorrect: true
+        },
+        { 
+          id: "quick", 
+          text: "Quick access only", 
+          emoji: "⚡", 
+          description: "Just for easy access",
+          isCorrect: false
+        },
+        { 
+          id: "free", 
+          text: "Free money", 
+          emoji: "💸", 
+          description: "You get free cash",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "You deposit ₹3000. After a year, it’s ₹3150. Cause?",
+      text: "If you deposit ₹500 and get ₹525 after a year, what's the extra ₹25?",
       options: [
-        { id: "interest", text: "Interest", emoji: "📊", description: "Bank pays for deposits", isCorrect: true },
-        { id: "donation", text: "Donation", emoji: "🤝", description: "Not realistic", isCorrect: false }
-      ],
-      reward: 7
+        { 
+          id: "bonus", 
+          text: "Bonus payment", 
+          emoji: "🎁", 
+          description: "Special gift from bank",
+          isCorrect: false
+        },
+        { 
+          id: "interest2", 
+          text: "Interest earned", 
+          emoji: "💵", 
+          description: "Money earned from interest",
+          isCorrect: true
+        },
+        { 
+          id: "fee", 
+          text: "Bank fee", 
+          emoji: "💳", 
+          description: "Charge for service",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
+  const handleAnswer = (optionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
-    const stage = stages[currentStage];
-    const isCorrect = stage.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    
+    const question = questions[currentQuestion];
+    const selectedOption = question.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect;
 
-    setChoices([...choices, { stageId: stage.id, choice: selectedChoice, isCorrect }]);
     if (isCorrect) {
-      setCoins(prev => prev + stage.reward);
-      showCorrectAnswerFeedback(stage.reward, true);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage(prev => prev + 1), 800);
-    } else {
-      const correctAnswers = [...choices, { stageId: stage.id, choice: selectedChoice, isCorrect }].filter(c => c.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
-    }
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentStage(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => navigate("/student/finance/teen");
+  const currentQ = questions[currentQuestion];
 
   return (
     <GameShell
       title="Savings Account Story"
-      score={coins}
-      subtitle={`Stage ${currentStage + 1} of ${stages.length}`}
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore>= 3}
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      
-      gameId="finance-teens-131"
+      gameId={gameId}
       gameType="finance"
     >
-      <div className="space-y-8 text-white">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Stage {currentStage + 1}/{stages.length}</span>
-              <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-            </div>
-            <p className="text-xl mb-6">{stages[currentStage].text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {stages[currentStage].options.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => handleChoice(opt.id)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">{opt.emoji}</div>
-                  <h3 className="font-bold text-xl mb-2">{opt.text}</h3>
-                  <p className="text-white/90">{opt.description}</p>
-                </button>
-              ))}
+      <div className="space-y-8">
+        {!showResult && currentQ ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {currentQ.text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQ.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.id)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <p className="text-sm opacity-90">{option.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <>
-                <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-                <h3 className="text-3xl font-bold mb-4">Savings Story Star!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct!</p>
-                <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-                  +{coins} Coins
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Story Complete!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You understand how savings accounts work!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-                <p className="text-white/80 mt-4">Lesson: Savings grow with interest!</p>
-              </>
+                <p className="text-white/80">
+                  Lesson: Savings accounts keep your money safe and pay interest, helping your money grow over time!
+                </p>
+              </div>
             ) : (
-              <>
-                <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold mb-4">Keep Practicing!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct.</p>
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember, savings accounts pay interest, which helps your money grow!
+                </p>
                 <button
                   onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Tip: When you deposit money in a savings account, the bank pays you interest, making your money grow over time!
+                </p>
+              </div>
             )}
           </div>
         )}

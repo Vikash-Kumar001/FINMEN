@@ -4,16 +4,16 @@ import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
-const PuzzleLoanBasics = () => {
+const PuzzleOfEntrepreneurs = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-54");
-  const gameId = gameData?.id || "finance-teens-54";
+  const gameData = getGameDataById("finance-teens-74");
+  const gameId = gameData?.id || "finance-teens-74";
   
   // Ensure gameId is always set correctly
   if (!gameData || !gameData.id) {
-    console.warn("Game data not found for PuzzleLoanBasics, using fallback ID");
+    console.warn("Game data not found for PuzzleOfEntrepreneurs, using fallback ID");
   }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -27,43 +27,39 @@ const PuzzleLoanBasics = () => {
   const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Loan terms and their meanings
+  // Entrepreneurs and their specialties
   const leftItems = [
-    { id: 1, name: "Principal", emoji: "💵", description: "Original amount borrowed" },
-    { id: 2, name: "Interest", emoji: "💰", description: "Extra cost of borrowing" },
-    { id: 3, name: "Loan Term", emoji: "📅", description: "Time to repay loan" },
-    { id: 4, name: "EMI", emoji: "📊", description: "Monthly payment amount" },
-    { id: 5, name: "Default", emoji: "⚠️", description: "Failure to repay" }
+    { id: 1, name: "Ratan Tata", emoji: "👔", description: "Indian Business Leader" },
+    { id: 2, name: "Elon Musk", emoji: "🚀", description: "Tech Innovator" },
+    { id: 3, name: "Narayana Murthy", emoji: "💻", description: "IT Pioneer" },
+    { id: 4, name: "Kiran Mazumdar", emoji: "🔬", description: "Biotech Leader" },
+    { id: 5, name: "Falguni Nayar", emoji: "💄", description: "Beauty Entrepreneur" }
   ];
 
-  // Right items shuffled to split matches across different positions
   const rightItems = [
-    { id: 1, name: "Original", emoji: "📝", description: "The initial borrowed amount" },
-    { id: 2, name: "Extra", emoji: "➕", description: "Additional cost paid" },
-    { id: 3, name: "Duration", emoji: "⏱️", description: "Repayment period" },
-    { id: 4, name: "Monthly Installment", emoji: "💳", description: "Regular payment" },
-    { id: 5, name: "Non-Payment", emoji: "🚫", description: "Missing payments" }
+    { id: 1, name: "Industry", emoji: "🏭", description: "Diversified business empire" },
+    { id: 2, name: "Innovation", emoji: "💡", description: "Revolutionary technology" },
+    { id: 3, name: "IT", emoji: "💻", description: "Information technology services" },
+    { id: 4, name: "Biotech", emoji: "🧬", description: "Biotechnology research" },
+    { id: 5, name: "E-commerce", emoji: "🛒", description: "Online retail platform" }
   ];
 
   // Correct matches (split across different positions)
-  // Principal (1) → Original (1), Interest (2) → Extra (2), Loan Term (3) → Duration (3), 
-  // EMI (4) → Monthly Installment (4), Default (5) → Non-Payment (5)
-  // But shuffled display order: Original(1), Duration(3), Non-Payment(5), Extra(2), Monthly Installment(4)
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Principal → Original (position 1)
-    { leftId: 2, rightId: 2 }, // Interest → Extra (position 2)
-    { leftId: 3, rightId: 3 }, // Loan Term → Duration (position 3)
-    { leftId: 4, rightId: 4 }, // EMI → Monthly Installment (position 4)
-    { leftId: 5, rightId: 5 }  // Default → Non-Payment (position 5)
+    { leftId: 1, rightId: 1 }, // Ratan Tata → Industry (position 1)
+    { leftId: 2, rightId: 2 }, // Elon Musk → Innovation (position 2)
+    { leftId: 3, rightId: 3 }, // Narayana Murthy → IT (position 3)
+    { leftId: 4, rightId: 4 }, // Kiran Mazumdar → Biotech (position 4)
+    { leftId: 5, rightId: 5 }  // Falguni Nayar → E-commerce (position 5)
   ];
 
   // Shuffled right items for display (to split matches)
   const shuffledRightItems = [
-    rightItems[0], // Original (id: 1) - position 1
-    rightItems[2], // Duration (id: 3) - position 2
-    rightItems[4], // Non-Payment (id: 5) - position 3
-    rightItems[1], // Extra (id: 2) - position 4
-    rightItems[3]  // Monthly Installment (id: 4) - position 5
+    rightItems[0], // Industry (id: 1) - position 1
+    rightItems[2], // IT (id: 3) - position 2
+    rightItems[4], // E-commerce (id: 5) - position 3
+    rightItems[1], // Innovation (id: 2) - position 4
+    rightItems[3]  // Biotech (id: 4) - position 5
   ];
 
   const handleLeftSelect = (item) => {
@@ -137,9 +133,9 @@ const PuzzleLoanBasics = () => {
 
   return (
     <GameShell
-      title="Puzzle: Loan Basics"
+      title="Puzzle of Entrepreneurs"
       score={score}
-      subtitle={showResult ? "Game Complete!" : `Match loan terms to their meanings (${matches.length}/${leftItems.length} matched)`}
+      subtitle={showResult ? "Game Complete!" : `Match entrepreneurs to their specialties (${matches.length}/${leftItems.length} matched)`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -156,9 +152,9 @@ const PuzzleLoanBasics = () => {
       <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Left column - Loan Terms */}
+            {/* Left column - Entrepreneurs */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Loan Terms</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Entrepreneurs</h3>
               <div className="space-y-4">
                 {leftItems.map(item => (
                   <button
@@ -193,7 +189,7 @@ const PuzzleLoanBasics = () => {
                 <p className="text-white/80 mb-4">
                   {selectedLeft 
                     ? `Selected: ${selectedLeft.name}` 
-                    : "Select a term"}
+                    : "Select an entrepreneur"}
                 </p>
                 <button
                   onClick={handleMatch}
@@ -213,9 +209,9 @@ const PuzzleLoanBasics = () => {
               </div>
             </div>
 
-            {/* Right column - Meanings */}
+            {/* Right column - Specialties */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Meanings</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Specialties</h3>
               <div className="space-y-4">
                 {shuffledRightItems.map(item => (
                   <button
@@ -249,14 +245,14 @@ const PuzzleLoanBasics = () => {
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You correctly matched {score} out of {leftItems.length} loan terms!
-                  You understand loan basics!
+                  You correctly matched {score} out of {leftItems.length} entrepreneurs!
+                  You know famous entrepreneurs!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  You know that Principal is the original amount, Interest is the extra cost, and EMI is the monthly installment!
+                  You know that Ratan Tata → Industry, Elon Musk → Innovation, and Narayana Murthy → IT!
                 </p>
               </div>
             ) : (
@@ -264,8 +260,8 @@ const PuzzleLoanBasics = () => {
                 <div className="text-5xl mb-4">😔</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched {score} out of {leftItems.length} loan terms correctly.
-                  Remember, understanding loan terms helps you make better borrowing decisions!
+                  You matched {score} out of {leftItems.length} entrepreneurs correctly.
+                  Remember, Ratan Tata → Industry, Elon Musk → Innovation, Narayana Murthy → IT!
                 </p>
                 <button
                   onClick={handleTryAgain}
@@ -274,7 +270,7 @@ const PuzzleLoanBasics = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Try to match each loan term with its appropriate meaning. Principal → Original, Interest → Extra!
+                  Try to match each entrepreneur with their specialty. Ratan Tata → Industry, Elon Musk → Innovation, Narayana Murthy → IT!
                 </p>
               </div>
             )}
@@ -285,4 +281,5 @@ const PuzzleLoanBasics = () => {
   );
 };
 
-export default PuzzleLoanBasics;
+export default PuzzleOfEntrepreneurs;
+

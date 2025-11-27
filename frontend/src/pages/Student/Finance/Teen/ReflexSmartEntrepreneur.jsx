@@ -1,156 +1,302 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
+
 const ReflexSmartEntrepreneur = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-159";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-79");
+  const gameId = gameData?.id || "finance-teens-79";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for ReflexSmartEntrepreneur, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [target, setTarget] = useState("");
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [currentRound, setCurrentRound] = useState(0);
+  const [score, setScore] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
 
-  const stages = [
+  const questions = [
     {
       id: 1,
-      action: "Plan + Risk",
-      wrong: "Spend All",
-      prompt: "Tap for plan + risk!"
+      question: "Choose the smart entrepreneur choice:",
+      correctAnswer: "Plan + Risk",
+      options: [
+        { text: "Plan + Risk", isCorrect: true, emoji: "📋" },
+        { text: "Spend All", isCorrect: false, emoji: "💸" },
+        { text: "Do Nothing", isCorrect: false, emoji: "😴" }
+      ]
     },
     {
       id: 2,
-      action: "Innovate Smart",
-      wrong: "Copy Others",
-      prompt: "Tap to innovate smart!"
+      question: "Choose the smart entrepreneur choice:",
+      correctAnswer: "Research Market",
+      options: [
+        { text: "Jump in blindly", isCorrect: false, emoji: "🙈" },
+        { text: "Research Market", isCorrect: true, emoji: "🔍" },
+        { text: "Ignore customers", isCorrect: false, emoji: "🚫" }
+      ]
     },
     {
       id: 3,
-      action: "Research Market",
-      wrong: "Act Blindly",
-      prompt: "Tap to research market!"
+      question: "Choose the smart entrepreneur choice:",
+      correctAnswer: "Save for Business",
+      options: [
+        { text: "Spend on wants", isCorrect: false, emoji: "🛍️" },
+        { text: "Waste money", isCorrect: false, emoji: "💸" },
+        { text: "Save for Business", isCorrect: true, emoji: "💰" }
+      ]
     },
     {
       id: 4,
-      action: "Build Team",
-      wrong: "Work Solo",
-      prompt: "Tap to build a team!"
+      question: "Choose the smart entrepreneur choice:",
+      correctAnswer: "Learn Skills",
+      options: [
+        { text: "Learn Skills", isCorrect: true, emoji: "📚" },
+        { text: "Avoid learning", isCorrect: false, emoji: "😴" },
+        { text: "Copy only", isCorrect: false, emoji: "📋" }
+      ]
     },
     {
       id: 5,
-      action: "Grow Steady",
-      wrong: "Rush Fast",
-      prompt: "Tap to grow steady!"
+      question: "Choose the smart entrepreneur choice:",
+      correctAnswer: "Start Small",
+      options: [
+        { text: "Start huge", isCorrect: false, emoji: "🎯" },
+        { text: "Start Small", isCorrect: true, emoji: "🌱" },
+        { text: "Never start", isCorrect: false, emoji: "❌" }
+      ]
     }
   ];
 
   useEffect(() => {
-    if (currentStage < stages.length) {
-      setTarget(Math.random() < 0.7 ? stages[currentStage].action : stages[currentStage].wrong);
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
-  }, [currentStage]);
+  }, [currentRound, gameState]);
 
-  const handleTap = (choice) => {
+  const handleTimeUp = useCallback(() => {
+    if (currentRound < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
+  }, [currentRound]);
+
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
     resetFeedback();
-    const isCorrect = choice === stages[currentStage].action;
+  };
 
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
     if (isCorrect) {
-      setCoins(prev => prev + 3);
-      showCorrectAnswerFeedback(3, true);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage(prev => prev + 1), 800);
-    } else {
-      const finalCoins = isCorrect ? coins + 3 : coins;
-      setFinalScore(Math.floor(finalCoins / 3));
-      setShowResult(true);
-    }
+    setTimeout(() => {
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
+      } else {
+        setGameState("finished");
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentStage(0);
-    setCoins(0);
-    setFinalScore(0);
-    setTarget("");
+    setGameState("ready");
+    setCurrentRound(0);
+    setScore(0);
+    setTimeLeft(ROUND_TIME);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => navigate("/student/finance/teen");
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Smart Entrepreneur"
-      score={coins}
-      subtitle={stages[currentStage]?.prompt || "Test your entrepreneur reflexes!"}
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      subtitle={
+        gameState === "ready" 
+          ? "Test your smart entrepreneur reflexes!" 
+          : gameState === "playing" 
+          ? `Round ${currentRound} of ${TOTAL_ROUNDS}` 
+          : "Game Complete!"
+      }
+      score={score}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore>= 3}
-      maxScore={stages.length} // Max score is total number of questions (all correct)
+      showGameOver={gameState === "finished"}
+      maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={gameState === "finished" && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      
-      gameId="finance-teens-159"
+      gameId={gameId}
       gameType="finance"
     >
-      <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <h3 className="text-3xl font-bold mb-4">Stage {currentStage + 1}</h3>
-            <div className="flex justify-center gap-6">
-              <button
-                onClick={() => handleTap(stages[currentStage].action)}
-                className="bg-green-500 hover:bg-green-600 px-8 py-4 rounded-full text-xl font-bold transition-transform hover:scale-105"
-              >
-                {stages[currentStage].action}
-              </button>
-              <button
-                onClick={() => handleTap(stages[currentStage].wrong)}
-                className="bg-red-500 hover:bg-red-600 px-8 py-4 rounded-full text-xl font-bold transition-transform hover:scale-105"
-              >
-                {stages[currentStage].wrong}
-              </button>
+      <div className="space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-4">⚡</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Ready to Test Your Smart Entrepreneur Reflexes?</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Choose the smart entrepreneur choice quickly!
+              You have {ROUND_TIME} seconds per question.
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Round {currentRound}/{TOTAL_ROUNDS}</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-yellow-400 font-bold">Score: {score}/{TOTAL_ROUNDS}</span>
+                  <div className="flex items-center gap-2">
+                    <span className={`text-lg font-bold ${timeLeft <= 3 ? "text-red-400 animate-pulse" : "text-blue-400"}`}>
+                      ⏱️ {timeLeft}s
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="w-full bg-white/20 rounded-full h-2 mb-6">
+                <div 
+                  className={`h-2 rounded-full transition-all ${timeLeft <= 3 ? "bg-red-500" : "bg-blue-500"}`}
+                  style={{ width: `${(timeLeft / ROUND_TIME) * 100}%` }}
+                />
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestion.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="text-white font-semibold text-lg">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-            <h3 className="text-3xl font-bold mb-4">Smart Entrepreneur Star!</h3>
-            <p className="text-white/90 text-lg mb-6">You scored {finalScore} out of 5!</p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80 mt-4">Lesson: Plan and take risks to succeed!</p>
-            {finalScore < 3 && (
-              <button
-                onClick={handleTryAgain}
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105 mt-4"
-              >
-                Try Again
-              </button>
+        )}
+
+        {gameState === "finished" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Smart Entrepreneur Master!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {TOTAL_ROUNDS}!
+                  You have quick reflexes for smart entrepreneurship!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Smart entrepreneurs plan and take calculated risks, research markets, save for business, learn skills, and start small!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You scored {score} out of {TOTAL_ROUNDS}.
+                  Practice makes perfect with smart entrepreneurship!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Always plan and take calculated risks, research markets, save for business, learn skills, and start small instead of spending all!
+                </p>
+              </div>
             )}
           </div>
         )}

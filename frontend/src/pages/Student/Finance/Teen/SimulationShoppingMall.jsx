@@ -1,48 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from '../GameShell';
-import { useGameFeedback } from '../../../../hooks/useGameFeedback';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 
-const SimulationShoppingMall = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  
-  // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-18";
-  const gameData = getGameDataById(gameId);
-  
-  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
-  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
-  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
-  const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [budget, setBudget] = useState(150);
-  const [cart, setCart] = useState([]);
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [scores, setScores] = useState(Array(5).fill(0));
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes per scenario
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
+// Items available in the shopping mall
+const items = [
+  { id: 1, name: "Designer Jeans", price: 80, category: "Clothing", necessity: "want" },
+  { id: 2, name: "Basic T-Shirt", price: 15, category: "Clothing", necessity: "need" },
+  { id: 3, name: "Smartphone", price: 700, category: "Electronics", necessity: "want" },
+  { id: 4, name: "School Supplies", price: 25, category: "Education", necessity: "need" },
+  { id: 5, name: "Gaming Headset", price: 120, category: "Electronics", necessity: "want" },
+  { id: 6, name: "Running Shoes", price: 90, category: "Footwear", necessity: "need" },
+  { id: 7, name: "Coffee Shop Gift Card", price: 25, category: "Food", necessity: "want" },
+  { id: 8, name: "Textbook", price: 120, category: "Education", necessity: "need" },
+  { id: 9, name: "Movie Tickets", price: 30, category: "Entertainment", necessity: "want" },
+  { id: 10, name: "Winter Coat", price: 150, category: "Clothing", necessity: "need" },
+  { id: 11, name: "Video Game", price: 60, category: "Entertainment", necessity: "want" },
+  { id: 12, name: "Toothbrush Set", price: 10, category: "Personal Care", necessity: "need" }
+];
 
-  // Items available in the shopping mall
-  const items = [
-    { id: 1, name: "Designer Jeans", price: 80, category: "Clothing", necessity: "want" },
-    { id: 2, name: "Basic T-Shirt", price: 15, category: "Clothing", necessity: "need" },
-    { id: 3, name: "Smartphone", price: 700, category: "Electronics", necessity: "want" },
-    { id: 4, name: "School Supplies", price: 25, category: "Education", necessity: "need" },
-    { id: 5, name: "Gaming Headset", price: 120, category: "Electronics", necessity: "want" },
-    { id: 6, name: "Running Shoes", price: 90, category: "Footwear", necessity: "need" },
-    { id: 7, name: "Coffee Shop Gift Card", price: 25, category: "Food", necessity: "want" },
-    { id: 8, name: "Textbook", price: 120, category: "Education", necessity: "need" },
-    { id: 9, name: "Movie Tickets", price: 30, category: "Entertainment", necessity: "want" },
-    { id: 10, name: "Winter Coat", price: 150, category: "Clothing", necessity: "need" },
-    { id: 11, name: "Video Game", price: 60, category: "Entertainment", necessity: "want" },
-    { id: 12, name: "Toothbrush Set", price: 10, category: "Personal Care", necessity: "need" }
-  ];
-
-  // Different shopping scenarios
-  const scenarios = [
+// Different shopping scenarios
+const scenarios = [
     {
       id: 1,
       title: "Back to School Shopping",
@@ -62,7 +41,7 @@ const SimulationShoppingMall = () => {
     {
       id: 3,
       title: "Emergency Clothing Needs",
-      budget: 80,
+      budget: 110,
       goal: "Replace essential clothing items after an unexpected situation",
       required: ["Basic T-Shirt", "Running Shoes"],
       timeLimit: 90
@@ -83,234 +62,225 @@ const SimulationShoppingMall = () => {
       required: ["Toothbrush Set"],
       timeLimit: 150
     }
-  ];
+];
 
-  // Reset timer when scenario changes
+const SimulationShoppingMall = () => {
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
+  const gameId = "finance-teens-18";
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [budget, setBudget] = useState(150);
+  const [cart, setCart] = useState([]);
+  const [currentScenario, setCurrentScenario] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+
+  // Reset budget and cart when scenario changes
   useEffect(() => {
-    setTimeLeft(scenarios[currentScenario].timeLimit);
-    setBudget(scenarios[currentScenario].budget);
-    setCart([]);
+    if (scenarios[currentScenario]) {
+      setBudget(scenarios[currentScenario].budget);
+      setCart([]);
+      setAnswered(false);
+    }
   }, [currentScenario]);
 
-  // Timer countdown
-  useEffect(() => {
-    if (timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timer);
-    } else {
-      // Time's up, evaluate the scenario
-      evaluateScenario();
-    }
-  }, [timeLeft]);
-
   const addToCart = (item) => {
-    resetFeedback();
+    if (answered) return;
     if (budget >= item.price) {
       setCart([...cart, item]);
       setBudget(budget - item.price);
-      showCorrectAnswerFeedback(1, true);
-      setFeedbackMessage("Added to cart!");
-      setIsSuccess(true);
-      
-      // Clear feedback after delay
-      setTimeout(() => {
-        setFeedbackMessage('');
-      }, 1000);
-    } else {
-      setFeedbackMessage("Not enough budget!");
-      setIsSuccess(false);
-      
-      // Clear feedback after delay
-      setTimeout(() => {
-        setFeedbackMessage('');
-      }, 1000);
     }
   };
 
   const removeFromCart = (itemId) => {
-    resetFeedback();
+    if (answered) return;
     const itemToRemove = cart.find(item => item.id === itemId);
     if (itemToRemove) {
       setCart(cart.filter(item => item.id !== itemId));
       setBudget(budget + itemToRemove.price);
-      showCorrectAnswerFeedback(1, true);
-      setFeedbackMessage("Removed from cart");
-      setIsSuccess(true);
-      
-      // Clear feedback after delay
-      setTimeout(() => {
-        setFeedbackMessage('');
-      }, 1000);
     }
   };
 
-  const evaluateScenario = () => {
+  const handleSubmit = () => {
+    if (answered) return;
+    
+    resetFeedback();
+    setAnswered(true);
+    
     const scenario = scenarios[currentScenario];
-    let score = 0;
+    let scenarioScore = 0;
     
     // Check if required items are purchased
     const requiredItems = scenario.required;
     const purchasedItems = cart.map(item => item.name);
-    const allRequiredPurchased = requiredItems.every(item => 
+    const allRequiredPurchased = requiredItems.length === 0 || requiredItems.every(item => 
       purchasedItems.includes(item)
     );
     
-    if (allRequiredPurchased) {
-      score += 1;
-    }
-    
     // Check if within budget
-    if (budget >= 0) {
-      score += 1;
+    const withinBudget = budget >= 0;
+    
+    // Award points
+    if (allRequiredPurchased && withinBudget) {
+      scenarioScore = 1;
     }
     
-    // Check if saved money (bonus point)
-    if (budget > scenario.budget * 0.1) {
-      score += 1;
+    if (scenarioScore > 0) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    const newScores = [...scores];
-    newScores[currentScenario] = score;
-    setScores(newScores);
-    
-    const message = score > 0 
-      ? `Great job! You scored ${score}/3 points.` 
-      : "Try again to improve your shopping strategy.";
-      
-    setFeedbackMessage(message);
-    setIsSuccess(score > 0);
+    const isLastScenario = currentScenario >= scenarios.length - 1;
     
     setTimeout(() => {
-      setFeedbackMessage('');
-      if (currentScenario < scenarios.length - 1) {
-        setCurrentScenario(currentScenario + 1);
+      if (isLastScenario) {
+        setShowResult(true);
       } else {
-        // For the last scenario, navigate after a delay
-        setTimeout(() => {
-          navigate('/games/financial-literacy/teen');
-        }, 3000);
+        setCurrentScenario(prev => prev + 1);
       }
-    }, 2000);
+    }, 1500);
   };
 
-  const calculateTotalScore = () => {
-    return scores.reduce((total, score) => total + score, 0);
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/financial-literacy/teen');
-  };
-
-  const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-  };
+  const currentScenarioData = scenarios[currentScenario];
+  const cartTotal = cart.reduce((sum, item) => sum + item.price, 0);
 
   return (
     <GameShell
-      gameId="finance-teens-18"
-      gameType="simulation"
+      title="Simulation: Shopping Mall"
+      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Simulation Complete!"}
+      gameId={gameId}
+      gameType="finance"
       totalLevels={scenarios.length}
-      coinsPerLevel={coinsPerLevel}
       currentLevel={currentScenario + 1}
-      score={calculateTotalScore()}
-      totalScore={scenarios.length * 3} // Max 3 points per scenario
-      onGameComplete={handleGameComplete}
-    
-      maxScore={scenarios.length} // Max score is total number of questions (all correct)
+      coinsPerLevel={coinsPerLevel}
+      score={score}
+      maxScore={scenarios.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="game-content">
-        <h3 className="text-xl font-bold mb-6 text-indigo-700">Shopping Mall Simulation</h3>
-        
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex justify-between items-center mb-4">
-            <h4 className="text-lg font-semibold text-gray-800">{scenarios[currentScenario].title}</h4>
-            <div className="text-right">
-              <div className="text-lg font-bold text-indigo-700">Budget: ${budget}</div>
-              <div className="text-sm text-gray-600">Time: {formatTime(timeLeft)}</div>
-            </div>
-          </div>
-          
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h5 className="font-medium text-blue-800 mb-2">Scenario Goal:</h5>
-            <p className="text-blue-700">{scenarios[currentScenario].goal}</p>
-            {scenarios[currentScenario].required.length > 0 && (
-              <p className="mt-2 text-blue-700">
-                <span className="font-medium">Required items:</span> {scenarios[currentScenario].required.join(", ")}
-              </p>
-            )}
-          </div>
-          
-          {feedbackMessage && (
-            <div className={`p-4 rounded-lg mb-4 ${
-              isSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-            }`}>
-              <p className="font-medium">{feedbackMessage}</p>
-            </div>
-          )}
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-            {items.map((item) => (
-              <div 
-                key={item.id} 
-                className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition duration-200"
-              >
-                <h5 className="font-medium text-gray-800">{item.name}</h5>
-                <div className="flex justify-between items-center mt-2">
-                  <span className="text-indigo-600 font-bold">${item.price}</span>
-                  <span className={`text-xs px-2 py-1 rounded ${
-                    item.necessity === 'need' 
-                      ? 'bg-green-100 text-green-800' 
-                      : 'bg-yellow-100 text-yellow-800'
-                  }`}>
-                    {item.necessity}
-                  </span>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      showConfetti={showResult && score === scenarios.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="text-center text-white space-y-4">
+        {!showResult && currentScenarioData && (
+          <div className="space-y-4 max-w-6xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/20">
+              <div className="flex justify-between items-center mb-3">
+                <h3 className="text-lg font-bold text-white">{currentScenarioData.title}</h3>
+                <div className="text-right">
+                  <div className="text-base font-bold text-yellow-400">Budget: ₹{budget}</div>
+                  <div className="text-xs text-white/70">Remaining</div>
                 </div>
-                <button
-                  onClick={() => addToCart(item)}
-                  disabled={budget < item.price}
-                  className={`mt-3 w-full py-2 rounded-lg text-sm font-medium transition duration-200 ${
-                    budget >= item.price
-                      ? 'bg-indigo-600 text-white hover:bg-indigo-700'
-                      : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  }`}
-                >
-                  Add to Cart
-                </button>
               </div>
-            ))}
-          </div>
-          
-          {cart.length > 0 && (
-            <div className="border-t border-gray-200 pt-4">
-              <h5 className="font-medium text-gray-800 mb-3">Your Shopping Cart:</h5>
-              <div className="space-y-2">
-                {cart.map((item) => (
-                  <div key={item.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-lg">
-                    <span>{item.name} - ${item.price}</span>
-                    <button
-                      onClick={() => removeFromCart(item.id)}
-                      className="text-red-600 hover:text-red-800 text-sm font-medium"
+              
+              <div className="bg-blue-500/20 border border-blue-400/50 rounded-lg p-3 mb-3">
+                <h5 className="font-medium text-blue-300 mb-1 text-sm">Goal:</h5>
+                <p className="text-white/90 text-xs">{currentScenarioData.goal}</p>
+                {currentScenarioData.required.length > 0 && (
+                  <p className="mt-1 text-white/80 text-xs">
+                    <span className="font-medium">Required:</span> {currentScenarioData.required.join(", ")}
+                  </p>
+                )}
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mb-3">
+                {items.map((item) => {
+                  const inCart = cart.some(cartItem => cartItem.id === item.id);
+                  const canAfford = budget >= item.price;
+                  
+                  return (
+                    <div 
+                      key={item.id} 
+                      className={`border rounded-lg p-2 transition duration-200 ${
+                        inCart 
+                          ? 'bg-green-500/30 border-green-400' 
+                          : 'bg-white/5 border-white/20 hover:bg-white/10'
+                      }`}
                     >
-                      Remove
-                    </button>
-                  </div>
-                ))}
+                      <h5 className="font-medium text-white text-xs mb-1">{item.name}</h5>
+                      <div className="flex justify-between items-center mb-1">
+                        <span className="text-yellow-400 font-bold text-xs">₹{item.price}</span>
+                        <span className={`text-xs px-1.5 py-0.5 rounded ${
+                          item.necessity === 'need' 
+                            ? 'bg-green-500/50 text-green-200' 
+                            : 'bg-yellow-500/50 text-yellow-200'
+                        }`}>
+                          {item.necessity}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => inCart ? removeFromCart(item.id) : addToCart(item)}
+                        disabled={!canAfford && !inCart || answered}
+                        className={`w-full py-1.5 rounded-lg text-xs font-medium transition duration-200 ${
+                          inCart
+                            ? 'bg-red-500 hover:bg-red-600 text-white'
+                            : canAfford && !answered
+                            ? 'bg-blue-500 hover:bg-blue-600 text-white'
+                            : 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                        }`}
+                      >
+                        {inCart ? 'Remove' : 'Add to Cart'}
+                      </button>
+                    </div>
+                  );
+                })}
               </div>
+              
+              {cart.length > 0 && (
+                <div className="border-t border-white/20 pt-3">
+                  <h5 className="font-medium text-white mb-2 text-sm">Shopping Cart ({cart.length} items):</h5>
+                  <div className="space-y-1 mb-2 max-h-24 overflow-y-auto">
+                    {cart.map((item) => (
+                      <div key={item.id} className="flex justify-between items-center bg-white/10 p-1.5 rounded-lg">
+                        <span className="text-white text-xs">{item.name} - ₹{item.price}</span>
+                        <button
+                          onClick={() => removeFromCart(item.id)}
+                          disabled={answered}
+                          className="text-red-400 hover:text-red-300 text-xs font-medium disabled:opacity-50"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="text-right text-white/80 text-xs">
+                    Total: ₹{cartTotal} | Remaining: ₹{budget}
+                  </div>
+                </div>
+              )}
+              
+              <button
+                onClick={handleSubmit}
+                disabled={answered || cart.length === 0}
+                className={`mt-3 w-full py-2 rounded-full text-sm font-semibold transition-transform ${
+                  !answered && cart.length > 0
+                    ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                    : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+                }`}
+              >
+                {currentScenario === scenarios.length - 1 ? 'Submit Final Cart' : 'Submit & Continue'}
+              </button>
             </div>
-          )}
-        </div>
-        
-        <div className="flex justify-between items-center">
-          <span className="text-gray-600">
-            Scenario {currentScenario + 1} of {scenarios.length}
-          </span>
-          <span className="font-medium text-indigo-700">
-            Score: {calculateTotalScore()}/{scenarios.length * 3}
-          </span>
-        </div>
+            
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-2 border border-white/20">
+              <span className="text-white/80 text-xs">
+                Scenario {currentScenario + 1} of {scenarios.length}
+              </span>
+              <span className="font-medium text-yellow-400 text-xs">
+                Score: {score}/{scenarios.length}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

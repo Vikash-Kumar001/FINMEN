@@ -45,8 +45,8 @@ const ReflexSmartSaver = () => {
       question: "What should you do before spending?",
       correctAnswer: "Budget First",
       options: [
-        { text: "Budget First", isCorrect: true, emoji: "📊" },
         { text: "Impulse Buy", isCorrect: false, emoji: "⚡" },
+        { text: "Budget First", isCorrect: true, emoji: "📊" },
         { text: "Spend Randomly", isCorrect: false, emoji: "🎲" },
         { text: "No Planning", isCorrect: false, emoji: "🚫" }
       ]
@@ -56,9 +56,9 @@ const ReflexSmartSaver = () => {
       question: "What's the best saving habit?",
       correctAnswer: "Save Regularly",
       options: [
-        { text: "Save Regularly", isCorrect: true, emoji: "💰" },
         { text: "Buy on Credit", isCorrect: false, emoji: "💳" },
         { text: "Never Save", isCorrect: false, emoji: "❌" },
+        { text: "Save Regularly", isCorrect: true, emoji: "💰" },
         { text: "Spend All", isCorrect: false, emoji: "💸" }
       ]
     },
@@ -67,10 +67,10 @@ const ReflexSmartSaver = () => {
       question: "What helps you stay focused on saving?",
       correctAnswer: "Set Goals",
       options: [
-        { text: "Set Goals", isCorrect: true, emoji: "🎯" },
         { text: "Spend All", isCorrect: false, emoji: "💸" },
         { text: "No Direction", isCorrect: false, emoji: "🤷" },
-        { text: "Ignore Planning", isCorrect: false, emoji: "🙈" }
+        { text: "Ignore Planning", isCorrect: false, emoji: "🙈" },
+        { text: "Set Goals", isCorrect: true, emoji: "🎯" }
       ]
     },
     {

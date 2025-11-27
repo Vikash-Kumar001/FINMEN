@@ -1,156 +1,293 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
+const questions = [
+  {
+    id: 1,
+    question: "What's the best way to track your spending?",
+    correctAnswer: "Record all expenses daily",
+    options: [
+      { 
+        text: "Record all expenses daily", 
+        isCorrect: true, 
+        emoji: "📝" 
+      },
+      { 
+        text: "Ignore small purchases", 
+        isCorrect: false, 
+        emoji: "🙈" 
+      },
+      { 
+        text: "Only track monthly totals", 
+        isCorrect: false, 
+        emoji: "📊" 
+      },
+      { 
+        text: "Guess your spending", 
+        isCorrect: false, 
+        emoji: "🎲" 
+      }
+    ],
+    explanation: "Tracking daily expenses helps you understand where your money goes and stay within budget"
+  },
+  {
+    id: 2,
+    question: "How often should you check your budget?",
+    correctAnswer: "Weekly or monthly",
+    options: [
+      { 
+        text: "Never check it", 
+        isCorrect: false, 
+        emoji: "🚫" 
+      },
+      { 
+        text: "Weekly or monthly", 
+        isCorrect: true, 
+        emoji: "📅" 
+      },
+      { 
+        text: "Only when you run out of money", 
+        isCorrect: false, 
+        emoji: "💸" 
+      },
+      { 
+        text: "Once a year", 
+        isCorrect: false, 
+        emoji: "📆" 
+      }
+    ],
+    explanation: "Regular budget reviews help you stay on track and adjust spending as needed"
+  },
+  {
+    id: 3,
+    question: "What should you do with receipts?",
+    correctAnswer: "Save them for tracking expenses",
+    options: [
+      { 
+        text: "Throw them away immediately", 
+        isCorrect: false, 
+        emoji: "🗑️" 
+      },
+      { 
+        text: "Only keep expensive receipts", 
+        isCorrect: false, 
+        emoji: "💎" 
+      },
+      { 
+        text: "Save them for tracking expenses", 
+        isCorrect: true, 
+        emoji: "💼" 
+      },
+      { 
+        text: "Give them to friends", 
+        isCorrect: false, 
+        emoji: "👥" 
+      }
+    ],
+    explanation: "Saving receipts helps you verify expenses and track your spending accurately"
+  },
+  {
+    id: 4,
+    question: "What's the first step in planning expenses?",
+    correctAnswer: "List all income sources",
+    options: [
+      { 
+        text: "List all income sources", 
+        isCorrect: true, 
+        emoji: "💰" 
+      },
+      { 
+        text: "Spend freely first", 
+        isCorrect: false, 
+        emoji: "🛍️" 
+      },
+      { 
+        text: "Borrow money", 
+        isCorrect: false, 
+        emoji: "💳" 
+      },
+      { 
+        text: "Ignore planning", 
+        isCorrect: false, 
+        emoji: "🙅" 
+      }
+    ],
+    explanation: "Knowing your income is essential before planning how to allocate your money"
+  },
+  {
+    id: 5,
+    question: "When should you update your budget?",
+    correctAnswer: "When income or expenses change",
+    options: [
+      { 
+        text: "Never update it", 
+        isCorrect: false, 
+        emoji: "🚫" 
+      },
+      { 
+        text: "Only at year end", 
+        isCorrect: false, 
+        emoji: "🎉" 
+      },
+      { 
+        text: "When income or expenses change", 
+        isCorrect: true, 
+        emoji: "🔄" 
+      },
+      { 
+        text: "When you feel like it", 
+        isCorrect: false, 
+        emoji: "😊" 
+      }
+    ],
+    explanation: "Updating your budget when circumstances change keeps it relevant and useful"
+  }
+];
+
 const ReflexBudgett = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-53";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-23");
+  const gameId = gameData?.id || "finance-teens-23";
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentStage, setCurrentStage] = useState(0);
-  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [target, setTarget] = useState("");
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
 
-  const stages = [
-    {
-      id: 1,
-      action: "Track Spending",
-      wrong: "Ignore Spending",
-      prompt: "Tap to track your spending!"
-    },
-    {
-      id: 2,
-      action: "Save Receipts",
-      wrong: "Throw Receipts",
-      prompt: "Tap to save receipts!"
-    },
-    {
-      id: 3,
-      action: "Check Budget",
-      wrong: "Skip Budget",
-      prompt: "Tap to check your budget!"
-    },
-    {
-      id: 4,
-      action: "Plan Expenses",
-      wrong: "Spend Freely",
-      prompt: "Tap to plan expenses!"
-    },
-    {
-      id: 5,
-      action: "Update Budget",
-      wrong: "Forget Budget",
-      prompt: "Tap to update your budget!"
-    }
-  ];
-
-  useEffect(() => {
-    if (currentStage < stages.length) {
-      setTarget(Math.random() < 0.7 ? stages[currentStage].action : stages[currentStage].wrong);
-    }
-  }, [currentStage]);
-
-  const handleTap = (choice) => {
+  const handleAnswer = (isCorrect, optionIndex) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    setSelectedAnswer(optionIndex);
     resetFeedback();
-    const isCorrect = choice === stages[currentStage].action;
 
     if (isCorrect) {
-      setCoins(prev => prev + 3);
-      showCorrectAnswerFeedback(3, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
 
-    if (currentStage < stages.length - 1) {
-      setTimeout(() => setCurrentStage(prev => prev + 1), 800);
-    } else {
-      const finalCoins = isCorrect ? coins + 3 : coins;
-      setFinalScore(Math.floor(finalCoins / 3));
-      setShowResult(true);
-    }
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentStage(0);
-    setCoins(0);
-    setFinalScore(0);
-    setTarget("");
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
     resetFeedback();
   };
 
-  const handleNext = () => navigate("/student/finance/teen");
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Reflex Budget Check"
-      score={coins}
-      subtitle={stages[currentStage]?.prompt || "Test your budgeting reflexes!"}
-      coins={coins}
-      currentLevel={currentStage + 1}
-      totalLevels={stages.length}
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore>= 3}
-      maxScore={stages.length} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      showConfetti={showResult && finalScore >= 3}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="finance"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      
-      gameId="finance-teens-53"
-      gameType="finance"
     >
-      <div className="text-center text-white space-y-8">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <h3 className="text-3xl font-bold mb-4">Stage {currentStage + 1}</h3>
-            <div className="flex justify-center gap-6">
-              <button
-                onClick={() => handleTap(stages[currentStage].action)}
-                className="bg-green-500 hover:bg-green-600 px-8 py-4 rounded-full text-xl font-bold transition-transform hover:scale-105"
-              >
-                {stages[currentStage].action}
-              </button>
-              <button
-                onClick={() => handleTap(stages[currentStage].wrong)}
-                className="bg-red-500 hover:bg-red-600 px-8 py-4 rounded-full text-xl font-bold transition-transform hover:scale-105"
-              >
-                {stages[currentStage].wrong}
-              </button>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestionData.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(option.isCorrect, idx)}
+                    disabled={answered}
+                    className={`bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none min-h-[60px] flex items-center justify-center gap-3 ${
+                      answered && selectedAnswer === idx
+                        ? option.isCorrect
+                          ? "ring-4 ring-green-400"
+                          : "ring-4 ring-red-400"
+                        : ""
+                    }`}
+                  >
+                    <span className="text-2xl">{option.emoji}</span>
+                    <span className="font-bold text-lg">{option.text}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-            <h3 className="text-3xl font-bold mb-4">Budget Reflex Star!</h3>
-            <p className="text-white/90 text-lg mb-6">You scored {finalScore} out of 5!</p>
-            <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-              +{coins} Coins
-            </div>
-            <p className="text-white/80 mt-4">Lesson: Quick budgeting keeps finances in check!</p>
-            {finalScore < 3 && (
-              <button
-                onClick={handleTryAgain}
-                className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105 mt-4"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct!
+                  You understand budgeting well!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Regular budget tracking and planning help you manage your finances effectively!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct.
+                  Remember to track expenses and review your budget regularly!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Budgeting involves tracking expenses, saving receipts, and regularly reviewing your financial plan.
+                </p>
+              </div>
             )}
           </div>
         )}

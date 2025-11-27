@@ -57,17 +57,17 @@ const QuizOnSavingsRate = () => {
       options: [
         { 
           id: "a", 
-          text: "₹200", 
-          emoji: "💰", 
-          description: "10% of ₹2000 is ₹200",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "₹300", 
           emoji: "🏦", 
           description: "15% of ₹2000 is ₹300",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "₹200", 
+          emoji: "💰", 
+          description: "10% of ₹2000 is ₹200",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -91,17 +91,17 @@ const QuizOnSavingsRate = () => {
         },
         { 
           id: "b", 
-          text: "20%", 
-          emoji: "✅", 
-          description: "You saved ₹1000 out of ₹5000, which is 20%",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "25%", 
           emoji: "🎯", 
           description: "You saved ₹1000 out of ₹5000, which is 20%",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "20%", 
+          emoji: "✅", 
+          description: "You saved ₹1000 out of ₹5000, which is 20%",
+          isCorrect: true
         }
       ]
     },
@@ -111,17 +111,17 @@ const QuizOnSavingsRate = () => {
       options: [
         { 
           id: "a", 
-          text: "₹1000", 
-          emoji: "🧮", 
-          description: "25% of ₹1000 is ₹250, not ₹500",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "₹2000", 
           emoji: "🧮", 
           description: "25% of ₹2000 is ₹500",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "₹1000", 
+          emoji: "🧮", 
+          description: "25% of ₹1000 is ₹250, not ₹500",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -145,17 +145,17 @@ const QuizOnSavingsRate = () => {
         },
         { 
           id: "b", 
-          text: "20%", 
-          emoji: "⚖️", 
-          description: "A balanced rate that allows for both current needs and future savings",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "50%", 
           emoji: "⚠️", 
           description: "Too high, may affect your current quality of life",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "20%", 
+          emoji: "⚖️", 
+          description: "A balanced rate that allows for both current needs and future savings",
+          isCorrect: true
         }
       ]
     }

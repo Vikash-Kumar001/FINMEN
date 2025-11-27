@@ -128,12 +128,14 @@ const teenFinanceGames = {
   // Third set of 10 games (budgeting focused)
   'allowance': Allowance,
   'budget-quiz': BudgetQuiz,
-  'reflex-budgett': ReflexBudgett,
+  'reflex-budget-check': ReflexBudgett,
   'puzzle-priorities': PuzzlePriorities,
   'college-story': CollegeStory,
   'debate-budget-freedom': DebateBudgetFreedom,
   'journal-monthly-budget': JournalMonthlyBudget,
+  'journal-planning': JournalMonthlyBudget,
   'simulation-monthly-allowance': SimulationMonthlyAllowance,
+  'simulation-allowance': SimulationMonthlyAllowance,
   'reflex-budget-smarts': ReflexBudgetSmarts,
   'badge-budget-hero': BadgeBudgetHero,
 

@@ -90,71 +90,48 @@ const ReflexMoneyTruthGame = () => {
     currentRoundRef.current = currentRound;
   }, [currentRound]);
 
-  const handleTimeUp = useCallback(() => {
-    if (answered) return;
-    
-    setAnswered(true);
-    resetFeedback();
-    
-    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
-    
-    setTimeout(() => {
-      if (isLastQuestion) {
-        setGameState("finished");
-      } else {
-        setCurrentRound((prev) => prev + 1);
-      }
-    }, 1000);
-  }, [answered, resetFeedback]);
-
-  // Timer effect - restarts when gameState, currentRound, or answered changes
+  // Reset timeLeft and answered when round changes
   useEffect(() => {
-    // Clear timer if not playing or if already answered
-    if (gameState !== "playing" || answered) {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
+  }, []);
+
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      return;
     }
 
-    // Don't start timer if round is invalid
-    if (currentRound < 1 || currentRound > TOTAL_ROUNDS) {
-      return;
-    }
-
-    // Reset timeLeft when round changes
-    setTimeLeft(ROUND_TIME);
-
-    // Clear any existing timer
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-
-    // Start new timer
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-          handleTimeUp();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    // Cleanup function
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
     };
-  }, [gameState, currentRound, answered, handleTimeUp]);
+  }, [gameState, answered, timeLeft, handleTimeUp]);
 
   const startGame = () => {
     setGameState("playing");
@@ -177,7 +154,6 @@ const ReflexMoneyTruthGame = () => {
     resetFeedback();
     
     const isCorrect = option.isCorrect;
-    const isLastQuestion = currentRound === questions.length;
     
     if (isCorrect) {
       setScore((prev) => prev + 1);
@@ -185,10 +161,10 @@ const ReflexMoneyTruthGame = () => {
     }
     
     setTimeout(() => {
-      if (isLastQuestion) {
-        setGameState("finished");
-      } else {
+      if (currentRound < TOTAL_ROUNDS) {
         setCurrentRound((prev) => prev + 1);
+      } else {
+        setGameState("finished");
       }
     }, 500);
   };

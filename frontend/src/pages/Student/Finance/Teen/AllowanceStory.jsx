@@ -8,8 +8,13 @@ const AllowanceStory = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-11";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-21");
+  const gameId = gameData?.id || "finance-teens-21";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for AllowanceStory, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
@@ -224,7 +229,7 @@ const AllowanceStory = () => {
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map((option, idx) => (
+                {currentQuestionData.options.map((option) => (
                   <button
                     key={option.id}
                     onClick={() => handleChoice(option.isCorrect)}

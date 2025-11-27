@@ -1,178 +1,277 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const CollegeStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-55";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-25");
+  const gameId = gameData?.id || "finance-teens-25";
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You get ₹1000 for college expenses. Spend all on outings?",
+      text: "You get ₹1000 for college expenses. How should you manage it?",
       options: [
-        { id: "no", text: "No, budget for needs", emoji: "📚", description: "Prioritize essentials", isCorrect: true },
-        { id: "yes", text: "Yes, enjoy outings", emoji: "🎉", description: "Spends all", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "spend", 
+          text: "Spend all on outings", 
+          emoji: "🎉", 
+          description: "Use all money for entertainment and fun", 
+          isCorrect: false 
+        },
+        { 
+          id: "budget", 
+          text: "Budget for needs first", 
+          emoji: "📚", 
+          description: "Prioritize essential expenses like books and fees", 
+          isCorrect: true 
+        },
+        { 
+          id: "save", 
+          text: "Save everything", 
+          emoji: "🏦", 
+          description: "Don't spend anything at all", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 2,
-      text: "You need books and want snacks. What’s first?",
+      text: "You need books and want snacks. What should you do first?",
       options: [
-        { id: "books", text: "Buy books", emoji: "📖", description: "Education first", isCorrect: true },
-        { id: "snacks", text: "Buy snacks", emoji: "🍫", description: "Fun over needs", isCorrect: false }
-      ],
-      reward: 5
+        { 
+          id: "books", 
+          text: "Buy books first", 
+          emoji: "📖", 
+          description: "Prioritize education essentials", 
+          isCorrect: true 
+        },
+        { 
+          id: "snacks", 
+          text: "Buy snacks first", 
+          emoji: "🍫", 
+          description: "Get snacks because they're more fun", 
+          isCorrect: false 
+        },
+        { 
+          id: "both", 
+          text: "Buy both equally", 
+          emoji: "⚖️", 
+          description: "Split money equally between both", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      text: "You get ₹500 extra. Save or spend on clothes?",
+      text: "You get ₹500 extra money. What's the best choice?",
       options: [
-        { id: "save", text: "Save for emergencies", emoji: "🏦", description: "Smart choice", isCorrect: true },
-        { id: "clothes", text: "Buy clothes", emoji: "👗", description: "Quick spend", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "clothes", 
+          text: "Buy new clothes", 
+          emoji: "👗", 
+          description: "Spend on fashionable items", 
+          isCorrect: false 
+        },
+        { 
+          id: "party", 
+          text: "Spend on party", 
+          emoji: "🎊", 
+          description: "Use it all for entertainment", 
+          isCorrect: false 
+        },
+        { 
+          id: "save", 
+          text: "Save for emergencies", 
+          emoji: "🏦", 
+          description: "Put money aside for unexpected expenses", 
+          isCorrect: true 
+        }
+      ]
     },
     {
       id: 4,
-      text: "You want a new phone but have fees due. What’s smarter?",
+      text: "You want a new phone but have college fees due. What should you do?",
       options: [
-        { id: "fees", text: "Pay fees", emoji: "💳", description: "Prioritize duties", isCorrect: true },
-        { id: "phone", text: "Buy phone", emoji: "📱", description: "Risky choice", isCorrect: false }
-      ],
-      reward: 6
+        { 
+          id: "fees", 
+          text: "Pay fees first", 
+          emoji: "💳", 
+          description: "Prioritize essential college expenses", 
+          isCorrect: true 
+        },
+        { 
+          id: "phone", 
+          text: "Buy the phone", 
+          emoji: "📱", 
+          description: "Get the phone you want", 
+          isCorrect: false 
+        },
+        { 
+          id: "both", 
+          text: "Buy both on credit", 
+          emoji: "💳", 
+          description: "Use credit card for both", 
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 5,
-      text: "You get a part-time job. How to manage earnings?",
+      text: "You get a part-time job earning ₹2000/month. How should you manage it?",
       options: [
-        { id: "budget", text: "Budget for needs, savings", emoji: "💰", description: "Balanced plan", isCorrect: true },
-        { id: "spend", text: "Spend all", emoji: "🛍️", description: "No savings", isCorrect: false }
-      ],
-      reward: 7
+        { 
+          id: "spend", 
+          text: "Spend all immediately", 
+          emoji: "🛍️", 
+          description: "Use all earnings for current wants", 
+          isCorrect: false 
+        },
+        { 
+          id: "save", 
+          text: "Save everything", 
+          emoji: "🏦", 
+          description: "Don't spend any of it", 
+          isCorrect: false 
+        },
+        { 
+          id: "budget", 
+          text: "Budget for needs and savings", 
+          emoji: "💰", 
+          description: "Plan for expenses and save a portion", 
+          isCorrect: true 
+        }
+      ]
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
-    const question = questions[currentQuestion];
-    const isCorrect = question.options.find(opt => opt.id === selectedChoice)?.isCorrect;
-
-    setChoices([...choices, { questionId: question.id, choice: selectedChoice, isCorrect }]);
+    
     if (isCorrect) {
-      setCoins(prev => prev + question.reward);
-      showCorrectAnswerFeedback(question.reward, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => setCurrentQuestion(prev => prev + 1), 800);
-    } else {
-      const correctAnswers = [...choices, { questionId: question.id, choice: selectedChoice, isCorrect }].filter(c => c.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
-    }
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
     setCurrentQuestion(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
-
-  const handleNext = () => navigate("/student/finance/teen");
 
   return (
     <GameShell
       title="College Story"
-      score={coins}
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      coins={coins}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       coinsPerLevel={coinsPerLevel}
-      onNext={showResult ? handleNext : null}
-      nextEnabled={showResult && finalScore>= 3}
-      maxScore={questions.length} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      showConfetti={showResult && finalScore >= 3}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="finance"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      
-      gameId="finance-teens-55"
-      gameType="finance"
     >
-      <div className="space-y-8 text-white">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-              <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-            </div>
-            <p className="text-xl mb-6">{questions[currentQuestion].text}</p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {questions[currentQuestion].options.map(opt => (
-                <button
-                  key={opt.id}
-                  onClick={() => handleChoice(opt.id)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-transform hover:scale-105"
-                >
-                  <div className="text-3xl mb-2">{opt.emoji}</div>
-                  <h3 className="font-bold text-xl mb-2">{opt.text}</h3>
-                  <p className="text-white/90">{opt.description}</p>
-                </button>
-              ))}
+      <div className="space-y-8">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
-            {finalScore >= 3 ? (
-              <>
-                <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-                <h3 className="text-3xl font-bold mb-4">College Budget Star!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct!</p>
-                <div className="bg-green-500 py-3 px-6 rounded-full inline-flex items-center gap-2">
-                  +{coins} Coins
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct!
+                  You're making smart financial decisions in college!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
                 </div>
-                <p className="text-white/80 mt-4">Lesson: Prioritize needs in college!</p>
-              </>
+                <p className="text-white/80">
+                  Lesson: Prioritize essential expenses like books and fees over wants like entertainment!
+                </p>
+              </div>
             ) : (
-              <>
+              <div>
                 <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold mb-4">Keep Practicing!</h3>
-                <p className="text-white/90 text-lg mb-6">You got {finalScore} out of 5 correct.</p>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct.
+                  Remember to prioritize needs over wants in college!
+                </p>
                 <button
                   onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-transform hover:scale-105"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
                 >
                   Try Again
                 </button>
-              </>
+                <p className="text-white/80 text-sm">
+                  Tip: Always prioritize essential expenses like books, fees, and groceries over entertainment and wants.
+                </p>
+              </div>
             )}
           </div>
         )}

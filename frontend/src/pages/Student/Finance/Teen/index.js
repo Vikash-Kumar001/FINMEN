@@ -36,6 +36,7 @@ import PuzzleRealPriorities from './PuzzleRealPriorities';
 import ExamPrepStory from './ExamPrepStory';
 import DebateWantsMatter from './DebateWantsMatter';
 import JournalOfBalance from './JournalOfBalance';
+import SavingsSaga from './SavingsSaga';
 import SimulationMonthlyBudget from './SimulationMonthlyBudget';
 import ReflexSmartSpend from './ReflexSmartSpend';
 import BadgeWiseChooser from './BadgeWiseChooser';
@@ -146,7 +147,9 @@ const teenFinanceGames = {
   'puzzle-real-priorities': PuzzleRealPriorities,
   'exam-prep-story': ExamPrepStory,
   'debate-wants-matter': DebateWantsMatter,
+  'debate-wants-matter-too': DebateWantsMatter,
   'journal-of-balance': JournalOfBalance,
+  'savings-saga': SavingsSaga,
   'simulation-monthly-budget': SimulationMonthlyBudget,
   'reflex-smart-spend': ReflexSmartSpend,
   'badge-wise-chooser': BadgeWiseChooser,

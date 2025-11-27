@@ -4,161 +4,161 @@ import GameShell from "../GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
-const MovieVsBusFareStory = () => {
+const SavingsSaga = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-31");
-  const gameId = gameData?.id || "finance-teens-31";
+  const gameData = getGameDataById("finance-teens-11");
+  const gameId = gameData?.id || "finance-teens-11";
   
   // Ensure gameId is always set correctly
   if (!gameData || !gameData.id) {
-    console.warn("Game data not found for MovieVsBusFareStory, using fallback ID");
+    console.warn("Game data not found for SavingsSaga, using fallback ID");
   }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You have ₹100. How should you use it?",
+      text: "You get ₹500 monthly. How should you manage it?",
       options: [
         { 
-          id: "bus", 
-          text: "Save for bus pass", 
-          emoji: "🚌", 
-          description: "Prioritize essential transport needs", 
-          isCorrect: true 
+          id: "divide", 
+          text: "Divide into needs/wants/savings", 
+          emoji: "💰", 
+          description: "Smart budgeting: allocate for essentials, fun, and future",
+          isCorrect: true
         },
         { 
-          id: "movie", 
-          text: "Spend on movie", 
-          emoji: "🎬", 
-          description: "Fun entertainment but not essential", 
-          isCorrect: false 
+          id: "spend", 
+          text: "Spend all on food", 
+          emoji: "🍕", 
+          description: "Use entire amount for food expenses",
+          isCorrect: false
         },
         { 
-          id: "split", 
-          text: "Split between both", 
-          emoji: "⚖️", 
-          description: "Use some for movie, some for bus", 
-          isCorrect: false 
+          id: "save", 
+          text: "Save everything", 
+          emoji: "🏦", 
+          description: "Don't spend anything at all",
+          isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "You have ₹150. What's the best choice?",
+      text: "You have ₹300. What's the best allocation?",
       options: [
         { 
-          id: "snack", 
-          text: "Buy a snack", 
-          emoji: "🍟", 
-          description: "Quick treat for immediate satisfaction", 
-          isCorrect: false 
+          id: "spend", 
+          text: "Spend all on snacks", 
+          emoji: "🍫", 
+          description: "Use all money for immediate treats",
+          isCorrect: false
         },
         { 
-          id: "bus", 
-          text: "Add to bus fare savings", 
-          emoji: "🚌", 
-          description: "Smart choice for essential commuting", 
-          isCorrect: true 
+          id: "divide", 
+          text: "Divide: needs, wants, savings", 
+          emoji: "⚖️", 
+          description: "Balance essentials, enjoyment, and future security",
+          isCorrect: true
         },
         { 
           id: "save", 
           text: "Save everything", 
           emoji: "💰", 
-          description: "Don't spend anything at all", 
-          isCorrect: false 
+          description: "Don't spend anything",
+          isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "You have ₹200. What should you prioritize?",
+      text: "You receive ₹400. How should you handle it?",
       options: [
         { 
-          id: "movie", 
-          text: "Movie night", 
-          emoji: "🎥", 
-          description: "Fun entertainment activity", 
-          isCorrect: false 
+          id: "divide", 
+          text: "Split: needs, wants, savings", 
+          emoji: "📊", 
+          description: "Plan for essentials, fun, and future goals",
+          isCorrect: true
         },
         { 
-          id: "split", 
-          text: "Split between both", 
-          emoji: "⚖️", 
-          description: "Use some for movie, some for bus", 
-          isCorrect: false 
+          id: "spend", 
+          text: "Spend all on entertainment", 
+          emoji: "🎬", 
+          description: "Use entire amount for movies and fun",
+          isCorrect: false
         },
         { 
-          id: "bus", 
-          text: "Weekly bus pass", 
-          emoji: "🚌", 
-          description: "Ensures reliable transportation", 
-          isCorrect: true 
+          id: "save", 
+          text: "Save everything", 
+          emoji: "🏦", 
+          description: "Don't spend anything",
+          isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "You have ₹120. What's the smart decision?",
+      text: "You have ₹600. What's the smart choice?",
       options: [
         { 
-          id: "bus", 
-          text: "Bus ticket", 
-          emoji: "🚌", 
-          description: "Practical choice for essential travel", 
-          isCorrect: true 
-        },
-        { 
-          id: "popcorn", 
-          text: "Popcorn at movies", 
-          emoji: "🍿", 
-          description: "Tempting treat but not necessary", 
-          isCorrect: false 
+          id: "spend", 
+          text: "Spend all on clothes", 
+          emoji: "👕", 
+          description: "Use all money for new clothes",
+          isCorrect: false
         },
         { 
           id: "save", 
-          text: "Save all of it", 
+          text: "Save everything", 
           emoji: "💰", 
-          description: "Don't spend anything", 
-          isCorrect: false 
+          description: "Don't spend anything",
+          isCorrect: false
+        },
+        { 
+          id: "divide", 
+          text: "Divide: needs, wants, savings", 
+          emoji: "⚖️", 
+          description: "Balance essentials, enjoyment, and savings",
+          isCorrect: true
         }
       ]
     },
     {
       id: 5,
-      text: "You have ₹300. What's the best use?",
+      text: "You get ₹800 monthly. How should you allocate it?",
       options: [
         { 
-          id: "cinema", 
-          text: "Cinema tickets", 
-          emoji: "🎬", 
-          description: "Short-term entertainment", 
-          isCorrect: false 
+          id: "divide", 
+          text: "Split: needs, wants, savings", 
+          emoji: "📈", 
+          description: "Plan for essentials, fun, and future security",
+          isCorrect: true
         },
         { 
-          id: "bus", 
-          text: "Monthly bus pass", 
-          emoji: "🚌", 
-          description: "Long-term reliable transportation", 
-          isCorrect: true 
+          id: "spend", 
+          text: "Spend all on gadgets", 
+          emoji: "📱", 
+          description: "Use entire amount for new gadgets",
+          isCorrect: false
         },
         { 
-          id: "split", 
-          text: "Split between both", 
-          emoji: "⚖️", 
-          description: "Use some for cinema, some for bus", 
-          isCorrect: false 
+          id: "save", 
+          text: "Save everything", 
+          emoji: "🏦", 
+          description: "Don't spend anything",
+          isCorrect: false
         }
       ]
     }
@@ -199,7 +199,7 @@ const MovieVsBusFareStory = () => {
 
   return (
     <GameShell
-      title="Movie vs Bus Fare Story"
+      title="Savings Saga"
       score={score}
       subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       coinsPerLevel={coinsPerLevel}
@@ -236,9 +236,11 @@ const MovieVsBusFareStory = () => {
                     disabled={answered}
                     className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
-                    <div className="text-3xl mb-3">{option.emoji}</div>
-                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="text-3xl mb-3">{option.emoji}</div>
+                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </div>
                   </button>
                 ))}
               </div>
@@ -252,13 +254,13 @@ const MovieVsBusFareStory = () => {
                 <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {questions.length} questions correct!
-                  You understand the importance of prioritizing essential expenses!
+                  You understand the importance of dividing money wisely!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Prioritize essential expenses like transport over entertainment wants!
+                  Lesson: Always divide your money into needs, wants, and savings for a balanced financial life!
                 </p>
               </div>
             ) : (
@@ -267,7 +269,7 @@ const MovieVsBusFareStory = () => {
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
                   You got {score} out of {questions.length} questions correct.
-                  Remember to prioritize essential expenses like transport over wants!
+                  Remember to divide your money into needs, wants, and savings!
                 </p>
                 <button
                   onClick={handleTryAgain}
@@ -276,7 +278,7 @@ const MovieVsBusFareStory = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Always prioritize essential expenses like transportation over entertainment wants.
+                  Tip: The smart approach is to divide your money: some for needs (essentials), some for wants (fun), and some for savings (future).
                 </p>
               </div>
             )}
@@ -287,4 +289,5 @@ const MovieVsBusFareStory = () => {
   );
 };
 
-export default MovieVsBusFareStory;
+export default SavingsSaga;
+

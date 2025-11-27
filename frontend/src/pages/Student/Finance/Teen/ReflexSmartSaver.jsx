@@ -90,6 +90,7 @@ const ReflexSmartSaver = () => {
     currentRoundRef.current = currentRound;
   }, [currentRound]);
 
+  // Reset timeLeft and answered when round changes
   useEffect(() => {
     if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
       setTimeLeft(ROUND_TIME);
@@ -98,53 +99,31 @@ const ReflexSmartSaver = () => {
   }, [currentRound, gameState]);
 
   const handleTimeUp = useCallback(() => {
-    setAnswered(true);
-    resetFeedback();
-    
-    const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
-    
-    setTimeout(() => {
-      if (isLastQuestion) {
-        setGameState("finished");
-      } else {
-        setCurrentRound((prev) => prev + 1);
-      }
-    }, 1000);
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
   }, []);
 
+  // Timer effect
   useEffect(() => {
-    if (gameState !== "playing") {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
       }
-      return;
     }
-
-    if (currentRoundRef.current > TOTAL_ROUNDS) {
-      setGameState("finished");
-      return;
-    }
-
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-
-    timerRef.current = setInterval(() => {
-      setTimeLeft((prev) => {
-        const newTime = prev - 1;
-        if (newTime <= 0) {
-          if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-          }
-          handleTimeUp();
-          return 0;
-        }
-        return newTime;
-      });
-    }, 1000);
 
     return () => {
       if (timerRef.current) {
@@ -152,7 +131,7 @@ const ReflexSmartSaver = () => {
         timerRef.current = null;
       }
     };
-  }, [gameState, handleTimeUp]);
+  }, [gameState, answered, timeLeft, handleTimeUp]);
 
   const startGame = () => {
     setGameState("playing");
@@ -166,27 +145,23 @@ const ReflexSmartSaver = () => {
   const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
     
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    
     setAnswered(true);
     resetFeedback();
     
     const isCorrect = option.isCorrect;
-    const isLastQuestion = currentRound === questions.length;
     
     if (isCorrect) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-    
+
     setTimeout(() => {
-      if (isLastQuestion) {
-        setGameState("finished");
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
       } else {
-        setCurrentRound((prev) => prev + 1);
+        setGameState("finished");
       }
     }, 500);
   };

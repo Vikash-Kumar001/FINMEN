@@ -223,20 +223,18 @@ const SpendingQuiz = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 gap-4">
-                {currentQuestionData.options.map((option, idx) => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
                   <button
                     key={option.id}
                     onClick={() => handleChoice(option.isCorrect)}
                     disabled={answered}
-                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
-                    <div className="flex items-center">
-                      <div className="text-2xl mr-4">{option.emoji}</div>
-                      <div>
-                        <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                        <p className="text-white/90">{option.description}</p>
-                      </div>
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="text-3xl mb-3">{option.emoji}</div>
+                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                      <p className="text-white/90 text-sm">{option.description}</p>
                     </div>
                   </button>
                 ))}

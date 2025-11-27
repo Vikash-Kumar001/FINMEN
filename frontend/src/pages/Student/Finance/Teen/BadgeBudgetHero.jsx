@@ -1,384 +1,296 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import { Trophy, Coins, PiggyBank, Wallet, ShoppingCart, Home, Car, GraduationCap, Heart } from "lucide-react";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../GameShell";
-import { useGameFeedback } from "../../../../hooks/useGameFeedback";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeBudgetHero = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "finance-teens-60";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("finance-teens-30");
+  const gameId = gameData?.id || "finance-teens-30";
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  const [gameState, setGameState] = useState('intro'); // intro, challenge, completed
-  const [currentChallenge, setCurrentChallenge] = useState(0);
+  const [challenge, setChallenge] = useState(0);
   const [score, setScore] = useState(0);
-  const [totalScore, setTotalScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [userChoices, setUserChoices] = useState([]);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [isSuccess, setIsSuccess] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Budgeting challenges
   const challenges = [
     {
       id: 1,
-      title: "Back-to-School Budget",
-      income: 200,
-      expenses: [
-        { id: 1, name: "Textbooks", amount: 80, icon: GraduationCap, priority: "essential" },
-        { id: 2, name: "Backpack", amount: 40, icon: ShoppingCart, priority: "important" },
-        { id: 3, name: "Designer Sneakers", amount: 120, icon: Car, priority: "want" },
-        { id: 4, name: "Lunch Money", amount: 30, icon: Home, priority: "essential" },
-        { id: 5, name: "Gadgets", amount: 100, icon: ShoppingCart, priority: "want" }
-      ],
-      goal: "Allocate your $200 wisely for school needs",
-      tip: "Prioritize essential items first, then important ones"
+      title: "Budget Planning",
+      question: "What should you do first when creating a budget?",
+      options: [
+        { 
+          text: "List all your income and expenses", 
+          emoji: "📋", 
+          isCorrect: true
+        },
+        { 
+          text: "Spend money on wants first", 
+          emoji: "🛍️", 
+          isCorrect: false
+        },
+        { 
+          text: "Ignore your expenses", 
+          emoji: "🙈", 
+          isCorrect: false
+        },
+        { 
+          text: "Save everything without planning", 
+          emoji: "💰", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "Monthly Allowance Challenge",
-      income: 150,
-      expenses: [
-        { id: 1, name: "Savings", amount: 50, icon: PiggyBank, priority: "essential" },
-        { id: 2, name: "Movie Tickets", amount: 25, icon: Heart, priority: "want" },
-        { id: 3, name: "New Clothes", amount: 60, icon: ShoppingCart, priority: "important" },
-        { id: 4, name: "Snacks", amount: 20, icon: Home, priority: "essential" },
-        { id: 5, name: "Video Game", amount: 40, icon: ShoppingCart, priority: "want" }
-      ],
-      goal: "Balance saving with spending on wants",
-      tip: "Always pay yourself first by saving before spending"
+      title: "Prioritizing Expenses",
+      question: "What should you prioritize in your budget?",
+      options: [
+        { 
+          text: "Buy wants before needs", 
+          emoji: "🎮", 
+          isCorrect: false
+        },
+        { 
+          text: "Cover essential needs first, then wants", 
+          emoji: "✅", 
+          isCorrect: true
+        },
+        { 
+          text: "Spend equally on everything", 
+          emoji: "⚖️", 
+          isCorrect: false
+        },
+        { 
+          text: "Only spend on wants", 
+          emoji: "💸", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Emergency Fund Setup",
-      income: 100,
-      expenses: [
-        { id: 1, name: "Emergency Savings", amount: 40, icon: PiggyBank, priority: "essential" },
-        { id: 2, name: "Phone Bill", amount: 30, icon: ShoppingCart, priority: "essential" },
-        { id: 3, name: "Concert Tickets", amount: 50, icon: Heart, priority: "want" },
-        { id: 4, name: "New Headphones", amount: 35, icon: ShoppingCart, priority: "important" },
-        { id: 5, name: "Coffee Shop", amount: 15, icon: Home, priority: "want" }
-      ],
-      goal: "Build an emergency fund while covering necessary expenses",
-      tip: "Emergency funds should be your top priority after essential expenses"
+      title: "Saving Strategy",
+      question: "What's the best way to save money?",
+      options: [
+        { 
+          text: "Save whatever is left after spending", 
+          emoji: "💵", 
+          isCorrect: false
+        },
+        { 
+          text: "Save first, then spend the rest", 
+          emoji: "💰", 
+          isCorrect: true
+        },
+        { 
+          text: "Never save anything", 
+          emoji: "❌", 
+          isCorrect: false
+        },
+        { 
+          text: "Save only when you have extra", 
+          emoji: "🎯", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      title: "Family Outing Budget",
-      income: 120,
-      expenses: [
-        { id: 1, name: "Transportation", amount: 25, icon: Car, priority: "essential" },
-        { id: 2, name: "Meals", amount: 40, icon: Home, priority: "essential" },
-        { id: 3, name: "Souvenirs", amount: 30, icon: ShoppingCart, priority: "want" },
-        { id: 4, name: "Activities", amount: 35, icon: Heart, priority: "important" },
-        { id: 5, name: "Snacks", amount: 10, icon: Home, priority: "essential" }
-      ],
-      goal: "Plan a fun family outing within budget",
-      tip: "Essential expenses come first, then allocate remaining funds for fun"
+      title: "Budget Tracking",
+      question: "How often should you review your budget?",
+      options: [
+        { 
+          text: "Never review it", 
+          emoji: "🚫", 
+          isCorrect: false
+        },
+        { 
+          text: "Review it regularly (weekly or monthly)", 
+          emoji: "✅", 
+          isCorrect: true
+        },
+        { 
+          text: "Review it only once a year", 
+          emoji: "📅", 
+          isCorrect: false
+        },
+        { 
+          text: "Review it only when you run out of money", 
+          emoji: "💸", 
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Teen Entrepreneur Budget",
-      income: 180,
-      expenses: [
-        { id: 1, name: "Business Supplies", amount: 50, icon: ShoppingCart, priority: "essential" },
-        { id: 2, name: "Marketing", amount: 30, icon: Wallet, priority: "important" },
-        { id: 3, name: "New Laptop", amount: 120, icon: ShoppingCart, priority: "want" },
-        { id: 4, name: "Savings", amount: 40, icon: PiggyBank, priority: "essential" },
-        { id: 5, name: "Business Training", amount: 35, icon: GraduationCap, priority: "important" }
-      ],
-      goal: "Invest in your business while saving for the future",
-      tip: "Invest in your business growth, but don't forget to save"
+      title: "Budget Flexibility",
+      question: "What should you do if you overspend in one category?",
+      options: [
+        { 
+          text: "Ignore it and continue spending", 
+          emoji: "🙈", 
+          isCorrect: false
+        },
+        { 
+          text: "Adjust other categories to stay within budget", 
+          emoji: "✅", 
+          isCorrect: true
+        },
+        { 
+          text: "Spend even more", 
+          emoji: "💳", 
+          isCorrect: false
+        },
+        { 
+          text: "Give up on budgeting", 
+          emoji: "😔", 
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  // Timer effect
-  useEffect(() => {
-    if (gameState === 'challenge' && timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && gameState === 'challenge') {
-      // Time's up, move to next challenge or complete game
-      handleChallengeComplete();
-    }
-  }, [gameState, timeLeft]);
-
-  const startGame = () => {
-    setGameState('challenge');
-    setCurrentChallenge(0);
-    setScore(0);
-    setTotalScore(0);
-    setTimeLeft(30);
-    setUserChoices([]);
-  };
-
-  const selectExpense = (expense) => {
-    if (gameState !== 'challenge') return;
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
     
+    setAnswered(true);
     resetFeedback();
     
-    // Check if expense is already selected
-    const isSelected = userChoices.some(choice => choice.id === expense.id);
-    
-    if (isSelected) {
-      // Remove expense
-      setUserChoices(userChoices.filter(choice => choice.id !== expense.id));
-      setScore(score - expense.amount);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      // Add expense if within budget
-      if (score + expense.amount <= challenges[currentChallenge].income) {
-        setUserChoices([...userChoices, expense]);
-        setScore(score + expense.amount);
-        showCorrectAnswerFeedback(10, true);
-        setFeedbackMessage(`+10 points! Added ${expense.name}`);
-        setIsSuccess(true);
-      } else {
-        setFeedbackMessage("Not enough budget for this item!");
-        setIsSuccess(false);
-      }
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastChallenge = challenge === challenges.length - 1;
     
-    // Clear feedback after delay
     setTimeout(() => {
-      setFeedbackMessage('');
-    }, 1500);
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  const handleChallengeComplete = () => {
-    // Calculate points for this challenge
-    const challengePoints = calculateChallengePoints();
-    setTotalScore(totalScore + challengePoints);
-    
-    if (currentChallenge < challenges.length - 1) {
-      // Move to next challenge
-      setCurrentChallenge(currentChallenge + 1);
-      setScore(0);
-      setUserChoices([]);
-      setTimeLeft(30);
-      setFeedbackMessage(`Challenge complete! +${challengePoints} points`);
-      setIsSuccess(true);
-      
-      setTimeout(() => {
-        setFeedbackMessage('');
-      }, 2000);
-    } else {
-      // Game completed
-      setGameState('completed');
-      setFeedbackMessage(`Game complete! Total score: ${totalScore + challengePoints}`);
-      setIsSuccess(true);
-    }
-  };
-
-  const calculateChallengePoints = () => {
-    // Points based on how well they budgeted
-    const selectedEssential = userChoices.filter(item => item.priority === 'essential').length;
-    const selectedImportant = userChoices.filter(item => item.priority === 'important').length;
-    const selectedWant = userChoices.filter(item => item.priority === 'want').length;
-    
-    // Base points for essential items
-    let points = selectedEssential * 20;
-    
-    // Bonus points for important items if budget allows
-    points += selectedImportant * 15;
-    
-    // Penalty for wants if budget is tight
-    if (score > challenges[currentChallenge].income * 0.8) {
-      points -= selectedWant * 10;
-    } else if (selectedWant > 0) {
-      points += selectedWant * 5; // Small bonus for reasonable wants
-    }
-    
-    // Bonus for staying within budget
-    if (score <= challenges[currentChallenge].income) {
-      points += 30;
-    }
-    
-    return Math.max(0, points); // Ensure non-negative points
-  };
-
-  const getPriorityColor = (priority) => {
-    switch (priority) {
-      case 'essential': return 'bg-red-100 text-red-800 border-red-300';
-      case 'important': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'want': return 'bg-green-100 text-green-800 border-green-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
-  };
-
-  const getPriorityLabel = (priority) => {
-    switch (priority) {
-      case 'essential': return 'Essential';
-      case 'important': return 'Important';
-      case 'want': return 'Want';
-      default: return 'Other';
-    }
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
   };
 
   return (
     <GameShell
-      gameId="finance-teens-60"
-      gameType="achievement"
+      title="Badge: Budget Hero"
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
+      score={score}
+      currentLevel={challenge + 1}
       totalLevels={challenges.length}
       coinsPerLevel={coinsPerLevel}
-      currentLevel={currentChallenge + 1}
-      score={totalScore}
-      totalScore={500} // Max possible score
-      onGameComplete={() => navigate("/games/financial-literacy/teen")}
-      maxScore={challenges.length} // Max score is total number of questions (all correct)   
+      showGameOver={showResult}
+      maxScore={challenges.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="finance"
     >
-      <div className="text-center text-white space-y-6">
-        <h3 className="text-3xl font-bold mb-4">Budget Hero Challenge</h3>
-        
-        {gameState === 'intro' && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4" />
-            <h4 className="text-2xl font-bold mb-4">Become a Budget Hero!</h4>
-            <p className="text-white/90 text-lg mb-6">
-              Test your budgeting skills with 5 real-life financial challenges
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-blue-200">
-                For each challenge, allocate your income wisely by selecting expenses. 
-                Prioritize essentials, balance wants, and stay within budget!
+      <div className="space-y-8">
+        {!showResult && challenges[challenge] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{challenges[challenge].title}</h3>
+              <p className="text-white text-lg mb-6">
+                {challenges[challenge].question}
               </p>
-            </div>
-            <button
-              onClick={startGame}
-              className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105"
-            >
-              Start Budgeting Challenge
-            </button>
-          </div>
-        )}
-        
-        {gameState === 'challenge' && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="flex justify-between items-center mb-6">
-              <div className="text-left">
-                <h4 className="text-xl font-bold">{challenges[currentChallenge].title}</h4>
-                <p className="text-white/80">{challenges[currentChallenge].goal}</p>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-yellow-400">${score} / ${challenges[currentChallenge].income}</div>
-                <div className="text-lg font-semibold text-red-400">{timeLeft}s</div>
-              </div>
-            </div>
-            
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-blue-200 text-sm">
-                <span className="font-bold">Tip:</span> {challenges[currentChallenge].tip}
-              </p>
-            </div>
-            
-            {feedbackMessage && (
-              <div className={`p-3 rounded-lg mb-4 ${
-                isSuccess ? 'bg-green-500/30 text-green-200 border border-green-400' : 'bg-red-500/30 text-red-200 border border-red-400'
-              }`}>
-                {feedbackMessage}
-              </div>
-            )}
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {challenges[currentChallenge].expenses.map((expense) => {
-                const IconComponent = expense.icon;
-                const isSelected = userChoices.some(choice => choice.id === expense.id);
-                
-                return (
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {challenges[challenge].options.map((option, idx) => (
                   <button
-                    key={expense.id}
-                    onClick={() => selectExpense(expense)}
-                    className={`p-4 rounded-xl border-2 transition-all duration-200 text-left ${
-                      isSelected 
-                        ? 'bg-green-500/30 border-green-400 transform scale-[1.02]' 
-                        : 'bg-white/5 hover:bg-white/10 border-white/30'
-                    }`}
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleAnswer(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center">
-                        <IconComponent className="w-6 h-6 mr-3 text-white" />
-                        <div>
-                          <div className="font-bold">{expense.name}</div>
-                          <div className="text-sm">${expense.amount}</div>
-                        </div>
-                      </div>
-                      <span className={`text-xs px-2 py-1 rounded-full ${getPriorityColor(expense.priority)}`}>
-                        {getPriorityLabel(expense.priority)}
-                      </span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
                   </button>
-                );
-              })}
-            </div>
-            
-            <div className="flex justify-between items-center">
-              <div className="text-left">
-                <div className="text-sm text-white/70">Selected Items: {userChoices.length}</div>
+                ))}
               </div>
-              <button
-                onClick={handleChallengeComplete}
-                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-full transition-all duration-300"
-              >
-                Finish Challenge
-              </button>
             </div>
           </div>
-        )}
-        
-        {gameState === 'completed' && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <Trophy className="mx-auto w-16 h-16 text-yellow-400 mb-4 animate-bounce" />
-            <h4 className="text-2xl font-bold mb-4">Budget Hero Achieved!</h4>
-            <p className="text-white/90 text-lg mb-6">Congratulations on mastering budgeting challenges!</p>
-            
-            <div className="bg-gradient-to-r from-yellow-500/30 to-orange-500/30 rounded-xl p-6 mb-6 border-2 border-yellow-400">
-              <div className="text-3xl font-bold text-yellow-300 mb-2">{totalScore} Points</div>
-              <p className="text-white/90">
-                {totalScore >= 400 ? "🏆 Budgeting Master!" : 
-                 totalScore >= 300 ? "🥇 Financial Expert!" : 
-                 totalScore >= 200 ? "🥈 Smart Budgeter!" : 
-                 "🥉 Keep Practicing!"}
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-green-500/20 rounded-lg p-3">
-                <Coins className="mx-auto w-8 h-8 text-green-400 mb-2" />
-                <div className="font-bold">{challenges.length}</div>
-                <div className="text-xs text-white/80">Challenges</div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🏆</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Budget Hero Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} challenges correct!
+                  You're a true Budget Hero!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Smart budgeting helps you achieve your financial goals and build a secure future!
+                </p>
               </div>
-              <div className="bg-blue-500/20 rounded-lg p-3">
-                <PiggyBank className="mx-auto w-8 h-8 text-blue-400 mb-2" />
-                <div className="font-bold">{userChoices.length}</div>
-                <div className="text-xs text-white/80">Items Selected</div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} challenges correct.
+                  Practice makes perfect with budgeting!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Remember to plan your budget, prioritize needs, save first, track regularly, and adjust as needed!
+                </p>
               </div>
-              <div className="bg-purple-500/20 rounded-lg p-3">
-                <Wallet className="mx-auto w-8 h-8 text-purple-400 mb-2" />
-                <div className="font-bold">${challenges[currentChallenge].income * challenges.length}</div>
-                <div className="text-xs text-white/80">Total Budget</div>
-              </div>
-            </div>
-            
-            <p className="text-white/80 mb-6">
-              Lesson: Smart budgeting leads to financial success!
-            </p>
-            
-            <button
-              onClick={() => navigate("/games/financial-literacy/teen")}
-              className="bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white font-bold py-3 px-8 rounded-full text-lg transition-all duration-300 transform hover:scale-105"
-            >
-              Continue Financial Journey
-            </button>
+            )}
           </div>
         )}
       </div>

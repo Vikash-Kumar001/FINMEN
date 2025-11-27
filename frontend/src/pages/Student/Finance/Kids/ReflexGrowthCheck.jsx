@@ -34,8 +34,8 @@ const ReflexGrowthCheck = () => {
       question: "What happens when your money earns interest?",
       correctAnswer: "Interest Earned",
       options: [
-        { text: "Interest Earned", isCorrect: true, emoji: "💰" },
         { text: "Money Lost", isCorrect: false, emoji: "💸" },
+        { text: "Interest Earned", isCorrect: true, emoji: "💰" },
         { text: "No Change", isCorrect: false, emoji: "😐" },
         { text: "Money Stolen", isCorrect: false, emoji: "😈" }
       ]
@@ -56,10 +56,10 @@ const ReflexGrowthCheck = () => {
       question: "What happens when your investment succeeds?",
       correctAnswer: "Profit Made",
       options: [
-        { text: "Profit Made", isCorrect: true, emoji: "💵" },
         { text: "Loss Incurred", isCorrect: false, emoji: "📉" },
         { text: "Money Frozen", isCorrect: false, emoji: "🧊" },
-        { text: "Investment Gone", isCorrect: false, emoji: "💔" }
+        { text: "Investment Gone", isCorrect: false, emoji: "💔" },
+        { text: "Profit Made", isCorrect: true, emoji: "💵" },
       ]
     },
     {
@@ -78,9 +78,9 @@ const ReflexGrowthCheck = () => {
       question: "What happens when you invest wisely over time?",
       correctAnswer: "Wealth Grows",
       options: [
-        { text: "Wealth Grows", isCorrect: true, emoji: "🌳" },
         { text: "Funds Shrink", isCorrect: false, emoji: "💸" },
         { text: "Wealth Stays Same", isCorrect: false, emoji: "➡️" },
+        { text: "Wealth Grows", isCorrect: true, emoji: "🌳" },
         { text: "Wealth Disappears", isCorrect: false, emoji: "👻" }
       ]
     }

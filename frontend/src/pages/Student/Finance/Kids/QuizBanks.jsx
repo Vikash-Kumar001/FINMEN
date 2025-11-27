@@ -63,19 +63,19 @@ const QuizBanks = () => {
           isCorrect: false
         },
         { 
-          id: "grows", 
-          text: "Grows your money", 
-          emoji: "📈", 
-          description: "Helps your money increase over time",
-          isCorrect: true
-        },
-        { 
           id: "food", 
           text: "Sells food", 
           emoji: "🍕", 
           description: "Sells food items",
           isCorrect: false
-        }
+        },
+        {
+          id: "grows",
+          text: "Grows your money",
+          emoji: "📈",
+          description: "Helps your money increase over time",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -137,13 +137,6 @@ const QuizBanks = () => {
       text: "Why are banks safe for money?",
       options: [
         { 
-          id: "protect", 
-          text: "They protect your savings", 
-          emoji: "🛡️", 
-          description: "Keep your money secure",
-          isCorrect: true
-        },
-        { 
           id: "candy", 
           text: "They give you candy", 
           emoji: "🍬", 
@@ -156,7 +149,14 @@ const QuizBanks = () => {
           emoji: "🫥", 
           description: "Hide your money away",
           isCorrect: false
-        }
+        },
+        {
+          id: "protect",
+          text: "They protect your savings",
+          emoji: "🛡️",
+          description: "Keep your money secure",
+          isCorrect: true
+        },
       ]
     }
   ];

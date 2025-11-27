@@ -29,18 +29,18 @@ const LostCoinStoryGame = () => {
       text: "You find ₹5 on the floor. What do you do?",
       options: [
         { 
-          id: "teacher", 
-          text: "Give to teacher", 
-          emoji: "🧑‍🏫", 
-          description: "Turn it in to teacher",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep it", 
           emoji: "🤫", 
           description: "Keep the money",
           isCorrect: false
+        },
+        {
+          id: "teacher",
+          text: "Give to teacher",
+          emoji: "🧑‍🏫",
+          description: "Turn it in to teacher",
+          isCorrect: true
         },
         { 
           id: "candy", 
@@ -110,13 +110,6 @@ const LostCoinStoryGame = () => {
       text: "You see ₹20 on the street. What's best?",
       options: [
         { 
-          id: "find", 
-          text: "Ask around to find the owner", 
-          emoji: "🕵️", 
-          description: "Try to locate owner",
-          isCorrect: true
-        },
-        { 
           id: "home", 
           text: "Take it home", 
           emoji: "💰", 
@@ -129,7 +122,14 @@ const LostCoinStoryGame = () => {
           emoji: "🍦", 
           description: "Spend immediately",
           isCorrect: false
-        }
+        },
+        {
+          id: "find",
+          text: "Ask around to find the owner",
+          emoji: "🕵️",
+          description: "Try to locate owner",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -137,18 +137,18 @@ const LostCoinStoryGame = () => {
       text: "Why is it good to be honest with found money?",
       options: [
         { 
-          id: "trust", 
-          text: "Builds trust and respect", 
-          emoji: "😊", 
-          description: "Creates positive relationships",
-          isCorrect: true
-        },
-        { 
           id: "money", 
           text: "Gets you more money", 
           emoji: "💰", 
           description: "Receive more cash",
           isCorrect: false
+        },
+        {
+          id: "trust",
+          text: "Builds trust and respect",
+          emoji: "😊",
+          description: "Creates positive relationships",
+          isCorrect: true
         },
         { 
           id: "things", 

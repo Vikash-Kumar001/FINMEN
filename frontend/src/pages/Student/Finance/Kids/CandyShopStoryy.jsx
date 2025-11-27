@@ -56,13 +56,6 @@ const CandyShopStoryy = () => {
       text: "You have ₹50. The candy costs ₹15. How much change should you get?",
       options: [
         { 
-          id: "35", 
-          text: "₹35", 
-          emoji: "💰", 
-          description: "50 - 15 = 35",
-          isCorrect: true
-        },
-        { 
           id: "25", 
           text: "₹25", 
           emoji: "💸", 
@@ -75,7 +68,14 @@ const CandyShopStoryy = () => {
           emoji: "💵", 
           description: "50 - 10 = 40",
           isCorrect: false
-        }
+        },
+        {
+          id: "35",
+          text: "₹35",
+          emoji: "💰",
+          description: "50 - 15 = 35",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -110,18 +110,18 @@ const CandyShopStoryy = () => {
       text: "You want to buy two candies at ₹10 each. Can you afford it with ₹15?",
       options: [
         { 
-          id: "no", 
-          text: "No, I need ₹20", 
-          emoji: "💰", 
-          description: "Need 20 rupees total",
-          isCorrect: true
-        },
-        { 
           id: "yes", 
           text: "Yes, I have enough", 
           emoji: "😊", 
           description: "Think you have enough",
           isCorrect: false
+        },
+        {
+          id: "no",
+          text: "No, I need ₹20",
+          emoji: "💰",
+          description: "Need 20 rupees total",
+          isCorrect: true
         },
         { 
           id: "discount", 
@@ -137,18 +137,18 @@ const CandyShopStoryy = () => {
       text: "What's the best way to shop smartly?",
       options: [
         { 
-          id: "check", 
-          text: "Check prices and bills carefully", 
-          emoji: "🧾", 
-          description: "Review everything before paying",
-          isCorrect: true
-        },
-        { 
           id: "everything", 
           text: "Buy everything you see", 
           emoji: "🛒", 
           description: "Purchase all items",
           isCorrect: false
+        },
+        {
+          id: "check",
+          text: "Check prices and bills carefully",
+          emoji: "🧾",
+          description: "Review everything before paying",
+          isCorrect: true
         },
         { 
           id: "friends", 

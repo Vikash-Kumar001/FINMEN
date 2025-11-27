@@ -30,9 +30,9 @@ const BadgeBankExplorer = () => {
       text: "What is the main purpose of a bank?",
       icon: Building2,
       options: [
-        { text: "To keep money safe and help it grow", correct: true },
         { text: "To give free toys", correct: false },
-        { text: "Only for adults to visit", correct: false }
+        { text: "Only for adults to visit", correct: false },
+        { text: "To keep money safe and help it grow", correct: true },
       ]
     },
     {
@@ -50,8 +50,8 @@ const BadgeBankExplorer = () => {
       text: "What should you NEVER do with your ATM card?",
       icon: CreditCard,
       options: [
-        { text: "Share your PIN with strangers", correct: true },
-        { text: "Keep it in a safe place", correct: false },
+        { text: "Share your PIN with strangers", correct: false },
+        { text: "Never share with anyone", correct: true },
         { text: "Use it with parent's permission", correct: false }
       ]
     },
@@ -60,8 +60,8 @@ const BadgeBankExplorer = () => {
       text: "Why do banks have security guards and cameras?",
       icon: Lock,
       options: [
-        { text: "To protect everyone's money", correct: true },
         { text: "To scare children", correct: false },
+        { text: "To protect everyone's money", correct: true },
         { text: "Just for decoration", correct: false }
       ]
     },
@@ -70,9 +70,9 @@ const BadgeBankExplorer = () => {
       text: "Which service do banks provide to help people?",
       icon: Users,
       options: [
-        { text: "Loans to start businesses or buy homes", correct: true },
         { text: "Free vacations", correct: false },
-        { text: "Magic money machines", correct: false }
+        { text: "Magic money machines", correct: false },
+        { text: "Loans to start businesses or buy homes", correct: true },
       ]
     }
   ];

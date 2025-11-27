@@ -23,42 +23,42 @@ const PuzzleHonestVsFraud = () => {
 
   const stages = [
     {
-      question: "Match: Fair Shop → Trust",
+      question: "Match: Fair Shop",
       choices: [
-        { text: "Fair Shop = Trust 🤝", correct: true },
-        { text: "Fair Shop = Loss 😞", correct: false },
-        { text: "Fair Shop = Scam 🚨", correct: false },
+        { text: "Loss 😞", correct: false },
+        { text: "Scam 🚨", correct: false },
+        { text: "Trust 🤝", correct: true },
       ],
     },
     {
-      question: "Match: Cheat Shop → Loss",
+      question: "Match: Cheat Shop",
       choices: [
-        { text: "Cheat Shop = Loss 😞", correct: true },
-        { text: "Cheat Shop = Trust 🤝", correct: false },
-        { text: "Cheat Shop = Gain 💰", correct: false },
+        { text: "Loss 😞", correct: true },
+        { text: "Trust 🤝", correct: false },
+        { text: "Gain 💰", correct: false },
       ],
     },
     {
-      question: "Match: Honest Seller → Fair Price",
+      question: "Match: Honest Seller",
       choices: [
-        { text: "Honest Seller = Fair Price 💸", correct: true },
-        { text: "Honest Seller = Overcharge 📈", correct: false },
-        { text: "Honest Seller = No Sale 🛑", correct: false },
+        { text: "Overcharge 📈", correct: false },
+        { text: "Fair Price 💸", correct: true },
+        { text: "No Sale 🛑", correct: false },
       ],
     },
     {
-      question: "Match: Fraud Shop → Scam",
+      question: "Match: Fraud Shop",
       choices: [
-        { text: "Fraud Shop = Scam 🚨", correct: true },
-        { text: "Fraud Shop = Trust 🤝", correct: false },
-        { text: "Fraud Shop = Savings 💰", correct: false },
+        { text: "Scam 🚨", correct: true },
+        { text: "Trust 🤝", correct: false },
+        { text: "Savings 💰", correct: false },
       ],
     },
     {
       question: "Why is it important to shop at honest stores?",
       choices: [
-        { text: "Builds trust and saves money 📚", correct: true },
         { text: "Gets you more toys 🧸", correct: false },
+        { text: "Builds trust and saves money 📚", correct: true },
         { text: "Makes shopping fun 🎉", correct: false },
       ],
     },

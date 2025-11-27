@@ -7,11 +7,11 @@ import { getGameDataById } from "../../../../utils/getGameData";
 const SchoolFairStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-28";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -28,18 +28,25 @@ const SchoolFairStory = () => {
       id: 1,
       text: "You have ₹50 for the fair. What do you do?",
       options: [
-        { 
-          id: "plan", 
-          text: "Plan for Both", 
-          emoji: "🎯", 
+        {
+          id: "toys",
+          text: "Spend on Toys",
+          emoji: "🧸",
+          description: "Buy toys only, forget about food",
+          isCorrect: false
+        },
+        {
+          id: "plan",
+          text: "Plan for Both",
+          emoji: "🎯",
           description: "Budget for snacks and games together",
           isCorrect: true
         },
-        { 
-          id: "toys", 
-          text: "Spend on Toys", 
-          emoji: "🧸", 
-          description: "Buy toys only, forget about food",
+        {
+          id: "food",
+          text: "Buy Only Food",
+          emoji: "🍔",
+          description: "Spend all on food, no games",
           isCorrect: false
         }
       ]
@@ -48,19 +55,26 @@ const SchoolFairStory = () => {
       id: 2,
       text: "You want snacks and games. What's smarter?",
       options: [
-        { 
-          id: "budget", 
-          text: "Budget Food", 
-          emoji: "🍕", 
-          description: "Plan money for food first, then games",
-          isCorrect: true
-        },
-        { 
-          id: "games", 
-          text: "Buy Games", 
-          emoji: "🎮", 
+        {
+          id: "games",
+          text: "Buy Games",
+          emoji: "🎮",
           description: "Spend all on games",
           isCorrect: false
+        },
+        {
+          id: "snacks",
+          text: "Buy Only Snacks",
+          emoji: "🍿",
+          description: "Spend all on snacks",
+          isCorrect: false
+        },
+        {
+          id: "budget",
+          text: "Budget Food",
+          emoji: "🍕",
+          description: "Plan money for food first, then games",
+          isCorrect: true
         }
       ]
     },
@@ -68,18 +82,25 @@ const SchoolFairStory = () => {
       id: 3,
       text: "You get ₹30 more. What now?",
       options: [
-        { 
-          id: "save", 
-          text: "Save Some", 
-          emoji: "💰", 
+        {
+          id: "save",
+          text: "Save Some",
+          emoji: "💰",
           description: "Keep some money aside",
           isCorrect: true
         },
-        { 
-          id: "spend", 
-          text: "Spend All", 
-          emoji: "🛍️", 
+        {
+          id: "spend",
+          text: "Spend All",
+          emoji: "🛍️",
           description: "Use all the money immediately",
+          isCorrect: false
+        },
+        {
+          id: "gamble",
+          text: "Gamble It",
+          emoji: "🎲",
+          description: "Try to double the money with games",
           isCorrect: false
         }
       ]
@@ -88,18 +109,25 @@ const SchoolFairStory = () => {
       id: 4,
       text: "Your friend has no money. What do you do?",
       options: [
-        { 
-          id: "share", 
-          text: "Share with Friend", 
-          emoji: "🤝", 
+        {
+          id: "keep",
+          text: "Keep All",
+          emoji: "👤",
+          description: "Use all money for yourself",
+          isCorrect: false
+        },
+        {
+          id: "share",
+          text: "Share with Friend",
+          emoji: "🤝",
           description: "Help your friend enjoy the fair",
           isCorrect: true
         },
-        { 
-          id: "keep", 
-          text: "Keep All", 
-          emoji: "👤", 
-          description: "Use all money for yourself",
+        {
+          id: "lend",
+          text: "Lend Money",
+          emoji: "💸",
+          description: "Let your friend borrow money",
           isCorrect: false
         }
       ]
@@ -108,19 +136,26 @@ const SchoolFairStory = () => {
       id: 5,
       text: "You see cool toys. What's the best choice?",
       options: [
-        { 
-          id: "one", 
-          text: "Buy One Toy", 
-          emoji: "🎁", 
-          description: "Choose one favorite toy",
-          isCorrect: true
-        },
-        { 
-          id: "many", 
-          text: "Buy Many", 
-          emoji: "🛒", 
+        {
+          id: "many",
+          text: "Buy Many",
+          emoji: "🛒",
           description: "Buy multiple toys at once",
           isCorrect: false
+        },
+        {
+          id: "none",
+          text: "Buy None",
+          emoji: "❌",
+          description: "Don't buy any toys",
+          isCorrect: false
+        },
+        {
+          id: "one",
+          text: "Buy One Toy",
+          emoji: "🎁",
+          description: "Choose one favorite toy",
+          isCorrect: true
         }
       ]
     }
@@ -136,21 +171,21 @@ const SchoolFairStory = () => {
       return;
     }
 
-    const newChoices = [...choices, { 
-      questionId: currentQ.id, 
+    const newChoices = [...choices, {
+      questionId: currentQ.id,
       choice: selectedChoice,
       isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
     }];
-    
+
     setChoices(newChoices);
-    
+
     // If the choice is correct, add coins and show flash/confetti
     const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    
+
     // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
@@ -206,12 +241,12 @@ const SchoolFairStory = () => {
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
                 <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
               </div>
-              
+
               <p className="text-white text-lg mb-6 text-center">
                 {currentQuestionData.text}
               </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}

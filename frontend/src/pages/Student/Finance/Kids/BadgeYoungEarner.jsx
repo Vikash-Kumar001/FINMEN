@@ -31,9 +31,9 @@ const BadgeYoungEarner = () => {
       icon: Sparkles,
       item: "Chores",
       options: [
-        { text: "Do chores like cleaning room", correct: true, coins: 10 },
         { text: "Demand money for nothing", correct: false, coins: 0 },
-        { text: "Take from parents' wallet", correct: false, coins: 0 }
+        { text: "Take from parents' wallet", correct: false, coins: 0 },
+        { text: "Do chores like cleaning room", correct: true, coins: 1 },
       ],
       feedback: {
         correct: "Excellent! Doing chores teaches responsibility and earns money fairly!",
@@ -47,7 +47,7 @@ const BadgeYoungEarner = () => {
       icon: Star,
       item: "Selling",
       options: [
-        { text: "Sell them to earn money", correct: true, coins: 15 },
+        { text: "Sell them to earn money", correct: true, coins: 1 },
         { text: "Throw them in trash", correct: false, coins: 0 },
         { text: "Hoard them forever", correct: false, coins: 0 }
       ],
@@ -63,9 +63,9 @@ const BadgeYoungEarner = () => {
       icon: Award,
       item: "Teaching",
       options: [
-        { text: "Teach friends for small fee", correct: true, coins: 20 },
         { text: "Keep skills to myself", correct: false, coins: 0 },
-        { text: "Copy others' work", correct: false, coins: 0 }
+        { text: "Copy others' work", correct: false, coins: 0 },
+        { text: "Teach friends for small fee", correct: true, coins: 1 },
       ],
       feedback: {
         correct: "Amazing! Using your skills to teach others is a great way to earn money!",
@@ -79,8 +79,8 @@ const BadgeYoungEarner = () => {
       icon: Coins,
       item: "Crafts",
       options: [
-        { text: "Make crafts and sell them", correct: true, coins: 25 },
         { text: "Do nothing and watch", correct: false, coins: 0 },
+        { text: "Make crafts and sell them", correct: true, coins: 1 },
         { text: "Steal others' ideas", correct: false, coins: 0 }
       ],
       feedback: {
@@ -95,7 +95,7 @@ const BadgeYoungEarner = () => {
       icon: DollarSign,
       item: "Studying",
       options: [
-        { text: "Study hard and earn fairly", correct: true, coins: 30 },
+        { text: "Study hard and earn fairly", correct: true, coins: 1 },
         { text: "Cheat on tests", correct: false, coins: 0 },
         { text: "Make excuses for bad grades", correct: false, coins: 0 }
       ],

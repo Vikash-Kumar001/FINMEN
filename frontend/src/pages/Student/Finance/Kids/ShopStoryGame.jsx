@@ -55,13 +55,6 @@ const ShopStoryGame = () => {
       text: "You find a cheaper item. What do you do?",
       options: [
         { 
-          id: "honest", 
-          text: "Be Honest", 
-          emoji: "✅", 
-          description: "Tell the shopkeeper",
-          isCorrect: true
-        },
-        { 
           id: "lie", 
           text: "Lie About Price", 
           emoji: "🙊", 
@@ -74,20 +67,20 @@ const ShopStoryGame = () => {
           emoji: "🙈", 
           description: "Don't say anything",
           isCorrect: false
-        }
+        },
+        {
+          id: "honest",
+          text: "Be Honest",
+          emoji: "✅",
+          description: "Tell the shopkeeper",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 3,
       text: "Seller quotes a price. What's next?",
       options: [
-        { 
-          id: "pay", 
-          text: "Pay Fairly", 
-          emoji: "⚖️", 
-          description: "Pay the fair price",
-          isCorrect: true
-        },
         { 
           id: "bargain", 
           text: "Bargain Unfairly", 
@@ -101,7 +94,14 @@ const ShopStoryGame = () => {
           emoji: "🚫", 
           description: "Don't pay at all",
           isCorrect: false
-        }
+        },
+        {
+          id: "pay",
+          text: "Pay Fairly",
+          emoji: "⚖️",
+          description: "Pay the fair price",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -136,18 +136,18 @@ const ShopStoryGame = () => {
       text: "Store overcharges you. What now?",
       options: [
         { 
-          id: "report", 
-          text: "Report Error", 
-          emoji: "🗣️", 
-          description: "Tell the shopkeeper",
-          isCorrect: true
-        },
-        { 
           id: "silent", 
           text: "Stay Silent", 
           emoji: "😶", 
           description: "Don't say anything",
           isCorrect: false
+        },
+        {
+          id: "report",
+          text: "Report Error",
+          emoji: "🗣️",
+          description: "Tell the shopkeeper",
+          isCorrect: true
         },
         { 
           id: "accept", 

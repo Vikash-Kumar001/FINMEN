@@ -56,18 +56,18 @@ const FriendsMoneyStoryGame = () => {
       text: "Your friend needs ₹5 for lunch. You have ₹10. What do you do?",
       options: [
         { 
-          id: "lend", 
-          text: "Lend ₹5 and ask for it later", 
-          emoji: "🤲", 
-          description: "Help them and expect repayment",
-          isCorrect: true
-        },
-        { 
           id: "give", 
           text: "Give all ₹10 away", 
           emoji: "🎁", 
           description: "Give all your money",
           isCorrect: false
+        },
+        {
+          id: "lend",
+          text: "Lend ₹5 and ask for it later",
+          emoji: "🤲",
+          description: "Help them and expect repayment",
+          isCorrect: true
         },
         { 
           id: "no", 
@@ -83,18 +83,18 @@ const FriendsMoneyStoryGame = () => {
       text: "You find ₹20 in class. No one claims it. What's next?",
       options: [
         { 
-          id: "teacher", 
-          text: "Give it to the teacher", 
-          emoji: "🧑‍🏫", 
-          description: "Turn it in to teacher",
-          isCorrect: true
-        },
-        { 
           id: "candy", 
           text: "Buy candy for everyone", 
           emoji: "🍬", 
           description: "Spend on treats",
           isCorrect: false
+        },
+        {
+          id: "teacher",
+          text: "Give it to the teacher",
+          emoji: "🧑‍🏫",
+          description: "Turn it in to teacher",
+          isCorrect: true
         },
         { 
           id: "hide", 
@@ -137,18 +137,18 @@ const FriendsMoneyStoryGame = () => {
       text: "Why is being honest with money important?",
       options: [
         { 
-          id: "trust", 
-          text: "Builds trust with friends", 
-          emoji: "😊", 
-          description: "Strengthens friendships",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Lets you spend more", 
           emoji: "🛍️", 
           description: "Have more to spend",
           isCorrect: false
+        },
+        {
+          id: "trust",
+          text: "Builds trust with friends",
+          emoji: "😊",
+          description: "Strengthens friendships",
+          isCorrect: true
         },
         { 
           id: "candy", 

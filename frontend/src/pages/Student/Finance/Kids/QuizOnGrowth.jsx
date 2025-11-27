@@ -29,13 +29,6 @@ const QuizOnGrowth = () => {
       text: "What grows money?",
       options: [
         { 
-          id: "savings", 
-          text: "Savings + Interest", 
-          emoji: "📈", 
-          description: "Save and earn interest",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Spending all", 
           emoji: "💸", 
@@ -48,7 +41,14 @@ const QuizOnGrowth = () => {
           emoji: "🗑️", 
           description: "Waste money",
           isCorrect: false
-        }
+        },
+        {
+          id: "savings",
+          text: "Savings + Interest",
+          emoji: "📈",
+          description: "Save and earn interest",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -56,18 +56,18 @@ const QuizOnGrowth = () => {
       text: "How does a bank help money grow?",
       options: [
         { 
-          id: "interest", 
-          text: "Pays interest", 
-          emoji: "💰", 
-          description: "Gives you interest on savings",
-          isCorrect: true
-        },
-        { 
           id: "toys", 
           text: "Gives toys", 
           emoji: "🧸", 
           description: "Provides free toys",
           isCorrect: false
+        },
+        {
+          id: "interest",
+          text: "Pays interest",
+          emoji: "💰",
+          description: "Gives you interest on savings",
+          isCorrect: true
         },
         { 
           id: "hide", 
@@ -83,13 +83,6 @@ const QuizOnGrowth = () => {
       text: "What's a safe way to grow money?",
       options: [
         { 
-          id: "bank", 
-          text: "Bank savings account", 
-          emoji: "🏦", 
-          description: "Save in a bank",
-          isCorrect: true
-        },
-        { 
           id: "candy", 
           text: "Buy candy", 
           emoji: "🍬", 
@@ -102,7 +95,14 @@ const QuizOnGrowth = () => {
           emoji: "🏠", 
           description: "Store at home",
           isCorrect: false
-        }
+        },
+        {
+          id: "bank",
+          text: "Bank savings account",
+          emoji: "🏦",
+          description: "Save in a bank",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -137,18 +137,18 @@ const QuizOnGrowth = () => {
       text: "Why save money in a bank?",
       options: [
         { 
-          id: "interest", 
-          text: "It grows with interest", 
-          emoji: "💹", 
-          description: "Money increases over time",
-          isCorrect: true
-        },
-        { 
           id: "toys", 
           text: "It buys toys", 
           emoji: "🧸", 
           description: "Use it for toys",
           isCorrect: false
+        },
+        {
+          id: "interest",
+          text: "It grows with interest",
+          emoji: "💹",
+          description: "Money increases over time",
+          isCorrect: true
         },
         { 
           id: "fun", 

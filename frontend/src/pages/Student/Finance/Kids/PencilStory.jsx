@@ -56,18 +56,18 @@ const PencilStory = () => {
       text: "You need a pencil but have none. What do you do?",
       options: [
         { 
-          id: "ask", 
-          text: "Ask to borrow and return", 
-          emoji: "🤝", 
-          description: "Borrow properly and return later",
-          isCorrect: true
-        },
-        { 
           id: "take", 
           text: "Take one without asking", 
           emoji: "🤫", 
           description: "Take without permission",
           isCorrect: false
+        },
+        {
+          id: "ask",
+          text: "Ask to borrow and return",
+          emoji: "🤝",
+          description: "Borrow properly and return later",
+          isCorrect: true
         },
         { 
           id: "skip", 
@@ -110,13 +110,6 @@ const PencilStory = () => {
       text: "Your friend lends you ₹5 for a pencil. What do you do?",
       options: [
         { 
-          id: "repay", 
-          text: "Repay the ₹5", 
-          emoji: "💸", 
-          description: "Pay back the money you borrowed",
-          isCorrect: true
-        },
-        { 
           id: "candy", 
           text: "Spend it on candy", 
           emoji: "🍬", 
@@ -129,7 +122,14 @@ const PencilStory = () => {
           emoji: "😞", 
           description: "Don't pay it back",
           isCorrect: false
-        }
+        },
+        {
+          id: "repay",
+          text: "Repay the ₹5",
+          emoji: "💸",
+          description: "Pay back the money you borrowed",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -137,18 +137,18 @@ const PencilStory = () => {
       text: "Why is returning borrowed items important?",
       options: [
         { 
-          id: "trust", 
-          text: "Builds trust with friends", 
-          emoji: "😊", 
-          description: "Shows you're reliable",
-          isCorrect: true
-        },
-        { 
           id: "pencils", 
           text: "Gets you more pencils", 
           emoji: "✏️", 
           description: "People will lend you more",
           isCorrect: false
+        },
+        {
+          id: "trust",
+          text: "Builds trust with friends",
+          emoji: "😊",
+          description: "Shows you're reliable",
+          isCorrect: true
         },
         { 
           id: "popular", 

@@ -7,11 +7,11 @@ import { getGameDataById } from "../../../../utils/getGameData";
 
 const PosterWorkToEarn = () => {
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-76";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -24,43 +24,43 @@ const PosterWorkToEarn = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Hard Work = Money."',
+      question: 'Which poster would best teach kids about earning money?',
       choices: [
-        { text: "Hard Work = Money 💸", correct: true },
-        { text: "Money for Free 🎁", correct: false },
-        { text: "Play All Day 🎉", correct: false },
+        { text: "Effort Today, Rewards Tomorrow! 🌱", correct: true },
+        { text: "Money Grows on Trees! �", correct: false },
+        { text: "Parents' Wallets = My Money! 👛", correct: false },
       ],
     },
     {
-      question: 'Choose a poster: "Earn Through Effort."',
+      question: 'What poster would best show the value of hard work?',
       choices: [
-        { text: "Earn Through Effort 💪", correct: true },
-        { text: "Take Money Easily 🤫", correct: false },
-        { text: "Spend Without Work 🛍️", correct: false },
+        { text: "Work is Boring, Just Play! 🎮", correct: false },
+        { text: "Why Work When You Can Get Free Stuff? 🎁", correct: false },
+        { text: "Sweat + Time = Success! ⏳", correct: true },
       ],
     },
     {
-      question: 'Choose a poster: "Work Smart, Earn Big."',
+      question: 'Which poster teaches the best work ethic?',
       choices: [
-        { text: "Work Smart, Earn Big 🌟", correct: true },
-        { text: "Get Money Fast 💰", correct: false },
-        { text: "Avoid Work 🙈", correct: false },
+        { text: "Work is for Grown-ups Only! 👨‍�", correct: false },
+        { text: "Small Jobs Lead to Big Dreams! ✨", correct: true },
+        { text: "Too Young to Work, Just Ask for Money! �", correct: false },
       ],
     },
     {
-      question: 'Choose a poster: "Effort Pays Off."',
+      question: 'What poster would best encourage saving earned money?',
       choices: [
-        { text: "Effort Pays Off 💼", correct: true },
-        { text: "Money Without Work 🎉", correct: false },
-        { text: "Borrow Instead 🤝", correct: false },
+        { text: "Work Hard, Save Smart, Dream Big! 🏆", correct: true },
+        { text: "Earn It, Burn It, Repeat! 🔥", correct: false },
+        { text: "Money is for Spending, Not Saving! 🛒", correct: false },
       ],
     },
     {
-      question: 'Why do work-to-earn posters help kids?',
+      question: 'Which poster best explains why we work?',
       choices: [
-        { text: "Teach value of work 📚", correct: true },
-        { text: "Encourage laziness 😴", correct: false },
-        { text: "Get free toys 🧸", correct: false },
+        { text: "Work is Just Something Grown-ups Do! 🤷", correct: false },
+        { text: "Work = Pride + Money + Future! �", correct: true },
+        { text: "Why Work When You Can Win the Lottery? 🎰", correct: false },
       ],
     },
   ];

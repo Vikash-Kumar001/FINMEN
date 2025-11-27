@@ -57,9 +57,9 @@ const ReflexBank = () => {
       correctAnswer: "Withdraw",
       options: [
         { text: "Lose", isCorrect: false, emoji: "❌" },
-        { text: "Withdraw", isCorrect: true, emoji: "🏦" },
         { text: "Steal", isCorrect: false, emoji: "🚫" },
-        { text: "Ignore", isCorrect: false, emoji: "🙈" }
+        { text: "Ignore", isCorrect: false, emoji: "🙈" },
+        { text: "Withdraw", isCorrect: true, emoji: "🏦" },
       ]
     },
     {
@@ -68,8 +68,8 @@ const ReflexBank = () => {
       correctAnswer: "Open Account",
       options: [
         { text: "Ignore", isCorrect: false, emoji: "🙈" },
-        { text: "Open Account", isCorrect: true, emoji: "📝" },
         { text: "Spend All", isCorrect: false, emoji: "💸" },
+        { text: "Open Account", isCorrect: true, emoji: "📝" },
         { text: "Forget", isCorrect: false, emoji: "😴" }
       ]
     },
@@ -78,8 +78,8 @@ const ReflexBank = () => {
       question: "What should you do to know how much money you have?",
       correctAnswer: "Check Balance",
       options: [
-        { text: "Forget", isCorrect: false, emoji: "😴" },
         { text: "Check Balance", isCorrect: true, emoji: "📊" },
+        { text: "Forget", isCorrect: false, emoji: "😴" },
         { text: "Spend All", isCorrect: false, emoji: "💸" },
         { text: "Ignore", isCorrect: false, emoji: "🙈" }
       ]

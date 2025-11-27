@@ -83,13 +83,6 @@ const BirthdayMoney = () => {
       text: "Saving a part of your gift money helps you…",
       options: [
         { 
-          id: "bigger", 
-          text: "Buy bigger things later", 
-          emoji: "🚀", 
-          description: "Reach bigger goals over time",
-          isCorrect: true
-        },
-        { 
           id: "forget", 
           text: "Forget about the money", 
           emoji: "😅", 
@@ -102,7 +95,14 @@ const BirthdayMoney = () => {
           emoji: "🛍️", 
           description: "Have more to spend immediately",
           isCorrect: false
-        }
+        },
+        {
+          id: "bigger",
+          text: "Buy bigger things later",
+          emoji: "🚀",
+          description: "Reach bigger goals over time",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -137,18 +137,18 @@ const BirthdayMoney = () => {
       text: "What's a balanced decision?",
       options: [
         { 
-          id: "enjoy", 
-          text: "Enjoy a treat and save the rest", 
-          emoji: "🧁🏦", 
-          description: "Have fun now, save for later",
-          isCorrect: true
-        },
-        { 
           id: "all", 
           text: "Spend all today", 
           emoji: "🎉", 
           description: "Use all money immediately",
           isCorrect: false
+        },
+        {
+          id: "enjoy",
+          text: "Enjoy a treat and save the rest",
+          emoji: "🧁🏦",
+          description: "Have fun now, save for later",
+          isCorrect: true
         },
         { 
           id: "none", 

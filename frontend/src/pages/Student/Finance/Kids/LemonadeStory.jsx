@@ -29,13 +29,6 @@ const LemonadeStory = () => {
       text: "You earn ₹50 from a lemonade stand. What's the smart choice?",
       options: [
         { 
-          id: "save", 
-          text: "Save half for supplies", 
-          emoji: "🍋", 
-          description: "Keep some money for next time",
-          isCorrect: true
-        },
-        { 
           id: "toys", 
           text: "Spend all on toys", 
           emoji: "🧸", 
@@ -48,7 +41,14 @@ const LemonadeStory = () => {
           emoji: "🍟", 
           description: "Spend on food",
           isCorrect: false
-        }
+        },
+        {
+          id: "save",
+          text: "Save half for supplies",
+          emoji: "🍋",
+          description: "Keep some money for next time",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -83,18 +83,18 @@ const LemonadeStory = () => {
       text: "A customer pays ₹10 instead of ₹5. What's honest?",
       options: [
         { 
-          id: "return", 
-          text: "Return extra ₹5", 
-          emoji: "🤝", 
-          description: "Give back the extra money",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep the ₹10", 
           emoji: "💸", 
           description: "Keep all the money",
           isCorrect: false
+        },
+        {
+          id: "return",
+          text: "Return extra ₹5",
+          emoji: "🤝",
+          description: "Give back the extra money",
+          isCorrect: true
         },
         { 
           id: "candy", 
@@ -137,18 +137,18 @@ const LemonadeStory = () => {
       text: "Why is planning your lemonade stand earnings smart?",
       options: [
         { 
-          id: "running", 
-          text: "Keeps your stand running", 
-          emoji: "🍋", 
-          description: "Helps continue your business",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Lets you spend more", 
           emoji: "🛍️", 
           description: "Have more to spend",
           isCorrect: false
+        },
+        {
+          id: "running",
+          text: "Keeps your stand running",
+          emoji: "🍋",
+          description: "Helps continue your business",
+          isCorrect: true
         },
         { 
           id: "customers", 

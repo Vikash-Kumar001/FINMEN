@@ -7,11 +7,11 @@ import { getGameDataById } from "../../../../utils/getGameData";
 
 const PosterGrowYourMoney = () => {
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-66";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -24,43 +24,43 @@ const PosterGrowYourMoney = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Invest = Grow."',
+      question: 'Which poster would best encourage kids to save their money?',
       choices: [
-        { text: "Invest = Grow 📈", correct: true },
-        { text: "Spend Now 🛍️", correct: false },
-        { text: "Hide Money 🏺", correct: false },
+        { text: "Spend Now, Regret Later! �", correct: false },
+        { text: "Money Grows on Trees! �", correct: false },
+        { text: "Small Savings Today, Big Dreams Tomorrow! 🌱", correct: true },
       ],
     },
     {
-      question: 'Choose a poster: "Save a Little, Grow a Lot."',
+      question: 'What poster would best explain compound interest to kids?',
       choices: [
-        { text: "Save a Little, Grow a Lot 💰", correct: true },
-        { text: "Buy Toys Now 🧸", correct: false },
-        { text: "Give Money Away 🎁", correct: false },
+        { text: "Let Your Money Work While You Play! ⚙️", correct: true },
+        { text: "Spend It All in One Place! 🎯", correct: false },
+        { text: "Money Disappears Fast! 💨", correct: false },
       ],
     },
     {
-      question: 'Choose a poster: "Grow Money with Banks."',
+      question: 'Which poster teaches the best money-growing habit?',
       choices: [
-        { text: "Grow Money with Banks 🏦", correct: true },
-        { text: "Spend Fast 🎉", correct: false },
-        { text: "Keep Cash at Home 🏺", correct: false },
+        { text: "Buy Now, Think Later! �", correct: false },
+        { text: "Save First, Spend Later - Watch Your Money Grow! �", correct: true },
+        { text: "Money is Meant to Be Spent! 💸", correct: false },
       ],
     },
     {
-      question: 'Choose a poster: "Invest Smart, Win Big."',
+      question: 'What poster would best show the power of patience with money?',
       choices: [
-        { text: "Invest Smart, Win Big 📊", correct: true },
-        { text: "Spend Without Plan 🛒", correct: false },
-        { text: "Lose Money Fast 💸", correct: false },
+        { text: "Great Things Grow With Time - Including Your Money! ⏳", correct: true },
+        { text: "Get Rich Quick - Try This Trick! 🎩", correct: false },
+        { text: "Spend It Before It's Gone! 🏃", correct: false },
       ],
     },
     {
-      question: 'Why do posters about growing money help?',
+      question: 'Which poster best explains why we should save money?',
       choices: [
-        { text: "Teach kids to invest wisely 📚", correct: true },
-        { text: "Make spending fun 🎉", correct: false },
-        { text: "Get more toys 🧸", correct: false },
+        { text: "Money is for Spending, Not Saving! 🛍️", correct: false },
+        { text: "You Can Always Get More Money! 💰", correct: false },
+        { text: "A Penny Saved is a Penny That Grows! 🌟", correct: true },
       ],
     },
   ];

@@ -55,19 +55,19 @@ const QuizBorrowing = () => {
       id: 2,
       text: "What should you do after borrowing a book?",
       options: [
+        {
+          id: "return",
+          text: "Return it",
+          emoji: "↩️",
+          description: "Give it back to owner",
+          isCorrect: true
+        },
         { 
           id: "keep", 
           text: "Keep it forever", 
           emoji: "📚", 
           description: "Never return it",
           isCorrect: false
-        },
-        { 
-          id: "return", 
-          text: "Return it", 
-          emoji: "↩️", 
-          description: "Give it back to owner",
-          isCorrect: true
         },
         { 
           id: "sell", 
@@ -110,13 +110,6 @@ const QuizBorrowing = () => {
       text: "What happens if you don't return borrowed items?",
       options: [
         { 
-          id: "trust", 
-          text: "You lose trust", 
-          emoji: "😞", 
-          description: "People won't trust you",
-          isCorrect: true
-        },
-        { 
           id: "more", 
           text: "You get more items", 
           emoji: "🎁", 
@@ -129,7 +122,14 @@ const QuizBorrowing = () => {
           emoji: "🏆", 
           description: "Get prizes",
           isCorrect: false
-        }
+        },
+        {
+          id: "trust",
+          text: "You lose trust",
+          emoji: "😞",
+          description: "People won't trust you",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -137,18 +137,18 @@ const QuizBorrowing = () => {
       text: "Why is honest borrowing important?",
       options: [
         { 
-          id: "trust", 
-          text: "Builds trust with others", 
-          emoji: "🤝", 
-          description: "Creates trust",
-          isCorrect: true
-        },
-        { 
           id: "toys", 
           text: "Gets you more toys", 
           emoji: "🧸", 
           description: "Receive more toys",
           isCorrect: false
+        },
+        {
+          id: "trust",
+          text: "Builds trust with others",
+          emoji: "🤝",
+          description: "Creates trust",
+          isCorrect: true
         },
         { 
           id: "fun", 

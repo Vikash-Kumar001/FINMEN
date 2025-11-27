@@ -55,13 +55,6 @@ const ToyStory = () => {
       text: "You borrowed a toy. What now?",
       options: [
         { 
-          id: "return", 
-          text: "Return Toy", 
-          emoji: "🔄", 
-          description: "Give it back to the owner",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep It", 
           emoji: "🙈", 
@@ -74,7 +67,14 @@ const ToyStory = () => {
           emoji: "😞", 
           description: "Lose track of the toy",
           isCorrect: false
-        }
+        },
+        {
+          id: "return",
+          text: "Return Toy",
+          emoji: "🔄",
+          description: "Give it back to the owner",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -109,18 +109,18 @@ const ToyStory = () => {
       text: "Toy's owner asks for it. What do you do?",
       options: [
         { 
-          id: "give", 
-          text: "Give Back", 
-          emoji: "🤝", 
-          description: "Return it immediately",
-          isCorrect: true
-        },
-        { 
           id: "hide", 
           text: "Hide", 
           emoji: "🫥", 
           description: "Hide it and don't return",
           isCorrect: false
+        },
+        {
+          id: "give",
+          text: "Give Back",
+          emoji: "🤝",
+          description: "Return it immediately",
+          isCorrect: true
         },
         { 
           id: "delay", 
@@ -136,13 +136,6 @@ const ToyStory = () => {
       text: "You borrow a toy. What's your duty?",
       options: [
         { 
-          id: "responsible", 
-          text: "Be Responsible", 
-          emoji: "✅", 
-          description: "Take responsibility and care",
-          isCorrect: true
-        },
-        { 
           id: "careless", 
           text: "Be Careless", 
           emoji: "❌", 
@@ -155,7 +148,14 @@ const ToyStory = () => {
           emoji: "🤷", 
           description: "Ignore your responsibility",
           isCorrect: false
-        }
+        },
+        {
+          id: "responsible",
+          text: "Be Responsible",
+          emoji: "✅",
+          description: "Take responsibility and care",
+          isCorrect: true
+        },
       ]
     }
   ];

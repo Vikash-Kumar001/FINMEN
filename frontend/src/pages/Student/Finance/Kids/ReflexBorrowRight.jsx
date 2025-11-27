@@ -34,9 +34,9 @@ const ReflexBorrowRight = () => {
       question: "What should you do before borrowing something?",
       correctAnswer: "Ask Permission",
       options: [
-        { text: "Ask Permission", isCorrect: true, emoji: "🙋" },
         { text: "Grab It", isCorrect: false, emoji: "🤏" },
         { text: "Take Without Asking", isCorrect: false, emoji: "🙈" },
+        { text: "Ask Permission", isCorrect: true, emoji: "🙋" },
         { text: "Ignore Owner", isCorrect: false, emoji: "😴" }
       ]
     },
@@ -56,10 +56,10 @@ const ReflexBorrowRight = () => {
       question: "What should you do with a borrowed item?",
       correctAnswer: "Return Item",
       options: [
-        { text: "Return Item", isCorrect: true, emoji: "↩️" },
         { text: "Keep It", isCorrect: false, emoji: "🙈" },
         { text: "Hide It", isCorrect: false, emoji: "🫥" },
-        { text: "Forget About It", isCorrect: false, emoji: "😴" }
+        { text: "Forget About It", isCorrect: false, emoji: "😴" },
+        { text: "Return Item", isCorrect: true, emoji: "↩️" },
       ]
     },
     {
@@ -67,8 +67,8 @@ const ReflexBorrowRight = () => {
       question: "What should you do with a loan?",
       correctAnswer: "Repay Loan",
       options: [
-        { text: "Repay Loan", isCorrect: true, emoji: "💰" },
         { text: "Ignore Payment", isCorrect: false, emoji: "🚫" },
+        { text: "Repay Loan", isCorrect: true, emoji: "💰" },
         { text: "Avoid It", isCorrect: false, emoji: "🏃" },
         { text: "Forget It", isCorrect: false, emoji: "🤷" }
       ]

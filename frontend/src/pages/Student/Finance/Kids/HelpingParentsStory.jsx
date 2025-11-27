@@ -56,18 +56,18 @@ const HelpingParentsStory = () => {
       text: "You earn ₹10 helping at home. Should you save it?",
       options: [
         { 
-          id: "save", 
-          text: "Yes, add to savings", 
-          emoji: "💰", 
-          description: "Put money in savings",
-          isCorrect: true
-        },
-        { 
           id: "toys", 
           text: "Spend it on toys", 
           emoji: "🧸", 
           description: "Buy toys",
           isCorrect: false
+        },
+        {
+          id: "save",
+          text: "Yes, add to savings",
+          emoji: "💰",
+          description: "Put money in savings",
+          isCorrect: true
         },
         { 
           id: "give", 
@@ -110,13 +110,6 @@ const HelpingParentsStory = () => {
       text: "You find ₹10. Parents say to be honest. What do you do?",
       options: [
         { 
-          id: "find", 
-          text: "Try to find the owner", 
-          emoji: "🕵️", 
-          description: "Look for who lost it",
-          isCorrect: true
-        },
-        { 
           id: "snacks", 
           text: "Spend it on snacks", 
           emoji: "🍟", 
@@ -129,7 +122,14 @@ const HelpingParentsStory = () => {
           emoji: "🧥", 
           description: "Keep it secret",
           isCorrect: false
-        }
+        },
+        {
+          id: "find",
+          text: "Try to find the owner",
+          emoji: "🕵️",
+          description: "Look for who lost it",
+          isCorrect: true
+        },
       ]
     },
     {

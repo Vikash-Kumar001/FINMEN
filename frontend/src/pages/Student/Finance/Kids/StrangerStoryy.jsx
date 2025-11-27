@@ -55,13 +55,6 @@ const StrangerStoryy = () => {
       text: "Someone asks for your bank details. What now?",
       options: [
         { 
-          id: "no", 
-          text: "Say No", 
-          emoji: "🚫", 
-          description: "Refuse to share",
-          isCorrect: true
-        },
-        { 
           id: "give", 
           text: "Give Info", 
           emoji: "💳", 
@@ -74,7 +67,14 @@ const StrangerStoryy = () => {
           emoji: "🤷", 
           description: "Share some details only",
           isCorrect: false
-        }
+        },
+        {
+          id: "no",
+          text: "Say No",
+          emoji: "🚫",
+          description: "Refuse to share",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -136,18 +136,18 @@ const StrangerStoryy = () => {
       text: "You get a strange message. What's best?",
       options: [
         { 
-          id: "ignore", 
-          text: "Ignore", 
-          emoji: "🚫", 
-          description: "Ignore the message",
-          isCorrect: true
-        },
-        { 
           id: "reply", 
           text: "Reply", 
           emoji: "💬", 
           description: "Reply to the message",
           isCorrect: false
+        },
+        {
+          id: "ignore",
+          text: "Ignore",
+          emoji: "🚫",
+          description: "Ignore the message",
+          isCorrect: true
         },
         { 
           id: "forward", 

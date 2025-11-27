@@ -52,9 +52,9 @@ const ReflexNeedVsWant = () => {
       question: "Which item is essential for learning?",
       options: [
         { text: "Video Game", isCorrect: false, emoji: "🎮" },
-        { text: "School Books", isCorrect: true, emoji: "📚" },
         { text: "Action Figure", isCorrect: false, emoji: "🤖" },
-        { text: "Puzzle Game", isCorrect: false, emoji: "🧩" }
+        { text: "Puzzle Game", isCorrect: false, emoji: "🧩" },
+        { text: "School Books", isCorrect: true, emoji: "📚" },
       ]
     },
     {
@@ -62,8 +62,8 @@ const ReflexNeedVsWant = () => {
       question: "What do you need in cold weather?",
       options: [
         { text: "Fancy Sunglasses", isCorrect: false, emoji: "🕶️" },
-        { text: "Winter Jacket", isCorrect: true, emoji: "🧥" },
         { text: "Swimming Pool", isCorrect: false, emoji: "🏊" },
+        { text: "Winter Jacket", isCorrect: true, emoji: "🧥" },
         { text: "Beach Ball", isCorrect: false, emoji: "🏐" }
       ]
     },
@@ -71,8 +71,8 @@ const ReflexNeedVsWant = () => {
       id: 5,
       question: "What is needed to get to school?",
       options: [
-        { text: "New Headphones", isCorrect: false, emoji: "🎧" },
         { text: "Bus Fare", isCorrect: true, emoji: "🚌" },
+        { text: "New Headphones", isCorrect: false, emoji: "🎧" },
         { text: "Music Player", isCorrect: false, emoji: "🎵" },
         { text: "Smart Watch", isCorrect: false, emoji: "⌚" }
       ]

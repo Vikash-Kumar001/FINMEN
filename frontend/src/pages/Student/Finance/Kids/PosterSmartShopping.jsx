@@ -25,41 +25,41 @@ const PosterSmartShopping = () => {
     {
       question: 'Choose the best poster for smart shopping:',
       choices: [
-        { text: "Think Before You Spend 📝💰", design: "📝💰", correct: true },
-        { text: "Spend All You Want 💸🛍️", design: "💸🛍️", correct: false },
-        { text: "Buy Everything Now 🛒", design: "🛒", correct: false },
+        { text: "Spend All You Want", design: "💸", correct: false },
+        { text: "Think Before You Spend", design: "📝", correct: true },
+        { text: "Buy Everything Now", design: "🛒", correct: false },
       ],
     },
     {
       question: 'Which poster promotes smart shopping habits?',
       choices: [
-        { text: "Make a Shopping List 📋🛒", design: "📋🛒", correct: true },
-        { text: "Buy Without Thinking 🎯", design: "🎯", correct: false },
-        { text: "Spend Immediately ⚡", design: "⚡", correct: false },
+        { text: "Make a Shopping List", design: "📋", correct: true },
+        { text: "Buy Without Thinking", design: "🎯", correct: false },
+        { text: "Spend Immediately", design: "⚡", correct: false },
       ],
     },
     {
       question: 'Select the best shopping poster:',
       choices: [
-        { text: "Compare Prices 🔍📊", design: "🔍📊", correct: true },
-        { text: "Buy First, Think Later 🛍️", design: "🛍️", correct: false },
-        { text: "Spend Without Plan 💸", design: "💸", correct: false },
+        { text: "Buy First, Think Later", design: "🛍️", correct: false },
+        { text: "Spend Without Plan", design: "💸", correct: false },
+        { text: "Compare Prices", design: "🔍", correct: true },
       ],
     },
     {
       question: 'Choose the smart shopping poster:',
       choices: [
-        { text: "Buy What's on Sale 🏷️🎉", design: "🏷️🎉", correct: true },
-        { text: "Pay Full Price Always 💵", design: "💵", correct: false },
-        { text: "Never Save Money 🎲", design: "🎲", correct: false },
+        { text: "Buy What's on Sale", design: "🏷️", correct: true },
+        { text: "Pay Full Price Always", design: "💵", correct: false },
+        { text: "Never Save Money", design: "🎲", correct: false },
       ],
     },
     {
       question: 'Which is the best poster for smart shopping?',
       choices: [
-        { text: "Plan Purchases Ahead 📅💰", design: "📅💰", correct: true },
-        { text: "Impulse Buy Everything 🎁", design: "🎁", correct: false },
-        { text: "Spend Without Budget 💳", design: "💳", correct: false },
+        { text: "Impulse Buy Everything", design: "🎁", correct: false },
+        { text: "Spend Without Budget", design: "💳", correct: false },
+        { text: "Plan Purchases Ahead", design: "📅", correct: true },
       ],
     },
   ];

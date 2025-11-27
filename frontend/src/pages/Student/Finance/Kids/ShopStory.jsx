@@ -25,7 +25,7 @@ const ShopStory = () => {
   const questions = [
     {
       id: 1,
-      text: "You're walking home from school and see your favorite candy in the shop window. You have ₹10 in your pocket. You've been saving ₹5 each week for a toy that costs ₹50. You've saved ₹20 so far. What do you do?",
+      text: "You spot your favorite candy. You have ₹10, but you’ve been saving ₹5 a week for a ₹50 toy and currently have ₹20 saved. What do you do?",
       options: [
         { 
           id: "save", 

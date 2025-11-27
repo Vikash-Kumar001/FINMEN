@@ -56,18 +56,18 @@ const QuizOnEarning = () => {
       text: "How does a farmer earn money?",
       options: [
         { 
-          id: "crops", 
-          text: "Selling crops", 
-          emoji: "🌾", 
-          description: "Selling grown crops",
-          isCorrect: true
-        },
-        { 
           id: "games", 
           text: "Playing games", 
           emoji: "🎮", 
           description: "Playing video games",
           isCorrect: false
+        },
+        {
+          id: "crops",
+          text: "Selling crops",
+          emoji: "🌾",
+          description: "Selling grown crops",
+          isCorrect: true
         },
         { 
           id: "give", 
@@ -83,13 +83,6 @@ const QuizOnEarning = () => {
       text: "What job earns money by teaching?",
       options: [
         { 
-          id: "teacher", 
-          text: "Teacher", 
-          emoji: "👨‍🏫", 
-          description: "Teaches students",
-          isCorrect: true
-        },
-        { 
           id: "toymaker", 
           text: "Toy maker", 
           emoji: "🧸", 
@@ -102,7 +95,14 @@ const QuizOnEarning = () => {
           emoji: "🍬", 
           description: "Sells candy",
           isCorrect: false
-        }
+        },
+        {
+          id: "teacher",
+          text: "Teacher",
+          emoji: "👨‍🏫",
+          description: "Teaches students",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -137,18 +137,18 @@ const QuizOnEarning = () => {
       text: "Why is earning money important?",
       options: [
         { 
-          id: "needs", 
-          text: "Meets your needs", 
-          emoji: "✅", 
-          description: "Helps you get what you need",
-          isCorrect: true
-        },
-        { 
           id: "toys", 
           text: "Gets you free toys", 
           emoji: "🧸", 
           description: "Free toys",
           isCorrect: false
+        },
+        {
+          id: "needs",
+          text: "Meets your needs",
+          emoji: "✅",
+          description: "Helps you get what you need",
+          isCorrect: true
         },
         { 
           id: "sleep", 

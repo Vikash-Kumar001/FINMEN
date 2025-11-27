@@ -31,8 +31,8 @@ const BadgeGoodBorrower = () => {
       icon: Book,
       item: "Book",
       options: [
-        { text: "Return it clean and on time", correct: true, coins: 10 },
         { text: "Keep it forever", correct: false, coins: 0 },
+        { text: "Return it clean and on time", correct: true, coins: 1 },
         { text: "Give it to someone else", correct: false, coins: 0 }
       ],
       feedback: {
@@ -47,7 +47,7 @@ const BadgeGoodBorrower = () => {
       icon: Pencil,
       item: "Pencil",
       options: [
-        { text: "Replace it with a new pencil", correct: true, coins: 15 },
+        { text: "Replace it with a new pencil", correct: true, coins: 1 },
         { text: "Return the broken pencil only", correct: false, coins: 0 },
         { text: "Don't return anything", correct: false, coins: 0 }
       ],
@@ -63,8 +63,8 @@ const BadgeGoodBorrower = () => {
       icon: Smartphone,
       item: "Phone",
       options: [
-        { text: "Clean it and return with thanks", correct: true, coins: 20 },
         { text: "Return with low battery", correct: false, coins: 0 },
+        { text: "Clean it and return with thanks", correct: true, coins: 1 },
         { text: "Delete all their apps first", correct: false, coins: 0 }
       ],
       feedback: {
@@ -79,7 +79,7 @@ const BadgeGoodBorrower = () => {
       icon: Umbrella,
       item: "Umbrella",
       options: [
-        { text: "As soon as possible, dried and clean", correct: true, coins: 25 },
+        { text: "As soon as possible, dried and clean", correct: true, coins: 1 },
         { text: "Wait until next rain", correct: false, coins: 0 },
         { text: "Keep it for emergencies", correct: false, coins: 0 }
       ],
@@ -95,9 +95,9 @@ const BadgeGoodBorrower = () => {
       icon: Gift,
       item: "Toy",
       options: [
-        { text: "Take extra care and return it safely", correct: true, coins: 30 },
         { text: "Play rough - it's just a toy", correct: false, coins: 0 },
-        { text: "Trade it with friends", correct: false, coins: 0 }
+        { text: "Trade it with friends", correct: false, coins: 0 },
+        { text: "Take extra care and return it safely", correct: true, coins: 1 },
       ],
       feedback: {
         correct: "Wonderful! Treating borrowed items with care makes you a trusted borrower!",

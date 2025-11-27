@@ -7,11 +7,11 @@ import { getGameDataById } from "../../../../utils/getGameData";
 const SavingsStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-45";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -26,100 +26,135 @@ const SavingsStory = () => {
   const questions = [
     {
       id: 1,
-      text: "Where to keep your gift money?",
+      text: "You received ₹1000 as a gift. What's the best way to keep it safe?",
       options: [
-        { 
-          id: "bank", 
-          text: "Put in Bank", 
-          emoji: "🏦", 
-          description: "Keep money safe in a bank",
+        {
+          id: "home",
+          text: "Keep at Home",
+          emoji: "🏠",
+          description: "Hide it under your mattress",
+          isCorrect: false
+        },
+        {
+          id: "bank",
+          text: "Open a Bank Account",
+          emoji: "🏦",
+          description: "Deposit in a savings account",
           isCorrect: true
         },
-        { 
-          id: "home", 
-          text: "Keep at Home", 
-          emoji: "🏠", 
-          description: "Keep money at home",
+        {
+          id: "wallet",
+          text: "Carry in Wallet",
+          emoji: "👛",
+          description: "Keep it with you at all times",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "What to do with birthday cash?",
+      text: "What's the smartest way to use your birthday money?",
       options: [
-        { 
-          id: "savings", 
-          text: "Open Savings", 
-          emoji: "💰", 
-          description: "Start a savings account",
+        {
+          id: "split",
+          text: "Split 50/50",
+          emoji: "💵",
+          description: "Save half, spend half",
           isCorrect: true
         },
-        { 
-          id: "spend", 
-          text: "Spend Now", 
-          emoji: "🛍️", 
-          description: "Spend it immediately",
+        {
+          id: "spend",
+          text: "Buy Latest Gadgets",
+          emoji: "📱",
+          description: "Purchase new electronics",
+          isCorrect: false
+        },
+        {
+          id: "spend_all",
+          text: "Spend All Now",
+          emoji: "💸",
+          description: "Buy everything you want today",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "What to do with your allowance?",
+      text: "You get ₹200 weekly allowance. What's the best plan?",
       options: [
-        { 
-          id: "save", 
-          text: "Save Allowance", 
-          emoji: "💾", 
-          description: "Save your allowance money",
+        {
+          id: "treats",
+          text: "Buy Snacks",
+          emoji: "🍫",
+          description: "Spend on candy and treats",
+          isCorrect: false
+        },
+        {
+          id: "save_half",
+          text: "Save 50%",
+          emoji: "💲",
+          description: "Save half, spend the rest",
           isCorrect: true
         },
-        { 
-          id: "toys", 
-          text: "Buy Toys", 
-          emoji: "🧸", 
-          description: "Spend on toys",
+        {
+          id: "save_all",
+          text: "Save Everything",
+          emoji: "💰",
+          description: "Don't spend anything",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Where to store your earnings?",
+      text: "Where should you keep money you've saved from chores?",
       options: [
-        { 
-          id: "deposit", 
-          text: "Deposit Cash", 
-          emoji: "🏛️", 
-          description: "Put money in the bank",
-          isCorrect: true
-        },
-        { 
-          id: "hide", 
-          text: "Hide Cash", 
-          emoji: "🫥", 
-          description: "Hide money somewhere",
+        {
+          id: "piggy",
+          text: "Piggy Bank",
+          emoji: "🐷",
+          description: "Keep it in a jar at home",
           isCorrect: false
+        },
+        {
+          id: "pocket",
+          text: "Your Pocket",
+          emoji: "👖",
+          description: "Carry it with you",
+          isCorrect: false
+        },
+        {
+          id: "bank",
+          text: "Savings Account",
+          emoji: "🏦",
+          description: "Deposit in the bank to earn interest",
+          isCorrect: true
         }
       ]
     },
     {
       id: 5,
-      text: "How to handle your money?",
+      text: "What's the best way to make your money grow?",
       options: [
-        { 
-          id: "grow", 
-          text: "Grow Savings", 
-          emoji: "📈", 
-          description: "Let savings grow over time",
+        {
+          id: "save",
+          text: "High-Interest Account",
+          emoji: "💹",
+          description: "Earn interest in a savings account",
           isCorrect: true
         },
-        { 
-          id: "spend", 
-          text: "Spend All", 
-          emoji: "💸", 
-          description: "Spend everything",
+        {
+          id: "invest",
+          text: "Invest in Stocks",
+          emoji: "📊",
+          description: "Buy company shares",
+          isCorrect: false
+        },
+        {
+          id: "spend",
+          text: "Buy Collectibles",
+          emoji: "🏀",
+          description: "Purchase items that might increase in value",
           isCorrect: false
         }
       ]
@@ -136,21 +171,21 @@ const SavingsStory = () => {
       return;
     }
 
-    const newChoices = [...choices, { 
-      questionId: currentQ.id, 
+    const newChoices = [...choices, {
+      questionId: currentQ.id,
       choice: selectedChoice,
       isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
     }];
-    
+
     setChoices(newChoices);
-    
+
     // If the choice is correct, add coins and show flash/confetti
     const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    
+
     // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
@@ -206,12 +241,12 @@ const SavingsStory = () => {
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
                 <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
               </div>
-              
+
               <p className="text-white text-lg mb-6 text-center">
                 {currentQuestionData.text}
               </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}

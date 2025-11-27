@@ -29,13 +29,6 @@ const MoneyHonestyQuizGame = () => {
       text: "Which is the honest choice if you find ₹10?",
       options: [
         { 
-          id: "return", 
-          text: "Return it to the owner", 
-          emoji: "🤝", 
-          description: "Find and return it",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep it quietly", 
           emoji: "🤫", 
@@ -48,7 +41,14 @@ const MoneyHonestyQuizGame = () => {
           emoji: "🍟", 
           description: "Buy food with it",
           isCorrect: false
-        }
+        },
+        {
+          id: "return",
+          text: "Return it to the owner",
+          emoji: "🤝",
+          description: "Find and return it",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -83,18 +83,18 @@ const MoneyHonestyQuizGame = () => {
       text: "You borrow ₹20. What's honest?",
       options: [
         { 
-          id: "repay", 
-          text: "Repay it on time", 
-          emoji: "✅", 
-          description: "Pay back when promised",
-          isCorrect: true
-        },
-        { 
           id: "never", 
           text: "Never repay", 
           emoji: "😞", 
           description: "Don't pay it back",
           isCorrect: false
+        },
+        {
+          id: "repay",
+          text: "Repay it on time",
+          emoji: "✅",
+          description: "Pay back when promised",
+          isCorrect: true
         },
         { 
           id: "spend", 

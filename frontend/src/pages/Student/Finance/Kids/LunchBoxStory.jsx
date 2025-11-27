@@ -56,18 +56,18 @@ const LunchBoxStory = () => {
       text: "Your friend shares lunch. How do you thank them?",
       options: [
         { 
-          id: "share", 
-          text: "Share something back", 
-          emoji: "🤝", 
-          description: "Return the kindness",
-          isCorrect: true
-        },
-        { 
           id: "nothing", 
           text: "Say nothing", 
           emoji: "😶", 
           description: "Don't acknowledge it",
           isCorrect: false
+        },
+        {
+          id: "share",
+          text: "Share something back",
+          emoji: "🤝",
+          description: "Return the kindness",
+          isCorrect: true
         },
         { 
           id: "more", 
@@ -110,13 +110,6 @@ const LunchBoxStory = () => {
       text: "You borrow lunch money. When do you repay?",
       options: [
         { 
-          id: "next", 
-          text: "Next day as promised", 
-          emoji: "✅", 
-          description: "Keep your promise",
-          isCorrect: true
-        },
-        { 
           id: "never", 
           text: "Never repay", 
           emoji: "😞", 
@@ -129,7 +122,14 @@ const LunchBoxStory = () => {
           emoji: "🍟", 
           description: "Use it for something else",
           isCorrect: false
-        }
+        },
+        {
+          id: "next",
+          text: "Next day as promised",
+          emoji: "✅",
+          description: "Keep your promise",
+          isCorrect: true
+        },
       ]
     },
     {

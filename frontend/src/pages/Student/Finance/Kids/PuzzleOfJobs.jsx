@@ -23,35 +23,35 @@ const PuzzleOfJobs = () => {
 
   const stages = [
     {
-      question: "Match: Farmer → Crops",
+      question: "Match: Farmer",
       choices: [
-        { text: "Farmer = Crops 🌾", correct: true },
-        { text: "Farmer = Knowledge 📚", correct: false },
-        { text: "Farmer = Toys 🧸", correct: false },
+        { text: "Crops 🌾", correct: true },
+        { text: "Knowledge 📚", correct: false },
+        { text: "Toys 🧸", correct: false },
       ],
     },
     {
-      question: "Match: Teacher → Knowledge",
+      question: "Match: Teacher",
       choices: [
-        { text: "Teacher = Knowledge 📚", correct: true },
-        { text: "Teacher = Goods 🛍️", correct: false },
-        { text: "Teacher = Crops 🌾", correct: false },
+        { text: "Goods 🛍️", correct: false },
+        { text: "Knowledge 📚", correct: true },
+        { text: "Crops 🌾", correct: false },
       ],
     },
     {
-      question: "Match: Shopkeeper → Goods",
+      question: "Match: Shopkeeper",
       choices: [
-        { text: "Shopkeeper = Goods 🛍️", correct: true },
-        { text: "Shopkeeper = Services 🔧", correct: false },
-        { text: "Shopkeeper = Lessons 📖", correct: false },
+        { text: "Services 🔧", correct: false },
+        { text: "Lessons 📖", correct: false },
+        { text: "Goods 🛍️", correct: true },
       ],
     },
     {
-      question: "Match: Doctor → Health",
+      question: "Match: Doctor",
       choices: [
-        { text: "Doctor = Health 🩺", correct: true },
-        { text: "Doctor = Food 🍎", correct: false },
-        { text: "Doctor = Money 💰", correct: false },
+        { text: "Food 🍎", correct: false },
+        { text: "Health 🩺", correct: true },
+        { text: "Money 💰", correct: false },
       ],
     },
     {

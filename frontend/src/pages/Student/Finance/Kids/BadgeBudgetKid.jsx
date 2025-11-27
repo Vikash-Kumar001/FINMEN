@@ -57,9 +57,9 @@ const BadgeBudgetKid = () => {
       question: "If you have ₹100 and want to save ₹30, how much can you spend?",
       options: [
         { text: "₹100", correct: false },
-        { text: "₹70", correct: true },
         { text: "₹130", correct: false },
-        { text: "₹30", correct: false }
+        { text: "₹30", correct: false },
+        { text: "₹70", correct: true }
       ],
       feedback: {
         correct: "Great math! ₹100 - ₹30 = ₹70 to spend!",
@@ -71,8 +71,8 @@ const BadgeBudgetKid = () => {
       question: "What should you do first when making a budget?",
       options: [
         { text: "Spend all your money", correct: false },
-        { text: "List your income and expenses", correct: true },
         { text: "Buy everything you want", correct: false },
+        { text: "List your income and expenses", correct: true },
         { text: "Ask for more money", correct: false }
       ],
       feedback: {
@@ -84,8 +84,8 @@ const BadgeBudgetKid = () => {
       id: 5,
       question: "What is the best way to stick to your budget?",
       options: [
-        { text: "Ignore it and spend freely", correct: false },
         { text: "Track your spending and adjust when needed", correct: true },
+        { text: "Ignore it and spend freely", correct: false },
         { text: "Spend more than planned", correct: false },
         { text: "Never save money", correct: false }
       ],

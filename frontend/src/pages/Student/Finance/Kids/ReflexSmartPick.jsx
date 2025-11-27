@@ -57,9 +57,9 @@ const ReflexSmartPick = () => {
       question: "What helps you gain knowledge?",
       options: [
         { text: "Candy", isCorrect: false, emoji: "🍬" },
-        { text: "Books", isCorrect: true, emoji: "📖" },
         { text: "Video Game", isCorrect: false, emoji: "🎮" },
-        { text: "Puzzle Game", isCorrect: false, emoji: "🧩" }
+        { text: "Puzzle Game", isCorrect: false, emoji: "🧩" },
+        { text: "Books", isCorrect: true, emoji: "📖" },
       ]
     },
     {
@@ -67,8 +67,8 @@ const ReflexSmartPick = () => {
       question: "What do you need to get to school?",
       options: [
         { text: "Cool Gadget", isCorrect: false, emoji: "⌚" },
-        { text: "Bus Ticket", isCorrect: true, emoji: "🚌" },
         { text: "Music Player", isCorrect: false, emoji: "🎵" },
+        { text: "Bus Ticket", isCorrect: true, emoji: "🚌" },
         { text: "Smart Watch", isCorrect: false, emoji: "⌚" }
       ]
     }

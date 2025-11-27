@@ -27,9 +27,9 @@ const PosterPlanFirst = () => {
     {
       question: 'Choose a poster: "Budget Saves Money."',
       choices: [
-        { text: "Budget Saves Money 💰", correct: true },
         { text: "Spend Without Plan 🛍️", correct: false },
         { text: "Buy Now, Think Later 🛒", correct: false },
+        { text: "Budget Saves Money 💰", correct: true },
       ],
     },
     {
@@ -43,16 +43,16 @@ const PosterPlanFirst = () => {
     {
       question: 'Choose a poster: "Smart Budget, Big Wins."',
       choices: [
-        { text: "Smart Budget, Big Wins 📈", correct: true },
         { text: "Buy Toys Fast 🧸", correct: false },
+        { text: "Smart Budget, Big Wins 📈", correct: true },
         { text: "Give Money Away 🎁", correct: false },
       ],
     },
     {
       question: 'Choose a poster: "Plan Today, Thrive Tomorrow."',
       choices: [
-        { text: "Plan Today, Thrive Tomorrow 🌟", correct: true },
         { text: "Spend Without Care 🛍️", correct: false },
+        { text: "Plan Today, Thrive Tomorrow 🌟", correct: true },
         { text: "Keep Cash in Pocket 🎒", correct: false },
       ],
     },

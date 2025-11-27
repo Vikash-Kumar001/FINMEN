@@ -7,11 +7,11 @@ import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleBankUses = () => {
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-44";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -24,43 +24,43 @@ const PuzzleBankUses = () => {
 
   const stages = [
     {
-      question: 'Match: Deposit → Safe.',
+      question: 'What happens when you put money in a bank?',
       choices: [
-        { text: "Deposit = Safe 🔒", correct: true },
-        { text: "Deposit = Spend 🛍️", correct: false },
-        { text: "Deposit = Borrow 💸", correct: false },
+        { text: "It's given to other people to spend freely 💸", correct: false },
+        { text: "It's converted into gold bars and stored in a vault 🪙", correct: false },
+        { text: "It's kept safe and can earn interest over time 💰", correct: true }
       ],
     },
     {
-      question: 'Match: Loan → Borrow.',
+      question: 'When you take a loan from a bank, what are you doing?',
       choices: [
-        { text: "Loan = Borrow 🤝", correct: true },
-        { text: "Loan = Save 💰", correct: false },
-        { text: "Loan = Withdraw 🏧", correct: false },
+        { text: "Borrowing money you'll need to pay back with interest 📝", correct: true },
+        { text: "Getting free money as a gift from the bank 🎁", correct: false },
+        { text: "Trading your future earnings for cash today ⏳", correct: false },
       ],
     },
     {
-      question: 'Match: ATM → Withdraw.',
+      question: 'What can you do at an ATM besides withdraw cash?',
       choices: [
-        { text: "ATM = Withdraw 🏧", correct: true },
-        { text: "ATM = Deposit 📥", correct: false },
-        { text: "ATM = Invest 📈", correct: false },
+        { text: "Apply for a mortgage or car loan 🏠", correct: false },
+        { text: "Check your balance and deposit checks/cash 📄", correct: true },
+        { text: "Exchange foreign currency 🌍", correct: false },
       ],
     },
     {
-      question: 'Match: Savings Account → Grow Money.',
+      question: 'How does a savings account help your money grow?',
       choices: [
-        { text: "Savings Account = Grow Money 📈", correct: true },
-        { text: "Savings Account = Spend 🛒", correct: false },
-        { text: "Savings Account = Lose Money 😞", correct: false },
+        { text: "By earning interest on your balance over time 📈", correct: true },
+        { text: "By automatically investing in stocks and bonds 📊", correct: false },
+        { text: "By giving you cashback on purchases 🛍️", correct: false },
       ],
     },
     {
-      question: 'Why learn about bank uses?',
+      question: 'What is the main purpose of learning about banking?',
       choices: [
-        { text: "Helps manage money wisely 📚", correct: true },
-        { text: "Makes banks fun 🎉", correct: false },
-        { text: "Gets you more toys 🧸", correct: false },
+        { text: "To impress friends with banking knowledge 🎩", correct: false },
+        { text: "To get rich quickly without working 💶", correct: false },
+        { text: "To make smart money decisions and build a secure future 🧠", correct: true },
       ],
     },
   ];

@@ -27,8 +27,8 @@ const HonestKidBadgeGame = () => {
     {
       question: "You find ₹10 on the playground. What’s the honest choice?",
       choices: [
-        { text: "Give it to a teacher 🧑‍🏫", correct: true },
         { text: "Keep it for yourself 🤫", correct: false },
+         { text: "Give it to a teacher 🧑‍🏫", correct: true },
         { text: "Spend it on snacks 🍟", correct: false },
       ],
     },
@@ -43,9 +43,9 @@ const HonestKidBadgeGame = () => {
     {
       question: "Your friend asks to borrow ₹5. What’s a fair deal?",
       choices: [
-        { text: "Lend and agree on repayment 🤝", correct: true },
         { text: "Give it without expecting back 🎁", correct: false },
         { text: "Refuse to lend 😐", correct: false },
+        { text: "Lend and agree on repayment 🤝", correct: true },
       ],
     },
     {
@@ -59,9 +59,9 @@ const HonestKidBadgeGame = () => {
     {
       question: "Why does honesty with money matter?",
       choices: [
-        { text: "It earns trust and respect 😊", correct: true },
         { text: "It gets you more money 💰", correct: false },
         { text: "It lets you spend more 🛍️", correct: false },
+        { text: "It earns trust and respect 😊", correct: true },
       ],
     },
   ];

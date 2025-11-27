@@ -83,13 +83,6 @@ const GiftMoneyStory = () => {
       text: "You saved ₹20. A sale offers shoes for ₹70. Can you buy them?",
       options: [
         { 
-          id: "no", 
-          text: "No, need ₹50 more", 
-          emoji: "📉", 
-          description: "You don't have enough money",
-          isCorrect: true
-        },
-        { 
           id: "yes", 
           text: "Yes, I have enough", 
           emoji: "😊", 
@@ -102,7 +95,14 @@ const GiftMoneyStory = () => {
           emoji: "🎟️", 
           description: "Try to negotiate the price",
           isCorrect: false
-        }
+        },
+        {
+          id: "no",
+          text: "No, need ₹50 more",
+          emoji: "📉",
+          description: "You don't have enough money",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -110,18 +110,18 @@ const GiftMoneyStory = () => {
       text: "Your friend suggests spending all your gift money. What do you say?",
       options: [
         { 
-          id: "no", 
-          text: "No, I'll save some", 
-          emoji: "✅", 
-          description: "Make a smart choice",
-          isCorrect: true
-        },
-        { 
           id: "okay", 
           text: "Okay, let's spend it", 
           emoji: "🎉", 
           description: "Agree to spend everything",
           isCorrect: false
+        },
+        {
+          id: "no",
+          text: "No, I'll save some",
+          emoji: "✅",
+          description: "Make a smart choice",
+          isCorrect: true
         },
         { 
           id: "give", 

@@ -7,11 +7,11 @@ import { getGameDataById } from "../../../../utils/getGameData";
 const SnackStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-35";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -28,18 +28,25 @@ const SnackStory = () => {
       id: 1,
       text: "You need lunch but want chips. What do you pick?",
       options: [
-        { 
-          id: "lunch", 
-          text: "Lunch", 
-          emoji: "🍱", 
-          description: "Choose healthy lunch for energy",
+        {
+          id: "chips",
+          text: "Just Chips",
+          emoji: "🍟",
+          description: "Eat only chips for lunch",
+          isCorrect: false
+        },
+        {
+          id: "lunch",
+          text: "Balanced Lunch",
+          emoji: "🍱",
+          description: "Choose a healthy lunch with protein and veggies",
           isCorrect: true
         },
-        { 
-          id: "chips", 
-          text: "Chips", 
-          emoji: "🍟", 
-          description: "Buy chips instead",
+        {
+          id: "sweets",
+          text: "Dessert Only",
+          emoji: "🍰",
+          description: "Eat cake and cookies for lunch",
           isCorrect: false
         }
       ]
@@ -48,18 +55,25 @@ const SnackStory = () => {
       id: 2,
       text: "You're hungry. What's the smart choice?",
       options: [
-        { 
-          id: "healthy", 
-          text: "Healthy Snack", 
-          emoji: "🥗", 
-          description: "Choose nutritious food",
+        {
+          id: "healthy",
+          text: "Nutritious Snack",
+          emoji: "🥗",
+          description: "Choose a balanced snack with protein and fiber",
           isCorrect: true
         },
-        { 
-          id: "candy", 
-          text: "Candy", 
-          emoji: "🍬", 
-          description: "Eat sweet treats",
+        {
+          id: "candy",
+          text: "Candy Bar",
+          emoji: "🍫",
+          description: "Eat a chocolate bar",
+          isCorrect: false
+        },
+        {
+          id: "chips",
+          text: "Potato Chips",
+          emoji: "🥔",
+          description: "Eat a bag of salty chips",
           isCorrect: false
         }
       ]
@@ -68,58 +82,79 @@ const SnackStory = () => {
       id: 3,
       text: "You're thirsty. What do you choose?",
       options: [
-        { 
-          id: "water", 
-          text: "Water", 
-          emoji: "💧", 
+        {
+          id: "soda",
+          text: "Soda",
+          emoji: "🥤",
+          description: "Drink fizzy soda",
+          isCorrect: false
+        },
+        {
+          id: "water",
+          text: "Water",
+          emoji: "💧",
           description: "Drink water to stay hydrated",
           isCorrect: true
         },
-        { 
-          id: "soda", 
-          text: "Soda", 
-          emoji: "🥤", 
-          description: "Drink fizzy soda",
+        {
+          id: "juice",
+          text: "Flavoured Juice",
+          emoji: "🧃",
+          description: "Drink 100% flavoured juice",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "You want a snack. What's better?",
+      text: "You want a snack. What's the healthiest choice?",
       options: [
-        { 
-          id: "fruit", 
-          text: "Fruit", 
-          emoji: "🍎", 
-          description: "Eat fresh fruit",
+        {
+          id: "cookies",
+          text: "Packaged Cookies",
+          emoji: "🍪",
+          description: "Eat processed cookies",
+          isCorrect: false
+        },
+        {
+          id: "candy",
+          text: "Gummy Bears",
+          emoji: "🐻",
+          description: "Eat chewy candy",
+          isCorrect: false
+        },
+        {
+          id: "fruit",
+          text: "Fresh Fruit",
+          emoji: "🍎",
+          description: "Eat an apple or banana",
           isCorrect: true
         },
-        { 
-          id: "cookies", 
-          text: "Cookies", 
-          emoji: "🍪", 
-          description: "Eat cookies",
-          isCorrect: false
-        }
       ]
     },
     {
       id: 5,
-      text: "You have money for food. What now?",
+      text: "You have money for food. What's the best decision?",
       options: [
-        { 
-          id: "balanced", 
-          text: "Balanced Meal", 
-          emoji: "🍽️", 
-          description: "Eat a complete, nutritious meal",
+        {
+          id: "balanced",
+          text: "Complete Meal",
+          emoji: "🍽️",
+          description: "Get a balanced meal with all food groups",
           isCorrect: true
         },
-        { 
-          id: "icecream", 
-          text: "Ice Cream", 
-          emoji: "🍦", 
-          description: "Buy ice cream only",
+        {
+          id: "icecream",
+          text: "Ice Cream Only",
+          emoji: "🍦",
+          description: "Spend all on ice cream",
+          isCorrect: false
+        },
+        {
+          id: "sweets",
+          text: "Candy and Soda",
+          emoji: "🍭",
+          description: "Buy only candy and soda",
           isCorrect: false
         }
       ]
@@ -136,21 +171,21 @@ const SnackStory = () => {
       return;
     }
 
-    const newChoices = [...choices, { 
-      questionId: currentQ.id, 
+    const newChoices = [...choices, {
+      questionId: currentQ.id,
       choice: selectedChoice,
       isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
     }];
-    
+
     setChoices(newChoices);
-    
+
     // If the choice is correct, add coins and show flash/confetti
     const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    
+
     // Move to next question or show results
     if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
@@ -206,12 +241,12 @@ const SnackStory = () => {
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
                 <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
               </div>
-              
+
               <p className="text-white text-lg mb-6 text-center">
                 {currentQuestionData.text}
               </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}

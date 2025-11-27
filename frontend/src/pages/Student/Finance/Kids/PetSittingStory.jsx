@@ -56,18 +56,18 @@ const PetSittingStory = () => {
       text: "You earn ₹20 pet sitting. What's smart?",
       options: [
         { 
-          id: "save", 
-          text: "Save half for supplies", 
-          emoji: "💰", 
-          description: "Keep some for future needs",
-          isCorrect: true
-        },
-        { 
           id: "candy", 
           text: "Spend all on candy", 
           emoji: "🍬", 
           description: "Buy candy with all",
           isCorrect: false
+        },
+        {
+          id: "save",
+          text: "Save half for supplies",
+          emoji: "💰",
+          description: "Keep some for future needs",
+          isCorrect: true
         },
         { 
           id: "give", 
@@ -110,13 +110,6 @@ const PetSittingStory = () => {
       text: "You're paid ₹10 extra by mistake. What's right?",
       options: [
         { 
-          id: "return", 
-          text: "Return the extra ₹10", 
-          emoji: "💸", 
-          description: "Give back the extra money",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep it quietly", 
           emoji: "😶", 
@@ -129,7 +122,14 @@ const PetSittingStory = () => {
           emoji: "🧸", 
           description: "Use it for toys",
           isCorrect: false
-        }
+        },
+        {
+          id: "return",
+          text: "Return the extra ₹10",
+          emoji: "💸",
+          description: "Give back the extra money",
+          isCorrect: true
+        },
       ]
     },
     {

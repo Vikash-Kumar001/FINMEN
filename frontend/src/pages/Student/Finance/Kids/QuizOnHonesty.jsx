@@ -29,18 +29,18 @@ const QuizOnHonesty = () => {
       text: "Who is honest?",
       options: [
         { 
-          id: "change", 
-          text: "Gives correct change", 
-          emoji: "💰", 
-          description: "Returns the right amount",
-          isCorrect: true
-        },
-        { 
           id: "cheat", 
           text: "Cheats customer", 
           emoji: "😈", 
           description: "Tricks customers",
           isCorrect: false
+        },
+        {
+          id: "change",
+          text: "Gives correct change",
+          emoji: "💰",
+          description: "Returns the right amount",
+          isCorrect: true
         },
         { 
           id: "lies", 
@@ -83,13 +83,6 @@ const QuizOnHonesty = () => {
       text: "How does honesty help in shopping?",
       options: [
         { 
-          id: "trust", 
-          text: "Builds trust", 
-          emoji: "🤝", 
-          description: "Creates trust between buyer and seller",
-          isCorrect: true
-        },
-        { 
           id: "free", 
           text: "Gets you free items", 
           emoji: "🎁", 
@@ -102,7 +95,14 @@ const QuizOnHonesty = () => {
           emoji: "🛍️", 
           description: "Encourages more spending",
           isCorrect: false
-        }
+        },
+        {
+          id: "trust",
+          text: "Builds trust",
+          emoji: "🤝",
+          description: "Creates trust between buyer and seller",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -137,13 +137,6 @@ const QuizOnHonesty = () => {
       text: "Why is honesty important in money matters?",
       options: [
         { 
-          id: "trust", 
-          text: "It earns trust", 
-          emoji: "🤝", 
-          description: "Builds trust with others",
-          isCorrect: true
-        },
-        { 
           id: "toys", 
           text: "It gets you toys", 
           emoji: "🧸", 
@@ -156,7 +149,14 @@ const QuizOnHonesty = () => {
           emoji: "⭐", 
           description: "Makes you well-known",
           isCorrect: false
-        }
+        },
+        {
+          id: "trust",
+          text: "It earns trust",
+          emoji: "🤝",
+          description: "Builds trust with others",
+          isCorrect: true
+        },
       ]
     }
   ];

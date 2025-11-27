@@ -8,11 +8,11 @@ import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleBorrowMatch = () => {
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-54";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -85,9 +85,8 @@ const PuzzleBorrowMatch = () => {
     return (
       <div
         ref={drop}
-        className={`bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 mb-4 min-h-[60px] ${
-          isOver && canDrop ? "border-green-400" : ""
-        }`}
+        className={`bg-white/10 backdrop-blur-md rounded-xl p-6 border border-white/20 mb-4 min-h-[60px] ${isOver && canDrop ? "border-green-400" : ""
+          }`}
       >
         {matchedItems[expected.id] ? "✅ Matched!" : expected.match}
       </div>
@@ -96,15 +95,15 @@ const PuzzleBorrowMatch = () => {
 
   const handleDrop = (dragged, target) => {
     resetFeedback();
-    const isCorrect = stages[currentStage].items.some(item => 
+    const isCorrect = stages[currentStage].items.some(item =>
       item.id === dragged.id && item.match === target.match
     );
-    
+
     if (isCorrect) {
       setMatchedItems((prev) => ({ ...prev, [dragged.id]: true }));
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      
+
       const allMatched = Object.keys(matchedItems).length + 1 === stages[currentStage].items.length;
       if (allMatched) {
         setTimeout(() => {

@@ -55,13 +55,6 @@ const TreeStory = () => {
       text: "Your money can grow. What do you do?",
       options: [
         { 
-          id: "grow", 
-          text: "Grow Money", 
-          emoji: "📈", 
-          description: "Invest and let it grow",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Spend Fast", 
           emoji: "⚡", 
@@ -74,7 +67,14 @@ const TreeStory = () => {
           emoji: "🙈", 
           description: "Keep it hidden",
           isCorrect: false
-        }
+        },
+        {
+          id: "grow",
+          text: "Grow Money",
+          emoji: "📈",
+          description: "Invest and let it grow",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -109,13 +109,6 @@ const TreeStory = () => {
       text: "You want wealth. What's the plan?",
       options: [
         { 
-          id: "build", 
-          text: "Build Wealth", 
-          emoji: "🏗️", 
-          description: "Grow wealth over time",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Spend All", 
           emoji: "🛍️", 
@@ -128,7 +121,14 @@ const TreeStory = () => {
           emoji: "⏳", 
           description: "Do nothing and wait",
           isCorrect: false
-        }
+        },
+        {
+          id: "build",
+          text: "Build Wealth",
+          emoji: "🏗️",
+          description: "Grow wealth over time",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -136,18 +136,18 @@ const TreeStory = () => {
       text: "Your savings are a seed. What now?",
       options: [
         { 
-          id: "plant", 
-          text: "Plant Savings", 
-          emoji: "🌳", 
-          description: "Let savings grow like a tree",
-          isCorrect: true
-        },
-        { 
           id: "burn", 
           text: "Burn Cash", 
           emoji: "🔥", 
           description: "Waste your savings",
           isCorrect: false
+        },
+        {
+          id: "plant",
+          text: "Plant Savings",
+          emoji: "🌳",
+          description: "Let savings grow like a tree",
+          isCorrect: true
         },
         { 
           id: "ignore", 

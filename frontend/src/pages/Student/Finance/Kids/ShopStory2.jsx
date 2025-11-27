@@ -29,19 +29,26 @@ const ShopStory2 = () => {
       text: "You see two pens in the store. One costs ₹50 and the other costs ₹15. Both work the same. Which should you buy?",
       options: [
         { 
-          id: "affordable", 
-          text: "Affordable pen", 
-          emoji: "✏️", 
-          description: "Buy the ₹15 pen that works just as well",
-          isCorrect: true
-        },
-        { 
           id: "costly", 
           text: "Costly pen", 
           emoji: "🖋️", 
           description: "Buy the ₹50 pen because it looks better",
           isCorrect: false
-        }
+        },
+        { 
+          id: "compare", 
+          text: "Check reviews first", 
+          emoji: "🔍", 
+          description: "Read reviews to see if there's any difference",
+          isCorrect: false
+        },
+        {
+          id: "affordable",
+          text: "Affordable pen",
+          emoji: "✏️",
+          description: "Buy the ₹15 pen that works just as well",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -61,6 +68,13 @@ const ShopStory2 = () => {
           emoji: "👔", 
           description: "Spend more on the ₹80 shirt",
           isCorrect: false
+        },
+        { 
+          id: "wait", 
+          text: "Wait for sale", 
+          emoji: "📅", 
+          description: "Wait to see if either shirt goes on sale",
+          isCorrect: false
         }
       ]
     },
@@ -69,17 +83,24 @@ const ShopStory2 = () => {
       text: "You're buying snacks for a party. Brand A costs ₹200 and Brand B costs ₹120. Both have the same amount. Which?",
       options: [
         { 
-          id: "affordable", 
-          text: "Buy Brand B", 
-          emoji: "🍪", 
-          description: "Save ₹80 by choosing the cheaper brand",
-          isCorrect: true
-        },
-        { 
           id: "costly", 
           text: "Buy Brand A", 
           emoji: "🍫", 
           description: "Spend more on the expensive brand",
+          isCorrect: false
+        },
+        {
+          id: "affordable",
+          text: "Buy Brand B",
+          emoji: "🍪",
+          description: "Save ₹80 by choosing the cheaper brand",
+          isCorrect: true
+        },
+        { 
+          id: "mix", 
+          text: "Buy some of each", 
+          emoji: "✌️", 
+          description: "Buy a mix of both brands to please everyone",
           isCorrect: false
         }
       ]
@@ -101,6 +122,13 @@ const ShopStory2 = () => {
           emoji: "💼", 
           description: "Spend more on the expensive backpack",
           isCorrect: false
+        },
+        { 
+          id: "borrow", 
+          text: "Borrow for now", 
+          emoji: "🤝", 
+          description: "Borrow one until you can afford the better one",
+          isCorrect: false
         }
       ]
     },
@@ -109,19 +137,26 @@ const ShopStory2 = () => {
       text: "You're buying groceries. Organic vegetables cost ₹300 and regular ones cost ₹150. Both are nutritious. Which?",
       options: [
         { 
-          id: "affordable", 
-          text: "Buy regular veggies", 
-          emoji: "🥕", 
-          description: "Save ₹150 by choosing regular vegetables",
-          isCorrect: true
-        },
-        { 
           id: "costly", 
           text: "Buy organic veggies", 
           emoji: "🥦", 
           description: "Spend more on organic vegetables",
           isCorrect: false
-        }
+        },
+        { 
+          id: "selective", 
+          text: "Mix both types", 
+          emoji: "🥗", 
+          description: "Buy organic for some items and regular for others",
+          isCorrect: false
+        },
+        {
+          id: "affordable",
+          text: "Buy regular veggies",
+          emoji: "🥕",
+          description: "Save ₹150 by choosing regular vegetables",
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -211,7 +246,7 @@ const ShopStory2 = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}

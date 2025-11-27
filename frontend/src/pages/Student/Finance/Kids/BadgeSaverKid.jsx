@@ -31,7 +31,7 @@ const BadgeSaverKid = () => {
       icon: PiggyBank,
       item: "Piggy Bank",
       options: [
-        { text: "Save a little bit regularly", correct: true, coins: 10 },
+        { text: "Save a little bit regularly", correct: true, coins: 1 },
         { text: "Spend everything first", correct: false, coins: 0 },
         { text: "Save only when you have a lot", correct: false, coins: 0 }
       ],
@@ -47,9 +47,9 @@ const BadgeSaverKid = () => {
       icon: Wallet,
       item: "Wallet",
       options: [
-        { text: "In a safe place like a bank", correct: true, coins: 15 },
         { text: "Under your bed", correct: false, coins: 0 },
-        { text: "Spend it all immediately", correct: false, coins: 0 }
+        { text: "Spend it all immediately", correct: false, coins: 0 },
+        { text: "In a safe place like a bank", correct: true, coins: 1 },
       ],
       feedback: {
         correct: "Perfect! Keeping money in a bank keeps it safe and can help it grow!",
@@ -63,7 +63,7 @@ const BadgeSaverKid = () => {
       icon: Coins,
       item: "Coins",
       options: [
-        { text: "Save it for future goals", correct: true, coins: 20 },
+        { text: "Save it for future goals", correct: true, coins: 1 },
         { text: "Spend it all right away", correct: false, coins: 0 },
         { text: "Lose it or forget about it", correct: false, coins: 0 }
       ],
@@ -79,8 +79,8 @@ const BadgeSaverKid = () => {
       icon: TrendingUp,
       item: "Growing Money",
       options: [
-        { text: "It helps you reach your goals", correct: true, coins: 25 },
         { text: "It's not important at all", correct: false, coins: 0 },
+        { text: "It helps you reach your goals", correct: true, coins: 1 },
         { text: "You should never save", correct: false, coins: 0 }
       ],
       feedback: {
@@ -95,9 +95,9 @@ const BadgeSaverKid = () => {
       icon: Target,
       item: "Saving Goal",
       options: [
-        { text: "Set goals and save regularly", correct: true, coins: 30 },
         { text: "Never save anything", correct: false, coins: 0 },
-        { text: "Spend more than you have", correct: false, coins: 0 }
+        { text: "Spend more than you have", correct: false, coins: 0 },
+        { text: "Set goals and save regularly", correct: true, coins: 1 }
       ],
       feedback: {
         correct: "Wonderful! Setting goals and saving regularly makes you a smart saver!",
@@ -169,7 +169,7 @@ const BadgeSaverKid = () => {
               {currentLevelData.question}
             </p>
             
-            <div className="space-y-4">
+            <div className="grid sm:grid-cols-3 gap-3">
               {currentLevelData.options.map((option, index) => (
                 <button
                   key={index}

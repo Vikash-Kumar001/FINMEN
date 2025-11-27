@@ -41,6 +41,13 @@ const IceCreamStory = () => {
           emoji: "🍦", 
           description: "Spend money on ice cream right now",
           isCorrect: false
+        },
+        { 
+          id: "split", 
+          text: "Save half, spend half", 
+          emoji: "⚖️", 
+          description: "Save ₹5 for toy and spend ₹5 on ice cream",
+          isCorrect: false
         }
       ]
     },
@@ -49,19 +56,26 @@ const IceCreamStory = () => {
       text: "Your friend bought an expensive ice cream and is enjoying it. You only have ₹5. What do you do?",
       options: [
         { 
-          id: "save", 
-          text: "Save for bigger goal", 
-          emoji: "🎯", 
-          description: "Keep saving for something more important",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Buy small treat", 
           emoji: "🍭", 
           description: "Buy a small treat for yourself",
           isCorrect: false
-        }
+        },
+        {
+          id: "save",
+          text: "Save for bigger goal",
+          emoji: "🎯",
+          description: "Keep saving for something more important",
+          isCorrect: true
+        },
+        { 
+          id: "borrow", 
+          text: "Ask to share friend's", 
+          emoji: "🤝", 
+          description: "Ask your friend if you can share their ice cream",
+          isCorrect: false
+        },
       ]
     },
     {
@@ -81,6 +95,13 @@ const IceCreamStory = () => {
           emoji: "🍦", 
           description: "Buy ice cream because it's a good deal",
           isCorrect: false
+        },
+        { 
+          id: "delay", 
+          text: "Buy later if extra money", 
+          emoji: "⏰", 
+          description: "Wait to see if you get extra money later",
+          isCorrect: false
         }
       ]
     },
@@ -89,17 +110,24 @@ const IceCreamStory = () => {
       text: "You've saved ₹30 for a bicycle. Your sibling offers to share their ice cream if you buy some. What do you choose?",
       options: [
         { 
-          id: "save", 
-          text: "Focus on bicycle", 
-          emoji: "🚲", 
-          description: "Keep working toward your bicycle goal",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Share treat", 
           emoji: "🍦", 
           description: "Spend ₹10 to share ice cream with sibling",
+          isCorrect: false
+        },
+        {
+          id: "save",
+          text: "Focus on bicycle",
+          emoji: "🚲",
+          description: "Keep working toward your bicycle goal",
+          isCorrect: true
+        },
+        { 
+          id: "negotiate", 
+          text: "Promise to help later", 
+          emoji: "🤝", 
+          description: "Offer to help your sibling with chores instead",
           isCorrect: false
         }
       ]
@@ -120,6 +148,13 @@ const IceCreamStory = () => {
           text: "Cool off now", 
           emoji: "🍦", 
           description: "Buy ice cream to cool off from the heat",
+          isCorrect: false
+        },
+        { 
+          id: "alternative", 
+          text: "Find free way to cool off", 
+          emoji: "🌳", 
+          description: "Sit under a tree or drink water to cool off",
           isCorrect: false
         }
       ]
@@ -211,7 +246,7 @@ const IceCreamStory = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}

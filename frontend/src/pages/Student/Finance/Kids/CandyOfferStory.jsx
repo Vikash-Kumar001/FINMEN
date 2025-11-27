@@ -29,17 +29,24 @@ const CandyOfferStory = () => {
       text: "A shop offers 'Buy 1, Get 1 Free' candy. You don't really need more candy. What should you do?",
       options: [
         { 
-          id: "need", 
-          text: "Don't buy", 
-          emoji: "🙅", 
-          description: "Don't buy because you don't need extra candy",
-          isCorrect: true
-        },
-        { 
           id: "want", 
           text: "Buy anyway", 
           emoji: "🙋", 
           description: "Buy because it's a good deal",
+          isCorrect: false
+        },
+        {
+          id: "need",
+          text: "Don't buy",
+          emoji: "🙅",
+          description: "Don't buy because you don't need extra candy",
+          isCorrect: true
+        },
+        { 
+          id: "share", 
+          text: "Buy and share", 
+          emoji: "🤝", 
+          description: "Buy and share with friends or family",
           isCorrect: false
         }
       ]
@@ -61,6 +68,13 @@ const CandyOfferStory = () => {
           emoji: "🛒", 
           description: "Buy because you're getting a free item",
           isCorrect: false
+        },
+        { 
+          id: "gift", 
+          text: "Buy as gifts", 
+          emoji: "🎁", 
+          description: "Buy to give as gifts to others",
+          isCorrect: false
         }
       ]
     },
@@ -69,19 +83,26 @@ const CandyOfferStory = () => {
       text: "A '3 for the price of 2' deal on snacks. You just bought snacks yesterday. What should you do?",
       options: [
         { 
-          id: "need", 
-          text: "Wait until needed", 
-          emoji: "⏳", 
-          description: "Wait until you need more snacks",
-          isCorrect: true
-        },
-        { 
           id: "want", 
           text: "Buy now", 
           emoji: "😋", 
           description: "Buy because it's a savings opportunity",
           isCorrect: false
-        }
+        },
+        { 
+          id: "donate", 
+          text: "Buy for donation", 
+          emoji: "💝", 
+          description: "Buy to donate to those in need",
+          isCorrect: false
+        },
+        {
+          id: "need",
+          text: "Wait until needed",
+          emoji: "⏳",
+          description: "Wait until you need more snacks",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -89,17 +110,24 @@ const CandyOfferStory = () => {
       text: "A 'Buy 1, Get 1 Half Off' deal on books. You need one book for school. What's wise?",
       options: [
         { 
-          id: "need", 
-          text: "Buy just one", 
-          emoji: "📚", 
-          description: "Buy only the book you need",
-          isCorrect: true
-        },
-        { 
           id: "want", 
           text: "Buy two", 
           emoji: "📖", 
           description: "Buy two to get the discount",
+          isCorrect: false
+        },
+        {
+          id: "need",
+          text: "Buy just one",
+          emoji: "📚",
+          description: "Buy only the book you need",
+          isCorrect: true
+        },
+        { 
+          id: "library", 
+          text: "Check library first", 
+          emoji: "🏛️", 
+          description: "See if you can borrow one from the library",
           isCorrect: false
         }
       ]
@@ -109,19 +137,26 @@ const CandyOfferStory = () => {
       text: "A 'Buy 3, Get 50% Off' deal on clothes. You have enough clothes. What should you choose?",
       options: [
         { 
-          id: "need", 
-          text: "Pass on deal", 
-          emoji: "🚫", 
-          description: "Don't buy because you don't need more clothes",
-          isCorrect: true
-        },
-        { 
           id: "want", 
           text: "Take advantage", 
           emoji: "👗", 
           description: "Buy because it's a big discount",
           isCorrect: false
-        }
+        },
+        { 
+          id: "charity", 
+          text: "Buy for charity", 
+          emoji: "🤲", 
+          description: "Buy to donate to a charity drive",
+          isCorrect: false
+        },
+        {
+          id: "need",
+          text: "Pass on deal",
+          emoji: "🚫",
+          description: "Don't buy because you don't need more clothes",
+          isCorrect: true
+        },
       ]
     }
   ];
@@ -211,7 +246,7 @@ const CandyOfferStory = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}

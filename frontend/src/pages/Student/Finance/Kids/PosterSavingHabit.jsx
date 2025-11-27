@@ -43,7 +43,7 @@ const PosterSavingHabit = () => {
           id: 3,
           title: "Save Nothing, Just Spend",
           description: "A poster showing only spending activities",
-          emoji: "🛍️❌🏦",
+          emoji: "🛍️🏦",
           isCorrect: false
         }
       ],
@@ -57,21 +57,21 @@ const PosterSavingHabit = () => {
           id: 1,
           title: "Spend Everything Today",
           description: "A poster showing immediate spending without goals",
-          emoji: "💸❌🎯",
+          emoji: "💸🎯",
           isCorrect: false
         },
         {
           id: 2,
           title: "Money Grows on Trees",
           description: "A poster with unrealistic money expectations",
-          emoji: "🌳💵❌",
+          emoji: "🌳💵",
           isCorrect: false
         },
         {
           id: 3,
           title: "Save for Your Dreams",
           description: "A poster showing a goal chart with savings milestones",
-          emoji: "🎯💰📈",
+          emoji: "🎯💰",
           isCorrect: true
         }
       ],
@@ -85,21 +85,21 @@ const PosterSavingHabit = () => {
           id: 1,
           title: "Bank = Safe Money",
           description: "A poster showing money safely stored in a bank",
-          emoji: "🏦🔒💰",
+          emoji: "🏦💰",
           isCorrect: true
         },
         {
           id: 2,
           title: "Keep Money Under Bed",
           description: "A poster showing money hidden at home",
-          emoji: "🛏️💵❌",
+          emoji: "🛏️💵",
           isCorrect: false
         },
         {
           id: 3,
           title: "Spend It All Now",
           description: "A poster showing no savings at all",
-          emoji: "💸❌🏦",
+          emoji: "💸🏦",
           isCorrect: false
         }
       ],
@@ -113,21 +113,21 @@ const PosterSavingHabit = () => {
           id: 1,
           title: "Save for Rainy Days",
           description: "A poster showing savings for unexpected needs",
-          emoji: "☔💰🛡️",
+          emoji: "☔🛡️",
           isCorrect: true
         },
         {
           id: 2,
           title: "Spend on Fun Only",
           description: "A poster showing only entertainment spending",
-          emoji: "🎮🎉❌",
+          emoji: "🎮🎉",
           isCorrect: false
         },
         {
           id: 3,
           title: "Borrow When Needed",
           description: "A poster promoting borrowing instead of saving",
-          emoji: "💳❌💰",
+          emoji: "💳💰",
           isCorrect: false
         }
       ],
@@ -138,25 +138,25 @@ const PosterSavingHabit = () => {
       question: "Which poster promotes regular saving habits?",
       posters: [
         {
-          id: 1,
-          title: "Save a Little Every Day",
-          description: "A poster showing daily savings routine",
-          emoji: "📅💰✅",
-          isCorrect: true
-        },
-        {
           id: 2,
           title: "Save Only on Special Days",
           description: "A poster showing irregular saving",
-          emoji: "🎂💰❌",
+          emoji: "🎂💰",
           isCorrect: false
         },
         {
           id: 3,
           title: "Never Save, Always Spend",
           description: "A poster discouraging saving",
-          emoji: "💸❌💰",
+          emoji: "💸💰",
           isCorrect: false
+        },
+        {
+          id: 1,
+          title: "Save a Little Every Day",
+          description: "A poster showing daily savings routine",
+          emoji: "📅💰",
+          isCorrect: true
         }
       ],
       correctFeedback: "Save a Little Every Day promotes good habits!",

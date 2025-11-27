@@ -41,6 +41,13 @@ const BadgeSmartSpenderKid = () => {
           emoji: "🧸", 
           description: "Buy toys and treats with all the money",
           isCorrect: false
+        },
+        { 
+          id: "split", 
+          text: "Save half, share half", 
+          emoji: "🤝", 
+          description: "Save ₹250 and share ₹250 with siblings",
+          isCorrect: false
         }
       ]
     },
@@ -50,19 +57,26 @@ const BadgeSmartSpenderKid = () => {
       description: "Your favorite toy is on 50% off, but you already have similar toys. Do you buy it?",
       choices: [
         { 
-          id: "need", 
-          text: "Don't buy", 
-          emoji: "🙅", 
-          description: "Don't buy because you don't need another toy",
-          isCorrect: true
-        },
-        { 
           id: "want", 
           text: "Buy because it's cheap", 
           emoji: "🛒", 
           description: "Buy because it's a good deal",
           isCorrect: false
-        }
+        },
+        { 
+          id: "gift", 
+          text: "Buy as a gift", 
+          emoji: "🎁", 
+          description: "Buy it to give as a gift to someone else",
+          isCorrect: false
+        },
+        {
+          id: "need",
+          text: "Don't buy",
+          emoji: "🙅",
+          description: "Don't buy because you don't need another toy",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -71,17 +85,24 @@ const BadgeSmartSpenderKid = () => {
       description: "You're going to the market with ₹300. What's the smart approach?",
       choices: [
         { 
-          id: "plan", 
-          text: "Make a list first", 
-          emoji: "📋", 
-          description: "Plan what you need before shopping",
-          isCorrect: true
-        },
-        { 
           id: "impulse", 
           text: "Buy what looks good", 
           emoji: "🛍️", 
           description: "Buy things that catch your eye",
+          isCorrect: false
+        },
+        {
+          id: "plan",
+          text: "Make a list first",
+          emoji: "📋",
+          description: "Plan what you need before shopping",
+          isCorrect: true
+        },
+        { 
+          id: "compare", 
+          text: "Compare prices", 
+          emoji: "🔍", 
+          description: "Check different stores for better deals",
           isCorrect: false
         }
       ]
@@ -92,19 +113,26 @@ const BadgeSmartSpenderKid = () => {
       description: "The same notebook is ₹50 at one store and ₹40 at another. Which do you choose?",
       choices: [
         { 
-          id: "compare", 
-          text: "Buy for ₹40", 
-          emoji: "🔍", 
-          description: "Save ₹10 by choosing the cheaper option",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Buy for ₹50", 
           emoji: "💸", 
           description: "Buy from the first store you visited",
           isCorrect: false
-        }
+        },
+        { 
+          id: "ask", 
+          text: "Ask for advice", 
+          emoji: "🙋", 
+          description: "Ask parents which option is better",
+          isCorrect: false
+        },
+        {
+          id: "compare",
+          text: "Buy for ₹40",
+          emoji: "🔍",
+          description: "Save ₹10 by choosing the cheaper option",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -124,6 +152,13 @@ const BadgeSmartSpenderKid = () => {
           text: "Buy fruits and candy", 
           emoji: "🍬", 
           description: "Add candy to your purchase",
+          isCorrect: false
+        },
+        { 
+          id: "substitute", 
+          text: "Buy healthy snack", 
+          emoji: "🥜", 
+          description: "Choose a healthier alternative to candy",
           isCorrect: false
         }
       ]
@@ -199,7 +234,7 @@ const BadgeSmartSpenderKid = () => {
                 {getCurrentScenario().description}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {getCurrentScenario().choices.map(choice => (
                   <button
                     key={choice.id}

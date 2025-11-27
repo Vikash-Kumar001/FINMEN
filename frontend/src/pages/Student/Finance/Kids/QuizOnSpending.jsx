@@ -55,19 +55,19 @@ const QuizOnSpending = () => {
       id: 2,
       text: "Which is a smart way to spend money?",
       options: [
+        {
+          id: "a",
+          text: "Budget first",
+          emoji: "📋",
+          description: "Plan what you'll spend before buying",
+          isCorrect: true
+        },
         { 
-          id: "a", 
+          id: "b", 
           text: "Spend all at once", 
           emoji: "🛍️", 
           description: "Use all your money on one big purchase",
           isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Budget first", 
-          emoji: "📋", 
-          description: "Plan what you'll spend before buying",
-          isCorrect: true
         },
         { 
           id: "c", 
@@ -84,25 +84,25 @@ const QuizOnSpending = () => {
       options: [
         { 
           id: "a", 
-          text: "Save up first", 
-          emoji: "🏦", 
-          description: "Set aside money over time for the purchase",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Buy on credit", 
           emoji: "💳", 
           description: "Use a credit card even if you can't pay immediately",
           isCorrect: false
         },
         { 
-          id: "c", 
+          id: "b", 
           text: "Ask friends", 
           emoji: "👥", 
           description: "Buy what your friends think you should buy",
           isCorrect: false
-        }
+        },
+        {
+          id: "c",
+          text: "Save up first",
+          emoji: "🏦",
+          description: "Set aside money over time for the purchase",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -136,19 +136,19 @@ const QuizOnSpending = () => {
       id: 5,
       text: "What's the smartest approach to shopping?",
       options: [
+        {
+          id: "a",
+          text: "Make a list",
+          emoji: "📝",
+          description: "Plan what you need before going shopping",
+          isCorrect: true
+        },
         { 
-          id: "a", 
+          id: "b", 
           text: "Impulse buying", 
           emoji: "⚡", 
           description: "Buy things immediately when you see them",
           isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Make a list", 
-          emoji: "📝", 
-          description: "Plan what you need before going shopping",
-          isCorrect: true
         },
         { 
           id: "c", 

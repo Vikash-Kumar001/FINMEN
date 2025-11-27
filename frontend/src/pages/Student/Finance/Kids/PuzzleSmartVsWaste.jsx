@@ -28,9 +28,9 @@ const PuzzleSmartVsWaste = () => {
   const leftItems = [
     { id: 1, name: "Notebook", emoji: "📚", category: "need" },
     { id: 2, name: "School Uniform", emoji: "👕", category: "need" },
-    { id: 3, name: "Medicine", emoji: "💊", category: "need" },
-    { id: 4, name: "Healthy Food", emoji: "🍎", category: "need" },
-    { id: 5, name: "Extra Candy", emoji: "🍬", category: "want" }
+    { id: 3, name: "Extra Candy", emoji: "🍬", category: "want" },
+    { id: 4, name: "Medicine", emoji: "💊", category: "need" },
+    { id: 5, name: "Healthy Food", emoji: "🍎", category: "need" }
   ];
 
   const rightItems = [

@@ -34,9 +34,9 @@ const ReflexMoneyChoice = () => {
       question: "What should you do with your money to keep it safe?",
       correctAnswer: "Deposit",
       options: [
-        { text: "Deposit", isCorrect: true, emoji: "📥" },
         { text: "Throw Away", isCorrect: false, emoji: "🗑️" },
         { text: "Lose It", isCorrect: false, emoji: "😞" },
+        { text: "Deposit", isCorrect: true, emoji: "📥" },
         { text: "Forget About It", isCorrect: false, emoji: "😴" }
       ]
     },
@@ -45,8 +45,8 @@ const ReflexMoneyChoice = () => {
       question: "What is the smart way to handle your money?",
       correctAnswer: "Save",
       options: [
-        { text: "Save", isCorrect: true, emoji: "💰" },
         { text: "Waste", isCorrect: false, emoji: "❌" },
+        { text: "Save", isCorrect: true, emoji: "💰" },
         { text: "Spend All", isCorrect: false, emoji: "💸" },
         { text: "Ignore It", isCorrect: false, emoji: "🤷" }
       ]
@@ -67,10 +67,10 @@ const ReflexMoneyChoice = () => {
       question: "What helps your money grow over time?",
       correctAnswer: "Invest",
       options: [
-        { text: "Invest", isCorrect: true, emoji: "📈" },
         { text: "Lose", isCorrect: false, emoji: "📉" },
         { text: "Waste", isCorrect: false, emoji: "🔥" },
-        { text: "Spend Fast", isCorrect: false, emoji: "⚡" }
+        { text: "Spend Fast", isCorrect: false, emoji: "⚡" },
+        { text: "Invest", isCorrect: true, emoji: "📈" },
       ]
     },
     {

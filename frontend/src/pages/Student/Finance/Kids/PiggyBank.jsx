@@ -56,18 +56,18 @@ const PiggyBank = () => {
       text: "You have ₹50. Where should you save to grow it?",
       options: [
         { 
-          id: "bank", 
-          text: "Bank savings account", 
-          emoji: "💰", 
-          description: "Grows with interest",
-          isCorrect: true
-        },
-        { 
           id: "jar", 
           text: "Jar at home", 
           emoji: "🏺", 
           description: "Stays the same",
           isCorrect: false
+        },
+        {
+          id: "bank",
+          text: "Bank savings account",
+          emoji: "💰",
+          description: "Grows with interest",
+          isCorrect: true
         },
         { 
           id: "spend", 
@@ -110,13 +110,6 @@ const PiggyBank = () => {
       text: "You save ₹100 in a bank. It grows to ₹105. Why?",
       options: [
         { 
-          id: "interest", 
-          text: "Bank pays interest", 
-          emoji: "📊", 
-          description: "Interest makes it grow",
-          isCorrect: true
-        },
-        { 
           id: "magic", 
           text: "Piggy bank magic", 
           emoji: "🪄", 
@@ -129,7 +122,14 @@ const PiggyBank = () => {
           emoji: "💸", 
           description: "You put in more",
           isCorrect: false
-        }
+        },
+        {
+          id: "interest",
+          text: "Bank pays interest",
+          emoji: "📊",
+          description: "Interest makes it grow",
+          isCorrect: true
+        },
       ]
     },
     {

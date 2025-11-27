@@ -30,8 +30,8 @@ const BadgeMoneyGardener = () => {
       question: "You got 100 rupees for your birthday. What will you do?",
       icon: Sprout,
       options: [
-        { text: "Save 80, spend 20 - Plant seeds for growth", correct: true },
         { text: "Spend all on candy today", correct: false },
+        { text: "Save 80, spend 20 - Plant seeds for growth", correct: true },
         { text: "Give all away immediately", correct: false }
       ],
       feedback: {
@@ -60,9 +60,9 @@ const BadgeMoneyGardener = () => {
       question: "You want a 500 rupee toy but have only 300 saved. What's the smart choice?",
       icon: TreePine,
       options: [
-        { text: "Save 200 more before buying - Let it grow!", correct: true },
         { text: "Borrow from parents and buy now", correct: false },
-        { text: "Buy a cheaper toy you don't want", correct: false }
+        { text: "Buy a cheaper toy you don't want", correct: false },
+        { text: "Save 200 more before buying - Let it grow!", correct: true },
       ],
       feedback: {
         correct: "Amazing! Saving until you have enough is the smart gardener's way!",
@@ -90,9 +90,9 @@ const BadgeMoneyGardener = () => {
       question: "After months of saving, you have 1000 rupees! What's the wisest choice?",
       icon: Award,
       options: [
-        { text: "Keep 800 saved, spend 200 on something special", correct: true },
         { text: "Spend everything at once", correct: false },
-        { text: "Never spend, just keep saving forever", correct: false }
+        { text: "Never spend, just keep saving forever", correct: false },
+        { text: "Keep 800 saved, spend 200 on something special", correct: true },
       ],
       feedback: {
         correct: "Wonderful! Balancing saving and spending makes you a true money gardener!",

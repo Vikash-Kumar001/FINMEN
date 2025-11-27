@@ -9,17 +9,17 @@ const ROUND_TIME = 10;
 
 const ReflexBudget = () => {
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-23";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  
+
   const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
   const [currentRound, setCurrentRound] = useState(0);
@@ -34,8 +34,8 @@ const ReflexBudget = () => {
       question: "What should you do before spending money?",
       correctAnswer: "Plan Before Spending",
       options: [
-        { text: "Plan Before Spending", isCorrect: true, emoji: "📋" },
         { text: "Spend Instantly", isCorrect: false, emoji: "💸" },
+        { text: "Plan Before Spending", isCorrect: true, emoji: "📋" },
         { text: "Buy Everything", isCorrect: false, emoji: "🛍️" },
         { text: "Ignore Planning", isCorrect: false, emoji: "🙈" }
       ]
@@ -56,9 +56,9 @@ const ReflexBudget = () => {
       question: "What helps you know where your money goes?",
       correctAnswer: "Track Expenses",
       options: [
-        { text: "Track Expenses", isCorrect: true, emoji: "📊" },
         { text: "Ignore Costs", isCorrect: false, emoji: "🙈" },
         { text: "Forget Spending", isCorrect: false, emoji: "😴" },
+        { text: "Track Expenses", isCorrect: true, emoji: "📊" },
         { text: "Don't Check", isCorrect: false, emoji: "🚫" }
       ]
     },
@@ -78,10 +78,10 @@ const ReflexBudget = () => {
       question: "What is the best way to manage your money?",
       correctAnswer: "Budget Wisely",
       options: [
-        { text: "Budget Wisely", isCorrect: true, emoji: "💡" },
         { text: "Overspend", isCorrect: false, emoji: "💸" },
         { text: "Ignore Budget", isCorrect: false, emoji: "🙈" },
-        { text: "Spend Carelessly", isCorrect: false, emoji: "😴" }
+        { text: "Spend Carelessly", isCorrect: false, emoji: "😴" },
+        { text: "Budget Wisely", isCorrect: true, emoji: "💡" },
       ]
     }
   ];
@@ -103,9 +103,9 @@ const ReflexBudget = () => {
   const handleTimeUp = useCallback(() => {
     setAnswered(true);
     resetFeedback();
-    
+
     const isLastQuestion = currentRoundRef.current >= TOTAL_ROUNDS;
-    
+
     setTimeout(() => {
       if (isLastQuestion) {
         setGameState("finished");
@@ -174,24 +174,24 @@ const ReflexBudget = () => {
 
   const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
-    
+
     // Clear the timer immediately when user answers
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
+
     setAnswered(true);
     resetFeedback();
-    
+
     const isCorrect = option.isCorrect;
     const isLastQuestion = currentRound === questions.length;
-    
+
     if (isCorrect) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    
+
     // Move to next round or show results after a short delay
     setTimeout(() => {
       if (isLastQuestion) {
@@ -262,7 +262,7 @@ const ReflexBudget = () => {
               <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
                 {currentQuestion.question}
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentQuestion.options.map((option, index) => (
                   <button

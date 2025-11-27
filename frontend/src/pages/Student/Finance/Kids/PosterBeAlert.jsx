@@ -7,11 +7,11 @@ import { getGameDataById } from "../../../../utils/getGameData";
 
 const PosterBeAlert = () => {
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-86";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -24,43 +24,43 @@ const PosterBeAlert = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Stop Scams."',
+      question: 'Which poster would best warn about online scams?',
       choices: [
-        { text: "Stop Scams 🚨", correct: true },
-        { text: "Trust Everyone 🤝", correct: false },
-        { text: "Spend Freely 🛍️", correct: false },
+        { text: "Think Before You Click! ", correct: true },
+        { text: "Free Money Inside! ", correct: false },
+        { text: "Share Your Password! ", correct: false },
       ],
     },
     {
-      question: 'Choose a poster: "Check Before You Pay."',
+      question: 'What poster would best teach about safe online shopping?',
       choices: [
-        { text: "Check Before You Pay 🔍", correct: true },
-        { text: "Pay Without Checking 💸", correct: false },
-        { text: "Give Money Away 🎁", correct: false },
+        { text: "Click Every Link! ", correct: false },
+        { text: "Use Public WiFi for Banking! ", correct: false },
+        { text: "Look for the Lock! ", correct: true },
       ],
     },
     {
-      question: 'Choose a poster: "Be Alert, Stay Safe."',
+      question: 'Which poster would help spot a phishing attempt?',
       choices: [
-        { text: "Be Alert, Stay Safe 🛡️", correct: true },
-        { text: "Share Money Easily 😊", correct: false },
-        { text: "Ignore Warnings ⚠️", correct: false },
+        { text: "Urgent! Your Account is Hacked! ", correct: false },
+        { text: "Verify Before You Trust! ", correct: true },
+        { text: "Winners Don't Need to Verify! ", correct: false },
       ],
     },
     {
-      question: 'Choose a poster: "Don’t Fall for Tricks."',
+      question: 'What poster would best protect personal information?',
       choices: [
-        { text: "Don’t Fall for Tricks 🕵️", correct: true },
-        { text: "Believe All Offers 🎉", correct: false },
-        { text: "Buy Everything 🛒", correct: false },
+        { text: "Share Everything Online! ", correct: false },
+        { text: "Privacy is Priceless! ", correct: true },
+        { text: "Post Your ID Publicly! ", correct: false },
       ],
     },
     {
-      question: 'Why do anti-scam posters help?',
+      question: 'Which poster best explains online safety?',
       choices: [
-        { text: "Teach kids to stay safe 🛡️", correct: true },
-        { text: "Make scams fun 🎭", correct: false },
-        { text: "Get more money 💰", correct: false },
+        { text: "If It's Too Good to Be True... ", correct: true },
+        { text: "Free Stuff is Always Real! ", correct: false },
+        { text: "Strangers Give Best Deals! ", correct: false },
       ],
     },
   ];

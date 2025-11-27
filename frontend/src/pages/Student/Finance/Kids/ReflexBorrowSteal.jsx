@@ -57,8 +57,8 @@ const ReflexBorrowSteal = () => {
       correctAnswer: "Give Back",
       options: [
         { text: "Hide", isCorrect: false, emoji: "🙈" },
-        { text: "Give Back", isCorrect: true, emoji: "↩️" },
         { text: "Keep It", isCorrect: false, emoji: "🚫" },
+        { text: "Give Back", isCorrect: true, emoji: "↩️" },
         { text: "Lose It", isCorrect: false, emoji: "❌" }
       ]
     },
@@ -79,9 +79,9 @@ const ReflexBorrowSteal = () => {
       correctAnswer: "Return On Time",
       options: [
         { text: "Delay", isCorrect: false, emoji: "⏰" },
-        { text: "Return On Time", isCorrect: true, emoji: "⏱️" },
         { text: "Never", isCorrect: false, emoji: "🚫" },
-        { text: "Maybe Later", isCorrect: false, emoji: "🤷" }
+        { text: "Maybe Later", isCorrect: false, emoji: "🤷" },
+        { text: "Return On Time", isCorrect: true, emoji: "⏱️" },
       ]
     }
   ];

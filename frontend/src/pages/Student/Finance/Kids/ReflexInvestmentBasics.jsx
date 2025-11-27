@@ -34,10 +34,10 @@ const ReflexInvestmentBasics = () => {
       question: "What should you do with your money to make it grow?",
       correctAnswer: "Save & Grow",
       options: [
-        { text: "Save & Grow", isCorrect: true, emoji: "🌱" },
         { text: "Spend All", isCorrect: false, emoji: "💸" },
         { text: "Hide It", isCorrect: false, emoji: "🙈" },
-        { text: "Forget About It", isCorrect: false, emoji: "😴" }
+        { text: "Forget About It", isCorrect: false, emoji: "😴" },
+        { text: "Save & Grow", isCorrect: true, emoji: "🌱" },
       ]
     },
     {
@@ -56,8 +56,8 @@ const ReflexInvestmentBasics = () => {
       question: "What is the best way to build your wealth?",
       correctAnswer: "Grow Wealth",
       options: [
-        { text: "Grow Wealth", isCorrect: true, emoji: "📈" },
         { text: "Lose Money", isCorrect: false, emoji: "💔" },
+        { text: "Grow Wealth", isCorrect: true, emoji: "📈" },
         { text: "Spend Everything", isCorrect: false, emoji: "🛍️" },
         { text: "Ignore Savings", isCorrect: false, emoji: "😑" }
       ]
@@ -67,9 +67,9 @@ const ReflexInvestmentBasics = () => {
       question: "How can your money work for you?",
       correctAnswer: "Earn Interest",
       options: [
-        { text: "Earn Interest", isCorrect: true, emoji: "💵" },
         { text: "Waste Cash", isCorrect: false, emoji: "🔥" },
         { text: "Spend Immediately", isCorrect: false, emoji: "⚡" },
+        { text: "Earn Interest", isCorrect: true, emoji: "💵" },
         { text: "Forget About It", isCorrect: false, emoji: "🤷" }
       ]
     },

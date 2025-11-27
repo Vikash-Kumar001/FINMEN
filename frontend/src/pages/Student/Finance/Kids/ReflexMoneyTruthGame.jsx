@@ -9,17 +9,17 @@ const ROUND_TIME = 10;
 
 const ReflexMoneyTruthGame = () => {
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-99";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  
+
   const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
   const [currentRound, setCurrentRound] = useState(0);
@@ -34,9 +34,9 @@ const ReflexMoneyTruthGame = () => {
       question: "What should you be with money?",
       correctAnswer: "Be Fair",
       options: [
-        { text: "Be Fair", isCorrect: true, emoji: "⚖️" },
         { text: "Be Greedy", isCorrect: false, emoji: "💰" },
         { text: "Be Selfish", isCorrect: false, emoji: "😈" },
+        { text: "Be Fair", isCorrect: true, emoji: "⚖️" },
         { text: "Be Unfair", isCorrect: false, emoji: "❌" }
       ]
     },
@@ -56,10 +56,10 @@ const ReflexMoneyTruthGame = () => {
       question: "What should you do with your money?",
       correctAnswer: "Share",
       options: [
-        { text: "Share", isCorrect: true, emoji: "🤝" },
         { text: "Hoard", isCorrect: false, emoji: "🐉" },
         { text: "Keep All", isCorrect: false, emoji: "🔒" },
-        { text: "Never Give", isCorrect: false, emoji: "🚫" }
+        { text: "Never Give", isCorrect: false, emoji: "🚫" },
+        { text: "Share", isCorrect: true, emoji: "🤝" },
       ]
     },
     {
@@ -67,8 +67,8 @@ const ReflexMoneyTruthGame = () => {
       question: "How should you make financial deals?",
       correctAnswer: "Honest Deal",
       options: [
-        { text: "Honest Deal", isCorrect: true, emoji: "💯" },
         { text: "Cheat", isCorrect: false, emoji: "🎭" },
+        { text: "Honest Deal", isCorrect: true, emoji: "💯" },
         { text: "Trick", isCorrect: false, emoji: "🃏" },
         { text: "Deceive", isCorrect: false, emoji: "😈" }
       ]
@@ -144,22 +144,22 @@ const ReflexMoneyTruthGame = () => {
 
   const handleAnswer = (option) => {
     if (answered || gameState !== "playing") return;
-    
+
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
+
     setAnswered(true);
     resetFeedback();
-    
+
     const isCorrect = option.isCorrect;
-    
+
     if (isCorrect) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    
+
     setTimeout(() => {
       if (currentRound < TOTAL_ROUNDS) {
         setCurrentRound((prev) => prev + 1);
@@ -228,9 +228,8 @@ const ReflexMoneyTruthGame = () => {
             {/* Progress bar */}
             <div className="w-full bg-white/20 rounded-full h-2">
               <div
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  timeLeft <= 2 ? 'bg-red-500' : timeLeft <= 3 ? 'bg-yellow-500' : 'bg-green-500'
-                }`}
+                className={`h-2 rounded-full transition-all duration-300 ${timeLeft <= 2 ? 'bg-red-500' : timeLeft <= 3 ? 'bg-yellow-500' : 'bg-green-500'
+                  }`}
                 style={{ width: `${(timeLeft / ROUND_TIME) * 100}%` }}
               />
             </div>
@@ -239,7 +238,7 @@ const ReflexMoneyTruthGame = () => {
               <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
                 {currentQuestion.question}
               </h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {currentQuestion.options.map((option, index) => (
                   <button

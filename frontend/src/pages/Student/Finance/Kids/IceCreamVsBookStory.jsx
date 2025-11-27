@@ -83,13 +83,6 @@ const IceCreamVsBookStory = () => {
       text: "You saved ₹20. A sale offers books for ₹18. Can you buy one?",
       options: [
         { 
-          id: "yes", 
-          text: "Yes, and have ₹2 left", 
-          emoji: "📚", 
-          description: "You can buy the book and save money",
-          isCorrect: true
-        },
-        { 
           id: "no", 
           text: "No, need ₹2 more", 
           emoji: "📉", 
@@ -102,7 +95,14 @@ const IceCreamVsBookStory = () => {
           emoji: "🍦", 
           description: "Change your mind and buy ice cream",
           isCorrect: false
-        }
+        },
+        {
+          id: "yes",
+          text: "Yes, and have ₹2 left",
+          emoji: "📚",
+          description: "You can buy the book and save money",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -137,18 +137,18 @@ const IceCreamVsBookStory = () => {
       text: "Why is choosing a book over ice cream smart?",
       options: [
         { 
-          id: "learn", 
-          text: "Helps you learn and grow", 
-          emoji: "🧠", 
-          description: "Books help you improve",
-          isCorrect: true
-        },
-        { 
           id: "taste", 
           text: "Tastes better than ice cream", 
           emoji: "🍦", 
           description: "More enjoyable",
           isCorrect: false
+        },
+        {
+          id: "learn",
+          text: "Helps you learn and grow",
+          emoji: "🧠",
+          description: "Books help you improve",
+          isCorrect: true
         },
         { 
           id: "friends", 

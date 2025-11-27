@@ -28,13 +28,6 @@ const QuizOnNeeds = () => {
       text: "Which one is a need?",
       options: [
         { 
-          id: "food", 
-          text: "Food", 
-          emoji: "🍎", 
-          description: "Essential for survival",
-          isCorrect: true
-        },
-        { 
           id: "toy", 
           text: "Fancy toy", 
           emoji: "🧸", 
@@ -47,7 +40,14 @@ const QuizOnNeeds = () => {
           emoji: "🍫", 
           description: "Sweet treats",
           isCorrect: false
-        }
+        },
+        {
+          id: "food",
+          text: "Food",
+          emoji: "🍎",
+          description: "Essential for survival",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -82,18 +82,18 @@ const QuizOnNeeds = () => {
       text: "What's a need to stay healthy?",
       options: [
         { 
-          id: "water", 
-          text: "Water", 
-          emoji: "💧", 
-          description: "Essential for life",
-          isCorrect: true
-        },
-        { 
           id: "soda", 
           text: "Soda", 
           emoji: "🥤", 
           description: "Fizzy drink",
           isCorrect: false
+        },
+        {
+          id: "water",
+          text: "Water",
+          emoji: "💧",
+          description: "Essential for life",
+          isCorrect: true
         },
         { 
           id: "icecream", 
@@ -136,13 +136,6 @@ const QuizOnNeeds = () => {
       text: "Why prioritize needs over wants?",
       options: [
         { 
-          id: "survival", 
-          text: "Ensures survival", 
-          emoji: "🛡️", 
-          description: "Keeps you safe and healthy",
-          isCorrect: true
-        },
-        { 
           id: "toys", 
           text: "Gets you more toys", 
           emoji: "🧸", 
@@ -155,7 +148,14 @@ const QuizOnNeeds = () => {
           emoji: "😊", 
           description: "Brings joy",
           isCorrect: false
-        }
+        },
+        {
+          id: "survival",
+          text: "Ensures survival",
+          emoji: "🛡️",
+          description: "Keeps you safe and healthy",
+          isCorrect: true
+        },
       ]
     }
   ];

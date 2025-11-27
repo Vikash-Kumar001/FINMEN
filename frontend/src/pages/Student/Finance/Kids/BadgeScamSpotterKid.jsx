@@ -39,9 +39,9 @@ const BadgeScamSpotterKid = () => {
       text: "A website looks like your favorite game but asks for parent's credit card. What's wrong?",
       icon: Eye,
       options: [
-        { text: "It's a SCAM! Real games don't ask for this", correct: true },
         { text: "It's okay because I know the game", correct: false },
-        { text: "Enter card details to unlock levels", correct: false }
+        { text: "Enter card details to unlock levels", correct: false },
+        { text: "It's a SCAM! Real games don't ask for this", correct: true },
       ]
     },
     {
@@ -59,8 +59,8 @@ const BadgeScamSpotterKid = () => {
       text: "Email says 'You won 1 Lakh rupees! Click link and enter OTP.' What do you do?",
       icon: Mail,
       options: [
-        { text: "Delete immediately and tell parents", correct: true },
         { text: "Click link to see if it's real", correct: false },
+        { text: "Delete immediately and tell parents", correct: true },
         { text: "Enter OTP to claim prize", correct: false }
       ]
     },
@@ -69,8 +69,8 @@ const BadgeScamSpotterKid = () => {
       text: "Online stranger offers 'Easy money - just share your school details!' What's your response?",
       icon: Shield,
       options: [
-        { text: "Block them and report to parents/teacher", correct: true },
         { text: "Share details for easy money", correct: false },
+        { text: "Block them and report to parents/teacher", correct: true },
         { text: "Ask what kind of work first", correct: false }
       ]
     }

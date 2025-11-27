@@ -56,18 +56,18 @@ const BankVisitStory = () => {
       text: "Bank staff greets you. How to respond?",
       options: [
         { 
-          id: "polite", 
-          text: "Be polite and respectful", 
-          emoji: "🙏", 
-          description: "Show respect",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore them completely", 
           emoji: "😐", 
           description: "Don't respond",
           isCorrect: false
+        },
+        {
+          id: "polite",
+          text: "Be polite and respectful",
+          emoji: "🙏",
+          description: "Show respect",
+          isCorrect: true
         },
         { 
           id: "rude", 
@@ -110,13 +110,6 @@ const BankVisitStory = () => {
       text: "Security guard checks bags. Your reaction?",
       options: [
         { 
-          id: "understand", 
-          text: "Understand it's for safety", 
-          emoji: "🛡️", 
-          description: "Know it's for protection",
-          isCorrect: true
-        },
-        { 
           id: "angry", 
           text: "Get angry at guard", 
           emoji: "😠", 
@@ -129,7 +122,14 @@ const BankVisitStory = () => {
           emoji: "❌", 
           description: "Don't allow checking",
           isCorrect: false
-        }
+        },
+        {
+          id: "understand",
+          text: "Understand it's for safety",
+          emoji: "🛡️",
+          description: "Know it's for protection",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -137,18 +137,18 @@ const BankVisitStory = () => {
       text: "Long queue at bank. What's best?",
       options: [
         { 
-          id: "wait", 
-          text: "Wait patiently in line", 
-          emoji: "⏳", 
-          description: "Wait your turn",
-          isCorrect: true
-        },
-        { 
           id: "push", 
           text: "Push to go first", 
           emoji: "👊", 
           description: "Try to skip the line",
           isCorrect: false
+        },
+        {
+          id: "wait",
+          text: "Wait patiently in line",
+          emoji: "⏳",
+          description: "Wait your turn",
+          isCorrect: true
         },
         { 
           id: "complain", 

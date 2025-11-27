@@ -34,10 +34,10 @@ const ReflexBankSymbols = () => {
       question: "What is the symbol for Indian Rupee?",
       correctAnswer: "₹",
       options: [
-        { text: "₹", isCorrect: true, emoji: "₹" },
-        { text: "$", isCorrect: false, emoji: "$" },
-        { text: "€", isCorrect: false, emoji: "€" },
-        { text: "£", isCorrect: false, emoji: "£" }
+        { text: "₹", isCorrect: true },
+        { text: "$", isCorrect: false },
+        { text: "€", isCorrect: false },
+        { text: "£", isCorrect: false }
       ]
     },
     {
@@ -57,9 +57,9 @@ const ReflexBankSymbols = () => {
       correctAnswer: "Save",
       options: [
         { text: "Spend", isCorrect: false, emoji: "💸" },
-        { text: "Save", isCorrect: true, emoji: "💰" },
         { text: "Waste", isCorrect: false, emoji: "🗑️" },
-        { text: "Lose", isCorrect: false, emoji: "❌" }
+        { text: "Lose", isCorrect: false, emoji: "❌" },
+        { text: "Save", isCorrect: true, emoji: "💰" },
       ]
     },
     {
@@ -78,8 +78,8 @@ const ReflexBankSymbols = () => {
       question: "What symbol represents a safe place to keep money?",
       correctAnswer: "Vault",
       options: [
-        { text: "Box", isCorrect: false, emoji: "📦" },
         { text: "Vault", isCorrect: true, emoji: "🔒" },
+        { text: "Box", isCorrect: false, emoji: "📦" },
         { text: "Bag", isCorrect: false, emoji: "🎒" },
         { text: "Basket", isCorrect: false, emoji: "🧺" }
       ]

@@ -26,10 +26,10 @@ const PosterNeedsFirst = () => {
     {
       question: 'Choose a poster: "Put Needs Before Wants."',
       choices: [
-        { text: "Put Needs Before Wants 📚", correct: true },
         { text: "Buy Wants First 🧸", correct: false },
         { text: "Spend Everything 🛍️", correct: false },
-        { text: "No Planning Needed 🎲", correct: false }
+        { text: "No Planning Needed 🎲", correct: false },
+        { text: "Put Needs Before Wants 📚", correct: true },
       ],
     },
     {
@@ -44,9 +44,9 @@ const PosterNeedsFirst = () => {
     {
       question: 'Choose a poster: "Choose Needs, Win Big."',
       choices: [
-        { text: "Choose Needs, Win Big 🥗", correct: true },
         { text: "Spend on Toys 🧸", correct: false },
         { text: "Give Money Away 🎁", correct: false },
+        { text: "Choose Needs, Win Big 🥗", correct: true },
         { text: "Buy Everything 🎪", correct: false }
       ],
     },
@@ -62,8 +62,8 @@ const PosterNeedsFirst = () => {
     {
       question: 'Why do needs-first posters help kids?',
       choices: [
-        { text: "Teach smart spending 📚", correct: true },
         { text: "Encourage more toys 🧸", correct: false },
+        { text: "Teach smart spending 📚", correct: true },
         { text: "Make spending fun 🎉", correct: false },
         { text: "Help buy expensive items 💎", correct: false }
       ],

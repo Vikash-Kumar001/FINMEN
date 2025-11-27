@@ -6,11 +6,11 @@ import { getGameDataById } from "../../../../utils/getGameData";
 
 const PosterReturnBorrow = () => {
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-56";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -23,43 +23,43 @@ const PosterReturnBorrow = () => {
 
   const stages = [
     {
-      question: 'Choose a poster: "Always Return Borrowed."',
+      question: 'Which poster would best remind friends about borrowing responsibility?',
       choices: [
-        { text: "Always Return Borrowed 🤝", correct: true },
-        { text: "Keep Borrowed Items 😶", correct: false },
-        { text: "Borrow More Stuff 📚", correct: false },
+        { text: "Take What You Want, When You Want! 🎯", correct: false },
+        { text: "Finders Keepers, Losers Weepers! 🎭", correct: false },
+        { text: "Borrow Today, Return Tomorrow - Keep Trust Strong! 🤝", correct: true },
       ],
     },
     {
-      question: 'Choose a poster: "Return What You Borrow."',
+      question: 'What poster would best encourage on-time returns?',
       choices: [
-        { text: "Return What You Borrow ✅", correct: true },
-        { text: "Never Return 🙈", correct: false },
-        { text: "Lose Borrowed Items 😞", correct: false },
+        { text: "Return When You Feel Like It! �", correct: false },
+        { text: "A Promise to Return is a Promise to Keep! ✨", correct: true },
+        { text: "Borrowed Items Are Better Than New Ones! 🆕", correct: false },
       ],
     },
     {
-      question: 'Choose a poster: "Honest Borrowing Wins."',
+      question: 'Which poster teaches the best borrowing habit?',
       choices: [
-        { text: "Honest Borrowing Wins 😊", correct: true },
-        { text: "Borrow Without Returning 💸", correct: false },
-        { text: "Take Without Asking 🤫", correct: false },
+        { text: "Ask, Use, Return - The Right Way to Borrow! �", correct: true },
+        { text: "Borrow Now, Worry Later! 🎢", correct: false },
+        { text: "What's Yours is Mine! 🎯", correct: false },
       ],
     },
     {
-      question: 'Choose a poster: "Return On Time, Be Kind."',
+      question: 'What poster would help maintain trust between friends?',
       choices: [
-        { text: "Return On Time, Be Kind 🌟", correct: true },
-        { text: "Keep Items Forever 🧸", correct: false },
-        { text: "Borrow More Money 💰", correct: false },
+        { text: "I'll Return It... Eventually! 🐢", correct: false },
+        { text: "Your Trust is Priceless - I'll Return It! 💎", correct: true },
+        { text: "What Borrowing Policy? �", correct: false },
       ],
     },
     {
-      question: 'Why do return-borrowing posters help?',
+      question: 'Which poster best explains why returning matters?',
       choices: [
-        { text: "Teach honesty and trust 📚", correct: true },
-        { text: "Encourage borrowing more 🎒", correct: false },
-        { text: "Make keeping items fun 🎉", correct: false },
+        { text: "Every Return Builds Trust - Let's Build Together! 🌉", correct: true },
+        { text: "Borrowing is Easier Than Buying! 🛍️", correct: false },
+        { text: "Why Buy When You Can Borrow Forever? ♾️", correct: false },
       ],
     },
   ];

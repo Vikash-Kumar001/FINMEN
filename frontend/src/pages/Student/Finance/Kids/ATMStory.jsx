@@ -29,18 +29,18 @@ const ATMStory = () => {
       text: "Your parent shows you their ATM card. What should you do?",
       options: [
         { 
-          id: "learn", 
-          text: "Learn how it works", 
-          emoji: "💳", 
-          description: "Learn about money management",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "😐", 
           description: "Pay no attention",
           isCorrect: false
+        },
+        {
+          id: "learn",
+          text: "Learn how it works",
+          emoji: "💳",
+          description: "Learn about money management",
+          isCorrect: true
         },
         { 
           id: "play", 
@@ -56,13 +56,6 @@ const ATMStory = () => {
       text: "Your parent is entering their PIN at the ATM. What should you do?",
       options: [
         { 
-          id: "away", 
-          text: "Look away to give privacy", 
-          emoji: "👀", 
-          description: "Respect their privacy",
-          isCorrect: true
-        },
-        { 
           id: "memorize", 
           text: "Try to memorize the PIN", 
           emoji: "🧠", 
@@ -75,7 +68,14 @@ const ATMStory = () => {
           emoji: "💬", 
           description: "Share with others",
           isCorrect: false
-        }
+        },
+        {
+          id: "away",
+          text: "Look away to give privacy",
+          emoji: "👀",
+          description: "Respect their privacy",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -137,13 +137,6 @@ const ATMStory = () => {
       text: "Your friend lost their lunch money. What should you do?",
       options: [
         { 
-          id: "share", 
-          text: "Share your lunch with them", 
-          emoji: "🍱", 
-          description: "Help them by sharing",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore them", 
           emoji: "😐", 
@@ -156,7 +149,14 @@ const ATMStory = () => {
           emoji: "😆", 
           description: "Make fun of them",
           isCorrect: false
-        }
+        },
+        {
+          id: "share",
+          text: "Share your lunch with them",
+          emoji: "🍱",
+          description: "Help them by sharing",
+          isCorrect: true
+        },
       ]
     }
   ];

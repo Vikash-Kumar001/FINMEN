@@ -45,9 +45,9 @@ const ReflexCheckFirst = () => {
       question: "What should you check before making a purchase?",
       correctAnswer: "Check Cost",
       options: [
-        { text: "Check Cost", isCorrect: true, emoji: "💵" },
         { text: "Buy Now", isCorrect: false, emoji: "🛒" },
         { text: "Skip Checking", isCorrect: false, emoji: "⏭️" },
+        { text: "Check Cost", isCorrect: true, emoji: "💵" },
         { text: "Guess Price", isCorrect: false, emoji: "🎲" }
       ]
     },
@@ -56,8 +56,8 @@ const ReflexCheckFirst = () => {
       question: "What's the smart way to shop?",
       correctAnswer: "Compare Prices",
       options: [
-        { text: "Compare Prices", isCorrect: true, emoji: "⚖️" },
         { text: "Pay Fast", isCorrect: false, emoji: "💸" },
+        { text: "Compare Prices", isCorrect: true, emoji: "⚖️" },
         { text: "Buy First Store", isCorrect: false, emoji: "🏪" },
         { text: "Don't Compare", isCorrect: false, emoji: "🙈" }
       ]
@@ -78,10 +78,10 @@ const ReflexCheckFirst = () => {
       question: "What should you do before buying online?",
       correctAnswer: "Read Reviews",
       options: [
-        { text: "Read Reviews", isCorrect: true, emoji: "⭐" },
         { text: "Rush", isCorrect: false, emoji: "⚡" },
         { text: "Skip Reviews", isCorrect: false, emoji: "⏭️" },
-        { text: "Buy Instantly", isCorrect: false, emoji: "🛒" }
+        { text: "Buy Instantly", isCorrect: false, emoji: "🛒" },
+        { text: "Read Reviews", isCorrect: true, emoji: "⭐" },
       ]
     }
   ];

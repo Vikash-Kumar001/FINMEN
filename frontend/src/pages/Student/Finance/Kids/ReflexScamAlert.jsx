@@ -45,8 +45,8 @@ const ReflexScamAlert = () => {
       question: "What should you do with a suspicious offer?",
       correctAnswer: "Verify Offer",
       options: [
-        { text: "Verify Offer", isCorrect: true, emoji: "✅" },
         { text: "Accept Fast", isCorrect: false, emoji: "⚡" },
+        { text: "Verify Offer", isCorrect: true, emoji: "✅" },
         { text: "Trust Immediately", isCorrect: false, emoji: "🤝" },
         { text: "Ignore Warning", isCorrect: false, emoji: "🚫" }
       ]
@@ -56,10 +56,10 @@ const ReflexScamAlert = () => {
       question: "What should you do when something seems too good to be true?",
       correctAnswer: "Ask Questions",
       options: [
-        { text: "Ask Questions", isCorrect: true, emoji: "❓" },
         { text: "Trust Blindly", isCorrect: false, emoji: "😴" },
         { text: "Accept Quickly", isCorrect: false, emoji: "⚡" },
-        { text: "Ignore Doubts", isCorrect: false, emoji: "🙈" }
+        { text: "Ignore Doubts", isCorrect: false, emoji: "🙈" },
+        { text: "Ask Questions", isCorrect: true, emoji: "❓" },
       ]
     },
     {
@@ -67,9 +67,9 @@ const ReflexScamAlert = () => {
       question: "What should you do before making a payment?",
       correctAnswer: "Confirm Details",
       options: [
-        { text: "Confirm Details", isCorrect: true, emoji: "📋" },
         { text: "Pay Now", isCorrect: false, emoji: "💸" },
         { text: "Skip Verification", isCorrect: false, emoji: "⏭️" },
+        { text: "Confirm Details", isCorrect: true, emoji: "📋" },
         { text: "Trust Without Check", isCorrect: false, emoji: "🤝" }
       ]
     },
@@ -78,10 +78,10 @@ const ReflexScamAlert = () => {
       question: "What should you do if you discover a scam?",
       correctAnswer: "Report Scam",
       options: [
-        { text: "Report Scam", isCorrect: true, emoji: "🚨" },
         { text: "Do Nothing", isCorrect: false, emoji: "😴" },
         { text: "Ignore It", isCorrect: false, emoji: "🙈" },
-        { text: "Keep Quiet", isCorrect: false, emoji: "🤫" }
+        { text: "Keep Quiet", isCorrect: false, emoji: "🤫" },
+        { text: "Report Scam", isCorrect: true, emoji: "🚨" },
       ]
     }
   ];

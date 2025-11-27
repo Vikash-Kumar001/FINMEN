@@ -34,9 +34,9 @@ const ReflexSmallBusiness = () => {
       question: "What is a good way to start a small business?",
       correctAnswer: "Bake & Sell",
       options: [
-        { text: "Bake & Sell", isCorrect: true, emoji: "🍰" },
         { text: "Buy & Waste", isCorrect: false, emoji: "💸" },
         { text: "Spend All", isCorrect: false, emoji: "🛍️" },
+        { text: "Bake & Sell", isCorrect: true, emoji: "🍰" },
         { text: "Do Nothing", isCorrect: false, emoji: "😴" }
       ]
     },
@@ -56,10 +56,10 @@ const ReflexSmallBusiness = () => {
       question: "What helps you earn money from others?",
       correctAnswer: "Offer Service",
       options: [
-        { text: "Offer Service", isCorrect: true, emoji: "🛠️" },
         { text: "Do Nothing", isCorrect: false, emoji: "😴" },
         { text: "Wait Forever", isCorrect: false, emoji: "⏳" },
-        { text: "Avoid Work", isCorrect: false, emoji: "🚫" }
+        { text: "Avoid Work", isCorrect: false, emoji: "🚫" },
+        { text: "Offer Service", isCorrect: true, emoji: "🛠️" },
       ]
     },
     {
@@ -78,8 +78,8 @@ const ReflexSmallBusiness = () => {
       question: "What helps your business succeed?",
       correctAnswer: "Grow Business",
       options: [
-        { text: "Grow Business", isCorrect: true, emoji: "📈" },
         { text: "Waste Money", isCorrect: false, emoji: "🔥" },
+        { text: "Grow Business", isCorrect: true, emoji: "📈" },
         { text: "Give Up", isCorrect: false, emoji: "😞" },
         { text: "Stay Small", isCorrect: false, emoji: "📉" }
       ]

@@ -45,8 +45,8 @@ const ReflexEthicsGame = () => {
       question: "How should you handle financial matters?",
       correctAnswer: "Honest",
       options: [
-        { text: "Honest", isCorrect: true, emoji: "💯" },
         { text: "Lie", isCorrect: false, emoji: "🤥" },
+        { text: "Honest", isCorrect: true, emoji: "💯" },
         { text: "Cheat", isCorrect: false, emoji: "🎭" },
         { text: "Trick", isCorrect: false, emoji: "🃏" }
       ]
@@ -56,9 +56,9 @@ const ReflexEthicsGame = () => {
       question: "What should your financial decisions be?",
       correctAnswer: "Fair",
       options: [
-        { text: "Fair", isCorrect: true, emoji: "⚖️" },
         { text: "Unfair", isCorrect: false, emoji: "❌" },
         { text: "Biased", isCorrect: false, emoji: "🎯" },
+        { text: "Fair", isCorrect: true, emoji: "⚖️" },
         { text: "Partial", isCorrect: false, emoji: "📊" }
       ]
     },
@@ -78,10 +78,10 @@ const ReflexEthicsGame = () => {
       question: "How should you behave with money?",
       correctAnswer: "Ethical",
       options: [
-        { text: "Ethical", isCorrect: true, emoji: "🌟" },
         { text: "Dishonest", isCorrect: false, emoji: "🚫" },
         { text: "Unfair", isCorrect: false, emoji: "❌" },
-        { text: "Corrupt", isCorrect: false, emoji: "💸" }
+        { text: "Corrupt", isCorrect: false, emoji: "💸" },
+        { text: "Ethical", isCorrect: true, emoji: "🌟" },
       ]
     }
   ];

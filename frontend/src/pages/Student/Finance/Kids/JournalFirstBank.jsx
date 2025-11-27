@@ -41,9 +41,9 @@ const JournalFirstBank = () => {
       id: 2,
       question: "How does a bank help people?",
       options: [
-        { text: "By keeping money safe and helping it grow", correct: true },
         { text: "By giving away free toys", correct: false },
         { text: "By playing games with you", correct: false },
+        { text: "By keeping money safe and helping it grow", correct: true },
         { text: "By buying you candy", correct: false }
       ],
       feedback: {
@@ -55,10 +55,10 @@ const JournalFirstBank = () => {
       id: 3,
       question: "How does saving money in a bank make you feel?",
       options: [
-        { text: "Safe and secure", correct: true },
         { text: "Scared and worried", correct: false },
         { text: "Bored and tired", correct: false },
-        { text: "Angry and upset", correct: false }
+        { text: "Angry and upset", correct: false },
+        { text: "Safe and secure", correct: true },
       ],
       feedback: {
         correct: "Great! Saving in a bank makes you feel safe and secure!",
@@ -69,8 +69,8 @@ const JournalFirstBank = () => {
       id: 4,
       question: "What is one important thing you learn about banks?",
       options: [
-        { text: "Banks protect and grow your money", correct: true },
         { text: "Banks are only for adults", correct: false },
+        { text: "Banks protect and grow your money", correct: true },
         { text: "Banks are scary places", correct: false },
         { text: "Banks don't help kids", correct: false }
       ],

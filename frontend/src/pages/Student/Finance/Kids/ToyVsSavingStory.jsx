@@ -55,18 +55,18 @@ const ToyVsSavingStory = () => {
       text: "You get gift money. What's smarter?",
       options: [
         { 
-          id: "goal", 
-          text: "Save for Goal", 
-          emoji: "🎯", 
-          description: "Save for something important",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Spend Now", 
           emoji: "💸", 
           description: "Spend immediately",
           isCorrect: false
+        },
+        {
+          id: "goal",
+          text: "Save for Goal",
+          emoji: "🎯",
+          description: "Save for something important",
+          isCorrect: true
         },
         { 
           id: "waste", 
@@ -109,13 +109,6 @@ const ToyVsSavingStory = () => {
       text: "You get allowance. What do you do?",
       options: [
         { 
-          id: "save", 
-          text: "Save Allowance", 
-          emoji: "💾", 
-          description: "Put it in savings",
-          isCorrect: true
-        },
-        { 
           id: "candy", 
           text: "Buy Candy", 
           emoji: "🍬", 
@@ -128,7 +121,14 @@ const ToyVsSavingStory = () => {
           emoji: "😞", 
           description: "Lose the money",
           isCorrect: false
-        }
+        },
+        {
+          id: "save",
+          text: "Save Allowance",
+          emoji: "💾",
+          description: "Put it in savings",
+          isCorrect: true
+        },
       ]
     },
     {

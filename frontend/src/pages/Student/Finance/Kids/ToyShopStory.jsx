@@ -28,18 +28,18 @@ const ToyShopStory = () => {
       text: "Seller says, 'Hurry or lose toy!' What do you do?",
       options: [
         { 
-          id: "check", 
-          text: "Check Price", 
-          emoji: "💰", 
-          description: "Check the price first",
-          isCorrect: true
-        },
-        { 
           id: "quick", 
           text: "Buy Quickly", 
           emoji: "⚡", 
           description: "Buy immediately",
           isCorrect: false
+        },
+        {
+          id: "check",
+          text: "Check Price",
+          emoji: "💰",
+          description: "Check the price first",
+          isCorrect: true
         },
         { 
           id: "ignore", 
@@ -82,18 +82,18 @@ const ToyShopStory = () => {
       text: "Toy looks cool. What do you check?",
       options: [
         { 
-          id: "quality", 
-          text: "Ask Quality", 
-          emoji: "🔍", 
-          description: "Check the quality first",
-          isCorrect: true
-        },
-        { 
           id: "fast", 
           text: "Buy Fast", 
           emoji: "🏃", 
           description: "Buy quickly",
           isCorrect: false
+        },
+        {
+          id: "quality",
+          text: "Ask Quality",
+          emoji: "🔍",
+          description: "Check the quality first",
+          isCorrect: true
         },
         { 
           id: "guess", 
@@ -136,13 +136,6 @@ const ToyShopStory = () => {
       text: "You want a toy. What's the plan?",
       options: [
         { 
-          id: "budget", 
-          text: "Budget First", 
-          emoji: "📊", 
-          description: "Plan your budget first",
-          isCorrect: true
-        },
-        { 
           id: "spend", 
           text: "Spend All", 
           emoji: "💸", 
@@ -155,7 +148,14 @@ const ToyShopStory = () => {
           emoji: "💳", 
           description: "Ask someone for money",
           isCorrect: false
-        }
+        },
+        {
+          id: "budget",
+          text: "Budget First",
+          emoji: "📊",
+          description: "Plan your budget first",
+          isCorrect: true
+        },
       ]
     }
   ];

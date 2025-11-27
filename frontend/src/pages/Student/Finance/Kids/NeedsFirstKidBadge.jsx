@@ -34,9 +34,9 @@ const NeedsFirstKidBadge = () => {
     {
       question: "You need ₹15 for lunch. You have ₹10. What’s smart?",
       choices: [
-        { text: "Save ₹5 more 💰", correct: true },
         { text: "Buy snacks 🍟", correct: false },
         { text: "Borrow ₹5 🙈", correct: false },
+        { text: "Save ₹5 more 💰", correct: true },
       ],
     },
     {
@@ -58,8 +58,8 @@ const NeedsFirstKidBadge = () => {
     {
       question: "Why prioritize needs over wants?",
       choices: [
-        { text: "Meets essentials first 🥗", correct: true },
         { text: "Gets you more toys 🛒", correct: false },
+        { text: "Meets essentials first 🥗", correct: true },
         { text: "Makes you popular 👥", correct: false },
       ],
     },

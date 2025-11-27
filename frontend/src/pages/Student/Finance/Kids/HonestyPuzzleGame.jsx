@@ -34,16 +34,16 @@ const HonestyPuzzleGame = () => {
     {
       question: "Match: Keep Extra Change → ?",
       choices: [
-        { text: "Wrong 😞", correct: true },
         { text: "Good 😊", correct: false },
         { text: "Neutral 😐", correct: false },
+        { text: "Wrong 😞", correct: true },
       ],
     },
     {
       question: "Match: Tell Truth About Spending → ?",
       choices: [
-        { text: "Good 😊", correct: true },
         { text: "Wrong 😞", correct: false },
+        { text: "Good 😊", correct: true },
         { text: "Neutral 😐", correct: false },
       ],
     },
@@ -58,8 +58,8 @@ const HonestyPuzzleGame = () => {
     {
       question: "Match: Save Honestly for Goals → ?",
       choices: [
-        { text: "Good 😊", correct: true },
         { text: "Wrong 😞", correct: false },
+        { text: "Good 😊", correct: true },
         { text: "Neutral 😐", correct: false },
       ],
     },

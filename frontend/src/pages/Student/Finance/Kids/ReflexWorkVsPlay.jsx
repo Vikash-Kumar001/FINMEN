@@ -34,9 +34,9 @@ const ReflexWorkVsPlay = () => {
       question: "What helps you earn money?",
       correctAnswer: "Work",
       options: [
-        { text: "Work", isCorrect: true, emoji: "💼" },
         { text: "Waste Time", isCorrect: false, emoji: "😴" },
         { text: "Play All Day", isCorrect: false, emoji: "🎮" },
+        { text: "Work", isCorrect: true, emoji: "💼" },
         { text: "Do Nothing", isCorrect: false, emoji: "🤷" }
       ]
     },
@@ -56,8 +56,8 @@ const ReflexWorkVsPlay = () => {
       question: "What should you do with your earnings?",
       correctAnswer: "Save Earnings",
       options: [
-        { text: "Save Earnings", isCorrect: true, emoji: "💰" },
         { text: "Spend All", isCorrect: false, emoji: "💸" },
+        { text: "Save Earnings", isCorrect: true, emoji: "💰" },
         { text: "Waste Money", isCorrect: false, emoji: "🔥" },
         { text: "Lose It", isCorrect: false, emoji: "😞" }
       ]
@@ -78,10 +78,10 @@ const ReflexWorkVsPlay = () => {
       question: "What helps you be productive?",
       correctAnswer: "Plan Work",
       options: [
-        { text: "Plan Work", isCorrect: true, emoji: "📋" },
         { text: "Be Idle", isCorrect: false, emoji: "😴" },
         { text: "Waste Time", isCorrect: false, emoji: "⏰" },
-        { text: "Do Nothing", isCorrect: false, emoji: "🤷" }
+        { text: "Do Nothing", isCorrect: false, emoji: "🤷" },
+        { text: "Plan Work", isCorrect: true, emoji: "📋" },
       ]
     }
   ];

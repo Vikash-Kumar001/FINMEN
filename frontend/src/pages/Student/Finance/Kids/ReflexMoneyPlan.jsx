@@ -9,11 +9,11 @@ const ROUND_TIME = 5;
 
 const ReflexMoneyPlan = () => {
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-29";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -110,12 +110,12 @@ const ReflexMoneyPlan = () => {
             clearInterval(timerRef.current);
             timerRef.current = null;
           }
-          
+
           setAnswered(true);
           resetFeedback();
-          
+
           const isLastQuestion = currentStageRef.current >= TOTAL_ROUNDS - 1;
-          
+
           setTimeout(() => {
             if (isLastQuestion) {
               setShowResult(true);
@@ -123,7 +123,7 @@ const ReflexMoneyPlan = () => {
               setCurrentStage((prev) => prev + 1);
             }
           }, 1000);
-          
+
           return 0;
         }
         return newTime;
@@ -141,26 +141,26 @@ const ReflexMoneyPlan = () => {
 
   const handleTap = (choice) => {
     if (answered || showResult) return; // Prevent multiple clicks
-    
+
     // Clear the timer immediately when user answers
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
+
     setAnswered(true);
     resetFeedback();
-    
+
     const isCorrect = choice === stages[currentStage].action;
     const isLastQuestion = currentStage === stages.length - 1;
-    
+
     setLastAnswerCorrect(isCorrect);
-    
+
     if (isCorrect) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    
+
     // Move to next question or show results after 1.5 seconds (to show feedback)
     setTimeout(() => {
       if (isLastQuestion) {
@@ -207,43 +207,27 @@ const ReflexMoneyPlan = () => {
               </div>
             </div>
 
-            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">              
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
               <h4 className="text-xl font-semibold mb-4 text-white">
                 {stages[currentStage].question}
               </h4>
               <p className="text-white/70 text-sm mb-6">{stages[currentStage].prompt}</p>
-              
               <div className="flex flex-col md:flex-row justify-center gap-4">
                 <button
                   onClick={() => handleTap(stages[currentStage].action)}
                   disabled={answered || showResult}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                  className="w-full md:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                 >
                   {stages[currentStage].action}
                 </button>
                 <button
                   onClick={() => handleTap(stages[currentStage].wrong)}
                   disabled={answered || showResult}
-                  className="bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white px-8 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                  className="w-full md:w-auto bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-lg font-bold transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                 >
                   {stages[currentStage].wrong}
                 </button>
               </div>
-              
-              {/* Show feedback after answering */}
-              {answered && (
-                <div className={`mt-4 p-4 rounded-xl ${
-                  lastAnswerCorrect
-                    ? 'bg-green-500/20 border-2 border-green-400' 
-                    : 'bg-red-500/20 border-2 border-red-400'
-                }`}>
-                  <p className="text-white font-semibold">
-                    {lastAnswerCorrect
-                      ? stages[currentStage].correctExplanation
-                      : stages[currentStage].wrongExplanation}
-                  </p>
-                </div>
-              )}
             </div>
           </>
         )}

@@ -6,11 +6,11 @@ import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleNeedsWants = () => {
   const location = useLocation();
-  
+
   // Get game data from game category folder (source of truth)
   const gameId = "finance-kids-34";
   const gameData = getGameDataById(gameId);
-  
+
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
@@ -22,43 +22,43 @@ const PuzzleNeedsWants = () => {
 
   const stages = [
     {
-      question: "Match: Water → Need, Candy → Want",
+      question: "Which of these is a need?",
       choices: [
-        { text: "Water = Need, Candy = Want 🥤🍬", correct: true },
-        { text: "Water = Want, Candy = Need 🍬🥤", correct: false },
-        { text: "Both are Needs 🥤🍬", correct: false },
+        { text: "Drinking water when you're thirsty", correct: true },
+        { text: "Buying a new video game", correct: false },
+        { text: "Getting a second ice cream", correct: false },
       ],
     },
     {
-      question: "Match: Shoes → Need, Video Game → Want",
+      question: "You have ₹500. What should you buy first?",
       choices: [
-        { text: "Shoes = Need, Video Game = Want 👟🎮", correct: true },
-        { text: "Shoes = Want, Video Game = Need 🎮👟", correct: false },
-        { text: "Both are Wants 👟🎮", correct: false },
+        { text: "Latest smartphone game", correct: false },
+        { text: "New school shoes", correct: true },
+        { text: "Designer sunglasses", correct: false },
       ],
     },
     {
-      question: "Match: Food → Need, Toy Car → Want",
+      question: "Which purchase is a want?",
       choices: [
-        { text: "Food = Need, Toy Car = Want 🍎🚗", correct: true },
-        { text: "Food = Want, Toy Car = Need 🚗🍎", correct: false },
-        { text: "Both are Needs 🍎🚗", correct: false },
+        { text: "A new toy car when you have many", correct: false },
+        { text: "Fresh fruits for dinner", correct: false },
+        { text: "A warm jacket in winter", correct: true }
       ],
     },
     {
-      question: "Match: School Books → Need, Ice Cream → Want",
+      question: "What's the best use of your pocket money?",
       choices: [
-        { text: "School Books = Need, Ice Cream = Want 📚🍨", correct: true },
-        { text: "School Books = Want, Ice Cream = Need 🍨📚", correct: false },
-        { text: "Both are Wants 📚🍨", correct: false },
+        { text: "Spending all on candy today", correct: false },
+        { text: "Buying stickers you'll never use", correct: false },
+        { text: "Saving for a new bicycle", correct: true }
       ],
     },
     {
-      question: "Why distinguish between needs and wants?",
+      question: "Why is it important to know needs vs wants?",
       choices: [
-        { text: "Helps prioritize spending 📚", correct: true },
-        { text: "Makes buying toys fun 🧸", correct: false },
-        { text: "Gets you more candy 🍬", correct: false },
+        { text: "Helps make smart money choices", correct: true },
+        { text: "Makes shopping more exciting", correct: false },
+        { text: "Gets you more likes on social media", correct: false },
       ],
     },
   ];
@@ -67,17 +67,17 @@ const PuzzleNeedsWants = () => {
 
   const handleSelect = (isCorrect) => {
     if (answered) return; // Prevent multiple clicks
-    
+
     setAnswered(true);
     resetFeedback();
-    
+
     if (isCorrect) {
       setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    
+
     const isLastQuestion = currentStage === stages.length - 1;
-    
+
     // Move to next question or show results after a short delay
     setTimeout(() => {
       if (isLastQuestion) {

@@ -524,8 +524,112 @@ export const verifySubscriptionPayment = async (req, res) => {
 export const getCurrentSubscription = async (req, res) => {
   try {
     const userId = req.user.id;
+    const user = req.user;
 
-    const subscription = await UserSubscription.getActiveSubscription(userId);
+    // If user is linked to a school, prioritize school-linked subscriptions
+    let subscription = null;
+    if (user.orgId && user.tenantId) {
+      // Check school subscription status first
+      const Subscription = (await import('../models/Subscription.js')).default;
+      const schoolSubscription = await Subscription.findOne({
+        orgId: user.orgId,
+        tenantId: user.tenantId
+      });
+
+      if (schoolSubscription) {
+        const now = new Date();
+        // Use getActualStatus() if available, otherwise check endDate manually
+        let actualStatus = schoolSubscription.status;
+        if (schoolSubscription.getActualStatus) {
+          actualStatus = schoolSubscription.getActualStatus();
+        } else if (schoolSubscription.endDate) {
+          const endDate = new Date(schoolSubscription.endDate);
+          if (endDate <= now) {
+            actualStatus = 'expired';
+          }
+        }
+        
+        const isSchoolActive = actualStatus === 'active' && 
+                              (!schoolSubscription.endDate || new Date(schoolSubscription.endDate) > now);
+
+        // First, try to find a school-linked subscription (even if expired)
+        subscription = await UserSubscription.findOne({
+          userId,
+          'metadata.orgId': user.orgId,
+          'metadata.tenantId': user.tenantId
+        }).sort({ createdAt: -1 });
+
+        // If school is expired and no school-linked subscription found, return free plan
+        if (!isSchoolActive && !subscription) {
+          const freePlan = {
+            planType: 'free',
+            planName: 'Free Plan',
+            status: 'expired',
+            features: PLAN_CONFIGS.free.features,
+            isFirstYear: true,
+            amount: 0,
+          };
+          return res.status(200).json({
+            success: true,
+            subscription: freePlan,
+          });
+        }
+
+        // If school is expired, make sure we don't return an active premium subscription
+        // Deactivate any active premium subscriptions that might be returned
+        if (!isSchoolActive) {
+          // Find and deactivate any active premium subscriptions
+          const activePremiumSubs = await UserSubscription.find({
+            userId,
+            status: 'active',
+            planType: { $ne: 'free' },
+            $or: [
+              { endDate: { $exists: false } },
+              { endDate: { $gt: now } }
+            ]
+          });
+
+          for (const activeSub of activePremiumSubs) {
+            // Don't deactivate if it's the school-linked subscription we found
+            if (!subscription || activeSub._id.toString() !== subscription._id.toString()) {
+              activeSub.status = 'expired';
+              activeSub.endDate = now;
+              await activeSub.save();
+            }
+          }
+
+          // If we have a school-linked subscription, use it (even if expired)
+          // Otherwise, return free plan
+          if (!subscription) {
+            console.log(`📋 School expired, returning free plan for user ${userId}`);
+            const freePlan = {
+              planType: 'free',
+              planName: 'Free Plan',
+              status: 'expired',
+              features: PLAN_CONFIGS.free.features,
+              isFirstYear: true,
+              amount: 0,
+            };
+            return res.status(200).json({
+              success: true,
+              subscription: freePlan,
+            });
+          } else {
+            console.log(`📋 Using school-linked subscription for user ${userId}: planType=${subscription.planType}, status=${subscription.status}, fullAccess=${subscription.features?.fullAccess}`);
+          }
+        } else {
+          // School is active, use school-linked subscription if found
+          if (subscription) {
+            console.log(`📋 Using school-linked subscription for user ${userId}: planType=${subscription.planType}, status=${subscription.status}, fullAccess=${subscription.features?.fullAccess}`);
+          }
+        }
+      }
+    }
+
+    // If no school-linked subscription, get active subscription
+    if (!subscription) {
+      subscription = await UserSubscription.getActiveSubscription(userId);
+    }
     
     if (!subscription) {
       // Return free plan defaults
@@ -549,6 +653,9 @@ export const getCurrentSubscription = async (req, res) => {
     subscriptionData.latestTransaction = subscriptionData.transactions?.length
       ? subscriptionData.transactions[subscriptionData.transactions.length - 1]
       : null;
+
+    // Log what subscription is being returned
+    console.log(`📋 Returning subscription for user ${userId}: planType=${subscriptionData.planType}, status=${subscriptionData.status}, fullAccess=${subscriptionData.features?.fullAccess}, gamesPerPillar=${subscriptionData.features?.gamesPerPillar}`);
 
     if (subscriptionData.endDate) {
       const endDate = new Date(subscriptionData.endDate);

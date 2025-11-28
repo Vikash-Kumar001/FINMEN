@@ -80,9 +80,9 @@ import api from "../../utils/api";
 
 export default function StudentDashboard() {
     const navigate = useNavigate();
-    const { user } = useAuth();
+    const { user, fetchUser } = useAuth();
     const { wallet, refreshWallet, setWallet } = useWallet();
-    const { subscription, canAccessPillar, hasFeature } = useSubscription();
+    const { subscription, canAccessPillar, hasFeature, refreshSubscription } = useSubscription();
     const socketContext = useSocket();
     const socket = socketContext?.socket || null;
     const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -120,6 +120,8 @@ export default function StudentDashboard() {
     const [profileForm, setProfileForm] = useState({
         dateOfBirth: "",
         gender: "",
+        registrationType: "individual", // "individual" or "school"
+        schoolLinkingCode: "",
     });
     const [profileErrors, setProfileErrors] = useState({});
     const [savingProfile, setSavingProfile] = useState(false);
@@ -494,6 +496,20 @@ export default function StudentDashboard() {
             return;
         }
 
+        // Validate registration type selection
+        if (!profileForm.registrationType) {
+            setProfileErrors({ registrationType: "Please select a registration type" });
+            return;
+        }
+
+        // If school registration, validate linking code
+        if (profileForm.registrationType === "school") {
+            if (!profileForm.schoolLinkingCode || !profileForm.schoolLinkingCode.trim()) {
+                setProfileErrors({ schoolLinkingCode: "School linking code is required" });
+                return;
+            }
+        }
+
         // Validate date of birth
         const dobDate = new Date(profileForm.dateOfBirth);
         if (isNaN(dobDate.getTime())) {
@@ -512,14 +528,18 @@ export default function StudentDashboard() {
             const response = await api.post('/api/user/complete-google-profile', {
                 dateOfBirth: profileForm.dateOfBirth,
                 gender: profileForm.gender,
+                registrationType: profileForm.registrationType,
+                schoolLinkingCode: profileForm.registrationType === "school" ? profileForm.schoolLinkingCode.trim() : undefined,
             });
 
             toast.success("Profile completed successfully!");
             setShowProfileModal(false);
             
-            // Refresh user data and reload pillar mastery to reflect gender-based filtering
-            const { fetchUser } = useAuth();
+            // Refresh user data and subscription
             await fetchUser(); // Refresh user context
+            if (refreshSubscription) {
+                await refreshSubscription(); // Refresh subscription data
+            }
             loadAnalyticsData(); // Reload pillar mastery with gender filtering
         } catch (err) {
             console.error("Profile completion error:", err);
@@ -557,23 +577,42 @@ export default function StudentDashboard() {
                 }
                 // Refresh pillar mastery to reflect new access
                 loadAnalyticsData();
-                toast.success('Subscription updated! Access refreshed.', {
-                    duration: 3000,
-                    position: 'bottom-center',
-                    icon: '🎉'
-                });
+                
+                // Show appropriate message based on reason
+                const reason = data.reason || 'updated';
+                if (reason === 'school_subscription_renewed') {
+                    toast.success('Your school has renewed its plan! Premium access restored.', {
+                        duration: 4000,
+                        position: 'bottom-center',
+                        icon: '🎉'
+                    });
+                } else if (reason === 'school_subscription_expired') {
+                    toast.warning('Your school\'s plan has expired. You now have freemium access.', {
+                        duration: 5000,
+                        position: 'bottom-center',
+                        icon: '⚠️'
+                    });
+                } else {
+                    toast.success('Subscription updated! Access refreshed.', {
+                        duration: 3000,
+                        position: 'bottom-center',
+                        icon: '🎉'
+                    });
+                }
             }
         };
 
         socket.on('subscription:activated', handleSubscriptionUpdate);
         socket.on('subscription:updated', handleSubscriptionUpdate);
         socket.on('subscription:cancelled', handleSubscriptionUpdate);
+        socket.on('student:subscription:updated', handleSubscriptionUpdate); // New event for school-linked students
 
         return () => {
             if (socket) {
                 socket.off('subscription:activated', handleSubscriptionUpdate);
                 socket.off('subscription:updated', handleSubscriptionUpdate);
                 socket.off('subscription:cancelled', handleSubscriptionUpdate);
+                socket.off('student:subscription:updated', handleSubscriptionUpdate);
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -748,6 +787,21 @@ export default function StudentDashboard() {
         socket.on('stats:updated', handleStatsUpdate);
         socket.on('achievement:earned', handleAchievementUpdate);
         
+        // Handle profile updates
+        const handleProfileUpdate = async (data) => {
+            if (data.userId === user?._id || data.userId?.toString() === user?._id?.toString()) {
+                // Refresh user data
+                await fetchUser();
+                // Refresh subscription if available
+                if (refreshSubscription) {
+                    await refreshSubscription();
+                }
+                // Reload analytics data
+                loadAnalyticsData();
+            }
+        };
+        socket.on('user:profile:updated', handleProfileUpdate);
+        
         return () => {
             socket.off('game-completed', handleGameCompleted);
             socket.off('wallet:updated', handleWalletUpdate);
@@ -755,8 +809,9 @@ export default function StudentDashboard() {
             socket.off('settings:updated', handleSettingsUpdate);
             socket.off('stats:updated', handleStatsUpdate);
             socket.off('achievement:earned', handleAchievementUpdate);
+            socket.off('user:profile:updated', handleProfileUpdate);
         };
-    }, [socket, stats.level, setWallet, refreshWallet, user, loadAnalyticsData]);
+    }, [socket, stats.level, setWallet, refreshWallet, user, loadAnalyticsData, fetchUser, refreshSubscription]);
 
     const allCategories = [
         { key: "finance", label: "Financial Literacy" },
@@ -2482,6 +2537,64 @@ export default function StudentDashboard() {
                                     <p className="text-red-500 text-xs mt-1">{profileErrors.gender}</p>
                                 )}
                             </div>
+
+                            {/* Registration Type Selection */}
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-3">
+                                    Registration Type <span className="text-red-500">*</span>
+                                </label>
+                                <div className="grid grid-cols-2 gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setProfileForm({ ...profileForm, registrationType: "individual", schoolLinkingCode: "" })}
+                                        className={`px-4 py-3 border-2 rounded-xl font-medium transition-all ${
+                                            profileForm.registrationType === "individual"
+                                                ? "border-purple-500 bg-purple-50 text-purple-700"
+                                                : "border-gray-300 bg-white text-gray-700 hover:border-purple-300"
+                                        } ${profileErrors.registrationType ? 'border-red-500' : ''}`}
+                                    >
+                                        Register Individual
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setProfileForm({ ...profileForm, registrationType: "school" })}
+                                        className={`px-4 py-3 border-2 rounded-xl font-medium transition-all ${
+                                            profileForm.registrationType === "school"
+                                                ? "border-purple-500 bg-purple-50 text-purple-700"
+                                                : "border-gray-300 bg-white text-gray-700 hover:border-purple-300"
+                                        } ${profileErrors.registrationType ? 'border-red-500' : ''}`}
+                                    >
+                                        Register Through School
+                                    </button>
+                                </div>
+                                {profileErrors.registrationType && (
+                                    <p className="text-red-500 text-xs mt-1">{profileErrors.registrationType}</p>
+                                )}
+                            </div>
+
+                            {/* School Linking Code Input - Only show when school is selected */}
+                            {profileForm.registrationType === "school" && (
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                        School Linking Code <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        value={profileForm.schoolLinkingCode}
+                                        onChange={(e) => setProfileForm({ ...profileForm, schoolLinkingCode: e.target.value.toUpperCase() })}
+                                        placeholder="Enter your school linking code"
+                                        className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all ${
+                                            profileErrors.schoolLinkingCode ? 'border-red-500' : 'border-gray-300'
+                                        }`}
+                                    />
+                                    {profileErrors.schoolLinkingCode && (
+                                        <p className="text-red-500 text-xs mt-1">{profileErrors.schoolLinkingCode}</p>
+                                    )}
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Ask your school administrator for the linking code
+                                    </p>
+                                </div>
+                            )}
                         </div>
 
                         <div className="mt-6 flex gap-3">

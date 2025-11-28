@@ -165,7 +165,10 @@ const AdminSchoolDetail = () => {
   useEffect(() => {
     if (!socket?.socket || !schoolId) return;
     const handleRealtimeUpdate = (payload) => {
-      if (payload?.id === schoolId) {
+      // Check if this update is for the current school
+      const updateId = payload?.id || payload?.data?.id || payload?.data?._id;
+      if (updateId && (updateId.toString() === schoolId.toString() || updateId === schoolId)) {
+        // Reload detail to get fresh data
         loadDetail(true);
       }
     };
@@ -215,11 +218,20 @@ const AdminSchoolDetail = () => {
       };
       const response = await updateAdminSchool(schoolId, payload);
       const updated = response.data || null;
+      
+      // Update state with fresh data from server
+      if (updated) {
       setDetail(updated);
       setFormState(buildFormState(updated));
-      setAnalytics(response.analytics || analytics);
+        if (response.analytics) {
+          setAnalytics(response.analytics);
+        }
+      }
+      
       setEditMode(false);
       toast.success("School record updated");
+      
+      // Reload detail to ensure we have the latest data including metrics
       await loadDetail(true);
     } catch (error) {
       console.error("Error updating school:", error);
@@ -230,26 +242,72 @@ const AdminSchoolDetail = () => {
   };
 
   const statusSummary = useMemo(() => ({
-    students: formatNumber(detail?.metrics?.studentCount),
-    teachers: formatNumber(detail?.metrics?.teacherCount),
-    classes: formatNumber(detail?.metrics?.classCount),
-    campuses: formatNumber(detail?.metrics?.campusCount),
+    students: formatNumber(detail?.academicInfo?.totalStudents ?? detail?.metrics?.studentCount ?? 0),
+    teachers: formatNumber(detail?.academicInfo?.totalTeachers ?? detail?.metrics?.teacherCount ?? 0),
+    classes: formatNumber(detail?.metrics?.classCount ?? 0),
+    campuses: formatNumber(detail?.metrics?.campusCount ?? 0),
   }), [detail]);
 
   const planDetails = useMemo(() => {
     const subscriptionPlan = detail?.subscription?.plan || {};
-    const planName =
-      subscriptionPlan.displayName ||
-      subscriptionPlan.name ||
-      (detail?.subscriptionPlan === "educational_institutions_premium"
-        ? "Educational Institutions Premium Plan"
-        : detail?.subscriptionPlan) ||
-      "—";
-    const activatedAt = detail?.subscription?.startDate || detail?.subscriptionStart || null;
+    
+    // Compute actual status based on endDate first
     const expiresAt = detail?.subscription?.endDate || detail?.subscriptionExpiry || null;
-    const status =
-      detail?.subscription?.status ||
+    let status = detail?.subscription?.status ||
       (detail?.subscriptionPlan === "educational_institutions_premium" ? "active" : null);
+    
+    // If status is active/pending but endDate has passed, mark as expired
+    if (expiresAt && (status === 'active' || status === 'pending')) {
+      const endDate = new Date(expiresAt);
+      const now = new Date();
+      if (endDate <= now) {
+        status = 'expired';
+      }
+    }
+    
+    // Determine plan name based on status
+    let planName;
+    
+    // If plan is expired, show "Free Plan"
+    if (status === 'expired') {
+      planName = "Free Plan";
+    } else if (status === 'active' || status === 'pending') {
+      // If plan is active/renewed, show the premium plan name
+      planName = subscriptionPlan.displayName || subscriptionPlan.name;
+      
+      // If subscription plan is "free" or missing but status is active and there's an endDate,
+      // it means the subscription should be using the Company's subscriptionPlan
+      if ((planName === 'free' || !planName) && expiresAt) {
+        // Use Company's subscriptionPlan as fallback
+        if (detail?.subscriptionPlan === "educational_institutions_premium") {
+          planName = "Educational Institutions Premium Plan";
+        } else if (detail?.subscriptionPlan) {
+          // Map other plan types if needed
+          const planMap = {
+            'educational_institutions_premium': 'Educational Institutions Premium Plan',
+            'student_premium': 'Student Premium Plan',
+            'student_parent_premium_pro': 'Student + Parent Premium Pro Plan',
+          };
+          planName = planMap[detail.subscriptionPlan] || detail.subscriptionPlan;
+        }
+      }
+      
+      // Final fallback for active plans
+      if (!planName || planName === 'free') {
+        planName = detail?.subscriptionPlan === "educational_institutions_premium"
+          ? "Educational Institutions Premium Plan"
+          : detail?.subscriptionPlan || "Educational Institutions Premium Plan";
+      }
+    } else {
+      // For other statuses (cancelled, etc.), show Free Plan
+      planName = "Free Plan";
+    }
+    
+    // Use current cycle start date (renewal date) instead of original activation date
+    const activatedAt = detail?.subscription?.currentCycleStartDate || 
+                        detail?.subscription?.lastRenewedAt ||
+                        detail?.subscription?.startDate || 
+                        detail?.subscriptionStart || null;
 
     return {
       planName,
@@ -557,7 +615,7 @@ const AdminSchoolDetail = () => {
                           />
                         ) : (
                           <p className="text-sm font-semibold text-slate-700">
-                            {formatNumber(detail?.metrics?.studentCount)}
+                            {formatNumber(detail?.academicInfo?.totalStudents ?? detail?.metrics?.studentCount ?? 0)}
                           </p>
                         )}
                       </div>
@@ -572,7 +630,7 @@ const AdminSchoolDetail = () => {
                           />
                         ) : (
                           <p className="text-sm font-semibold text-slate-700">
-                            {formatNumber(detail?.metrics?.teacherCount)}
+                            {formatNumber(detail?.academicInfo?.totalTeachers ?? detail?.metrics?.teacherCount ?? 0)}
                           </p>
                         )}
                       </div>
@@ -710,7 +768,11 @@ const AdminSchoolDetail = () => {
                         </div>
                         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                           <div className="rounded-xl border border-emerald-100 bg-white px-3 py-2">
-                            <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wide">Activated On</p>
+                            <p className="text-[11px] font-semibold text-emerald-600 uppercase tracking-wide">
+                              {detail?.subscription?.lastRenewedAt || detail?.subscription?.currentCycleStartDate 
+                                ? "Renewed On" 
+                                : "Activated On"}
+                            </p>
                             <p className="text-sm font-semibold text-emerald-900">
                               {formatAbsoluteDateTime(planDetails.activatedAt)}
                             </p>

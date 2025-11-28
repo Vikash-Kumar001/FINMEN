@@ -1174,6 +1174,35 @@ export const unlockGameReplay = async (req, res) => {
       });
     }
 
+    // Check subscription access - freemium users cannot unlock replay for games beyond first 5 per pillar
+    const subscription = await getUserSubscription(userId);
+    const features = subscription.features || {};
+    
+    // Premium users (fullAccess) can unlock replay for any game
+    if (features.fullAccess !== true) {
+      // For freemium users, check if game is beyond the first 5 games
+      // Extract game index from gameId (format: pillar-ageGroup-index, e.g., "finance-kids-6")
+      // Game IDs are typically in format: "pillar-ageGroup-index" where index is 1-based
+      const gameIdParts = gameId.split('-');
+      if (gameIdParts.length >= 3) {
+        const gameIndex = parseInt(gameIdParts[gameIdParts.length - 1], 10);
+        const gamesPerPillar = features.gamesPerPillar || 5;
+        
+        // Game index in ID is 1-based (e.g., "finance-kids-6" means 6th game)
+        // But we need to check if it's beyond the allowed limit (first 5 games = indices 1-5)
+        // So if gameIndex > gamesPerPillar, it's beyond the limit
+        if (!isNaN(gameIndex) && gameIndex > gamesPerPillar) {
+          console.log(`🔒 Blocking replay unlock for freemium user: gameId=${gameId}, gameIndex=${gameIndex}, gamesPerPillar=${gamesPerPillar}`);
+          return res.status(403).json({ 
+            error: `This game is not available in your current plan. You can only unlock replay for the first ${gamesPerPillar} games per pillar. Upgrade to premium to access all games.`,
+            reason: 'subscription_restricted',
+            gamesAllowed: gamesPerPillar,
+            gameIndex: gameIndex
+          });
+        }
+      }
+    }
+
     // Check wallet balance
     let wallet = await Wallet.findOne({ userId });
     

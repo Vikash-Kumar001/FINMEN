@@ -72,7 +72,15 @@ ChartJS.register(
 );
 
 const SchoolTeacherDashboard = () => {
+  const navigate = useNavigate();
+  const socket = useSocket()?.socket;
   const [loading, setLoading] = useState(true);
+  
+  // Access control state
+  const [hasAccess, setHasAccess] = useState(true);
+  const [accessLoading, setAccessLoading] = useState(true);
+  const [accessInfo, setAccessInfo] = useState(null);
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
   const [stats, setStats] = useState({
     totalStudents: 0,
     totalClasses: 0,
@@ -98,9 +106,65 @@ const SchoolTeacherDashboard = () => {
   const [classMissions, setClassMissions] = useState({});
   const [teacherProfile, setTeacherProfile] = useState(null);
 
+  // Check teacher access on mount
   useEffect(() => {
-    fetchDashboardData();
+    checkTeacherAccess();
   }, []);
+
+  // Listen for real-time access updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleAccessUpdate = (data) => {
+      if (data) {
+        setHasAccess(data.hasAccess === true);
+        if (data.hasAccess === true) {
+          setShowExpiredModal(false);
+          // Refresh dashboard data
+          fetchDashboardData();
+        } else {
+          setShowExpiredModal(true);
+        }
+      }
+    };
+
+    socket.on('teacher:access:updated', handleAccessUpdate);
+
+    return () => {
+      socket.off('teacher:access:updated', handleAccessUpdate);
+    };
+  }, [socket]);
+
+  const checkTeacherAccess = async () => {
+    try {
+      setAccessLoading(true);
+      const response = await api.get('/api/school/teacher/access');
+      if (response.data.success) {
+        const accessData = response.data;
+        setHasAccess(accessData.hasAccess === true);
+        setAccessInfo(accessData);
+        
+        // Show modal if access is denied
+        if (!accessData.hasAccess) {
+          setShowExpiredModal(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking teacher access:', error);
+      // On error, assume access is denied for safety
+      setHasAccess(false);
+      setShowExpiredModal(true);
+    } finally {
+      setAccessLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    // Only fetch dashboard data if teacher has access
+    if (hasAccess && !accessLoading) {
+      fetchDashboardData();
+    }
+  }, [hasAccess, accessLoading]);
 
   const fetchDashboardData = async () => {
     try {
@@ -247,6 +311,49 @@ const SchoolTeacherDashboard = () => {
     return matchesSearch && matchesFlagged;
   });
 
+  // Show loading state while checking access
+  if (accessLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Checking access...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show expired subscription modal if access is denied
+  if (!hasAccess) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <ExpiredSubscriptionModal
+          isOpen={showExpiredModal}
+          onClose={() => setShowExpiredModal(false)}
+          schoolName={accessInfo?.schoolName}
+          schoolContact={accessInfo?.schoolContact}
+          onRefresh={checkTeacherAccess}
+        />
+        {/* Blocked content overlay */}
+        <div className="flex items-center justify-center min-h-screen p-4">
+          <div className="text-center max-w-md">
+            <AlertCircle className="w-16 h-16 text-red-500 mx-auto mb-4" />
+            <h2 className="text-2xl font-bold text-gray-900 mb-2">Access Restricted</h2>
+            <p className="text-gray-600 mb-6">
+              Your school's subscription has expired. Please contact your school administrator to renew the subscription.
+            </p>
+            <button
+              onClick={checkTeacherAccess}
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              Check Access Again
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
@@ -260,8 +367,17 @@ const SchoolTeacherDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-      {/* Global Toolbar */}
+    <>
+      {/* Expired subscription modal (hidden but ready for real-time updates) */}
+      <ExpiredSubscriptionModal
+        isOpen={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
+        schoolName={accessInfo?.schoolName}
+        schoolContact={accessInfo?.schoolContact}
+        onRefresh={checkTeacherAccess}
+      />
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        {/* Global Toolbar */}
       <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-xl border-b border-gray-200 shadow-lg">
         <div className="px-6 py-4">
           <div className="flex flex-wrap items-center gap-4">
@@ -1334,6 +1450,7 @@ const SchoolTeacherDashboard = () => {
       </div>
 
     </div>
+    </>
   );
 };
 

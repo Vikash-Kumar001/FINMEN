@@ -11,9 +11,12 @@ import {
 import api from "../../utils/api";
 import { toast } from "react-hot-toast";
 import analytics from "../../utils/analytics";
+import SchoolAdminExpiredSubscriptionModal from "../../components/School/SchoolAdminExpiredSubscriptionModal";
+import { useSocket } from "../../context/SocketContext";
 
 const SchoolAdminDashboard = () => {
   const navigate = useNavigate();
+  const { socket } = useSocket();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({});
   const [campuses, setCampuses] = useState([]);
@@ -24,6 +27,11 @@ const SchoolAdminDashboard = () => {
   const [adminProfile, setAdminProfile] = useState(null);
   const [pillarMastery, setPillarMastery] = useState({});
   const [wellbeingCases, setWellbeingCases] = useState({});
+  
+  // Subscription expiration modal
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
+  const [subscriptionInfo, setSubscriptionInfo] = useState(null);
+  const [schoolInfo, setSchoolInfo] = useState(null);
   
   // Modals
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
@@ -39,8 +47,58 @@ const SchoolAdminDashboard = () => {
 
   useEffect(() => {
     fetchDashboardData();
+    checkSubscriptionStatus();
     analytics.trackOverviewView('school_admin', 'all');
   }, []);
+
+  // Listen for subscription updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleSubscriptionUpdate = () => {
+      checkSubscriptionStatus();
+    };
+
+    socket.on('school:subscription:updated', handleSubscriptionUpdate);
+
+    return () => {
+      socket.off('school:subscription:updated', handleSubscriptionUpdate);
+    };
+  }, [socket]);
+
+  const checkSubscriptionStatus = async () => {
+    try {
+      const response = await api.get('/api/school/admin/subscription/enhanced');
+      const { subscription, enhancedDetails } = response.data || {};
+      
+      if (subscription) {
+        const now = new Date();
+        const endDate = subscription.endDate ? new Date(subscription.endDate) : null;
+        const isExpired = endDate && endDate <= now;
+        
+        setSubscriptionInfo({
+          ...subscription,
+          planName: subscription.plan?.displayName || subscription.plan?.name || 'Premium Plan',
+          endDate: subscription.endDate,
+        });
+        
+        if (adminProfile) {
+          setSchoolInfo({
+            name: adminProfile.organization || 'Your School',
+            email: adminProfile.email,
+          });
+        }
+        
+        // Show modal if subscription is expired
+        if (isExpired) {
+          setShowExpiredModal(true);
+        }
+      }
+    } catch (error) {
+      console.error('Error checking subscription status:', error);
+      // Don't show error toast, just log it
+    }
+  };
 
   const fetchDashboardData = async () => {
     try {
@@ -69,6 +127,14 @@ const SchoolAdminDashboard = () => {
       setAdminProfile(profileRes.data);
       setPillarMastery(masteryRes.data);
       setWellbeingCases(wellbeingRes.data);
+      
+      // Set school info for subscription modal
+      if (profileRes.data) {
+        setSchoolInfo({
+          name: profileRes.data.organization || 'Your School',
+          email: profileRes.data.email,
+        });
+      }
     } catch (error) {
       console.error("Error fetching dashboard data:", error);
       toast.error("Failed to load dashboard data");
@@ -977,6 +1043,18 @@ const SchoolAdminDashboard = () => {
       <AddStudentModal />
       <StudentDetailModal />
       <CampusDetailModal />
+
+      {/* Subscription Expiration Modal */}
+      <SchoolAdminExpiredSubscriptionModal
+        isOpen={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
+        subscription={subscriptionInfo}
+        schoolInfo={schoolInfo}
+        onRenew={() => {
+          setShowExpiredModal(false);
+          navigate('/school/admin/payment-tracker');
+        }}
+      />
     </div>
   );
 };

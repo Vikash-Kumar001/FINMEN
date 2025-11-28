@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import api from '../../utils/api';
 import { useSocket } from '../../context/SocketContext';
+import SubscriptionExpirationBanner from '../../components/School/SubscriptionExpirationBanner';
 
 const PLAN_CONFIG = {
   free: {
@@ -173,10 +174,22 @@ const SchoolAdminPaymentTracker = () => {
       fetchSubscription();
     };
 
+    const handleExpirationNotification = (data) => {
+      if (data) {
+        toast.info('Subscription expiration notification received', {
+          icon: '📧',
+          duration: 5000,
+        });
+        fetchSubscription();
+      }
+    };
+
     socket.on('school:subscription:updated', handleSubscriptionUpdate);
+    socket.on('subscription:expiration:notification', handleExpirationNotification);
 
     return () => {
       socket.off('school:subscription:updated', handleSubscriptionUpdate);
+      socket.off('subscription:expiration:notification', handleExpirationNotification);
     };
   }, [socket, fetchSubscription]);
 
@@ -218,17 +231,23 @@ const SchoolAdminPaymentTracker = () => {
 
     try {
       setRenewing(true);
-      await api.post('/api/school/admin/subscription/renew', {
+      const response = await api.post('/api/school/admin/subscription/renew', {
         students: studentsCount,
         teachers: teachersCount,
         billingCycle: 'yearly',
       });
-      toast.success('Subscription renewed successfully');
+      
+      if (response.data.status === 'pending') {
+        toast.success('Renewal request submitted successfully. It will be reviewed by admin.');
+      } else {
+        toast.success('Subscription renewed successfully');
+      }
+      
       setShowRenewModal(false);
       await fetchSubscription();
     } catch (error) {
       console.error('Error renewing subscription:', error);
-      toast.error(error.response?.data?.message || 'Failed to renew subscription');
+      toast.error(error.response?.data?.message || 'Failed to submit renewal request');
     } finally {
       setRenewing(false);
     }
@@ -236,6 +255,24 @@ const SchoolAdminPaymentTracker = () => {
 
   const currentPlanName = subscription?.plan?.name || 'free';
   const currentPlanPrice = subscription?.plan?.price ?? PLAN_CONFIG[currentPlanName]?.price ?? 0;
+
+  // Compute actual status based on endDate (must be before canRenew)
+  const actualStatus = useMemo(() => {
+    if (!enhancedDetails) return subscription?.status || 'unknown';
+    let status = enhancedDetails.status || subscription?.status || 'unknown';
+    const endDate = subscription?.endDate || enhancedDetails?.nextBillingDate;
+    
+    // If status is active/pending but endDate has passed, mark as expired
+    if (endDate && (status === 'active' || status === 'pending')) {
+      const expiryDate = new Date(endDate);
+      const now = new Date();
+      if (expiryDate <= now) {
+        status = 'expired';
+      }
+    }
+    
+    return status;
+  }, [enhancedDetails, subscription]);
 
   const renewAnalytics = useMemo(() => {
     if (!renewForm.students && !renewForm.teachers) {
@@ -258,10 +295,10 @@ const SchoolAdminPaymentTracker = () => {
 
   const canRenew = useMemo(() => {
     if (!enhancedDetails) return false;
-    const { status, daysRemaining } = enhancedDetails;
-    if (!Number.isFinite(Number(daysRemaining))) return status !== 'active';
-    return Number(daysRemaining) <= 60 || status !== 'active';
-  }, [enhancedDetails]);
+    const { daysRemaining } = enhancedDetails;
+    if (!Number.isFinite(Number(daysRemaining))) return actualStatus !== 'active';
+    return Number(daysRemaining) <= 60 || actualStatus !== 'active';
+  }, [enhancedDetails, actualStatus]);
 
   const upcomingRenewalText = useMemo(() => {
     if (!enhancedDetails) return 'Renewal details unavailable';
@@ -385,6 +422,7 @@ const SchoolAdminPaymentTracker = () => {
                 type="button"
                 onClick={handleOpenRenewModal}
                 disabled={!canRenew}
+                data-renew-button
                 className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all shadow-lg ${canRenew ? 'bg-white text-emerald-600 hover:bg-emerald-50' : 'bg-white/30 text-white/70 cursor-not-allowed'}`}
               >
                 <Sparkles className="w-5 h-5" />
@@ -396,6 +434,16 @@ const SchoolAdminPaymentTracker = () => {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 -mt-10 space-y-10">
+        {/* Subscription Expiration Banner */}
+        {subscription && subscription.endDate && (
+          <SubscriptionExpirationBanner
+            subscription={subscription}
+            onRenew={() => {
+              handleOpenRenewModal();
+            }}
+          />
+        )}
+        
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -407,8 +455,11 @@ const SchoolAdminPaymentTracker = () => {
               <span className="text-sm font-semibold text-gray-500">Plan Status</span>
               <ShieldCheck className="w-5 h-5 text-emerald-500" />
             </div>
-            <p className="text-2xl font-black text-gray-900 capitalize">{enhancedDetails?.status || 'unknown'}</p>
-            <p className="text-sm text-gray-500 mt-2">{formatDate(subscription?.startDate)} • Started</p>
+            <p className="text-2xl font-black text-gray-900 capitalize">{actualStatus}</p>
+            <p className="text-sm text-gray-500 mt-2">
+              {formatDate(enhancedDetails?.currentCycleStartDate || subscription?.currentCycleStartDate || subscription?.lastRenewedAt || subscription?.startDate)} • 
+              {enhancedDetails?.currentCycleStartDate || subscription?.currentCycleStartDate || subscription?.lastRenewedAt ? ' Renewed' : ' Started'}
+            </p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl border border-cyan-100 p-6">
@@ -416,8 +467,14 @@ const SchoolAdminPaymentTracker = () => {
               <span className="text-sm font-semibold text-gray-500">Current Term</span>
               <Calendar className="w-5 h-5 text-cyan-500" />
             </div>
-            <p className="text-2xl font-black text-gray-900">{formatDate(subscription?.endDate)}</p>
-            <p className="text-sm text-gray-500 mt-2">Next billing cycle</p>
+            <p className="text-2xl font-black text-gray-900">
+              {formatDate(enhancedDetails?.nextBillingDate || subscription?.endDate)}
+            </p>
+            <p className="text-sm text-gray-500 mt-2">
+              {enhancedDetails?.currentCycleStartDate || subscription?.currentCycleStartDate || subscription?.lastRenewedAt
+                ? `Cycle: ${formatDate(enhancedDetails?.currentCycleStartDate || subscription?.currentCycleStartDate || subscription?.lastRenewedAt)} - ${formatDate(enhancedDetails?.nextBillingDate || subscription?.endDate)}`
+                : 'Next billing cycle'}
+            </p>
           </div>
 
           <div className="bg-white rounded-2xl shadow-xl border border-blue-100 p-6">
@@ -457,7 +514,7 @@ const SchoolAdminPaymentTracker = () => {
               </h2>
               <p className="text-gray-500 font-medium">Stay within plan limits while scaling your school</p>
             </div>
-            {enhancedDetails?.status === 'active' && enhancedDetails?.daysRemaining <= 15 && (
+            {actualStatus === 'active' && enhancedDetails?.daysRemaining <= 15 && (
               <div className="flex items-center gap-2 px-4 py-2 bg-amber-50 border border-amber-200 text-amber-600 rounded-xl font-semibold">
                 <AlertTriangle className="w-4 h-4" />
                 Renewal window is closing soon

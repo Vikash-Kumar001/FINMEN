@@ -18,6 +18,7 @@ import Timetable from '../models/Timetable.js';
 import Announcement from '../models/Announcement.js';
 import Template from '../models/Template.js';
 import Subscription from '../models/Subscription.js';
+import SubscriptionRenewalRequest from '../models/SubscriptionRenewalRequest.js';
 import ConsentRecord from '../models/ConsentRecord.js';
 import DataRetentionPolicy from '../models/DataRetentionPolicy.js';
 import ComplianceAuditLog from '../models/ComplianceAuditLog.js';
@@ -5750,6 +5751,12 @@ export const renewSubscription = async (req, res) => {
       return res.status(404).json({ message: 'Subscription not found' });
     }
 
+    // Find Company associated with this organization
+    const company = await Company.findOne({ organizations: orgId });
+    if (!company) {
+      return res.status(404).json({ message: 'Company not found for this organization' });
+    }
+
     const parseCount = (value, fallback) => {
       if (value === undefined || value === null || value === '') {
         return fallback;
@@ -5769,127 +5776,80 @@ export const renewSubscription = async (req, res) => {
       : determinePlanFromUsage(desiredStudents, desiredTeachers);
 
     const planConfig = PLAN_LIMITS[targetPlanName];
-    const resolvedLimits = resolvePlanLimits(targetPlanName);
-    const features = resolvePlanFeatures(targetPlanName);
     const cycle = 'yearly';
-    const now = new Date();
-    const cycleMonths = BILLING_CYCLE_MONTHS[cycle] || BILLING_CYCLE_MONTHS.yearly;
     const multiplier = BILLING_MULTIPLIER[cycle] || BILLING_MULTIPLIER.yearly;
-
-    const updatedLimits = {
-      ...resolvedLimits,
-      maxStudents: resolvedLimits.maxStudents === -1
-        ? -1
-        : Math.max(resolvedLimits.maxStudents, desiredStudents),
-      maxTeachers: resolvedLimits.maxTeachers === -1
-        ? -1
-        : Math.max(resolvedLimits.maxTeachers, desiredTeachers),
-      features,
-    };
-
-    subscription.plan = {
-      name: targetPlanName,
-      displayName: PLAN_DISPLAY_NAMES[targetPlanName] || `${capitalize(targetPlanName)} Plan`,
-      price: planConfig.price,
-      billingCycle: cycle,
-    };
-
-    subscription.limits = updatedLimits;
-    subscription.status = 'active';
-    subscription.autoRenew = true;
-    subscription.startDate = subscription.startDate || now;
-
-    const previousEnd = subscription.endDate ? new Date(subscription.endDate) : null;
-    const renewalBase = previousEnd && previousEnd > now ? previousEnd : now;
-    const nextEndDate = new Date(renewalBase);
-    nextEndDate.setMonth(nextEndDate.getMonth() + cycleMonths);
-    subscription.endDate = nextEndDate;
-    const { amount, extraStudents, extraTeachers } = computeBillingAmount(
+    const { amount } = computeBillingAmount(
       targetPlanName,
       cycle,
       desiredStudents,
       desiredTeachers
     );
 
-    const addOns = (subscription.addOns || []).filter(addOn => !['extra_students', 'extra_teachers'].includes(addOn.name));
-
-    if (extraStudents > 0) {
-      addOns.push({
-        name: 'extra_students',
-        description: `${extraStudents} additional students`,
-        price: EXTRA_USAGE_RATES.student * multiplier,
-        quantity: extraStudents,
-        active: true,
-      });
-    }
-
-    if (extraTeachers > 0) {
-      addOns.push({
-        name: 'extra_teachers',
-        description: `${extraTeachers} additional teachers`,
-        price: EXTRA_USAGE_RATES.teacher * multiplier,
-        quantity: extraTeachers,
-        active: true,
-      });
-    }
-
-    subscription.addOns = addOns;
-
-    subscription.invoices = subscription.invoices || [];
-    subscription.invoices.push({
-      invoiceId: `INV-${Date.now()}`,
-      amount,
-      currency: 'INR',
-      status: 'paid',
-      paidAt: now,
-      dueDate: nextEndDate,
-      description: `${PLAN_DISPLAY_NAMES[targetPlanName] || capitalize(targetPlanName)} Renewal - ${capitalize(cycle)} • ${desiredStudents} students / ${desiredTeachers} teachers`,
+    // Check if there's already a pending renewal request
+    const existingRequest = await SubscriptionRenewalRequest.findOne({
+      orgId,
+      tenantId,
+      subscriptionId: subscription._id,
+      status: 'pending',
     });
 
-    const previousNotes = subscription.notes ? `\n${subscription.notes}` : '';
-    subscription.notes = `Renewed on ${now.toISOString()} by ${req.user?.name || 'School Admin'} for ${desiredStudents} students and ${desiredTeachers} teachers.${previousNotes}`;
+    if (existingRequest) {
+      return res.status(400).json({ 
+        message: 'You already have a pending renewal request. Please wait for admin approval.',
+        requestId: existingRequest._id,
+      });
+    }
 
-    await subscription.save();
+    // Create renewal request instead of directly renewing
+    const renewalRequest = await SubscriptionRenewalRequest.create({
+      orgId,
+      tenantId,
+      subscriptionId: subscription._id,
+      companyId: company._id,
+      requestedBy: req.user._id,
+      requestedByName: req.user.name || 'School Admin',
+      requestedByEmail: req.user.email || '',
+      requestedPlan: {
+        name: targetPlanName,
+        displayName: PLAN_DISPLAY_NAMES[targetPlanName] || `${capitalize(targetPlanName)} Plan`,
+      },
+      requestedStudents: desiredStudents,
+      requestedTeachers: desiredTeachers,
+      billingCycle: cycle,
+      estimatedAmount: amount,
+      currentPlan: {
+        name: subscription.plan?.name || 'free',
+        displayName: subscription.plan?.displayName || 'Free Plan',
+      },
+      currentStudents: subscription.usage?.students || 0,
+      currentTeachers: subscription.usage?.teachers || 0,
+      currentEndDate: subscription.endDate || null,
+      status: 'pending',
+    });
 
-    const payload = subscription.toObject ? subscription.toObject() : subscription;
+    // Emit socket event for admin notification
     const io = req.app.get('io');
-
     if (io) {
-      const userRoom = req.user?._id ? req.user._id.toString() : null;
-      if (userRoom) {
-        io.to(userRoom).emit('school:subscription:updated', {
-          subscription: payload,
-          tenantId,
-          orgId: orgId.toString(),
-        });
-      }
-      io.emit('school:subscription:updated', {
-        subscription: payload,
-        tenantId,
+      io.emit('admin:subscription-renewal:requested', {
+        requestId: renewalRequest._id,
         orgId: orgId.toString(),
+        companyName: company.name,
+        requestedPlan: targetPlanName,
+        requestedStudents: desiredStudents,
+        requestedTeachers: desiredTeachers,
+        estimatedAmount: amount,
       });
     }
 
     res.json({
       success: true,
-      message: 'Subscription renewed successfully',
-      subscription: payload,
-      billing: {
-        plan: targetPlanName,
-        amount,
-        cycle,
-        students: desiredStudents,
-        teachers: desiredTeachers,
-        extraStudents,
-        extraTeachers,
-      },
-      renewalWindow: {
-        endDate: nextEndDate,
-        daysRemaining: subscription.daysUntilExpiry ? subscription.daysUntilExpiry() : null,
-      },
+      message: 'Renewal request submitted successfully. It will be reviewed by admin.',
+      requestId: renewalRequest._id,
+      status: 'pending',
+      estimatedAmount: amount,
     });
   } catch (error) {
-    console.error('Error renewing subscription:', error);
+    console.error('Error creating renewal request:', error);
     res.status(500).json({ message: 'Server error' });
   }
 };
@@ -10800,14 +10760,38 @@ export const getEnhancedSubscriptionDetails = async (req, res) => {
     const classLimitForPercent = normalizeLimit(allowedClassCount, normalizeLimit(subscription.limits?.maxClasses, 1));
     const campusLimitForPercent = normalizeLimit(allowedCampusCount, normalizeLimit(subscription.limits?.maxCampuses, 1));
 
+    // Compute actual status based on endDate
+    const actualStatus = subscription.getActualStatus ? subscription.getActualStatus() : subscription.status;
+    
+    // Calculate current cycle start date
+    const getCurrentCycleStartDate = () => {
+      if (subscription.lastRenewedAt) {
+        return subscription.lastRenewedAt;
+      }
+      if (subscription.endDate) {
+        const cycleMonths = subscription.plan?.billingCycle === 'yearly' ? 12 : 12;
+        const cycleStart = new Date(subscription.endDate);
+        cycleStart.setMonth(cycleStart.getMonth() - cycleMonths);
+        return cycleStart;
+      }
+      return subscription.startDate || new Date();
+    };
+    
+    const currentCycleStartDate = getCurrentCycleStartDate();
+    
     res.json({
-      subscription,
+      subscription: {
+        ...subscription.toObject ? subscription.toObject() : subscription,
+        status: actualStatus, // Override with computed status
+        currentCycleStartDate: currentCycleStartDate, // Add current cycle start date
+      },
       enhancedDetails: {
         planName: subscription.plan.displayName,
         planType: subscription.plan.name,
         price: subscription.plan.price,
         billingCycle: subscription.plan.billingCycle,
-        status: subscription.status,
+        status: actualStatus, // Use computed status
+        currentCycleStartDate: currentCycleStartDate, // Add current cycle start date
         nextBillingDate,
         daysRemaining,
         activeStudentCount: activeStudents,

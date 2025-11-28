@@ -127,6 +127,9 @@ const subscriptionSchema = new mongoose.Schema({
   endDate: {
     type: Date,
   },
+  lastRenewedAt: {
+    type: Date,
+  },
   cancelledAt: Date,
   
   // Billing
@@ -202,6 +205,59 @@ subscriptionSchema.methods.daysUntilExpiry = function() {
   const end = new Date(this.endDate);
   const diff = end - now;
   return Math.ceil(diff / (1000 * 60 * 60 * 24));
+};
+
+subscriptionSchema.methods.isActive = function() {
+  // Check if status is active AND endDate hasn't passed
+  if (this.status !== 'active' && this.status !== 'pending') {
+    return false;
+  }
+  if (!this.endDate) {
+    return this.status === 'active';
+  }
+  return new Date(this.endDate) > new Date();
+};
+
+subscriptionSchema.methods.isExpired = function() {
+  if (!this.endDate) return false;
+  return new Date(this.endDate) <= new Date();
+};
+
+subscriptionSchema.methods.getActualStatus = function() {
+  // Compute actual status based on endDate
+  if (this.status === 'cancelled') {
+    return 'cancelled';
+  }
+  if (this.isExpired()) {
+    return 'expired';
+  }
+  if (this.status === 'active' && this.isActive()) {
+    return 'active';
+  }
+  if (this.status === 'pending' && !this.isExpired()) {
+    return 'pending';
+  }
+  // If status says active but expired, return expired
+  return 'expired';
+};
+
+subscriptionSchema.methods.getCurrentCycleStartDate = function() {
+  // Calculate the start date of the current billing cycle
+  // If lastRenewedAt exists, use it; otherwise calculate from endDate
+  if (this.lastRenewedAt) {
+    return this.lastRenewedAt;
+  }
+  
+  // If no lastRenewedAt, calculate from endDate based on billing cycle
+  if (this.endDate) {
+    const cycleMonths = this.plan?.billingCycle === 'yearly' ? 12 : 12; // Default to yearly
+    const cycleStart = new Date(this.endDate);
+    cycleStart.setMonth(cycleStart.getMonth() - cycleMonths);
+    return cycleStart;
+  }
+  
+  // Fallback to original startDate
+  return this.startDate || new Date();
 };
 
 const Subscription = mongoose.model('Subscription', subscriptionSchema);

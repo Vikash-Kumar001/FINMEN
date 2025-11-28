@@ -200,14 +200,73 @@ const mapAdminUserSummary = (adminDoc) => {
 
 const mapSubscriptionSummary = (subscriptionDoc) => {
   const subscription = toPlain(subscriptionDoc) || {};
+  
+  // Compute actual status based on endDate
+  let actualStatus = subscription.status || null;
+  if (subscription.endDate) {
+    const endDate = new Date(subscription.endDate);
+    const now = new Date();
+    if (endDate <= now && (actualStatus === 'active' || actualStatus === 'pending')) {
+      actualStatus = 'expired';
+    }
+  }
+  
+  // Calculate current cycle start date (when current period started)
+  let currentCycleStartDate = subscription.startDate || null;
+  if (subscription.lastRenewedAt) {
+    // If lastRenewedAt exists, use it as the current cycle start
+    currentCycleStartDate = subscription.lastRenewedAt;
+  } else if (subscription.endDate) {
+    // Calculate from endDate based on billing cycle (default yearly = 12 months)
+    const cycleMonths = subscription.plan?.billingCycle === 'yearly' ? 12 : 12;
+    const cycleStart = new Date(subscription.endDate);
+    cycleStart.setMonth(cycleStart.getMonth() - cycleMonths);
+    currentCycleStartDate = cycleStart;
+  }
+  
+  // Ensure plan name and displayName are set correctly based on status
+  const plan = subscription.plan || {};
+  const planName = plan.name;
+  const planDisplayName = plan.displayName;
+  
+  // If plan is expired, set to free plan
+  if (actualStatus === 'expired') {
+    plan.name = 'free';
+    plan.displayName = 'Free Plan';
+  } else if (actualStatus === 'active' || actualStatus === 'pending') {
+    // If plan is active/renewed, ensure it shows premium plan
+    // If plan name is missing or "free" but we have limits that suggest premium, 
+    // try to infer the correct plan from limits
+    if ((!planName || planName === 'free') && subscription.endDate) {
+      // Check if limits suggest it's an educational institutions premium plan
+      const maxStudents = subscription.limits?.maxStudents || 0;
+      const maxTeachers = subscription.limits?.maxTeachers || 0;
+      if (maxStudents >= 10000 || maxTeachers >= 1000) {
+        // Likely educational_institutions_premium
+        plan.name = 'educational_institutions_premium';
+        plan.displayName = 'Educational Institutions Premium Plan';
+      } else if (!planName || planName === 'free') {
+        // Default to educational_institutions_premium for active school subscriptions
+        plan.name = 'educational_institutions_premium';
+        plan.displayName = 'Educational Institutions Premium Plan';
+      }
+    }
+  } else {
+    // For cancelled or other statuses, show free plan
+    plan.name = 'free';
+    plan.displayName = 'Free Plan';
+  }
+  
   return {
     id: subscription._id ? subscription._id.toString() : undefined,
-    status: subscription.status || null,
-    plan: subscription.plan || {},
+    status: actualStatus,
+    plan: plan,
     limits: subscription.limits || {},
     usage: subscription.usage || {},
-    startDate: subscription.startDate || null,
+    startDate: subscription.startDate || null, // Original activation date
+    currentCycleStartDate: currentCycleStartDate, // Current renewal cycle start date
     endDate: subscription.endDate || null,
+    lastRenewedAt: subscription.lastRenewedAt || null,
     autoRenew: typeof subscription.autoRenew === "boolean" ? subscription.autoRenew : null,
     tenantId: subscription.tenantId || null,
     orgId: subscription.orgId ? subscription.orgId.toString?.() : null,
@@ -2172,6 +2231,24 @@ export const updateAdminSchool = async (req, res) => {
           : company.academicInfo?.totalTeachers ?? null;
       }
       company.academicInfo = mergedAcademic;
+
+      // Update Organization settings with academic info
+      if (organizationObjectId && organizationTenantId) {
+        const orgIds = organizations.map((org) => (org && org._id ? org._id : org));
+        if (orgIds.length > 0) {
+          await Organization.updateMany(
+            { _id: { $in: orgIds } },
+            {
+              $set: {
+                'settings.board': mergedAcademic.board || '',
+                'settings.establishedYear': mergedAcademic.establishedYear || '',
+                'settings.totalStudents': mergedAcademic.totalStudents || 0,
+                'settings.totalTeachers': mergedAcademic.totalTeachers || 0
+              }
+            }
+          );
+        }
+      }
     }
 
     const now = new Date();
@@ -2568,6 +2645,42 @@ export const updateAdminSchool = async (req, res) => {
 
     const [detail] = await hydrateSchoolData([company]);
 
+    // Calculate analytics for the response
+    let analytics = null;
+    const tenantId = detail?.primaryOrganization?.tenantId;
+    if (tenantId) {
+      const [admissions, activeTeachers] = await Promise.all([
+        SchoolStudent.aggregate([
+          {
+            $match: {
+              tenantId,
+              createdAt: { $gte: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000) }
+            }
+          },
+          {
+            $group: {
+              _id: '$grade',
+              count: { $sum: 1 }
+            }
+          },
+          { $sort: { count: -1 } }
+        ]),
+        User.countDocuments({
+          tenantId,
+          role: 'school_teacher',
+          lastActiveAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+        })
+      ]);
+
+      analytics = {
+        admissionsLast30: admissions.map((entry) => ({
+          grade: entry._id || 'Unknown',
+          count: entry.count
+        })),
+        activeTeachers7d: activeTeachers
+      };
+    }
+
     if (io) {
       await emitAdminSchoolUpdate(io, company);
     }
@@ -2575,7 +2688,8 @@ export const updateAdminSchool = async (req, res) => {
     res.json({
       success: true,
       message: 'School updated successfully',
-      data: detail || null
+      data: detail || null,
+      analytics: analytics || null
     });
   } catch (error) {
     console.error('Error updating school:', error);

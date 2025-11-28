@@ -33,9 +33,12 @@ import api from "../../utils/api";
 import { toast } from "react-hot-toast";
 import NewAssignmentModal from "../../components/NewAssignmentModal";
 import InviteStudentsModal from "../../components/InviteStudentsModal";
+import ExpiredSubscriptionModal from "../../components/School/ExpiredSubscriptionModal";
+import { useSocket } from "../../context/SocketContext";
 
 const TeacherOverview = () => {
   const navigate = useNavigate();
+  const socket = useSocket()?.socket;
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({});
   const [classes, setClasses] = useState([]);
@@ -49,10 +52,82 @@ const TeacherOverview = () => {
   const [showNewAssignment, setShowNewAssignment] = useState(false);
   const [showInviteStudents, setShowInviteStudents] = useState(false);
   const [selectedClassForInvite, setSelectedClassForInvite] = useState(null);
+  
+  // Access control state
+  const [hasAccess, setHasAccess] = useState(true);
+  const [accessLoading, setAccessLoading] = useState(true);
+  const [accessInfo, setAccessInfo] = useState(null);
+  const [showExpiredModal, setShowExpiredModal] = useState(false);
+
+  // Check teacher access on mount and when socket connects
+  useEffect(() => {
+    checkTeacherAccess();
+  }, []);
+
+  // Listen for real-time access updates
+  useEffect(() => {
+    if (!socket) return;
+
+    const handleAccessUpdate = (data) => {
+      if (data) {
+        setHasAccess(data.hasAccess === true);
+        if (data.hasAccess === true) {
+          setShowExpiredModal(false);
+          toast.success('Access restored! Your school has renewed its subscription.', {
+            duration: 5000,
+            icon: '🎉'
+          });
+          // Refresh dashboard data
+          fetchDashboardData();
+        } else {
+          setShowExpiredModal(true);
+          toast.warning('Your school\'s subscription has expired. Access restricted.', {
+            duration: 5000,
+            icon: '⚠️'
+          });
+        }
+      }
+    };
+
+    socket.on('teacher:access:updated', handleAccessUpdate);
+
+    return () => {
+      socket.off('teacher:access:updated', handleAccessUpdate);
+    };
+  }, [socket]);
+
+  const checkTeacherAccess = async () => {
+    try {
+      setAccessLoading(true);
+      const response = await api.get('/api/school/teacher/access');
+      if (response.data.success) {
+        const accessData = response.data;
+        setHasAccess(accessData.hasAccess === true);
+        setAccessInfo(accessData);
+        
+        // Show modal if access is denied
+        if (!accessData.hasAccess) {
+          setShowExpiredModal(true);
+          setLoading(false); // Stop loading spinner when access is denied
+        }
+      }
+    } catch (error) {
+      console.error('Error checking teacher access:', error);
+      // On error, assume access is denied for safety
+      setHasAccess(false);
+      setShowExpiredModal(true);
+      setLoading(false); // Stop loading spinner on error
+    } finally {
+      setAccessLoading(false);
+    }
+  };
 
   useEffect(() => {
-    fetchDashboardData();
-  }, []);
+    // Only fetch dashboard data if teacher has access
+    if (hasAccess && !accessLoading) {
+      fetchDashboardData();
+    }
+  }, [hasAccess, accessLoading]);
 
   const fetchDashboardData = async () => {
     try {
@@ -168,13 +243,33 @@ const TeacherOverview = () => {
     setShowInviteStudents(true);
   };
 
-  if (loading) {
+  // Show loading spinner only if we're still checking access or loading dashboard data
+  if (accessLoading || (loading && hasAccess)) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
         <motion.div
           animate={{ rotate: 360, scale: [1, 1.2, 1] }}
           transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
           className="w-20 h-20 border-4 border-purple-500 border-t-transparent rounded-full"
+        />
+      </div>
+    );
+  }
+
+  // If access is denied, show only the modal (no dashboard content)
+  if (!hasAccess && !accessLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
+        <ExpiredSubscriptionModal
+          isOpen={true}
+          onClose={() => {}} // Prevent closing - modal must stay open when access is denied
+          schoolInfo={accessInfo ? {
+            name: accessInfo.schoolName,
+            planStatus: accessInfo.subscriptionStatus,
+            planEndDate: accessInfo.subscriptionEndDate,
+          } : null}
+          contactInfo={accessInfo?.schoolContact || null}
+          onCheckAgain={checkTeacherAccess}
         />
       </div>
     );
@@ -752,6 +847,19 @@ const TeacherOverview = () => {
         }}
         classId={selectedClassForInvite?.id}
         className={selectedClassForInvite?.name}
+      />
+
+      {/* Expired Subscription Modal */}
+      <ExpiredSubscriptionModal
+        isOpen={showExpiredModal}
+        onClose={() => setShowExpiredModal(false)}
+        schoolInfo={accessInfo ? {
+          name: accessInfo.schoolName,
+          planStatus: accessInfo.subscriptionStatus,
+          planEndDate: accessInfo.subscriptionEndDate,
+        } : null}
+        contactInfo={accessInfo?.schoolContact || null}
+        onCheckAgain={checkTeacherAccess}
       />
     </div>
   );

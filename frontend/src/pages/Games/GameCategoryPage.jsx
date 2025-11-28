@@ -126,8 +126,9 @@ const GameCategoryPage = () => {
 
   // Check if a specific game is unlocked based on completion sequence and subscription
   const isGameUnlocked = (gameIndex) => {
-    // Check subscription-based access first (freemium users can only access first 5 games)
-    const subscriptionAccess = canAccessGameBySubscription(categoryTitle, gameIndex);
+    // Check subscription-based access first - pass gameIndex to check if this specific game is within limit
+    const gamesCompleted = categoryStats.completedGames || 0;
+    const subscriptionAccess = canAccessGameBySubscription(categoryTitle, gamesCompleted, gameIndex);
     if (!subscriptionAccess.allowed) {
       return false; // Game is locked due to subscription limits
     }
@@ -1313,8 +1314,9 @@ const GameCategoryPage = () => {
 
   // Handle game play
   const handlePlayGame = (game) => {
-    // Check subscription-based access first
-    const subscriptionAccess = canAccessGameBySubscription(categoryTitle, game.index);
+    // Check subscription-based access first - pass game index to check if this specific game is within limit
+    const gamesCompleted = categoryStats.completedGames || 0;
+    const subscriptionAccess = canAccessGameBySubscription(categoryTitle, gamesCompleted, game.index);
     if (!subscriptionAccess.allowed) {
       toast.error(
         subscriptionAccess.reason || `Upgrade to premium to access more than ${gamesPerPillar} games per pillar.`,
@@ -1451,6 +1453,20 @@ const GameCategoryPage = () => {
     if (processingReplay) return;
     
     const REPLAY_COST = 2;
+    
+    // Check if game is subscription-locked (freemium users beyond first 5 games)
+    const subscriptionAccess = canAccessGameBySubscription(categoryTitle, gamesCompleted, game.index);
+    if (!subscriptionAccess.allowed) {
+      toast.error(
+        subscriptionAccess.reason || "This game is not available in your current plan. Upgrade to premium to access more games.",
+        {
+          duration: 5000,
+          position: "bottom-center",
+          icon: "🔒",
+        }
+      );
+      return;
+    }
     
     // Check wallet balance
     if (!wallet || wallet.balance < REPLAY_COST) {
@@ -1906,8 +1922,9 @@ const GameCategoryPage = () => {
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
           >
             {games.map((game, index) => {
-            // Check subscription-based access for freemium users (first 5 games only)
-            const subscriptionAccess = canAccessGameBySubscription(categoryTitle, index);
+            // Check subscription-based access for freemium users - pass game index to check if this specific game is within limit
+            const gamesCompleted = categoryStats.completedGames || 0;
+            const subscriptionAccess = canAccessGameBySubscription(categoryTitle, gamesCompleted, index);
             const isSubscriptionLocked = !subscriptionAccess.allowed;
             
             const isUnlocked =
@@ -1944,7 +1961,9 @@ const GameCategoryPage = () => {
             const progress = gameProgressData[game.id];
             // Explicitly check for replayUnlocked === true (not just truthy)
             const canReplay = isFullyCompleted && progress && progress.replayUnlocked === true;
-            const needsReplayUnlock = isFullyCompleted && (!progress || progress.replayUnlocked !== true);
+            // Only show replay unlock button if game is fully completed, replay is not unlocked, AND game is not subscription-locked
+            // Freemium users cannot unlock replay for games beyond the first 5 per pillar
+            const needsReplayUnlock = isFullyCompleted && (!progress || progress.replayUnlocked !== true) && !isSubscriptionLocked;
             // Game is locked if:
             // 1. Fully completed AND replay is not unlocked, OR
             // 2. Not unlocked (sequential or subscription lock), OR
@@ -2209,7 +2228,8 @@ const GameCategoryPage = () => {
                 </div>
 
                 {/* Replay unlock button for completed games */}
-                {needsReplayUnlock && (
+                {/* Only show if game is not subscription-locked (freemium users cannot unlock replay for games beyond first 5) */}
+                {needsReplayUnlock && !isSubscriptionLocked && (
                   <div className="mt-4 pt-4 border-t border-gray-200 relative z-20">
                     <button
                       onClick={(e) => {
@@ -2232,6 +2252,14 @@ const GameCategoryPage = () => {
                         Insufficient balance
                       </p>
                     )}
+                  </div>
+                )}
+                {/* Show message if game is subscription-locked and completed */}
+                {isFullyCompleted && isSubscriptionLocked && (
+                  <div className="mt-4 pt-4 border-t border-gray-200">
+                    <p className="text-xs text-amber-600 text-center font-medium">
+                      🔒 Replay not available. Upgrade to premium to access this game.
+                    </p>
                   </div>
                 )}
 

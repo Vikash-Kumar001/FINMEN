@@ -88,6 +88,7 @@ export const SubscriptionProvider = ({ children }) => {
       if (data && data.subscription) {
         setSubscription(data.subscription);
         toast.success('Subscription updated!', { icon: '🎉' });
+        fetchSubscription(); // Refresh from API to get latest data
       }
     };
 
@@ -95,17 +96,43 @@ export const SubscriptionProvider = ({ children }) => {
       if (data && data.subscription) {
         setSubscription(data.subscription);
         toast.info('Subscription cancelled');
+        fetchSubscription(); // Refresh from API to get latest data
+      }
+    };
+
+    const handleStudentSubscriptionUpdated = (data) => {
+      if (data && data.subscription) {
+        const reason = data.reason || 'updated';
+        setSubscription(data.subscription);
+        fetchSubscription(); // Refresh from API to get latest data
+        
+        // Show appropriate message
+        if (reason === 'school_subscription_renewed') {
+          toast.success('Your school has renewed its plan! Premium access restored.', { 
+            icon: '🎉',
+            duration: 4000 
+          });
+        } else if (reason === 'school_subscription_expired') {
+          toast.warning('Your school\'s plan has expired. You now have freemium access.', { 
+            icon: '⚠️',
+            duration: 5000 
+          });
+        } else {
+          toast.success('Subscription updated!', { icon: '🎉' });
+        }
       }
     };
 
     socket.socket.on('subscription:activated', handleSubscriptionActivated);
     socket.socket.on('subscription:cancelled', handleSubscriptionCancelled);
+    socket.socket.on('student:subscription:updated', handleStudentSubscriptionUpdated);
 
     return () => {
       socket.socket.off('subscription:activated', handleSubscriptionActivated);
       socket.socket.off('subscription:cancelled', handleSubscriptionCancelled);
+      socket.socket.off('student:subscription:updated', handleStudentSubscriptionUpdated);
     };
-  }, [socket, user]);
+  }, [socket, user, fetchSubscription]);
 
   // Feature check functions - memoized to prevent unnecessary re-renders
   const hasFeature = useCallback((featureName) => {
@@ -133,7 +160,7 @@ export const SubscriptionProvider = ({ children }) => {
     }
   }, [subscription]);
 
-  const canAccessGame = useCallback((pillarName, gameIndex) => {
+  const canAccessGame = useCallback((pillarName, gamesCompletedCount, gameIndex = undefined) => {
     if (!subscription || !subscription.features) {
       return { allowed: false, reason: 'Subscription not loaded' };
     }
@@ -150,23 +177,35 @@ export const SubscriptionProvider = ({ children }) => {
       };
     }
 
-    // Free users: check games per pillar limit
+    // Freemium users: ONLY have access to first N games per pillar (locked after that)
     const gamesPerPillar = features.gamesPerPillar || 5;
-
-    if (gameIndex >= gamesPerPillar) {
+    
+    // If gameIndex is provided, check if this specific game is within the limit
+    if (gameIndex !== undefined) {
+      // Game is locked if index is beyond the allowed limit
+      if (gameIndex >= gamesPerPillar) {
+        return {
+          allowed: false,
+          reason: `Upgrade to premium to access more than ${gamesPerPillar} games per pillar.`,
+          gamesPlayed: gamesCompletedCount || 0,
+          gamesAllowed: gamesPerPillar,
+          mode: 'preview',
+        };
+      }
+      // Game is within limit, allow access
       return {
-        allowed: false,
-        reason: `You've reached the limit of ${gamesPerPillar} free games in this pillar. Upgrade to access all games.`,
-        gamesPlayed: gameIndex,
+        allowed: true,
+        gamesPlayed: gamesCompletedCount || 0,
         gamesAllowed: gamesPerPillar,
-        mode: 'locked',
-        upgradeRequired: true,
+        mode: 'preview',
       };
     }
 
+    // If gameIndex is not provided, return general access info
+    // (for backward compatibility, but individual games should pass gameIndex)
     return {
-      allowed: true,
-      gamesPlayed: gameIndex,
+      allowed: true, // Individual game access must be checked with gameIndex
+      gamesPlayed: gamesCompletedCount || 0,
       gamesAllowed: gamesPerPillar,
       mode: 'preview',
     };

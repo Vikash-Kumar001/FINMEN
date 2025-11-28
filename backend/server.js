@@ -1,4 +1,6 @@
 import { scheduleSubscriptionReminders } from './cronJobs/subscriptionReminders.js';
+import { scheduleSubscriptionExpirationNotifications } from './cronJobs/subscriptionExpirationNotifications.js';
+import { scheduleExpiredSubscriptionSync } from './cronJobs/syncExpiredSubscriptions.js';
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
@@ -370,7 +372,14 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   scheduleWeeklyReports();
-scheduleSubscriptionReminders();
+  scheduleSubscriptionReminders();
+  
+  // Schedule comprehensive subscription expiration notifications
+  scheduleSubscriptionExpirationNotifications(io);
+  
+  // Schedule periodic sync of expired subscriptions (syncs students/teachers when school plan expires)
+  scheduleExpiredSubscriptionSync(io);
+  
   // Start real-time notification TTL cleanup (15 days)
   const ttlSeconds = parseInt(process.env.NOTIFICATION_TTL_SECONDS || "1296000", 10);
   startNotificationTTL(io, { ttlSeconds, intervalSeconds: 3600 });

@@ -32,6 +32,7 @@ import {
   rejectSchool,
   updatePendingSchool
 } from "../../services/schoolApprovalService";
+import { subscriptionRenewalService } from "../../services/subscriptionRenewalService";
 import { useSocket } from "../../context/SocketContext";
 
 const statusStyles = {
@@ -104,6 +105,11 @@ const AdminSchoolApprovals = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const [dashboard, setDashboard] = useState(null);
   const [pendingSchools, setPendingSchools] = useState([]);
+  const [renewalRequests, setRenewalRequests] = useState([]);
+  const [renewalLoading, setRenewalLoading] = useState(false);
+  const [selectedRenewalRequest, setSelectedRenewalRequest] = useState(null);
+  const [renewalActionModal, setRenewalActionModal] = useState(null);
+  const [renewalActionNote, setRenewalActionNote] = useState("");
   const [history, setHistory] = useState({ data: [], meta: { total: 0, page: 1, pages: 1, limit: historyPageSize } });
   const [filters, setFilters] = useState({ search: "", state: "", sort: "oldest" });
   const [historyFilter, setHistoryFilter] = useState({ status: "all", page: 1 });
@@ -280,15 +286,78 @@ const AdminSchoolApprovals = () => {
     }
   }, []);
 
+  const loadRenewalRequests = useCallback(async () => {
+    try {
+      setRenewalLoading(true);
+      const response = await subscriptionRenewalService.getRenewalRequests({ status: 'pending' });
+      setRenewalRequests(response.data || []);
+    } catch (error) {
+      console.error("Error loading renewal requests:", error);
+      toast.error("Unable to load renewal requests");
+    } finally {
+      setRenewalLoading(false);
+    }
+  }, []);
+
+  const handleRenewalAction = async () => {
+    if (!renewalActionModal?.request) return;
+    setActionLoading(true);
+    try {
+      const data = { adminNotes: renewalActionNote };
+      if (renewalActionModal.mode === 'approve') {
+        await subscriptionRenewalService.approveRenewal(renewalActionModal.request._id, data);
+        toast.success("Subscription renewal approved successfully");
+      } else {
+        if (!renewalActionNote.trim()) {
+          toast.error("Rejection reason is required");
+          setActionLoading(false);
+          return;
+        }
+        await subscriptionRenewalService.rejectRenewal(renewalActionModal.request._id, { 
+          rejectionReason: renewalActionNote,
+          adminNotes: renewalActionNote 
+        });
+        toast.success("Subscription renewal rejected");
+      }
+      setRenewalActionModal(null);
+      setRenewalActionNote("");
+      await loadRenewalRequests();
+    } catch (error) {
+      console.error("Error processing renewal request:", error);
+      toast.error(error.response?.data?.message || "Unable to process renewal request");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   const initialize = useCallback(async () => {
     setInitialLoading(true);
-    await Promise.all([loadDashboard(), loadPending(), loadHistory({ page: 1 })]);
+    await Promise.all([loadDashboard(), loadPending(), loadHistory({ page: 1 }), loadRenewalRequests()]);
     setInitialLoading(false);
-  }, [loadDashboard, loadPending, loadHistory]);
+  }, [loadDashboard, loadPending, loadHistory, loadRenewalRequests]);
 
   useEffect(() => {
     initialize();
   }, [initialize]);
+
+  // Socket listeners for real-time updates
+  useEffect(() => {
+    if (!socket?.socket) return;
+
+    const handleRenewalRequested = () => {
+      loadRenewalRequests();
+    };
+
+    socket.socket.on('admin:subscription-renewal:requested', handleRenewalRequested);
+    socket.socket.on('admin:subscription-renewal:approved', handleRenewalRequested);
+    socket.socket.on('admin:subscription-renewal:rejected', handleRenewalRequested);
+
+    return () => {
+      socket.socket.off('admin:subscription-renewal:requested', handleRenewalRequested);
+      socket.socket.off('admin:subscription-renewal:approved', handleRenewalRequested);
+      socket.socket.off('admin:subscription-renewal:rejected', handleRenewalRequested);
+    };
+  }, [socket, loadRenewalRequests]);
 
   useEffect(() => {
     const timeout = setTimeout(() => {
@@ -742,7 +811,111 @@ const AdminSchoolApprovals = () => {
               </div>
             </div>
 
-            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6">
+            {/* Subscription Renewal Requests Section */}
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 mt-6">
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                    <TrendingUp className="w-5 h-5 text-emerald-500" />
+                    Subscription Renewal Requests ({renewalRequests.length})
+                  </h2>
+                  <p className="text-sm text-slate-500 mt-1">Pending subscription renewal requests from schools</p>
+                </div>
+                <button
+                  onClick={loadRenewalRequests}
+                  disabled={renewalLoading}
+                  className="px-4 py-2 text-sm font-semibold text-indigo-600 bg-indigo-50 border border-indigo-200 rounded-xl hover:bg-indigo-100 transition disabled:opacity-50"
+                >
+                  {renewalLoading ? "Loading..." : "Refresh"}
+                </button>
+              </div>
+
+              {renewalLoading && renewalRequests.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">Loading renewal requests...</div>
+              ) : renewalRequests.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  <Sparkles className="w-6 h-6 text-indigo-400 mx-auto mb-3" />
+                  <p className="text-sm">No pending renewal requests</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {renewalRequests.map((request) => (
+                    <Motion.div
+                      key={request._id}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="border border-slate-200 rounded-xl p-5 hover:shadow-md transition"
+                    >
+                      <div className="flex items-start justify-between mb-4">
+                        <div>
+                          <h3 className="font-semibold text-slate-900">{request.companyId?.name || "Unknown School"}</h3>
+                          <p className="text-xs text-slate-500 mt-1">Requested by: {request.requestedByName || request.requestedByEmail}</p>
+                        </div>
+                        <span className="px-2.5 py-1 text-xs font-semibold rounded-full bg-amber-100 text-amber-700 border border-amber-200">
+                          Pending
+                        </span>
+                      </div>
+
+                      <div className="space-y-2 mb-4">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Current Plan:</span>
+                          <span className="font-semibold text-slate-900">{request.currentPlan?.displayName || request.currentPlan?.name || "Free"}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Requested Plan:</span>
+                          <span className="font-semibold text-emerald-600">{request.requestedPlan?.displayName || request.requestedPlan?.name || "Premium"}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Students:</span>
+                          <span className="font-semibold text-slate-900">{request.currentStudents} → {request.requestedStudents}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Teachers:</span>
+                          <span className="font-semibold text-slate-900">{request.currentTeachers} → {request.requestedTeachers}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-slate-600">Estimated Amount:</span>
+                          <span className="font-semibold text-emerald-600">₹{new Intl.NumberFormat('en-IN').format(request.estimatedAmount || 0)}</span>
+                        </div>
+                        {request.currentEndDate && (
+                          <div className="flex justify-between text-sm">
+                            <span className="text-slate-600">Current Expiry:</span>
+                            <span className="font-semibold text-slate-900">
+                              {new Date(request.currentEndDate).toLocaleDateString('en-IN')}
+                            </span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex gap-2 pt-4 border-t border-slate-200">
+                        <button
+                          onClick={() => {
+                            setSelectedRenewalRequest(request);
+                            setRenewalActionModal({ mode: 'approve', request });
+                            setRenewalActionNote("");
+                          }}
+                          className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-xl hover:bg-emerald-700 transition"
+                        >
+                          Approve
+                        </button>
+                        <button
+                          onClick={() => {
+                            setSelectedRenewalRequest(request);
+                            setRenewalActionModal({ mode: 'reject', request });
+                            setRenewalActionNote("");
+                          }}
+                          className="flex-1 px-4 py-2 text-sm font-semibold text-white bg-rose-600 rounded-xl hover:bg-rose-700 transition"
+                        >
+                          Reject
+                        </button>
+                      </div>
+                    </Motion.div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white border border-slate-200 rounded-2xl shadow-sm p-6 mt-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                   <h2 className="text-lg font-semibold text-slate-900 flex items-center gap-2">
@@ -1334,6 +1507,93 @@ const AdminSchoolApprovals = () => {
                 >
                   {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                   {confirmAction.mode === "approve" ? "Confirm approval" : "Reject school"}
+                </button>
+              </div>
+            </Motion.div>
+          </Motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Renewal Action Modal */}
+      <AnimatePresence>
+        {renewalActionModal && (
+          <Motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[2300] flex items-center justify-center px-4"
+            onClick={() => setRenewalActionModal(null)}
+          >
+            <Motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="max-w-lg w-full bg-white border border-slate-200 rounded-2xl p-6 shadow-2xl space-y-5"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex items-start gap-3">
+                {renewalActionModal.mode === "approve" ? (
+                  <CheckCircle2 className="w-6 h-6 text-emerald-500" />
+                ) : (
+                  <AlertTriangle className="w-6 h-6 text-rose-500" />
+                )}
+                <div>
+                  <h3 className="text-lg font-semibold text-slate-900">
+                    {renewalActionModal.mode === "approve" ? "Approve Subscription Renewal" : "Reject Subscription Renewal"}
+                  </h3>
+                  <p className="text-sm text-slate-600 mt-1">
+                    {renewalActionModal.mode === "approve"
+                      ? "This will activate the subscription with the requested plan and headcount."
+                      : "Provide a reason for rejection so the school can understand and resubmit if needed."}
+                  </p>
+                </div>
+              </div>
+              {renewalActionModal.request && (
+                <div className="text-sm text-slate-700 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3">
+                  <div className="font-semibold text-slate-900 mb-2">{renewalActionModal.request.companyId?.name || "Unknown School"}</div>
+                  <div className="space-y-1 text-xs">
+                    <div>Plan: {renewalActionModal.request.currentPlan?.displayName} → {renewalActionModal.request.requestedPlan?.displayName}</div>
+                    <div>Students: {renewalActionModal.request.currentStudents} → {renewalActionModal.request.requestedStudents}</div>
+                    <div>Teachers: {renewalActionModal.request.currentTeachers} → {renewalActionModal.request.requestedTeachers}</div>
+                    <div>Amount: ₹{new Intl.NumberFormat('en-IN').format(renewalActionModal.request.estimatedAmount || 0)}</div>
+                  </div>
+                </div>
+              )}
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">
+                  {renewalActionModal.mode === "approve" ? "Admin Notes (optional)" : "Rejection Reason *"}
+                </label>
+                <textarea
+                  value={renewalActionNote}
+                  onChange={(e) => setRenewalActionNote(e.target.value)}
+                  placeholder={renewalActionModal.mode === "approve" ? "Add any notes about this approval..." : "Explain why this renewal is being rejected..."}
+                  rows={4}
+                  className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"
+                  required={renewalActionModal.mode === "reject"}
+                />
+              </div>
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRenewalActionModal(null);
+                    setRenewalActionNote("");
+                  }}
+                  className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-slate-600 bg-white border border-slate-200 hover:bg-slate-50 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRenewalAction}
+                  disabled={actionLoading || (renewalActionModal.mode === "reject" && !renewalActionNote.trim())}
+                  className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition disabled:opacity-60 disabled:cursor-not-allowed ${
+                    renewalActionModal.mode === "approve"
+                      ? "bg-emerald-600 hover:bg-emerald-700"
+                      : "bg-rose-600 hover:bg-rose-700"
+                  }`}
+                >
+                  {actionLoading ? "Processing..." : renewalActionModal.mode === "approve" ? "Approve Renewal" : "Reject Renewal"}
                 </button>
               </div>
             </Motion.div>

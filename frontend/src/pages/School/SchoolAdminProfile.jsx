@@ -181,7 +181,17 @@ const SchoolAdminProfile = () => {
   const enhancedDetails = subscriptionInfo.enhanced;
   const planExpiryDate = enhancedDetails?.nextBillingDate || subscription?.endDate || null;
   const planName = enhancedDetails?.planName || subscription?.plan?.displayName || 'Premium Plan';
-  const planStatus = enhancedDetails?.status || subscription?.status || 'active';
+  
+  // Compute actual status based on endDate
+  let planStatus = enhancedDetails?.status || subscription?.status || 'active';
+  if (planExpiryDate && (planStatus === 'active' || planStatus === 'pending')) {
+    const expiryDate = new Date(planExpiryDate);
+    const now = new Date();
+    if (expiryDate <= now) {
+      planStatus = 'expired';
+    }
+  }
+  
   const daysRemaining = enhancedDetails?.daysRemaining ??
     (planExpiryDate ? Math.max(0, Math.ceil((new Date(planExpiryDate) - new Date()) / (1000 * 60 * 60 * 24))) : null);
 

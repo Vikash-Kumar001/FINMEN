@@ -521,6 +521,87 @@ export const login = async (req, res) => {
 
     const token = generateToken(user._id);
 
+    // Check and sync student subscription if linked to a school
+    if ((user.role === 'student' || user.role === 'school_student') && user.orgId && user.tenantId) {
+      try {
+        const { syncSchoolStudentSubscriptions } = await import('../services/schoolStudentSubscriptionSync.js');
+        const Subscription = (await import('../models/Subscription.js')).default;
+        
+        // Find the school's subscription
+        const schoolSubscription = await Subscription.findOne({
+          orgId: user.orgId,
+          tenantId: user.tenantId
+        });
+
+        if (schoolSubscription) {
+          const now = new Date();
+          // Use getActualStatus() if available, otherwise check endDate manually
+          let actualStatus = schoolSubscription.status;
+          if (schoolSubscription.getActualStatus) {
+            actualStatus = schoolSubscription.getActualStatus();
+          } else if (schoolSubscription.endDate) {
+            const endDate = new Date(schoolSubscription.endDate);
+            if (endDate <= now) {
+              actualStatus = 'expired';
+            }
+          }
+          
+          const isActive = actualStatus === 'active' && 
+                          (!schoolSubscription.endDate || new Date(schoolSubscription.endDate) > now);
+          
+          console.log(`🔄 Syncing student ${user.email} subscription: school status=${actualStatus}, isActive=${isActive}`);
+          
+          // Sync student subscription with school subscription status
+          const io = req.app.get('io');
+          const syncResult = await syncSchoolStudentSubscriptions(
+            user.orgId.toString(),
+            user.tenantId,
+            isActive,
+            schoolSubscription.endDate,
+            io
+          );
+          
+          console.log(`✅ Student sync result: ${syncResult.studentsUpdated} students updated`);
+        }
+      } catch (syncError) {
+        console.error('Error syncing student subscription on login:', syncError);
+        // Don't fail login if sync fails
+      }
+    }
+
+    // Check and sync teacher access if linked to a school
+    if ((user.role === 'school_teacher' || user.role === 'teacher') && user.orgId && user.tenantId) {
+      try {
+        const { syncSchoolTeacherAccess } = await import('../services/schoolStudentSubscriptionSync.js');
+        const Subscription = (await import('../models/Subscription.js')).default;
+        
+        // Find the school's subscription
+        const schoolSubscription = await Subscription.findOne({
+          orgId: user.orgId,
+          tenantId: user.tenantId
+        });
+
+        if (schoolSubscription) {
+          const now = new Date();
+          const isActive = schoolSubscription.status === 'active' && 
+                          (!schoolSubscription.endDate || new Date(schoolSubscription.endDate) > now);
+          
+          // Sync teacher access with school subscription status
+          const io = req.app.get('io');
+          await syncSchoolTeacherAccess(
+            user.orgId.toString(),
+            user.tenantId,
+            isActive,
+            schoolSubscription.endDate,
+            io
+          );
+        }
+      } catch (syncError) {
+        console.error('Error syncing teacher access on login:', syncError);
+        // Don't fail login if sync fails
+      }
+    }
+
     // Daily login reward for students
     if (user.role === "student" || user.role === "school_student") {
       const today = new Date();

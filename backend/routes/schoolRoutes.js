@@ -182,6 +182,7 @@ import {
 import { extractTenant, enforceTenantIsolation } from '../middlewares/tenantMiddleware.js';
 import { requireAuth, requireSchoolAdmin, requireSchoolTeacher, requireSchoolRole } from '../middlewares/requireAuth.js';
 import { getAdminProfileStats } from '../controllers/userController.js';
+import { checkTeacherAccess } from '../controllers/teacherAccessController.js';
 import multer from 'multer';
 
 // Configure multer for CSV upload
@@ -340,7 +341,14 @@ router.get('/admin/nep/dashboard', requireAuth, requireSchoolAdmin, getNEPDashbo
 router.put('/admin/templates/:templateId/nep-competencies', requireAuth, requireSchoolAdmin, updateTemplateNEPCompetencies);
 router.put('/admin/assignments/:assignmentId/nep-competencies', requireAuth, requireSchoolAdmin, updateAssignmentNEPCompetencies);
 
+// Subscription Expiration Notification Routes
+router.get('/subscription/:subscriptionId/expiration-notifications', requireAuth, requireSchoolRole, async (req, res) => {
+  const { getExpirationNotificationStatus } = await import('../controllers/subscriptionExpirationNotificationController.js');
+  return getExpirationNotificationStatus(req, res);
+});
+
 // School Teacher Routes (Teacher only or admin)
+router.get('/teacher/access', requireAuth, requireSchoolRole, checkTeacherAccess);
 router.get('/teacher/stats', requireAuth, requireSchoolRole, getTeacherStats);
 router.get('/teacher/classes', requireAuth, requireSchoolRole, getTeacherClasses);
 router.get('/teacher/assignments', requireAuth, requireSchoolRole, getTeacherAssignments);

@@ -2,6 +2,8 @@ import User from '../models/User.js';
 import Organization from '../models/Organization.js';
 import SchoolStudent from '../models/School/SchoolStudent.js';
 import SchoolClass from '../models/School/SchoolClass.js';
+import UserSubscription from '../models/UserSubscription.js';
+import Subscription from '../models/Subscription.js';
 import bcrypt from 'bcrypt';
 
 const isStudentRole = (role) => role === 'student' || role === 'school_student';
@@ -587,11 +589,25 @@ export const updateUserAvatar = async (req, res) => {
 export const completeGoogleUserProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    const { dateOfBirth, gender } = req.body;
+    const { dateOfBirth, gender, registrationType, schoolLinkingCode } = req.body;
 
     if (!dateOfBirth || !gender) {
       return res.status(400).json({ 
         message: 'Date of birth and gender are required' 
+      });
+    }
+
+    // Validate registration type
+    if (!registrationType || !['individual', 'school'].includes(registrationType)) {
+      return res.status(400).json({ 
+        message: 'Registration type must be either "individual" or "school"' 
+      });
+    }
+
+    // If school registration, validate linking code
+    if (registrationType === 'school' && (!schoolLinkingCode || !schoolLinkingCode.trim())) {
+      return res.status(400).json({ 
+        message: 'School linking code is required for school registration' 
       });
     }
 
@@ -619,8 +635,8 @@ export const completeGoogleUserProfile = async (req, res) => {
     if (isNaN(parsedDob.getTime())) {
       return res.status(400).json({ message: 'Invalid date of birth format' });
     }
-    const now = new Date();
-    if (parsedDob > now) {
+    const currentDate = new Date();
+    if (parsedDob > currentDate) {
       return res.status(400).json({ message: 'Date of birth cannot be in the future' });
     }
 
@@ -637,16 +653,310 @@ export const completeGoogleUserProfile = async (req, res) => {
     user.dob = dateOfBirth; // Also update legacy field
     user.gender = gender.toLowerCase();
 
+    // Handle registration type
+    if (registrationType === 'individual') {
+      // Enroll in freemium plan
+      const existingSubscription = await UserSubscription.findOne({
+        userId: user._id,
+        status: 'active'
+      });
+
+      if (!existingSubscription) {
+        await UserSubscription.create({
+          userId: user._id,
+          planType: 'free',
+          planName: 'Free Plan',
+          amount: 0,
+          firstYearAmount: 0,
+          renewalAmount: 0,
+          isFirstYear: true,
+          status: 'active',
+          startDate: new Date(),
+          features: {
+            fullAccess: false,
+            parentDashboard: false,
+            advancedAnalytics: false,
+            certificates: false,
+            wiseClubAccess: false,
+            inavoraAccess: false,
+            gamesPerPillar: 5,
+            totalGames: 50,
+          },
+          metadata: {
+            registrationType: 'individual',
+            completedAt: new Date(),
+          },
+        });
+        console.log(`✅ Created freemium subscription for user: ${user._id}`);
+      }
+    } else if (registrationType === 'school') {
+      // Link with school using registration code
+      const normalizedSchoolCode = schoolLinkingCode.trim().toUpperCase();
+
+      // Try to find teacher with registration code
+      let teacher = await User.findOne({ 'metadata.registrationCodes.code': normalizedSchoolCode });
+      if (!teacher) {
+        teacher = await User.findOne({
+          'metadata.registrationCodes.code': schoolLinkingCode.trim(),
+        });
+      }
+
+      let registrationRecord = null;
+      let schoolClass = null;
+      let organization = null;
+
+      if (teacher) {
+        const registrationEntries = Array.isArray(teacher.metadata?.registrationCodes)
+          ? teacher.metadata.registrationCodes
+          : [];
+        registrationRecord = registrationEntries.find(
+          (entry) => String(entry?.code || '').toUpperCase() === normalizedSchoolCode,
+        );
+      }
+
+      if (registrationRecord) {
+        if (registrationRecord.expiresAt && new Date(registrationRecord.expiresAt) < new Date()) {
+          return res.status(400).json({ message: 'This school code has expired.' });
+        }
+
+        if (!registrationRecord.classId) {
+          return res.status(400).json({ message: 'This school code is missing class information.' });
+        }
+
+        schoolClass = await SchoolClass.findById(registrationRecord.classId);
+        if (!schoolClass) {
+          return res.status(404).json({ message: 'Class not found for provided school code.' });
+        }
+      } else {
+        // Try organization linking code
+        organization = await Organization.findOne({
+          linkingCode: normalizedSchoolCode,
+        });
+
+        if (!organization) {
+          organization = await Organization.findOne({ linkingCode: schoolLinkingCode.trim() });
+        }
+
+        if (!organization) {
+          return res.status(404).json({ message: 'No school found for the provided code.' });
+        }
+      }
+
+      const targetOrgId = schoolClass?.orgId || organization?._id;
+      const targetTenantId = schoolClass?.tenantId || organization?.tenantId;
+
+      // Check school subscription
+      const subscription = await Subscription.findOne({
+        tenantId: targetTenantId,
+        orgId: targetOrgId,
+      });
+
+      const now = new Date();
+      let isPlanActive = false;
+      let planStatus = 'inactive';
+      let planEndDate = null;
+      let subscriptionPlanName = null;
+
+      if (subscription) {
+        subscriptionPlanName = subscription.plan?.name || subscription.plan?.planType || null;
+        const endDate = subscription.endDate ? new Date(subscription.endDate) : null;
+        if (subscription.status === 'active' && (!endDate || endDate > now)) {
+          isPlanActive = true;
+          planStatus = 'active';
+          planEndDate = endDate;
+        } else {
+          planStatus = subscription.status || 'inactive';
+          planEndDate = endDate && endDate > now ? endDate : null;
+        }
+      }
+
+      // Determine plan type based on school subscription
+      let planType = 'free';
+      if (isPlanActive) {
+        if (subscriptionPlanName === 'student_parent_premium_pro') {
+          planType = 'student_parent_premium_pro';
+        } else if (subscriptionPlanName === 'educational_institutions_premium') {
+          planType = 'educational_institutions_premium';
+        } else {
+          planType = 'student_premium';
+        }
+      }
+
+      // Update user role to school_student
+      user.role = 'school_student';
+      user.orgId = targetOrgId;
+      user.tenantId = targetTenantId;
+
+      // Link with teacher if exists
+      if (teacher?._id) {
+        if (!user.linkedIds) {
+          user.linkedIds = { parentIds: [], childIds: [], teacherIds: [], studentIds: [] };
+        }
+        if (!user.linkedIds.teacherIds) {
+          user.linkedIds.teacherIds = [];
+        }
+        if (!user.linkedIds.teacherIds.includes(teacher._id)) {
+          user.linkedIds.teacherIds.push(teacher._id);
+        }
+      }
+
+      // Don't save here - will save at the end
+
+      // Create or update SchoolStudent record
+      // Note: SchoolStudent model requires tenantId in all queries
+      let schoolStudent = await SchoolStudent.findOne({ userId: user._id, tenantId: targetTenantId });
+      if (!schoolStudent) {
+        const admissionNumber = `ADM${new Date().getFullYear()}${Date.now().toString().slice(-6)}`;
+        const rollNumber = `ROLL${Date.now().toString().slice(-6)}`;
+
+        schoolStudent = await SchoolStudent.create({
+          userId: user._id,
+          orgId: targetOrgId,
+          tenantId: targetTenantId,
+          classId: schoolClass?._id || null,
+          admissionNumber,
+          rollNumber,
+          academicYear: schoolClass?.academicYear || organization?.settings?.academicYear?.current || new Date().getFullYear().toString(),
+        });
+      } else {
+        // Update existing school student record
+        schoolStudent.orgId = targetOrgId;
+        schoolStudent.tenantId = targetTenantId;
+        if (schoolClass?._id) {
+          schoolStudent.classId = schoolClass._id;
+        }
+        await schoolStudent.save();
+      }
+
+      // Create or update user subscription based on school plan
+      const existingUserSubscription = await UserSubscription.findOne({
+        userId: user._id,
+        status: 'active'
+      });
+
+      const planFeatures = {
+        free: {
+          fullAccess: false,
+          parentDashboard: false,
+          advancedAnalytics: false,
+          certificates: false,
+          wiseClubAccess: false,
+          inavoraAccess: false,
+          gamesPerPillar: 5,
+          totalGames: 50,
+        },
+        student_premium: {
+          fullAccess: true,
+          parentDashboard: false,
+          advancedAnalytics: true,
+          certificates: true,
+          wiseClubAccess: true,
+          inavoraAccess: true,
+          gamesPerPillar: -1,
+          totalGames: 2200,
+        },
+        student_parent_premium_pro: {
+          fullAccess: true,
+          parentDashboard: true,
+          advancedAnalytics: true,
+          certificates: true,
+          wiseClubAccess: true,
+          inavoraAccess: true,
+          gamesPerPillar: -1,
+          totalGames: 2200,
+        },
+        educational_institutions_premium: {
+          fullAccess: true,
+          parentDashboard: true,
+          advancedAnalytics: true,
+          certificates: true,
+          wiseClubAccess: true,
+          inavoraAccess: true,
+          gamesPerPillar: -1,
+          totalGames: 2200,
+        },
+      };
+
+      if (existingUserSubscription) {
+        // Update existing subscription
+        existingUserSubscription.planType = planType;
+        existingUserSubscription.planName = planType === 'free' ? 'Free Plan' : 
+          planType === 'student_premium' ? 'Students Premium Plan' :
+          planType === 'student_parent_premium_pro' ? 'Student + Parent Premium Pro Plan' :
+          'Educational Institutions Premium Plan';
+        existingUserSubscription.features = planFeatures[planType];
+        existingUserSubscription.metadata = {
+          ...(existingUserSubscription.metadata || {}),
+          registrationType: 'school',
+          orgId: targetOrgId,
+          tenantId: targetTenantId,
+          registrationCode: normalizedSchoolCode,
+          linkedTeacherId: teacher?._id || null,
+          completedAt: new Date(),
+        };
+        await existingUserSubscription.save();
+      } else {
+        // Create new subscription
+        await UserSubscription.create({
+          userId: user._id,
+          planType: planType,
+          planName: planType === 'free' ? 'Free Plan' : 
+            planType === 'student_premium' ? 'Students Premium Plan' :
+            planType === 'student_parent_premium_pro' ? 'Student + Parent Premium Pro Plan' :
+            'Educational Institutions Premium Plan',
+          amount: 0,
+          firstYearAmount: 0,
+          renewalAmount: 0,
+          isFirstYear: true,
+          status: 'active',
+          startDate: new Date(),
+          endDate: planEndDate || undefined,
+          features: planFeatures[planType],
+          metadata: {
+            registrationType: 'school',
+            orgId: targetOrgId,
+            tenantId: targetTenantId,
+            registrationCode: normalizedSchoolCode,
+            linkedTeacherId: teacher?._id || null,
+            completedAt: new Date(),
+          },
+        });
+      }
+
+      console.log(`✅ Linked user ${user._id} with school ${targetOrgId} using code ${normalizedSchoolCode}`);
+    }
+
+    // Save user changes (only once at the end)
+    await user.save();
+
+    // Save user changes (only once at the end)
     await user.save();
 
     // Emit real-time update
     const io = req.app.get('io');
     if (io) {
-      io.to(user._id.toString()).emit('user:profile:updated', {
-        userId: user._id,
-        dateOfBirth: user.dateOfBirth,
-        gender: user.gender,
-      });
+      try {
+        // Get updated subscription for real-time update
+        const updatedSubscription = await UserSubscription.getActiveSubscription(user._id);
+        
+        io.to(user._id.toString()).emit('user:profile:updated', {
+          userId: user._id,
+          dateOfBirth: user.dateOfBirth,
+          gender: user.gender,
+          registrationType,
+          role: user.role,
+        });
+
+        // Emit subscription update if subscription was created/updated
+        if (updatedSubscription) {
+          io.to(user._id.toString()).emit('subscription:activated', {
+            subscription: updatedSubscription.toObject ? updatedSubscription.toObject() : updatedSubscription,
+          });
+        }
+      } catch (socketError) {
+        console.error('Error emitting socket events:', socketError);
+        // Don't fail the request if socket emission fails
+      }
     }
 
     res.status(200).json({ 
@@ -655,11 +965,13 @@ export const completeGoogleUserProfile = async (req, res) => {
         id: user._id,
         dateOfBirth: user.dateOfBirth,
         gender: user.gender,
+        registrationType,
+        role: user.role,
       }
     });
   } catch (err) {
     console.error('❌ Complete Google profile error:', err);
-    res.status(500).json({ message: 'Failed to complete profile' });
+    res.status(500).json({ message: 'Failed to complete profile', error: err.message });
   }
 };
 

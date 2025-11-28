@@ -29,20 +29,20 @@ const PuzzleMemoryMatch = () => {
 
   // Fruits shown earlier (left side)
   const leftItems = [
-    { id: 1, name: "Apple", emoji: "🍎", description: "Red fruit" },
-    { id: 2, name: "Banana", emoji: "🍌", description: "Yellow fruit" },
-    { id: 3, name: "Orange", emoji: "🍊", description: "Orange fruit" },
-    { id: 4, name: "Grape", emoji: "🍇", description: "Purple fruit" },
-    { id: 5, name: "Mango", emoji: "🥭", description: "Yellow-orange fruit" }
+    { id: 1, name: "Apple", emoji: "🍎" },
+    { id: 2, name: "Banana", emoji: "🍌" },
+    { id: 3, name: "Orange", emoji: "🍊" },
+    { id: 4, name: "Grape", emoji: "🍇" },
+{ id: 5, name: "Watermelon", emoji: "🍉" }
   ];
 
   // Matching fruits (right side)
   const rightItems = [
-    { id: 1, name: "Apple", emoji: "🍎", description: "Red fruit" },
-    { id: 2, name: "Banana", emoji: "🍌", description: "Yellow fruit" },
-    { id: 3, name: "Orange", emoji: "🍊", description: "Orange fruit" },
-    { id: 4, name: "Grape", emoji: "🍇", description: "Purple fruit" },
-    { id: 5, name: "Mango", emoji: "🥭", description: "Yellow-orange fruit" }
+    { id: 1, name: "Red fruit" },
+    { id: 2, name: "Yellow fruit" },
+    { id: 3, name: "Orange fruit" },
+    { id: 4, name: "Purple fruit" },
+    { id: 5, name: "Green fruit" }
   ];
 
   // Correct matches

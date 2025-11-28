@@ -141,7 +141,7 @@ const kidBrainGames = {
   'homework-calm-story': Homework,
   'quiz-on-calmness': CalmnessQuiz,
   'reflex-calm': ReflexCalm,
-  'relaxing-puzzle': RelaxingPuzzle,
+  'puzzle-of-relaxing': RelaxingPuzzle,
   'exam-storyy': ExamStoryy,
   'stay-cool-poster': StayCoolPoster,
   'calmness-journal': CalmnessJournal,

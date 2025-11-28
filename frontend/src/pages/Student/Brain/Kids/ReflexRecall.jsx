@@ -3,7 +3,7 @@ import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { Zap, CheckCircle, XCircle, Brain } from 'lucide-react';
+import { CheckCircle, XCircle } from 'lucide-react';
 
 const TOTAL_ROUNDS = 5;
 const ROUND_TIME = 10;
@@ -31,33 +31,39 @@ const ReflexRecall = () => {
   const [score, setScore] = useState(0);
   const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
-  const [seenWords, setSeenWords] = useState([]);
   const timerRef = useRef(null);
 
-  const allWords = [
-    { id: 1, word: "Apple", seen: true, emoji: "🍎" },
-    { id: 2, word: "Banana", seen: true, emoji: "🍌" },
-    { id: 3, word: "Orange", seen: true, emoji: "🍊" },
-    { id: 4, word: "Grape", seen: true, emoji: "🍇" },
-    { id: 5, word: "Mango", seen: true, emoji: "🥭" },
-    { id: 6, word: "Car", seen: false, emoji: "🚗" },
-    { id: 7, word: "Book", seen: false, emoji: "📚" },
-    { id: 8, word: "Tree", seen: false, emoji: "🌳" },
-    { id: 9, word: "Sun", seen: false, emoji: "☀️" },
-    { id: 10, word: "Moon", seen: false, emoji: "🌙" }
+  // Words that will be shown initially (fruits - these are the "seen" words)
+  const seenWords = [
+    { word: "Apple", emoji: "🍎" },
+    { word: "Banana", emoji: "🍌" },
+    { word: "Orange", emoji: "🍊" },
+    { word: "Grape", emoji: "🍇" },
+    { word: "Mango", emoji: "🥭" }
   ];
 
+  // Words that are new (not shown initially)
+  const newWords = [
+    { word: "Car", emoji: "🚗" },
+    { word: "Book", emoji: "📚" },
+    { word: "Tree", emoji: "🌳" },
+    { word: "Sun", emoji: "☀️" },
+    { word: "Moon", emoji: "🌙" }
+  ];
+
+  // Questions with mix of seen and new words
   const questions = [
-    { id: 1, word: allWords[0], correct: true }, // Apple - seen
-    { id: 2, word: allWords[5], correct: false }, // Car - not seen
-    { id: 3, word: allWords[1], correct: true }, // Banana - seen
-    { id: 4, word: allWords[6], correct: false }, // Book - not seen
-    { id: 5, word: allWords[2], correct: true }  // Orange - seen
+    { word: seenWords[0], isSeen: true }, // Apple - seen
+    { word: newWords[0], isSeen: false }, // Car - new
+    { word: seenWords[1], isSeen: true }, // Banana - seen
+    { word: newWords[1], isSeen: false }, // Book - new
+    { word: seenWords[2], isSeen: true }  // Orange - seen
   ];
 
   const handleTimeUp = useCallback(() => {
     if (currentRound < TOTAL_ROUNDS) {
       setCurrentRound(prev => prev + 1);
+      setAnswered(false);
     } else {
       setGameState("finished");
     }
@@ -72,7 +78,7 @@ const ReflexRecall = () => {
 
   // Timer effect
   useEffect(() => {
-    if (gameState === "playing" && !answered && timeLeft > 0 && currentRound > 0) {
+    if (gameState === "playing" && !answered && timeLeft > 0 && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
       if (timerRef.current) {
         clearInterval(timerRef.current);
         timerRef.current = null;
@@ -107,13 +113,27 @@ const ReflexRecall = () => {
     };
   }, [gameState, answered, timeLeft, currentRound, handleTimeUp]);
 
+  // Ensure game always starts fresh when component mounts
+  useEffect(() => {
+    setGameState("ready");
+    setCurrentRound(0);
+    setScore(0);
+    setTimeLeft(ROUND_TIME);
+    setAnswered(false);
+    resetFeedback();
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const startGame = () => {
     setGameState("playing");
     setTimeLeft(ROUND_TIME);
     setScore(0);
     setCurrentRound(1);
     setAnswered(false);
-    setSeenWords(["Apple", "Banana", "Orange", "Grape", "Mango"]);
     resetFeedback();
   };
 
@@ -129,49 +149,61 @@ const ReflexRecall = () => {
     resetFeedback();
     
     const currentQuestion = questions[currentRound - 1];
-    const isCorrect = answerType === "seen" ? currentQuestion.correct : !currentQuestion.correct;
-    const isLastQuestion = currentRound === TOTAL_ROUNDS;
+    // answerType is "seen" or "new"
+    // isSeen is true if the word was shown initially
+    const isCorrect = (answerType === "seen" && currentQuestion.isSeen) || 
+                      (answerType === "new" && !currentQuestion.isSeen);
     
     if (isCorrect) {
-      setScore((prev) => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-    
+
     setTimeout(() => {
-      if (isLastQuestion) {
-        setGameState("finished");
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
       } else {
-        setCurrentRound((prev) => prev + 1);
+        setGameState("finished");
       }
-    }, 500);
+    }, 1000);
   };
 
-  const currentQuestion = questions[currentRound - 1];
+  const currentQuestion = currentRound > 0 && currentRound <= TOTAL_ROUNDS ? questions[currentRound - 1] : null;
 
   return (
     <GameShell
       title="Reflex Recall"
+      subtitle={gameState === "ready" ? "Get Ready!" : gameState === "playing" ? `Round ${currentRound} of ${TOTAL_ROUNDS}` : "Game Complete!"}
       score={score}
-      subtitle={gameState === "playing" ? `Round ${currentRound} of ${TOTAL_ROUNDS}` : gameState === "finished" ? "Game Complete!" : "Tap for words seen before, skip new ones"}
+      currentLevel={currentRound || 1}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={gameState === "finished"}
+      maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={gameState === "finished"}
-      gameId={gameId}
-      gameType="brain"
-      totalLevels={TOTAL_ROUNDS}
-      currentLevel={currentRound}
-      maxScore={TOTAL_ROUNDS}
       showConfetti={gameState === "finished" && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
     >
       <div className="space-y-8">
         {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
             <h3 className="text-2xl font-bold text-white mb-4">Test Your Memory Recall!</h3>
-            <p className="text-white/80 mb-4 text-lg">Remember these words: Apple, Banana, Orange, Grape, Mango</p>
-            <p className="text-white/80 mb-6 text-lg">Tap if you've seen the word before, skip if it's new</p>
+            <p className="text-white/90 mb-4 text-lg">Remember these words:</p>
+            <div className="flex flex-wrap justify-center gap-3 mb-6">
+              {seenWords.map((item, idx) => (
+                <div key={idx} className="bg-white/20 rounded-lg px-4 py-2 flex items-center gap-2">
+                  <span className="text-2xl">{item.emoji}</span>
+                  <span className="text-white font-semibold">{item.word}</span>
+                </div>
+              ))}
+            </div>
+            <p className="text-white/80 mb-6 text-lg">Tap "Seen Before" if you remember seeing the word, or "New Word" if it's new!</p>
             <button
               onClick={startGame}
               className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105"
@@ -212,23 +244,15 @@ const ReflexRecall = () => {
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl mx-auto">
                 <button
                   onClick={() => handleAnswer('seen')}
                   disabled={answered}
                   className="p-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex flex-col items-center shadow-lg"
                 >
                   <CheckCircle className="w-8 h-8 mb-2" />
-                  <span className="font-bold text-lg">Seen Before!</span>
-                </button>
-                
-                <button
-                  onClick={() => handleAnswer('neutral')}
-                  disabled={answered}
-                  className="p-6 bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white rounded-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex flex-col items-center shadow-lg"
-                >
-                  <Brain className="w-8 h-8 mb-2" />
-                  <span className="font-bold text-lg">Not Sure</span>
+                  <span className="font-bold text-lg">Seen Before</span>
+                  <span className="text-sm text-white/90 mt-1">I remember this word</span>
                 </button>
                 
                 <button
@@ -237,7 +261,8 @@ const ReflexRecall = () => {
                   className="p-6 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex flex-col items-center shadow-lg"
                 >
                   <XCircle className="w-8 h-8 mb-2" />
-                  <span className="font-bold text-lg">New Word!</span>
+                  <span className="font-bold text-lg">New Word</span>
+                  <span className="text-sm text-white/90 mt-1">I haven't seen this</span>
                 </button>
               </div>
             </div>

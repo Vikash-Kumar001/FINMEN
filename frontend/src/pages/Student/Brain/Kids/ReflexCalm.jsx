@@ -1,12 +1,8 @@
-import React, { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { Wind, AlertTriangle, Clock, Zap } from 'lucide-react';
-
-const TOTAL_ROUNDS = 5;
-const ROUND_TIME = 8;
 
 const ReflexCalm = () => {
   const location = useLocation();
@@ -24,180 +20,188 @@ const ReflexCalm = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-  
-  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
-  const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
-  const timerRef = useRef(null);
-
-  // Ensure game always starts fresh when component mounts
-  useEffect(() => {
-    setGameState("ready");
-    setCurrentRound(0);
-    setScore(0);
-    setTimeLeft(ROUND_TIME);
-    setAnswered(false);
-    resetFeedback();
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      question: "Is 'Breathe Slow' a calm action?",
-      action: "Breathe Slow",
-      type: "calm",
-      emoji: "🧘",
-      icon: <Wind className="w-8 h-8" />
+      text: "What is a calm action when feeling stressed?",
+      options: [
+        { 
+          id: "a", 
+          text: "Breathe slowly and deeply", 
+          emoji: "🌬️", 
+          description: "Deep breathing helps calm down",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Panic and yell", 
+          emoji: "😰", 
+          description: "Panic increases stress",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Run around frantically", 
+          emoji: "🏃", 
+          description: "This increases anxiety",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      question: "Is 'Panic' a calm action?",
-      action: "Panic",
-      type: "panic",
-      emoji: "😰",
-      icon: <AlertTriangle className="w-8 h-8" />
+      text: "Which action helps you stay calm?",
+      options: [
+        { 
+          id: "a", 
+          text: "Getting very angry", 
+          emoji: "😡", 
+          description: "Anger doesn't help calmness",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Count to 10 slowly", 
+          emoji: "🔢", 
+          description: "Counting helps you relax",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Worry about everything", 
+          emoji: "😟", 
+          description: "Worrying increases stress",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      question: "Is 'Count to 10' a calm action?",
-      action: "Count to 10",
-      type: "calm",
-      emoji: "🔢",
-      icon: <Clock className="w-8 h-8" />
+      text: "What should you do to feel calm?",
+      options: [
+        { 
+          id: "a", 
+          text: "Shout at others", 
+          emoji: "😠", 
+          description: "Shouting increases tension",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Think about worst scenarios", 
+          emoji: "😰", 
+          description: "This increases anxiety",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Take a break and relax", 
+          emoji: "🧘", 
+          description: "Taking breaks helps calm down",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      question: "Is 'Yell' a calm action?",
-      action: "Yell",
-      type: "panic",
-      emoji: "😠",
-      icon: <AlertTriangle className="w-8 h-8" />
+      text: "Which is a calm response to stress?",
+      options: [
+        { 
+          id: "a", 
+          text: "Practice deep breathing", 
+          emoji: "💨", 
+          description: "Breathing exercises reduce stress",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Panic immediately", 
+          emoji: "😱", 
+          description: "Panic makes things worse",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore the problem", 
+          emoji: "🙈", 
+          description: "Ignoring doesn't help",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      question: "Is 'Relax' a calm action?",
-      action: "Relax",
-      type: "calm",
-      emoji: "😌",
-      icon: <Zap className="w-8 h-8" />
+      text: "What helps you stay calm in difficult situations?",
+      options: [
+        { 
+          id: "a", 
+          text: "Reacting immediately with anger", 
+          emoji: "😡", 
+          description: "Anger doesn't help",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Staying calm and thinking clearly", 
+          emoji: "😌", 
+          description: "Staying calm helps solve problems",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Worrying constantly", 
+          emoji: "😟", 
+          description: "Worrying increases stress",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleTimeUp = useCallback(() => {
-    if (currentRound < TOTAL_ROUNDS) {
-      setCurrentRound(prev => prev + 1);
-    } else {
-      setGameState("finished");
-    }
-  }, [currentRound]);
-
-  useEffect(() => {
-    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
-      setTimeLeft(ROUND_TIME);
-      setAnswered(false);
-    }
-  }, [currentRound, gameState]);
-
-  // Timer effect
-  useEffect(() => {
-    if (gameState === "playing" && !answered && timeLeft > 0 && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-
-      timerRef.current = setInterval(() => {
-        setTimeLeft((prev) => {
-          const newTime = prev - 1;
-          if (newTime <= 0) {
-            if (timerRef.current) {
-              clearInterval(timerRef.current);
-              timerRef.current = null;
-            }
-            handleTimeUp();
-            return 0;
-          }
-          return newTime;
-        });
-      }, 1000);
-    } else {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    }
-
-    return () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-      }
-    };
-  }, [gameState, answered, timeLeft, currentRound, handleTimeUp]);
-
-  const startGame = () => {
-    setGameState("playing");
-    setTimeLeft(ROUND_TIME);
-    setScore(0);
-    setCurrentRound(1);
-    setAnswered(false);
-    resetFeedback();
-  };
-
-  const handleAnswer = (answerType) => {
-    if (answered || gameState !== "playing") return;
-    
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-      timerRef.current = null;
-    }
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentQ = questions[currentRound - 1];
-    const isCorrect = (answerType === "tap" && currentQ.type === "calm") || 
-                      (answerType === "skip" && currentQ.type === "panic");
-    
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
-
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentRound < TOTAL_ROUNDS) {
-        setCurrentRound(prev => prev + 1);
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setGameState("finished");
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    }, 1000);
+    }, 500);
   };
 
-  const currentQ = currentRound > 0 && currentRound <= TOTAL_ROUNDS ? questions[currentRound - 1] : null;
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Reflex Calm"
-      subtitle={gameState === "ready" ? "Get Ready!" : gameState === "playing" ? `Round ${currentRound} of ${TOTAL_ROUNDS}` : "Game Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
       score={score}
-      currentLevel={currentRound || 1}
-      totalLevels={TOTAL_ROUNDS}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      showGameOver={gameState === "finished"}
-      maxScore={TOTAL_ROUNDS}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={gameState === "finished" && score >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       gameId={gameId}
@@ -205,56 +209,35 @@ const ReflexCalm = () => {
       backPath="/games/brain-health/kids"
     >
       <div className="space-y-8">
-        {gameState === "ready" && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h3 className="text-2xl font-bold text-white mb-4">Tap for calm actions, skip for panic actions!</h3>
-            <p className="text-white/90 mb-6">You'll see actions. Tap if it's calm, skip if it's panic.</p>
-            <button
-              onClick={startGame}
-              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold transition-all"
-            >
-              Start Game
-            </button>
-          </div>
-        )}
-
-        {gameState === "playing" && currentQ && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="flex justify-between items-center mb-4">
-              <span className="text-white/80">Round {currentRound}/{TOTAL_ROUNDS}</span>
-              <span className="text-yellow-400 font-bold">Score: {score}/{TOTAL_ROUNDS}</span>
-              <span className="text-red-400 font-bold">Time: {timeLeft}s</span>
-            </div>
-            
-            <div className="text-center mb-8">
-              <div className="text-6xl mb-4">{currentQ.emoji}</div>
-              <h3 className="text-3xl font-bold text-white mb-2">{currentQ.action}</h3>
-              <p className="text-white/80 text-lg">{currentQ.question}</p>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <button
-                onClick={() => handleAnswer("tap")}
-                disabled={answered}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                <div className="text-3xl mb-2">👆</div>
-                <h3 className="font-bold text-xl">Tap</h3>
-                <p className="text-white/90 text-sm">It's calm</p>
-              </button>
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
               
-              <button
-                onClick={() => handleAnswer("skip")}
-                disabled={answered}
-                className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                <div className="text-3xl mb-2">⏭️</div>
-                <h3 className="font-bold text-xl">Skip</h3>
-                <p className="text-white/90 text-sm">It's panic</p>
-              </button>
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

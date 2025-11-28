@@ -1,418 +1,271 @@
-// File: PositiveKidBadge.js
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Award, Check, X, Zap, Trophy, Star, RotateCcw, Play, Sun, Smile, Sparkles, Heart, ThumbsUp } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { Smile, Heart, Sun, Sparkles, ThumbsUp } from 'lucide-react';
 
 const PositiveKidBadge = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-110";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-60");
+  const gameId = gameData?.id || "brain-kids-60";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for PositiveKidBadge, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [progress, setProgress] = useState(0);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [challenge, setChallenge] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [isTimerActive, setIsTimerActive] = useState(false);
-  const [streak, setStreak] = useState(0);
-  const [bestStreak, setBestStreak] = useState(0);
-  const [gameState, setGameState] = useState('intro'); // intro, playing, case, completed
-  const [selectedCase, setSelectedCase] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const cases = [
-    { 
-      id: 1, 
-      title: "Rainy Day Optimism", 
+  const challenges = [
+    {
+      id: 1,
+      title: "Rainy Day Optimism",
       description: "Find the silver lining in a rainy day!",
       icon: <Sun className="w-8 h-8" />,
-      color: "bg-yellow-500"
+      color: "bg-yellow-500",
+      question: "It's raining and your picnic is cancelled. What's a positive thought?",
+      options: [
+        { 
+          text: "We can play indoor games!", 
+          emoji: "🏠", 
+          isCorrect: true
+        },
+        { 
+          text: "This day is ruined", 
+          emoji: "😞", 
+          isCorrect: false
+        },
+        { 
+          text: "I hate rain", 
+          emoji: "🌧️", 
+          isCorrect: false
+        },
+        { 
+          text: "Nothing good can happen", 
+          emoji: "😠", 
+          isCorrect: false
+        }
+      ]
     },
-    { 
-      id: 2, 
-      title: "Positivity Quiz", 
+    {
+      id: 2,
+      title: "Positivity Quiz",
       description: "Test your positive thinking knowledge!",
       icon: <Sparkles className="w-8 h-8" />,
-      color: "bg-purple-500"
+      color: "bg-purple-500",
+      question: "What is the benefit of positive thinking?",
+      options: [
+        { 
+          text: "Makes you feel worse", 
+          emoji: "😞", 
+          isCorrect: false
+        },
+        { 
+          text: "Helps you feel better and solve problems", 
+          emoji: "😊", 
+          isCorrect: true
+        },
+        { 
+          text: "Doesn't help at all", 
+          emoji: "🤷", 
+          isCorrect: false
+        },
+        { 
+          text: "Makes problems bigger", 
+          emoji: "😠", 
+          isCorrect: false
+        }
+      ]
     },
-    { 
-      id: 3, 
-      title: "Happy Thoughts Reflex", 
+    {
+      id: 3,
+      title: "Happy Thoughts Reflex",
       description: "Quickly identify positive thoughts!",
       icon: <Smile className="w-8 h-8" />,
-      color: "bg-green-500"
+      color: "bg-green-500",
+      question: "Is this thought positive or negative: 'I can learn from my mistakes'?",
+      options: [
+        { 
+          text: "Negative - it's about mistakes", 
+          emoji: "😞", 
+          isCorrect: false
+        },
+        { 
+          text: "Negative - it's too hard", 
+          emoji: "😠", 
+          isCorrect: false
+        },
+        { 
+          text: "Positive - it shows growth mindset", 
+          emoji: "🌟", 
+          isCorrect: true
+        },
+        { 
+          text: "Negative - mistakes are bad", 
+          emoji: "❌", 
+          isCorrect: false
+        }
+      ]
     },
-    { 
-      id: 4, 
-      title: "Positive Words Match", 
+    {
+      id: 4,
+      title: "Positive Words Match",
       description: "Match uplifting words and meanings!",
       icon: <Heart className="w-8 h-8" />,
-      color: "bg-pink-500"
+      color: "bg-pink-500",
+      question: "What does 'gratitude' mean?",
+      options: [
+        { 
+          text: "Being thankful for what you have", 
+          emoji: "🙏", 
+          isCorrect: true
+        },
+        { 
+          text: "Complaining about things", 
+          emoji: "😠", 
+          isCorrect: false
+        },
+        { 
+          text: "Wanting more stuff", 
+          emoji: "🛍️", 
+          isCorrect: false
+        },
+        { 
+          text: "Being sad all the time", 
+          emoji: "😞", 
+          isCorrect: false
+        }
+      ]
     },
-    { 
-      id: 5, 
-      title: "Lost Match Positivity", 
+    {
+      id: 5,
+      title: "Lost Match Positivity",
       description: "Turn defeat into motivation!",
       icon: <ThumbsUp className="w-8 h-8" />,
-      color: "bg-blue-500"
+      color: "bg-blue-500",
+      question: "Your team lost the big game. What's a positive way to think?",
+      options: [
+        { 
+          text: "We're losers forever", 
+          emoji: "😞", 
+          isCorrect: false
+        },
+        { 
+          text: "We'll never win", 
+          emoji: "😠", 
+          isCorrect: false
+        },
+        { 
+          text: "Next time we'll improve and try harder", 
+          emoji: "💪", 
+          isCorrect: true
+        },
+        { 
+          text: "Games are stupid", 
+          emoji: "🚫", 
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  // Timer effect
-  useEffect(() => {
-    let timer;
-    if (isTimerActive && timeLeft > 0 && gameState === 'case') {
-      timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-    } else if (timeLeft === 0 && isTimerActive && gameState === 'case') {
-      // Time's up
-      setIsTimerActive(false);
-      setFeedbackType("wrong");
-      setFeedbackMessage("Time's up! Try again.");
-      setShowFeedback(true);
-      setTimeout(() => {
-        setShowFeedback(false);
-        resetCase();
-      }, 2000);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-    return () => clearTimeout(timer);
-  }, [timeLeft, isTimerActive, gameState]);
-
-  const startGame = () => {
-    setGameState('playing');
-    setProgress(0);
-    setScore(0);
-    setStreak(0);
-    setBestStreak(0);
-    setCurrentLevel(1);
-  };
-
-  const startCase = (caseItem) => {
-    setSelectedCase(caseItem);
-    setGameState('case');
-    setIsSubmitted(false);
-    setTimeLeft(30);
-    setIsTimerActive(true);
-  };
-
-  const handleCompleteTask = () => {
-    if (isSubmitted) return;
     
-    setIsSubmitted(true);
-    setIsTimerActive(false);
-    setProgress(prev => prev + 1);
-    
-    setScore(prev => prev + 1); // 1 coin per completed case
-    setStreak(streak + 1);
-    setBestStreak(Math.max(bestStreak, streak + 1));
-    
-    setFeedbackType("correct");
-    setFeedbackMessage(`Case completed! +1 coin`);
-    setShowFeedback(true);
+    const isLastChallenge = challenge === challenges.length - 1;
     
     setTimeout(() => {
-      setShowFeedback(false);
-      if (currentLevel < 5) {
-        setCurrentLevel(prev => prev + 1);
-        setGameState('playing');
+      if (isLastChallenge) {
+        setShowResult(true);
+        setScore(challenges.length); // Ensure score matches total for GameOverModal
       } else {
-        setGameState('completed');
-        setLevelCompleted(true);
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
       }
-    }, 2500);
+    }, 1500);
   };
 
-  const resetCase = () => {
-    setGameState('playing');
-    setIsSubmitted(false);
-    setTimeLeft(30);
-    setIsTimerActive(false);
-    setStreak(0);
-  };
-
-  const resetGame = () => {
-    setGameState('intro');
-    setCurrentLevel(1);
-    setProgress(0);
-    setScore(0);
-    setStreak(0);
-    setBestStreak(0);
-    setLevelCompleted(false);
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
-
-  const getProgressColor = () => {
-    const percentage = (progress / 5) * 100;
-    if (percentage < 30) return 'bg-red-500';
-    if (percentage < 60) return 'bg-yellow-500';
-    if (percentage < 90) return 'bg-blue-500';
-    return 'bg-green-500';
-  };
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
-      title="Positive Kid Challenge"
+      title="Badge: Positive Kid"
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Earned!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={challenge + 1}
+      totalLevels={challenges.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-110"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={challenges.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-2 text-center">Positive Kid Challenge</h3>
-        
-        {gameState === 'intro' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-6"
-          >
-            <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-            <h4 className="text-xl font-bold text-white mb-2">Become a Positivity Master!</h4>
-            <p className="text-white/80 mb-6">Complete 5 positive thinking challenges to earn your badge</p>
-            
-            <div className="bg-white/10 rounded-xl p-4 mb-6">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-white/80">Progress</span>
-                <span className="text-white/80">{progress}/5</span>
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && currentChallenge ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
-              <div className="w-full bg-white/20 rounded-full h-3">
-                <div 
-                  className={`h-3 rounded-full transition-all duration-500 ${getProgressColor()}`}
-                  style={{ width: `${(progress/5) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-blue-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-blue-300">{score}</div>
-                <div className="text-xs text-white/70">Points</div>
-              </div>
-              <div className="bg-green-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-green-300">{bestStreak}x</div>
-                <div className="text-xs text-white/70">Best Streak</div>
-              </div>
-            </div>
-            
-            <button
-              onClick={startGame}
-              className="px-8 py-3 rounded-full font-bold transition duration-200 text-lg bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:opacity-90 shadow-lg flex items-center justify-center mx-auto"
-            >
-              <Play className="w-5 h-5 mr-2" />
-              Start Challenge
-            </button>
-          </motion.div>
-        )}
-        
-        {gameState === 'playing' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl p-4 mb-4 bg-white/10 backdrop-blur-sm"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-bold text-white">Challenge {currentLevel}</h4>
-              <div className="flex items-center bg-white/20 rounded-full px-3 py-1">
-                <Award className="w-4 h-4 text-yellow-400 mr-1" />
-                <span className="text-sm font-bold text-yellow-300">{progress}/5</span>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 gap-3 mb-4">
-              {cases.slice(0, currentLevel).map((caseItem) => (
-                <motion.div
-                  key={caseItem.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => startCase(caseItem)}
-                  className={`${caseItem.color} rounded-xl p-4 text-white cursor-pointer shadow-md hover:shadow-lg transition-all`}
-                >
-                  <div className="flex items-center">
-                    <div className="mr-3">{caseItem.icon}</div>
-                    <div>
-                      <h5 className="font-bold">{caseItem.title}</h5>
-                      <p className="text-sm opacity-90">{caseItem.description}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-            
-            <div className="flex justify-between text-sm">
-              <div className="text-white/70">Points: {score}</div>
-              <div className="text-white/70">Streak: {streak}x</div>
-            </div>
-          </motion.div>
-        )}
-        
-        {gameState === 'case' && selectedCase && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="rounded-2xl p-6 mb-4 bg-white/10 backdrop-blur-sm"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center">
-                <div className={`mr-3 ${selectedCase.color} p-2 rounded-lg`}>
-                  {selectedCase.icon}
-                </div>
+              
+              <div className={`${currentChallenge.color} rounded-xl p-4 mb-6 flex items-center gap-3`}>
+                <div className="text-white">{currentChallenge.icon}</div>
                 <div>
-                  <h4 className="text-lg font-bold text-white">{selectedCase.title}</h4>
-                  <p className="text-white/80 text-sm">{selectedCase.description}</p>
+                  <h3 className="text-xl font-bold text-white">{currentChallenge.title}</h3>
+                  <p className="text-white/90 text-sm">{currentChallenge.description}</p>
                 </div>
               </div>
-              <div className={`text-lg font-bold ${timeLeft < 10 ? 'text-red-400 animate-pulse' : 'text-yellow-400'}`}>
-                {timeLeft}s
-              </div>
-            </div>
-            
-            <div className="bg-white/10 rounded-xl p-4 mb-4">
-              <div className="text-center text-white mb-2">
-                {currentLevel === 1 && "It's raining outside and your picnic is cancelled. What's a positive way to think about this?"}
-                {currentLevel === 2 && "Answer this question: What is the benefit of positive thinking?"}
-                {currentLevel === 3 && "Quick! Is this thought positive or negative: 'I can learn from my mistakes'?"}
-                {currentLevel === 4 && "Match these positive words with their meanings to spread happiness!"}
-                {currentLevel === 5 && "Your team lost the big game. How can you turn this into a positive experience?"}
-              </div>
-              <div className="flex justify-center space-x-2 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <div 
-                    key={i} 
-                    className={`w-3 h-3 rounded-full ${i < progress ? 'bg-green-500' : 'bg-white/20'}`}
-                  ></div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg">{option.text}</h3>
+                  </button>
                 ))}
               </div>
             </div>
-            
-            <div className="text-center mb-4">
-              <button
-                onClick={handleCompleteTask}
-                disabled={isSubmitted}
-                className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg flex items-center justify-center mx-auto ${
-                  !isSubmitted
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                    : 'bg-white/20 text-white/50 cursor-not-allowed'
-                }`}
-              >
-                {isSubmitted ? (
-                  <>
-                    <Check className="w-5 h-5 mr-2" />
-                    Completed!
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-5 h-5 mr-2" />
-                    Complete Challenge
-                  </>
-                )}
-              </button>
-            </div>
-            
-            <div className="flex justify-between">
-              <button
-                onClick={resetCase}
-                className="flex items-center text-white/70 hover:text-white text-sm"
-              >
-                <RotateCcw className="w-4 h-4 mr-1" />
-                Back
-              </button>
-              <div className="text-sm text-white/70">
-                Streak: {streak}x
-              </div>
-            </div>
-          </motion.div>
-        )}
-        
-        {gameState === 'completed' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-6"
-          >
-            <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4 animate-bounce" />
-            <h4 className="text-2xl font-bold text-white mb-2">Positivity Master!</h4>
-            <p className="text-white/80 mb-4">You've earned the Positive Kid Badge!</p>
-            
-            <div className="bg-gradient-to-r from-yellow-500/30 to-orange-500/30 rounded-xl p-4 mb-6 border-2 border-yellow-400">
-              <div className="text-3xl font-bold text-yellow-300 mb-2">{score} Points</div>
-              <div className="text-xl font-bold text-white mb-4">Positive Kid Badge Earned!</div>
-              <p className="text-white/90">
-                {score >= 80 ? "🏆 Positivity Champion!" : 
-                 score >= 60 ? "🥇 Happiness Expert!" : 
-                 score >= 40 ? "🥈 Good Job!" : 
-                 "🥉 Keep Practicing!"}
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="bg-blue-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-blue-300">{progress}</div>
-                <div className="text-xs text-white/70">Challenges</div>
-              </div>
-              <div className="bg-green-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-green-300">{bestStreak}x</div>
-                <div className="text-xs text-white/70">Best Streak</div>
-              </div>
-              <div className="bg-purple-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-purple-300">{score}</div>
-                <div className="text-xs text-white/70">Points</div>
-              </div>
-            </div>
-            
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={resetGame}
-                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full font-bold hover:opacity-90 transition-opacity"
-              >
-                Play Again
-              </button>
-              <button
-                onClick={handleGameComplete}
-                className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-bold hover:opacity-90 transition-opacity"
-              >
-                Continue
-              </button>
-            </div>
-          </motion.div>
-        )}
-        
-        <AnimatePresence>
-          {showFeedback && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <FeedbackBubble 
-                message={feedbackMessage}
-                type={feedbackType}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </GameCard>
+          </div>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

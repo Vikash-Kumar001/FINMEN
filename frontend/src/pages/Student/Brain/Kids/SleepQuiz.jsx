@@ -1,169 +1,243 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Moon, Check, X, Clock, Bed, Coffee } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SleepQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-122";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-62");
+  const gameId = gameData?.id || "brain-kids-62";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for SleepQuiz, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const levels = [
+  const questions = [
     {
       id: 1,
-      question: "How many hours should kids sleep? (a) 4, (b) 8–10, (c) 12+ always",
-      options: ["(a) 4", "(b) 8–10", "(c) 12+ always"],
-      correct: "(b) 8–10",
-      icon: <Moon className="w-8 h-8" />
+      text: "How many hours should kids sleep? (a) 4, (b) 8–10, (c) 12+",
+      options: [
+        { 
+          id: "b", 
+          text: "(b) 8–10 hours", 
+          emoji: "😴", 
+          description: "The recommended amount for kids",
+          isCorrect: true
+        },
+        { 
+          id: "a", 
+          text: "(a) 4 hours", 
+          emoji: "😴", 
+          description: "Too little sleep",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "(c) 12+ hours", 
+          emoji: "😴", 
+          description: "Too much sleep",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      question: "Best bedtime for kids? (a) Midnight, (b) 9–10 PM, (c) 2 AM",
-      options: ["(a) Midnight", "(b) 9–10 PM", "(c) 2 AM"],
-      correct: "(b) 9–10 PM",
-      icon: <Clock className="w-8 h-8" />
+      text: "Best bedtime for kids? (a) Midnight, (b) 9–10 PM, (c) 2 AM",
+      options: [
+        { 
+          id: "a", 
+          text: "(a) Midnight", 
+          emoji: "🌙", 
+          description: "Too late for kids",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "(b) 9–10 PM", 
+          emoji: "🌙", 
+          description: "Good bedtime for kids",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "(c) 2 AM", 
+          emoji: "🌙", 
+          description: "Very late, not good",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      question: "What helps sleep? (a) Screen time, (b) Quiet routine, (c) Loud music",
-      options: ["(a) Screen time", "(b) Quiet routine", "(c) Loud music"],
-      correct: "(b) Quiet routine",
-      icon: <Bed className="w-8 h-8" />
+      text: "What helps sleep? (a) Screen time, (b) Quiet routine, (c) Loud music",
+      options: [
+        { 
+          id: "c", 
+          text: "(c) Loud music", 
+          emoji: "🔊", 
+          description: "Too noisy for sleep",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "(a) Screen time", 
+          emoji: "📱", 
+          description: "Screens keep you awake",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "(b) Quiet routine", 
+          emoji: "🧘", 
+          description: "Calm activities help sleep",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      question: "Good for sleep? (a) Caffeine, (b) Warm milk, (c) Gaming",
-      options: ["(a) Caffeine", "(b) Warm milk", "(c) Gaming"],
-      correct: "(b) Warm milk",
-      icon: <Coffee className="w-8 h-8" />
+      text: "Good for sleep? (a) Caffeine, (b) Warm milk, (c) Gaming",
+      options: [
+        { 
+          id: "b", 
+          text: "(b) Warm milk", 
+          emoji: "🥛", 
+          description: "Helps you relax and sleep",
+          isCorrect: true
+        },
+        { 
+          id: "a", 
+          text: "(a) Caffeine", 
+          emoji: "☕", 
+          description: "Keeps you awake",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "(c) Gaming", 
+          emoji: "🎮", 
+          description: "Too exciting before bed",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      question: "Sleep helps? (a) Focus, (b) Tiredness, (c) Stress",
-      options: ["(a) Focus", "(b) Tiredness", "(c) Stress"],
-      correct: "(a) Focus",
-      icon: <Brain className="w-8 h-8" />
+      text: "Sleep helps? (a) Focus, (b) Tiredness, (c) Stress",
+      options: [
+        { 
+          id: "c", 
+          text: "(c) Stress", 
+          emoji: "😰", 
+          description: "Sleep reduces stress",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "(a) Focus", 
+          emoji: "🎯", 
+          description: "Good sleep improves focus",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "(b) Tiredness", 
+          emoji: "😴", 
+          description: "Sleep reduces tiredness",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-
-  const handleAnswerSelect = (answer) => {
-    if (!isSubmitted) {
-      setSelectedAnswer(answer);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleSubmit = () => {
-    if (selectedAnswer) {
-      setIsSubmitted(true);
-      if (selectedAnswer === currentLevelData.correct) {
-        setFeedbackType("correct");
-        setFeedbackMessage("Correct! Good sleep knowledge.");
-        setScore(prev => prev + 1);
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          if (currentLevel < 5) {
-            setCurrentLevel(prev => prev + 1);
-            setSelectedAnswer(null);
-            setIsSubmitted(false);
-          } else {
-            setLevelCompleted(true);
-          }
-        }, 2000);
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setFeedbackType("wrong");
-        setFeedbackMessage("Not quite! Try again.");
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          setIsSubmitted(false);
-        }, 2000);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select an answer!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
-    }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Quiz on Sleep"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-122"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Quiz on Sleep</h3>
-        <p className="text-white/80 mb-6 text-center">{currentLevelData.question}</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="flex justify-center mb-4">{currentLevelData.icon}</div>
-          <div className="space-y-4">
-            {currentLevelData.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswerSelect(option)}
-                className={`w-full p-4 rounded-lg ${selectedAnswer === option ? 'bg-blue-500' : 'bg-white/20'} text-white text-left`}
-              >
-                {option}
-              </button>
-            ))}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedAnswer || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedAnswer && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

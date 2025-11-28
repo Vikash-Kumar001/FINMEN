@@ -1,170 +1,243 @@
-// File: PositivityQuiz.js
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Sun, Check, X, Smile, Heart, Sparkles, ThumbsUp } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PositivityQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-102";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-52");
+  const gameId = gameData?.id || "brain-kids-52";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for PositivityQuiz, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const levels = [
+  const questions = [
     {
       id: 1,
-      question: "What is positive thinking? (a) Complaining, (b) Looking for good side, (c) Giving up",
-      options: ["(a) Complaining", "(b) Looking for good side", "(c) Giving up"],
-      correct: "(b) Looking for good side",
-      icon: <Sun className="w-8 h-8" />
+      text: "What is positive thinking?",
+      options: [
+        { 
+          id: "complaining", 
+          text: "Complaining", 
+          emoji: "😤", 
+          description: "Focusing on problems",
+          isCorrect: false
+        },
+        { 
+          id: "goodside", 
+          text: "Looking for good side", 
+          emoji: "😊", 
+          description: "Finding the positive in situations",
+          isCorrect: true
+        },
+        { 
+          id: "givingup", 
+          text: "Giving up", 
+          emoji: "😔", 
+          description: "Quitting when things get hard",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      question: "Positive attitude means? (a) See the bright side, (b) Always sad, (c) Ignore problems",
-      options: ["(a) See the bright side", "(b) Always sad", "(c) Ignore problems"],
-      correct: "(a) See the bright side",
-      icon: <Smile className="w-8 h-8" />
+      text: "Positive attitude means?",
+      options: [
+        { 
+          id: "brightside", 
+          text: "See the bright side", 
+          emoji: "☀️", 
+          description: "Focusing on positive aspects",
+          isCorrect: true
+        },
+        { 
+          id: "alwayssad", 
+          text: "Always sad", 
+          emoji: "😢", 
+          description: "Feeling down all the time",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore problems", 
+          emoji: "🙈", 
+          description: "Pretending problems don't exist",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      question: "Gratitude is? (a) Saying thanks, (b) Complaining, (c) Forgetting",
-      options: ["(a) Saying thanks", "(b) Complaining", "(c) Forgetting"],
-      correct: "(a) Saying thanks",
-      icon: <Heart className="w-8 h-8" />
+      text: "Gratitude is?",
+      options: [
+        { 
+          id: "forgetting", 
+          text: "Forgetting", 
+          emoji: "🤷", 
+          description: "Not remembering things",
+          isCorrect: false
+        },
+        { 
+          id: "complaining2", 
+          text: "Complaining", 
+          emoji: "😤", 
+          description: "Focusing on what's wrong",
+          isCorrect: false
+        },
+        { 
+          id: "thanks", 
+          text: "Saying thanks", 
+          emoji: "🙏", 
+          description: "Being thankful for what you have",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      question: "Optimism is? (a) Hoping for best, (b) Expecting worst, (c) Doing nothing",
-      options: ["(a) Hoping for best", "(b) Expecting worst", "(c) Doing nothing"],
-      correct: "(a) Hoping for best",
-      icon: <Sparkles className="w-8 h-8" />
+      text: "Optimism is?",
+      options: [
+        { 
+          id: "hoping", 
+          text: "Hoping for best", 
+          emoji: "🌟", 
+          description: "Believing good things will happen",
+          isCorrect: true
+        },
+        { 
+          id: "worst", 
+          text: "Expecting worst", 
+          emoji: "😰", 
+          description: "Thinking bad things will happen",
+          isCorrect: false
+        },
+        { 
+          id: "nothing", 
+          text: "Doing nothing", 
+          emoji: "😴", 
+          description: "Not taking any action",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      question: "Positive thinking helps? (a) Feel better, (b) Feel worse, (c) No change",
-      options: ["(a) Feel better", "(b) Feel worse", "(c) No change"],
-      correct: "(a) Feel better",
-      icon: <ThumbsUp className="w-8 h-8" />
+      text: "Positive thinking helps?",
+      options: [
+        { 
+          id: "worse", 
+          text: "Feel worse", 
+          emoji: "😢", 
+          description: "Makes you feel bad",
+          isCorrect: false
+        },
+        { 
+          id: "nochange", 
+          text: "No change", 
+          emoji: "😑", 
+          description: "Doesn't make a difference",
+          isCorrect: false
+        },
+        { 
+          id: "better", 
+          text: "Feel better", 
+          emoji: "😊", 
+          description: "Improves your mood and outlook",
+          isCorrect: true
+        }
+      ]
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-
-  const handleAnswerSelect = (answer) => {
-    if (!isSubmitted) {
-      setSelectedAnswer(answer);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleSubmit = () => {
-    if (selectedAnswer) {
-      setIsSubmitted(true);
-      if (selectedAnswer === currentLevelData.correct) {
-        setFeedbackType("correct");
-        setFeedbackMessage("Positive answer! Correct.");
-        setScore(prev => prev + 1);
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          if (currentLevel < 5) {
-            setCurrentLevel(prev => prev + 1);
-            setSelectedAnswer(null);
-            setIsSubmitted(false);
-          } else {
-            setLevelCompleted(true);
-          }
-        }, 2000);
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setFeedbackType("wrong");
-        setFeedbackMessage("Not positive. Try again!");
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          setIsSubmitted(false);
-        }, 2000);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select an answer!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
-    }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Quiz on Positivity"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-102"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Quiz on Positivity</h3>
-        <p className="text-white/80 mb-6 text-center">{currentLevelData.question}</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="flex justify-center mb-4">{currentLevelData.icon}</div>
-          <div className="space-y-4">
-            {currentLevelData.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswerSelect(option)}
-                className={`w-full p-4 rounded-lg ${selectedAnswer === option ? 'bg-blue-500' : 'bg-white/20'} text-white text-left`}
-              >
-                {option}
-              </button>
-            ))}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedAnswer || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedAnswer && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

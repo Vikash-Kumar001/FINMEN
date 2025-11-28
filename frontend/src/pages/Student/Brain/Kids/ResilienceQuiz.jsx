@@ -1,167 +1,243 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Sparkles, Check, X, RefreshCw, TrendingUp, Rocket } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ResilienceQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-182";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-92");
+  const gameId = gameData?.id || "brain-kids-92";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for ResilienceQuiz, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const levels = [
+  const questions = [
     {
       id: 1,
-      question: "What is resilience? (a) Giving up, (b) Bouncing back, (c) Complaining",
-      options: ["(a) Giving up", "(b) Bouncing back", "(c) Complaining"],
-      correct: "(b) Bouncing back",
-      icon: <Sparkles className="w-8 h-8" />
+      text: "What is resilience?",
+      options: [
+        { 
+          id: "giving", 
+          text: "Giving up", 
+          emoji: "🏳️", 
+          description: "Stopping when things get hard",
+          isCorrect: false
+        },
+        { 
+          id: "bouncing", 
+          text: "Bouncing back", 
+          emoji: "⚡", 
+          description: "Recovering and trying again",
+          isCorrect: true
+        },
+        { 
+          id: "complaining", 
+          text: "Complaining", 
+          emoji: "😤", 
+          description: "Whining about problems",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      question: "After failure, resilience is? (a) Stopping, (b) Trying again, (c) Blaming",
-      options: ["(a) Stopping", "(b) Trying again", "(c) Blaming"],
-      correct: "(b) Trying again",
-      icon: <RefreshCw className="w-8 h-8" />
+      text: "What does it mean to be resilient?",
+      options: [
+        { 
+          id: "quit", 
+          text: "Quit when things are hard", 
+          emoji: "🚶", 
+          description: "Give up easily",
+          isCorrect: false
+        },
+        { 
+          id: "persist", 
+          text: "Keep trying after setbacks", 
+          emoji: "💪", 
+          description: "Don't give up",
+          isCorrect: true
+        },
+        { 
+          id: "blame", 
+          text: "Blame others", 
+          emoji: "👆", 
+          description: "Point fingers",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      question: "Resilience helps with? (a) Giving up, (b) Growing stronger, (c) Ignoring",
-      options: ["(a) Giving up", "(b) Growing stronger", "(c) Ignoring"],
-      correct: "(b) Growing stronger",
-      icon: <TrendingUp className="w-8 h-8" />
+      text: "How do resilient people handle failure?",
+      options: [
+        { 
+          id: "cry", 
+          text: "Cry and give up", 
+          emoji: "😢", 
+          description: "Get upset and quit",
+          isCorrect: false
+        },
+        { 
+          id: "learn", 
+          text: "Learn from it and try again", 
+          emoji: "📚", 
+          description: "Use it as a lesson",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "😑", 
+          description: "Pretend it didn't happen",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      question: "Best response to setbacks? (a) Learn, (b) Quit, (c) Cry",
-      options: ["(a) Learn", "(b) Quit", "(c) Cry"],
-      correct: "(a) Learn",
-      icon: <Brain className="w-8 h-8" />
+      text: "What is a sign of resilience?",
+      options: [
+        { 
+          id: "try", 
+          text: "Trying again after falling", 
+          emoji: "🔄", 
+          description: "Not giving up",
+          isCorrect: true
+        },
+        { 
+          id: "avoid", 
+          text: "Avoiding challenges", 
+          emoji: "🙈", 
+          description: "Staying away from hard things",
+          isCorrect: false
+        },
+        { 
+          id: "panic", 
+          text: "Panicking at problems", 
+          emoji: "😰", 
+          description: "Getting overwhelmed",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      question: "Resilience means? (a) Never fail, (b) Keep going, (c) Avoid trying",
-      options: ["(a) Never fail", "(b) Keep going", "(c) Avoid trying"],
-      correct: "(b) Keep going",
-      icon: <Rocket className="w-8 h-8" />
+      text: "What helps build resilience?",
+      options: [
+        { 
+          id: "practice", 
+          text: "Facing challenges and learning from mistakes", 
+          emoji: "🎯", 
+          description: "Practice and grow",
+          isCorrect: true
+        },
+        { 
+          id: "avoid2", 
+          text: "Avoiding all difficulties", 
+          emoji: "🚫", 
+          description: "Never facing problems",
+          isCorrect: false
+        },
+        { 
+          id: "give", 
+          text: "Giving up quickly", 
+          emoji: "😞", 
+          description: "Quitting fast",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-
-  const handleAnswerSelect = (answer) => {
-    if (!isSubmitted) {
-      setSelectedAnswer(answer);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleSubmit = () => {
-    if (selectedAnswer) {
-      setIsSubmitted(true);
-      if (selectedAnswer === currentLevelData.correct) {
-        setFeedbackType("correct");
-        setFeedbackMessage("Correct! That's resilience!");
-        setScore(prev => prev + 1);
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setFeedbackType("wrong");
-        setFeedbackMessage("Not quite! Try again.");
-        // No points for wrong answers
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-      setShowFeedback(true);
-      
-      // Always move to the next question after a short delay, regardless of correct/incorrect
-      setTimeout(() => {
-        setShowFeedback(false);
-        if (currentLevel < 5) {
-          setCurrentLevel(prev => prev + 1);
-          setSelectedAnswer(null);
-          setIsSubmitted(false);
-        } else {
-          setLevelCompleted(true);
-        }
-      }, 2000);
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select an answer!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
-    }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Quiz on Resilience"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-182"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Quiz on Resilience</h3>
-        <p className="text-white/80 mb-6 text-center">{currentLevelData.question}</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="flex justify-center mb-4">{currentLevelData.icon}</div>
-          <div className="space-y-4">
-            {currentLevelData.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswerSelect(option)}
-                className={`w-full p-4 rounded-lg ${selectedAnswer === option ? 'bg-blue-500' : 'bg-white/20'} text-white text-left`}
-              >
-                {option}
-              </button>
-            ))}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedAnswer || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedAnswer && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

@@ -1,409 +1,229 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Gamepad, Smile, Frown, Monitor, Timer, Trophy, RotateCcw } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { Gamepad, Smile, Monitor, Frown } from 'lucide-react';
 
 const BalancePuzzle = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-74";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-74");
+  const gameId = gameData?.id || "brain-kids-74";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for BalancePuzzle, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [cards, setCards] = useState([]);
-  const [flipped, setFlipped] = useState([]);
-  const [matched, setMatched] = useState([]);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [moves, setMoves] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(45);
-  const [isTimerActive, setIsTimerActive] = useState(true);
-  const [streak, setStreak] = useState(0);
-  const [bestStreak, setBestStreak] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const levelPairs = [3, 4, 5, 6, 8]; // Increasing difficulty
-  const levelTimes = [45, 60, 75, 90, 120]; // Time per level
-
-  // Balance activities with icons - fixed matching pairs
-  const balanceActivities = [
-    { id: 1, Icon: Gamepad, label: "1 hr Game", pairId: 2, color: "bg-green-400" },
-    { id: 2, Icon: Smile, label: "Fun", pairId: 1, color: "bg-yellow-400" },
-    { id: 3, Icon: Monitor, label: "5 hrs Screen", pairId: 4, color: "bg-red-400" },
-    { id: 4, Icon: Frown, label: "Harm", pairId: 3, color: "bg-orange-400" },
-    { id: 5, Icon: Gamepad, label: "1 hr Game", pairId: 6, color: "bg-green-400" },
-    { id: 6, Icon: Smile, label: "Fun", pairId: 5, color: "bg-yellow-400" },
-    { id: 7, Icon: Monitor, label: "5 hrs Screen", pairId: 8, color: "bg-red-400" },
-    { id: 8, Icon: Frown, label: "Harm", pairId: 7, color: "bg-orange-400" }
+  // Left side - screen time amounts
+  const leftItems = [
+    { id: 1, name: "1 hr Game", emoji: "🎮", description: "Short gaming time", icon: Gamepad },
+    { id: 2, name: "5 hrs Screen", emoji: "📱", description: "Long screen time", icon: Monitor },
+    { id: 3, name: "2 hrs Tablet", emoji: "📱", description: "Moderate screen time", icon: Monitor },
+    { id: 4, name: "30 min Phone", emoji: "📞", description: "Very short screen time", icon: Monitor },
+    { id: 5, name: "6 hrs Gaming", emoji: "🎮", description: "Very long gaming time", icon: Gamepad }
   ];
 
-  // Initialize game
-  useEffect(() => {
-    const numPairs = levelPairs[currentLevel - 1];
-    // Create pairs of balance activities
-    let levelActivities = [];
-    for (let i = 0; i < numPairs * 2; i++) {
-      levelActivities.push({ ...balanceActivities[i], isFlipped: false, isMatched: false });
-    }
-    
-    // Shuffle the cards
-    const shuffledActivities = [...levelActivities].sort(() => Math.random() - 0.5);
-    
-    setCards(shuffledActivities);
-    setFlipped([]);
-    setMatched([]);
-    setMoves(0);
-    setTimeLeft(levelTimes[currentLevel - 1]);
-    setIsTimerActive(true);
-    setStreak(0);
-  }, [currentLevel]);
+  // Right side - effects
+  const rightItems = [
+    { id: 1, name: "Fun", emoji: "😊", description: "Enjoyable and healthy" },
+    { id: 2, name: "Harm", emoji: "😞", description: "Harmful and unhealthy" },
+    { id: 3, name: "Balance", emoji: "⚖️", description: "Moderate and okay" },
+    { id: 4, name: "Good", emoji: "✅", description: "Healthy choice" },
+    { id: 5, name: "Bad", emoji: "❌", description: "Unhealthy choice" }
+  ];
 
-  // Timer effect
-  useEffect(() => {
-    let timer;
-    if (isTimerActive && timeLeft > 0 && !levelCompleted) {
-      timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-    } else if (timeLeft === 0 && isTimerActive) {
-      // Time's up
-      setIsTimerActive(false);
-      setFeedbackType("wrong");
-      setFeedbackMessage("Time's up! Try again.");
-      setShowFeedback(true);
+  // Correct matches
+  const correctMatches = [
+    { leftId: 1, rightId: 1 }, // 1 hr Game → Fun
+    { leftId: 2, rightId: 2 }, // 5 hrs Screen → Harm
+    { leftId: 3, rightId: 3 }, // 2 hrs Tablet → Balance
+    { leftId: 4, rightId: 4 }, // 30 min Phone → Good
+    { leftId: 5, rightId: 5 }  // 6 hrs Gaming → Bad
+  ];
+
+  // Shuffled right items for display (to split matches across positions)
+  const shuffledRightItems = [
+    rightItems[2], // Balance (id: 3) - position 1
+    rightItems[4], // Bad (id: 5) - position 2
+    rightItems[0], // Fun (id: 1) - position 3
+    rightItems[3], // Good (id: 4) - position 4
+    rightItems[1]  // Harm (id: 2) - position 5
+  ];
+
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    setSelectedLeft(item);
+  };
+
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    // Check if all items are matched
+    if (newMatches.length === leftItems.length) {
       setTimeout(() => {
-        setShowFeedback(false);
-        resetLevel();
-      }, 3000);
+        setShowResult(true);
+        setScore(leftItems.length); // Ensure score matches total for GameOverModal
+      }, 1000);
     }
-    return () => clearTimeout(timer);
-  }, [timeLeft, isTimerActive, levelCompleted]);
 
-  const handleFlip = (id) => {
-    // Don't allow flipping if two cards are already flipped or if card is matched
-    if (flipped.length >= 2 || matched.includes(id) || flipped.includes(id)) return;
-
-    const newCards = cards.map(card => 
-      card.id === id ? { ...card, isFlipped: true } : card
-    );
-    setCards(newCards);
-
-    const newFlipped = [...flipped, id];
-    setFlipped(newFlipped);
-
-    if (newFlipped.length === 2) {
-      setMoves(moves + 1);
-      const [firstId, secondId] = newFlipped;
-      
-      // Find the actual card objects
-      const firstCard = cards.find(card => card.id === firstId);
-      const secondCard = cards.find(card => card.id === secondId);
-      
-      // Check for match using the pairId property
-      if (firstCard.pairId === secondCard.id && secondCard.pairId === firstCard.id) {
-        // Match found
-        const updatedCards = newCards.map(card => 
-          card.id === firstId || card.id === secondId ? { ...card, isMatched: true } : card
-        );
-        setCards(updatedCards);
-        
-        setMatched([...matched, firstId, secondId]);
-        setScore(prev => prev + 1); // 1 coin per correct match
-        setStreak(streak + 1);
-        setBestStreak(Math.max(bestStreak, streak + 1));
-        
-        setFeedbackType("correct");
-        setFeedbackMessage(`Balanced match! +1 coin`);
-        setShowFeedback(true);
-        
-        // Reset flipped state immediately after match
-        setFlipped([]);
-        
-        setTimeout(() => setShowFeedback(false), 1500);
-        
-        // Check if level is completed
-        if (matched.length + 2 === cards.length) {
-          setIsTimerActive(false);
-          setFeedbackType("correct");
-          setFeedbackMessage(`Level ${currentLevel} Complete!`);
-          setShowFeedback(true);
-          
-          setTimeout(() => {
-            if (currentLevel < 5) {
-              setCurrentLevel(prev => prev + 1);
-            } else {
-              setLevelCompleted(true);
-            }
-            setShowFeedback(false);
-          }, 2500);
-        }
-      } else {
-        // No match
-        setStreak(0);
-        setFeedbackType("wrong");
-        setFeedbackMessage("No match! Keep trying.");
-        setShowFeedback(true);
-        
-        // Flip cards back after delay
-        setTimeout(() => {
-          const resetCards = newCards.map(card => 
-            card.id === firstId || card.id === secondId ? { ...card, isFlipped: false } : card
-          );
-          setCards(resetCards);
-          setFlipped([]);
-          setShowFeedback(false);
-        }, 1500);
-      }
-    }
+    // Reset selections
+    setSelectedLeft(null);
+    setSelectedRight(null);
   };
 
-  const resetLevel = () => {
-    const numPairs = levelPairs[currentLevel - 1];
-    // Create pairs of balance activities
-    let levelActivities = [];
-    for (let i = 0; i < numPairs * 2; i++) {
-      levelActivities.push({ ...balanceActivities[i], isFlipped: false, isMatched: false });
-    }
-    
-    // Shuffle the cards
-    const shuffledActivities = [...levelActivities].sort(() => Math.random() - 0.5);
-    
-    setCards(shuffledActivities);
-    setFlipped([]);
-    setMatched([]);
-    setMoves(0);
-    setTimeLeft(levelTimes[currentLevel - 1]);
-    setIsTimerActive(true);
-    setStreak(0);
-  };
-
-  const resetGame = () => {
-    setCurrentLevel(1);
-    setScore(0);
-    setStreak(0);
-    setBestStreak(0);
-    setMoves(0);
-    setTimeLeft(levelTimes[0]);
-    setIsTimerActive(true);
-    setLevelCompleted(false);
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
+  const isMatched = (leftId, rightId) => {
+    return matches.some(m => m.leftId === leftId && m.rightId === rightId && m.isCorrect);
   };
 
   return (
     <GameShell
-      title="Balance Habits Memory Puzzle"
+      title="Puzzle of Balance"
+      subtitle={!showResult ? `Match ${matches.length}/${leftItems.length} pairs` : "Puzzle Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={1}
+      totalLevels={1}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-144"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={leftItems.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-2 text-center">Balance Habits Memory Puzzle</h3>
-        <p className="text-white/80 mb-4 text-center">Match screen time habits with their effects!</p>
-        
-        {/* Game stats */}
-        <div className="flex justify-between items-center mb-4 bg-white/10 rounded-lg p-2">
-          <div className="text-center">
-            <div className="text-xs text-white/70">Time</div>
-            <div className={`font-bold ${timeLeft < 10 ? 'text-red-400 animate-pulse' : 'text-yellow-400'}`}>
-              {timeLeft}s
-            </div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-white/70">Moves</div>
-            <div className="font-bold text-blue-400">{moves}</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-white/70">Streak</div>
-            <div className="font-bold text-green-400">{streak}x</div>
-          </div>
-          <div className="text-center">
-            <div className="text-xs text-white/70">Best</div>
-            <div className="font-bold text-purple-400">{bestStreak}x</div>
-          </div>
-        </div>
-        
-        <div className="rounded-2xl p-4 mb-4 bg-white/10 backdrop-blur-sm">
-          {/* Level info */}
-          <div className="flex justify-between items-center mb-3">
-            <div className="text-sm font-semibold text-white/90">
-              Level {currentLevel}: {levelPairs[currentLevel - 1]} Pairs
-            </div>
-            <button 
-              onClick={resetLevel}
-              className="flex items-center text-xs bg-white/20 hover:bg-white/30 rounded-full px-3 py-1 transition-colors"
-            >
-              <RotateCcw className="w-3 h-3 mr-1" />
-              Reset
-            </button>
-          </div>
-          
-          {/* Game board */}
-          <div className={`grid gap-3 ${
-            levelPairs[currentLevel - 1] <= 4 ? 'grid-cols-4' : 
-            levelPairs[currentLevel - 1] <= 6 ? 'grid-cols-5' : 'grid-cols-6'
-          }`}>
-            <AnimatePresence>
-              {cards.map(({ id, Icon, label, color, isFlipped, isMatched }) => (
-                <motion.div
-                  key={id}
-                  layout
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  exit={{ scale: 0.8, opacity: 0 }}
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
-                  onClick={() => handleFlip(id)}
-                  className={`
-                    aspect-square rounded-xl cursor-pointer flex items-center justify-center
-                    transition-all duration-300 relative
-                    ${isMatched 
-                      ? `${color} text-white shadow-lg` 
-                      : isFlipped 
-                        ? 'bg-white text-black shadow-md' 
-                        : 'bg-gradient-to-br from-blue-400 to-purple-500 text-white shadow-lg'
-                    }
-                    ${!isMatched && !isFlipped ? 'hover:from-blue-500 hover:to-purple-600' : ''}
-                  `}
-                >
-                  {isMatched || isFlipped ? (
-                    <motion.div
-                      initial={{ rotateY: 180 }}
-                      animate={{ rotateY: 0 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <Icon className="w-6 h-6 sm:w-8 sm:h-8" />
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      initial={{ rotateY: 0 }}
-                      animate={{ rotateY: isFlipped ? 180 : 0 }}
-                      transition={{ duration: 0.3 }}
-                      className="text-2xl font-bold"
-                    >
-                      ?
-                    </motion.div>
-                  )}
-                  
-                  {/* Match indicator */}
-                  {isMatched && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute -top-1 -right-1 bg-green-500 rounded-full p-1"
-                    >
-                      <Trophy className="w-3 h-3 text-white" />
-                    </motion.div>
-                  )}
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
-        
-        {/* Progress bar */}
-        <div className="mb-4">
-          <div className="flex justify-between text-xs text-white/70 mb-1">
-            <span>Progress</span>
-            <span>{matched.length/2} / {levelPairs[currentLevel - 1]}</span>
-          </div>
-          <div className="w-full bg-white/20 rounded-full h-2">
-            <div 
-              className="bg-gradient-to-r from-green-400 to-blue-500 h-2 rounded-full transition-all duration-500"
-              style={{ width: `${(matched.length/2) / levelPairs[currentLevel - 1] * 100}%` }}
-            ></div>
-          </div>
-        </div>
-        
-        {/* Feedback */}
-        <AnimatePresence>
-          {showFeedback && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              className="mb-4"
-            >
-              <FeedbackBubble 
-                message={feedbackMessage}
-                type={feedbackType}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-        
-        {/* Completion screen */}
-        {levelCompleted && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-6"
-          >
-            <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4 animate-bounce" />
-            <h3 className="text-2xl font-bold text-white mb-2">Balance Master!</h3>
-            <p className="text-white/80 mb-4">You've mastered digital balance with {score} points!</p>
-            
-            <div className="bg-gradient-to-r from-yellow-500/30 to-orange-500/30 rounded-xl p-4 mb-6 border-2 border-yellow-400">
-              <div className="text-3xl font-bold text-yellow-300 mb-2">{score} Points</div>
-              <div className="text-xl font-bold text-white mb-4">Balance Habits Expert Badge</div>
-              <p className="text-white/90">
-                {score >= 100 ? "🏆 Digital Balance Champion!" : 
-                 score >= 80 ? "🥇 Screen Time Expert!" : 
-                 score >= 60 ? "🥈 Good Job!" : 
-                 "🥉 Keep Practicing!"}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Matches: {matches.length}/{leftItems.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{leftItems.length}</span>
+              </div>
+              
+              <p className="text-white text-center mb-6">
+                Match screen time amounts with their effects!
               </p>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="bg-blue-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-blue-300">{moves}</div>
-                <div className="text-xs text-white/70">Moves</div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Left side */}
+                <div className="space-y-3">
+                  <h3 className="text-white font-bold text-center mb-4">Screen Time</h3>
+                  {leftItems.map((item) => {
+                    const Icon = item.icon;
+                    const matched = matches.some(m => m.leftId === item.id && m.isCorrect);
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleLeftSelect(item)}
+                        disabled={matched || showResult}
+                        className={`w-full p-4 rounded-xl transition-all ${
+                          selectedLeft?.id === item.id
+                            ? "bg-blue-500 border-2 border-blue-300"
+                            : matched
+                            ? "bg-green-500/50 border-2 border-green-300"
+                            : "bg-white/10 border-2 border-white/20 hover:bg-white/20"
+                        } ${matched ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className="w-6 h-6 text-white" />
+                          <div className="text-left flex-1">
+                            <div className="text-white font-bold">{item.name}</div>
+                            <div className="text-white/70 text-sm">{item.description}</div>
+                          </div>
+                          <div className="text-2xl">{item.emoji}</div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
+                
+                {/* Right side */}
+                <div className="space-y-3">
+                  <h3 className="text-white font-bold text-center mb-4">Effects</h3>
+                  {shuffledRightItems.map((item) => {
+                    const matched = matches.some(m => m.rightId === item.id && m.isCorrect);
+                    return (
+                      <button
+                        key={item.id}
+                        onClick={() => handleRightSelect(item)}
+                        disabled={matched || showResult}
+                        className={`w-full p-4 rounded-xl transition-all ${
+                          selectedRight?.id === item.id
+                            ? "bg-blue-500 border-2 border-blue-300"
+                            : matched
+                            ? "bg-green-500/50 border-2 border-green-300"
+                            : "bg-white/10 border-2 border-white/20 hover:bg-white/20"
+                        } ${matched ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="text-2xl">{item.emoji}</div>
+                          <div className="text-left flex-1">
+                            <div className="text-white font-bold">{item.name}</div>
+                            <div className="text-white/70 text-sm">{item.description}</div>
+                          </div>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
-              <div className="bg-green-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-green-300">{bestStreak}x</div>
-                <div className="text-xs text-white/70">Best Streak</div>
-              </div>
-              <div className="bg-purple-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-purple-300">{score}</div>
-                <div className="text-xs text-white/70">Points</div>
-              </div>
+              
+              {selectedLeft && selectedRight && (
+                <div className="mt-6 text-center">
+                  <button
+                    onClick={handleMatch}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold transition-all"
+                  >
+                    Match!
+                  </button>
+                </div>
+              )}
             </div>
-            
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={resetGame}
-                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full font-bold hover:opacity-90 transition-opacity"
-              >
-                Play Again
-              </button>
-              <button
-                onClick={handleGameComplete}
-                className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-bold hover:opacity-90 transition-opacity"
-              >
-                Continue
-              </button>
-            </div>
-          </motion.div>
-        )}
-      </GameCard>
+          </div>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

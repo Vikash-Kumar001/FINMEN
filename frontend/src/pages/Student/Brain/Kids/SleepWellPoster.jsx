@@ -1,205 +1,149 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Moon, Battery, Bed, Clock } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Image } from "lucide-react";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SleepWellPoster = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-126";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-66");
+  const gameId = gameData?.id || "brain-kids-66";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for SleepWellPoster, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedPoster, setSelectedPoster] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const levelPosters = [
-    [
-      {
-        id: 1,
-        title: "Sleep = Brain Fuel",
-        elements: [{ icon: <Moon />, text: "Rest Well" }, { icon: <Battery />, text: "Energy" }],
-        color: "bg-gradient-to-r from-blue-500 to-purple-500"
-      },
-      {
-        id: 2,
-        title: "Dreams Charge You",
-        elements: [{ icon: <Bed />, text: "Sleep Early" }, { icon: <Clock />, text: "Routine" }],
-        color: "bg-gradient-to-r from-green-500 to-teal-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Rest to Shine",
-        elements: [{ icon: <Moon />, text: "Calm Night" }, { icon: <Battery />, text: "Focus" }],
-        color: "bg-gradient-to-r from-purple-500 to-pink-500"
-      },
-      {
-        id: 2,
-        title: "Sleep Smart",
-        elements: [{ icon: <Bed />, text: "No Screens" }, { icon: <Clock />, text: "9 PM Bed" }],
-        color: "bg-gradient-to-r from-teal-500 to-blue-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Power of Rest",
-        elements: [{ icon: <Moon />, text: "Sleep Well" }, { icon: <Battery />, text: "Strength" }],
-        color: "bg-gradient-to-r from-yellow-500 to-orange-500"
-      },
-      {
-        id: 2,
-        title: "Night Recharge",
-        elements: [{ icon: <Bed />, text: "Dark Room" }, { icon: <Clock />, text: "Schedule" }],
-        color: "bg-gradient-to-r from-blue-500 to-green-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Sleep for Success",
-        elements: [{ icon: <Moon />, text: "Rest Easy" }, { icon: <Battery />, text: "Alert" }],
-        color: "bg-gradient-to-r from-pink-500 to-red-500"
-      },
-      {
-        id: 2,
-        title: "Dream Big",
-        elements: [{ icon: <Bed />, text: "Early Bed" }, { icon: <Clock />, text: "Timing" }],
-        color: "bg-gradient-to-r from-green-500 to-yellow-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Rest is Best",
-        elements: [{ icon: <Moon />, text: "Good Sleep" }, { icon: <Battery />, text: "Power" }],
-        color: "bg-gradient-to-r from-orange-500 to-red-500"
-      },
-      {
-        id: 2,
-        title: "Sleep to Win",
-        elements: [{ icon: <Bed />, text: "Calm Bed" }, { icon: <Clock />, text: "Early" }],
-        color: "bg-gradient-to-r from-purple-500 to-blue-500"
-      }
-    ]
+  const stages = [
+    {
+      question: 'Which poster best shows "Sleep = Brain Fuel"?',
+      choices: [
+        { text: "Poster: 'Sleep = Brain Fuel' with moon and brain", correct: true, emoji: "🌙🧠" },
+        { text: "Poster: 'Stay Up All Night' with clock", correct: false, emoji: "⏰" },
+        { text: "Poster: 'No Sleep Needed' with energy drink", correct: false, emoji: "⚡" }
+      ]
+    },
+    {
+      question: 'Which poster best shows "Rest to Shine"?',
+      choices: [
+        { text: "Poster: 'Never Rest' with running person", correct: false, emoji: "🏃" },
+        { text: "Poster: 'Rest to Shine' with moon and star", correct: true, emoji: "🌙⭐" },
+        { text: "Poster: 'Skip Sleep' with coffee cup", correct: false, emoji: "☕" }
+      ]
+    },
+    {
+      question: 'Which poster best shows "Sleep Smart"?',
+      choices: [
+        { text: "Poster: 'Sleep Smart' with bed and clock", correct: true, emoji: "🛏️⏰" },
+        { text: "Poster: 'Stay Awake' with light bulb", correct: false, emoji: "💡" },
+        { text: "Poster: 'No Bedtime' with party hat", correct: false, emoji: "🎉" }
+      ]
+    },
+    {
+      question: 'Which poster best shows "Power of Rest"?',
+      choices: [
+        { text: "Poster: 'Work All Night' with computer", correct: false, emoji: "💻" },
+        { text: "Poster: 'No Rest' with tired face", correct: false, emoji: "😴" },
+        { text: "Poster: 'Power of Rest' with moon and battery", correct: true, emoji: "🌙🔋" }
+      ]
+    },
+    {
+      question: 'Which poster best shows "Sleep for Success"?',
+      choices: [
+        { text: "Poster: 'Sleep for Success' with trophy and bed", correct: true, emoji: "🏆🛏️" },
+        { text: "Poster: 'Skip Sleep' with books", correct: false, emoji: "📚" },
+        { text: "Poster: 'Stay Up' with gaming controller", correct: false, emoji: "🎮" }
+      ]
+    }
   ];
 
-  const posters = levelPosters[currentLevel - 1];
-
-  const handlePosterSelect = (poster) => {
-    if (!isSubmitted) {
-      setSelectedPoster(poster);
-    }
-  };
-
-  const handleSubmit = () => {
-    if (selectedPoster) {
-      setIsSubmitted(true);
-      setFeedbackType("correct");
-      setFeedbackMessage("Great sleep poster!");
+  const handleSelect = (isCorrect) => {
+    if (answered || showResult) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
       setScore(prev => prev + 1);
-      setShowFeedback(true);
-      setTimeout(() => {
-        setShowFeedback(false);
-        if (currentLevel < 5) {
-          setCurrentLevel(prev => prev + 1);
-          setSelectedPoster(null);
-          setIsSubmitted(false);
-        } else {
-          setLevelCompleted(true);
-        }
-      }, 2000);
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select a poster!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
+    
+    const isLastStage = currentStage === stages.length - 1;
+    
+    setTimeout(() => {
+      if (isLastStage) {
+        setShowResult(true);
+      } else {
+        setCurrentStage(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   return (
     <GameShell
       title="Poster: Sleep Well"
+      subtitle={!showResult ? `Stage ${currentStage + 1} of ${stages.length}` : "Poster Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-126"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={stages.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Poster: Sleep Well</h3>
-        <p className="text-white/80 mb-6 text-center">Select a sleep poster.</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {posters.map((poster) => (
-              <div
-                key={poster.id}
-                onClick={() => handlePosterSelect(poster)}
-                className={`border-2 rounded-2xl p-6 cursor-pointer transition-all duration-200 ${
-                  selectedPoster?.id === poster.id ? 'border-white ring-2 ring-white/30 bg-white/20' : 'border-white/30 hover:border-white/50 bg-white/10'
-                }`}
-              >
-                <div className={`rounded-lg p-4 mb-4 ${poster.color}`}>
-                  <h5 className="text-white font-bold text-center">{poster.title}</h5>
-                </div>
-                <div className="space-y-3">
-                  {poster.elements.map((element, index) => (
-                    <div key={index} className="flex items-center">
-                      <div className="text-white mr-3">{element.icon}</div>
-                      <span className="text-white">{element.text}</span>
-                    </div>
-                  ))}
-                </div>
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && stages[currentStage] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Stage {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
               </div>
-            ))}
+              
+              <div className="text-center mb-6">
+                <Image className="w-12 h-12 mx-auto mb-4 text-yellow-400" />
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {stages[currentStage].question}
+                </h3>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {stages[currentStage].choices.map((choice, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSelect(choice.correct)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{choice.emoji}</div>
+                    <h3 className="font-bold text-lg">{choice.text}</h3>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedPoster || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedPoster && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

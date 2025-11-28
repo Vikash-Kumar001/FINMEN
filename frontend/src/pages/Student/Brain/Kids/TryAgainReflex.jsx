@@ -1,130 +1,260 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, RefreshCw, XCircle, Clock } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { Zap, X, RefreshCw } from 'lucide-react';
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 8;
 
 const TryAgainReflex = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-183";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-93");
+  const gameId = gameData?.id || "brain-kids-93";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for TryAgainReflex, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [currentItem, setCurrentItem] = useState('');
-  const [isGoodChoice, setIsGoodChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [timer, setTimer] = useState(5);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
 
-  const levelItems = [
-    { good: ['Retry', 'Keep Going'], bad: ['Quit', 'Give Up'] },
-    { good: ['Try Again', 'Push Forward'], bad: ['Stop', 'Lose Hope'] },
-    { good: ['Start Over', 'Stay Strong'], bad: ['Give Up', 'Walk Away'] },
-    { good: ['Try Harder', 'Keep At It'], bad: ['Quit Now', 'No Try'] },
-    { good: ['Bounce Back', 'Try Once More'], bad: ['Stop Trying', 'Give In'] }
+  const questions = [
+    {
+      id: 1,
+      question: "Is 'Retry' a resilient action?",
+      action: "Retry",
+      type: "retry",
+      emoji: "🔄",
+      icon: <RefreshCw className="w-8 h-8" />
+    },
+    {
+      id: 2,
+      question: "Is 'Quit' a resilient action?",
+      action: "Quit",
+      type: "quit",
+      emoji: "🏳️",
+      icon: <X className="w-8 h-8" />
+    },
+    {
+      id: 3,
+      question: "Is 'Try Again' a resilient action?",
+      action: "Try Again",
+      type: "retry",
+      emoji: "💪",
+      icon: <Zap className="w-8 h-8" />
+    },
+    {
+      id: 4,
+      question: "Is 'Give Up' a resilient action?",
+      action: "Give Up",
+      type: "quit",
+      emoji: "😞",
+      icon: <X className="w-8 h-8" />
+    },
+    {
+      id: 5,
+      question: "Is 'Keep Going' a resilient action?",
+      action: "Keep Going",
+      type: "retry",
+      emoji: "🚀",
+      icon: <RefreshCw className="w-8 h-8" />
+    }
   ];
 
-  useEffect(() => {
-    const levelData = levelItems[currentLevel - 1];
-    const allItems = [...levelData.good, ...levelData.bad].sort(() => Math.random() - 0.5);
-    let index = 0;
-    const interval = setInterval(() => {
-      if (index < allItems.length) {
-        setCurrentItem(allItems[index]);
-        setIsGoodChoice(null);
-        setTimer(5);
-        index++;
-      } else {
-        clearInterval(interval);
-        if (currentLevel < 5) {
-          setCurrentLevel(prev => prev + 1);
-        } else {
-          setLevelCompleted(true);
-        }
-      }
-    }, 6000);
-    return () => clearInterval(interval);
-  }, [currentLevel]);
-
-  useEffect(() => {
-    if (timer > 0 && currentItem) {
-      const countdown = setTimeout(() => setTimer(prev => prev - 1), 1000);
-      return () => clearTimeout(countdown);
-    } else if (timer === 0 && isGoodChoice === null) {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Too slow!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
-    }
-  }, [timer, currentItem, isGoodChoice]);
-
-  const handleResponse = (response) => {
-    const levelData = levelItems[currentLevel - 1];
-    const correct = levelData.good.includes(currentItem);
-    if (response === correct) {
-      setFeedbackType("correct");
-      setFeedbackMessage("Resilient choice!");
-      setScore(prev => prev + 1);
+  const handleTimeUp = useCallback(() => {
+    if (currentRound < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
     } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Keep trying!");
+      setGameState("finished");
     }
-    setIsGoodChoice(response);
-    setShowFeedback(true);
-    setTimeout(() => setShowFeedback(false), 2000);
+  }, [currentRound]);
+
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0 && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          const newTime = prev - 1;
+          if (newTime <= 0) {
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
+            }
+            handleTimeUp();
+            return 0;
+          }
+          return newTime;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, currentRound, handleTimeUp]);
+
+  // Ensure game always starts fresh when component mounts
+  useEffect(() => {
+    setGameState("ready");
+    setCurrentRound(0);
+    setScore(0);
+    setTimeLeft(ROUND_TIME);
+    setAnswered(false);
+    resetFeedback();
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
+  const handleAnswer = (answerType) => {
+    if (answered || gameState !== "playing") return;
+    
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const currentQ = questions[currentRound - 1];
+    const isCorrect = (answerType === "tap" && currentQ.type === "retry") || 
+                      (answerType === "skip" && currentQ.type === "quit");
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    setTimeout(() => {
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
+      } else {
+        setGameState("finished");
+      }
+    }, 1000);
   };
+
+  const currentQ = currentRound > 0 && currentRound <= TOTAL_ROUNDS ? questions[currentRound - 1] : null;
 
   return (
     <GameShell
       title="Reflex Try Again"
+      subtitle={gameState === "ready" ? "Get Ready!" : gameState === "playing" ? `Round ${currentRound} of ${TOTAL_ROUNDS}` : "Game Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentRound || 1}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-183"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={gameState === "finished"}
+      maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Reflex Try Again</h3>
-        <p className="text-white/80 mb-6 text-center">Tap for resilient actions.</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="text-center mb-4">
-            <Clock className="w-8 h-8 inline" /> {timer}s
+      totalXp={totalXp}
+      showConfetti={gameState === "finished" && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">Tap for 'Retry,' skip for 'Quit'!</h3>
+            <p className="text-white/90 mb-6">You'll see actions. Tap if it's trying again, skip if it's giving up.</p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold transition-all"
+            >
+              Start Game
+            </button>
           </div>
-          <h4 className="text-xl text-white mb-4">{currentItem}</h4>
-          <div className="grid grid-cols-2 gap-4">
-            <button onClick={() => handleResponse(true)} className="p-4 bg-green-500 rounded-lg text-white">Resilient</button>
-            <button onClick={() => handleResponse(false)} className="p-4 bg-red-500 rounded-lg text-white">Give Up</button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
         )}
-      </GameCard>
+
+        {gameState === "playing" && currentQ && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Round {currentRound}/{TOTAL_ROUNDS}</span>
+              <span className="text-yellow-400 font-bold">Score: {score}/{TOTAL_ROUNDS}</span>
+              <span className="text-red-400 font-bold">Time: {timeLeft}s</span>
+            </div>
+            
+            <div className="text-center mb-8">
+              <div className="text-6xl mb-4">{currentQ.emoji}</div>
+              <h3 className="text-3xl font-bold text-white mb-2">{currentQ.action}</h3>
+              <p className="text-white/80 text-lg">{currentQ.question}</p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <button
+                onClick={() => handleAnswer("tap")}
+                disabled={answered}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                <div className="text-3xl mb-2">👆</div>
+                <h3 className="font-bold text-xl">Tap</h3>
+                <p className="text-white/90 text-sm">Retry</p>
+              </button>
+              
+              <button
+                onClick={() => handleAnswer("skip")}
+                disabled={answered}
+                className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                <div className="text-3xl mb-2">⏭️</div>
+                <h3 className="font-bold text-xl">Skip</h3>
+                <p className="text-white/90 text-sm">Quit</p>
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
     </GameShell>
   );
 };

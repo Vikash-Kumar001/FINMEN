@@ -1,205 +1,148 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Rocket, RefreshCw, ArrowUp } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Image } from "lucide-react";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const DontGiveUpPoster = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-186";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-96");
+  const gameId = gameData?.id || "brain-kids-96";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for DontGiveUpPoster, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedPoster, setSelectedPoster] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const levelPosters = [
-    [
-      {
-        id: 1,
-        title: "Failure = Step to Success",
-        elements: [{ icon: <Rocket />, text: "Keep Going" }, { icon: <RefreshCw />, text: "Try Again" }],
-        color: "bg-gradient-to-r from-blue-500 to-green-500"
-      },
-      {
-        id: 2,
-        title: "Never Stop Trying",
-        elements: [{ icon: <Brain />, text: "Learn More" }, { icon: <ArrowUp />, text: "Rise Up" }],
-        color: "bg-gradient-to-r from-yellow-500 to-orange-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Bounce Back Strong",
-        elements: [{ icon: <Rocket />, text: "Push Forward" }, { icon: <RefreshCw />, text: "Retry" }],
-        color: "bg-gradient-to-r from-purple-500 to-pink-500"
-      },
-      {
-        id: 2,
-        title: "Keep Moving Up",
-        elements: [{ icon: <Brain />, text: "Grow Strong" }, { icon: <ArrowUp />, text: "Get Up" }],
-        color: "bg-gradient-to-r from-green-500 to-teal-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Rise After Fall",
-        elements: [{ icon: <Rocket />, text: "Stay Resilient" }, { icon: <RefreshCw />, text: "Try Harder" }],
-        color: "bg-gradient-to-r from-orange-500 to-red-500"
-      },
-      {
-        id: 2,
-        title: "Never Give Up",
-        elements: [{ icon: <Brain />, text: "Keep Learning" }, { icon: <ArrowUp />, text: "Bounce Back" }],
-        color: "bg-gradient-to-r from-blue-500 to-purple-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Try Until You Win",
-        elements: [{ icon: <Rocket />, text: "Keep At It" }, { icon: <RefreshCw />, text: "Start Over" }],
-        color: "bg-gradient-to-r from-teal-500 to-blue-500"
-      },
-      {
-        id: 2,
-        title: "Resilient Mind",
-        elements: [{ icon: <Brain />, text: "Learn Always" }, { icon: <ArrowUp />, text: "Rise Again" }],
-        color: "bg-gradient-to-r from-pink-500 to-red-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Stronger Each Try",
-        elements: [{ icon: <Rocket />, text: "Push On" }, { icon: <RefreshCw />, text: "Try Again" }],
-        color: "bg-gradient-to-r from-green-500 to-yellow-500"
-      },
-      {
-        id: 2,
-        title: "Resilience Wins",
-        elements: [{ icon: <Brain />, text: "Stay Strong" }, { icon: <ArrowUp />, text: "Keep Rising" }],
-        color: "bg-gradient-to-r from-purple-500 to-blue-500"
-      }
-    ]
+  const stages = [
+    {
+      question: 'Which poster best shows "Failure = Step to Success"?',
+      choices: [
+        { text: "Poster showing failure leads to learning and success", correct: true, emoji: "📈💪" },
+        { text: "Poster showing failure is the end", correct: false, emoji: "🛑" },
+        { text: "Poster showing only success matters", correct: false, emoji: "🏆" }
+      ]
+    },
+    {
+      question: 'Which poster best shows "Don\'t Give Up"?',
+      choices: [
+        { text: "Poster showing quitting easily", correct: false, emoji: "🏳️" },
+        { text: "Poster showing persistence and trying again", correct: true, emoji: "💪🔄" },
+        { text: "Poster showing avoiding challenges", correct: false, emoji: "🚶" }
+      ]
+    },
+    {
+      question: 'Which poster best shows "Keep Trying"?',
+      choices: [
+        { text: "Poster showing never giving up and practicing", correct: true, emoji: "🎯✨" },
+        { text: "Poster showing giving up after one try", correct: false, emoji: "😞" },
+        { text: "Poster showing only winning matters", correct: false, emoji: "👑" }
+      ]
+    },
+    {
+      question: 'Which poster best shows "Learn from Mistakes"?',
+      choices: [
+        { text: "Poster showing ignoring mistakes", correct: false, emoji: "🙈" },
+        { text: "Poster showing using mistakes to improve", correct: true, emoji: "📚💡" },
+        { text: "Poster showing never making mistakes", correct: false, emoji: "✨" }
+      ]
+    },
+    {
+      question: 'Which poster best shows "Resilience and Growth"?',
+      choices: [
+        { text: "Poster showing bouncing back and growing stronger", correct: true, emoji: "🌱⬆️" },
+        { text: "Poster showing staying down after falling", correct: false, emoji: "⬇️" },
+        { text: "Poster showing avoiding all challenges", correct: false, emoji: "🚫" }
+      ]
+    }
   ];
 
-  const posters = levelPosters[currentLevel - 1];
-
-  const handlePosterSelect = (poster) => {
-    if (!isSubmitted) {
-      setSelectedPoster(poster);
-    }
-  };
-
-  const handleSubmit = () => {
-    if (selectedPoster) {
-      setIsSubmitted(true);
-      setFeedbackType("correct");
-      setFeedbackMessage("Awesome resilient poster!");
+  const handleSelect = (isCorrect) => {
+    if (answered || showResult) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
       setScore(prev => prev + 1);
-      setShowFeedback(true);
-      setTimeout(() => {
-        setShowFeedback(false);
-        if (currentLevel < 5) {
-          setCurrentLevel(prev => prev + 1);
-          setSelectedPoster(null);
-          setIsSubmitted(false);
-        } else {
-          setLevelCompleted(true);
-        }
-      }, 2000);
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select a poster!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
+      showCorrectAnswerFeedback(1, true);
     }
+    
+    const isLastStage = currentStage === stages.length - 1;
+    
+    setTimeout(() => {
+      if (isLastStage) {
+        setShowResult(true);
+      } else {
+        setCurrentStage(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const finalScore = score;
 
   return (
     <GameShell
-      title="Poster: Don’t Give Up"
+      title="Poster: Don't Give Up"
+      subtitle={!showResult ? `Stage ${currentStage + 1} of ${stages.length}` : "Poster Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-186"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={stages.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Poster: Don’t Give Up</h3>
-        <p className="text-white/80 mb-6 text-center">Select a resilient poster.</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {posters.map((poster) => (
-              <div
-                key={poster.id}
-                onClick={() => handlePosterSelect(poster)}
-                className={`border-2 rounded-2xl p-6 cursor-pointer transition-all duration-200 ${
-                  selectedPoster?.id === poster.id ? 'border-white ring-2 ring-white/30 bg-white/20' : 'border-white/30 hover:border-white/50 bg-white/10'
-                }`}
-              >
-                <div className={`rounded-lg p-4 mb-4 ${poster.color}`}>
-                  <h5 className="text-white font-bold text-center">{poster.title}</h5>
-                </div>
-                <div className="space-y-3">
-                  {poster.elements.map((element, index) => (
-                    <div key={index} className="flex items-center">
-                      <div className="text-white mr-3">{element.icon}</div>
-                      <span className="text-white">{element.text}</span>
-                    </div>
-                  ))}
-                </div>
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && stages[currentStage] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Stage {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
               </div>
-            ))}
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {stages[currentStage].question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {stages[currentStage].choices.map((choice, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSelect(choice.correct)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-4xl mb-3">{choice.emoji}</div>
+                    <p className="text-white text-sm font-semibold">{choice.text}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedPoster || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedPoster && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

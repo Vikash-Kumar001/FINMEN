@@ -1,169 +1,243 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Goal, Check, X } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SportsStories = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-188";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-98");
+  const gameId = gameData?.id || "brain-kids-98";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for SportsStories, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const levels = [
+  const questions = [
     {
       id: 1,
-      story: "Team loses football match. Should they stop?",
-      choices: ["No, practice harder", "Yes, quit"],
-      correct: "No, practice harder",
-  icon: <Goal className="w-8 h-8" />
+      text: "Team loses football match. Should they stop?",
+      options: [
+        { 
+          id: "practice", 
+          text: "No, practice harder", 
+          emoji: "⚽", 
+          description: "Keep trying and improve",
+          isCorrect: true
+        },
+        { 
+          id: "quit", 
+          text: "Yes, stop playing", 
+          emoji: "🏳️", 
+          description: "Give up completely",
+          isCorrect: false
+        },
+        { 
+          id: "blame", 
+          text: "Blame teammates", 
+          emoji: "👆", 
+          description: "Point fingers",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      story: "Team loses basketball game. Best choice?",
-      choices: ["Train more", "Stop playing"],
-      correct: "Train more",
-      icon: <Basketball className="w-8 h-8" />
+      text: "Kid misses goal in soccer. What should they do?",
+      options: [
+        { 
+          id: "give", 
+          text: "Give up soccer", 
+          emoji: "😞", 
+          description: "Stop playing",
+          isCorrect: false
+        },
+        { 
+          id: "practice2", 
+          text: "Practice more and try again", 
+          emoji: "⚽", 
+          description: "Keep improving",
+          isCorrect: true
+        },
+        { 
+          id: "cry", 
+          text: "Cry and quit", 
+          emoji: "😢", 
+          description: "Get upset",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      story: "Kid misses goal in soccer. Next step?",
-      choices: ["Practice kicks", "Give up"],
-      correct: "Practice kicks",
-      icon: <Goal className="w-8 h-8" />
+      text: "Team loses basketball game. Best response?",
+      options: [
+        { 
+          id: "learn", 
+          text: "Learn from loss and practice", 
+          emoji: "🏀", 
+          description: "Use it as a lesson",
+          isCorrect: true
+        },
+        { 
+          id: "stop", 
+          text: "Stop playing basketball", 
+          emoji: "🚫", 
+          description: "Quit the sport",
+          isCorrect: false
+        },
+        { 
+          id: "angry", 
+          text: "Get angry at coach", 
+          emoji: "😠", 
+          description: "Blame others",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      story: "Team loses relay race. Best action?",
-      choices: ["Run again", "Quit team"],
-      correct: "Run again",
-      icon: <Running className="w-8 h-8" />
+      text: "Kid falls during race. What's the right action?",
+      options: [
+        { 
+          id: "get", 
+          text: "Get up and finish", 
+          emoji: "🏃", 
+          description: "Don't give up",
+          isCorrect: true
+        },
+        { 
+          id: "stay", 
+          text: "Stay down and quit", 
+          emoji: "😞", 
+          description: "Give up",
+          isCorrect: false
+        },
+        { 
+          id: "blame4", 
+          text: "Blame the track", 
+          emoji: "👆", 
+          description: "Make excuses",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      story: "Kid drops ball in volleyball. What to do?",
-      choices: ["Keep practicing", "Stop playing"],
-      correct: "Keep practicing",
-      icon: <Volleyball className="w-8 h-8" />
+      text: "Team loses tournament. Next step?",
+      options: [
+        { 
+          id: "train", 
+          text: "Train harder for next time", 
+          emoji: "💪", 
+          description: "Keep improving",
+          isCorrect: true
+        },
+        { 
+          id: "quit5", 
+          text: "Quit the team", 
+          emoji: "🚶", 
+          description: "Leave the team",
+          isCorrect: false
+        },
+        { 
+          id: "complain", 
+          text: "Complain about it", 
+          emoji: "😤", 
+          description: "Whine",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-
-  const handleChoiceSelect = (choice) => {
-    if (!isSubmitted) {
-      setSelectedChoice(choice);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleSubmit = () => {
-    if (selectedChoice) {
-      setIsSubmitted(true);
-      if (selectedChoice === currentLevelData.correct) {
-        setFeedbackType("correct");
-        setFeedbackMessage("Great teamwork resilience!");
-        setScore(prev => prev + 1);
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          if (currentLevel < 5) {
-            setCurrentLevel(prev => prev + 1);
-            setSelectedChoice(null);
-            setIsSubmitted(false);
-          } else {
-            setLevelCompleted(true);
-          }
-        }, 2000);
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setFeedbackType("wrong");
-        setFeedbackMessage("Keep practicing! Try again.");
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          setIsSubmitted(false);
-        }, 2000);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select a choice!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
-    }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Sports Story"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-188"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Sports Story</h3>
-        <p className="text-white/80 mb-6 text-center">{currentLevelData.story}</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="flex justify-center mb-4">{currentLevelData.icon}</div>
-          <div className="grid grid-cols-2 gap-4">
-            {currentLevelData.choices.map((choice, index) => (
-              <button
-                key={index}
-                onClick={() => handleChoiceSelect(choice)}
-                className={`p-4 rounded-lg ${selectedChoice === choice ? 'bg-blue-500' : 'bg-white/20'} text-white`}
-              >
-                {choice}
-              </button>
-            ))}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedChoice || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedChoice && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

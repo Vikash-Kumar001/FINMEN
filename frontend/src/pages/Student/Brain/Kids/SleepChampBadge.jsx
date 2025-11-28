@@ -1,417 +1,271 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Award, Check, X, Zap, Trophy, Star, RotateCcw, Play, Moon, Clock, Bed, Battery, BookOpenCheck } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { Moon, Clock, Bed, Battery, BookOpenCheck } from 'lucide-react';
 
 const SleepChampBadge = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-130";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-70");
+  const gameId = gameData?.id || "brain-kids-70";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for SleepChampBadge, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [progress, setProgress] = useState(0);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const [challenge, setChallenge] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [isTimerActive, setIsTimerActive] = useState(false);
-  const [streak, setStreak] = useState(0);
-  const [bestStreak, setBestStreak] = useState(0);
-  const [gameState, setGameState] = useState('intro'); // intro, playing, habit, completed
-  const [selectedHabit, setSelectedHabit] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const habits = [
-    { 
-      id: 1, 
-      title: "Bedtime Story Challenge", 
+  const challenges = [
+    {
+      id: 1,
+      title: "Bedtime Story Challenge",
       description: "Choose the best bedtime routine!",
       icon: <Moon className="w-8 h-8" />,
-      color: "bg-indigo-500"
+      color: "bg-indigo-500",
+      question: "It's bedtime! Which routine helps you sleep best?",
+      options: [
+        { 
+          text: "Go to bed at the same time each night", 
+          emoji: "🌙", 
+          isCorrect: true
+        },
+        { 
+          text: "Stay up late every night", 
+          emoji: "⏰", 
+          isCorrect: false
+        },
+        { 
+          text: "Watch TV until you fall asleep", 
+          emoji: "📺", 
+          isCorrect: false
+        },
+        { 
+          text: "Play games until midnight", 
+          emoji: "🎮", 
+          isCorrect: false
+        }
+      ]
     },
-    { 
-      id: 2, 
-      title: "Sleep Quiz Master", 
+    {
+      id: 2,
+      title: "Sleep Quiz Master",
       description: "Test your sleep knowledge!",
       icon: <BookOpenCheck className="w-8 h-8" />,
-      color: "bg-purple-500"
+      color: "bg-purple-500",
+      question: "Answer this question: How many hours should kids sleep?",
+      options: [
+        { 
+          text: "4 hours is enough", 
+          emoji: "😴", 
+          isCorrect: false
+        },
+        { 
+          text: "8-10 hours is best", 
+          emoji: "😊", 
+          isCorrect: true
+        },
+        { 
+          text: "12+ hours always", 
+          emoji: "😴", 
+          isCorrect: false
+        },
+        { 
+          text: "No sleep needed", 
+          emoji: "⚡", 
+          isCorrect: false
+        }
+      ]
     },
-    { 
-      id: 3, 
-      title: "Sleep Habits Reflex", 
+    {
+      id: 3,
+      title: "Sleep Habits Reflex",
       description: "Quickly identify good sleep habits!",
       icon: <Clock className="w-8 h-8" />,
-      color: "bg-blue-500"
+      color: "bg-blue-500",
+      question: "Is this a good sleep habit: 'Going to bed at the same time each night'?",
+      options: [
+        { 
+          text: "No, routines are bad", 
+          emoji: "❌", 
+          isCorrect: false
+        },
+        { 
+          text: "No, it's too strict", 
+          emoji: "😞", 
+          isCorrect: false
+        },
+        { 
+          text: "Yes, routines help sleep", 
+          emoji: "✅", 
+          isCorrect: true
+        },
+        { 
+          text: "No, sleep doesn't matter", 
+          emoji: "🤷", 
+          isCorrect: false
+        }
+      ]
     },
-    { 
-      id: 4, 
-      title: "Rest Habits Puzzle", 
+    {
+      id: 4,
+      title: "Rest Habits Puzzle",
       description: "Match rest habits with their effects!",
       icon: <Battery className="w-8 h-8" />,
-      color: "bg-green-500"
+      color: "bg-green-500",
+      question: "What effect does good sleep have?",
+      options: [
+        { 
+          text: "Makes you more tired", 
+          emoji: "😴", 
+          isCorrect: false
+        },
+        { 
+          text: "Helps you feel energized and focused", 
+          emoji: "⚡", 
+          isCorrect: true
+        },
+        { 
+          text: "Doesn't help at all", 
+          emoji: "🤷", 
+          isCorrect: false
+        },
+        { 
+          text: "Makes you lazy", 
+          emoji: "😑", 
+          isCorrect: false
+        }
+      ]
     },
-    { 
-      id: 5, 
-      title: "Exam Time Wisdom", 
+    {
+      id: 5,
+      title: "Exam Time Wisdom",
       description: "Avoid bad sleep habits during exams!",
       icon: <Bed className="w-8 h-8" />,
-      color: "bg-teal-500"
+      color: "bg-teal-500",
+      question: "It's exam week! What's the best approach to balance studying and sleep?",
+      options: [
+        { 
+          text: "Study all night, skip sleep", 
+          emoji: "📚", 
+          isCorrect: false
+        },
+        { 
+          text: "Study during day, sleep at night", 
+          emoji: "🌙", 
+          isCorrect: true
+        },
+        { 
+          text: "No sleep needed for exams", 
+          emoji: "⚡", 
+          isCorrect: false
+        },
+        { 
+          text: "Sleep all day, study at night", 
+          emoji: "🌙", 
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  // Timer effect
-  useEffect(() => {
-    let timer;
-    if (isTimerActive && timeLeft > 0 && gameState === 'habit') {
-      timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-    } else if (timeLeft === 0 && isTimerActive && gameState === 'habit') {
-      // Time's up
-      setIsTimerActive(false);
-      setFeedbackType("wrong");
-      setFeedbackMessage("Time's up! Try again.");
-      setShowFeedback(true);
-      setTimeout(() => {
-        setShowFeedback(false);
-        resetHabit();
-      }, 2000);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-    return () => clearTimeout(timer);
-  }, [timeLeft, isTimerActive, gameState]);
-
-  const startGame = () => {
-    setGameState('playing');
-    setProgress(0);
-    setScore(0);
-    setStreak(0);
-    setBestStreak(0);
-    setCurrentLevel(1);
-  };
-
-  const startHabit = (habitItem) => {
-    setSelectedHabit(habitItem);
-    setGameState('habit');
-    setIsSubmitted(false);
-    setTimeLeft(30);
-    setIsTimerActive(true);
-  };
-
-  const handleCompleteTask = () => {
-    if (isSubmitted) return;
     
-    setIsSubmitted(true);
-    setIsTimerActive(false);
-    setProgress(prev => prev + 1);
-    
-    setScore(prev => prev + 1); // 1 coin per completed habit
-    setStreak(streak + 1);
-    setBestStreak(Math.max(bestStreak, streak + 1));
-    
-    setFeedbackType("correct");
-    setFeedbackMessage(`Habit completed! +1 coin`);
-    setShowFeedback(true);
+    const isLastChallenge = challenge === challenges.length - 1;
     
     setTimeout(() => {
-      setShowFeedback(false);
-      if (currentLevel < 5) {
-        setCurrentLevel(prev => prev + 1);
-        setGameState('playing');
+      if (isLastChallenge) {
+        setShowResult(true);
+        setScore(challenges.length); // Ensure score matches total for GameOverModal
       } else {
-        setGameState('completed');
-        setLevelCompleted(true);
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
       }
-    }, 2500);
+    }, 1500);
   };
 
-  const resetHabit = () => {
-    setGameState('playing');
-    setIsSubmitted(false);
-    setTimeLeft(30);
-    setIsTimerActive(false);
-    setStreak(0);
-  };
-
-  const resetGame = () => {
-    setGameState('intro');
-    setCurrentLevel(1);
-    setProgress(0);
-    setScore(0);
-    setStreak(0);
-    setBestStreak(0);
-    setLevelCompleted(false);
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
-
-  const getProgressColor = () => {
-    const percentage = (progress / 5) * 100;
-    if (percentage < 30) return 'bg-red-500';
-    if (percentage < 60) return 'bg-yellow-500';
-    if (percentage < 90) return 'bg-blue-500';
-    return 'bg-green-500';
-  };
+  const currentChallenge = challenges[challenge];
 
   return (
     <GameShell
-      title="Sleep Champ Challenge"
+      title="Badge: Sleep Champ"
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Earned!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={challenge + 1}
+      totalLevels={challenges.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-130"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={challenges.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-2 text-center">Sleep Champ Challenge</h3>
-        
-        {gameState === 'intro' && (
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center py-6"
-          >
-            <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4" />
-            <h4 className="text-xl font-bold text-white mb-2">Become a Sleep Master!</h4>
-            <p className="text-white/80 mb-6">Complete 5 sleep habit challenges to earn your badge</p>
-            
-            <div className="bg-white/10 rounded-xl p-4 mb-6">
-              <div className="flex justify-between text-sm mb-2">
-                <span className="text-white/80">Progress</span>
-                <span className="text-white/80">{progress}/5</span>
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && currentChallenge ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
-              <div className="w-full bg-white/20 rounded-full h-3">
-                <div 
-                  className={`h-3 rounded-full transition-all duration-500 ${getProgressColor()}`}
-                  style={{ width: `${(progress/5) * 100}%` }}
-                ></div>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="bg-blue-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-blue-300">{score}</div>
-                <div className="text-xs text-white/70">Points</div>
-              </div>
-              <div className="bg-green-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-green-300">{bestStreak}x</div>
-                <div className="text-xs text-white/70">Best Streak</div>
-              </div>
-            </div>
-            
-            <button
-              onClick={startGame}
-              className="px-8 py-3 rounded-full font-bold transition duration-200 text-lg bg-gradient-to-r from-purple-500 to-indigo-600 text-white hover:opacity-90 shadow-lg flex items-center justify-center mx-auto"
-            >
-              <Play className="w-5 h-5 mr-2" />
-              Start Challenge
-            </button>
-          </motion.div>
-        )}
-        
-        {gameState === 'playing' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="rounded-2xl p-4 mb-4 bg-white/10 backdrop-blur-sm"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h4 className="text-lg font-bold text-white">Habit {currentLevel}</h4>
-              <div className="flex items-center bg-white/20 rounded-full px-3 py-1">
-                <Award className="w-4 h-4 text-yellow-400 mr-1" />
-                <span className="text-sm font-bold text-yellow-300">{progress}/5</span>
-              </div>
-            </div>
-            
-            <div className="grid grid-cols-1 gap-3 mb-4">
-              {habits.slice(0, currentLevel).map((habitItem) => (
-                <motion.div
-                  key={habitItem.id}
-                  whileHover={{ scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={() => startHabit(habitItem)}
-                  className={`${habitItem.color} rounded-xl p-4 text-white cursor-pointer shadow-md hover:shadow-lg transition-all`}
-                >
-                  <div className="flex items-center">
-                    <div className="mr-3">{habitItem.icon}</div>
-                    <div>
-                      <h5 className="font-bold">{habitItem.title}</h5>
-                      <p className="text-sm opacity-90">{habitItem.description}</p>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-            
-            <div className="flex justify-between text-sm">
-              <div className="text-white/70">Points: {score}</div>
-              <div className="text-white/70">Streak: {streak}x</div>
-            </div>
-          </motion.div>
-        )}
-        
-        {gameState === 'habit' && selectedHabit && (
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="rounded-2xl p-6 mb-4 bg-white/10 backdrop-blur-sm"
-          >
-            <div className="flex justify-between items-center mb-4">
-              <div className="flex items-center">
-                <div className={`mr-3 ${selectedHabit.color} p-2 rounded-lg`}>
-                  {selectedHabit.icon}
-                </div>
+              
+              <div className={`${currentChallenge.color} rounded-xl p-4 mb-6 flex items-center gap-3`}>
+                <div className="text-white">{currentChallenge.icon}</div>
                 <div>
-                  <h4 className="text-lg font-bold text-white">{selectedHabit.title}</h4>
-                  <p className="text-white/80 text-sm">{selectedHabit.description}</p>
+                  <h3 className="text-xl font-bold text-white">{currentChallenge.title}</h3>
+                  <p className="text-white/90 text-sm">{currentChallenge.description}</p>
                 </div>
               </div>
-              <div className={`text-lg font-bold ${timeLeft < 10 ? 'text-red-400 animate-pulse' : 'text-yellow-400'}`}>
-                {timeLeft}s
-              </div>
-            </div>
-            
-            <div className="bg-white/10 rounded-xl p-4 mb-4">
-              <div className="text-center text-white mb-2">
-                {currentLevel === 1 && "It's bedtime! Which routine helps you sleep best?"}
-                {currentLevel === 2 && "Answer this question: How many hours should kids sleep?"}
-                {currentLevel === 3 && "Quick! Is this a good sleep habit: 'Going to bed at the same time each night'?"}
-                {currentLevel === 4 && "Match these rest habits with their positive effects!"}
-                {currentLevel === 5 && "It's exam week! What's the best approach to balance studying and sleep?"}
-              </div>
-              <div className="flex justify-center space-x-2 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <div 
-                    key={i} 
-                    className={`w-3 h-3 rounded-full ${i < progress ? 'bg-green-500' : 'bg-white/20'}`}
-                  ></div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentChallenge.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallenge.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg">{option.text}</h3>
+                  </button>
                 ))}
               </div>
             </div>
-            
-            <div className="text-center mb-4">
-              <button
-                onClick={handleCompleteTask}
-                disabled={isSubmitted}
-                className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg flex items-center justify-center mx-auto ${
-                  !isSubmitted
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                    : 'bg-white/20 text-white/50 cursor-not-allowed'
-                }`}
-              >
-                {isSubmitted ? (
-                  <>
-                    <Check className="w-5 h-5 mr-2" />
-                    Completed!
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-5 h-5 mr-2" />
-                    Complete Habit
-                  </>
-                )}
-              </button>
-            </div>
-            
-            <div className="flex justify-between">
-              <button
-                onClick={resetHabit}
-                className="flex items-center text-white/70 hover:text-white text-sm"
-              >
-                <RotateCcw className="w-4 h-4 mr-1" />
-                Back
-              </button>
-              <div className="text-sm text-white/70">
-                Streak: {streak}x
-              </div>
-            </div>
-          </motion.div>
-        )}
-        
-        {gameState === 'completed' && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="text-center py-6"
-          >
-            <Trophy className="w-16 h-16 text-yellow-400 mx-auto mb-4 animate-bounce" />
-            <h4 className="text-2xl font-bold text-white mb-2">Sleep Master!</h4>
-            <p className="text-white/80 mb-4">You've earned the Sleep Champ Badge!</p>
-            
-            <div className="bg-gradient-to-r from-yellow-500/30 to-orange-500/30 rounded-xl p-4 mb-6 border-2 border-yellow-400">
-              <div className="text-3xl font-bold text-yellow-300 mb-2">{score} Points</div>
-              <div className="text-xl font-bold text-white mb-4">Sleep Champ Badge Earned!</div>
-              <p className="text-white/90">
-                {score >= 80 ? "🏆 Sleep Champion!" : 
-                 score >= 60 ? "🥇 Rest Expert!" : 
-                 score >= 40 ? "🥈 Good Job!" : 
-                 "🥉 Keep Practicing!"}
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-3 gap-3 mb-6">
-              <div className="bg-blue-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-blue-300">{progress}</div>
-                <div className="text-xs text-white/70">Habits</div>
-              </div>
-              <div className="bg-green-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-green-300">{bestStreak}x</div>
-                <div className="text-xs text-white/70">Best Streak</div>
-              </div>
-              <div className="bg-purple-500/20 rounded-lg p-2">
-                <div className="text-lg font-bold text-purple-300">{score}</div>
-                <div className="text-xs text-white/70">Points</div>
-              </div>
-            </div>
-            
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={resetGame}
-                className="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full font-bold hover:opacity-90 transition-opacity"
-              >
-                Play Again
-              </button>
-              <button
-                onClick={handleGameComplete}
-                className="px-6 py-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-full font-bold hover:opacity-90 transition-opacity"
-              >
-                Continue
-              </button>
-            </div>
-          </motion.div>
-        )}
-        
-        <AnimatePresence>
-          {showFeedback && (
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-            >
-              <FeedbackBubble 
-                message={feedbackMessage}
-                type={feedbackType}
-              />
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </GameCard>
+          </div>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

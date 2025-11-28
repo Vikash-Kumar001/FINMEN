@@ -1,169 +1,243 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Monitor, Check, X, Moon, Clock, Gamepad, Eye } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ScreensQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-142";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-72");
+  const gameId = gameData?.id || "brain-kids-72";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for ScreensQuiz, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const levels = [
+  const questions = [
     {
       id: 1,
-      question: "Too much screen time causes? (a) Eye strain, (b) More energy, (c) Superpowers",
-      options: ["(a) Eye strain", "(b) More energy", "(c) Superpowers"],
-      correct: "(a) Eye strain",
-      icon: <Monitor className="w-8 h-8" />
+      text: "Too much screen time causes? (a) Eye strain, (b) More energy, (c) Superpowers",
+      options: [
+        { 
+          id: "a", 
+          text: "(a) Eye strain", 
+          emoji: "👁️", 
+          description: "Too much screen time hurts eyes",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "(b) More energy", 
+          emoji: "⚡", 
+          description: "Screens don't give energy",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "(c) Superpowers", 
+          emoji: "🦸", 
+          description: "Screens don't give superpowers",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      question: "Screens before bed affect? (a) Sleep, (b) Strength, (c) Height",
-      options: ["(a) Sleep", "(b) Strength", "(c) Height"],
-      correct: "(a) Sleep",
-      icon: <Moon className="w-8 h-8" />
+      text: "Screens before bed affect? (a) Sleep, (b) Strength, (c) Height",
+      options: [
+        { 
+          id: "b", 
+          text: "(b) Strength", 
+          emoji: "💪", 
+          description: "Screens don't affect strength",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "(a) Sleep", 
+          emoji: "😴", 
+          description: "Screens before bed affect sleep",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "(c) Height", 
+          emoji: "📏", 
+          description: "Screens don't affect height",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      question: "Best screen time limit? (a) 10 hrs, (b) 1–2 hrs, (c) No limit",
-      options: ["(a) 10 hrs", "(b) 1–2 hrs", "(c) No limit"],
-      correct: "(b) 1–2 hrs",
-      icon: <Clock className="w-8 h-8" />
+      text: "Best screen time limit? (a) 10 hrs, (b) 1–2 hrs, (c) No limit",
+      options: [
+        { 
+          id: "c", 
+          text: "(c) No limit", 
+          emoji: "♾️", 
+          description: "Unlimited screen time is not healthy",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "(a) 10 hrs", 
+          emoji: "⏰", 
+          description: "10 hours is too much",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "(b) 1–2 hrs", 
+          emoji: "⏱️", 
+          description: "1-2 hours is a good limit",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      question: "Too much gaming causes? (a) Focus, (b) Tiredness, (c) Speed",
-      options: ["(a) Focus", "(b) Tiredness", "(c) Speed"],
-      correct: "(b) Tiredness",
-      icon: <Gamepad className="w-8 h-8" />
+      text: "Too much gaming causes? (a) Focus, (b) Tiredness, (c) Speed",
+      options: [
+        { 
+          id: "b", 
+          text: "(b) Tiredness", 
+          emoji: "😴", 
+          description: "Too much gaming makes you tired",
+          isCorrect: true
+        },
+        { 
+          id: "a", 
+          text: "(a) Focus", 
+          emoji: "🎯", 
+          description: "Too much gaming reduces focus",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "(c) Speed", 
+          emoji: "⚡", 
+          description: "Gaming doesn't increase speed",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      question: "Balanced screen use helps? (a) Eyes, (b) Headaches, (c) Laziness",
-      options: ["(a) Eyes", "(b) Headaches", "(c) Laziness"],
-      correct: "(a) Eyes",
-      icon: <Eye className="w-8 h-8" />
+      text: "Balanced screen use helps? (a) Eyes, (b) Headaches, (c) Laziness",
+      options: [
+        { 
+          id: "c", 
+          text: "(c) Laziness", 
+          emoji: "😑", 
+          description: "Balanced use reduces laziness",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "(a) Eyes", 
+          emoji: "👁️", 
+          description: "Balanced use protects your eyes",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "(b) Headaches", 
+          emoji: "🤕", 
+          description: "Balanced use reduces headaches",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-
-  const handleAnswerSelect = (answer) => {
-    if (!isSubmitted) {
-      setSelectedAnswer(answer);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleSubmit = () => {
-    if (selectedAnswer) {
-      setIsSubmitted(true);
-      if (selectedAnswer === currentLevelData.correct) {
-        setFeedbackType("correct");
-        setFeedbackMessage("Correct! Good screen knowledge.");
-        setScore(prev => prev + 1);
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          if (currentLevel < 5) {
-            setCurrentLevel(prev => prev + 1);
-            setSelectedAnswer(null);
-            setIsSubmitted(false);
-          } else {
-            setLevelCompleted(true);
-          }
-        }, 2000);
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setFeedbackType("wrong");
-        setFeedbackMessage("Not quite! Try again.");
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          setIsSubmitted(false);
-        }, 2000);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select an answer!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
-    }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Quiz on Screens"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-142"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Quiz on Screens</h3>
-        <p className="text-white/80 mb-6 text-center">{currentLevelData.question}</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="flex justify-center mb-4">{currentLevelData.icon}</div>
-          <div className="space-y-4">
-            {currentLevelData.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswerSelect(option)}
-                className={`w-full p-4 rounded-lg ${selectedAnswer === option ? 'bg-blue-500' : 'bg-white/20'} text-white text-left`}
-              >
-                {option}
-              </button>
-            ))}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedAnswer || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedAnswer && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

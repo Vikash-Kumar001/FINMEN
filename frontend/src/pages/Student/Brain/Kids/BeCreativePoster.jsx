@@ -1,205 +1,148 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Lightbulb, Wrench, Sparkles } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Image } from "lucide-react";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BeCreativePoster = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-86";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-86");
+  const gameId = gameData?.id || "brain-kids-86";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for BeCreativePoster, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedPoster, setSelectedPoster] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const levelPosters = [
-    [
-      {
-        id: 1,
-        title: "Think Out of the Box",
-        elements: [{ icon: <Lightbulb />, text: "New Ideas" }, { icon: <Wrench />, text: "Solve It" }],
-        color: "bg-gradient-to-r from-blue-500 to-purple-500"
-      },
-      {
-        id: 2,
-        title: "Create Solutions",
-        elements: [{ icon: <Sparkles />, text: "Be Unique" }, { icon: <Brain />, text: "Think Hard" }],
-        color: "bg-gradient-to-r from-green-500 to-teal-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Innovate Now",
-        elements: [{ icon: <Lightbulb />, text: "Fresh Ideas" }, { icon: <Wrench />, text: "Fix It" }],
-        color: "bg-gradient-to-r from-purple-500 to-pink-500"
-      },
-      {
-        id: 2,
-        title: "Be a Problem Solver",
-        elements: [{ icon: <Sparkles />, text: "Try New" }, { icon: <Brain />, text: "Smart Plan" }],
-        color: "bg-gradient-to-r from-teal-500 to-blue-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Creative Mind",
-        elements: [{ icon: <Lightbulb />, text: "Think Big" }, { icon: <Wrench />, text: "Solve Smart" }],
-        color: "bg-gradient-to-r from-yellow-500 to-orange-500"
-      },
-      {
-        id: 2,
-        title: "Idea Power",
-        elements: [{ icon: <Sparkles />, text: "Unique Fix" }, { icon: <Brain />, text: "Plan It" }],
-        color: "bg-gradient-to-r from-blue-500 to-green-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Think Creative",
-        elements: [{ icon: <Lightbulb />, text: "New Way" }, { icon: <Wrench />, text: "Work It Out" }],
-        color: "bg-gradient-to-r from-pink-500 to-red-500"
-      },
-      {
-        id: 2,
-        title: "Solve with Style",
-        elements: [{ icon: <Sparkles />, text: "Be Bold" }, { icon: <Brain />, text: "Smart Fix" }],
-        color: "bg-gradient-to-r from-green-500 to-yellow-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Ideas That Win",
-        elements: [{ icon: <Lightbulb />, text: "Think Fresh" }, { icon: <Wrench />, text: "Solve Now" }],
-        color: "bg-gradient-to-r from-orange-500 to-red-500"
-      },
-      {
-        id: 2,
-        title: "Creative Spark",
-        elements: [{ icon: <Sparkles />, text: "Unique Ideas" }, { icon: <Brain />, text: "Plan Smart" }],
-        color: "bg-gradient-to-r from-purple-500 to-blue-500"
-      }
-    ]
+  const stages = [
+    {
+      question: 'Which poster best shows "Think Out of the Box"?',
+      choices: [
+        { text: "Poster showing creative thinking and new ideas", correct: true, emoji: "💡✨" },
+        { text: "Poster showing only following rules", correct: false, emoji: "📋" },
+        { text: "Poster showing copying others", correct: false, emoji: "📋" }
+      ]
+    },
+    {
+      question: 'Which poster best shows "Be Creative"?',
+      choices: [
+        { text: "Poster showing only doing same thing", correct: false, emoji: "🔄" },
+        { text: "Poster showing imagination and creativity", correct: true, emoji: "🎨🌈" },
+        { text: "Poster showing avoiding new things", correct: false, emoji: "🚫" }
+      ]
+    },
+    {
+      question: 'Which poster best shows "Solve Problems Creatively"?',
+      choices: [
+        { text: "Poster showing finding creative solutions", correct: true, emoji: "🔧💭" },
+        { text: "Poster showing giving up easily", correct: false, emoji: "🏳️" },
+        { text: "Poster showing only one way to solve", correct: false, emoji: "➡️" }
+      ]
+    },
+    {
+      question: 'Which poster best shows "Use Your Imagination"?',
+      choices: [
+        { text: "Poster showing only copying", correct: false, emoji: "📋" },
+        { text: "Poster showing thinking differently", correct: true, emoji: "🧠✨" },
+        { text: "Poster showing avoiding ideas", correct: false, emoji: "🤐" }
+      ]
+    },
+    {
+      question: 'Which poster best shows "Create Something New"?',
+      choices: [
+        { text: "Poster showing making original things", correct: true, emoji: "🎨🆕" },
+        { text: "Poster showing only repeating old things", correct: false, emoji: "🔄" },
+        { text: "Poster showing never trying new", correct: false, emoji: "🚫" }
+      ]
+    }
   ];
 
-  const posters = levelPosters[currentLevel - 1];
-
-  const handlePosterSelect = (poster) => {
-    if (!isSubmitted) {
-      setSelectedPoster(poster);
-    }
-  };
-
-  const handleSubmit = () => {
-    if (selectedPoster) {
-      setIsSubmitted(true);
-      setFeedbackType("correct");
-      setFeedbackMessage("Awesome creative poster!");
+  const handleSelect = (isCorrect) => {
+    if (answered || showResult) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
       setScore(prev => prev + 1);
-      setShowFeedback(true);
-      setTimeout(() => {
-        setShowFeedback(false);
-        if (currentLevel < 5) {
-          setCurrentLevel(prev => prev + 1);
-          setSelectedPoster(null);
-          setIsSubmitted(false);
-        } else {
-          setLevelCompleted(true);
-        }
-      }, 2000);
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select a poster!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
+      showCorrectAnswerFeedback(1, true);
     }
+    
+    const isLastStage = currentStage === stages.length - 1;
+    
+    setTimeout(() => {
+      if (isLastStage) {
+        setShowResult(true);
+      } else {
+        setCurrentStage(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const finalScore = score;
 
   return (
     <GameShell
       title="Poster: Be Creative"
+      subtitle={!showResult ? `Stage ${currentStage + 1} of ${stages.length}` : "Poster Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-166"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={stages.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Poster: Be Creative</h3>
-        <p className="text-white/80 mb-6 text-center">Select a creative poster.</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {posters.map((poster) => (
-              <div
-                key={poster.id}
-                onClick={() => handlePosterSelect(poster)}
-                className={`border-2 rounded-2xl p-6 cursor-pointer transition-all duration-200 ${
-                  selectedPoster?.id === poster.id ? 'border-white ring-2 ring-white/30 bg-white/20' : 'border-white/30 hover:border-white/50 bg-white/10'
-                }`}
-              >
-                <div className={`rounded-lg p-4 mb-4 ${poster.color}`}>
-                  <h5 className="text-white font-bold text-center">{poster.title}</h5>
-                </div>
-                <div className="space-y-3">
-                  {poster.elements.map((element, index) => (
-                    <div key={index} className="flex items-center">
-                      <div className="text-white mr-3">{element.icon}</div>
-                      <span className="text-white">{element.text}</span>
-                    </div>
-                  ))}
-                </div>
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && stages[currentStage] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Stage {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
               </div>
-            ))}
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {stages[currentStage].question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {stages[currentStage].choices.map((choice, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleSelect(choice.correct)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-4xl mb-3">{choice.emoji}</div>
+                    <p className="text-white text-sm font-semibold">{choice.text}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedPoster || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedPoster && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

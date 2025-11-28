@@ -1,170 +1,243 @@
-// File: LostMatchStory.js
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Trophy, Check, X, BookOpenCheck, Bike, Paintbrush, Goal } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const LostMatchStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-105";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-55");
+  const gameId = gameData?.id || "brain-kids-55";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for LostMatchStory, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const levels = [
+  const questions = [
     {
       id: 1,
-      story: "Team loses game. Best thought?",
-      choices: ["Next time we'll improve!", "We're losers", "Give up"],
-      correct: "Next time we'll improve!",
-      icon: <Trophy className="w-8 h-8" />
+      text: "Team loses a game. Best thought?",
+      options: [
+        { 
+          id: "improve", 
+          text: "Next time we'll improve!", 
+          emoji: "📈", 
+          description: "Focus on getting better",
+          isCorrect: true
+        },
+        { 
+          id: "losers", 
+          text: "We're losers", 
+          emoji: "😢", 
+          description: "Think negatively about yourself",
+          isCorrect: false
+        },
+        { 
+          id: "giveup", 
+          text: "Give up", 
+          emoji: "😔", 
+          description: "Stop trying",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      story: "Failed test. Positive thought?",
-      choices: ["Study more next time!", "I'm dumb", "Skip school"],
-      correct: "Study more next time!",
-      icon: <BookOpenCheck className="w-8 h-8" />
+      text: "Failed test. Positive thought?",
+      options: [
+        { 
+          id: "dumb", 
+          text: "I'm dumb", 
+          emoji: "😞", 
+          description: "Think negatively about yourself",
+          isCorrect: false
+        },
+        { 
+          id: "study", 
+          text: "Study more next time!", 
+          emoji: "📚", 
+          description: "Focus on improvement",
+          isCorrect: true
+        },
+        { 
+          id: "skip", 
+          text: "Skip school", 
+          emoji: "🚶", 
+          description: "Avoid the problem",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      story: "Fell off bike. Best thought?",
-      choices: ["Practice makes perfect!", "Never ride again", "Hate bike"],
-      correct: "Practice makes perfect!",
-      icon: <Bike className="w-8 h-8" />
+      text: "Fell off bike. Best thought?",
+      options: [
+        { 
+          id: "practice", 
+          text: "Practice makes perfect!", 
+          emoji: "🚴", 
+          description: "Keep trying and improving",
+          isCorrect: true
+        },
+        { 
+          id: "never", 
+          text: "Never ride again", 
+          emoji: "🚫", 
+          description: "Give up completely",
+          isCorrect: false
+        },
+        { 
+          id: "hate", 
+          text: "Hate bike", 
+          emoji: "😠", 
+          description: "Get angry and blame",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      story: "Drawing didn't win. What to think?",
-      choices: ["Try new ideas next!", "I'm bad at art", "Stop drawing"],
-      correct: "Try new ideas next!",
-      icon: <Paintbrush className="w-8 h-8" />
+      text: "Drawing didn't win. What to think?",
+      options: [
+        { 
+          id: "bad", 
+          text: "I'm bad at art", 
+          emoji: "😞", 
+          description: "Think negatively",
+          isCorrect: false
+        },
+        { 
+          id: "stop", 
+          text: "Stop drawing", 
+          emoji: "✋", 
+          description: "Give up",
+          isCorrect: false
+        },
+        { 
+          id: "newideas", 
+          text: "Try new ideas next!", 
+          emoji: "🎨", 
+          description: "Focus on improvement",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 5,
-      story: "Missed goal. Positive thought?",
-      choices: ["Keep practicing!", "I'm terrible", "Quit team"],
-      correct: "Keep practicing!",
-      icon: <Goal className="w-8 h-8" />
+      text: "Missed goal. Positive thought?",
+      options: [
+        { 
+          id: "terrible", 
+          text: "I'm terrible", 
+          emoji: "😞", 
+          description: "Think negatively",
+          isCorrect: false
+        },
+        { 
+          id: "quit", 
+          text: "Quit team", 
+          emoji: "🚪", 
+          description: "Give up",
+          isCorrect: false
+        },
+        { 
+          id: "practice2", 
+          text: "Keep practicing!", 
+          emoji: "⚽", 
+          description: "Focus on improvement",
+          isCorrect: true
+        }
+      ]
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-
-  const handleChoiceSelect = (choice) => {
-    if (!isSubmitted) {
-      setSelectedChoice(choice);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleSubmit = () => {
-    if (selectedChoice) {
-      setIsSubmitted(true);
-      if (selectedChoice === currentLevelData.correct) {
-        setFeedbackType("correct");
-        setFeedbackMessage("Positive mindset!");
-        setScore(prev => prev + 1);
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          if (currentLevel < 5) {
-            setCurrentLevel(prev => prev + 1);
-            setSelectedChoice(null);
-            setIsSubmitted(false);
-          } else {
-            setLevelCompleted(true);
-          }
-        }, 2000);
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setFeedbackType("wrong");
-        setFeedbackMessage("Think positive! Try again.");
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          setIsSubmitted(false);
-        }, 2000);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select a choice!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
-    }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Lost Match Story"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-105"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Lost Match Story</h3>
-        <p className="text-white/80 mb-6 text-center">{currentLevelData.story}</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="flex justify-center mb-4">{currentLevelData.icon}</div>
-          <div className="space-y-4">
-            {currentLevelData.choices.map((choice, index) => (
-              <button
-                key={index}
-                onClick={() => handleChoiceSelect(choice)}
-                className={`w-full p-4 rounded-lg ${selectedChoice === choice ? 'bg-blue-500' : 'bg-white/20'} text-white text-left`}
-              >
-                {choice}
-              </button>
-            ))}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedChoice || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedChoice && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

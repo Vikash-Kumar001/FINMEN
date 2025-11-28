@@ -1,169 +1,243 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, PartyPopper, Check, X, Gift, Gamepad, Tv, Smartphone } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const HolidayStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-128";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-68");
+  const gameId = gameData?.id || "brain-kids-68";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for HolidayStory, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const levels = [
+  const questions = [
     {
       id: 1,
-      story: "Kid plays all night, tired next day. Good habit?",
-      choices: ["Yes", "No"],
-      correct: "No",
-      icon: <PartyPopper className="w-8 h-8" />
+      text: "Kid plays all night, tired next day. Good habit?",
+      options: [
+        { 
+          id: "no", 
+          text: "No, it's not good", 
+          emoji: "❌", 
+          description: "Rest helps you feel better",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes, it's good", 
+          emoji: "✅", 
+          description: "Playing all night is fine",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe, depends", 
+          emoji: "🤔", 
+          description: "It depends on the activity",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      story: "Kid stays up late on holiday, sleepy. Smart?",
-      choices: ["Yes", "No"],
-      correct: "No",
-      icon: <Gift className="w-8 h-8" />
+      text: "Kid stays up late on holiday, sleepy. Smart?",
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes, it's smart", 
+          emoji: "✅", 
+          description: "Holidays are for staying up",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe, depends", 
+          emoji: "🤔", 
+          description: "It depends on the holiday",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No, it's not smart", 
+          emoji: "❌", 
+          description: "Sleep is important even on holidays",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 3,
-      story: "Kid games till 2 AM on break, exhausted. Good?",
-      choices: ["Yes", "No"],
-      correct: "No",
-      icon: <Gamepad className="w-8 h-8" />
+      text: "Kid games till 2 AM on break, exhausted. Good?",
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe, depends", 
+          emoji: "🤔", 
+          description: "It depends on the game",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No, it's not good", 
+          emoji: "❌", 
+          description: "Rest helps you enjoy breaks more",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes, it's good", 
+          emoji: "✅", 
+          description: "Gaming all night is fine",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      story: "Kid watches movies all night, tired. Wise?",
-      choices: ["Yes", "No"],
-      correct: "No",
-      icon: <Tv className="w-8 h-8" />
+      text: "Kid watches movies all night, tired. Wise?",
+      options: [
+        { 
+          id: "no", 
+          text: "No, it's not wise", 
+          emoji: "❌", 
+          description: "Sleep helps you feel refreshed",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes, it's wise", 
+          emoji: "✅", 
+          description: "Movies are worth staying up",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe, depends", 
+          emoji: "🤔", 
+          description: "It depends on the movie",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      story: "Kid chats till midnight, yawns all day. Good?",
-      choices: ["Yes", "No"],
-      correct: "No",
-      icon: <Smartphone className="w-8 h-8" />
+      text: "Kid chats till midnight, yawns all day. Good?",
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes, it's good", 
+          emoji: "✅", 
+          description: "Chatting is always fine",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe, depends", 
+          emoji: "🤔", 
+          description: "It depends on who you chat with",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No, it's not good", 
+          emoji: "❌", 
+          description: "Sleep helps you stay alert",
+          isCorrect: true
+        }
+      ]
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-
-  const handleChoiceSelect = (choice) => {
-    if (!isSubmitted) {
-      setSelectedChoice(choice);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleSubmit = () => {
-    if (selectedChoice) {
-      setIsSubmitted(true);
-      if (selectedChoice === currentLevelData.correct) {
-        setFeedbackType("correct");
-        setFeedbackMessage("Good choice! Rest is key.");
-        setScore(prev => prev + 1);
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          if (currentLevel < 5) {
-            setCurrentLevel(prev => prev + 1);
-            setSelectedChoice(null);
-            setIsSubmitted(false);
-          } else {
-            setLevelCompleted(true);
-          }
-        }, 2000);
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setFeedbackType("wrong");
-        setFeedbackMessage("Rest helps! Try again.");
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          setIsSubmitted(false);
-        }, 2000);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select a choice!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
-    }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Holiday Story"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-128"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Holiday Story</h3>
-        <p className="text-white/80 mb-6 text-center">{currentLevelData.story}</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="flex justify-center mb-4">{currentLevelData.icon}</div>
-          <div className="grid grid-cols-2 gap-4">
-            {currentLevelData.choices.map((choice, index) => (
-              <button
-                key={index}
-                onClick={() => handleChoiceSelect(choice)}
-                className={`p-4 rounded-lg ${selectedChoice === choice ? 'bg-blue-500' : 'bg-white/20'} text-white`}
-              >
-                {choice}
-              </button>
-            ))}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedChoice || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedChoice && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

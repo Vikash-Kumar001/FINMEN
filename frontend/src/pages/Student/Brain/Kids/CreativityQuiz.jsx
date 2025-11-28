@@ -1,169 +1,243 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Lightbulb, Check, X, Users, Wrench, Sparkles } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const CreativityQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-82";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-82");
+  const gameId = gameData?.id || "brain-kids-82";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for CreativityQuiz, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const levels = [
+  const questions = [
     {
       id: 1,
-      question: "Which is problem solving? (a) Crying, (b) Finding another way, (c) Giving up",
-      options: ["(a) Crying", "(b) Finding another way", "(c) Giving up"],
-      correct: "(b) Finding another way",
-      icon: <Lightbulb className="w-8 h-8" />
+      text: "Which is problem solving?",
+      options: [
+        { 
+          id: "crying", 
+          text: "Crying", 
+          emoji: "😢", 
+          description: "Getting upset",
+          isCorrect: false
+        },
+        { 
+          id: "finding", 
+          text: "Finding another way", 
+          emoji: "💡", 
+          description: "Thinking creatively",
+          isCorrect: true
+        },
+        { 
+          id: "giving", 
+          text: "Giving up", 
+          emoji: "😞", 
+          description: "Stopping trying",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      question: "Creative thinking is? (a) Copying, (b) New ideas, (c) Waiting",
-      options: ["(a) Copying", "(b) New ideas", "(c) Waiting"],
-      correct: "(b) New ideas",
-      icon: <Brain className="w-8 h-8" />
+      text: "What is creative thinking?",
+      options: [
+        { 
+          id: "copy", 
+          text: "Copying others", 
+          emoji: "📋", 
+          description: "Doing the same thing",
+          isCorrect: false
+        },
+        { 
+          id: "new", 
+          text: "Coming up with new ideas", 
+          emoji: "✨", 
+          description: "Thinking differently",
+          isCorrect: true
+        },
+        { 
+          id: "avoid", 
+          text: "Avoiding problems", 
+          emoji: "🚶", 
+          description: "Running away",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      question: "Best for solving issues? (a) Asking for help, (b) Ignoring, (c) Blaming",
-      options: ["(a) Asking for help", "(b) Ignoring", "(c) Blaming"],
-      correct: "(a) Asking for help",
-      icon: <Users className="w-8 h-8" />
+      text: "How do you solve a problem creatively?",
+      options: [
+        { 
+          id: "same", 
+          text: "Do the same thing again", 
+          emoji: "🔄", 
+          description: "Repeat old methods",
+          isCorrect: false
+        },
+        { 
+          id: "think", 
+          text: "Think of different solutions", 
+          emoji: "🧠", 
+          description: "Brainstorm ideas",
+          isCorrect: true
+        },
+        { 
+          id: "wait", 
+          text: "Wait for someone else", 
+          emoji: "⏳", 
+          description: "Let others solve it",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      question: "Stuck on a task? Best is? (a) Try new way, (b) Quit, (c) Complain",
-      options: ["(a) Try new way", "(b) Quit", "(c) Complain"],
-      correct: "(a) Try new way",
-      icon: <Wrench className="w-8 h-8" />
+      text: "What helps you be creative?",
+      options: [
+        { 
+          id: "fear", 
+          text: "Being afraid to try", 
+          emoji: "😨", 
+          description: "Avoiding new things",
+          isCorrect: false
+        },
+        { 
+          id: "experiment", 
+          text: "Trying new things", 
+          emoji: "🔬", 
+          description: "Experimenting",
+          isCorrect: true
+        },
+        { 
+          id: "stay", 
+          text: "Staying in comfort zone", 
+          emoji: "🛋️", 
+          description: "Never changing",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      question: "Creative solution means? (a) Same old, (b) Unique fix, (c) Do nothing",
-      options: ["(a) Same old", "(b) Unique fix", "(c) Do nothing"],
-      correct: "(b) Unique fix",
-      icon: <Sparkles className="w-8 h-8" />
+      text: "What is the best way to solve a problem?",
+      options: [
+        { 
+          id: "quit", 
+          text: "Give up immediately", 
+          emoji: "🏳️", 
+          description: "Stop trying",
+          isCorrect: false
+        },
+        { 
+          id: "blame", 
+          text: "Blame others", 
+          emoji: "👆", 
+          description: "Point fingers",
+          isCorrect: false
+        },
+        { 
+          id: "solve", 
+          text: "Think and find solutions", 
+          emoji: "🔧", 
+          description: "Work on solving it",
+          isCorrect: true
+        }
+      ]
     }
   ];
 
-  const currentLevelData = levels[currentLevel - 1];
-
-  const handleAnswerSelect = (answer) => {
-    if (!isSubmitted) {
-      setSelectedAnswer(answer);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleSubmit = () => {
-    if (selectedAnswer) {
-      setIsSubmitted(true);
-      if (selectedAnswer === currentLevelData.correct) {
-        setFeedbackType("correct");
-        setFeedbackMessage("Correct! Creative thinking!");
-        setScore(prev => prev + 1);
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          if (currentLevel < 5) {
-            setCurrentLevel(prev => prev + 1);
-            setSelectedAnswer(null);
-            setIsSubmitted(false);
-          } else {
-            setLevelCompleted(true);
-          }
-        }, 2000);
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setFeedbackType("wrong");
-        setFeedbackMessage("Think creatively! Try again.");
-        setShowFeedback(true);
-        setTimeout(() => {
-          setShowFeedback(false);
-          setIsSubmitted(false);
-        }, 2000);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select an answer!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
-    }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Quiz on Creativity"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-162"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Quiz on Creativity</h3>
-        <p className="text-white/80 mb-6 text-center">{currentLevelData.question}</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="flex justify-center mb-4">{currentLevelData.icon}</div>
-          <div className="space-y-4">
-            {currentLevelData.options.map((option, index) => (
-              <button
-                key={index}
-                onClick={() => handleAnswerSelect(option)}
-                className={`w-full p-4 rounded-lg ${selectedAnswer === option ? 'bg-blue-500' : 'bg-white/20'} text-white text-left`}
-              >
-                {option}
-              </button>
-            ))}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedAnswer || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedAnswer && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

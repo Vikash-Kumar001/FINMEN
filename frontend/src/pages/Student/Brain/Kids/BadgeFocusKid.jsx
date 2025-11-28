@@ -1,117 +1,258 @@
-import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble, LevelCompleteHandler } from '../../Finance/GameShell';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BadgeFocusKid = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-20";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-20");
+  const gameId = gameData?.id || "brain-kids-20";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for BadgeFocusKid, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [levelCompleted] = React.useState(true);
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // This badge is awarded for completing all the focus games
-  const badgeCriteria = [
-    "Completed Classroom Story",
-    "Passed Focus Quiz",
-    "Demonstrated Attention Reflex",
-    "Solved Focus Puzzle",
-    "Understood Homework Focus",
-    "Created Focus Matters Poster",
-    "Documented Focus Strategies in Journal",
-    "Learned Game Balance",
-    "Practiced Quick Attention Reflex",
-    "Showed Consistent Focus Skills"
+  const challenges = [
+    {
+      id: 1,
+      title: "Focus Challenge 1",
+      question: "What is the best way to improve your focus?",
+      options: [
+        { 
+          text: "Practice focusing, eliminate distractions, and take breaks", 
+          emoji: "🎯", 
+          isCorrect: true
+        },
+        { 
+          text: "Never take breaks", 
+          emoji: "⏰", 
+          isCorrect: false
+        },
+        { 
+          text: "Always multitask", 
+          emoji: "🤹", 
+          isCorrect: false
+        },
+        { 
+          text: "Avoid all learning activities", 
+          emoji: "🚫", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Focus Challenge 2",
+      question: "Which environment helps you focus best?",
+      options: [
+        { 
+          text: "Loud and noisy place", 
+          emoji: "🔊", 
+          isCorrect: false
+        },
+        { 
+          text: "Quiet and organized space", 
+          emoji: "🔇", 
+          isCorrect: true
+        },
+        { 
+          text: "Busy playground", 
+          emoji: "🎮", 
+          isCorrect: false
+        },
+        { 
+          text: "In front of TV", 
+          emoji: "📺", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Focus Challenge 3",
+      question: "How should you balance games and study?",
+      options: [
+        { 
+          text: "Play games all day", 
+          emoji: "🎮", 
+          isCorrect: false
+        },
+        { 
+          text: "Study all day without breaks", 
+          emoji: "📚", 
+          isCorrect: false
+        },
+        { 
+          text: "Set a schedule: study time and play time", 
+          emoji: "⏰", 
+          isCorrect: true
+        },
+        { 
+          text: "Never play games", 
+          emoji: "🚫", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Focus Challenge 4",
+      question: "What helps you maintain focus longer?",
+      options: [
+        { 
+          text: "Taking short breaks between tasks", 
+          emoji: "⏸️", 
+          isCorrect: true
+        },
+        { 
+          text: "Working continuously without rest", 
+          emoji: "⏰", 
+          isCorrect: false
+        },
+        { 
+          text: "Doing everything at once", 
+          emoji: "🤹", 
+          isCorrect: false
+        },
+        { 
+          text: "Avoiding all activities", 
+          emoji: "😴", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Focus Challenge 5",
+      question: "What is a key focus strategy?",
+      options: [
+        { 
+          text: "Eliminate distractions and stay organized", 
+          emoji: "🎯", 
+          isCorrect: true
+        },
+        { 
+          text: "Have many distractions around", 
+          emoji: "📱", 
+          isCorrect: false
+        },
+        { 
+          text: "Work in chaos", 
+          emoji: "🌀", 
+          isCorrect: false
+        },
+        { 
+          text: "Never plan anything", 
+          emoji: "❌", 
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const handleNext = () => {
-    navigate('/games/brain-health/kids');
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const currentChallengeData = challenges[challenge];
 
   return (
     <GameShell
-      title="Focus Kid Badge"
-      score={100}
-      currentLevel={1}
-      totalLevels={1}
+      title="Badge: Focus Kid"
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-20"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={levelCompleted}
-      nextLabel="Complete"
-      backPath="/games/brain-health/kids"
-    
-      maxScore={1} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <LevelCompleteHandler
-        gameId="brain-kids-20"
-        gameType="brain-health"
-        levelNumber={1}
-        levelScore={100}
-        maxLevelScore={100}
-      >
-        <GameCard>
-          <div className="text-center">
-            <h3 className="text-2xl font-bold mb-6 text-white">Focus Kid Badge</h3>
-            
-            <div className="mb-8">
-              <div className="inline-block p-4 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-24 w-24 text-white" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                </svg>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="brain"
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult && currentChallengeData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
               </div>
-              <h4 className="text-xl font-bold text-white mb-2">Congratulations!</h4>
-              <p className="text-white/80 max-w-md mx-auto">
-                You've earned the Focus Kid badge for completing all the focus and attention games!
+              
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallengeData.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallengeData.question}
               </p>
-            </div>
-            
-            <div className="bg-white/10 rounded-xl p-6 mb-8 text-left">
-              <h5 className="text-lg font-semibold mb-4 text-white">Badge Requirements:</h5>
-              <ul className="space-y-2">
-                {badgeCriteria.map((criterion, index) => (
-                  <li key={index} className="flex items-start">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-400 mr-2 mt-0.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    <span className="text-white/90">{criterion}</span>
-                  </li>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallengeData.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
                 ))}
-              </ul>
-            </div>
-            
-            <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-6 mb-8">
-              <h5 className="font-medium text-blue-300 mb-2">Skills You've Developed:</h5>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-left">
-                <div>
-                  <p className="text-blue-200">✓ Improved concentration and attention</p>
-                  <p className="text-blue-200">✓ Better focus during learning activities</p>
-                  <p className="text-blue-200">✓ Enhanced ability to ignore distractions</p>
-                </div>
-                <div>
-                  <p className="text-blue-200">✓ Developed study and homework strategies</p>
-                  <p className="text-blue-200">✓ Built self-awareness of focus habits</p>
-                  <p className="text-blue-200">✓ Practiced mindfulness techniques</p>
-                </div>
               </div>
             </div>
           </div>
-        </GameCard>
-      </LevelCompleteHandler>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

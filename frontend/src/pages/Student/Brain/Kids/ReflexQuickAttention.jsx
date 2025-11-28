@@ -1,220 +1,268 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
-import { Zap, Coffee, Brain, Target } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { Zap, Eye, Brain, Coffee, Target } from 'lucide-react';
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 8;
 
 const ReflexQuickAttention = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-19";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-19");
+  const gameId = gameData?.id || "brain-kids-19";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for ReflexQuickAttention, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [gameState, setGameState] = useState('waiting'); // waiting, active, finished
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [showTarget, setShowTarget] = useState(false);
-  const [reactionTime, setReactionTime] = useState(null);
-  const [streak, setStreak] = useState(0);
-  const [bestStreak, setBestStreak] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [totalCorrect, setTotalCorrect] = useState(0); // Track total correct answers
-  const startTimeRef = useRef(null);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
 
-  // Timer countdown
-  useEffect(() => {
-    if (gameState === 'active' && timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && gameState === 'active') {
-      setGameState('finished');
-      setLevelCompleted(true);
+  const questions = [
+    {
+      id: 1,
+      question: "Is 'Quick Focus' a good attention skill?",
+      action: "Quick Focus",
+      type: "good",
+      emoji: "⚡",
+      icon: <Zap className="w-8 h-8" />
+    },
+    {
+      id: 2,
+      question: "Is 'Getting Distracted' a good attention skill?",
+      action: "Getting Distracted",
+      type: "bad",
+      emoji: "😵",
+      icon: <Coffee className="w-8 h-8" />
+    },
+    {
+      id: 3,
+      question: "Is 'Staying Alert' a good attention skill?",
+      action: "Staying Alert",
+      type: "good",
+      emoji: "👁️",
+      icon: <Eye className="w-8 h-8" />
+    },
+    {
+      id: 4,
+      question: "Is 'Losing Concentration' a good attention skill?",
+      action: "Losing Concentration",
+      type: "bad",
+      emoji: "💭",
+      icon: <Coffee className="w-8 h-8" />
+    },
+    {
+      id: 5,
+      question: "Is 'Quick Response' a good attention skill?",
+      action: "Quick Response",
+      type: "good",
+      emoji: "🎯",
+      icon: <Target className="w-8 h-8" />
     }
-  }, [gameState, timeLeft]);
+  ];
 
-  // Random target appearance
+  const handleTimeUp = useCallback(() => {
+    if (currentRound < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
+  }, [currentRound]);
+
   useEffect(() => {
-    if (gameState === 'active' && timeLeft > 0) {
-      const targetTimer = setTimeout(() => {
-        if (!showTarget) {
-          setShowTarget(true);
-          startTimeRef.current = Date.now();
-          
-          // Hide target after random time if not tapped
-          setTimeout(() => {
-            if (showTarget) {
-              setShowTarget(false);
-              setStreak(0);
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0 && currentRound > 0) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => {
+          const newTime = prev - 1;
+          if (newTime <= 0) {
+            if (timerRef.current) {
+              clearInterval(timerRef.current);
+              timerRef.current = null;
             }
-          }, 2000);
-        }
-      }, Math.random() * 3000 + 1000);
-      return () => clearTimeout(targetTimer);
+            handleTimeUp();
+            return 0;
+          }
+          return newTime;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     }
-  }, [gameState, timeLeft, showTarget]);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, currentRound, handleTimeUp]);
 
   const startGame = () => {
-    setGameState('active');
-    setTimeLeft(30);
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
     setScore(0);
-    setStreak(0);
-    setBestStreak(0);
-    setShowTarget(false);
-    setReactionTime(null);
-    setTotalCorrect(0);
-    setLevelCompleted(false);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
   };
 
-  const handleTargetTap = () => {
-    if (showTarget && gameState === 'active') {
-      const reaction = Date.now() - startTimeRef.current;
-      setReactionTime(reaction);
-      
-      // Points based on reaction time (faster = more points)
-      const points = Math.max(1, Math.floor(2000 / reaction));
-      setScore(Math.min(score + points, 100)); // Cap score at 100
-      setStreak(streak + 1);
-      setTotalCorrect(totalCorrect + 1); // Track correct answers
-      
-      if (streak + 1 > bestStreak) {
-        setBestStreak(streak + 1);
+  const handleAnswer = (answerType) => {
+    if (answered || gameState !== "playing") return;
+    
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const currentQuestion = questions[currentRound - 1];
+    const isCorrect = answerType === currentQuestion.type;
+    const isLastQuestion = currentRound === TOTAL_ROUNDS;
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
       }
-      
-      setShowTarget(false);
-    }
+    }, 500);
   };
 
-  const handleMiss = () => {
-    if (gameState === 'active' && !showTarget) {
-      setStreak(0);
-    }
-  };
-
-  const handleNext = () => {
-    navigate('/games/brain-health/kids');
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
-
-  // Calculate coins based on correct answers (1 coin per correct answer)
-  const calculateTotalCoins = () => {
-    return Math.min(totalCorrect * 0.3, 15); // 0.3 coins per correct answer, max 15
-  };
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
-      title="Quick Attention Reflex"
+      title="Reflex Quick Attention"
       score={score}
-      currentLevel={1}
-      totalLevels={1}
+      subtitle={gameState === "playing" ? `Round ${currentRound} of ${TOTAL_ROUNDS}` : gameState === "finished" ? "Game Complete!" : "Test your quick attention reflexes"}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-19"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={levelCompleted}
-      nextLabel="Complete"
-      backPath="/games/brain-health/kids"
-    
-      maxScore={1} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6 text-center">Quick Attention Reflex</h3>
-        
-        {gameState === 'waiting' && (
-          <div 
-            className="text-center cursor-pointer p-8 rounded-xl bg-white/10 hover:bg-white/20 transition duration-200"
-            onClick={startGame}
-          >
-            <h4 className="text-xl font-semibold mb-4 text-white">Test Your Attention!</h4>
-            <p className="mb-6 text-white/80">Tap quickly when the target appears</p>
-            <div className="text-2xl font-bold text-blue-400 mb-4">Tap to Start</div>
-            <p className="text-sm text-white/60">You'll have 30 seconds to get as many points as possible</p>
+      totalXp={totalXp}
+      showGameOver={gameState === "finished"}
+      gameId={gameId}
+      gameType="brain"
+      totalLevels={TOTAL_ROUNDS}
+      currentLevel={currentRound}
+      maxScore={TOTAL_ROUNDS}
+      showConfetti={gameState === "finished" && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <h3 className="text-2xl font-bold text-white mb-4">Test Your Quick Attention!</h3>
+            <p className="text-white/80 mb-6 text-lg">Tap quickly for good attention skills, avoid bad ones</p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white px-8 py-4 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+            <p className="text-white/60 mt-4">You'll have {ROUND_TIME} seconds per round</p>
           </div>
         )}
-        
-        {gameState === 'active' && (
-          <div 
-            className="p-6 h-96 flex flex-col cursor-pointer"
-            onClick={handleMiss}
-          >
-            <div className="flex justify-between items-center mb-6">
-              <div className="text-lg font-bold text-white">Score: {score}</div>
-              <div className="text-lg font-bold text-red-400">{timeLeft}s</div>
-              <div className="text-lg font-bold text-green-400">Streak: {streak}</div>
-            </div>
-            
-            <div className="flex-1 flex items-center justify-center relative">
-              {showTarget ? (
-                <div 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleTargetTap();
-                  }}
-                  className="w-24 h-24 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform duration-150"
-                >
-                  <Target className="w-12 h-12 text-white" />
-                </div>
-              ) : (
-                <div className="text-white/60 text-center">
-                  <p>Wait for the target...</p>
-                  <p className="text-sm mt-2">Tap when it appears!</p>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-        
-        {gameState === 'finished' && (
-          <div className="text-center p-8">
-            <h4 className="text-xl font-bold mb-4 text-white">Game Complete!</h4>
-            <div className="grid grid-cols-3 gap-4 mb-6">
-              <div className="bg-blue-500/20 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-blue-400">{score}</div>
-                <div className="text-sm text-white/70">Base Score</div>
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              <div className="bg-green-500/20 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-green-400">{bestStreak}</div>
-                <div className="text-sm text-white/70">Best Streak</div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
               </div>
-              <div className="bg-purple-500/20 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-purple-400">{Math.min(score + (bestStreak * 5), 100)}</div>
-                <div className="text-sm text-white/70">Total Score</div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}/{TOTAL_ROUNDS}
               </div>
             </div>
-            <p className="text-white/80 mb-6">
-              {score >= 70 ? 'Excellent attention skills! 🎉' : 
-               score >= 40 ? 'Good job! Keep practicing! 💪' : 
-               'Keep practicing to improve your attention! 🌱'}
-            </p>
-            
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={startGame}
-                className="px-6 py-3 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-600 transition duration-200"
-              >
-                Play Again
-              </button>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
               
-              <button
-                onClick={handleNext}
-                className="px-6 py-3 bg-gray-500 text-white rounded-lg font-medium hover:bg-gray-600 transition duration-200"
-              >
-                Finish Game
-              </button>
+              <div className="mb-8">
+                <div className="inline-block p-8 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-lg">
+                  <div className="text-white text-6xl mb-4">
+                    {currentQuestion.emoji}
+                  </div>
+                  <div className="text-3xl font-bold text-white">
+                    {currentQuestion.action}
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <button
+                  onClick={() => handleAnswer('good')}
+                  disabled={answered}
+                  className="p-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex flex-col items-center shadow-lg"
+                >
+                  <Zap className="w-8 h-8 mb-2" />
+                  <span className="font-bold text-lg">Good Skill!</span>
+                </button>
+                
+                <button
+                  onClick={() => handleAnswer('neutral')}
+                  disabled={answered}
+                  className="p-6 bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-white rounded-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex flex-col items-center shadow-lg"
+                >
+                  <Brain className="w-8 h-8 mb-2" />
+                  <span className="font-bold text-lg">Neutral</span>
+                </button>
+                
+                <button
+                  onClick={() => handleAnswer('bad')}
+                  disabled={answered}
+                  className="p-6 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-2xl transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none flex flex-col items-center shadow-lg"
+                >
+                  <Coffee className="w-8 h-8 mb-2" />
+                  <span className="font-bold text-lg">Bad Skill!</span>
+                </button>
+              </div>
             </div>
           </div>
         )}
-      </GameCard>
+      </div>
     </GameShell>
   );
 };

@@ -1,19 +1,19 @@
 import React, { useState } from "react";
 import { useLocation } from "react-router-dom";
-import GameShell from "../GameShell";
+import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
-const PuzzleOfDigitalTools = () => {
+const PuzzleMemoryMatch = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("finance-teens-44");
-  const gameId = gameData?.id || "finance-teens-44";
+  const gameData = getGameDataById("brain-kids-24");
+  const gameId = gameData?.id || "brain-kids-24";
   
   // Ensure gameId is always set correctly
   if (!gameData || !gameData.id) {
-    console.warn("Game data not found for PuzzleOfDigitalTools, using fallback ID");
+    console.warn("Game data not found for PuzzleMemoryMatch, using fallback ID");
   }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -27,39 +27,40 @@ const PuzzleOfDigitalTools = () => {
   const [showResult, setShowResult] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Digital tools and their uses
+  // Fruits shown earlier (left side)
   const leftItems = [
-    { id: 1, name: "UPI", emoji: "📱", description: "Unified Payment Interface" },
-    { id: 2, name: "Debit Card", emoji: "💳", description: "Bank card for payments" },
-    { id: 3, name: "OTP", emoji: "🔐", description: "One-Time Password" },
-    { id: 4, name: "QR Code", emoji: "📷", description: "Quick Response code" },
-    { id: 5, name: "CVV", emoji: "🔒", description: "Card Verification Value" }
+    { id: 1, name: "Apple", emoji: "🍎", description: "Red fruit" },
+    { id: 2, name: "Banana", emoji: "🍌", description: "Yellow fruit" },
+    { id: 3, name: "Orange", emoji: "🍊", description: "Orange fruit" },
+    { id: 4, name: "Grape", emoji: "🍇", description: "Purple fruit" },
+    { id: 5, name: "Mango", emoji: "🥭", description: "Yellow-orange fruit" }
   ];
 
+  // Matching fruits (right side)
   const rightItems = [
-    { id: 1, name: "PhonePe", emoji: "📲", description: "UPI payment app" },
-    { id: 2, name: "ATM", emoji: "🏧", description: "Cash withdrawal machine" },
-    { id: 3, name: "Security", emoji: "🛡️", description: "Protection and verification" },
-    { id: 4, name: "GPay", emoji: "💸", description: "Google Pay app" },
-    { id: 5, name: "Card Safety", emoji: "🔐", description: "Protects card information" }
+    { id: 1, name: "Apple", emoji: "🍎", description: "Red fruit" },
+    { id: 2, name: "Banana", emoji: "🍌", description: "Yellow fruit" },
+    { id: 3, name: "Orange", emoji: "🍊", description: "Orange fruit" },
+    { id: 4, name: "Grape", emoji: "🍇", description: "Purple fruit" },
+    { id: 5, name: "Mango", emoji: "🥭", description: "Yellow-orange fruit" }
   ];
 
   // Correct matches
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // UPI → PhonePe
-    { leftId: 2, rightId: 2 }, // Debit Card → ATM
-    { leftId: 3, rightId: 3 }, // OTP → Security
-    { leftId: 4, rightId: 4 }, // QR Code → GPay
-    { leftId: 5, rightId: 5 }  // CVV → Card Safety
+    { leftId: 1, rightId: 1 }, // Apple → Apple
+    { leftId: 2, rightId: 2 }, // Banana → Banana
+    { leftId: 3, rightId: 3 }, // Orange → Orange
+    { leftId: 4, rightId: 4 }, // Grape → Grape
+    { leftId: 5, rightId: 5 }  // Mango → Mango
   ];
 
-  // Shuffled right items for display (to split matches across different positions)
+  // Shuffled right items for display (to split matches across positions)
   const shuffledRightItems = [
-    rightItems[1], // ATM (id: 2) - position 1
-    rightItems[3], // GPay (id: 4) - position 2
-    rightItems[0], // PhonePe (id: 1) - position 3
-    rightItems[4], // Card Safety (id: 5) - position 4
-    rightItems[2]  // Security (id: 3) - position 5
+    rightItems[2], // Orange (id: 3) - position 1
+    rightItems[4], // Mango (id: 5) - position 2
+    rightItems[0], // Apple (id: 1) - position 3
+    rightItems[3], // Grape (id: 4) - position 4
+    rightItems[1]  // Banana (id: 2) - position 5
   ];
 
   const handleLeftSelect = (item) => {
@@ -92,6 +93,8 @@ const PuzzleOfDigitalTools = () => {
     if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
     // Check if all items are matched
@@ -104,15 +107,6 @@ const PuzzleOfDigitalTools = () => {
     // Reset selections
     setSelectedLeft(null);
     setSelectedRight(null);
-  };
-
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setMatches([]);
-    setSelectedLeft(null);
-    setSelectedRight(null);
-    setScore(0);
-    resetFeedback();
   };
 
   // Check if a left item is already matched
@@ -133,15 +127,15 @@ const PuzzleOfDigitalTools = () => {
 
   return (
     <GameShell
-      title="Puzzle of Digital Tools"
+      title="Puzzle: Memory Match"
       score={score}
-      subtitle={showResult ? "Game Complete!" : `Match digital tools to their uses (${matches.length}/${leftItems.length} matched)`}
+      subtitle={showResult ? "Game Complete!" : `Match fruits shown earlier (${matches.length}/${leftItems.length} matched)`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult}
       gameId={gameId}
-      gameType="finance"
+      gameType="brain"
       totalLevels={leftItems.length}
       currentLevel={matches.length + 1}
       maxScore={leftItems.length}
@@ -152,9 +146,9 @@ const PuzzleOfDigitalTools = () => {
       <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Left column - Digital Tools */}
+            {/* Left column - Fruits Shown Earlier */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Digital Tools</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Fruits Shown</h3>
               <div className="space-y-4">
                 {leftItems.map(item => (
                   <button
@@ -189,7 +183,7 @@ const PuzzleOfDigitalTools = () => {
                 <p className="text-white/80 mb-4">
                   {selectedLeft 
                     ? `Selected: ${selectedLeft.name}` 
-                    : "Select a tool"}
+                    : "Select a fruit"}
                 </p>
                 <button
                   onClick={handleMatch}
@@ -200,7 +194,7 @@ const PuzzleOfDigitalTools = () => {
                       : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  Match
+                  Match Selected
                 </button>
                 <div className="mt-4 text-white/80">
                   <p>Score: {score}/{leftItems.length}</p>
@@ -209,9 +203,9 @@ const PuzzleOfDigitalTools = () => {
               </div>
             </div>
 
-            {/* Right column - Uses */}
+            {/* Right column - Match These */}
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-xl font-bold text-white mb-4 text-center">Uses</h3>
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Match These</h3>
               <div className="space-y-4">
                 {shuffledRightItems.map(item => (
                   <button
@@ -243,34 +237,28 @@ const PuzzleOfDigitalTools = () => {
             {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Memory!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You correctly matched {score} out of {leftItems.length} digital tools!
-                  You understand how digital payment tools work!
+                  You correctly matched {score} out of {leftItems.length} fruits!
+                  Your memory is working well!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
                   <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  You know that UPI works with apps like PhonePe, Debit Cards are used at ATMs, and OTP provides security!
+                  You remembered the fruits: Apple, Banana, Orange, Grape, and Mango!
                 </p>
               </div>
             ) : (
               <div>
                 <div className="text-5xl mb-4">😔</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched {score} out of {leftItems.length} digital tools correctly.
-                  Remember, understanding these tools helps you use digital payments safely!
+                  You matched {score} out of {leftItems.length} fruits correctly.
+                  Remember, practice helps improve your memory!
                 </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
                 <p className="text-white/80 text-sm">
-                  Try to match each digital tool with its appropriate use. UPI → PhonePe, Debit Card → ATM, OTP → Security!
+                  Try to match each fruit with its pair. The fruits were: Apple, Banana, Orange, Grape, and Mango!
                 </p>
               </div>
             )}
@@ -281,4 +269,5 @@ const PuzzleOfDigitalTools = () => {
   );
 };
 
-export default PuzzleOfDigitalTools;
+export default PuzzleMemoryMatch;
+

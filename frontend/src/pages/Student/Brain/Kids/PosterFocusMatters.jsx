@@ -1,173 +1,146 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
-import { Zap, VolumeX, Brain, Target, Eye } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PosterFocusMatters = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-16";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-16");
+  const gameId = gameData?.id || "brain-kids-16";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for PosterFocusMatters, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [selectedPoster, setSelectedPoster] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentStage, setCurrentStage] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const posters = [
+  const stages = [
     {
-      id: 1,
-      title: "Focus = Power",
-      description: "A poster showing how focus leads to success",
-      elements: [
-        { icon: <Zap className="w-8 h-8" />, text: "Concentrate" },
-        { icon: <Target className="w-8 h-8" />, text: "Achieve Goals" },
-        { icon: <Brain className="w-8 h-8" />, text: "Learn Better" }
+      question: 'Which poster would best show "Focus Helps You Learn Better"?',
+      choices: [
+        { text: "Poster with a student concentrating on books 📚", correct: true },
+        { text: "Poster with someone watching TV 📺", correct: false },
+        { text: "Poster with a sleeping person 😴", correct: false },
       ],
-      color: "bg-gradient-to-r from-blue-400 to-purple-500"
     },
     {
-      id: 2,
-      title: "Power of Focus",
-      description: "A poster showing focus-building techniques",
-      elements: [
-        { icon: <Eye className="w-8 h-8" />, text: "Stay Alert" },
-        { icon: <VolumeX className="w-8 h-8" />, text: "Minimize Noise" },
-        { icon: <Brain className="w-8 h-8" />, text: "Think Clearly" }
+      question: 'Which poster would best show "Quiet Space Improves Focus"?',
+      choices: [
+        { text: "Poster with loud music and noise 🔊", correct: false },
+        { text: "Poster with a peaceful study area 🔇", correct: true },
+        { text: "Poster with a busy playground 🎮", correct: false },
       ],
-      color: "bg-gradient-to-r from-green-400 to-blue-500"
     },
     {
-      id: 3,
-      title: "Focused Mind",
-      description: "A poster showing benefits of focus",
-      elements: [
-        { icon: <Zap className="w-8 h-8" />, text: "Quick Learning" },
-        { icon: <Target className="w-8 h-8" />, text: "Better Results" },
-        { icon: <Brain className="w-8 h-8" />, text: "Clear Thinking" }
+      question: 'Which poster would best show "Focus Leads to Success"?',
+      choices: [
+        { text: "Poster with someone achieving goals 🎯", correct: true },
+        { text: "Poster with someone giving up 😔", correct: false },
+        { text: "Poster with distractions everywhere 📱", correct: false },
       ],
-      color: "bg-gradient-to-r from-purple-400 to-pink-500"
     },
     {
-      id: 4,
-      title: "My Focus Plan",
-      description: "Create your own focus poster",
-      elements: [
-        { icon: <Eye className="w-8 h-8" />, text: "Eliminate Distractions" },
-        { icon: <Zap className="w-8 h-8" />, text: "Stay Consistent" },
-        { icon: <Target className="w-8 h-8" />, text: "Reach Goals" }
+      question: 'Which poster would best show "Take Breaks to Stay Focused"?',
+      choices: [
+        { text: "Poster showing continuous work without rest ⏰", correct: false },
+        { text: "Poster showing study time with breaks ⏸️", correct: true },
+        { text: "Poster showing only play time 🎮", correct: false },
       ],
-      color: "bg-gradient-to-r from-yellow-400 to-red-500"
-    }
+    },
+    {
+      question: 'Which poster would best show "Focus Makes You Smarter"?',
+      choices: [
+        { text: "Poster with a brain getting stronger 🧠", correct: true },
+        { text: "Poster with a confused person 🤯", correct: false },
+        { text: "Poster with someone ignoring lessons 🙈", correct: false },
+      ],
+    },
   ];
 
-  const handlePosterSelect = (poster) => {
-    if (!isSubmitted && !levelCompleted) {
-      setSelectedPoster(poster);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
+    
+    const isLastStage = currentStage === stages.length - 1;
+    
+    setTimeout(() => {
+      if (isLastStage) {
+        setShowResult(true);
+      } else {
+        setCurrentStage(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleSubmit = () => {
-    if (selectedPoster) {
-      setIsSubmitted(true);
-      setScore(1); // 1 coin for completing the activity
-      
-      // Auto-complete after delay
-      setTimeout(() => {
-        setLevelCompleted(true);
-      }, 1500);
-    }
-  };
-
-  const handleNext = () => {
-    // This is a single-level game, so completing it moves to the next game
-    navigate('/games/brain-health/kids');
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const currentStageData = stages[currentStage];
 
   return (
     <GameShell
-      title="Focus Matters Poster"
+      title="Poster: Focus Matters"
       score={score}
-      currentLevel={1}
-      totalLevels={1}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}` : "Poster Complete!"}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-16"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={levelCompleted}
-      nextLabel="Complete"
-      backPath="/games/brain-health/kids"
-    
-      maxScore={1} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6 text-center">Focus Matters Poster</h3>
-        <p className="text-white/80 mb-8 text-center">Create or select a poster that shows why focus is important</p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-          {posters.map((poster) => (
-            <div
-              key={poster.id}
-              onClick={() => handlePosterSelect(poster)}
-              className={`border-2 rounded-xl p-6 cursor-pointer transition-all duration-200 ${
-                selectedPoster?.id === poster.id
-                  ? 'border-blue-400 ring-2 ring-blue-200 bg-blue-500/10'
-                  : 'border-white/20 hover:border-blue-300/50'
-              }`}
-            >
-              <div className={`rounded-lg p-4 mb-4 ${poster.color}`}>
-                <h4 className="text-white font-bold text-center text-lg">{poster.title}</h4>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="brain"
+      totalLevels={stages.length}
+      currentLevel={currentStage + 1}
+      maxScore={stages.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult && currentStageData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
               </div>
-              <p className="text-white/70 text-sm mb-4">{poster.description}</p>
               
-              <div className="space-y-3">
-                {poster.elements.map((element, index) => (
-                  <div key={index} className="flex items-center">
-                    <div className="text-blue-400 mr-3">
-                      {element.icon}
-                    </div>
-                    <span className="text-white/90">{element.text}</span>
-                  </div>
+              <p className="text-white text-lg mb-6">
+                {currentStageData.question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentStageData.choices.map((choice, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => handleChoice(choice.correct)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <p className="font-semibold text-lg">{choice.text}</p>
+                  </button>
                 ))}
               </div>
             </div>
-          ))}
-        </div>
-        
-        <div className="text-center">
-          <button
-            onClick={handleSubmit}
-            disabled={!selectedPoster || isSubmitted || levelCompleted}
-            className={`px-8 py-3 rounded-lg font-medium transition duration-200 ${
-              selectedPoster && !isSubmitted && !levelCompleted
-                ? 'bg-blue-500 text-white hover:bg-blue-600'
-                : 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
-            }`}
-          >
-            {isSubmitted ? 'Submitted!' : 'Submit My Choice'}
-          </button>
-        </div>
-        
-        {isSubmitted && (
-          <FeedbackBubble 
-            message="Great choice! This poster shows excellent focus principles. 🎉"
-            type="correct"
-          />
-        )}
-      </GameCard>
+          </div>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

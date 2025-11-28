@@ -1,190 +1,251 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BreakfastStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-5";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-5");
+  const gameId = gameData?.id || "brain-kids-5";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for BreakfastStory, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({}); // Track answers for each question
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Kid skips breakfast. Is this good for brain?",
-      choices: [
-        { id: 'yes', text: 'Yes' },
-        { id: 'no', text: 'No' }
-      ],
-      correct: 'no',
-      explanation: 'Breakfast fuels your brain for the day ahead!'
+      options: [
+        { 
+          id: "maybe", 
+          text: "Maybe", 
+          emoji: "🤔", 
+          description: "It might be okay sometimes",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "Breakfast fuels your brain for the day",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "✅", 
+          description: "Skipping breakfast is fine",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "Which breakfast is best for your brain?",
-      choices: [
-        { id: 'cereal', text: 'Whole grain cereal with milk' },
-        { id: 'candy', text: 'Candy bar' }
-      ],
-      correct: 'cereal',
-      explanation: 'Whole grains and protein help your brain work well!'
+      options: [
+        { 
+          id: "cereal", 
+          text: "Whole grain cereal with milk", 
+          emoji: "🥣", 
+          description: "Whole grains and protein help your brain work well",
+          isCorrect: true
+        },
+        { 
+          id: "candy", 
+          text: "Candy bar", 
+          emoji: "🍫", 
+          description: "Candy has lots of sugar",
+          isCorrect: false
+        },
+        { 
+          id: "nothing", 
+          text: "Nothing", 
+          emoji: "🚫", 
+          description: "Skip breakfast completely",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "Why is breakfast called the most important meal?",
-      choices: [
-        { id: 'first', text: 'It\'s the first meal after sleeping' },
-        { id: 'expensive', text: 'It\'s the most expensive meal' }
-      ],
-      correct: 'first',
-      explanation: 'After fasting overnight, your brain needs fuel to wake up!'
+      options: [
+        { 
+          id: "expensive", 
+          text: "It's the most expensive meal", 
+          emoji: "💰", 
+          description: "Breakfast costs more money",
+          isCorrect: false
+        },
+        { 
+          id: "first", 
+          text: "It's the first meal after sleeping", 
+          emoji: "🌅", 
+          description: "After fasting overnight, your brain needs fuel",
+          isCorrect: true
+        },
+        { 
+          id: "biggest", 
+          text: "It's the biggest meal", 
+          emoji: "🍽️", 
+          description: "Breakfast is the largest meal of the day",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       text: "How does breakfast help your school performance?",
-      choices: [
-        { id: 'focus', text: 'Helps you focus and learn better' },
-        { id: 'sleepy', text: 'Makes you sleepy in class' }
-      ],
-      correct: 'focus',
-      explanation: 'A good breakfast improves concentration and memory!'
+      options: [
+        { 
+          id: "focus", 
+          text: "Helps you focus and learn better", 
+          emoji: "🎯", 
+          description: "A good breakfast improves concentration and memory",
+          isCorrect: true
+        },
+        { 
+          id: "sleepy", 
+          text: "Makes you sleepy in class", 
+          emoji: "😴", 
+          description: "Breakfast makes you tired",
+          isCorrect: false
+        },
+        { 
+          id: "nothing", 
+          text: "Does nothing", 
+          emoji: "🚫", 
+          description: "Breakfast has no effect",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "What should you do if you\'re running late for school?",
-      choices: [
-        { id: 'skip', text: 'Skip breakfast completely' },
-        { id: 'quick', text: 'Grab a quick healthy snack' }
-      ],
-      correct: 'quick',
-      explanation: 'A piece of fruit or yogurt is better than skipping breakfast.'
+      text: "What should you do if you're running late for school?",
+      options: [
+        { 
+          id: "skip", 
+          text: "Skip breakfast completely", 
+          emoji: "⏰", 
+          description: "Don't eat anything",
+          isCorrect: false
+        },
+        { 
+          id: "wait", 
+          text: "Wait and eat later", 
+          emoji: "⏳", 
+          description: "Eat breakfast after school",
+          isCorrect: false
+        },
+        { 
+          id: "quick", 
+          text: "Grab a quick healthy snack", 
+          emoji: "🍎", 
+          description: "A piece of fruit or yogurt is better than skipping",
+          isCorrect: true
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
+    setAnswered(true);
+    resetFeedback();
     
     if (isCorrect) {
-      setScore(score + 1); // 1 coin for correct answer (max 5 coins for 5 questions)
-      setShowConfetti(true);
-      // Hide confetti after animation
-      setTimeout(() => setShowConfetti(false), 1000);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    // Auto-advance to next question after delay
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
-        setShowConfetti(false);
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setLevelCompleted(true);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    }, 1500);
+    }, 500);
   };
 
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-      setFeedbackType(null);
-      setShowConfetti(false);
-    }
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
   };
 
   const currentQuestionData = questions[currentQuestion];
-
-  // Calculate coins based on correct answers (max 5 coins for 5 questions)
-  const calculateTotalCoins = () => {
-    const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 1;
-  };
 
   return (
     <GameShell
       title="Breakfast for Brain Power"
       score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-5"
-      gameType="brain"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={currentQuestion < questions.length - 1}
-      nextLabel="Next"
-      showAnswerConfetti={showConfetti}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {currentQuestionData.choices.map((choice) => (
-            <OptionButton
-              key={choice.id}
-              option={choice.text}
-              onClick={() => handleOptionSelect(choice.id)}
-              selected={selectedOption === choice.id}
-              disabled={!!selectedOption}
-              feedback={showFeedback ? { type: feedbackType } : null}
-            />
-          ))}
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackType === "correct" ? "Correct! 🎉" : "Not quite! 🤔"}
-            type={feedbackType}
-          />
-        )}
-        
-        {showFeedback && feedbackType === "wrong" && (
-          <div className="mt-4 text-white/90 text-center">
-            <p>💡 {currentQuestionData.explanation}</p>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="brain"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

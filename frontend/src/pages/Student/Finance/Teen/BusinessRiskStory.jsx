@@ -59,18 +59,18 @@ const BusinessRiskStory = () => {
       text: "What's a good profit margin for a small business?",
       options: [
         { 
-          id: "high", 
-          text: "30-50% profit", 
-          emoji: "📈", 
-          description: "Healthy profit margin",
-          isCorrect: true
-        },
-        { 
           id: "low", 
           text: "5% profit", 
           emoji: "📉", 
           description: "Very low margin",
           isCorrect: false
+        },
+        { 
+          id: "high", 
+          text: "30-50% profit", 
+          emoji: "📈", 
+          description: "Healthy profit margin",
+          isCorrect: true
         },
         { 
           id: "loss", 
@@ -86,13 +86,6 @@ const BusinessRiskStory = () => {
       text: "Should you take risks in business?",
       options: [
         { 
-          id: "calculated", 
-          text: "Yes, calculated risks", 
-          emoji: "🎯", 
-          description: "Take smart, planned risks",
-          isCorrect: true
-        },
-        { 
           id: "all", 
           text: "Take all risks", 
           emoji: "🎲", 
@@ -105,6 +98,13 @@ const BusinessRiskStory = () => {
           emoji: "🛡️", 
           description: "Never take risks",
           isCorrect: false
+        },
+        { 
+          id: "calculated", 
+          text: "Yes, calculated risks", 
+          emoji: "🎯", 
+          description: "Take smart, planned risks",
+          isCorrect: true
         }
       ]
     },
@@ -113,18 +113,18 @@ const BusinessRiskStory = () => {
       text: "What's important before starting a business?",
       options: [
         { 
-          id: "plan", 
-          text: "Plan and research", 
-          emoji: "📋", 
-          description: "Understand market and costs",
-          isCorrect: true
-        },
-        { 
           id: "jump", 
           text: "Jump in immediately", 
           emoji: "⚡", 
           description: "Start without planning",
           isCorrect: false
+        },
+        { 
+          id: "plan", 
+          text: "Plan and research", 
+          emoji: "📋", 
+          description: "Understand market and costs",
+          isCorrect: true
         },
         { 
           id: "wait", 
@@ -140,13 +140,6 @@ const BusinessRiskStory = () => {
       text: "Is ₹200→₹300 a good business result?",
       options: [
         { 
-          id: "yes2", 
-          text: "Yes, 50% return", 
-          emoji: "✅", 
-          description: "Excellent profit margin",
-          isCorrect: true
-        },
-        { 
           id: "no2", 
           text: "No, too small", 
           emoji: "❌", 
@@ -159,6 +152,13 @@ const BusinessRiskStory = () => {
           emoji: "🤷", 
           description: "Only if repeatable",
           isCorrect: false
+        },
+        { 
+          id: "yes2", 
+          text: "Yes, 50% return", 
+          emoji: "✅", 
+          description: "Excellent profit margin",
+          isCorrect: true
         }
       ]
     }

@@ -20,9 +20,9 @@ import GameStory from './GameStory';
 import ReflexQuickAttention from './ReflexQuickAttention';
 import BadgeFocusKid from './BadgeFocusKid';
 import ShoppingListStory from './ShoppingListStory';
-import MemoryQuiz from './MemoryQuiz';
+import QuizOnMemory from './QuizOnMemory';
 import ReflexRecall from './ReflexRecall';
-import MemoryMatchPuzzle from './MemoryMatchPuzzle';
+import PuzzleMemoryMatch from './PuzzleMemoryMatch';
 import RepetitionStory from './RepetitionStory';
 import StrongMemoryPoster from './StrongMemoryPoster';
 import RecallJournal from './RecallJournal';
@@ -127,19 +127,19 @@ const kidBrainGames = {
 
   // Third set of 10 games (memory focused)
   'shopping-list-story': ShoppingListStory,
-  'memory-quiz': MemoryQuiz,
+  'quiz-on-memory': QuizOnMemory,
   'reflex-recall': ReflexRecall,
-  'memory-match-puzzle': MemoryMatchPuzzle,
-  'repetition-story': RepetitionStory,
-  'strong-memory-poster': StrongMemoryPoster,
-  'recall-journal': RecallJournal,
+  'memory-match': PuzzleMemoryMatch,
+  'story-of-repetition': RepetitionStory,
+  'poster-strong-memory': StrongMemoryPoster,
+  'journal-of-recall': RecallJournal,
   'game': Game,
   'reflex-sequence': ReflexSequence,
-  'memory-kid-badge': MemoryKidBadge,
+  'badge-memory-kid': MemoryKidBadge,
 
   // Fourth set of 10 games (calmness focused)
-  'homework': Homework,
-  'calmness-quiz': CalmnessQuiz,
+  'homework-calm-story': Homework,
+  'quiz-on-calmness': CalmnessQuiz,
   'reflex-calm': ReflexCalm,
   'relaxing-puzzle': RelaxingPuzzle,
   'exam-storyy': ExamStoryy,

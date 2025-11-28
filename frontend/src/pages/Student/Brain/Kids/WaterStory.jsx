@@ -1,190 +1,251 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const WaterStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-1";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-1");
+  const gameId = gameData?.id || "brain-kids-1";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for WaterStory, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({}); // Track answers for each question
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Teacher says 'Drink water for brain.' Do you follow?",
-      choices: [
-        { id: 'yes', text: 'Yes' },
-        { id: 'no', text: 'No' }
-      ],
-      correct: 'yes',
-      explanation: 'Drinking water helps your brain function better!'
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes", 
+          emoji: "💧", 
+          description: "Follow the teacher's advice and drink water",
+          isCorrect: true
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe later", 
+          emoji: "🤔", 
+          description: "Think about it later",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "No", 
+          emoji: "❌", 
+          description: "Ignore the advice",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "You feel thirsty during class. What should you do?",
-      choices: [
-        { id: 'drink', text: 'Drink water' },
-        { id: 'ignore', text: 'Ignore thirst' }
-      ],
-      correct: 'drink',
-      explanation: 'Staying hydrated helps you concentrate better.'
+      options: [
+        { 
+          id: "wait", 
+          text: "Wait until break", 
+          emoji: "⏰", 
+          description: "Wait for the break time",
+          isCorrect: false
+        },
+        { 
+          id: "drink", 
+          text: "Drink water", 
+          emoji: "💧", 
+          description: "Drink water to stay hydrated",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore thirst", 
+          emoji: "😴", 
+          description: "Ignore the feeling of thirst",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "Your friend says water is boring. What do you say?",
-      choices: [
-        { id: 'agree', text: 'Agree - soda is better' },
-        { id: 'explain', text: 'Explain water helps brain' }
-      ],
-      correct: 'explain',
-      explanation: 'Water is the best drink for brain health!'
+      options: [
+        { 
+          id: "agree", 
+          text: "Agree - soda is better", 
+          emoji: "🥤", 
+          description: "Agree that soda is more interesting",
+          isCorrect: false
+        },
+        { 
+          id: "say-nothing", 
+          text: "Say nothing", 
+          emoji: "🤐", 
+          description: "Don't respond",
+          isCorrect: false
+        },
+        { 
+          id: "explain", 
+          text: "Explain water helps brain", 
+          emoji: "🧠", 
+          description: "Explain why water is good for the brain",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
       text: "How much water should you drink daily?",
-      choices: [
-        { id: 'little', text: 'A little is enough' },
-        { id: 'enough', text: 'Enough to stay hydrated' }
-      ],
-      correct: 'enough',
-      explanation: 'About 6-8 glasses of water daily is recommended.'
+      options: [
+        { 
+          id: "enough", 
+          text: "Enough to stay hydrated", 
+          emoji: "💧", 
+          description: "Drink enough water to stay properly hydrated",
+          isCorrect: true
+        },
+        { 
+          id: "little", 
+          text: "A little is enough", 
+          emoji: "💧", 
+          description: "Just a small amount",
+          isCorrect: false
+        },
+        { 
+          id: "none", 
+          text: "None needed", 
+          emoji: "🚫", 
+          description: "Don't need to drink water",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "When is the best time to drink water?",
-      choices: [
-        { id: 'during', text: 'Only during meals' },
-        { id: 'throughout', text: 'Throughout the day' }
-      ],
-      correct: 'throughout',
-      explanation: 'Drinking water regularly keeps your brain hydrated.'
+      options: [
+        { 
+          id: "during", 
+          text: "Only during meals", 
+          emoji: "🍽️", 
+          description: "Drink water only when eating",
+          isCorrect: false
+        },
+        { 
+          id: "throughout", 
+          text: "Throughout the day", 
+          emoji: "⏰", 
+          description: "Drink water regularly all day long",
+          isCorrect: true
+        },
+        { 
+          id: "evening", 
+          text: "Only in evening", 
+          emoji: "🌙", 
+          description: "Drink water only in the evening",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
+    setAnswered(true);
+    resetFeedback();
     
     if (isCorrect) {
-      setScore(score + 1); // 1 coin for correct answer (max 5 coins for 5 questions)
-      setShowConfetti(true);
-      // Hide confetti after animation
-      setTimeout(() => setShowConfetti(false), 1000);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    // Auto-advance to next question after delay
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
-        setShowConfetti(false);
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setLevelCompleted(true);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    }, 1500);
+    }, 500);
   };
 
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-      setFeedbackType(null);
-      setShowConfetti(false);
-    }
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
   };
 
   const currentQuestionData = questions[currentQuestion];
-
-  // Calculate coins based on correct answers (max 5 coins for 5 questions)
-  const calculateTotalCoins = () => {
-    const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 1;
-  };
 
   return (
     <GameShell
       title="Water for Brain Health"
       score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-1"
-      gameType="brain"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={currentQuestion < questions.length - 1}
-      nextLabel="Next"
-      showAnswerConfetti={showConfetti}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {currentQuestionData.choices.map((choice) => (
-            <OptionButton
-              key={choice.id}
-              option={choice.text}
-              onClick={() => handleOptionSelect(choice.id)}
-              selected={selectedOption === choice.id}
-              disabled={!!selectedOption}
-              feedback={showFeedback ? { type: feedbackType } : null}
-            />
-          ))}
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackType === "correct" ? "Correct! 🎉" : "Not quite! 🤔"}
-            type={feedbackType}
-          />
-        )}
-        
-        {showFeedback && feedbackType === "wrong" && (
-          <div className="mt-4 text-white/90 text-center">
-            <p>💡 {currentQuestionData.explanation}</p>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="brain"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

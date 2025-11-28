@@ -154,13 +154,6 @@ const QuizOnEntrepreneurship = () => {
           isCorrect: true 
         },
         { 
-          id: "job", 
-          text: "Working for others", 
-          emoji: "💼", 
-          description: "Being an employee", 
-          isCorrect: false 
-        },
-        { 
           id: "spending", 
           text: "Spending money", 
           emoji: "💳", 

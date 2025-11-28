@@ -1,144 +1,169 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { PenSquare } from "lucide-react";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const JournalOfFocus = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-17";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-17");
+  const gameId = gameData?.id || "brain-kids-17";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for JournalOfFocus, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentEntry, setCurrentEntry] = useState(0);
-  const [journalEntries, setJournalEntries] = useState(Array(5).fill(''));
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [entry, setEntry] = useState("");
+  const [answered, setAnswered] = useState(false);
 
   const journalPrompts = [
     {
       id: 1,
-      prompt: "Write: \"One thing that distracts me is ___\"",
-      guidance: "Think about what makes it hard for you to concentrate during school or homework."
+      prompt: "Write: \"One strategy that helps me focus is ___\"",
+      guidance: "Think about activities or techniques that help you concentrate better.",
+      minLength: 10
     },
     {
       id: 2,
-      prompt: "Describe a time when you were able to focus really well. What helped you?",
-      guidance: "Consider your environment, mindset, or preparation that contributed to good focus."
+      prompt: "Write: \"When I lose focus, I can ___\"",
+      guidance: "Reflect on what you do to regain your concentration.",
+      minLength: 10
     },
     {
       id: 3,
-      prompt: "What is one strategy you could try to improve your focus?",
-      guidance: "Think about techniques like taking breaks, organizing your space, or setting goals."
+      prompt: "Write: \"A quiet place helps me focus because ___\"",
+      guidance: "Think about why a peaceful environment is important for concentration.",
+      minLength: 10
     },
     {
       id: 4,
-      prompt: "Write about how good focus helps you in school or activities.",
-      guidance: "Consider how concentration improves your learning, performance, or results."
+      prompt: "Write: \"One distraction I avoid while studying is ___\"",
+      guidance: "Consider what things take away your attention when you need to focus.",
+      minLength: 10
     },
     {
       id: 5,
-      prompt: "What new focus habit would you like to develop this week?",
-      guidance: "Choose something specific and achievable, like turning off distractions during study time."
+      prompt: "Write: \"I improve my focus by ___\"",
+      guidance: "Reflect on practices that help you maintain better concentration.",
+      minLength: 10
     }
   ];
 
-  const handleEntryChange = (e) => {
-    const newEntries = [...journalEntries];
-    newEntries[currentEntry] = e.target.value;
-    setJournalEntries(newEntries);
-  };
-
-  const handleSubmitEntry = () => {
-    if (journalEntries[currentEntry].trim().length > 10) {
-      setScore(score + 1); // 1 coin per completed entry (max 5 coins for 5 entries)
-      setSubmitted(true);
-      
-      // Auto-advance to next entry after delay
-      setTimeout(() => {
-        if (currentEntry < journalPrompts.length - 1) {
-          setCurrentEntry(currentEntry + 1);
-          setSubmitted(false);
-        } else {
-          setLevelCompleted(true);
-        }
-      }, 1500);
+  const handleInputChange = (e) => {
+    if (!answered) {
+      setEntry(e.target.value);
     }
   };
 
-  const handleNext = () => {
-    if (currentEntry < journalPrompts.length - 1) {
-      setCurrentEntry(currentEntry + 1);
-      setSubmitted(false);
-    }
+  const handleSubmit = () => {
+    if (answered || entry.trim().length < journalPrompts[currentStage].minLength) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    setScore(prev => prev + 1);
+    showCorrectAnswerFeedback(1, true);
+    
+    const isLastStage = currentStage === journalPrompts.length - 1;
+    
+    setTimeout(() => {
+      if (isLastStage) {
+        setShowResult(true);
+      } else {
+        setCurrentStage(prev => prev + 1);
+        setEntry("");
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
-
-  const currentPrompt = journalPrompts[currentEntry];
+  const currentPrompt = journalPrompts[currentStage];
 
   return (
     <GameShell
-      title="Focus Journal"
+      title="Journal of Focus"
       score={score}
-      currentLevel={currentEntry + 1}
-      totalLevels={journalPrompts.length}
+      subtitle={!showResult ? `Entry ${currentStage + 1} of ${journalPrompts.length}` : "Journal Complete!"}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-17"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={currentEntry < journalPrompts.length - 1}
-      nextLabel="Next"
-      backPath="/games/brain-health/kids"
-    
-      maxScore={journalPrompts.length} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6">Journal Prompt:</h3>
-        <p className="mb-6 text-white/90 text-lg">{currentPrompt.prompt}</p>
-        
-        <div className="bg-blue-500/20 border border-blue-400/30 rounded-lg p-4 mb-6">
-          <h4 className="font-medium text-blue-300 mb-2">Guidance:</h4>
-          <p className="text-blue-200 text-sm">{currentPrompt.guidance}</p>
-        </div>
-        
-        <textarea
-          value={journalEntries[currentEntry]}
-          onChange={handleEntryChange}
-          placeholder="Write your journal entry here..."
-          className="w-full h-40 p-4 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          disabled={submitted}
-        />
-        
-        <button
-          onClick={handleSubmitEntry}
-          disabled={!journalEntries[currentEntry].trim() || submitted}
-          className={`mt-4 px-6 py-3 rounded-lg font-medium transition duration-200 ${
-            journalEntries[currentEntry].trim() && !submitted
-              ? 'bg-blue-500 text-white hover:bg-blue-600'
-              : 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
-          }`}
-        >
-          {submitted ? 'Submitted!' : 'Submit Entry'}
-        </button>
-        
-        {submitted && (
-          <FeedbackBubble 
-            message="Great job! 🎉"
-            type="correct"
-          />
-        )}
-      </GameCard>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="brain"
+      totalLevels={journalPrompts.length}
+      currentLevel={currentStage + 1}
+      maxScore={journalPrompts.length}
+      showConfetti={showResult && score === journalPrompts.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult && currentPrompt ? (
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Entry {currentStage + 1}/{journalPrompts.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{journalPrompts.length}</span>
+              </div>
+              
+              <div className="flex items-center gap-3 mb-4">
+                <PenSquare className="w-8 h-8 text-blue-400" />
+                <h3 className="text-xl font-bold text-white">Journal Entry</h3>
+              </div>
+              
+              <p className="text-white text-lg mb-2">
+                {currentPrompt.prompt}
+              </p>
+              <p className="text-white/70 text-sm mb-4">
+                {currentPrompt.guidance}
+              </p>
+              
+              <div className="mb-3">
+                <textarea
+                  className="w-full max-w-md mx-auto border border-white/20 rounded-lg p-3 bg-white/5 text-white placeholder-white/50 text-base focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={entry}
+                  onChange={handleInputChange}
+                  placeholder="Type your response here..."
+                  rows={6}
+                  disabled={answered}
+                />
+                <div className="flex justify-between items-center mt-2 text-xs text-white/60">
+                  <span>
+                    Minimum {currentPrompt.minLength} characters required
+                  </span>
+                  <span className={entry.length >= currentPrompt.minLength ? "text-green-400" : "text-red-400"}>
+                    {entry.length}/{currentPrompt.minLength}
+                  </span>
+                </div>
+              </div>
+              
+              <button
+                onClick={handleSubmit}
+                disabled={entry.trim().length < currentPrompt.minLength || answered}
+                className={`w-full max-w-md mx-auto py-3 px-6 rounded-full font-bold transition-all ${
+                  entry.trim().length >= currentPrompt.minLength && !answered
+                    ? "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white transform hover:scale-105"
+                    : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
+                }`}
+              >
+                {answered ? "Submitted!" : "Submit Entry"}
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

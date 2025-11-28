@@ -4,16 +4,16 @@ import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
-const QuizOnBrainFood = () => {
+const QuizOnMemory = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("brain-kids-2");
-  const gameId = gameData?.id || "brain-kids-2";
+  const gameData = getGameDataById("brain-kids-22");
+  const gameId = gameData?.id || "brain-kids-22";
   
   // Ensure gameId is always set correctly
   if (!gameData || !gameData.id) {
-    console.warn("Game data not found for QuizOnBrainFood, using fallback ID");
+    console.warn("Game data not found for QuizOnMemory, using fallback ID");
   }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -29,135 +29,135 @@ const QuizOnBrainFood = () => {
   const questions = [
     {
       id: 1,
-      text: "Which food is healthy for brain?",
+      text: "What helps memory?",
       options: [
         { 
           id: "a", 
-          text: "Fruits", 
-          emoji: "🍎", 
-          description: "Fruits contain vitamins and antioxidants",
+          text: "Sleep", 
+          emoji: "😴", 
+          description: "Sleep helps memory formation",
           isCorrect: true
         },
         { 
           id: "b", 
-          text: "Chips", 
-          emoji: "🍟", 
-          description: "Chips are processed snacks",
+          text: "Skipping food", 
+          emoji: "🍽️", 
+          description: "Nutrition is important for memory",
           isCorrect: false
         },
         { 
           id: "c", 
-          text: "Cola", 
-          emoji: "🥤", 
-          description: "Cola has lots of sugar",
+          text: "Stress", 
+          emoji: "😰", 
+          description: "Stress hurts memory",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Which nutrient helps your brain grow?",
+      text: "Which activity improves memory?",
       options: [
         { 
           id: "a", 
-          text: "Sugar", 
-          emoji: "🍬", 
-          description: "Sugar provides quick energy",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Protein", 
-          emoji: "🥩", 
-          description: "Protein builds and repairs brain cells",
+          text: "Practicing and repeating", 
+          emoji: "🔁", 
+          description: "Practice strengthens memory",
           isCorrect: true
         },
         { 
+          id: "b", 
+          text: "Never practicing", 
+          emoji: "🚫", 
+          description: "Practice is important",
+          isCorrect: false
+        },
+        { 
           id: "c", 
-          text: "Salt", 
-          emoji: "🧂", 
-          description: "Salt is needed in small amounts",
+          text: "Forgetting everything", 
+          emoji: "😵", 
+          description: "This doesn't help",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "What drink is best for your brain?",
+      text: "What food is good for memory?",
       options: [
         { 
           id: "a", 
-          text: "Soda", 
-          emoji: "🥤", 
-          description: "Soda has lots of sugar",
+          text: "Junk food only", 
+          emoji: "🍟", 
+          description: "Junk food isn't good for brain",
           isCorrect: false
         },
         { 
           id: "b", 
-          text: "Energy drinks", 
-          emoji: "⚡", 
-          description: "Energy drinks have caffeine",
-          isCorrect: false
+          text: "Healthy food like fruits and vegetables", 
+          emoji: "🍎", 
+          description: "Healthy food supports brain function",
+          isCorrect: true
         },
         { 
           id: "c", 
-          text: "Water", 
-          emoji: "💧", 
-          description: "Water keeps your brain hydrated",
-          isCorrect: true
+          text: "No food at all", 
+          emoji: "🚫", 
+          description: "Nutrition is essential",
+          isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Which food helps you concentrate better?",
+      text: "How can you remember things better?",
       options: [
         { 
           id: "a", 
-          text: "Fish with omega-3", 
-          emoji: "🐟", 
-          description: "Omega-3 fatty acids support brain function",
+          text: "Write them down and review", 
+          emoji: "📝", 
+          description: "Writing and reviewing helps",
           isCorrect: true
         },
         { 
           id: "b", 
-          text: "Candy", 
-          emoji: "🍭", 
-          description: "Candy has lots of sugar",
+          text: "Never write anything", 
+          emoji: "🙈", 
+          description: "Writing helps memory",
           isCorrect: false
         },
         { 
           id: "c", 
-          text: "Chips", 
-          emoji: "🍟", 
-          description: "Chips are processed snacks",
+          text: "Ignore everything", 
+          emoji: "😴", 
+          description: "This won't help",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "Why are vegetables good for your brain?",
+      text: "Does exercise help memory?",
       options: [
         { 
           id: "a", 
-          text: "They taste bad", 
-          emoji: "😖", 
-          description: "Some vegetables might not taste good",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "They have vitamins and minerals", 
-          emoji: "🥬", 
-          description: "Vitamins and minerals help your brain work properly",
+          text: "Yes, exercise improves brain function", 
+          emoji: "💪", 
+          description: "Exercise benefits memory",
           isCorrect: true
         },
         { 
+          id: "b", 
+          text: "No, exercise doesn't help", 
+          emoji: "❌", 
+          description: "Exercise does help",
+          isCorrect: false
+        },
+        { 
           id: "c", 
-          text: "They are expensive", 
-          emoji: "💰", 
-          description: "Some vegetables can be costly",
+          text: "Maybe sometimes", 
+          emoji: "🤔", 
+          description: "Exercise consistently helps",
           isCorrect: false
         }
       ]
@@ -191,7 +191,7 @@ const QuizOnBrainFood = () => {
 
   return (
     <GameShell
-      title="Brain Food Quiz"
+      title="Quiz on Memory"
       score={score}
       subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
@@ -242,4 +242,5 @@ const QuizOnBrainFood = () => {
   );
 };
 
-export default QuizOnBrainFood;
+export default QuizOnMemory;
+

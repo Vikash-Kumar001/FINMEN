@@ -1,190 +1,243 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const GameStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-18";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-18");
+  const gameId = gameData?.id || "brain-kids-18";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for GameStory, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({}); // Track answers for each question
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Friend plays while you revise. Best choice?",
-      choices: [
-        { id: 'play', text: 'Play with friend' },
-        { id: 'revise', text: 'Revise' }
-      ],
-      correct: 'revise',
-      explanation: 'Studying first helps you learn and achieve your goals!'
+      text: "You want to play games but have homework. What should you do?",
+      options: [
+        { 
+          id: "homework", 
+          text: "Finish homework first, then play", 
+          emoji: "📚", 
+          description: "Complete responsibilities before fun",
+          isCorrect: true
+        },
+        { 
+          id: "games", 
+          text: "Play games first, homework later", 
+          emoji: "🎮", 
+          description: "This can delay your work",
+          isCorrect: false
+        },
+        { 
+          id: "both", 
+          text: "Do both at same time", 
+          emoji: "🤹", 
+          description: "Multitasking reduces focus",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      text: "You have a big test tomorrow. What should you do now?",
-      choices: [
-        { id: 'study', text: 'Study for the test' },
-        { id: 'games', text: 'Play video games' }
-      ],
-      correct: 'study',
-      explanation: 'Preparing for important tests helps you perform better!'
+      text: "You've been playing games for 2 hours. What should you do?",
+      options: [
+        { 
+          id: "continue", 
+          text: "Keep playing more", 
+          emoji: "🎮", 
+          description: "Too much screen time isn't healthy",
+          isCorrect: false
+        },
+        { 
+          id: "break", 
+          text: "Take a break and do other activities", 
+          emoji: "⏸️", 
+          description: "Balancing activities is important",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore everything else", 
+          emoji: "😴", 
+          description: "This isn't a good balance",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "You finished your homework. How should you balance fun and work?",
-      choices: [
-        { id: 'balance', text: 'Reward yourself with some fun time' },
-        { id: 'moregames', text: 'Keep playing games all night' }
-      ],
-      correct: 'balance',
-      explanation: 'Balancing work and play helps maintain motivation!'
+      text: "Your friend invites you to play games during study time. What do you do?",
+      options: [
+        { 
+          id: "play", 
+          text: "Play games with friend", 
+          emoji: "🎮", 
+          description: "This can distract from studying",
+          isCorrect: false
+        },
+        { 
+          id: "study", 
+          text: "Finish studying first, then play", 
+          emoji: "📖", 
+          description: "Prioritize your studies",
+          isCorrect: true
+        },
+        { 
+          id: "skip", 
+          text: "Skip studying completely", 
+          emoji: "⏭️", 
+          description: "Skipping isn't helpful",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      text: "Your favorite show is on during study time. What do you do?",
-      choices: [
-        { id: 'record', text: 'Record it and study now' },
-        { id: 'watch', text: 'Watch now and study later' }
-      ],
-      correct: 'record',
-      explanation: 'Managing your time well helps you enjoy both activities!'
+      text: "How can you balance games and study time?",
+      options: [
+        { 
+          id: "onlygames", 
+          text: "Play games all the time", 
+          emoji: "🎮", 
+          description: "This isn't balanced",
+          isCorrect: false
+        },
+        { 
+          id: "schedule", 
+          text: "Set a schedule: study time and game time", 
+          emoji: "⏰", 
+          description: "Planning helps balance activities",
+          isCorrect: true
+        },
+        { 
+          id: "onlystudy", 
+          text: "Never play games", 
+          emoji: "📚", 
+          description: "Balance includes some fun time",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "You are really good at a game. Should you spend all your time on it?",
-      choices: [
-        { id: 'moderate', text: 'Play in moderation and focus on other areas too' },
-        { id: 'alltime', text: 'Play all the time' }
-      ],
-      correct: 'moderate',
-      explanation: 'Balancing your talents with other responsibilities leads to well-rounded growth!'
+      text: "You finished your homework early. What's a good choice?",
+      options: [
+        { 
+          id: "morehomework", 
+          text: "Do extra homework", 
+          emoji: "📝", 
+          description: "You can do this, but rest is also good",
+          isCorrect: false
+        },
+        { 
+          id: "play", 
+          text: "Play games as a reward", 
+          emoji: "🎮", 
+          description: "Rewarding yourself is good",
+          isCorrect: true
+        },
+        { 
+          id: "nothing", 
+          text: "Do nothing", 
+          emoji: "😴", 
+          description: "Being active is better",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
+    setAnswered(true);
+    resetFeedback();
     
     if (isCorrect) {
-      setScore(score + 1); // 1 coin for correct answer (max 5 coins for 5 questions)
-      setShowConfetti(true);
-      // Hide confetti after animation
-      setTimeout(() => setShowConfetti(false), 1000);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    // Auto-advance to next question after delay
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
-        setShowConfetti(false);
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setLevelCompleted(true);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    }, 1500);
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-      setFeedbackType(null);
-      setShowConfetti(false);
-    }
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
+    }, 500);
   };
 
   const currentQuestionData = questions[currentQuestion];
 
-  // Calculate coins based on correct answers (max 5 coins for 5 questions)
-  const calculateTotalCoins = () => {
-    const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 1;
-  };
-
   return (
     <GameShell
-      title="Balancing Games and Study"
+      title="Game Story"
       score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-18"
-      gameType="brain"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={currentQuestion < questions.length - 1}
-      nextLabel="Next"
-      showAnswerConfetti={showConfetti}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {currentQuestionData.choices.map((choice) => (
-            <OptionButton
-              key={choice.id}
-              option={choice.text}
-              onClick={() => handleOptionSelect(choice.id)}
-              selected={selectedOption === choice.id}
-              disabled={!!selectedOption}
-              feedback={showFeedback ? { type: feedbackType } : null}
-            />
-          ))}
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackType === "correct" ? "Correct! 🎉" : "Not quite! 🤔"}
-            type={feedbackType}
-          />
-        )}
-        
-        {showFeedback && feedbackType === "wrong" && (
-          <div className="mt-4 text-white/90 text-center">
-            <p>💡 {currentQuestionData.explanation}</p>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="brain"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

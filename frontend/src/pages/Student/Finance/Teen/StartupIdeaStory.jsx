@@ -154,13 +154,6 @@ const StartupIdeaStory = () => {
           isCorrect: true
         },
         { 
-          id: "no3", 
-          text: "No, not real business", 
-          emoji: "❌", 
-          description: "Only offline counts",
-          isCorrect: false
-        },
-        { 
           id: "maybe3", 
           text: "Maybe, if profitable", 
           emoji: "🤔", 

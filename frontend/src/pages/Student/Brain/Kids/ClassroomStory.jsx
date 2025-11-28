@@ -1,190 +1,243 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ClassroomStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-11";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-11");
+  const gameId = gameData?.id || "brain-kids-11";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for ClassroomStory, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({}); // Track answers for each question
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Teacher is teaching. Do you listen carefully or doodle?",
-      choices: [
-        { id: 'listen', text: 'Listen carefully' },
-        { id: 'doodle', text: 'Doodle' }
-      ],
-      correct: 'listen',
-      explanation: 'Listening helps you learn and understand better!'
+      options: [
+        { 
+          id: "listen", 
+          text: "Listen carefully", 
+          emoji: "👂", 
+          description: "Pay attention to the teacher",
+          isCorrect: true
+        },
+        { 
+          id: "doodle", 
+          text: "Doodle in notebook", 
+          emoji: "✏️", 
+          description: "Draw pictures instead of listening",
+          isCorrect: false
+        },
+        { 
+          id: "chat", 
+          text: "Chat with friends", 
+          emoji: "💬", 
+          description: "Talk to classmates during lesson",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "You don't understand something the teacher said. What should you do?",
-      choices: [
-        { id: 'ask', text: 'Ask the teacher to explain' },
-        { id: 'ignore', text: 'Ignore it and hope to figure it out later' }
-      ],
-      correct: 'ask',
-      explanation: 'Asking questions helps you learn better!'
+      options: [
+        { 
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "😴", 
+          description: "Hope to figure it out later",
+          isCorrect: false
+        },
+        { 
+          id: "ask", 
+          text: "Ask the teacher to explain", 
+          emoji: "🙋", 
+          description: "Raise your hand and ask questions",
+          isCorrect: true
+        },
+        { 
+          id: "copy", 
+          text: "Copy from friend", 
+          emoji: "👀", 
+          description: "Look at neighbor's work",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "During group work, your friend wants to chat about games. What do you do?",
-      choices: [
-        { id: 'focus', text: 'Stay focused on the task' },
-        { id: 'chat', text: 'Chat about games' }
-      ],
-      correct: 'focus',
-      explanation: 'Staying focused helps you and your group learn!'
+      options: [
+        { 
+          id: "focus", 
+          text: "Stay focused on the task", 
+          emoji: "🎯", 
+          description: "Complete the group work first",
+          isCorrect: true
+        },
+        { 
+          id: "chat", 
+          text: "Chat about games", 
+          emoji: "🎮", 
+          description: "Talk about games instead",
+          isCorrect: false
+        },
+        { 
+          id: "both", 
+          text: "Do both at same time", 
+          emoji: "🤹", 
+          description: "Try to chat and work together",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       text: "You finished your classwork early. What's the best choice?",
-      choices: [
-        { id: 'help', text: 'Help classmates who need assistance' },
-        { id: 'disturb', text: 'Disturb others who are still working' }
-      ],
-      correct: 'help',
-      explanation: 'Helping others reinforces your own learning!'
+      options: [
+        { 
+          id: "help", 
+          text: "Help classmates who need assistance", 
+          emoji: "🤝", 
+          description: "Assist others who are still working",
+          isCorrect: true
+        },
+        { 
+          id: "disturb", 
+          text: "Disturb others who are still working", 
+          emoji: "😈", 
+          description: "Make noise and distract classmates",
+          isCorrect: false
+        },
+        { 
+          id: "play", 
+          text: "Play on phone", 
+          emoji: "📱", 
+          description: "Use your phone while others work",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
       text: "The lesson is difficult. How do you handle it?",
-      choices: [
-        { id: 'persist', text: 'Keep trying and ask for help if needed' },
-        { id: 'giveup', text: 'Give up and stop trying' }
-      ],
-      correct: 'persist',
-      explanation: 'Persistence helps you overcome challenges!'
+      options: [
+        { 
+          id: "persist", 
+          text: "Keep trying and ask for help if needed", 
+          emoji: "💪", 
+          description: "Stay determined and seek assistance",
+          isCorrect: true
+        },
+        { 
+          id: "giveup", 
+          text: "Give up and stop trying", 
+          emoji: "😔", 
+          description: "Quit when it gets hard",
+          isCorrect: false
+        },
+        { 
+          id: "blame", 
+          text: "Blame the teacher", 
+          emoji: "👎", 
+          description: "Say the teacher is bad",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
     
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
+    setAnswered(true);
+    resetFeedback();
     
     if (isCorrect) {
-      setScore(score + 1); // 1 coin for correct answer (max 5 coins for 5 questions)
-      setShowConfetti(true);
-      // Hide confetti after animation
-      setTimeout(() => setShowConfetti(false), 1000);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
     
-    // Auto-advance to next question after delay
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
-        setShowConfetti(false);
+      if (isLastQuestion) {
+        setShowResult(true);
       } else {
-        setLevelCompleted(true);
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
-    }, 1500);
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-      setFeedbackType(null);
-      setShowConfetti(false);
-    }
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
+    }, 500);
   };
 
   const currentQuestionData = questions[currentQuestion];
 
-  // Calculate coins based on correct answers (max 5 coins for 5 questions)
-  const calculateTotalCoins = () => {
-    const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 1;
-  };
-
   return (
     <GameShell
-      title="Classroom Focus Story"
+      title="Classroom Story"
       score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-11"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={currentQuestion < questions.length - 1}
-      nextLabel="Next"
-      showAnswerConfetti={showConfetti}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-          {currentQuestionData.choices.map((choice) => (
-            <OptionButton
-              key={choice.id}
-              option={choice.text}
-              onClick={() => handleOptionSelect(choice.id)}
-              selected={selectedOption === choice.id}
-              disabled={!!selectedOption}
-              feedback={showFeedback ? { type: feedbackType } : null}
-            />
-          ))}
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackType === "correct" ? "Correct! 🎉" : "Not quite! 🤔"}
-            type={feedbackType}
-          />
-        )}
-        
-        {showFeedback && feedbackType === "wrong" && (
-          <div className="mt-4 text-white/90 text-center">
-            <p>💡 {currentQuestionData.explanation}</p>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="brain"
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

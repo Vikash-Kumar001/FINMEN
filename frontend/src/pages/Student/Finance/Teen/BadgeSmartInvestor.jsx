@@ -157,11 +157,6 @@ const BadgeSmartInvestor = () => {
           isCorrect: true
         },
         { 
-          text: "Invest randomly", 
-          emoji: "🎲", 
-          isCorrect: false
-        },
-        { 
           text: "Ignore planning", 
           emoji: "🚫", 
           isCorrect: false

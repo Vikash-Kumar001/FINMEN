@@ -34,14 +34,14 @@ const BadgeDebtSmart = () => {
       question: "You need money for education. What's the responsible approach?",
       options: [
         { 
-          text: "Borrow without planning repayment", 
-          emoji: "🚫", 
-          isCorrect: false
-        },
-        { 
           text: "Plan repayment and borrow responsibly", 
           emoji: "✅", 
           isCorrect: true
+        },
+        { 
+          text: "Borrow without planning repayment", 
+          emoji: "🚫", 
+          isCorrect: false
         },
         { 
           text: "Borrow more than needed", 
@@ -66,14 +66,14 @@ const BadgeDebtSmart = () => {
           isCorrect: false
         },
         { 
-          text: "Create a repayment plan and stick to it", 
-          emoji: "📋", 
-          isCorrect: true
-        },
-        { 
           text: "Borrow more to pay old debt", 
           emoji: "🔄", 
           isCorrect: false
+        },
+        { 
+          text: "Create a repayment plan and stick to it", 
+          emoji: "📋", 
+          isCorrect: true
         },
         { 
           text: "Ignore payment dates", 
@@ -93,11 +93,6 @@ const BadgeDebtSmart = () => {
           isCorrect: false
         },
         { 
-          text: "Save first or borrow only if you can repay", 
-          emoji: "💰", 
-          isCorrect: true
-        },
-        { 
           text: "Borrow and worry later", 
           emoji: "😊", 
           isCorrect: false
@@ -106,6 +101,11 @@ const BadgeDebtSmart = () => {
           text: "Borrow from multiple sources", 
           emoji: "🔄", 
           isCorrect: false
+        },
+        { 
+          text: "Save first or borrow only if you can repay", 
+          emoji: "💰", 
+          isCorrect: true
         }
       ]
     },
@@ -115,14 +115,14 @@ const BadgeDebtSmart = () => {
       question: "You can't repay on time. What's the best action?",
       options: [
         { 
-          text: "Hide and avoid lender", 
-          emoji: "🙈", 
-          isCorrect: false
-        },
-        { 
           text: "Communicate honestly and explain situation", 
           emoji: "💬", 
           isCorrect: true
+        },
+        { 
+          text: "Hide and avoid lender", 
+          emoji: "🙈", 
+          isCorrect: false
         },
         { 
           text: "Ignore the lender completely", 
@@ -147,14 +147,14 @@ const BadgeDebtSmart = () => {
           isCorrect: false
         },
         { 
-          text: "Borrow only when necessary and always repay on time", 
-          emoji: "✅", 
-          isCorrect: true
-        },
-        { 
           text: "Ignore repayment plans", 
           emoji: "🚫", 
           isCorrect: false
+        },
+        { 
+          text: "Borrow only when necessary and always repay on time", 
+          emoji: "✅", 
+          isCorrect: true
         },
         { 
           text: "Borrow without thinking", 

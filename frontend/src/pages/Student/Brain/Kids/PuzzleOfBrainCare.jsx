@@ -1,211 +1,269 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Zap, Moon, Book, Dumbbell, Apple, Coffee, Gamepad } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PuzzleOfBrainCare = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-4";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-4");
+  const gameId = gameData?.id || "brain-kids-4";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for PuzzleOfBrainCare, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [matchedPairs, setMatchedPairs] = useState([]);
-  const [selectedConcept, setSelectedConcept] = useState(null);
-  const [selectedBenefit, setSelectedBenefit] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const concepts = [
-    { id: 1, name: 'Sleep', icon: <Moon className="w-6 h-6" />, color: 'bg-blue-500' },
-    { id: 2, name: 'Reading', icon: <Book className="w-6 h-6" />, color: 'bg-green-500' },
-    { id: 3, name: 'Exercise', icon: <Dumbbell className="w-6 h-6" />, color: 'bg-red-500' },
-    { id: 4, name: 'Healthy Food', icon: <Apple className="w-6 h-6" />, color: 'bg-yellow-500' },
-    { id: 5, name: 'Junk Food', icon: <Coffee className="w-6 h-6" />, color: 'bg-gray-500' },
-    { id: 6, name: 'Video Games', icon: <Gamepad className="w-6 h-6" />, color: 'bg-purple-500' }
+  // Brain care activities (left side)
+  const leftItems = [
+    { id: 1, name: "Sleep", emoji: "😴", description: "Rest for brain recovery" },
+    { id: 2, name: "Reading", emoji: "📚", description: "Learn and think better" },
+    { id: 3, name: "Exercise", emoji: "💪", description: "Physical activity for brain" },
+    { id: 4, name: "Healthy Food", emoji: "🍎", description: "Nutritious meals" },
+    { id: 5, name: "Water", emoji: "💧", description: "Stay hydrated" }
   ];
 
-  const benefits = [
-    { id: 1, conceptId: 1, benefit: 'Rest', description: 'Sleep helps your brain recover and form memories' },
-    { id: 2, conceptId: 2, benefit: 'Sharp Mind', description: 'Reading improves vocabulary and thinking skills' },
-    { id: 3, conceptId: 3, benefit: 'Strong Brain', description: 'Exercise increases blood flow to the brain' },
-    { id: 4, conceptId: 4, benefit: 'Smart Fuel', description: 'Healthy food provides nutrients for brain function' },
-    { id: 5, conceptId: 5, benefit: 'Brain Fog', description: 'Junk food can make it hard to think clearly' },
-    { id: 6, conceptId: 6, benefit: 'Fun Break', description: 'Some games can be good, but too much is harmful' }
+  // Benefits (right side)
+  const rightItems = [
+    { id: 1, name: "Rest & Memory", emoji: "🧠", description: "Helps brain recover and form memories" },
+    { id: 2, name: "Sharp Mind", emoji: "✨", description: "Improves vocabulary and thinking skills" },
+    { id: 3, name: "Strong Brain", emoji: "💪", description: "Increases blood flow to the brain" },
+    { id: 4, name: "Smart Fuel", emoji: "⚡", description: "Provides nutrients for brain function" },
+    { id: 5, name: "Stay Hydrated", emoji: "💧", description: "Keeps brain functioning well" }
   ];
 
-  const correctPairs = [
-    { conceptId: 1, benefitId: 1 },
-    { conceptId: 2, benefitId: 2 },
-    { conceptId: 3, benefitId: 3 },
-    { conceptId: 4, benefitId: 4 },
-    { conceptId: 5, benefitId: 5 },
-    { conceptId: 6, benefitId: 6 }
+  // Correct matches
+  const correctMatches = [
+    { leftId: 1, rightId: 1 }, // Sleep → Rest & Memory
+    { leftId: 2, rightId: 2 }, // Reading → Sharp Mind
+    { leftId: 3, rightId: 3 }, // Exercise → Strong Brain
+    { leftId: 4, rightId: 4 }, // Healthy Food → Smart Fuel
+    { leftId: 5, rightId: 5 }  // Water → Stay Hydrated
   ];
 
-  const handleConceptSelect = (concept) => {
-    if (matchedPairs.some(pair => pair.conceptId === concept.id)) return;
-    setSelectedConcept(concept);
+  // Shuffled right items for display (to split matches across positions)
+  const shuffledRightItems = [
+    rightItems[2], // Strong Brain (id: 3) - position 1
+    rightItems[0], // Rest & Memory (id: 1) - position 2
+    rightItems[4], // Stay Hydrated (id: 5) - position 3
+    rightItems[1], // Sharp Mind (id: 2) - position 4
+    rightItems[3]  // Smart Fuel (id: 4) - position 5
+  ];
+
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    setSelectedLeft(item);
   };
 
-  const handleBenefitSelect = (benefit) => {
-    if (matchedPairs.some(pair => pair.benefitId === benefit.id)) return;
-    
-    if (selectedConcept) {
-      const isCorrect = correctPairs.some(pair => 
-        pair.conceptId === selectedConcept.id && pair.benefitId === benefit.id
-      );
-      
-      if (isCorrect) {
-        const newMatch = { conceptId: selectedConcept.id, benefitId: benefit.id };
-        setMatchedPairs([...matchedPairs, newMatch]);
-        setFeedbackType("correct");
-        setFeedbackMessage('Correct match!');
-        setShowFeedback(true);
-        setScore(score + 1); // 1 coin per correct match
-        
-        // Check if all pairs are matched
-        if (matchedPairs.length + 1 === concepts.length) {
-          setTimeout(() => {
-            setLevelCompleted(true);
-          }, 1500);
-        }
-      } else {
-        setFeedbackType("wrong");
-        setFeedbackMessage('Try again!');
-        setShowFeedback(true);
-      }
-      
-      // Hide feedback after delay
-      setTimeout(() => {
-        setShowFeedback(false);
-      }, 1500);
-      
-      setSelectedConcept(null);
-      setSelectedBenefit(null);
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setSelectedBenefit(benefit);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    // Check if all items are matched
+    if (newMatches.length === leftItems.length) {
+      setTimeout(() => {
+        setShowResult(true);
+      }, 800);
+    }
+
+    // Reset selections
+    setSelectedLeft(null);
+    setSelectedRight(null);
   };
 
-  const isConceptMatched = (conceptId) => {
-    return matchedPairs.some(pair => pair.conceptId === conceptId);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setMatches([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setScore(0);
+    resetFeedback();
   };
 
-  const isBenefitMatched = (benefitId) => {
-    return matchedPairs.some(pair => pair.benefitId === benefitId);
+  // Check if a left item is already matched
+  const isLeftItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
   };
 
-  const calculateScore = () => {
-    return matchedPairs.length * 8.33;
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
+  // Get match result for a left item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
   };
 
   return (
     <GameShell
-      title="Brain Care Puzzle"
-      score={Math.round(calculateScore())}
-      currentLevel={matchedPairs.length + 1}
-      totalLevels={concepts.length}
+      title="Puzzle of Brain Care"
+      score={score}
+      subtitle={showResult ? "Puzzle Complete!" : `Match brain care activities with their benefits (${matches.length}/${leftItems.length} matched)`}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-4"
-      gameType="brain"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={concepts.length} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Brain Care Puzzle</h3>
-        <p className="text-white/80 mb-6 text-center">Match each brain care activity with its benefit</p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {/* Concepts column */}
-          <div>
-            <h4 className="text-xl font-semibold mb-4 text-white text-center">Brain Care Activities</h4>
-            <div className="space-y-3">
-              {concepts.map((concept) => (
-                <button
-                  key={concept.id}
-                  onClick={() => handleConceptSelect(concept)}
-                  disabled={isConceptMatched(concept.id)}
-                  className={`w-full flex items-center p-4 rounded-xl transition duration-200 border-2 ${
-                    selectedConcept?.id === concept.id
-                      ? 'bg-white/20 border-white'
-                      : isConceptMatched(concept.id)
-                      ? 'bg-green-500/20 border-green-400 opacity-70'
-                      : 'bg-white/10 hover:bg-white/20 border-white/30'
-                  }`}
-                >
-                  <div className={`p-2 rounded-lg mr-3 ${concept.color}`}>
-                    {concept.icon}
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="brain"
+      totalLevels={leftItems.length}
+      currentLevel={matches.length + 1}
+      maxScore={leftItems.length}
+      showConfetti={showResult && score === leftItems.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8">
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Matches: {matches.length}/{leftItems.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{leftItems.length}</span>
+              </div>
+              
+              <p className="text-white/90 text-center mb-6">
+                Select an activity from the left and its benefit from the right, then click "Match"
+              </p>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Left column - Activities */}
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-white text-center">Brain Care Activities</h4>
+                  <div className="space-y-3">
+                    {leftItems.map((item) => {
+                      const isMatched = isLeftItemMatched(item.id);
+                      const matchResult = getMatchResult(item.id);
+                      const isSelected = selectedLeft?.id === item.id;
+                      
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleLeftSelect(item)}
+                          disabled={isMatched || showResult}
+                          className={`w-full p-4 rounded-xl transition-all border-2 ${
+                            isSelected
+                              ? 'bg-blue-500/30 border-blue-400 ring-2 ring-blue-400'
+                              : isMatched
+                              ? matchResult
+                                ? 'bg-green-500/20 border-green-400 opacity-70'
+                                : 'bg-red-500/20 border-red-400 opacity-70'
+                              : 'bg-white/10 hover:bg-white/20 border-white/30'
+                          } ${isMatched ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="flex items-center">
+                            <span className="text-2xl mr-3">{item.emoji}</span>
+                            <div className="text-left flex-1">
+                              <div className="font-semibold text-white">{item.name}</div>
+                              <div className="text-sm text-white/70">{item.description}</div>
+                            </div>
+                            {isMatched && (
+                              <span className={`text-xl ${matchResult ? 'text-green-400' : 'text-red-400'}`}>
+                                {matchResult ? '✓' : '✗'}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
-                  <span className="font-medium text-white">{concept.name}</span>
-                  {isConceptMatched(concept.id) && (
-                    <span className="ml-auto text-green-400 text-xl">✓</span>
-                  )}
-                </button>
-              ))}
-            </div>
-          </div>
-          
-          {/* Benefits column */}
-          <div>
-            <h4 className="text-xl font-semibold mb-4 text-white text-center">Benefits</h4>
-            <div className="space-y-3">
-              {benefits.map((benefit) => (
+                </div>
+
+                {/* Right column - Benefits */}
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-white text-center">Benefits</h4>
+                  <div className="space-y-3">
+                    {shuffledRightItems.map((item) => {
+                      const isMatched = isRightItemMatched(item.id);
+                      const isSelected = selectedRight?.id === item.id;
+                      
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleRightSelect(item)}
+                          disabled={isMatched || showResult}
+                          className={`w-full p-4 rounded-xl transition-all border-2 text-left ${
+                            isSelected
+                              ? 'bg-blue-500/30 border-blue-400 ring-2 ring-blue-400'
+                              : isMatched
+                              ? 'bg-green-500/20 border-green-400 opacity-70'
+                              : 'bg-white/10 hover:bg-white/20 border-white/30'
+                          } ${isMatched ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="flex items-center">
+                            <span className="text-2xl mr-3">{item.emoji}</span>
+                            <div className="flex-1">
+                              <div className="font-semibold text-white">{item.name}</div>
+                              <div className="text-sm text-white/70">{item.description}</div>
+                            </div>
+                            {isMatched && (
+                              <span className="text-xl text-green-400">✓</span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Match button */}
+              <div className="text-center">
                 <button
-                  key={benefit.id}
-                  onClick={() => handleBenefitSelect(benefit)}
-                  disabled={isBenefitMatched(benefit.id)}
-                  className={`w-full text-left p-4 rounded-xl transition duration-200 border-2 ${
-                    selectedBenefit?.id === benefit.id
-                      ? 'bg-white/20 border-white'
-                      : isBenefitMatched(benefit.id)
-                      ? 'bg-green-500/20 border-green-400 opacity-70'
-                      : 'bg-white/10 hover:bg-white/20 border-white/30'
+                  onClick={handleMatch}
+                  disabled={!selectedLeft || !selectedRight || showResult}
+                  className={`px-8 py-3 rounded-full font-bold transition-all ${
+                    selectedLeft && selectedRight && !showResult
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white'
+                      : 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
                   }`}
                 >
-                  <div className="font-medium text-white">{benefit.benefit}</div>
-                  <div className="text-sm text-white/70 mt-1">{benefit.description}</div>
-                  {isBenefitMatched(benefit.id) && (
-                    <span className="text-green-400 text-xl">✓</span>
-                  )}
+                  Match Selected
                 </button>
-              ))}
+              </div>
             </div>
           </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-        
-        <div className="flex justify-between items-center text-white">
-          <span>
-            Matches: {matchedPairs.length}/{concepts.length}
-          </span>
-          <span className="font-bold text-yellow-300">
-            Score: {Math.round(calculateScore())}/50
-          </span>
-        </div>
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

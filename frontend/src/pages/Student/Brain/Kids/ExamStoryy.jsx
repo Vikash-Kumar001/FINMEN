@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
 import { Brain, BookOpenCheck, Check, X, Mic, Trophy, Stethoscope, School, Timer, Zap, Star } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import { getGameDataById } from '../../../../utils/getGameData';
 
@@ -11,8 +12,13 @@ const ExamStoryy = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-65";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-35");
+  const gameId = gameData?.id || "brain-kids-35";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for ExamStoryy, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
@@ -187,7 +193,7 @@ const ExamStoryy = () => {
       currentLevel={currentLevel}
       totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-65"
+      gameId={gameId}
       gameType="brain-health"
       showGameOver={levelCompleted}
       backPath="/games/brain-health/kids"

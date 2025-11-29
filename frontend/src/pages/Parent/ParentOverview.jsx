@@ -36,8 +36,9 @@ const ParentOverview = () => {
   const [recentActivities, setRecentActivities] = useState([]);
   const [parentProfile, setParentProfile] = useState(null);
   const [showAddChildModal, setShowAddChildModal] = useState(false);
-  const [childEmail, setChildEmail] = useState("");
+  const [childLinkingCode, setChildLinkingCode] = useState("");
   const [addingChild, setAddingChild] = useState(false);
+  const [paymentData, setPaymentData] = useState(null);
 
   useEffect(() => {
     fetchOverviewData();
@@ -84,27 +85,128 @@ const ParentOverview = () => {
     }
   };
 
-  const handleAddChild = async () => {
-    if (!childEmail.trim()) {
-      toast.error("Please enter child's email");
-      return;
-    }
+  const loadRazorpay = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.razorpay.com/v1/checkout.js";
+      script.onload = () => resolve(window.Razorpay);
+      script.onerror = () => resolve(null);
+      document.body.appendChild(script);
+    });
+  };
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(childEmail)) {
-      toast.error("Please enter a valid email address");
+  const initializeRazorpayPayment = async (orderId, keyId, amount, childId) => {
+    try {
+      const Razorpay = await loadRazorpay();
+      if (!Razorpay) {
+        throw new Error("Payment gateway not available right now.");
+      }
+
+      const options = {
+        key: keyId,
+        amount: amount * 100, // Convert to paise
+        currency: "INR",
+        name: "Wise Student",
+        description: "Link Child Account - Premium Plan",
+        order_id: orderId,
+        handler: async (response) => {
+          try {
+            // Verify and confirm payment
+            const confirmResponse = await api.post("/api/parent/link-child/confirm-payment", {
+              childId,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+              razorpaySignature: response.razorpay_signature,
+            });
+
+            if (confirmResponse.data.success) {
+              toast.success(confirmResponse.data.message || "Child linked successfully!");
+              setShowAddChildModal(false);
+              setChildLinkingCode("");
+              setPaymentData(null);
+              fetchOverviewData();
+            } else {
+              toast.error(confirmResponse.data.message || "Payment verification failed");
+            }
+          } catch (error) {
+            console.error("Payment confirmation error:", error);
+            toast.error(error.response?.data?.message || "Failed to confirm payment");
+          } finally {
+            setAddingChild(false);
+          }
+        },
+        prefill: {
+          name: parentProfile?.name || "",
+          email: parentProfile?.email || "",
+        },
+        theme: {
+          color: "#6366f1",
+        },
+        modal: {
+          ondismiss: () => {
+            setAddingChild(false);
+            setPaymentData(null);
+          },
+        },
+      };
+
+      const razorpayInstance = new Razorpay(options);
+      razorpayInstance.on("payment.failed", (response) => {
+        console.error("Payment failed:", response);
+        toast.error(`Payment failed: ${response.error.description || "Unknown error"}`);
+        setAddingChild(false);
+        setPaymentData(null);
+      });
+
+      razorpayInstance.open();
+    } catch (error) {
+      console.error("Razorpay initialization error:", error);
+      toast.error("Failed to initialize payment gateway");
+      setAddingChild(false);
+      setPaymentData(null);
+    }
+  };
+
+  const handleAddChild = async () => {
+    if (!childLinkingCode.trim()) {
+      toast.error("Please enter child's secret linking code");
       return;
     }
 
     try {
       setAddingChild(true);
       const response = await api.post("/api/parent/link-child", {
-        childEmail: childEmail.trim(),
+        childLinkingCode: childLinkingCode.trim().toUpperCase(),
       });
-      toast.success(response.data.message || "Child linked successfully!");
-      setShowAddChildModal(false);
-      setChildEmail("");
-      fetchOverviewData();
+
+      // Check if payment is required
+      if (response.data?.requiresPayment) {
+        setPaymentData({
+          orderId: response.data.orderId,
+          keyId: response.data.keyId,
+          amount: response.data.amount,
+          childId: response.data.childId,
+          childName: response.data.childName,
+          childPlanType: response.data.childPlanType,
+        });
+        
+        // Initialize Razorpay payment
+        await initializeRazorpayPayment(
+          response.data.orderId,
+          response.data.keyId,
+          response.data.amount,
+          response.data.childId
+        );
+        return;
+      }
+
+      // No payment required - child linked directly
+      if (response.data?.success) {
+        toast.success(response.data.message || "Child linked successfully!");
+        setShowAddChildModal(false);
+        setChildLinkingCode("");
+        fetchOverviewData();
+      }
     } catch (error) {
       console.error("Error linking child:", error);
       toast.error(error.response?.data?.message || "Failed to link child");
@@ -182,29 +284,77 @@ const ParentOverview = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="bg-white rounded-2xl p-8 max-w-md w-full shadow-2xl"
             >
-              <h3 className="text-2xl font-bold text-gray-900 mb-6">Link Child Account</h3>
-              <input
-                type="email"
-                placeholder="Enter child's email address"
-                value={childEmail}
-                onChange={(e) => setChildEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 outline-none mb-6"
-              />
-              <div className="flex gap-3">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-2xl font-bold text-gray-900">Link Child Account</h3>
                 <button
-                  onClick={() => setShowAddChildModal(false)}
-                  className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all"
+                  onClick={() => {
+                    setShowAddChildModal(false);
+                    setChildLinkingCode("");
+                    setPaymentData(null);
+                  }}
+                  className="p-2 hover:bg-gray-100 rounded-lg transition-all"
                 >
-                  Cancel
-                </button>
-                <button
-                  onClick={handleAddChild}
-                  disabled={addingChild}
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50"
-                >
-                  {addingChild ? "Linking..." : "Link Child"}
+                  <X className="w-5 h-5 text-gray-600" />
                 </button>
               </div>
+              
+              {paymentData ? (
+                <div className="space-y-4">
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                    <p className="text-sm text-blue-800 mb-2">
+                      To link <strong>{paymentData.childName}</strong>, payment of ₹{paymentData.amount} is required.
+                    </p>
+                    <p className="text-xs text-blue-600">
+                      {paymentData.childPlanType === 'free' 
+                        ? 'This will upgrade to Student + Parent Premium Pro Plan.'
+                        : 'This will add parent dashboard access to the existing plan.'}
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-600 text-center">
+                    Payment window will open shortly...
+                  </p>
+                </div>
+              ) : (
+                <>
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Enter child's secret linking code
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="ST-XXXXXX"
+                      value={childLinkingCode}
+                      onChange={(e) => setChildLinkingCode(e.target.value.toUpperCase())}
+                      onKeyPress={(e) => e.key === "Enter" && !addingChild && handleAddChild()}
+                      className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none uppercase"
+                      disabled={addingChild}
+                    />
+                    <p className="text-xs text-gray-500 mt-2">
+                      Ask your child for their secret linking code (e.g., ST-ABC123)
+                    </p>
+                  </div>
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => {
+                        setShowAddChildModal(false);
+                        setChildLinkingCode("");
+                        setPaymentData(null);
+                      }}
+                      disabled={addingChild}
+                      className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all disabled:opacity-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleAddChild}
+                      disabled={addingChild || !childLinkingCode.trim()}
+                      className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                    >
+                      {addingChild ? "Linking..." : "Link Child"}
+                    </button>
+                  </div>
+                </>
+              )}
             </motion.div>
           </div>
         )}
@@ -552,35 +702,74 @@ const ParentOverview = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-2xl font-bold text-gray-900">Link Child Account</h3>
               <button
-                onClick={() => setShowAddChildModal(false)}
+                onClick={() => {
+                  setShowAddChildModal(false);
+                  setChildLinkingCode("");
+                  setPaymentData(null);
+                }}
                 className="p-2 hover:bg-gray-100 rounded-lg transition-all"
               >
                 <X className="w-5 h-5 text-gray-600" />
               </button>
             </div>
-            <input
-              type="email"
-              placeholder="Enter child's email address"
-              value={childEmail}
-              onChange={(e) => setChildEmail(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleAddChild()}
-              className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none mb-6"
-            />
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowAddChildModal(false)}
-                className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleAddChild}
-                disabled={addingChild}
-                className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-              >
-                {addingChild ? "Linking..." : "Link Child"}
-              </button>
-            </div>
+            
+            {paymentData ? (
+              <div className="space-y-4">
+                <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                  <p className="text-sm text-blue-800 mb-2">
+                    To link <strong>{paymentData.childName}</strong>, payment of ₹{paymentData.amount} is required.
+                  </p>
+                  <p className="text-xs text-blue-600">
+                    {paymentData.childPlanType === 'free' 
+                      ? 'This will upgrade to Student + Parent Premium Pro Plan.'
+                      : 'This will add parent dashboard access to the existing plan.'}
+                  </p>
+                </div>
+                <p className="text-sm text-gray-600 text-center">
+                  Payment window will open shortly...
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Enter child's secret linking code
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="ST-XXXXXX"
+                    value={childLinkingCode}
+                    onChange={(e) => setChildLinkingCode(e.target.value.toUpperCase())}
+                    onKeyPress={(e) => e.key === "Enter" && !addingChild && handleAddChild()}
+                    className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-purple-500 focus:ring-2 focus:ring-purple-200 outline-none uppercase"
+                    disabled={addingChild}
+                  />
+                  <p className="text-xs text-gray-500 mt-2">
+                    Ask your child for their secret linking code (e.g., ST-ABC123)
+                  </p>
+                </div>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowAddChildModal(false);
+                      setChildLinkingCode("");
+                      setPaymentData(null);
+                    }}
+                    disabled={addingChild}
+                    className="flex-1 px-6 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-all disabled:opacity-50"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddChild}
+                    disabled={addingChild || !childLinkingCode.trim()}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-semibold hover:shadow-lg transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    {addingChild ? "Linking..." : "Link Child"}
+                  </button>
+                </div>
+              </>
+            )}
           </motion.div>
         </div>
       )}

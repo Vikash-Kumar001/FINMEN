@@ -332,7 +332,7 @@ export const getBrainTeenGames = (gameCompletionStatus) => {
           xp: 10,
           completed: gameCompletionStatus["brain-teens-22"] || false,
           isSpecial: true,
-          path: "/student/brain/teen/quiz-memory-hacks",
+          path: "/student/brain/teen/quiz-on-memory-hacks",
           index: 21,
         },
         {

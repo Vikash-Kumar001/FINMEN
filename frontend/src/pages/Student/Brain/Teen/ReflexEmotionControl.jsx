@@ -1,128 +1,196 @@
-// ReflexEmotionControl.js
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
+import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
+
+const QUESTION_TIME = 10; // 10 seconds per question
 
 const ReflexEmotionControl = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
   const gameId = "brain-teens-43";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({});
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const timerRef = useRef(null);
 
   const questions = [
     {
       id: 1,
-      text: "Quick: Angry friend? Tap for control!",
-      choices: [
-        { id: 'a', text: 'Talk calmly', icon: '💬😌' },
-        { id: 'b', text: 'Shout back', icon: '🗣️😠' }
-      ],
-      correct: 'a',
-      explanation: 'Calm talk de-escalates emotions!'
+      text: "Tap for 'Talk Calmly,' avoid 'Shout.'",
+      options: [
+        { id: "talk", text: "Talk Calmly", emoji: "💬😌", description: "De-escalates emotions", isCorrect: true },
+        { id: "shout", text: "Shout", emoji: "🗣️😠", description: "Escalates conflict", isCorrect: false },
+        { id: "ignore", text: "Ignore", emoji: "🙈", description: "Bottles up feelings", isCorrect: false },
+        { id: "yell", text: "Yell Back", emoji: "😡", description: "Increases tension", isCorrect: false }
+      ]
     },
     {
       id: 2,
-      text: "Reflex: Feeling sad?",
-      choices: [
-        { id: 'a', text: 'Breathe deeply', icon: '🌬️' },
-        { id: 'b', text: 'Isolate', icon: '🚶‍♂️' }
-      ],
-      correct: 'a',
-      explanation: 'Breathing regulates emotional responses!'
+      text: "Which action helps control emotions?",
+      options: [
+        { id: "breathe", text: "Deep Breathing", emoji: "🌬️", description: "Regulates emotional response", isCorrect: true },
+        { id: "isolate", text: "Isolate Yourself", emoji: "🚶", description: "Reduces support", isCorrect: false },
+        { id: "panic", text: "Panic", emoji: "😱", description: "Amplifies emotions", isCorrect: false },
+        { id: "freeze", text: "Freeze", emoji: "❄️", description: "Paralyzes response", isCorrect: false }
+      ]
     },
     {
       id: 3,
-      text: "Fast: Excited too much?",
-      choices: [
-        { id: 'a', text: 'Pause & reflect', icon: '⏸️🧠' },
-        { id: 'b', text: 'Act impulsively', icon: '⚡' }
-      ],
-      correct: 'a',
-      explanation: 'Pausing prevents regrettable actions!'
+      text: "What helps manage strong emotions?",
+      options: [
+        { id: "pause", text: "Pause & Reflect", emoji: "⏸️🧠", description: "Prevents impulsive actions", isCorrect: true },
+        { id: "impulse", text: "Act Impulsively", emoji: "⚡", description: "Leads to regret", isCorrect: false },
+        { id: "react", text: "React Immediately", emoji: "🔥", description: "Often makes things worse", isCorrect: false },
+        { id: "rush", text: "Rush Into Action", emoji: "🏃", description: "No time to think", isCorrect: false }
+      ]
     },
     {
       id: 4,
-      text: "Quick: Jealous feeling?",
-      choices: [
-        { id: 'a', text: 'Focus on gratitude', icon: '🙏' },
-        { id: 'b', text: 'Compare more', icon: '📊' }
-      ],
-      correct: 'a',
-      explanation: 'Gratitude shifts perspective positively!'
+      text: "Which technique helps with negative emotions?",
+      options: [
+        { id: "gratitude", text: "Focus on Gratitude", emoji: "🙏", description: "Shifts perspective positively", isCorrect: true },
+        { id: "compare", text: "Compare More", emoji: "📊", description: "Increases negative feelings", isCorrect: false },
+        { id: "dwell", text: "Dwell on Negatives", emoji: "😔", description: "Maintains negative state", isCorrect: false },
+        { id: "blame", text: "Blame Others", emoji: "👉", description: "Creates resentment", isCorrect: false }
+      ]
     },
     {
       id: 5,
-      text: "Reflex: Anxious?",
-      choices: [
-        { id: 'a', text: 'Grounding exercise', icon: '🌍' },
-        { id: 'b', text: 'Worry loop', icon: '🔄😟' }
-      ],
-      correct: 'a',
-      explanation: 'Grounding brings you back to present!'
+      text: "What helps when feeling anxious?",
+      options: [
+        { id: "grounding", text: "Grounding Exercise", emoji: "🌍", description: "Brings you to present moment", isCorrect: true },
+        { id: "worry", text: "Worry Loop", emoji: "🔄😟", description: "Amplifies anxiety", isCorrect: false },
+        { id: "avoid", text: "Avoid Everything", emoji: "🏃", description: "Limits life experiences", isCorrect: false },
+        { id: "panic", text: "Panic", emoji: "😱", description: "Increases stress", isCorrect: false }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
-    
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
+  // Timer effect
+  useEffect(() => {
+    if (answered || showResult) return;
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          // Time's up - move to next question
+          handleTimeUp();
+          return QUESTION_TIME;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
       }
-    }));
-    
-    if (isCorrect) {
-      setScore(score + 1); // 1 coin for correct answer
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 1000);
-    }
+    };
+  }, [currentQuestion, answered, showResult]);
+
+  const handleTimeUp = () => {
+    if (answered) return;
+    setAnswered(true);
+    resetFeedback();
+    showCorrectAnswerFeedback(0, false);
     
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
-      } else {
-        setLevelCompleted(true);
-      }
+      moveToNextQuestion();
     }, 1500);
   };
 
-  const handleNext = () => {
+  const moveToNextQuestion = () => {
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-      setFeedbackType(null);
-      setShowConfetti(false);
+      setCurrentQuestion(prev => prev + 1);
+      setTimeLeft(QUESTION_TIME);
+      setAnswered(false);
+      setSelectedOptionId(null);
+    } else {
+      setShowResult(true);
     }
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/teens');
+  const handleOptionClick = (optionId, isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    setSelectedOptionId(optionId);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
+    setTimeout(() => {
+      moveToNextQuestion();
+    }, 1500);
   };
+
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Reflex Emotion Control game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, score, gameId, nextGamePath, nextGameId, questions.length]);
 
   const currentQuestionData = questions[currentQuestion];
 
@@ -137,42 +205,65 @@ const ReflexEmotionControl = () => {
       totalXp={totalXp}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={currentQuestion < questions.length - 1}
-      nextLabel="Next"
-      showAnswerConfetti={showConfetti}
-      backPath="/games/brain-health/teens"
+      showGameOver={showResult}
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
-          {currentQuestionData.choices.map((choice) => (
-            <OptionButton
-              key={choice.id}
-              option={`${choice.icon} ${choice.text}`}
-              onClick={() => handleOptionSelect(choice.id)}
-              selected={selectedOption === choice.id}
-              disabled={!!selectedOption}
-              feedback={showFeedback ? { type: feedbackType } : null}
-            />
-          ))}
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackType === "correct" ? "Correct! 🎉" : "Not quite! 🤔"}
-            type={feedbackType}
-          />
-        )}
-        
-        {showFeedback && feedbackType === "wrong" && (
-          <div className="mt-4 text-white/90 text-center">
-            <p>💡 {currentQuestionData.explanation}</p>
+      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
+                  <div className="bg-red-500/20 px-3 py-1 rounded-lg border border-red-400/30">
+                    <span className="text-red-300 font-bold text-sm md:text-base">⏱️ {timeLeft}s</span>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {currentQuestionData.options.map((option) => {
+                  const isSelected = selectedOptionId === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleOptionClick(option.id, option.isCorrect)}
+                      disabled={answered}
+                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
+                        showCorrect
+                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
+                          : showIncorrect
+                          ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
+                          : isSelected
+                          ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
+                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-2xl">{option.emoji}</span>
+                        <span className="text-white font-bold text-sm md:text-base">{option.text}</span>
+                      </div>
+                      <div className="text-white/70 text-xs md:text-sm">{option.description}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

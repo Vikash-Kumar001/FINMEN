@@ -1,135 +1,198 @@
-// ReflexHealthyCalm.js
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
+import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
+
+const QUESTION_TIME = 10; // 10 seconds per question
 
 const ReflexHealthyCalm = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
   const gameId = "brain-teens-39";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({});
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const timerRef = useRef(null);
 
   const questions = [
     {
       id: 1,
-      text: "Tap for healthy calm!",
-      choices: [
-        { id: 'a', text: 'Exercise', icon: '🏃' },
-        { id: 'b', text: 'Avoid work', icon: '🛋️' }
-      ],
-      correct: 'a',
-      explanation: 'Exercise promotes endorphins for natural calm!'
+      text: "Tap for 'Exercise,' avoid 'Avoid Work.'",
+      options: [
+        { id: "exercise", text: "Exercise", emoji: "🏃", description: "Promotes endorphins and natural calm", isCorrect: true },
+        { id: "avoid", text: "Avoid Work", emoji: "🛋️", description: "Procrastination increases stress", isCorrect: false },
+        { id: "procrastinate", text: "Procrastinate", emoji: "⏰", description: "Delays and increases pressure", isCorrect: false },
+        { id: "ignore", text: "Ignore Tasks", emoji: "🙈", description: "Makes problems worse", isCorrect: false }
+      ]
     },
     {
       id: 2,
-      text: "Quick: Calm reflex!",
-      choices: [
-        { id: 'a', text: 'Tea time', icon: '🍵' },
-        { id: 'b', text: 'Energy drinks', icon: '⚡🥤' }
-      ],
-      correct: 'a',
-      explanation: 'Herbal tea soothes nerves!'
+      text: "Which action promotes healthy calm?",
+      options: [
+        { id: "tea", text: "Tea Time", emoji: "🍵", description: "Herbal tea soothes nerves", isCorrect: true },
+        { id: "energy", text: "Energy Drinks", emoji: "⚡🥤", description: "Can increase anxiety", isCorrect: false },
+        { id: "caffeine", text: "Excess Caffeine", emoji: "☕", description: "Can cause jitters", isCorrect: false },
+        { id: "sugar", text: "Sugar Rush", emoji: "🍬", description: "Temporary, then crash", isCorrect: false }
+      ]
     },
     {
       id: 3,
-      text: "Fast: Choose calm!",
-      choices: [
-        { id: 'a', text: 'Mindful walk', icon: '🚶🧠' },
-        { id: 'b', text: 'Rush around', icon: '🏃‍♂️💨' }
-      ],
-      correct: 'a',
-      explanation: 'Mindful activities ground you!'
+      text: "What helps maintain calm?",
+      options: [
+        { id: "mindful", text: "Mindful Walk", emoji: "🚶🧠", description: "Grounds you in the present", isCorrect: true },
+        { id: "rush", text: "Rush Around", emoji: "🏃‍♂️💨", description: "Increases stress", isCorrect: false },
+        { id: "panic", text: "Panic", emoji: "😱", description: "Triggers fight-or-flight", isCorrect: false },
+        { id: "worry", text: "Worry Constantly", emoji: "😟", description: "Maintains anxiety", isCorrect: false }
+      ]
     },
     {
       id: 4,
-      text: "Reflex: Healthy choice?",
-      choices: [
-        { id: 'a', text: 'Balanced diet', icon: '🥗' },
-        { id: 'b', text: 'Skip meals', icon: '🚫🍽️' }
-      ],
-      correct: 'a',
-      explanation: 'Nutrition supports stable mood!'
+      text: "Which supports healthy calm?",
+      options: [
+        { id: "diet", text: "Balanced Diet", emoji: "🥗", description: "Supports stable mood", isCorrect: true },
+        { id: "skip", text: "Skip Meals", emoji: "🚫🍽️", description: "Causes blood sugar drops", isCorrect: false },
+        { id: "junk", text: "Junk Food Only", emoji: "🍔", description: "Can cause mood swings", isCorrect: false },
+        { id: "fast", text: "Fast All Day", emoji: "⏰", description: "Impairs cognitive function", isCorrect: false }
+      ]
     },
     {
       id: 5,
-      text: "Tap for calm habit!",
-      choices: [
-        { id: 'a', text: 'Routine sleep', icon: '🛌' },
-        { id: 'b', text: 'Late nights', icon: '🌙' }
-      ],
-      correct: 'a',
-      explanation: 'Consistent sleep regulates stress!'
+      text: "What promotes calm habits?",
+      options: [
+        { id: "sleep", text: "Routine Sleep", emoji: "🛌", description: "Regulates stress hormones", isCorrect: true },
+        { id: "late", text: "Late Nights", emoji: "🌙", description: "Disrupts circadian rhythm", isCorrect: false },
+        { id: "irregular", text: "Irregular Sleep", emoji: "😴", description: "Increases stress", isCorrect: false },
+        { id: "skip", text: "Skip Sleep", emoji: "🚫", description: "Impairs recovery", isCorrect: false }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
-    
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
+  // Timer effect
+  useEffect(() => {
+    if (answered || showResult) return;
+
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          // Time's up - move to next question
+          handleTimeUp();
+          return QUESTION_TIME;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
       }
-    }));
-    
-    if (isCorrect) {
-      setScore(score + 1); // 1 coin for correct answer
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 1000);
-    }
+    };
+  }, [currentQuestion, answered, showResult]);
+
+  const handleTimeUp = () => {
+    if (answered) return;
+    setAnswered(true);
+    resetFeedback();
+    showCorrectAnswerFeedback(0, false);
     
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
-      } else {
-        setLevelCompleted(true);
-      }
+      moveToNextQuestion();
     }, 1500);
   };
 
-  const handleNext = () => {
+  const moveToNextQuestion = () => {
     if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-      setFeedbackType(null);
-      setShowConfetti(false);
+      setCurrentQuestion(prev => prev + 1);
+      setTimeLeft(QUESTION_TIME);
+      setAnswered(false);
+      setSelectedOptionId(null);
+    } else {
+      setShowResult(true);
     }
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/teens');
+  const handleOptionClick = (optionId, isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    setSelectedOptionId(optionId);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
+    setTimeout(() => {
+      moveToNextQuestion();
+    }, 1500);
   };
+
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Reflex Healthy Calm game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, score, gameId, nextGamePath, nextGameId, questions.length]);
 
   const currentQuestionData = questions[currentQuestion];
-
-  const calculateTotalCoins = () => {
-    const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 1;
-  };
 
   return (
     <GameShell
@@ -142,42 +205,65 @@ const ReflexHealthyCalm = () => {
       totalXp={totalXp}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={currentQuestion < questions.length - 1}
-      nextLabel="Next"
-      showAnswerConfetti={showConfetti}
-      backPath="/games/brain-health/teens"
+      showGameOver={showResult}
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
-          {currentQuestionData.choices.map((choice) => (
-            <OptionButton
-              key={choice.id}
-              option={`${choice.icon} ${choice.text}`}
-              onClick={() => handleOptionSelect(choice.id)}
-              selected={selectedOption === choice.id}
-              disabled={!!selectedOption}
-              feedback={showFeedback ? { type: feedbackType } : null}
-            />
-          ))}
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackType === "correct" ? "Correct! 🎉" : "Not quite! 🤔"}
-            type={feedbackType}
-          />
-        )}
-        
-        {showFeedback && feedbackType === "wrong" && (
-          <div className="mt-4 text-white/90 text-center">
-            <p>💡 {currentQuestionData.explanation}</p>
+      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
+                  <div className="bg-red-500/20 px-3 py-1 rounded-lg border border-red-400/30">
+                    <span className="text-red-300 font-bold text-sm md:text-base">⏱️ {timeLeft}s</span>
+                  </div>
+                </div>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {currentQuestionData.options.map((option) => {
+                  const isSelected = selectedOptionId === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleOptionClick(option.id, option.isCorrect)}
+                      disabled={answered}
+                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
+                        showCorrect
+                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
+                          : showIncorrect
+                          ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
+                          : isSelected
+                          ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
+                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-2xl">{option.emoji}</span>
+                        <span className="text-white font-bold text-sm md:text-base">{option.text}</span>
+                      </div>
+                      <div className="text-white/70 text-xs md:text-sm">{option.description}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

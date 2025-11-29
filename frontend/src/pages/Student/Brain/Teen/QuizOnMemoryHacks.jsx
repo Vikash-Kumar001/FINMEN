@@ -1,12 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const QuizOnMemoryHacks = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -53,8 +52,6 @@ const QuizOnMemoryHacks = () => {
   const [feedbackType, setFeedbackType] = useState(null);
   const [score, setScore] = useState(0);
   const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({});
 
   const questions = [
     {
@@ -122,14 +119,6 @@ const QuizOnMemoryHacks = () => {
     setFeedbackType(isCorrect ? "correct" : "wrong");
     setShowFeedback(true);
     resetFeedback();
-    
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
     
     if (isCorrect) {
       setScore(prev => prev + 1);

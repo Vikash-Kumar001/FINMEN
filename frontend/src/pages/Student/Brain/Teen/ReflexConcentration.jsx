@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Zap, Coffee, Book, Gamepad2, Phone, Brain, Clock, Moon } from 'lucide-react';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
+import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
+
+const QUESTION_TIME = 10; // 10 seconds per question
 
 const ReflexConcentration = () => {
   const navigate = useNavigate();
@@ -11,207 +14,380 @@ const ReflexConcentration = () => {
   // Get game data from game category folder (source of truth)
   const gameId = "brain-teens-13";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
-  const [gameState, setGameState] = useState('waiting'); // waiting, active, finished
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [score, setScore] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const [currentState, setCurrentState] = useState(null);
-  const [streak, setStreak] = useState(0);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [totalCorrect, setTotalCorrect] = useState(0); // Track total correct answers
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const timerRef = useRef(null);
 
-  const states = [
-    { id: 1, text: 'Focused Study', type: 'good', icon: <Book className="w-6 h-6" />, explanation: 'Deep focus improves learning and retention' },
-    { id: 2, text: 'Social Media Scrolling', type: 'bad', icon: <Phone className="w-6 h-6" />, explanation: 'Multitasking reduces efficiency and focus' },
-    { id: 3, text: 'Taking Short Breaks', type: 'good', icon: <Clock className="w-6 h-6" />, explanation: 'Brief rests prevent mental fatigue and maintain focus' },
-    { id: 4, text: 'Playing Video Games', type: 'bad', icon: <Gamepad2 className="w-6 h-6" />, explanation: 'Gaming during study time reduces academic performance' },
-    { id: 5, text: 'Mindfulness Meditation', type: 'good', icon: <Brain className="w-6 h-6" />, explanation: 'Meditation enhances attention and emotional regulation' },
-    { id: 6, text: 'Daydreaming', type: 'bad', icon: <Coffee className="w-6 h-6" />, explanation: 'Uncontrolled wandering thoughts reduce productivity' },
-    { id: 7, text: 'Organized Study Space', type: 'good', icon: <Zap className="w-6 h-6" />, explanation: 'Clean environment reduces distractions and improves focus' },
-    { id: 8, text: 'Studying All Night', type: 'bad', icon: <Moon className="w-6 h-6" />, explanation: 'Sleep deprivation impairs cognitive function and memory' }
+  const questions = [
+    {
+      id: 1,
+      text: "Which action helps concentration?",
+      options: [
+        { 
+          id: "focused", 
+          text: "Focused Study", 
+          emoji: "📚", 
+          description: "Deep focus improves learning and retention",
+          isCorrect: true
+        },
+        { 
+          id: "social", 
+          text: "Social Media Scrolling", 
+          emoji: "📱", 
+          description: "Multitasking reduces efficiency and focus",
+          isCorrect: false
+        },
+        { 
+          id: "breaks", 
+          text: "Taking Short Breaks", 
+          emoji: "⏰", 
+          description: "Brief rests prevent mental fatigue",
+          isCorrect: false
+        },
+        { 
+          id: "gaming", 
+          text: "Playing Video Games", 
+          emoji: "🎮", 
+          description: "Gaming during study reduces performance",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "What supports sustained focus?",
+      options: [
+        { 
+          id: "daydream", 
+          text: "Daydreaming", 
+          emoji: "☁️", 
+          description: "Uncontrolled thoughts reduce productivity",
+          isCorrect: false
+        },
+        { 
+          id: "meditation", 
+          text: "Mindfulness Meditation", 
+          emoji: "🧘", 
+          description: "Enhances attention and emotional regulation",
+          isCorrect: true
+        },
+        { 
+          id: "organized", 
+          text: "Organized Study Space", 
+          emoji: "✨", 
+          description: "Clean environment reduces distractions",
+          isCorrect: false
+        },
+        { 
+          id: "allnight", 
+          text: "Studying All Night", 
+          emoji: "🌙", 
+          description: "Sleep deprivation impairs cognitive function",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "Which improves concentration?",
+      options: [
+        { 
+          id: "phone", 
+          text: "Phone Notifications On", 
+          emoji: "🔔", 
+          description: "Constant interruptions break focus",
+          isCorrect: false
+        },
+        { 
+          id: "multitask", 
+          text: "Multitasking", 
+          emoji: "📱", 
+          description: "Reduces efficiency and increases errors",
+          isCorrect: false
+        },
+        { 
+          id: "quiet", 
+          text: "Quiet Environment", 
+          emoji: "🔇", 
+          description: "Minimizes distractions and improves focus",
+          isCorrect: true
+        },
+        { 
+          id: "pomodoro", 
+          text: "Pomodoro Technique", 
+          emoji: "⏱️", 
+          description: "Structured breaks maintain focus",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "What helps maintain attention?",
+      options: [
+        { 
+          id: "noise", 
+          text: "Loud Music", 
+          emoji: "🔊", 
+          description: "Can break concentration and reduce learning",
+          isCorrect: false
+        },
+        { 
+          id: "cram", 
+          text: "Cramming Sessions", 
+          emoji: "📖", 
+          description: "Leads to mental fatigue and poor retention",
+          isCorrect: false
+        },
+        { 
+          id: "sleep", 
+          text: "Adequate Sleep", 
+          emoji: "😴", 
+          description: "Essential for optimal cognitive function",
+          isCorrect: true
+        },
+        { 
+          id: "hydration", 
+          text: "Staying Hydrated", 
+          emoji: "💧", 
+          description: "Maintains brain function and focus",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Which boosts concentration?",
+      options: [
+        { 
+          id: "distractions", 
+          text: "Multiple Distractions", 
+          emoji: "📺", 
+          description: "Fragments attention and reduces productivity",
+          isCorrect: false
+        },
+        { 
+          id: "chaos", 
+          text: "Chaotic Environment", 
+          emoji: "🌪️", 
+          description: "Increases stress and reduces focus",
+          isCorrect: false
+        },
+        { 
+          id: "single", 
+          text: "Single Task Focus", 
+          emoji: "🎯", 
+          description: "Improves concentration and productivity",
+          isCorrect: true
+        },
+        { 
+          id: "routine", 
+          text: "Consistent Routine", 
+          emoji: "📅", 
+          description: "Helps train the brain for better focus",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  // Timer countdown
+  // Timer effect
   useEffect(() => {
-    if (gameState === 'active' && timeLeft > 0) {
-      const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (timeLeft === 0 && gameState === 'active') {
-      setGameState('finished');
-      setLevelCompleted(true);
+    if (!showResult && !answered && timeLeft > 0) {
+      timerRef.current = setTimeout(() => {
+        setTimeLeft(timeLeft - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && !answered) {
+      // Time's up, move to next question
+      handleTimeUp();
     }
-  }, [gameState, timeLeft]);
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current);
+      }
+    };
+  }, [timeLeft, answered, showResult]);
 
-  // Generate new state
+  // Reset timer when question changes
   useEffect(() => {
-    if (gameState === 'active') {
-      const stateTimer = setTimeout(() => {
-        if (timeLeft > 0) {
-          const randomState = states[Math.floor(Math.random() * states.length)];
-          setCurrentState(randomState);
-        }
-      }, 800); // Slightly faster pace for more decisions
-      return () => clearTimeout(stateTimer);
+    if (!showResult) {
+      setTimeLeft(QUESTION_TIME);
+      setAnswered(false);
+      setSelectedOptionId(null);
     }
-  }, [gameState, timeLeft]);
+  }, [currentQuestion, showResult]);
 
-  const startGame = () => {
-    setGameState('active');
-    setTimeLeft(30);
-    setScore(0);
-    setStreak(0);
-    setTotalCorrect(0);
-    setLevelCompleted(false);
-    const randomState = states[Math.floor(Math.random() * states.length)];
-    setCurrentState(randomState);
-  };
-
-  const handleStateTap = (stateType) => {
-    if (!currentState || gameState !== 'active') return;
-
-    const isCorrect = stateType === 'good';
+  const handleTimeUp = () => {
+    setAnswered(true);
+    resetFeedback();
+    showCorrectAnswerFeedback(0, false);
     
-    if (isCorrect) {
-      setScore(score + 1); // 1 coin per correct answer
-      setStreak(streak + 1);
-      setTotalCorrect(totalCorrect + 1); // Track correct answers
-      setFeedbackMessage(`+1 coin! ${currentState.explanation}`);
-      setShowFeedback(true);
-    } else {
-      setStreak(0);
-      setFeedbackMessage(`Not helpful! ${currentState.explanation}`);
-      setShowFeedback(true);
-    }
-
-    // Hide feedback after delay
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      setShowFeedback(false);
-    }, 1200);
-
-    // Generate next state
-    const randomState = states[Math.floor(Math.random() * states.length)];
-    setCurrentState(randomState);
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+      }
+    }, 1500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/teens');
+  const handleChoice = (option) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    setSelectedOptionId(option.id);
+    resetFeedback();
+    
+    if (option.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+      }
+    }, 1500);
   };
 
-  // Calculate coins based on correct answers (1 coin per correct answer)
-  const calculateTotalCoins = () => {
-    return totalCorrect * 1;
-  };
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Reflex Concentration game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, score, gameId, nextGamePath, nextGameId, questions.length]);
+
+  const currentQuestionData = questions[currentQuestion];
+  const timerColor = timeLeft <= 3 ? 'text-red-400' : timeLeft <= 6 ? 'text-yellow-400' : 'text-green-400';
 
   return (
     <GameShell
       title="Reflex Concentration"
       score={score}
-      currentLevel={1}
-      totalLevels={1}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/teens"
+      showGameOver={showResult}
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <GameCard>
-        {gameState === 'waiting' && (
-          <div 
-            className="text-center cursor-pointer hover:opacity-90 transition duration-200"
-            onClick={startGame}
-          >
-            <h3 className="text-2xl font-bold text-white mb-4">Concentration Reflex!</h3>
-            <p className="text-white/80 mb-6">Tap quickly for concentration-boosting states, avoid distracting ones</p>
-            <div className="text-3xl font-bold text-yellow-300 mb-4">Tap to Start</div>
-            <p className="text-white/60">You'll have 30 seconds to get as many coins as possible</p>
-            <p className="text-white/60 mt-2">More points for longer streaks!</p>
-          </div>
-        )}
-        
-        {gameState === 'active' && (
-          <div>
-            <div className="flex justify-between items-center mb-8">
-              <div className="text-xl font-bold text-white">Score: <span className="text-yellow-300">{score}</span></div>
-              <div className="text-xl font-bold text-red-400">{timeLeft}s</div>
-              <div className="text-xl font-bold text-green-400">Streak: {streak}</div>
-            </div>
-            
-            <div className="text-center mb-8">
-              <p className="text-white/80 mb-4">Tap if it helps your concentration!</p>
-              {currentState ? (
-                <div className="inline-block p-6 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-2xl shadow-lg">
-                  <div className="text-white">
-                    {currentState.icon}
+      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
+                  <div className={`text-lg md:text-xl font-bold ${timerColor}`}>
+                    ⏱️ {timeLeft}s
                   </div>
-                  <div className="text-2xl font-bold text-white mt-2">{currentState.text}</div>
                 </div>
-              ) : (
-                <div className="text-white/60">Get ready...</div>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleStateTap('good')}
-                className="p-6 bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white rounded-2xl transition duration-200 flex flex-col items-center shadow-lg"
-              >
-                <Zap className="w-8 h-8 mb-2" />
-                <span className="font-bold">Helps Concentration!</span>
-              </button>
+              </div>
               
-              <button
-                onClick={() => handleStateTap('bad')}
-                className="p-6 bg-gradient-to-r from-red-500 to-rose-600 hover:from-red-600 hover:to-rose-700 text-white rounded-2xl transition duration-200 flex flex-col items-center shadow-lg"
-              >
-                <Coffee className="w-8 h-8 mb-2" />
-                <span className="font-bold">Distracting!</span>
-              </button>
-            </div>
-            
-            {showFeedback && (
-              <FeedbackBubble 
-                message={feedbackMessage}
-                type={feedbackMessage.includes('coins') ? "correct" : "wrong"}
-              />
-            )}
-          </div>
-        )}
-        
-        {gameState === 'finished' && (
-          <div className="text-center">
-            <h3 className="text-2xl font-bold text-white mb-4">Game Complete!</h3>
-            <div className="text-5xl font-bold text-yellow-300 mb-6">{score} Coins</div>
-            <p className="text-white/80 mb-6 text-lg">
-              {score >= 25 ? 'Excellent! Your concentration reflexes are sharp!' : 
-               score >= 15 ? 'Great job! Your focus knowledge is solid!' : 
-               score >= 8 ? 'Good effort! Keep practicing to improve!' : 
-               'Keep practicing to boost your concentration skills!'}
-            </p>
-            
-            <div className="flex justify-center gap-4">
-              <button
-                onClick={startGame}
-                className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full font-semibold shadow-md hover:opacity-90 transition"
-              >
-                Play Again
-              </button>
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <button
-                onClick={handleGameComplete}
-                className="px-6 py-3 bg-gradient-to-r from-gray-500 to-gray-700 text-white rounded-full font-semibold shadow-md hover:opacity-90 transition"
-              >
-                Finish Game
-              </button>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {currentQuestionData.options.map((option) => {
+                  const isSelected = selectedOptionId === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleChoice(option)}
+                      disabled={answered}
+                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
+                        showCorrect
+                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
+                          : showIncorrect
+                          ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
+                          : isSelected
+                          ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
+                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="text-2xl md:text-3xl">{option.emoji}</span>
+                        <div className="flex-1">
+                          <div className="text-white font-bold text-sm md:text-base mb-1">{option.text}</div>
+                          <div className="text-white/80 text-xs md:text-sm">{option.description}</div>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

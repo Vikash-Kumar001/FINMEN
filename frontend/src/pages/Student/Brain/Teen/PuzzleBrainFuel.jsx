@@ -1,8 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Fish, Zap, Apple, Coffee, Brain, Leaf } from 'lucide-react';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { Fish, Zap, Apple, Coffee, Brain } from 'lucide-react';
 import { getGameDataById } from '../../../../utils/getGameData';
+import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const PuzzleBrainFuel = () => {
   const navigate = useNavigate();
@@ -11,203 +13,301 @@ const PuzzleBrainFuel = () => {
   // Get game data from game category folder (source of truth)
   const gameId = "brain-teens-4";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
-  const [matchedPairs, setMatchedPairs] = useState([]);
-  const [selectedConcept, setSelectedConcept] = useState(null);
-  const [selectedBenefit, setSelectedBenefit] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-
-  const concepts = [
-    { id: 1, name: 'Omega-3', icon: <Fish className="w-6 h-6" />, color: 'bg-blue-500' },
-    { id: 2, name: 'Exercise', icon: <Zap className="w-6 h-6" />, color: 'bg-green-500' },
-    { id: 3, name: 'Antioxidants', icon: <Apple className="w-6 h-6" />, color: 'bg-red-500' },
-    { id: 4, name: 'Caffeine', icon: <Coffee className="w-6 h-6" />, color: 'bg-yellow-500' },
-    { id: 5, name: 'Sleep', icon: <Brain className="w-6 h-6" />, color: 'bg-purple-500' },
-    { id: 6, name: 'Hydration', icon: <Leaf className="w-6 h-6" />, color: 'bg-cyan-500' }
-  ];
-
-  const benefits = [
-    { id: 1, conceptId: 1, benefit: 'Fish', description: 'Omega-3 fatty acids support brain function and development' },
-    { id: 2, conceptId: 2, benefit: 'Energy', description: 'Physical activity increases blood flow and energy to the brain' },
-    { id: 3, conceptId: 3, benefit: 'Berries', description: 'Protect brain cells from oxidative stress and inflammation' },
-    { id: 4, conceptId: 4, benefit: 'Coffee', description: 'Enhances alertness and concentration temporarily' },
-    { id: 5, conceptId: 5, benefit: 'Rest', description: 'Essential for memory consolidation and cognitive function' },
-    { id: 6, conceptId: 6, benefit: 'Water', description: 'Maintains optimal brain function and prevents fatigue' }
-  ];
-
-  const correctPairs = [
-    { conceptId: 1, benefitId: 1 },
-    { conceptId: 2, benefitId: 2 },
-    { conceptId: 3, benefitId: 3 },
-    { conceptId: 4, benefitId: 4 },
-    { conceptId: 5, benefitId: 5 },
-    { conceptId: 6, benefitId: 6 }
-  ];
-
-  const handleConceptSelect = (concept) => {
-    if (matchedPairs.some(pair => pair.conceptId === concept.id)) return;
-    setSelectedConcept(concept);
-  };
-
-  const handleBenefitSelect = (benefit) => {
-    if (matchedPairs.some(pair => pair.benefitId === benefit.id)) return;
-    
-    if (selectedConcept) {
-      const isCorrect = correctPairs.some(pair => 
-        pair.conceptId === selectedConcept.id && pair.benefitId === benefit.id
-      );
-      
-      if (isCorrect) {
-        const newMatch = { conceptId: selectedConcept.id, benefitId: benefit.id };
-        setMatchedPairs([...matchedPairs, newMatch]);
-        setFeedbackType("correct");
-        setFeedbackMessage('Correct match! Great job!');
-        setShowFeedback(true);
-        setScore(score + 1); // 1 coin per correct match
-        
-        // Check if all pairs are matched
-        if (matchedPairs.length + 1 === concepts.length) {
-          setTimeout(() => {
-            setLevelCompleted(true);
-          }, 1500);
-        }
-      } else {
-        setFeedbackType("wrong");
-        setFeedbackMessage('Not quite! Try another combination.');
-        setShowFeedback(true);
-      }
-      
-      // Hide feedback after delay
-      setTimeout(() => {
-        setShowFeedback(false);
-      }, 1500);
-      
-      setSelectedConcept(null);
-      setSelectedBenefit(null);
-    } else {
-      setSelectedBenefit(benefit);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [score, setScore] = useState(0);
+
+  // Brain fuels (left side)
+  const leftItems = [
+    { id: 1, name: 'Omega-3', emoji: '🐟', description: 'Essential fatty acids for brain health' },
+    { id: 2, name: 'Exercise', emoji: '🏃', description: 'Physical activity for brain function' },
+    { id: 3, name: 'Antioxidants', emoji: '🫐', description: 'Protect brain cells from damage' },
+    { id: 4, name: 'Caffeine', emoji: '☕', description: 'Enhances alertness temporarily' },
+    { id: 5, name: 'Sleep', emoji: '😴', description: 'Essential for memory consolidation' }
+  ];
+
+  // Sources/Benefits (right side) - manually arranged to vary correct answer positions
+  const rightItems = [
+    { id: 2, name: 'Energy', emoji: '⚡', description: 'Physical activity increases blood flow' }, // Matches Exercise (left position 2, right position 1)
+    { id: 4, name: 'Coffee', emoji: '☕', description: 'Enhances alertness and concentration' }, // Matches Caffeine (left position 4, right position 2)
+    { id: 1, name: 'Fish', emoji: '🐠', description: 'Omega-3 fatty acids support brain function' }, // Matches Omega-3 (left position 1, right position 3)
+    { id: 5, name: 'Rest', emoji: '🌙', description: 'Essential for memory consolidation' }, // Matches Sleep (left position 5, right position 4)
+    { id: 3, name: 'Berries', emoji: '🫐', description: 'Protect brain cells from oxidative stress' } // Matches Antioxidants (left position 3, right position 5)
+  ];
+
+  // Correct matches - manually defined to split correct answers across different positions
+  const correctMatches = [
+    { leftId: 1, rightId: 1 }, // Omega-3 → Fish (left 1st, right 3rd)
+    { leftId: 2, rightId: 2 }, // Exercise → Energy (left 2nd, right 1st)
+    { leftId: 3, rightId: 3 }, // Antioxidants → Berries (left 3rd, right 5th)
+    { leftId: 4, rightId: 4 }, // Caffeine → Coffee (left 4th, right 2nd)
+    { leftId: 5, rightId: 5 }  // Sleep → Rest (left 5th, right 4th)
+  ];
+
+  // Check if a left item is already matched
+  const isLeftItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
   };
 
-  const isConceptMatched = (conceptId) => {
-    return matchedPairs.some(pair => pair.conceptId === conceptId);
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
   };
 
-  const isBenefitMatched = (benefitId) => {
-    return matchedPairs.some(pair => pair.benefitId === benefitId);
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    if (isLeftItemMatched(item.id)) return;
+    setSelectedLeft(item);
   };
 
-  const calculateScore = () => {
-    return matchedPairs.length * 1; // 1 coin per correct match
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    if (isRightItemMatched(item.id)) return;
+    setSelectedRight(item);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/teens');
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show feedback
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    // Check if all items are matched
+    if (newMatches.length === leftItems.length) {
+      setShowResult(true);
+    }
+
+    // Reset selections
+    setSelectedLeft(null);
+    setSelectedRight(null);
   };
 
-  // Calculate coins based on matched pairs (1 coin per pair)
-  const calculateTotalCoins = () => {
-    return matchedPairs.length * 1;
+  // Get match result for a left item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
   };
+
+  // Get match result for a right item
+  const getRightMatchResult = (itemId) => {
+    const match = matches.find(m => m.rightId === itemId);
+    return match ? match.isCorrect : null;
+  };
+
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Puzzle Brain Fuel game completed! Score: ${score}/${leftItems.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, score, gameId, nextGamePath, nextGameId, leftItems.length]);
 
   return (
     <GameShell
       title="Puzzle: Brain Fuel"
-      score={Math.round(calculateScore())}
-      currentLevel={matchedPairs.length + 1}
-      totalLevels={concepts.length}
+      score={score}
+      subtitle={showResult ? "Game Complete!" : `Match brain fuels with their sources or benefits (${matches.length}/${leftItems.length} matched)`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/teens"
+      totalLevels={leftItems.length}
+      currentLevel={matches.length + 1}
+      maxScore={leftItems.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Brain Fuel Puzzle</h3>
-        <p className="text-white/80 mb-6 text-center">Match each brain fuel with its source or benefit</p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-          {/* Concepts column */}
-          <div>
-            <h4 className="text-xl font-semibold mb-4 text-white text-center">Brain Fuels</h4>
-            <div className="space-y-3">
-              {concepts.map((concept) => (
-                <button
-                  key={concept.id}
-                  onClick={() => handleConceptSelect(concept)}
-                  disabled={isConceptMatched(concept.id)}
-                  className={`w-full flex items-center p-4 rounded-xl transition duration-200 border-2 ${
-                    selectedConcept?.id === concept.id
-                      ? 'bg-white/20 border-white'
-                      : isConceptMatched(concept.id)
-                      ? 'bg-green-500/20 border-green-400 opacity-70'
-                      : 'bg-white/10 hover:bg-white/20 border-white/30'
-                  }`}
-                >
-                  <div className={`p-2 rounded-lg mr-3 ${concept.color}`}>
-                    {concept.icon}
+      <div className="space-y-6 md:space-y-8 max-w-5xl mx-auto px-4">
+        {!showResult ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            {/* Left column - Brain Fuels */}
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 text-center">Brain Fuels</h3>
+              <div className="space-y-3 md:space-y-4">
+                {leftItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleLeftSelect(item)}
+                    disabled={isLeftItemMatched(item.id)}
+                    className={`w-full p-3 md:p-4 rounded-lg md:rounded-xl text-left transition-all ${
+                      isLeftItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedLeft?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    } disabled:cursor-not-allowed`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-xl md:text-2xl mr-2 md:mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white text-sm md:text-base">{item.name}</h4>
+                        <p className="text-white/80 text-xs md:text-sm">{item.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20 text-center w-full">
+                <p className="text-white/80 mb-3 md:mb-4 text-sm md:text-base">
+                  {selectedLeft 
+                    ? `Selected: ${selectedLeft.name}` 
+                    : "Select a brain fuel"}
+                </p>
+                {selectedLeft && selectedRight && (
+                  <button
+                    onClick={handleMatch}
+                    className="w-full py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105 text-sm md:text-base"
+                  >
+                    Match!
+                  </button>
+                )}
+                {(!selectedLeft || !selectedRight) && (
+                  <div className="w-full py-2 md:py-3 px-4 md:px-6 rounded-full font-bold bg-gray-500/30 text-gray-400 cursor-not-allowed text-sm md:text-base">
+                    Match!
                   </div>
-                  <span className="font-medium text-white">{concept.name}</span>
-                  {isConceptMatched(concept.id) && (
-                    <span className="ml-auto text-green-400 text-xl">✓</span>
-                  )}
-                </button>
-              ))}
+                )}
+                <div className="mt-3 md:mt-4 text-white/80 text-xs md:text-sm">
+                  <p>Score: {score}</p>
+                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Sources/Benefits */}
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 text-center">Sources/Benefits</h3>
+              <div className="space-y-3 md:space-y-4">
+                {rightItems.map(item => {
+                  const isMatched = isRightItemMatched(item.id);
+                  const isCorrectMatch = getRightMatchResult(item.id);
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleRightSelect(item)}
+                      disabled={isMatched}
+                      className={`w-full p-3 md:p-4 rounded-lg md:rounded-xl text-left transition-all ${
+                        isMatched
+                          ? isCorrectMatch
+                            ? "bg-green-500/30 border-2 border-green-500"
+                            : "bg-red-500/30 border-2 border-red-500"
+                          : selectedRight?.id === item.id
+                          ? "bg-purple-500/50 border-2 border-purple-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                      } disabled:cursor-not-allowed`}
+                    >
+                      <div className="flex items-center">
+                        <div className="text-xl md:text-2xl mr-2 md:mr-3">{item.emoji}</div>
+                        <div>
+                          <h4 className="font-bold text-white text-sm md:text-base">{item.name}</h4>
+                          <p className="text-white/80 text-xs md:text-sm">{item.description}</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-          
-          {/* Benefits column */}
-          <div>
-            <h4 className="text-xl font-semibold mb-4 text-white text-center">Sources/Benefits</h4>
-            <div className="space-y-3">
-              {benefits.map((benefit) => (
-                <button
-                  key={benefit.id}
-                  onClick={() => handleBenefitSelect(benefit)}
-                  disabled={isBenefitMatched(benefit.id)}
-                  className={`w-full text-left p-4 rounded-xl transition duration-200 border-2 ${
-                    selectedBenefit?.id === benefit.id
-                      ? 'bg-white/20 border-white'
-                      : isBenefitMatched(benefit.id)
-                      ? 'bg-green-500/20 border-green-400 opacity-70'
-                      : 'bg-white/10 hover:bg-white/20 border-white/30'
-                  }`}
-                >
-                  <div className="font-medium text-white">{benefit.benefit}</div>
-                  <div className="text-sm text-white/70 mt-1">{benefit.description}</div>
-                  {isBenefitMatched(benefit.id) && (
-                    <span className="text-green-400 text-xl">✓</span>
-                  )}
-                </button>
-              ))}
-            </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You correctly matched {score} out of {leftItems.length} brain fuels!
+                  You understand how different nutrients and activities support brain health!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{score} Coins</span>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You matched {score} out of {leftItems.length} brain fuels correctly.
+                  Remember, different nutrients and activities support brain health in different ways!
+                </p>
+              </div>
+            )}
           </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
         )}
-        
-        <div className="flex justify-between items-center text-white">
-          <span>
-            Matches: {matchedPairs.length}/{concepts.length}
-          </span>
-          <span className="font-bold text-yellow-300">
-            Score: {calculateScore()}/{concepts.length}
-          </span>
-        </div>
-      </GameCard>
+      </div>
     </GameShell>
   );
 };

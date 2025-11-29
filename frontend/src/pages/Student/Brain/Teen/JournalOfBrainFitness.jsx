@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
 import { getGameDataById } from '../../../../utils/getGameData';
+import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const JournalOfBrainFitness = () => {
   const navigate = useNavigate();
@@ -10,9 +11,39 @@ const JournalOfBrainFitness = () => {
   // Get game data from game category folder (source of truth)
   const gameId = "brain-teens-7";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
   const [currentPrompt, setCurrentPrompt] = useState(0);
   const [journalEntries, setJournalEntries] = useState({});
   const [currentEntry, setCurrentEntry] = useState('');
@@ -99,15 +130,21 @@ const JournalOfBrainFitness = () => {
     }
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/teens');
-  };
-
-  // Calculate coins based on completed entries (1 coin per entry)
-  const calculateTotalCoins = () => {
-    const completedEntries = Object.keys(journalEntries).length + (isSubmitted ? 1 : 0);
-    return completedEntries * 1;
-  };
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (levelCompleted) {
+      console.log(`🎮 Journal of Brain Fitness game completed! Score: ${score}/${prompts.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, prompts.length]);
 
   return (
     <GameShell
@@ -121,48 +158,55 @@ const JournalOfBrainFitness = () => {
       gameId={gameId}
       gameType="brain"
       showGameOver={levelCompleted}
-      backPath="/games/brain-health/teens"
+      maxScore={prompts.length}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      {/* Removed LevelCompleteHandler */}
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4">Brain Fitness Journal</h3>
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <h4 className="text-xl font-semibold mb-4 text-white">Journal Prompt:</h4>
-          <p className="mb-4 text-white/90 text-lg">"{currentPromptData.text}"</p>
-          
-          <div className="bg-blue-500/20 border border-blue-400/30 rounded-xl p-4 mb-6">
-            <h5 className="font-medium text-blue-300 mb-2">Guidance:</h5>
-            <p className="text-white/80 text-sm">{currentPromptData.guidance}</p>
+      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
+        {!levelCompleted && currentPromptData ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Brain Fitness Journal</h3>
+              <div className="rounded-xl md:rounded-2xl p-4 md:p-6 mb-6 bg-white/10 backdrop-blur-sm">
+                <h4 className="text-lg md:text-xl font-semibold mb-4 text-white">Journal Prompt:</h4>
+                <p className="mb-4 text-white/90 text-base md:text-lg">"{currentPromptData.text}"</p>
+                
+                <div className="bg-blue-500/20 border border-blue-400/30 rounded-xl p-3 md:p-4 mb-6">
+                  <h5 className="font-medium text-blue-300 mb-2 text-sm md:text-base">Guidance:</h5>
+                  <p className="text-white/80 text-xs md:text-sm">{currentPromptData.guidance}</p>
+                </div>
+                
+                <textarea
+                  value={currentEntry}
+                  onChange={handleEntryChange}
+                  placeholder="Write your journal entry here..."
+                  className="w-full h-32 md:h-40 p-3 md:p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-sm md:text-base"
+                  disabled={isSubmitted}
+                />
+                
+                <button
+                  onClick={handleSubmitEntry}
+                  disabled={!currentEntry.trim() || isSubmitted}
+                  className={`mt-4 px-4 md:px-6 py-2 md:py-3 rounded-full font-bold transition duration-200 text-sm md:text-base ${
+                    currentEntry.trim() && !isSubmitted
+                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
+                      : 'bg-white/20 text-white/50 cursor-not-allowed'
+                  }`}
+                >
+                  {isSubmitted ? 'Entry Submitted!' : 'Submit Entry'}
+                </button>
+              </div>
+              
+              {showFeedback && (
+                <FeedbackBubble 
+                  message={feedbackMessage}
+                  type={feedbackType}
+                />
+              )}
+            </div>
           </div>
-          
-          <textarea
-            value={currentEntry}
-            onChange={handleEntryChange}
-            placeholder="Write your journal entry here..."
-            className="w-full h-40 p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-blue-400 focus:border-blue-400"
-            disabled={isSubmitted}
-          />
-          
-          <button
-            onClick={handleSubmitEntry}
-            disabled={!currentEntry.trim() || isSubmitted}
-            className={`mt-4 px-6 py-3 rounded-full font-bold transition duration-200 ${
-              currentEntry.trim() && !isSubmitted
-                ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                : 'bg-white/20 text-white/50 cursor-not-allowed'
-            }`}
-          >
-            {isSubmitted ? 'Entry Submitted!' : 'Submit Entry'}
-          </button>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

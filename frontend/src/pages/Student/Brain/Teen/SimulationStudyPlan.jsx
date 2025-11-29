@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
+import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const SimulationStudyPlan = () => {
   const navigate = useNavigate();
@@ -10,9 +12,41 @@ const SimulationStudyPlan = () => {
   // Get game data from game category folder (source of truth)
   const gameId = "brain-teens-18";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
@@ -174,6 +208,7 @@ const SimulationStudyPlan = () => {
     const isCorrect = optionId === currentScenario.correct;
     setFeedbackType(isCorrect ? "correct" : "wrong");
     setShowFeedback(true);
+    resetFeedback();
     
     // Save answer
     setAnswers(prev => ({
@@ -185,10 +220,10 @@ const SimulationStudyPlan = () => {
     }));
     
     if (isCorrect) {
-      setScore(prevScore => prevScore + 1); // 1 coin for correct answer
-      setShowConfetti(true);
-      // Hide confetti after animation
-      setTimeout(() => setShowConfetti(false), 1000);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
     // Auto-move to next question or complete after delay
@@ -201,18 +236,24 @@ const SimulationStudyPlan = () => {
       } else {
         setLevelCompleted(true);
       }
-    }, 2000);
+    }, 1500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/teens');
-  };
-
-  // Calculate coins based on correct answers (1 coin per question)
-  const calculateTotalCoins = () => {
-    const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 1;
-  };
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (levelCompleted) {
+      console.log(`🎮 Simulation: Study Plan game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell
@@ -226,49 +267,57 @@ const SimulationStudyPlan = () => {
       gameId={gameId}
       gameType="brain"
       showGameOver={levelCompleted}
-      showAnswerConfetti={showConfetti}
-      backPath="/games/brain-health/teens"
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      {/* Removed LevelCompleteHandler */}
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6 text-center">Study Plan Simulator</h3>
-        <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-2xl p-6 mb-8">
-          <p className="text-xl font-semibold text-white text-center">"{currentScenario.text}"</p>
-        </div>
-        
-        <div className="space-y-4 mb-6">
-          <h4 className="text-lg font-semibold text-white mb-4">Choose the best option:</h4>
-          {currentScenario.options.map((option) => (
-            <div 
-              key={option.id}
-              onClick={() => handleOptionSelect(option.id)}
-              className={`p-4 rounded-xl border-2 cursor-pointer transition duration-200 ${
-                selectedOption === option.id
-                  ? 'bg-white/20 border-white'
-                  : levelCompleted
-                  ? 'opacity-70 cursor-not-allowed'
-                  : 'bg-white/10 hover:bg-white/20 border-white/30'
-              }`}
-            >
-              <h5 className="font-bold text-white">{option.text}</h5>
-              <p className="text-white/80 text-sm mt-1">{option.description}</p>
+      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
+        {!levelCompleted && currentScenario ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+            <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 text-center">Study Plan Simulator</h3>
+            <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
+              <p className="text-base md:text-lg lg:text-xl font-semibold text-white text-center">"{currentScenario.text}"</p>
             </div>
-          ))}
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackType === "correct" ? "Perfect choice! 🎉" : "Not quite! 🤔"}
-            type={feedbackType}
-          />
-        )}
-        
-        {showFeedback && feedbackType === "wrong" && (
-          <div className="mt-4 text-white/90 text-center">
-            <p>💡 {currentScenario.explanation}</p>
+            
+            <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
+              <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Choose the best option:</h4>
+              {currentScenario.options.map((option) => {
+                const isSelected = selectedOption === option.id;
+                const showCorrect = showFeedback && option.id === currentScenario.correct;
+                const showIncorrect = showFeedback && isSelected && !showCorrect;
+                
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => handleOptionSelect(option.id)}
+                    disabled={!!selectedOption}
+                    className={`w-full p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
+                      showCorrect
+                        ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
+                        : showIncorrect
+                        ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
+                        : isSelected
+                        ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
+                    } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
+                  >
+                    <h5 className="font-bold text-white text-sm md:text-base mb-1">{option.text}</h5>
+                    <p className="text-white/80 text-xs md:text-sm">{option.description}</p>
+                  </button>
+                );
+              })}
+            </div>
+            
+            {showFeedback && feedbackType === "wrong" && (
+              <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
+                <p>💡 {currentScenario.explanation}</p>
+              </div>
+            )}
           </div>
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

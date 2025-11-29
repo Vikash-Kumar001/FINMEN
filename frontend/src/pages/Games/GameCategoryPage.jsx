@@ -1413,6 +1413,7 @@ const GameCategoryPage = () => {
       // Pass coinsPerLevel, totalCoins, totalXp, replay status, and next game path via navigation state
       navigate(game.path, { 
         state: { 
+          gameId: game.id, // Pass gameId to help components identify which game to render
           coinsPerLevel: game.coins || null, // For backward compatibility
           totalCoins: game.coins || 5, // Total coins for full completion
           totalXp: game.xp || 10, // Total XP for full completion

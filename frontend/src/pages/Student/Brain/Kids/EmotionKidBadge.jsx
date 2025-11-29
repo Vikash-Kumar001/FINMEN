@@ -218,21 +218,24 @@ const EmotionKidBadge = () => {
       gameId={gameId}
       gameType="brain"
     >
-      <div className="space-y-8">
+      <div className="space-y-4 sm:space-y-6 md:space-y-8 max-w-4xl mx-auto px-2 sm:px-4 md:px-6">
         {!showResult && challenges[challenge] ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 border border-white/20">
+              {/* Header - Stack on mobile, horizontal on larger screens */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
+                <span className="text-white/80 text-xs sm:text-sm md:text-base">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold text-xs sm:text-sm md:text-base">Score: {score}/{challenges.length}</span>
               </div>
               
-              <h3 className="text-xl font-bold text-white mb-2">{challenges[challenge].title}</h3>
-              <p className="text-white text-lg mb-6">
+              {/* Challenge title and question - Centered */}
+              <h3 className="text-base sm:text-lg md:text-xl font-bold text-white mb-2 sm:mb-3 text-center">{challenges[challenge].title}</h3>
+              <p className="text-white text-sm sm:text-base md:text-lg mb-4 sm:mb-5 md:mb-6 text-center">
                 {challenges[challenge].question}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Options grid - Single column on mobile, 2 columns on tablet+ */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {challenges[challenge].options.map((option, idx) => (
                   <button
                     key={idx}
@@ -241,19 +244,19 @@ const EmotionKidBadge = () => {
                       handleAnswer(option.isCorrect);
                     }}
                     disabled={answered}
-                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                    className={`p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl text-left transition-all transform active:scale-95 ${
                       answered
                         ? option.isCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          ? "bg-green-500/30 border-2 sm:border-4 border-green-400 ring-2 sm:ring-4 ring-green-400"
                           : selectedAnswer === idx
-                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          ? "bg-red-500/20 border-2 sm:border-4 border-red-400 ring-2 sm:ring-4 ring-red-400"
                           : "bg-white/5 border-2 border-white/20 opacity-50"
                         : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${answered ? "cursor-not-allowed" : ""}`}
+                    } ${answered ? "cursor-not-allowed" : "cursor-pointer"} w-full`}
                   >
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{option.emoji}</span>
-                      <span className="text-white font-semibold">{option.text}</span>
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <span className="text-xl sm:text-2xl md:text-3xl flex-shrink-0">{option.emoji}</span>
+                      <span className="text-white font-semibold text-xs sm:text-sm md:text-base leading-tight sm:leading-normal">{option.text}</span>
                     </div>
                   </button>
                 ))}
@@ -261,37 +264,37 @@ const EmotionKidBadge = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+          <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 border border-white/20 text-center">
             {score >= 3 ? (
               <div>
-                <div className="text-5xl mb-4">🏆</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Emotion Kid Badge Earned!</h3>
-                <p className="text-white/90 text-lg mb-4">
+                <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">🏆</div>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4">Emotion Kid Badge Earned!</h3>
+                <p className="text-white/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-4 px-2">
                   You got {score} out of {challenges.length} challenges correct!
                   You're a true Emotion Kid expert!
                 </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 sm:py-3 px-4 sm:px-6 rounded-full inline-flex items-center gap-2 mb-3 sm:mb-4 text-sm sm:text-base">
                   <span>+{score} Coins</span>
                 </div>
-                <p className="text-white/80">
+                <p className="text-white/80 text-xs sm:text-sm md:text-base px-2">
                   Lesson: You can identify different feelings like happiness, sadness, anger, fear, and excitement!
                 </p>
               </div>
             ) : (
               <div>
-                <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
-                <p className="text-white/90 text-lg mb-4">
+                <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">💪</div>
+                <h3 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-sm sm:text-base md:text-lg mb-3 sm:mb-4 px-2">
                   You got {score} out of {challenges.length} challenges correct.
                   Practice makes perfect with identifying feelings!
                 </p>
                 <button
                   onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 active:scale-95 text-white py-2 sm:py-3 px-4 sm:px-6 rounded-full font-bold transition-all mb-3 sm:mb-4 text-sm sm:text-base"
                 >
                   Try Again
                 </button>
-                <p className="text-white/80 text-sm">
+                <p className="text-white/80 text-xs sm:text-sm px-2">
                   Tip: Pay attention to facial expressions and body language to identify different feelings!
                 </p>
               </div>

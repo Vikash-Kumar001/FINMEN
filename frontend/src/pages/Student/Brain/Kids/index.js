@@ -38,6 +38,7 @@ import StayCoolPoster from './StayCoolPoster';
 import CalmnessJournal from './CalmnessJournal';
 import Sports from './Sports';
 import QuickCalmReflex from './QuickCalmReflex';
+import ReflexQuickCalm from './ReflexQuickCalm';
 import CalmKidBadge from './CalmKidBadge';
 import ToyBrokenStory from './ToyBrokenStory';
 import FeelingsQuizz from './FeelingsQuizz';
@@ -143,11 +144,13 @@ const kidBrainGames = {
   'reflex-calm': ReflexCalm,
   'puzzle-of-relaxing': RelaxingPuzzle,
   'exam-storyy': ExamStoryy,
-  'stay-cool-poster': StayCoolPoster,
-  'calmness-journal': CalmnessJournal,
+  'poster-stay-cool': StayCoolPoster,
+  'journal-of-calmness': CalmnessJournal,
   'sports': Sports,
   'quick-calm-reflex': QuickCalmReflex,
+  'reflex-quick-calm': ReflexQuickCalm,
   'calm-kid-badge': CalmKidBadge,
+  'badge-calm-kid': CalmKidBadge,
 
   // Fifth set of 10 games (emotions focused)
   'toy-broken-story': ToyBrokenStory,
@@ -217,7 +220,7 @@ const kidBrainGames = {
   'test-story': TestStory,
   'poster-dont-give-up': DontGiveUpPoster,
   'journal-bounce-back': BounceBackJournal,
-  'sports-story': SportsStories,
+  'sports-story-resilience': SportsStories, // Changed to avoid conflict with brain-kids-38
   'reflex-growth-thinking': GrowthThinkingReflex,
   'badge-bounce-back-kid': BounceBackKidBadge,
 };

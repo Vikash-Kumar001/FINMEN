@@ -1,206 +1,288 @@
-// File: StayCoolPoster.js
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
-import { Brain, Wind, Music, Flower, Waves } from 'lucide-react';
-import { getGameDataById } from '../../../../utils/getGameData';
+import React, { useState, useMemo } from "react";
+import { useLocation } from "react-router-dom";
+import GameShell from "../../Finance/GameShell";
+import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getBrainKidsGames } from "../../../../pages/Games/GameCategories/Brain/kidGamesData";
+import { Wind, Music, Flower, Waves } from 'lucide-react';
 
 const StayCoolPoster = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-kids-66";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("brain-kids-36");
+  const gameId = gameData?.id || "brain-kids-36";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for StayCoolPoster, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentLevel, setCurrentLevel] = useState(1);
-  const [selectedPoster, setSelectedPoster] = useState(null);
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
+  
+  // Find next game path if not provided in location.state
+  const nextGamePath = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return location.state.nextGamePath;
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return nextGame ? nextGame.path : null;
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return null;
+  }, [location.state, gameId]);
+  
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const levelPosters = [
-    [
-      {
-        id: 1,
-        title: "Stay Calm",
-        elements: [{ icon: <Wind />, text: "Breathe" }, { icon: <Music />, text: "Listen" }],
-        color: "bg-gradient-to-r from-blue-500 to-green-500"
-      },
-      {
-        id: 2,
-        title: "Relax Now",
-        elements: [{ icon: <Flower />, text: "Meditate" }, { icon: <Waves />, text: "Ocean Sounds" }],
-        color: "bg-gradient-to-r from-purple-500 to-pink-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Cool Under Pressure",
-        elements: [{ icon: <Wind />, text: "Deep Breath" }, { icon: <Flower />, text: "Yoga" }],
-        color: "bg-gradient-to-r from-green-500 to-blue-500"
-      },
-      {
-        id: 2,
-        title: "Peaceful Mind",
-        elements: [{ icon: <Music />, text: "Calm Music" }, { icon: <Waves />, text: "Relax" }],
-        color: "bg-gradient-to-r from-yellow-500 to-orange-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Be Calm",
-        elements: [{ icon: <Wind />, text: "Inhale Exhale" }, { icon: <Music />, text: "Tunes" }],
-        color: "bg-gradient-to-r from-red-500 to-pink-500"
-      },
-      {
-        id: 2,
-        title: "Stay Cool",
-        elements: [{ icon: <Flower />, text: "Garden" }, { icon: <Waves />, text: "Waves" }],
-        color: "bg-gradient-to-r from-blue-500 to-purple-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Calm Vibes",
-        elements: [{ icon: <Wind />, text: "Breath Work" }, { icon: <Flower />, text: "Flowers" }],
-        color: "bg-gradient-to-r from-green-500 to-yellow-500"
-      },
-      {
-        id: 2,
-        title: "Relax Zone",
-        elements: [{ icon: <Music />, text: "Melody" }, { icon: <Waves />, text: "Sea" }],
-        color: "bg-gradient-to-r from-orange-500 to-red-500"
-      }
-    ],
-    [
-      {
-        id: 1,
-        title: "Peace Poster",
-        elements: [{ icon: <Wind />, text: "Air" }, { icon: <Music />, text: "Sound" }],
-        color: "bg-gradient-to-r from-purple-500 to-blue-500"
-      },
-      {
-        id: 2,
-        title: "Cool Calm",
-        elements: [{ icon: <Flower />, text: "Bloom" }, { icon: <Waves />, text: "Flow" }],
-        color: "bg-gradient-to-r from-pink-500 to-purple-500"
-      }
-    ]
+  const questions = [
+    {
+      id: 1,
+      text: "Create/select poster: 'Stay Calm Under Pressure.'",
+      options: [
+        { 
+          id: "stay-calm", 
+          text: "Stay Calm", 
+          emoji: "🧘", 
+          description: "Breathe and listen to calm music",
+          icon: <Wind className="w-6 h-6" />,
+          isCorrect: true
+        },
+        { 
+          id: "relax-now", 
+          text: "Relax Now", 
+          emoji: "🌸", 
+          description: "Meditate with ocean sounds",
+          icon: <Flower className="w-6 h-6" />,
+          isCorrect: false
+        },
+        { 
+          id: "stress-out", 
+          text: "Stress Out", 
+          emoji: "😰", 
+          description: "Worry and panic",
+          icon: <Music className="w-6 h-6" />,
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "Which poster helps you stay cool under pressure?",
+      options: [
+        { 
+          id: "peaceful-mind", 
+          text: "Peaceful Mind", 
+          emoji: "🎵", 
+          description: "Calm music and relaxation",
+          icon: <Music className="w-6 h-6" />,
+          isCorrect: false
+        },
+        { 
+          id: "cool-pressure", 
+          text: "Cool Under Pressure", 
+          emoji: "🌊", 
+          description: "Deep breath and yoga",
+          icon: <Waves className="w-6 h-6" />,
+          isCorrect: true
+        },
+        { 
+          id: "panic-mode", 
+          text: "Panic Mode", 
+          emoji: "😱", 
+          description: "Rush and worry",
+          icon: <Wind className="w-6 h-6" />,
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "Select the best poster for staying calm.",
+      options: [
+        { 
+          id: "be-calm", 
+          text: "Be Calm", 
+          emoji: "💨", 
+          description: "Inhale and exhale with tunes",
+          icon: <Wind className="w-6 h-6" />,
+          isCorrect: false
+        },
+        { 
+          id: "anxious-poster", 
+          text: "Anxious Poster", 
+          emoji: "😟", 
+          description: "Worry and stress",
+          icon: <Flower className="w-6 h-6" />,
+          isCorrect: false
+        },
+        { 
+          id: "stay-cool", 
+          text: "Stay Cool", 
+          emoji: "🌺", 
+          description: "Garden and waves",
+          icon: <Flower className="w-6 h-6" />,
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "Which poster promotes calm vibes?",
+      options: [
+        { 
+          id: "calm-vibes", 
+          text: "Calm Vibes", 
+          emoji: "🌿", 
+          description: "Breath work and flowers",
+          icon: <Flower className="w-6 h-6" />,
+          isCorrect: true
+        },
+        { 
+          id: "relax-zone", 
+          text: "Relax Zone", 
+          emoji: "🌊", 
+          description: "Melody and sea sounds",
+          icon: <Waves className="w-6 h-6" />,
+          isCorrect: false
+        },
+        { 
+          id: "chaos-poster", 
+          text: "Chaos Poster", 
+          emoji: "🌀", 
+          description: "Noise and confusion",
+          icon: <Music className="w-6 h-6" />,
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Choose the poster that helps you stay cool and calm.",
+      options: [
+        { 
+          id: "cool-calm", 
+          text: "Cool Calm", 
+          emoji: "🌸", 
+          description: "Bloom and flow",
+          icon: <Flower className="w-6 h-6" />,
+          isCorrect: false
+        },
+        { 
+          id: "peace-poster", 
+          text: "Peace Poster", 
+          emoji: "💨", 
+          description: "Air and sound",
+          icon: <Wind className="w-6 h-6" />,
+          isCorrect: true
+        },
+        { 
+          id: "tension-poster", 
+          text: "Tension Poster", 
+          emoji: "😤", 
+          description: "Stress and pressure",
+          icon: <Waves className="w-6 h-6" />,
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  const posters = levelPosters[currentLevel - 1];
-
-  const handlePosterSelect = (poster) => {
-    if (!isSubmitted) {
-      setSelectedPoster(poster);
-    }
-  };
-
-  const handleSubmit = () => {
-    if (selectedPoster) {
-      setIsSubmitted(true);
-      setFeedbackType("correct");
-      setFeedbackMessage("Cool poster! Great choice.");
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
       setScore(prev => prev + 1);
-      setShowFeedback(true);
-      setTimeout(() => {
-        setShowFeedback(false);
-        if (currentLevel < 5) {
-          setCurrentLevel(prev => prev + 1);
-          setSelectedPoster(null);
-          setIsSubmitted(false);
-        } else {
-          setLevelCompleted(true);
-        }
-      }, 2000);
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Select a poster!");
-      setShowFeedback(true);
-      setTimeout(() => setShowFeedback(false), 2000);
+      showCorrectAnswerFeedback(1, true);
     }
+    
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/kids');
-  };
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Poster: Stay Cool"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Poster Complete!"}
       score={score}
-      currentLevel={currentLevel}
-      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      gameId="brain-kids-66"
-      gameType="brain-health"
-      showGameOver={levelCompleted}
-      backPath="/games/brain-health/kids"
-    
-      maxScore={5} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-4 text-center">Poster: Stay Cool</h3>
-        <p className="text-white/80 mb-6 text-center">Select a poster for staying calm.</p>
-        
-        <div className="rounded-2xl p-6 mb-6 bg-white/10 backdrop-blur-sm">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {posters.map((poster) => (
-              <div
-                key={poster.id}
-                onClick={() => handlePosterSelect(poster)}
-                className={`border-2 rounded-2xl p-6 cursor-pointer transition-all duration-200 ${
-                  selectedPoster?.id === poster.id ? 'border-white ring-2 ring-white/30 bg-white/20' : 'border-white/30 hover:border-white/50 bg-white/10'
-                }`}
-              >
-                <div className={`rounded-lg p-4 mb-4 ${poster.color}`}>
-                  <h5 className="text-white font-bold text-center">{poster.title}</h5>
-                </div>
-                <div className="space-y-3">
-                  {poster.elements.map((element, index) => (
-                    <div key={index} className="flex items-center">
-                      <div className="text-white mr-3">{element.icon}</div>
-                      <span className="text-white">{element.text}</span>
-                    </div>
-                  ))}
-                </div>
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      gameId={gameId}
+      gameType="brain"
+      backPath="/games/brain-health/kids"
+      nextGamePath={nextGamePath}
+    >
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
-            ))}
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="flex items-center justify-center mb-3">
+                      <div className="text-3xl mr-3">{option.emoji}</div>
+                      <div className="text-white">{option.icon}</div>
+                    </div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-          <div className="mt-8 text-center">
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedPoster || isSubmitted}
-              className={`px-8 py-3 rounded-full font-bold transition duration-200 text-lg ${
-                selectedPoster && !isSubmitted
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                  : 'bg-white/20 text-white/50 cursor-not-allowed'
-              }`}
-            >
-              Submit
-            </button>
-          </div>
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackMessage}
-            type={feedbackType}
-          />
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

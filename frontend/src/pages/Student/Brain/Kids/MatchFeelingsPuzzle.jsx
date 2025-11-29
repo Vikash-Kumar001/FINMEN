@@ -138,7 +138,7 @@ const MatchFeelingsPuzzle = () => {
       gameId={gameId}
       gameType="brain"
     >
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">

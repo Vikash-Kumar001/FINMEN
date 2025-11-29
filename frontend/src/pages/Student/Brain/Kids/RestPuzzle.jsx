@@ -133,7 +133,7 @@ const RestPuzzle = () => {
       gameId={gameId}
       gameType="brain"
     >
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
@@ -146,7 +146,7 @@ const RestPuzzle = () => {
                 Match rest activities with their effects!
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 relative">
                 {/* Left side */}
                 <div className="space-y-3">
                   <h3 className="text-white font-bold text-center mb-4">Rest Activities</h3>
@@ -177,6 +177,18 @@ const RestPuzzle = () => {
                       </button>
                     );
                   })}
+                </div>
+                
+                {/* Middle - Match Button */}
+                <div className="hidden md:flex items-center justify-center">
+                  {selectedLeft && selectedRight && (
+                    <button
+                      onClick={handleMatch}
+                      className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-6 rounded-full font-bold transition-all transform hover:scale-105 shadow-lg"
+                    >
+                      Match!
+                    </button>
+                  )}
                 </div>
                 
                 {/* Right side */}
@@ -210,8 +222,9 @@ const RestPuzzle = () => {
                 </div>
               </div>
               
+              {/* Match button for mobile - shown at bottom */}
               {selectedLeft && selectedRight && (
-                <div className="mt-6 text-center">
+                <div className="mt-6 flex md:hidden justify-center items-center">
                   <button
                     onClick={handleMatch}
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold transition-all"

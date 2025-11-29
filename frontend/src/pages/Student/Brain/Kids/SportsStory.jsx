@@ -1,15 +1,20 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getBrainKidsGames } from "../../../../pages/Games/GameCategories/Brain/kidGamesData";
 
 const SportsStory = () => {
   const location = useLocation();
   
+  // Check if this component should render based on gameId from location.state
+  // This is needed because there are multiple "Sports Story" games with the same path
+  const expectedGameId = "brain-kids-38";
+  
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("brain-kids-8");
-  const gameId = gameData?.id || "brain-kids-8";
+  const gameData = getGameDataById(expectedGameId);
+  const gameId = gameData?.id || expectedGameId;
   
   // Ensure gameId is always set correctly
   if (!gameData || !gameData.id) {
@@ -20,6 +25,35 @@ const SportsStory = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
   const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
@@ -29,135 +63,135 @@ const SportsStory = () => {
   const questions = [
     {
       id: 1,
-      text: "Playing football helps brain?",
+      text: "Kid loses a game and feels angry. Right action?",
       options: [
         { 
-          id: "yes", 
-          text: "Yes", 
-          emoji: "⚽", 
-          description: "Physical activity increases blood flow to the brain",
+          id: "try-again", 
+          text: "Try again calmly", 
+          emoji: "🧘", 
+          description: "Stay calm and practice more",
           isCorrect: true
         },
         { 
-          id: "maybe", 
-          text: "Maybe", 
-          emoji: "🤔", 
-          description: "It might help sometimes",
+          id: "yell", 
+          text: "Yell and get more angry", 
+          emoji: "😡", 
+          description: "Getting angry makes it worse",
           isCorrect: false
         },
         { 
-          id: "no", 
-          text: "No", 
-          emoji: "❌", 
-          description: "Sports don't help the brain",
+          id: "quit", 
+          text: "Quit playing forever", 
+          emoji: "🚪", 
+          description: "Giving up doesn't help",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "How does playing sports help your school work?",
+      text: "After losing, what helps you improve?",
       options: [
         { 
-          id: "tired", 
-          text: "Makes you too tired to study", 
-          emoji: "😴", 
-          description: "Sports make you exhausted",
-          isCorrect: false
-        },
-        { 
-          id: "focus", 
-          text: "Helps you focus better", 
-          emoji: "🎯", 
-          description: "Exercise improves concentration and memory",
+          id: "practice", 
+          text: "Practice and learn from mistakes", 
+          emoji: "📚", 
+          description: "Learning helps you get better",
           isCorrect: true
         },
         { 
-          id: "nothing", 
-          text: "Does nothing", 
-          emoji: "🚫", 
-          description: "Sports have no effect on learning",
+          id: "blame", 
+          text: "Blame others", 
+          emoji: "👆", 
+          description: "Blaming doesn't help you improve",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore the loss", 
+          emoji: "🙈", 
+          description: "Ignoring doesn't help you learn",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Which sport is best for brain health?",
+      text: "When you feel angry after losing, what should you do?",
       options: [
         { 
-          id: "any", 
-          text: "Any sport you enjoy", 
-          emoji: "🏃", 
-          description: "The best sport is one you'll stick with regularly",
+          id: "breathe", 
+          text: "Take deep breaths and calm down", 
+          emoji: "🌬️", 
+          description: "Calming down helps you think clearly",
           isCorrect: true
         },
         { 
-          id: "football", 
-          text: "Only football", 
-          emoji: "⚽", 
-          description: "Football is the only good sport",
+          id: "scream", 
+          text: "Scream and throw things", 
+          emoji: "😱", 
+          description: "This makes you more upset",
           isCorrect: false
         },
         { 
-          id: "none", 
-          text: "No sports needed", 
-          emoji: "🚫", 
-          description: "You don't need to play any sports",
+          id: "cry", 
+          text: "Cry and give up", 
+          emoji: "😢", 
+          description: "Giving up doesn't help",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "When is the best time to play sports?",
+      text: "What's the best way to handle losing?",
       options: [
         { 
-          id: "weekend", 
-          text: "Only on weekends", 
-          emoji: "📅", 
-          description: "Play sports only on weekends",
-          isCorrect: false
-        },
-        { 
-          id: "regular", 
-          text: "Regularly, even for short periods", 
-          emoji: "⏰", 
-          description: "Consistent activity is more beneficial",
+          id: "learn", 
+          text: "Learn from it and try again", 
+          emoji: "💪", 
+          description: "Every loss teaches you something",
           isCorrect: true
         },
         { 
-          id: "never", 
-          text: "Never", 
-          emoji: "🚫", 
-          description: "Don't play sports at all",
+          id: "forget", 
+          text: "Forget about it completely", 
+          emoji: "🧠", 
+          description: "You miss learning opportunities",
+          isCorrect: false
+        },
+        { 
+          id: "complain", 
+          text: "Complain to everyone", 
+          emoji: "😤", 
+          description: "Complaining doesn't help",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "What should you do after playing sports?",
+      text: "How can you stay calm when you lose?",
       options: [
         { 
-          id: "hydrate", 
-          text: "Drink water and rest", 
-          emoji: "💧", 
-          description: "Rehydrating helps your brain recover too",
+          id: "positive", 
+          text: "Think positive and keep trying", 
+          emoji: "✨", 
+          description: "Positive thinking helps you improve",
           isCorrect: true
         },
         { 
-          id: "continue", 
-          text: "Keep playing without rest", 
-          emoji: "🏃", 
-          description: "Continue playing without taking a break",
+          id: "negative", 
+          text: "Think you'll always lose", 
+          emoji: "💔", 
+          description: "Negative thoughts make it worse",
           isCorrect: false
         },
         { 
-          id: "sleep", 
-          text: "Sleep immediately", 
-          emoji: "😴", 
-          description: "Go to sleep right away",
+          id: "avoid", 
+          text: "Avoid playing again", 
+          emoji: "🏃", 
+          description: "Avoiding doesn't help you grow",
           isCorrect: false
         }
       ]
@@ -170,15 +204,25 @@ const SportsStory = () => {
     setAnswered(true);
     resetFeedback();
     
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-    
     const isLastQuestion = currentQuestion === questions.length - 1;
+    let finalScore = score;
+    
+    if (isCorrect) {
+      setScore(prev => {
+        const newScore = prev + 1;
+        finalScore = newScore;
+        console.log(`✅ Correct answer! Score: ${newScore}/${questions.length}, isLastQuestion: ${isLastQuestion}, gameId: ${gameId}`);
+        return newScore;
+      });
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      finalScore = score;
+      console.log(`❌ Wrong answer. Score: ${score}/${questions.length}, isLastQuestion: ${isLastQuestion}, gameId: ${gameId}`);
+    }
     
     setTimeout(() => {
       if (isLastQuestion) {
+        console.log(`🎮 Game complete! Final score: ${finalScore}/${questions.length}, gameId: ${gameId}`);
         setShowResult(true);
       } else {
         setCurrentQuestion(prev => prev + 1);
@@ -187,13 +231,21 @@ const SportsStory = () => {
     }, 500);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentQuestion(0);
-    setScore(0);
-    setAnswered(false);
-    resetFeedback();
-  };
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Sports Story game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, score, gameId, nextGamePath, nextGameId, questions.length]);
 
   const currentQuestionData = questions[currentQuestion];
 
@@ -214,6 +266,9 @@ const SportsStory = () => {
       showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      backPath="/games/brain-health/kids"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
       <div className="space-y-8">
         {!showResult && currentQuestionData ? (

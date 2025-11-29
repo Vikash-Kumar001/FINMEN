@@ -7,16 +7,16 @@ import { getBrainKidsGames } from "../../../../pages/Games/GameCategories/Brain/
 
 const QUESTION_TIME = 10; // 10 seconds per question
 
-const HappyThoughtsReflex = () => {
+const ReflexQuickCalm = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("brain-kids-53");
-  const gameId = gameData?.id || "brain-kids-53";
+  const gameData = getGameDataById("brain-kids-39");
+  const gameId = gameData?.id || "brain-kids-39";
   
   // Ensure gameId is always set correctly
   if (!gameData || !gameData.id) {
-    console.warn("Game data not found for HappyThoughtsReflex, using fallback ID");
+    console.warn("Game data not found for ReflexQuickCalm, using fallback ID");
   }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -63,171 +63,171 @@ const HappyThoughtsReflex = () => {
   const questions = [
     {
       id: 1,
-      text: "Which is a positive thought?",
+      text: "Which action helps you stay calm?",
       options: [
         { 
           id: "smile", 
           text: "Smile", 
           emoji: "😊", 
-          description: "A positive, happy thought",
+          description: "A positive, calm action",
           isCorrect: true
         },
         { 
-          id: "complain", 
-          text: "Complain", 
-          emoji: "😤", 
-          description: "A negative thought",
+          id: "yell", 
+          text: "Yell", 
+          emoji: "😡", 
+          description: "Not a calm action",
           isCorrect: false
         },
         { 
-          id: "worry", 
-          text: "Worry", 
-          emoji: "😰", 
-          description: "A negative, anxious thought",
+          id: "panic", 
+          text: "Panic", 
+          emoji: "😱", 
+          description: "Increases stress and anxiety",
           isCorrect: false
         },
         { 
-          id: "doubt", 
-          text: "Doubt", 
-          emoji: "🤔", 
-          description: "Not a positive thought",
+          id: "rush", 
+          text: "Rush around", 
+          emoji: "🏃", 
+          description: "Makes stress worse",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Which is a positive thought?",
+      text: "What helps you relax when stressed?",
       options: [
         { 
-          id: "give-up", 
-          text: "Give up", 
-          emoji: "😔", 
-          description: "A negative thought",
+          id: "worry", 
+          text: "Worry more", 
+          emoji: "😰", 
+          description: "Increases anxiety",
           isCorrect: false
         },
         { 
-          id: "hope", 
-          text: "Hope", 
-          emoji: "🌟", 
-          description: "A positive, optimistic thought",
+          id: "breathe", 
+          text: "Breathe deeply", 
+          emoji: "🌬️", 
+          description: "A calming action",
           isCorrect: true
         },
         { 
-          id: "blame", 
-          text: "Blame others", 
-          emoji: "👆", 
-          description: "A negative thought",
+          id: "scream", 
+          text: "Scream", 
+          emoji: "😱", 
+          description: "Makes you more upset",
           isCorrect: false
         },
         { 
-          id: "fear", 
-          text: "Fear", 
-          emoji: "😨", 
-          description: "A negative, worried thought",
+          id: "ignore", 
+          text: "Ignore it", 
+          emoji: "🙈", 
+          description: "Doesn't help you relax",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Which is a positive thought?",
+      text: "Which is a calm way to handle anger?",
       options: [
         { 
-          id: "anger", 
-          text: "Anger", 
-          emoji: "😠", 
-          description: "A negative emotion",
+          id: "hit", 
+          text: "Hit something", 
+          emoji: "👊", 
+          description: "Not a healthy way to handle anger",
           isCorrect: false
         },
         { 
-          id: "sadness", 
-          text: "Sadness", 
-          emoji: "😢", 
-          description: "A negative feeling",
+          id: "blame", 
+          text: "Blame others", 
+          emoji: "👆", 
+          description: "Doesn't help you calm down",
           isCorrect: false
         },
         { 
-          id: "thanks", 
-          text: "Thanks", 
-          emoji: "🙏", 
-          description: "A positive, grateful thought",
+          id: "count", 
+          text: "Count to 10", 
+          emoji: "🔢", 
+          description: "Helps you calm down",
           isCorrect: true
         },
         { 
-          id: "hate", 
-          text: "Hate", 
-          emoji: "💔", 
-          description: "A negative thought",
+          id: "cry", 
+          text: "Cry and give up", 
+          emoji: "😢", 
+          description: "Doesn't solve the problem",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Which is a positive thought?",
+      text: "What helps you feel peaceful?",
       options: [
         { 
-          id: "gratitude", 
-          text: "Gratitude", 
-          emoji: "🙏", 
-          description: "A positive, thankful thought",
-          isCorrect: true
-        },
-        { 
-          id: "envy", 
-          text: "Envy", 
-          emoji: "😒", 
-          description: "A negative feeling",
-          isCorrect: false
-        },
-        { 
-          id: "jealousy", 
-          text: "Jealousy", 
+          id: "argue", 
+          text: "Argue", 
           emoji: "😤", 
-          description: "A negative emotion",
+          description: "Creates tension",
           isCorrect: false
         },
         { 
-          id: "resentment", 
-          text: "Resentment", 
-          emoji: "😠", 
-          description: "A negative thought",
+          id: "complain", 
+          text: "Complain", 
+          emoji: "😒", 
+          description: "Doesn't help you feel better",
           isCorrect: false
+        },
+        { 
+          id: "stress", 
+          text: "Stress out", 
+          emoji: "😓", 
+          description: "Increases worry",
+          isCorrect: false
+        },
+        { 
+          id: "relax", 
+          text: "Relax and rest", 
+          emoji: "🧘", 
+          description: "A positive, calm action",
+          isCorrect: true
         }
       ]
     },
     {
       id: 5,
-      text: "Which is a positive thought?",
+      text: "Which action keeps you calm?",
       options: [
         { 
-          id: "pessimism", 
-          text: "Pessimism", 
-          emoji: "😞", 
-          description: "A negative outlook",
+          id: "negative", 
+          text: "Think negative thoughts", 
+          emoji: "💔", 
+          description: "Makes you more upset",
           isCorrect: false
         },
         { 
-          id: "defeat", 
-          text: "Defeat", 
-          emoji: "😔", 
-          description: "A negative feeling",
-          isCorrect: false
-        },
-        { 
-          id: "failure", 
-          text: "Failure", 
-          emoji: "😢", 
-          description: "A negative thought",
-          isCorrect: false
-        },
-        { 
-          id: "optimism", 
-          text: "Optimism", 
+          id: "positive", 
+          text: "Think positive thoughts", 
           emoji: "✨", 
-          description: "A positive, hopeful thought",
+          description: "Helps maintain calm",
           isCorrect: true
+        },
+        { 
+          id: "avoid", 
+          text: "Avoid the problem", 
+          emoji: "🏃", 
+          description: "Doesn't help you stay calm",
+          isCorrect: false
+        },
+        { 
+          id: "overthink", 
+          text: "Overthink everything", 
+          emoji: "🤯", 
+          description: "Increases stress",
+          isCorrect: false
         }
       ]
     }
@@ -330,7 +330,7 @@ const HappyThoughtsReflex = () => {
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
     if (showResult) {
-      console.log(`🎮 Reflex Happy Thoughts game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      console.log(`🎮 Reflex Quick Calm game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -347,7 +347,7 @@ const HappyThoughtsReflex = () => {
 
   return (
     <GameShell
-      title="Reflex Happy Thoughts"
+      title="Reflex Quick Calm"
       score={score}
       subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
       coinsPerLevel={coinsPerLevel}
@@ -366,32 +366,32 @@ const HappyThoughtsReflex = () => {
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-4 sm:space-y-6 md:space-y-8 max-w-4xl mx-auto px-2 sm:px-4 md:px-6">
+      <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult && currentQuestionData ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 border border-white/20">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
-              <span className="text-white/80 text-xs sm:text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
-              <span className="text-yellow-400 font-bold text-xs sm:text-sm md:text-base">Score: {score}/{questions.length}</span>
-              <span className={`font-bold text-xs sm:text-sm md:text-base ${timeLeft <= 3 ? 'text-red-400' : timeLeft <= 5 ? 'text-yellow-400' : 'text-green-400'}`}>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+              <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              <span className={`font-bold ${timeLeft <= 3 ? 'text-red-400' : timeLeft <= 7 ? 'text-yellow-400' : 'text-green-400'}`}>
                 Time: {timeLeft}s
               </span>
             </div>
             
-            <p className="text-white text-base sm:text-lg md:text-xl mb-4 sm:mb-5 md:mb-6 text-center sm:text-left">
+            <p className="text-white text-lg mb-6">
               {currentQuestionData.text}
             </p>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {currentQuestionData.options.map((option) => (
                 <button
                   key={option.id}
                   onClick={() => handleChoice(option.isCorrect)}
                   disabled={answered}
-                  className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 active:scale-95 text-white p-4 sm:p-5 md:p-6 rounded-xl sm:rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none w-full"
+                  className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                 >
-                  <div className="text-2xl sm:text-3xl md:text-4xl mb-2 sm:mb-3">{option.emoji}</div>
-                  <h3 className="font-bold text-base sm:text-lg md:text-xl mb-1 sm:mb-2">{option.text}</h3>
-                  <p className="text-white/90 text-xs sm:text-sm md:text-base leading-tight sm:leading-normal">{option.description}</p>
+                  <div className="text-3xl mb-3">{option.emoji}</div>
+                  <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                  <p className="text-white/90 text-sm">{option.description}</p>
                 </button>
               ))}
             </div>
@@ -402,4 +402,4 @@ const HappyThoughtsReflex = () => {
   );
 };
 
-export default HappyThoughtsReflex;
+export default ReflexQuickCalm;

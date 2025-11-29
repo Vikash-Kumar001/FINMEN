@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useLocation } from 'react-router-dom';
 import financeGames, { getFinanceGame } from '../pages/Student/Finance';
 import brainGames, { getBrainGame } from '../pages/Student/Brain';
 import uvlsGames, { getUvlsGame } from '../pages/Student/UVLS';
@@ -97,6 +97,7 @@ const gameCategories = {
 const UniversalGameRenderer = () => {
   const {category, age, game: gameId} = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [currentGame, setCurrentGame] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -105,7 +106,8 @@ const UniversalGameRenderer = () => {
 
   // Validate and load game component 
   useEffect(() => {
-    console.log('Loading game:', { category, age, gameId });
+    const stateGameId = location.state?.gameId;
+    console.log('Loading game:', { category, age, gameId, stateGameId });
 
     // Validate parameters
     if (!category || !age || !gameId) {
@@ -130,7 +132,19 @@ const UniversalGameRenderer = () => {
     }
 
     // Get the game component function
-    const GameComponent = catData.getGame(age, gameId);
+    let GameComponent = catData.getGame(age, gameId);
+    
+    // Special handling for duplicate paths: if gameId is in location.state, 
+    // check if the component matches the expected gameId
+    // This is needed for games like 'sports-story' which has two different games
+    if (GameComponent && stateGameId && gameId === 'sports-story') {
+      // For sports-story, we need to check which component should be used
+      // brain-kids-38 should use SportsStory, brain-kids-98 should use SportsStories
+      // The component itself will check location.state.gameId and return null if it's the wrong one
+      // So we'll just use the first one found and let the component handle the check
+      console.log('⚠️ Duplicate path detected for sports-story, using component with gameId check');
+    }
+    
     if (!GameComponent) {
       setError(`Game not found: ${gameId} in ${category} ${age}`);
       setLoading(false);
@@ -141,7 +155,7 @@ const UniversalGameRenderer = () => {
     setCategoryData(catData);
     setCurrentGame(() => GameComponent); // Store as function to prevent looping
     setLoading(false);
-  }, [category, age, gameId]);
+  }, [category, age, gameId, location.state]);
 
   if (loading) {
     return (

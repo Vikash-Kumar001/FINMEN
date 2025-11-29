@@ -114,21 +114,21 @@ const GoodThingsJournal = () => {
       gameId={gameId}
       gameType="brain"
     >
-      <div className="space-y-8">
+      <div className="space-y-4 sm:space-y-6 md:space-y-8 max-w-4xl mx-auto px-2 sm:px-4 md:px-6">
         {!showResult && stages[currentStage] ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Entry {currentStage + 1}/{stages.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
+          <div className="space-y-4 sm:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-4 mb-4 sm:mb-5 md:mb-6">
+                <span className="text-white/80 text-xs sm:text-sm md:text-base">Entry {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold text-xs sm:text-sm md:text-base">Score: {score}/{stages.length}</span>
               </div>
               
-              <div className="text-center mb-6">
-                <PenSquare className="w-12 h-12 mx-auto mb-4 text-yellow-400" />
-                <h3 className="text-xl font-bold text-white mb-2">
+              <div className="text-center mb-4 sm:mb-5 md:mb-6">
+                <PenSquare className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mx-auto mb-3 sm:mb-4 text-yellow-400" />
+                <h3 className="text-base sm:text-lg md:text-xl font-bold text-white mb-2 sm:mb-3">
                   {stages[currentStage].prompt}
                 </h3>
-                <p className="text-white/70 text-sm">
+                <p className="text-white/70 text-xs sm:text-sm md:text-base px-2">
                   {stages[currentStage].guidance}
                 </p>
               </div>
@@ -137,18 +137,18 @@ const GoodThingsJournal = () => {
                 value={entry}
                 onChange={handleInputChange}
                 placeholder="Write your thoughts here..."
-                className="w-full h-40 p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                className="w-full h-32 sm:h-36 md:h-40 p-3 sm:p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none text-sm sm:text-base"
                 disabled={answered}
               />
               
-              <div className="flex justify-between items-center mt-4">
-                <span className={`text-sm ${characterCount < minLength ? 'text-red-400' : 'text-green-400'}`}>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mt-4">
+                <span className={`text-xs sm:text-sm ${characterCount < minLength ? 'text-red-400' : 'text-green-400'}`}>
                   {characterCount}/{minLength} characters minimum
                 </span>
                 <button
                   onClick={handleSubmit}
                   disabled={answered || characterCount < minLength}
-                  className={`px-6 py-2 rounded-full font-bold transition-all ${
+                  className={`px-4 sm:px-6 py-2 sm:py-2.5 rounded-full font-bold transition-all active:scale-95 text-sm sm:text-base w-full sm:w-auto ${
                     !answered && characterCount >= minLength
                       ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
                       : "bg-white/20 text-white/50 cursor-not-allowed"

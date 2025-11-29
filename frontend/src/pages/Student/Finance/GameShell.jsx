@@ -198,7 +198,7 @@ export const FeedbackBubble = ({ message, type }) => (
 );
 
 /* --------------------- Game Over Modal --------------------- */
-export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1, maxScore = null, coinsPerLevel = null, totalCoins = null, totalXp = null, isReplay = false, onClose, nextGamePath = null }) => {
+export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1, maxScore = null, coinsPerLevel = null, totalCoins = null, totalXp = null, isReplay = false, onClose, nextGamePath = null, nextGameId = null }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [coinsEarned, setCoinsEarned] = useState(0);
   const [xpEarned, setXpEarned] = useState(0);
@@ -402,16 +402,28 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
                 }
 
                 try {
-                  // Get next game ID from location.state (passed from GameCategoryPage)
-                  const nextGameId = location.state?.nextGameId || null;
+                  // Get next game ID from prop or location.state (passed from GameCategoryPage)
+                  const resolvedNextGameId = nextGameId || location.state?.nextGameId || null;
+                  
+                  console.log('🎮 Continue button - Next game info:', {
+                    resolvedNextGamePath,
+                    resolvedNextGameId,
+                    nextGamePath,
+                    nextGameId,
+                    locationState: location.state
+                  });
+                  
+                  // Wait a moment to ensure current game completion is saved
+                  await new Promise(resolve => setTimeout(resolve, 500));
+                  
+                  let nextGameProgress = null;
+                  let isReplay = false;
                   
                   // If we have the next game ID, check its status before navigating
-                  if (nextGameId) {
-                    // Wait a moment to ensure current game completion is saved
-                    await new Promise(resolve => setTimeout(resolve, 300));
-                    
+                  if (resolvedNextGameId) {
                     // Check next game status
-                    const nextGameProgress = await gameCompletionService.getGameProgress(nextGameId);
+                    nextGameProgress = await gameCompletionService.getGameProgress(resolvedNextGameId);
+                    console.log('🎮 Next game progress:', nextGameProgress);
                     
                     // Check if next game is fully completed
                     if (nextGameProgress?.fullyCompleted) {
@@ -431,34 +443,25 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
                         return;
                       }
                       // Replay is unlocked - allow navigation (will be treated as replay)
+                      isReplay = true;
                     }
                     // Game is not completed or replay is unlocked - allow navigation
-                    
-                    // Navigate to next game
-                    const returnPath = location.state?.returnPath || '/games';
-                    navigate(resolvedNextGamePath, {
-                      state: {
-                        returnPath: returnPath,
-                        coinsPerLevel: location.state?.coinsPerLevel || null,
-                        totalCoins: location.state?.totalCoins || null,
-                        totalXp: location.state?.totalXp || null,
-                        maxScore: location.state?.maxScore || null,
-                        isReplay: nextGameProgress?.fullyCompleted && nextGameProgress?.replayUnlocked || false,
-                      }
-                    });
-                  } else {
-                    // No game ID available - navigate directly (fallback for games without sequential unlocking)
-                    const returnPath = location.state?.returnPath || '/games';
-                    navigate(resolvedNextGamePath, {
-                      state: {
-                        returnPath: returnPath,
-                        coinsPerLevel: location.state?.coinsPerLevel || null,
-                        totalCoins: location.state?.totalCoins || null,
-                        totalXp: location.state?.totalXp || null,
-                        maxScore: location.state?.maxScore || null,
-                      }
-                    });
                   }
+                  
+                  // Navigate to next game
+                  const returnPath = location.state?.returnPath || '/games';
+                  console.log('🎮 Navigating to next game:', resolvedNextGamePath);
+                  
+                  navigate(resolvedNextGamePath, {
+                    state: {
+                      returnPath: returnPath,
+                      coinsPerLevel: location.state?.coinsPerLevel || null,
+                      totalCoins: location.state?.totalCoins || null,
+                      totalXp: location.state?.totalXp || null,
+                      maxScore: location.state?.maxScore || null,
+                      isReplay: isReplay,
+                    }
+                  });
                 } catch (error) {
                   console.error('Failed to check game status:', error);
                   // On error, allow navigation (fallback behavior)
@@ -519,6 +522,7 @@ const GameShell = ({
   showAnswerConfetti = false,
   backPath: backPathProp,
   nextGamePath: nextGamePathProp = null, // Optional next game path prop to override location.state
+  nextGameId: nextGameIdProp = null, // Optional next game ID prop to override location.state
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -684,6 +688,7 @@ const GameShell = ({
           isReplay={location?.state?.isReplay || false}
           onClose={handleGameOverClose}
           nextGamePath={nextGamePathProp || location?.state?.nextGamePath || null}
+          nextGameId={nextGameIdProp || location?.state?.nextGameId || null}
         />
       )}
 

@@ -1455,6 +1455,7 @@ const GameCategoryPage = () => {
     const REPLAY_COST = 2;
     
     // Check if game is subscription-locked (freemium users beyond first 5 games)
+    const gamesCompleted = categoryStats.completedGames || 0;
     const subscriptionAccess = canAccessGameBySubscription(categoryTitle, gamesCompleted, game.index);
     if (!subscriptionAccess.allowed) {
       toast.error(

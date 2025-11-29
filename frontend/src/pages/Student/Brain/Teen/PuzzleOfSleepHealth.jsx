@@ -1,177 +1,311 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
+import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const PuzzleOfSleepHealth = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
   const gameId = "brain-teens-64";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({});
-
-  const questions = [
-    {
-      id: 1,
-      text: "Match 'Screen Off' to?",
-      choices: [
-        { id: 'a', text: 'Good sleep', icon: '📱🚫😴' },
-        { id: 'b', text: 'Bad sleep', icon: '📱😓' }
-      ],
-      correct: 'a',
-      explanation: 'No screens before bed improves sleep quality!'
-    },
-    {
-      id: 2,
-      text: "Match 'Noise' to?",
-      choices: [
-        { id: 'a', text: 'Bad sleep', icon: '🔊😴🚫' },
-        { id: 'b', text: 'Good sleep', icon: '🔊😌' }
-      ],
-      correct: 'a',
-      explanation: 'Quiet environments promote restful sleep!'
-    },
-    {
-      id: 3,
-      text: "Match 'Consistent Bedtime' to?",
-      choices: [
-        { id: 'a', text: 'Better rest', icon: '📅🛌' },
-        { id: 'b', text: 'Poor rest', icon: '😓' }
-      ],
-      correct: 'a',
-      explanation: 'Regular sleep schedules enhance rest!'
-    },
-    {
-      id: 4,
-      text: "Match 'Caffeine' to?",
-      choices: [
-        { id: 'a', text: 'Disrupts sleep', icon: '☕🚫' },
-        { id: 'b', text: 'Improves sleep', icon: '☕😴' }
-      ],
-      correct: 'a',
-      explanation: 'Caffeine keeps you awake, avoid before bed!'
-    },
-    {
-      id: 5,
-      text: "Match 'Relaxation Routine' to?",
-      choices: [
-        { id: 'a', text: 'Good sleep', icon: '😌🛌' },
-        { id: 'b', text: 'Bad sleep', icon: '😓' }
-      ],
-      correct: 'a',
-      explanation: 'Calming routines prep body for sleep!'
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [score, setScore] = useState(0);
+
+  // Sleep Factors (left side)
+  const leftItems = [
+    { id: 1, name: 'Screen Off', emoji: '📱', description: 'Turning off devices before bed' },
+    { id: 2, name: 'Noise', emoji: '🔊', description: 'Loud sounds during sleep' },
+    { id: 3, name: 'Regular Schedule', emoji: '⏰', description: 'Consistent bedtime routine' },
+    { id: 4, name: 'Caffeine Late', emoji: '☕', description: 'Drinking coffee before bed' },
+    { id: 5, name: 'Dark Room', emoji: '🌙', description: 'Sleeping in darkness' }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
-    
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
-    
-    if (isCorrect) {
-      setScore(score + 1); // 1 coin for correct answer
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 1000);
+  // Sleep Effects (right side) - manually arranged to vary correct answer positions
+  const rightItems = [
+    { id: 2, name: 'Bad Sleep', emoji: '😴', description: 'Disrupted and poor quality sleep' }, // Matches Noise (left position 2, right position 1)
+    { id: 1, name: 'Good Sleep', emoji: '😌', description: 'Restful and quality sleep' }, // Matches Screen Off (left position 1, right position 2)
+    { id: 4, name: 'Restless Sleep', emoji: '😰', description: 'Difficulty falling asleep' }, // Matches Caffeine Late (left position 4, right position 3)
+    { id: 3, name: 'Better Sleep', emoji: '✨', description: 'Improved sleep quality' }, // Matches Regular Schedule (left position 3, right position 4)
+    { id: 5, name: 'Deep Sleep', emoji: '🌊', description: 'Restorative and deep rest' } // Matches Dark Room (left position 5, right position 5)
+  ];
+
+  // Correct matches - manually defined to split correct answers across different positions
+  const correctMatches = [
+    { leftId: 1, rightId: 1 }, // Screen Off → Good Sleep (left 1st, right 2nd)
+    { leftId: 2, rightId: 2 }, // Noise → Bad Sleep (left 2nd, right 1st)
+    { leftId: 3, rightId: 3 }, // Regular Schedule → Better Sleep (left 3rd, right 4th)
+    { leftId: 4, rightId: 4 }, // Caffeine Late → Restless Sleep (left 4th, right 3rd)
+    { leftId: 5, rightId: 5 }  // Dark Room → Deep Sleep (left 5th, right 5th)
+  ];
+
+  // Check if a left item is already matched
+  const isLeftItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
+  };
+
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
+  };
+
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    if (isLeftItemMatched(item.id)) return;
+    setSelectedLeft(item);
+  };
+
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    if (isRightItemMatched(item.id)) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show feedback
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-    
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
-      } else {
-        setLevelCompleted(true);
-      }
-    }, 1500);
-  };
 
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-      setFeedbackType(null);
-      setShowConfetti(false);
+    // Check if all items are matched
+    if (newMatches.length === leftItems.length) {
+      setShowResult(true);
     }
+
+    // Reset selections
+    setSelectedLeft(null);
+    setSelectedRight(null);
   };
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/teens');
+  // Get match result for a left item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
   };
 
-  const currentQuestionData = questions[currentQuestion];
+  // Get match result for a right item
+  const getRightMatchResult = (itemId) => {
+    const match = matches.find(m => m.rightId === itemId);
+    return match ? match.isCorrect : null;
+  };
+
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Puzzle of Sleep Health game completed! Score: ${score}/${leftItems.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, score, gameId, nextGamePath, nextGameId, leftItems.length]);
 
   return (
     <GameShell
       title="Puzzle of Sleep Health"
       score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={showResult ? "Game Complete!" : `Match sleep factors with their effects (${matches.length}/${leftItems.length} matched)`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={currentQuestion < questions.length - 1}
-      nextLabel="Next"
-      showAnswerConfetti={showConfetti}
-      backPath="/games/brain-health/teens"
+      totalLevels={leftItems.length}
+      currentLevel={matches.length + 1}
+      maxScore={leftItems.length}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
-          {currentQuestionData.choices.map((choice) => (
-            <OptionButton
-              key={choice.id}
-              option={`${choice.icon} ${choice.text}`}
-              onClick={() => handleOptionSelect(choice.id)}
-              selected={selectedOption === choice.id}
-              disabled={!!selectedOption}
-              feedback={showFeedback ? { type: feedbackType } : null}
-            />
-          ))}
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackType === "correct" ? "Correct! 🎉" : "Not quite! 🤔"}
-            type={feedbackType}
-          />
-        )}
-        
-        {showFeedback && feedbackType === "wrong" && (
-          <div className="mt-4 text-white/90 text-center">
-            <p>💡 {currentQuestionData.explanation}</p>
+      <div className="space-y-6 md:space-y-8 max-w-5xl mx-auto px-4">
+        {!showResult ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+            {/* Left column - Sleep Factors */}
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 text-center">Sleep Factors</h3>
+              <div className="space-y-3 md:space-y-4">
+                {leftItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleLeftSelect(item)}
+                    disabled={isLeftItemMatched(item.id)}
+                    className={`w-full p-3 md:p-4 rounded-lg md:rounded-xl text-left transition-all ${
+                      isLeftItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedLeft?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    } disabled:cursor-not-allowed`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-xl md:text-2xl mr-2 md:mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white text-sm md:text-base">{item.name}</h4>
+                        <p className="text-white/80 text-xs md:text-sm">{item.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20 text-center w-full">
+                <p className="text-white/80 mb-3 md:mb-4 text-sm md:text-base">
+                  {selectedLeft 
+                    ? `Selected: ${selectedLeft.name}` 
+                    : "Select a factor"}
+                </p>
+                {selectedLeft && selectedRight && (
+                  <button
+                    onClick={handleMatch}
+                    className="w-full py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105 text-sm md:text-base"
+                  >
+                    Match!
+                  </button>
+                )}
+                {(!selectedLeft || !selectedRight) && (
+                  <div className="w-full py-2 md:py-3 px-4 md:px-6 rounded-full font-bold bg-gray-500/30 text-gray-400 cursor-not-allowed text-sm md:text-base">
+                    Match!
+                  </div>
+                )}
+                <div className="mt-3 md:mt-4 text-white/80 text-xs md:text-sm">
+                  <p>Score: {score}</p>
+                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Sleep Effects */}
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <h3 className="text-lg md:text-xl font-bold text-white mb-3 md:mb-4 text-center">Sleep Effects</h3>
+              <div className="space-y-3 md:space-y-4">
+                {rightItems.map(item => {
+                  const isMatched = isRightItemMatched(item.id);
+                  const isCorrectMatch = getRightMatchResult(item.id);
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleRightSelect(item)}
+                      disabled={isMatched}
+                      className={`w-full p-3 md:p-4 rounded-lg md:rounded-xl text-left transition-all ${
+                        isMatched
+                          ? isCorrectMatch
+                            ? "bg-green-500/30 border-2 border-green-500"
+                            : "bg-red-500/30 border-2 border-red-500"
+                          : selectedRight?.id === item.id
+                          ? "bg-purple-500/50 border-2 border-purple-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                      } disabled:cursor-not-allowed`}
+                    >
+                      <div className="flex items-center">
+                        <div className="text-xl md:text-2xl mr-2 md:mr-3">{item.emoji}</div>
+                        <div>
+                          <h4 className="font-bold text-white text-sm md:text-base">{item.name}</h4>
+                          <p className="text-white/80 text-xs md:text-sm">{item.description}</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You correctly matched {score} out of {leftItems.length} sleep factors!
+                  You understand how different factors affect sleep quality!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{score} Coins</span>
+                </div>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You matched {score} out of {leftItems.length} factors correctly.
+                  Remember, good sleep habits lead to better rest and health!
+                </p>
+              </div>
+            )}
           </div>
         )}
-      </GameCard>
+      </div>
     </GameShell>
   );
 };

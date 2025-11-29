@@ -145,6 +145,7 @@ const teenBrainGames = {
   'failuree-story': FailureeStory,
   'debate-stress-good-or-bad': DebateStressGoodOrBad,
   'journal-of-stress-relief': JournalOfStressRelief,
+  'journal-stress-relief': JournalOfStressRelief, // Alias for backward compatibility
   'simulation-stress-day': SimulationStressDay,
   'reflex-healthy-calm': ReflexHealthyCalm,
   'badge-stress-manager': BadgeStressManager,

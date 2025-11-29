@@ -1,177 +1,216 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import { PenSquare } from 'lucide-react';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
+import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const JournalOfSleepHealth = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
   const gameId = "brain-teens-67";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({});
+  const [showResult, setShowResult] = useState(false);
+  const [entry, setEntry] = useState("");
+  const [answered, setAnswered] = useState(false);
 
-  const questions = [
-    {
-      id: 1,
-      text: "One bedtime rule I follow is ___?",
-      choices: [
-        { id: 'a', text: 'No screens before bed', icon: '📱🚫' },
-        { id: 'b', text: 'Late-night scrolling', icon: '📱🌙' }
-      ],
-      correct: 'a',
-      explanation: 'Avoiding screens promotes better sleep!'
+  const stages = [
+    { 
+      id: 1, 
+      prompt: "One bedtime rule I follow is ___.", 
+      minLength: 10,
+      guidance: "Think about a specific rule or habit you have for bedtime, such as turning off screens, setting a consistent time, or creating a relaxing routine."
     },
-    {
-      id: 2,
-      text: "Journal: Sleep habit I value?",
-      choices: [
-        { id: 'a', text: 'Consistent bedtime', icon: '📅🛌' },
-        { id: 'b', text: 'Irregular sleep', icon: '😴🔄' }
-      ],
-      correct: 'a',
-      explanation: 'Regular sleep improves health!'
+    { 
+      id: 2, 
+      prompt: "Describe your ideal sleep environment. What makes it restful?", 
+      minLength: 10,
+      guidance: "Consider factors like darkness, temperature, noise level, comfort, and anything else that helps you sleep well."
     },
-    {
-      id: 3,
-      text: "Sleep environment choice?",
-      choices: [
-        { id: 'a', text: 'Quiet and dark', icon: '🌙🔇' },
-        { id: 'b', text: 'Noisy and bright', icon: '🔊💡' }
-      ],
-      correct: 'a',
-      explanation: 'Calm settings enhance rest!'
+    { 
+      id: 3, 
+      prompt: "What sleep habit would you like to improve? Why?", 
+      minLength: 10,
+      guidance: "Reflect on a sleep habit you'd like to change or improve, such as going to bed earlier, reducing screen time, or creating a better routine."
     },
-    {
-      id: 4,
-      text: "Evening routine for sleep?",
-      choices: [
-        { id: 'a', text: 'Relaxing activity', icon: '😌🛁' },
-        { id: 'b', text: 'High-energy task', icon: '⚡' }
-      ],
-      correct: 'a',
-      explanation: 'Relaxation preps body for sleep!'
+    { 
+      id: 4, 
+      prompt: "How does good sleep affect your daily life?", 
+      minLength: 10,
+      guidance: "Think about the benefits you notice when you get enough quality sleep, such as better mood, focus, energy, or overall well-being."
     },
-    {
-      id: 5,
-      text: "Journal: Sleep goal?",
-      choices: [
-        { id: 'a', text: '7–8 hours nightly', icon: '🛌7️⃣8️⃣' },
-        { id: 'b', text: 'Minimal sleep', icon: '😴🚫' }
-      ],
-      correct: 'a',
-      explanation: 'Adequate sleep boosts performance!'
+    { 
+      id: 5, 
+      prompt: "Write about a time when prioritizing sleep helped you succeed.", 
+      minLength: 10,
+      guidance: "Reflect on a specific instance where getting enough sleep made a positive difference in your performance, mood, or daily activities."
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
+  const handleSubmit = () => {
+    if (answered) return;
     
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
-    
-    if (isCorrect) {
-      setScore(score + 1); // 1 coin for correct answer
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 1000);
+    const currentPrompt = stages[currentStage];
+    if (entry.trim().length < currentPrompt.minLength) {
+      showCorrectAnswerFeedback(0, false);
+      return;
     }
     
+    setAnswered(true);
+    resetFeedback();
+    setScore(prev => prev + 1);
+    showCorrectAnswerFeedback(1, true);
+
+    const isLastStage = currentStage === stages.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
+      if (isLastStage) {
+        setShowResult(true);
+        setScore(stages.length); // Ensure score matches total for GameOverModal
       } else {
-        setLevelCompleted(true);
+        setCurrentStage(prev => prev + 1);
+        setEntry("");
+        setAnswered(false);
       }
     }, 1500);
   };
 
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-      setFeedbackType(null);
-      setShowConfetti(false);
+  const handleInputChange = (e) => {
+    setEntry(e.target.value);
+  };
+
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Journal of Sleep Health game completed! Score: ${score}/${stages.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
     }
-  };
+  }, [showResult, score, gameId, nextGamePath, nextGameId, stages.length]);
 
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/teens');
-  };
-
-  const currentQuestionData = questions[currentQuestion];
+  const characterCount = entry.length;
+  const minLength = stages[currentStage]?.minLength || 10;
 
   return (
     <GameShell
       title="Journal of Sleep Health"
+      subtitle={!showResult ? `Entry ${currentStage + 1} of ${stages.length}` : "Journal Complete!"}
       score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={stages.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={currentQuestion < questions.length - 1}
-      nextLabel="Next"
-      showAnswerConfetti={showConfetti}
-      backPath="/games/brain-health/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
-          {currentQuestionData.choices.map((choice) => (
-            <OptionButton
-              key={choice.id}
-              option={`${choice.icon} ${choice.text}`}
-              onClick={() => handleOptionSelect(choice.id)}
-              selected={selectedOption === choice.id}
-              disabled={!!selectedOption}
-              feedback={showFeedback ? { type: feedbackType } : null}
+      <div className="space-y-8 max-w-2xl mx-auto px-4">
+        {!showResult && stages[currentStage] ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+              <span className="text-white/80 text-sm md:text-base">Entry {currentStage + 1}/{stages.length}</span>
+              <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{stages.length}</span>
+            </div>
+            
+            <div className="flex items-center gap-3 mb-4 md:mb-6">
+              <PenSquare className="w-6 h-6 md:w-8 md:h-8 text-blue-400" />
+              <h3 className="text-lg md:text-xl font-bold text-white">Journal Entry</h3>
+            </div>
+            
+            <p className="text-white text-base md:text-lg mb-4 md:mb-6">
+              {stages[currentStage].prompt}
+            </p>
+            
+            <div className="bg-blue-500/20 border border-blue-400/30 rounded-xl p-3 md:p-4 mb-4 md:mb-6">
+              <p className="text-white/90 text-xs md:text-sm">
+                <span className="font-semibold text-blue-300">💡 Tip:</span> {stages[currentStage].guidance}
+              </p>
+            </div>
+            
+            <textarea
+              value={entry}
+              onChange={handleInputChange}
+              placeholder="Write your journal entry here..."
+              disabled={answered}
+              className="w-full h-32 md:h-40 p-3 md:p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed resize-none text-sm md:text-base"
             />
-          ))}
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackType === "correct" ? "Correct! 🎉" : "Not quite! 🤔"}
-            type={feedbackType}
-          />
-        )}
-        
-        {showFeedback && feedbackType === "wrong" && (
-          <div className="mt-4 text-white/90 text-center">
-            <p>💡 {currentQuestionData.explanation}</p>
+            
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mt-2 mb-4 md:mb-6">
+              <span className={`text-xs md:text-sm ${characterCount < minLength ? 'text-red-400' : 'text-green-400'}`}>
+                {characterCount < minLength 
+                  ? `Minimum ${minLength} characters (${minLength - characterCount} more needed)`
+                  : '✓ Minimum length reached'}
+              </span>
+              <span className="text-white/60 text-xs md:text-sm">{characterCount} characters</span>
+            </div>
+            
+            <button
+              onClick={handleSubmit}
+              disabled={entry.trim().length < minLength || answered}
+              className={`w-full py-3 md:py-4 rounded-xl font-bold transition-all text-sm md:text-base ${
+                entry.trim().length >= minLength && !answered
+                  ? 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white'
+                  : 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
+              }`}
+            >
+              {answered ? 'Submitted!' : 'Submit Entry'}
+            </button>
           </div>
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

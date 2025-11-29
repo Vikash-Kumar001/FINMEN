@@ -548,7 +548,7 @@ export const getBrainTeenGames = (gameCompletionStatus) => {
           xp: 10,
           completed: gameCompletionStatus["brain-teens-37"] || false,
           isSpecial: true,
-          path: "/student/brain/teen/journal-stress-relief",
+          path: "/student/brain/teen/journal-of-stress-relief",
           index: 36,
         },
         {
@@ -934,7 +934,7 @@ export const getBrainTeenGames = (gameCompletionStatus) => {
         {
           id: "brain-teens-64",
           title: "Puzzle of Sleep Health",
-          description: "Match ‘Screen Off → Good Sleep, Noise → Bad Sleep.’",
+          description: "Match 'Screen Off → Good Sleep, Noise → Bad Sleep.'",
           icon: <Puzzle className="w-6 h-6" />,
           difficulty: "Medium",
           duration: "6 min",
@@ -942,7 +942,7 @@ export const getBrainTeenGames = (gameCompletionStatus) => {
           xp: 10,
           completed: gameCompletionStatus["brain-teens-64"] || false,
           isSpecial: true,
-          path: "/student/brain/teen/puzzle-sleep-health",
+          path: "/student/brain/teen/puzzle-of-sleep-health",
           index: 63,
         },
         {
@@ -986,7 +986,7 @@ export const getBrainTeenGames = (gameCompletionStatus) => {
           xp: 10,
           completed: gameCompletionStatus["brain-teens-67"] || false,
           isSpecial: true,
-          path: "/student/brain/teen/journal-sleep-health",
+          path: "/student/brain/teen/journal-of-sleep-health",
           index: 66,
         },
         {
@@ -1059,7 +1059,7 @@ export const getBrainTeenGames = (gameCompletionStatus) => {
           xp: 10,
           completed: gameCompletionStatus["brain-teens-72"] || false,
           isSpecial: true,
-          path: "/student/brain/teen/quiz-digital-balance",
+          path: "/student/brain/teen/quiz-on-digital-balance",
           index: 71,
         },
         {

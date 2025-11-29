@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
+// eslint-disable-next-line no-unused-vars
 import { motion } from "framer-motion";
 import {
     Settings as SettingsIcon,
@@ -71,11 +72,7 @@ const Settings = () => {
     const [copiedCode, setCopiedCode] = useState(false);
 
     // Fetch settings from backend
-    useEffect(() => {
-        fetchSettings();
-    }, [user]);
-
-    const fetchSettings = async () => {
+    const fetchSettings = useCallback(async () => {
         try {
             setSettingsLoading(true);
             const [settingsRes, profileRes] = await Promise.all([
@@ -140,7 +137,12 @@ const Settings = () => {
         } finally {
             setSettingsLoading(false);
         }
-    };
+    }, [user]);
+
+    // Fetch settings from backend
+    useEffect(() => {
+        fetchSettings();
+    }, [fetchSettings]);
 
     useEffect(() => {
         if (form.newPassword) {
@@ -553,7 +555,7 @@ const Settings = () => {
                         </motion.div>
                         <div>
                             <h1 className="text-4xl sm:text-5xl font-black mb-2 flex items-center justify-center gap-2 text-center">
-                                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent leading-tight">
                                     Settings
                                 </span>
                                 <span>⚙️</span>

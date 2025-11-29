@@ -525,7 +525,7 @@ export default function StudentDashboard() {
 
         setSavingProfile(true);
         try {
-            const response = await api.post('/api/user/complete-google-profile', {
+            await api.post('/api/user/complete-google-profile', {
                 dateOfBirth: profileForm.dateOfBirth,
                 gender: profileForm.gender,
                 registrationType: profileForm.registrationType,
@@ -769,14 +769,11 @@ export default function StudentDashboard() {
         };
         
         const handleSettingsUpdate = (data) => {
+            // Settings updates are handled in the Settings component
+            // This handler is kept for socket event cleanup but doesn't need to update state here
             if (data.userId === user?._id) {
-                setQuickSettings(prev => ({
-                    ...prev,
-                    [data.section]: {
-                        ...prev[data.section],
-                        [data.key]: data.value
-                    }
-                }));
+                // Settings are managed in the Settings component
+                console.log('Settings updated via socket:', data);
             }
         };
         
@@ -932,7 +929,7 @@ export default function StudentDashboard() {
                         animate="animate"
                     >
                         <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black mb-3 flex items-center gap-2">
-                            <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-sm">
+                        <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-sm leading-tight">
                                 {loading
                                     ? "Game On, Player!"
                                     : `Game On, ${user?.name || "Player"}!`}

@@ -59,7 +59,7 @@ const ReflexPositiveEmotion = () => {
   const questions = [
     {
       id: 1,
-      text: "Tap for 'Empathy,' avoid 'Bullying.'",
+      text: "Which action shows empathy and positive emotion?",
       options: [
         { id: "empathy", text: "Empathy", emoji: "❤️", description: "Understanding others' feelings", isCorrect: true },
         { id: "bullying", text: "Bullying", emoji: "😠", description: "Hurting others intentionally", isCorrect: false },
@@ -71,8 +71,8 @@ const ReflexPositiveEmotion = () => {
       id: 2,
       text: "Which action spreads positive emotions?",
       options: [
-        { id: "compliment", text: "Compliment", emoji: "👍", description: "Kind words boost mood", isCorrect: true },
         { id: "criticize", text: "Criticize", emoji: "👎", description: "Negative feedback", isCorrect: false },
+        { id: "compliment", text: "Compliment", emoji: "👍", description: "Kind words boost mood", isCorrect: true },
         { id: "gossip", text: "Gossip", emoji: "🗣️", description: "Spreading rumors", isCorrect: false },
         { id: "judge", text: "Judge", emoji: "⚖️", description: "Harsh judgment", isCorrect: false }
       ]
@@ -81,9 +81,9 @@ const ReflexPositiveEmotion = () => {
       id: 3,
       text: "What's the positive way to handle a loss?",
       options: [
-        { id: "grace", text: "Graceful Acceptance", emoji: "😌🏆", description: "Shows maturity", isCorrect: true },
         { id: "blame", text: "Blame Others", emoji: "👉😡", description: "Avoids responsibility", isCorrect: false },
         { id: "excuse", text: "Make Excuses", emoji: "🤷", description: "Denies reality", isCorrect: false },
+        { id: "grace", text: "Graceful Acceptance", emoji: "😌🏆", description: "Shows maturity", isCorrect: true },
         { id: "quit", text: "Give Up", emoji: "🚫", description: "No growth", isCorrect: false }
       ]
     },
@@ -101,8 +101,8 @@ const ReflexPositiveEmotion = () => {
       id: 5,
       text: "What helps you see good in bad situations?",
       options: [
-        { id: "lesson", text: "Find the Lesson", emoji: "💡", description: "Turns challenges into growth", isCorrect: true },
         { id: "dwell", text: "Dwell on Negative", emoji: "😔", description: "Maintains negative state", isCorrect: false },
+        { id: "lesson", text: "Find the Lesson", emoji: "💡", description: "Turns challenges into growth", isCorrect: true },
         { id: "complain", text: "Complain", emoji: "😤", description: "Focuses on problems", isCorrect: false },
         { id: "blame", text: "Blame Circumstances", emoji: "🌪️", description: "Victim mindset", isCorrect: false }
       ]

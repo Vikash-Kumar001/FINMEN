@@ -52,12 +52,11 @@ const SimulationStressfulDay = () => {
   const [feedbackType, setFeedbackType] = useState(null);
   const [score, setScore] = useState(0);
   const [levelCompleted, setLevelCompleted] = useState(false);
-  const [answers, setAnswers] = useState({});
 
   const questions = [
     {
       id: 1,
-      text: "Options: (a) Bottle feelings, (b) Shout, (c) Journal/talk. Correct = Journal/talk.",
+      text: "You're having a stressful day. How should you handle your emotions?",
       options: [
         { id: 'journal', text: 'Journal/talk', description: 'Process emotions healthily', isCorrect: true },
         { id: 'bottle', text: 'Bottle feelings', description: 'Suppresses emotions', isCorrect: false },
@@ -71,8 +70,8 @@ const SimulationStressfulDay = () => {
       id: 2,
       text: "You receive a bad grade. How should you handle your feelings?",
       options: [
-        { id: 'process', text: 'Cry then make a plan', description: 'Emotional release + action', isCorrect: true },
         { id: 'tantrum', text: 'Throw a tantrum', description: 'Destructive behavior', isCorrect: false },
+        { id: 'process', text: 'Cry then make a plan', description: 'Emotional release + action', isCorrect: true },
         { id: 'deny', text: 'Deny the grade', description: 'Avoids reality', isCorrect: false },
         { id: 'blame', text: 'Blame the teacher', description: 'No personal growth', isCorrect: false }
       ],
@@ -83,9 +82,9 @@ const SimulationStressfulDay = () => {
       id: 3,
       text: "You have a fight with a friend. What's the best approach?",
       options: [
-        { id: 'apologize', text: 'Apologize first if needed', description: 'Shows maturity', isCorrect: true },
         { id: 'ghost', text: 'Ghost them', description: 'Damages relationship', isCorrect: false },
         { id: 'wait', text: 'Wait for them to apologize', description: 'Creates stalemate', isCorrect: false },
+        { id: 'apologize', text: 'Apologize first if needed', description: 'Shows maturity', isCorrect: true },
         { id: 'ignore', text: 'Ignore the conflict', description: 'Doesn\'t resolve issue', isCorrect: false }
       ],
       correct: 'apologize',
@@ -107,8 +106,8 @@ const SimulationStressfulDay = () => {
       id: 5,
       text: "At the end of a stressful day, how should you reflect?",
       options: [
-        { id: 'balanced', text: 'Reflect on positives too', description: 'Builds resilience', isCorrect: true },
         { id: 'negative', text: 'Focus on negatives only', description: 'Increases stress', isCorrect: false },
+        { id: 'balanced', text: 'Reflect on positives too', description: 'Builds resilience', isCorrect: true },
         { id: 'ignore', text: 'Ignore the day', description: 'Misses learning', isCorrect: false },
         { id: 'dwell', text: 'Dwell on mistakes', description: 'Maintains negative state', isCorrect: false }
       ],
@@ -125,15 +124,6 @@ const SimulationStressfulDay = () => {
     setFeedbackType(isCorrect ? "correct" : "wrong");
     setShowFeedback(true);
     resetFeedback();
-    
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
     
     if (isCorrect) {
       setScore(prev => prev + 1);

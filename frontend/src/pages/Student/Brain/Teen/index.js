@@ -157,7 +157,9 @@ const teenBrainGames = {
   'puzzle-emotion-match': PuzzleEmotionMatch,
   'anger-story': AngerStory,
   'debate-show-or-hide-emotions': DebateShowOrHideEmotions,
+  'debate-show-hide-emotions': DebateShowOrHideEmotions, // Alias for backward compatibility
   'journal-of-emotional-moment': JournalOfEmotionalMoment,
+  'journal-emotional-moment': JournalOfEmotionalMoment, // Alias for backward compatibility
   'simulation-stressful-day': SimulationStressfulDay,
   'reflex-positive-emotion': ReflexPositiveEmotion,
   'badge-emotion-hero': BadgeEmotionHero,

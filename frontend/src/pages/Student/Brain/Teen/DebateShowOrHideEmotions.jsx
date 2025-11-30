@@ -52,7 +52,6 @@ const DebateShowOrHideEmotions = () => {
   const [feedbackType, setFeedbackType] = useState(null);
   const [score, setScore] = useState(0);
   const [levelCompleted, setLevelCompleted] = useState(false);
-  const [answers, setAnswers] = useState({});
 
   const questions = [
     {
@@ -70,22 +69,22 @@ const DebateShowOrHideEmotions = () => {
       id: 2,
       text: "What happens when you hide emotions long-term?",
       choices: [
-        { id: 'a', text: 'Builds up stress and can lead to outbursts' },
-        { id: 'b', text: 'Makes you stronger' },
+        { id: 'a', text: 'Makes you stronger' },
+        { id: 'b', text: 'Builds up stress and can lead to outbursts' },
         { id: 'c', text: 'Has no negative effects' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Suppressing emotions long-term can lead to increased stress, anxiety, and unexpected emotional outbursts!'
     },
     {
       id: 3,
       text: "Does showing vulnerability strengthen relationships?",
       choices: [
-        { id: 'a', text: 'Yes, it builds trust and deeper bonds' },
-        { id: 'b', text: 'No, it shows weakness' },
-        { id: 'c', text: 'Only with close family' }
+        { id: 'a', text: 'No, it shows weakness' },
+        { id: 'b', text: 'Only with close family' },
+        { id: 'c', text: 'Yes, it builds trust and deeper bonds' }
       ],
-      correct: 'a',
+      correct: 'c',
       explanation: 'Showing vulnerability authentically helps build trust, deepens relationships, and creates genuine connections!'
     },
     {
@@ -103,11 +102,11 @@ const DebateShowOrHideEmotions = () => {
       id: 5,
       text: "When should you control emotional expression?",
       choices: [
-        { id: 'a', text: 'In inappropriate times or settings' },
-        { id: 'b', text: 'All the time' },
+        { id: 'a', text: 'All the time' },
+        { id: 'b', text: 'In inappropriate times or settings' },
         { id: 'c', text: 'Never control emotions' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Timing and context matter - controlling expression in inappropriate settings shows emotional intelligence!'
     }
   ];
@@ -120,15 +119,6 @@ const DebateShowOrHideEmotions = () => {
     setFeedbackType(isCorrect ? "correct" : "wrong");
     setShowFeedback(true);
     resetFeedback();
-    
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
     
     if (isCorrect) {
       setScore(prev => prev + 1);

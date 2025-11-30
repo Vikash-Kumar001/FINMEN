@@ -1101,6 +1101,7 @@ export const getBrainTeenGames = (gameCompletionStatus) => {
           coins: 5,
           xp: 10,
           completed: gameCompletionStatus["brain-teens-75"] || false,
+          isSpecial: true,
           path: "/student/brain/teen/gaming-story",
           index: 74,
         },
@@ -1114,6 +1115,7 @@ export const getBrainTeenGames = (gameCompletionStatus) => {
           coins: 5,
           xp: 10,
           completed: gameCompletionStatus["brain-teens-76"] || false,
+          isSpecial: true,
           path: "/student/brain/teen/debate-tech-good-or-bad",
           index: 75,
         },
@@ -1143,6 +1145,7 @@ export const getBrainTeenGames = (gameCompletionStatus) => {
           xp: 10,
           completed: gameCompletionStatus["brain-teens-78"] || false,
           path: "/student/brain/teen/simulation-daily-routinee",
+          isSpecial: true,
           index: 77,
         },
         {
@@ -1156,6 +1159,7 @@ export const getBrainTeenGames = (gameCompletionStatus) => {
           xp: 10,
           completed: gameCompletionStatus["brain-teens-79"] || false,
           path: "/student/brain/teen/reflex-healthy-use",
+          isSpecial: true,
           index: 78,
         },
         {

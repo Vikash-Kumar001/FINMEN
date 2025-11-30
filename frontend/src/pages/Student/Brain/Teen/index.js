@@ -75,15 +75,15 @@ import ReflexTechControl from "./ReflexTechControl";
 import PuzzleOfBalanceHabits from "./PuzzleOfBalanceHabits";
 import GamingStory from "./GamingStory";
 import DebateTechGoodOrBad from "./DebateTechGoodOrBad";
-import JournalOfBalancee from "./JournalOfBalancee";
-import SimulationDailyRoutinee from "./SimulationDailyRoutinee";
+import JournalOfBalance from "./JournalOfBalance";
 import ReflexHealthyUse from "./ReflexHealthyUse";
 import BadgeDigitalHero from "./BadgeDigitalHero";
+import SimulationDailyRoutinee from "./SimulationDailyRoutinee";
 import ScienceProjectStory from "./ScienceProjectStory";
 import QuizOnInnovation from "./QuizOnInnovation";
 import ReflexSolutionMode from "./ReflexSolutionMode";
 import PuzzleInnovators from "./PuzzleInnovators";
-import StartupIdeaStoryy from "./StartupIdeaStoryy";
+import StartupIdeaStory from "./StartupIdeaStory";
 import DebateCopyVsCreate from "./DebateCopyVsCreate";
 import JournalOfCreativity from "./JournalOfCreativity";
 import SimulationSchoolFair from "./SimulationSchoolFair";
@@ -92,10 +92,10 @@ import BadgeInnovatorHero from "./BadgeInnovatorHero";
 import ExamFailureStory from "./ExamFailureStory";
 import GrowthMindsetQuiz from "./GrowthMindsetQuiz";
 import ReflexGrowthAttitude from "./ReflexGrowthAttitude";
-import PuzzleOfGrowthh from "./PuzzleOfGrowthh";
-import CareerStoryy from "./CareerStoryy";
+import PuzzleOfGrowth from "./PuzzleOfGrowth";
+import CareerStory from "./CareerStory";
 import DebateTalentVsEffort from "./DebateTalentVsEffort";
-import JournalOfGrowthh from "./JournalOfGrowthh";
+import JournalOfGrowth from "./JournalOfGrowth";
 import SimulationLifeChoices from "./SimulationLifeChoices";
 import ReflexNeverQuit from "./ReflexNeverQuit";
 import BadgeGrowthChampion from "./BadgeGrowthChampion";
@@ -195,7 +195,8 @@ const teenBrainGames = {
   'puzzle-of-balance-habits': PuzzleOfBalanceHabits,
   'gaming-story': GamingStory,
   'debate-tech-good-or-bad': DebateTechGoodOrBad,
-  'journal-of-balancee': JournalOfBalancee,
+  'journal-of-balance': JournalOfBalance,
+  'journal-balancee': JournalOfBalance, // Alias for backward compatibility
   'simulation-daily-routinee': SimulationDailyRoutinee,
   'reflex-healthy-use': ReflexHealthyUse,
   'badge-digital-hero': BadgeDigitalHero,
@@ -205,7 +206,8 @@ const teenBrainGames = {
   'quiz-on-innovation': QuizOnInnovation,
   'reflex-solution-mode': ReflexSolutionMode,
   'puzzle-innovators': PuzzleInnovators,
-  'startup-idea-storyy': StartupIdeaStoryy,
+  'startup-idea-story': StartupIdeaStory,
+  'startup-idea-storyy': StartupIdeaStory, // Alias for backward compatibility
   'debate-copy-vs-create': DebateCopyVsCreate,
   'journal-of-creativity': JournalOfCreativity,
   'simulation-school-fair': SimulationSchoolFair,
@@ -216,10 +218,13 @@ const teenBrainGames = {
   'exam-failure-story': ExamFailureStory,
   'growth-mindset-quiz': GrowthMindsetQuiz,
   'reflex-growth-attitude': ReflexGrowthAttitude,
-  'puzzle-of-growthh': PuzzleOfGrowthh,
-  'career-storyy': CareerStoryy,
+  'puzzle-of-growth': PuzzleOfGrowth,
+  'puzzle-of-growthh': PuzzleOfGrowth, // Alias for backward compatibility
+  'career-story': CareerStory,
+  'career-storyy': CareerStory, // Alias for backward compatibility
   'debate-talent-vs-effort': DebateTalentVsEffort,
-  'journal-of-growthh': JournalOfGrowthh,
+  'journal-of-growth': JournalOfGrowth,
+  'journal-of-growthh': JournalOfGrowth, // Alias for backward compatibility
   'simulation-life-choices': SimulationLifeChoices,
   'reflex-never-quit': ReflexNeverQuit,
   'badge-growth-champion': BadgeGrowthChampion,

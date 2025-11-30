@@ -5,11 +5,11 @@ import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
-const PuzzleInnovators = () => {
+const PuzzleOfGrowth = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-teens-84";
+  const gameId = "brain-teens-94";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -52,30 +52,30 @@ const PuzzleInnovators = () => {
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
 
-  // Left items (innovators)
+  // Left items (actions/attitudes)
   const leftItems = [
-    { id: 1, text: "Wright Brothers", emoji: "✈️" },
-    { id: 2, text: "Thomas Edison", emoji: "💡" },
-    { id: 3, text: "Marie Curie", emoji: "🔬" },
-    { id: 4, text: "Steve Jobs", emoji: "📱" },
-    { id: 5, text: "Einstein", emoji: "🧠" }
+    { id: 1, text: "Effort", emoji: "💪" },
+    { id: 2, text: "Giving Up", emoji: "🚫" },
+    { id: 3, text: "Practice", emoji: "📚" },
+    { id: 4, text: "Learning", emoji: "🧠" },
+    { id: 5, text: "Persistence", emoji: "🔥" }
   ];
 
-  // Right items (innovations) - manually ordered for varied correct positions
+  // Right items (outcomes) - manually ordered for varied correct positions
   const rightItems = [
-    { id: 1, text: "Plane", emoji: "✈️" }, // Matches with "Wright Brothers"
-    { id: 2, text: "Bulb", emoji: "💡" }, // Matches with "Thomas Edison"
-    { id: 3, text: "Radium", emoji: "⚛️" }, // Matches with "Marie Curie"
-    { id: 4, text: "iPhone", emoji: "📱" }, // Matches with "Steve Jobs"
-    { id: 5, text: "Relativity", emoji: "🌌" } // Matches with "Einstein"
+    { id: 1, text: "Success", emoji: "✅" }, // Matches with "Effort"
+    { id: 2, text: "Failure", emoji: "❌" }, // Matches with "Giving Up"
+    { id: 3, text: "Improvement", emoji: "📈" }, // Matches with "Practice"
+    { id: 4, text: "Growth", emoji: "🌱" }, // Matches with "Learning"
+    { id: 5, text: "Achievement", emoji: "🏆" } // Matches with "Persistence"
   ];
 
   const correctPairs = {
-    1: 1, // Wright Brothers → Plane
-    2: 2, // Thomas Edison → Bulb
-    3: 3, // Marie Curie → Radium
-    4: 4, // Steve Jobs → iPhone
-    5: 5  // Einstein → Relativity
+    1: 1, // Effort → Success
+    2: 2, // Giving Up → Failure
+    3: 3, // Practice → Improvement
+    4: 4, // Learning → Growth
+    5: 5  // Persistence → Achievement
   };
 
   const handleLeftClick = (leftId) => {
@@ -128,7 +128,7 @@ const PuzzleInnovators = () => {
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
     if (showResult) {
-      console.log(`🎮 Puzzle: Innovators game completed! Score: ${score}/${leftItems.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      console.log(`🎮 Puzzle of Growth game completed! Score: ${score}/${leftItems.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -143,7 +143,7 @@ const PuzzleInnovators = () => {
 
   return (
     <GameShell
-      title="Puzzle: Innovators"
+      title="Puzzle of Growth"
       score={score}
       currentLevel={matchedPairs.length}
       totalLevels={leftItems.length}
@@ -162,11 +162,11 @@ const PuzzleInnovators = () => {
       <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
         <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
           <p className="text-white text-base md:text-lg mb-6 text-center">
-            Match innovators with their innovations!
+            Match actions with their outcomes!
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-center">
-            {/* Left Column - Innovators */}
+            {/* Left Column - Actions */}
             <div className="space-y-3 md:space-y-4">
               {leftItems.map((item) => {
                 const isMatched = matchedPairs.includes(item.id);
@@ -203,7 +203,7 @@ const PuzzleInnovators = () => {
               </div>
             </div>
             
-            {/* Right Column - Innovations */}
+            {/* Right Column - Outcomes */}
             <div className="space-y-3 md:space-y-4">
               {rightItems.map((item) => {
                 const matchedLeftId = Object.keys(correctPairs).find(key => correctPairs[key] === item.id);
@@ -238,4 +238,5 @@ const PuzzleInnovators = () => {
   );
 };
 
-export default PuzzleInnovators;
+export default PuzzleOfGrowth;
+

@@ -1,177 +1,239 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
+import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const PuzzleOfBalanceHabits = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
   const gameId = "brain-teens-74";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({});
-
-  const questions = [
-    {
-      id: 1,
-      text: "Match 'Sleep Early' to?",
-      choices: [
-        { id: 'a', text: 'Healthy', icon: '🛌😊' },
-        { id: 'b', text: 'Tired', icon: '😴😓' }
-      ],
-      correct: 'a',
-      explanation: 'Early sleep promotes health and energy!'
-    },
-    {
-      id: 2,
-      text: "Match 'Midnight Phone' to?",
-      choices: [
-        { id: 'a', text: 'Tired', icon: '📱😴🚫' },
-        { id: 'b', text: 'Healthy', icon: '📱😊' }
-      ],
-      correct: 'a',
-      explanation: 'Late phone use leads to fatigue!'
-    },
-    {
-      id: 3,
-      text: "Match 'Screen Limits' to?",
-      choices: [
-        { id: 'a', text: 'Better focus', icon: '⏰🧠' },
-        { id: 'b', text: 'Distraction', icon: '📱😓' }
-      ],
-      correct: 'a',
-      explanation: 'Screen limits improve concentration!'
-    },
-    {
-      id: 4,
-      text: "Match 'Tech Breaks' to?",
-      choices: [
-        { id: 'a', text: 'Refreshed', icon: '⏸️😌' },
-        { id: 'b', text: 'Stressed', icon: '😓' }
-      ],
-      correct: 'a',
-      explanation: 'Breaks from tech reduce stress!'
-    },
-    {
-      id: 5,
-      text: "Match 'Digital Detox' to?",
-      choices: [
-        { id: 'a', text: 'Balanced life', icon: '📱🚫😊' },
-        { id: 'b', text: 'Overuse', icon: '📱🕒' }
-      ],
-      correct: 'a',
-      explanation: 'Detox fosters healthier habits!'
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [leftSelected, setLeftSelected] = useState(null);
+  const [rightSelected, setRightSelected] = useState(null);
+  const [matchedPairs, setMatchedPairs] = useState([]);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+
+  // Left items (habits/actions)
+  const leftItems = [
+    { id: 1, text: "Sleep Early", emoji: "😴" },
+    { id: 2, text: "Midnight Phone", emoji: "📱🌙" },
+    { id: 3, text: "Regular Breaks", emoji: "⏸️" },
+    { id: 4, text: "Screen All Day", emoji: "📱" },
+    { id: 5, text: "Digital Detox", emoji: "🧘" }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
-    
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
+  // Right items (effects/outcomes) - manually ordered for varied correct positions
+  const rightItems = [
+    { id: 1, text: "Healthy", emoji: "✅" }, // Matches with "Sleep Early"
+    { id: 2, text: "Tired", emoji: "😴" }, // Matches with "Midnight Phone"
+    { id: 3, text: "Refreshed", emoji: "⚡" }, // Matches with "Regular Breaks"
+    { id: 4, text: "Exhausted", emoji: "😵" }, // Matches with "Screen All Day"
+    { id: 5, text: "Balanced", emoji: "⚖️" } // Matches with "Digital Detox"
+  ];
+
+  const correctPairs = {
+    1: 1, // Sleep Early → Healthy
+    2: 2, // Midnight Phone → Tired
+    3: 3, // Regular Breaks → Refreshed
+    4: 4, // Screen All Day → Exhausted
+    5: 5  // Digital Detox → Balanced
+  };
+
+  const handleLeftClick = (leftId) => {
+    if (matchedPairs.includes(leftId) || showResult) return;
+    if (leftSelected === leftId) {
+      setLeftSelected(null);
+    } else {
+      setLeftSelected(leftId);
+      if (rightSelected) {
+        checkMatch(leftId, rightSelected);
       }
-    }));
-    
-    if (isCorrect) {
-      setScore(score + 1); // 1 coin for correct answer
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 1000);
+    }
+  };
+
+  const handleRightClick = (rightId) => {
+    if (matchedPairs.includes(correctPairs[rightId]) || showResult) return;
+    if (rightSelected === rightId) {
+      setRightSelected(null);
+    } else {
+      setRightSelected(rightId);
+      if (leftSelected) {
+        checkMatch(leftSelected, rightId);
+      }
+    }
+  };
+
+  const checkMatch = (leftId, rightId) => {
+    if (correctPairs[leftId] === rightId) {
+      setMatchedPairs(prev => [...prev, leftId]);
+      setScore(prev => prev + 1);
+      resetFeedback();
+      showCorrectAnswerFeedback(1, true);
+      
+      if (score + 1 === leftItems.length) {
+        setTimeout(() => {
+          setShowResult(true);
+        }, 1000);
+      }
+    } else {
+      resetFeedback();
+      showCorrectAnswerFeedback(0, false);
     }
     
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
-      } else {
-        setLevelCompleted(true);
+      setLeftSelected(null);
+      setRightSelected(null);
+    }, 500);
+  };
+
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Puzzle of Balance Habits game completed! Score: ${score}/${leftItems.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
       }
-    }, 1500);
-  };
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-      setFeedbackType(null);
-      setShowConfetti(false);
     }
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/teens');
-  };
-
-  const currentQuestionData = questions[currentQuestion];
+  }, [showResult, score, gameId, nextGamePath, nextGameId, leftItems.length]);
 
   return (
     <GameShell
       title="Puzzle of Balance Habits"
       score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      currentLevel={matchedPairs.length}
+      totalLevels={leftItems.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={currentQuestion < questions.length - 1}
-      nextLabel="Next"
-      showAnswerConfetti={showConfetti}
-      backPath="/games/brain-health/teens"
+      showGameOver={showResult}
+      maxScore={leftItems.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
-          {currentQuestionData.choices.map((choice) => (
-            <OptionButton
-              key={choice.id}
-              option={`${choice.icon} ${choice.text}`}
-              onClick={() => handleOptionSelect(choice.id)}
-              selected={selectedOption === choice.id}
-              disabled={!!selectedOption}
-              feedback={showFeedback ? { type: feedbackType } : null}
-            />
-          ))}
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackType === "correct" ? "Correct! 🎉" : "Not quite! 🤔"}
-            type={feedbackType}
-          />
-        )}
-        
-        {showFeedback && feedbackType === "wrong" && (
-          <div className="mt-4 text-white/90 text-center">
-            <p>💡 {currentQuestionData.explanation}</p>
+      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
+        <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+          <p className="text-white text-base md:text-lg mb-6 text-center">
+            Match balance habits with their effects!
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 items-center">
+            {/* Left Column - Habits */}
+            <div className="space-y-3 md:space-y-4">
+              {leftItems.map((item) => {
+                const isMatched = matchedPairs.includes(item.id);
+                const isSelected = leftSelected === item.id;
+                
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleLeftClick(item.id)}
+                    disabled={isMatched || showResult}
+                    className={`w-full p-3 md:p-4 rounded-xl transition-all transform ${
+                      isMatched
+                        ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 opacity-70"
+                        : isSelected
+                        ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
+                    } disabled:cursor-not-allowed disabled:transform-none`}
+                  >
+                    <div className="text-white font-bold text-sm md:text-base text-center">
+                      <span className="text-xl md:text-2xl mr-2">{item.emoji}</span>
+                      {item.text}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+            
+            {/* Middle - Match Button */}
+            <div className="flex justify-center">
+              <div className="bg-white/20 rounded-xl p-4 md:p-6 border border-white/30">
+                <div className="text-white text-center font-bold text-lg md:text-xl">
+                  Match!
+                </div>
+              </div>
+            </div>
+            
+            {/* Right Column - Effects */}
+            <div className="space-y-3 md:space-y-4">
+              {rightItems.map((item) => {
+                const matchedLeftId = Object.keys(correctPairs).find(key => correctPairs[key] === item.id);
+                const isMatched = matchedLeftId && matchedPairs.includes(Number(matchedLeftId));
+                const isSelected = rightSelected === item.id;
+                
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => handleRightClick(item.id)}
+                    disabled={isMatched || showResult}
+                    className={`w-full p-3 md:p-4 rounded-xl transition-all transform ${
+                      isMatched
+                        ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 opacity-70"
+                        : isSelected
+                        ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
+                    } disabled:cursor-not-allowed disabled:transform-none`}
+                  >
+                    <div className="text-white font-bold text-sm md:text-base text-center">
+                      <span className="text-xl md:text-2xl mr-2">{item.emoji}</span>
+                      {item.text}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
           </div>
-        )}
-      </GameCard>
+        </div>
+      </div>
     </GameShell>
   );
 };

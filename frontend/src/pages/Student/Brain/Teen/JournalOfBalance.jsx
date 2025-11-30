@@ -6,11 +6,11 @@ import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
-const JournalOfCreativity = () => {
+const JournalOfBalance = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-teens-87";
+  const gameId = "brain-teens-77";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -56,33 +56,33 @@ const JournalOfCreativity = () => {
   const stages = [
     { 
       id: 1, 
-      prompt: "One creative idea I had was ___.", 
+      prompt: "One way I control screen time is ___.", 
       minLength: 10,
-      guidance: "Think about a time when you came up with a creative solution, idea, or project that was original and innovative."
+      guidance: "Think about specific strategies you use to limit screen time, such as setting timers, using apps, or scheduling device-free time."
     },
     { 
       id: 2, 
-      prompt: "Describe a problem you solved creatively. How did you approach it?", 
+      prompt: "Describe your ideal balance between screen time and offline activities.", 
       minLength: 10,
-      guidance: "Reflect on a specific problem you faced and how you used creative thinking to find a unique solution."
+      guidance: "Consider how you would ideally divide your time between digital activities and real-world activities like exercise, hobbies, or socializing."
     },
     { 
       id: 3, 
-      prompt: "What inspires your creativity? Where do your best ideas come from?", 
+      prompt: "What screen time habit would you like to improve? Why?", 
       minLength: 10,
-      guidance: "Consider what triggers your creative thinking - is it observation, reading, nature, music, or something else?"
+      guidance: "Reflect on a specific screen time habit you'd like to change, such as reducing late-night phone use or limiting gaming time."
     },
     { 
       id: 4, 
-      prompt: "How does creativity help you in your daily life?", 
+      prompt: "How does balanced screen time affect your daily life?", 
       minLength: 10,
-      guidance: "Think about practical ways creativity benefits you - in problem-solving, projects, hobbies, or relationships."
+      guidance: "Think about the benefits you notice when you maintain a healthy balance between screen time and other activities."
     },
     { 
       id: 5, 
-      prompt: "Write about a creative project you'd like to start. What makes it innovative?", 
+      prompt: "Write about a time when controlling screen time helped you succeed.", 
       minLength: 10,
-      guidance: "Describe a creative project or idea you want to pursue and explain what makes it original or innovative."
+      guidance: "Reflect on a specific instance where limiting or managing screen time had a positive impact on your studies, relationships, or well-being."
     }
   ];
 
@@ -121,7 +121,7 @@ const JournalOfCreativity = () => {
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
     if (showResult) {
-      console.log(`🎮 Journal of Creativity game completed! Score: ${score}/${stages.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      console.log(`🎮 Journal of Balance game completed! Score: ${score}/${stages.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -139,7 +139,7 @@ const JournalOfCreativity = () => {
 
   return (
     <GameShell
-      title="Journal of Creativity"
+      title="Journal of Balance"
       subtitle={!showResult ? `Entry ${currentStage + 1} of ${stages.length}` : "Journal Complete!"}
       score={score}
       currentLevel={currentStage + 1}
@@ -215,4 +215,5 @@ const JournalOfCreativity = () => {
   );
 };
 
-export default JournalOfCreativity;
+export default JournalOfBalance;
+

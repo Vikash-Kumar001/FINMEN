@@ -5,11 +5,11 @@ import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
-const SimulationLifeChoices = () => {
+const CareerStory = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "brain-teens-98";
+  const gameId = "brain-teens-95";
   const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -56,63 +56,58 @@ const SimulationLifeChoices = () => {
   const questions = [
     {
       id: 1,
-      text: "Fail in sports selection. Options: (a) Quit, (b) Practice harder. Correct = Practice harder.",
-      options: [
-        { id: 'practice', text: 'Practice harder', description: 'Shows growth mindset', isCorrect: true },
-        { id: 'quit', text: 'Quit', description: 'Gives up', isCorrect: false },
-        { id: 'blame', text: 'Blame others', description: 'Avoids responsibility', isCorrect: false },
-        { id: 'avoid', text: 'Avoid sports', description: 'No growth', isCorrect: false }
+      text: "Teen struggles in coding. Best path?",
+      choices: [
+        { id: 'a', text: 'Practice until better' },
+        { id: 'b', text: 'Give up coding' },
+        { id: 'c', text: 'Blame the teacher' }
       ],
-      correct: 'practice',
-      explanation: 'Practicing harder shows growth mindset, persistence, and leads to improvement and eventual success!'
+      correct: 'a',
+      explanation: 'Practicing until you get better shows growth mindset, persistence, and leads to improvement and success!'
     },
     {
       id: 2,
-      text: "You fail at something important. What's the best response?",
-      options: [
-        { id: 'quit', text: 'Give up completely', description: 'Fixed mindset', isCorrect: false },
-        { id: 'learn', text: 'Learn from failure and try again', description: 'Growth mindset', isCorrect: true },
-        { id: 'blame', text: 'Blame external factors', description: 'No learning', isCorrect: false },
-        { id: 'avoid', text: 'Avoid trying again', description: 'No growth', isCorrect: false }
+      text: "What should you do when struggling with a skill?",
+      choices: [
+        { id: 'a', text: 'Quit immediately' },
+        { id: 'b', text: 'Keep practicing and learning' },
+        { id: 'c', text: 'Avoid the skill' }
       ],
-      correct: 'learn',
-      explanation: 'Learning from failure and trying again demonstrates resilience, growth mindset, and leads to improvement!'
+      correct: 'b',
+      explanation: 'Continuing to practice and learn when struggling builds skills, resilience, and eventually leads to mastery!'
     },
     {
       id: 3,
-      text: "What should you do when you don't succeed?",
-      options: [
-        { id: 'quit', text: 'Quit immediately', description: 'No persistence', isCorrect: false },
-        { id: 'blame', text: 'Blame others', description: 'Avoids responsibility', isCorrect: false },
-        { id: 'persist', text: 'Keep practicing and improving', description: 'Shows determination', isCorrect: true },
-        { id: 'avoid', text: 'Avoid challenges', description: 'No growth', isCorrect: false }
+      text: "How does practice help improve skills?",
+      choices: [
+        { id: 'a', text: 'Makes you worse' },
+        { id: 'b', text: 'Has no effect' },
+        { id: 'c', text: 'Builds competence and confidence through repetition' }
       ],
-      correct: 'persist',
-      explanation: 'Continuing to practice and improve despite setbacks shows resilience and leads to eventual success!'
+      correct: 'c',
+      explanation: 'Practice builds competence, improves skills, increases confidence, and leads to better performance over time!'
     },
     {
       id: 4,
-      text: "How should you handle setbacks?",
-      options: [
-        { id: 'improve', text: 'Use them as learning opportunities', description: 'Growth mindset', isCorrect: true },
-        { id: 'quit', text: 'Give up', description: 'Fixed mindset', isCorrect: false },
-        { id: 'blame', text: 'Blame everything', description: 'No learning', isCorrect: false },
-        { id: 'avoid', text: 'Avoid future attempts', description: 'No growth', isCorrect: false }
+      text: "What's the best approach to learning difficult skills?",
+      choices: [
+        { id: 'a', text: 'Practice consistently and learn from mistakes' },
+        { id: 'b', text: 'Give up after first failure' },
+        { id: 'c', text: 'Avoid challenging skills' }
       ],
-      correct: 'improve',
-      explanation: 'Using setbacks as learning opportunities helps you grow, improve, and eventually succeed!'
+      correct: 'a',
+      explanation: 'Consistent practice and learning from mistakes is the key to mastering difficult skills and achieving success!'
     },
     {
       id: 5,
-      text: "What's the best approach to failure?",
-      options: [
-        { id: 'quit', text: 'Quit and never try again', description: 'No persistence', isCorrect: false },
-        { id: 'blame', text: 'Blame others only', description: 'No learning', isCorrect: false },
-        { id: 'grow', text: 'Learn, adapt, and keep trying', description: 'Shows growth', isCorrect: true },
-        { id: 'avoid', text: 'Avoid all challenges', description: 'No growth', isCorrect: false }
+      text: "Why is persistence important in skill development?",
+      choices: [
+        { id: 'a', text: 'It wastes time' },
+        { id: 'b', text: 'It leads to improvement and eventual mastery' },
+        { id: 'c', text: 'It has no value' }
       ],
-      correct: 'grow',
-      explanation: 'Learning from failure, adapting your approach, and continuing to try leads to growth and success!'
+      correct: 'b',
+      explanation: 'Persistence in skill development leads to gradual improvement, builds expertise, and eventually results in mastery!'
     }
   ];
 
@@ -148,7 +143,7 @@ const SimulationLifeChoices = () => {
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
     if (levelCompleted) {
-      console.log(`🎮 Simulation: Life Choices game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      console.log(`🎮 Career Story game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -165,7 +160,7 @@ const SimulationLifeChoices = () => {
 
   return (
     <GameShell
-      title="Simulation: Life Choices"
+      title="Career Story"
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -194,18 +189,18 @@ const SimulationLifeChoices = () => {
                 {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {currentQuestionData.options.map((option) => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = showFeedback && isSelected && option.id === questions[currentQuestion].correct;
-                  const showIncorrect = showFeedback && isSelected && option.id !== questions[currentQuestion].correct;
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                {currentQuestionData.choices.map((choice) => {
+                  const isSelected = selectedOption === choice.id;
+                  const showCorrect = showFeedback && isSelected && choice.id === questions[currentQuestion].correct;
+                  const showIncorrect = showFeedback && isSelected && choice.id !== questions[currentQuestion].correct;
                   
                   return (
                     <button
-                      key={option.id}
-                      onClick={() => handleOptionSelect(option.id)}
+                      key={choice.id}
+                      onClick={() => handleOptionSelect(choice.id)}
                       disabled={!!selectedOption}
-                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
+                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform ${
                         showCorrect
                           ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
                           : showIncorrect
@@ -213,10 +208,9 @@ const SimulationLifeChoices = () => {
                           : isSelected
                           ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
                           : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
+                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none text-white font-bold text-sm md:text-base`}
                     >
-                      <div className="text-white font-bold text-sm md:text-base mb-1">{option.text}</div>
-                      <div className="text-white/70 text-xs md:text-sm">{option.description}</div>
+                      {choice.text}
                     </button>
                   );
                 })}
@@ -235,4 +229,5 @@ const SimulationLifeChoices = () => {
   );
 };
 
-export default SimulationLifeChoices;
+export default CareerStory;
+

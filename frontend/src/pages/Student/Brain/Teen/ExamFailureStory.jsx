@@ -1,77 +1,113 @@
-import React, { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import React, { useState, useMemo, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
+import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const ExamFailureStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
   const gameId = "brain-teens-91";
   const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    // Fallback: find next game from game data
+    try {
+      const games = getBrainTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackType, setFeedbackType] = useState(null);
   const [score, setScore] = useState(0);
   const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({});
 
   const questions = [
     {
       id: 1,
       text: "Teen fails exam. Best choice?",
       choices: [
-        { id: 'a', text: 'Learn mistakes, try again', icon: '📚🔄' },
-        { id: 'b', text: 'Give up', icon: '😔🚫' }
+        { id: 'a', text: 'Learn from mistakes, try again' },
+        { id: 'b', text: 'Give up completely' },
+        { id: 'c', text: 'Blame the teacher' }
       ],
       correct: 'a',
-      explanation: 'Learning from mistakes builds resilience!'
+      explanation: 'Learning from mistakes and trying again shows resilience, growth mindset, and leads to improvement!'
     },
     {
       id: 2,
-      text: "Bad test score?",
+      text: "What should you do after failing an exam?",
       choices: [
-        { id: 'a', text: 'Study harder', icon: '📖💪' },
-        { id: 'b', text: 'Blame teacher', icon: '👎' }
+        { id: 'a', text: 'Quit studying' },
+        { id: 'b', text: 'Analyze mistakes and study harder' },
+        { id: 'c', text: 'Ignore the failure' }
       ],
-      correct: 'a',
-      explanation: 'Hard work improves results!'
+      correct: 'b',
+      explanation: 'Analyzing mistakes, understanding what went wrong, and studying harder leads to better results next time!'
     },
     {
       id: 3,
-      text: "Failed math quiz?",
+      text: "How does failure help you grow?",
       choices: [
-        { id: 'a', text: 'Practice more', icon: '➕📝' },
-        { id: 'b', text: 'Quit studying', icon: '🚫' }
+        { id: 'a', text: 'Makes you weaker' },
+        { id: 'b', text: 'Has no benefits' },
+        { id: 'c', text: 'Teaches lessons and shows areas to improve' }
       ],
-      correct: 'a',
-      explanation: 'Practice strengthens skills!'
+      correct: 'c',
+      explanation: 'Failure teaches valuable lessons, highlights areas for improvement, and builds resilience for future challenges!'
     },
     {
       id: 4,
-      text: "Low exam grade?",
+      text: "What's the best response to exam failure?",
       choices: [
-        { id: 'a', text: 'Review errors', icon: '🔍📚' },
-        { id: 'b', text: 'Feel defeated', icon: '😞' }
+        { id: 'a', text: 'Learn from it and prepare better next time' },
+        { id: 'b', text: 'Never try again' },
+        { id: 'c', text: 'Blame external factors only' }
       ],
       correct: 'a',
-      explanation: 'Reviewing errors leads to growth!'
+      explanation: 'Learning from failure, identifying weaknesses, and preparing better for the next attempt leads to success!'
     },
     {
       id: 5,
-      text: "Struggling with tests?",
+      text: "Why is it important to try again after failure?",
       choices: [
-        { id: 'yes', text: 'Yes, improve study', icon: '📖💡' },
-        { id: 'no', text: 'No, give up', icon: '🚫' }
+        { id: 'a', text: 'It wastes time' },
+        { id: 'b', text: 'It builds resilience and leads to improvement' },
+        { id: 'c', text: 'It has no value' }
       ],
-      correct: 'yes',
-      explanation: 'Improving study habits boosts success!'
+      correct: 'b',
+      explanation: 'Trying again after failure builds resilience, demonstrates growth mindset, and eventually leads to success!'
     }
   ];
 
@@ -82,26 +118,21 @@ const ExamFailureStory = () => {
     const isCorrect = optionId === questions[currentQuestion].correct;
     setFeedbackType(isCorrect ? "correct" : "wrong");
     setShowFeedback(true);
-    
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
+    resetFeedback();
     
     if (isCorrect) {
-      setScore(score + 1); // 1 coin for correct answer
-      setShowConfetti(true);
-      setTimeout(() => setShowConfetti(false), 1000);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
+    // Auto-advance to next question after delay
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(currentQuestion + 1);
         setSelectedOption(null);
-        setSho-+-+wFeedback(false);
+        setShowFeedback(false);
         setFeedbackType(null);
       } else {
         setLevelCompleted(true);
@@ -109,19 +140,21 @@ const ExamFailureStory = () => {
     }, 1500);
   };
 
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-      setFeedbackType(null);
-      setShowConfetti(false);
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (levelCompleted) {
+      console.log(`🎮 Exam Failure Story game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
     }
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/teens');
-  };
+  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, questions.length]);
 
   const currentQuestionData = questions[currentQuestion];
 
@@ -137,41 +170,61 @@ const ExamFailureStory = () => {
       gameId={gameId}
       gameType="brain"
       showGameOver={levelCompleted}
-      onNext={handleNext}
-      nextEnabled={currentQuestion < questions.length - 1}
-      nextLabel="Next"
-      showAnswerConfetti={showConfetti}
-      backPath="/games/brain-health/teens"
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <GameCard>
-        <h3 className="text-2xl font-bold text-white mb-6">{currentQuestionData.text}</h3>
-        
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
-          {currentQuestionData.choices.map((choice) => (
-            <OptionButton
-              key={choice.id}
-              option={`${choice.icon} ${choice.text}`}
-              onClick={() => handleOptionSelect(choice.id)}
-              selected={selectedOption === choice.id}
-              disabled={!!selectedOption}
-              feedback={showFeedback ? { type: feedbackType } : null}
-            />
-          ))}
-        </div>
-        
-        {showFeedback && (
-          <FeedbackBubble 
-            message={feedbackType === "correct" ? "Correct! 🎉" : "Not quite! 🤔"}
-            type={feedbackType}
-          />
-        )}
-        
-        {showFeedback && feedbackType === "wrong" && (
-          <div className="mt-4 text-white/90 text-center">
-            <p>💡 {currentQuestionData.explanation}</p>
+      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
+                {currentQuestionData.choices.map((choice) => {
+                  const isSelected = selectedOption === choice.id;
+                  const showCorrect = showFeedback && isSelected && choice.id === questions[currentQuestion].correct;
+                  const showIncorrect = showFeedback && isSelected && choice.id !== questions[currentQuestion].correct;
+                  
+                  return (
+                    <button
+                      key={choice.id}
+                      onClick={() => handleOptionSelect(choice.id)}
+                      disabled={!!selectedOption}
+                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform ${
+                        showCorrect
+                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
+                          : showIncorrect
+                          ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
+                          : isSelected
+                          ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
+                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none text-white font-bold text-sm md:text-base`}
+                    >
+                      {choice.text}
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {showFeedback && feedbackType === "wrong" && (
+                <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
+                  <p>💡 {currentQuestionData.explanation}</p>
+                </div>
+              )}
+            </div>
           </div>
-        )}
-      </GameCard>
+        ) : null}
+      </div>
     </GameShell>
   );
 };

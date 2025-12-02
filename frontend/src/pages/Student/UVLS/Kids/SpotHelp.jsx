@@ -1,233 +1,293 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from '../../../../utils/getGameData';
 
 const SpotHelp = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "uvls-kids-5";
-  const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [selectedKid, setSelectedKid] = useState(null);
-  const [selectedAction, setSelectedAction] = useState(null);
-  const [results, setResults] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const gameData = getGameDataById("uvls-kids-5");
+  const gameId = gameData?.id || "uvls-kids-5";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for SpotHelp, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      description: "Classroom Scene - Look carefully and find who needs help",
-      kids: [
-        { id: 1, name: "Alex", emoji: "😊", status: "Playing happily", needsHelp: false },
-        { id: 2, name: "Bella", emoji: "😢", status: "Can't reach book", needsHelp: true },
-        { id: 3, name: "Carlos", emoji: "😄", status: "Drawing picture", needsHelp: false },
-        { id: 4, name: "Diana", emoji: "🙂", status: "Reading quietly", needsHelp: false }
-      ],
-      helpActions: [
-        { id: "help", text: "Offer to help get the book", isCorrect: true },
-        { id: "ignore", text: "Keep playing", isCorrect: false }
+      text: "Classroom Scene - Look carefully. Bella can't reach her book. What should you do?",
+      options: [
+        { 
+          id: "help", 
+          text: "Offer to help get the book", 
+          emoji: "🤝", 
+          description: "Help Bella reach her book",
+          isCorrect: true 
+        },
+        { 
+          id: "ignore", 
+          text: "Keep playing", 
+          emoji: "🙈", 
+          description: "Ignore the situation",
+          isCorrect: false 
+        },
+        { 
+          id: "watch", 
+          text: "Just watch", 
+          emoji: "👀", 
+          description: "Observe without helping",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 2,
-      description: "Playground Scene - Who needs your help?",
-      kids: [
-        { id: 1, name: "Emma", emoji: "😊", status: "Swinging happily", needsHelp: false },
-        { id: 2, name: "Felix", emoji: "😰", status: "Lost their ball", needsHelp: true },
-        { id: 3, name: "Grace", emoji: "😁", status: "Playing tag", needsHelp: false },
-        { id: 4, name: "Henry", emoji: "🙂", status: "Sitting on bench", needsHelp: false }
-      ],
-      helpActions: [
-        { id: "help", text: "Help find the ball", isCorrect: true },
-        { id: "ignore", text: "Continue playing", isCorrect: false }
+      text: "Playground Scene - Felix lost their ball and looks upset. What should you do?",
+      options: [
+        { 
+          id: "ignore", 
+          text: "Continue playing", 
+          emoji: "⚽", 
+          description: "Keep playing your game",
+          isCorrect: false 
+        },
+        { 
+          id: "help", 
+          text: "Help find the ball", 
+          emoji: "🔍", 
+          description: "Assist in finding the lost ball",
+          isCorrect: true 
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh about it", 
+          emoji: "😂", 
+          description: "Make fun of the situation",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 3,
-      description: "Lunchroom Scene - Spot who could use assistance",
-      kids: [
-        { id: 1, name: "Ivy", emoji: "😃", status: "Eating lunch", needsHelp: false },
-        { id: 2, name: "Jack", emoji: "🥺", status: "Spilled juice", needsHelp: true },
-        { id: 3, name: "Kate", emoji: "😊", status: "Chatting with friends", needsHelp: false },
-        { id: 4, name: "Leo", emoji: "😄", status: "Enjoying snack", needsHelp: false }
-      ],
-      helpActions: [
-        { id: "help", text: "Get napkins to clean up", isCorrect: true },
-        { id: "ignore", text: "Eat my lunch", isCorrect: false }
+      text: "Lunchroom Scene - Jack spilled juice and needs help. What should you do?",
+      options: [
+        { 
+          id: "help", 
+          text: "Get napkins to clean up", 
+          emoji: "🧻", 
+          description: "Help clean the spill",
+          isCorrect: true 
+        },
+        { 
+          id: "eat", 
+          text: "Eat my lunch", 
+          emoji: "🍽️", 
+          description: "Focus on your own meal",
+          isCorrect: false 
+        },
+        { 
+          id: "point", 
+          text: "Point and laugh", 
+          emoji: "😏", 
+          description: "Make fun of the accident",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 4,
-      description: "Library Scene - Who needs assistance?",
-      kids: [
-        { id: 1, name: "Maya", emoji: "😊", status: "Reading a book", needsHelp: false },
-        { id: 2, name: "Noah", emoji: "😕", status: "Can't find a book", needsHelp: true },
-        { id: 3, name: "Olivia", emoji: "😄", status: "Writing notes", needsHelp: false },
-        { id: 4, name: "Peter", emoji: "🙂", status: "Studying quietly", needsHelp: false }
-      ],
-      helpActions: [
-        { id: "help", text: "Help find the book", isCorrect: true },
-        { id: "ignore", text: "Continue reading", isCorrect: false }
+      text: "Library Scene - Noah can't find a book and looks confused. What should you do?",
+      options: [
+        { 
+          id: "read", 
+          text: "Continue reading", 
+          emoji: "📚", 
+          description: "Keep reading your book",
+          isCorrect: false 
+        },
+        { 
+          id: "avoid", 
+          text: "Avoid them", 
+          emoji: "🚶", 
+          description: "Walk away",
+          isCorrect: false 
+        },
+        { 
+          id: "help", 
+          text: "Help find the book", 
+          emoji: "🔍", 
+          description: "Assist in finding the book",
+          isCorrect: true 
+        }
       ]
     },
     {
       id: 5,
-      description: "Art Room Scene - Look for someone who needs help",
-      kids: [
-        { id: 1, name: "Quinn", emoji: "😁", status: "Painting happily", needsHelp: false },
-        { id: 2, name: "Ruby", emoji: "😟", status: "Can't reach supplies", needsHelp: true },
-        { id: 3, name: "Sam", emoji: "😊", status: "Drawing a picture", needsHelp: false },
-        { id: 4, name: "Tina", emoji: "🙂", status: "Coloring quietly", needsHelp: false }
-      ],
-      helpActions: [
-        { id: "help", text: "Offer to get the supplies", isCorrect: true },
-        { id: "ignore", text: "Keep working on my art", isCorrect: false }
+      text: "Art Room Scene - Ruby can't reach supplies and needs help. What should you do?",
+      options: [
+        { 
+          id: "help", 
+          text: "Offer to get the supplies", 
+          emoji: "🎨", 
+          description: "Help get the art supplies",
+          isCorrect: true 
+        },
+        { 
+          id: "work", 
+          text: "Keep working on my art", 
+          emoji: "🖌️", 
+          description: "Focus on your own project",
+          isCorrect: false 
+        },
+        { 
+          id: "ignore", 
+          text: "Pretend not to see", 
+          emoji: "🙈", 
+          description: "Ignore their need",
+          isCorrect: false 
+        }
       ]
     }
   ];
 
-  const handleKidSelect = (kidId) => {
-    setSelectedKid(kidId);
-    setSelectedAction(null);
-  };
-
-  const handleActionSelect = (actionId) => {
-    setSelectedAction(actionId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedKid || !selectedAction) return;
-
-    const scenario = scenarios[currentScenario];
-    const kid = scenario.kids.find(k => k.id === selectedKid);
-    const action = scenario.helpActions.find(a => a.id === selectedAction);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
     
-    const isCorrect = kid.needsHelp && action.isCorrect;
-    
-    const newResults = [...results, {
-      scenarioId: scenario.id,
-      selectedKid: kid.name,
-      selectedAction: action.text,
-      isCorrect
-    }];
-    
-    setResults(newResults);
+    setAnswered(true);
+    resetFeedback();
     
     if (isCorrect) {
-      setCoins(prev => prev + 1); // 1 coin for correct answer
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    setSelectedKid(null);
-    setSelectedAction(null);
-    
-    if (currentScenario < scenarios.length - 1) {
-      setTimeout(() => {
-        setCurrentScenario(prev => prev + 1);
-      }, isCorrect ? 1000 : 0);
     } else {
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
   };
-
-  const scenario = scenarios[currentScenario];
-  const correctChoices = results.filter(r => r.isCorrect).length;
-  // Score should be the number of correct answers for backend
-  const finalScore = showResult ? correctChoices : coins;
 
   return (
     <GameShell
       title="Spot Help"
-      score={finalScore}
-      subtitle={`Scene ${currentScenario + 1} of ${scenarios.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && correctChoices === 5}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      totalLevels={5}
-      maxScore={5}
-      gameId="uvls-kids-5"
-      gameType="uvls"
-      showConfetti={showResult && correctChoices === 5}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId={gameId}
+      gameType="uvls"
     >
       <div className="space-y-8">
-        {!showResult && (
-          <div className="space-y-6">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white/90 text-lg mb-6 text-center font-semibold">
-                {scenario.description}
-              </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
               
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                {scenario.kids.map(kid => (
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
                   <button
-                    key={kid.id}
-                    onClick={() => handleKidSelect(kid.id)}
-                    className={`border-2 rounded-xl p-4 transition-all transform hover:scale-105 ${
-                      selectedKid === kid.id
-                        ? 'bg-purple-500/50 border-purple-400'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-4xl mb-2">{kid.emoji}</div>
-                    <div className="text-white font-bold mb-1">{kid.name}</div>
-                    <div className="text-white/70 text-sm">{kid.status}</div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <span className="text-sm opacity-90">{option.description}</span>
+                    </div>
                   </button>
                 ))}
               </div>
-              
-              {selectedKid && (
-                <>
-                  <p className="text-white mb-3 text-center">What will you do?</p>
-                  <div className="space-y-3 mb-6">
-                    {scenario.helpActions.map(action => (
-                      <button
-                        key={action.id}
-                        onClick={() => handleActionSelect(action.id)}
-                        className={`w-full border-2 rounded-xl p-3 transition-all ${
-                          selectedAction === action.id
-                            ? 'bg-green-500/50 border-green-400'
-                            : 'bg-white/20 border-white/40 hover:bg-white/30'
-                        }`}
-                      >
-                        <div className="text-white font-medium">{action.text}</div>
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedKid || !selectedAction}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedKid && selectedAction
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Confirm Choice
-              </button>
             </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Helpful Hero!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You know how to spot when others need help!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Paying attention to others helps you notice when someone needs help. Offering assistance when you see someone struggling is a kind and helpful thing to do!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: Look for people who need help!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Watch for signs that someone needs help - like looking confused, struggling to reach something, or looking upset. Then offer to help!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -236,4 +296,3 @@ const SpotHelp = () => {
 };
 
 export default SpotHelp;
-

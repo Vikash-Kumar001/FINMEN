@@ -1,147 +1,127 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { PenSquare } from "lucide-react";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const WeeklyPlanJournal = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-97";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [plans, setPlans] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [entry, setEntry] = useState("");
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-97");
+  const gameId = gameData?.id || "uvls-kids-97";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for WeeklyPlanJournal, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
+  const [showResult, setShowResult] = useState(false);
 
-  const questions = [
+  const stages = [
     {
-      id: 1,
-      prompt: "3 points for week: study, play, rest."
+      question: 'Write: "Three things I plan for this week: study, play, and rest. My plan is ___."',
+      minLength: 10,
     },
     {
-      id: 2,
-      prompt: "Plan: homework, fun, sleep."
+      question: 'Write: "My plan includes: homework, fun, and sleep. I will ___."',
+      minLength: 10,
     },
     {
-      id: 3,
-      prompt: "Weekly: chore, friend, hobby."
+      question: 'Write: "This week I will: do chores, spend time with friends, and enjoy hobbies. I plan to ___."',
+      minLength: 10,
     },
     {
-      id: 4,
-      prompt: "Points: exercise, read, family."
+      question: 'Write: "My weekly goals: exercise, read, and family time. I will ___."',
+      minLength: 10,
     },
     {
-      id: 5,
-      prompt: "Plan: goal, task, relax."
-    }
+      question: 'Write: "My plan includes: a goal, tasks, and relaxation. I will ___."',
+      minLength: 10,
+    },
   ];
 
-  const handlePlan = () => {
-    const newPlans = [...plans, entry];
-    setPlans(newPlans);
-
-    const isValid = entry.trim().length > 0;
-    if (isValid) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setEntry(""); // Reset entry for next level
-      }, isValid ? 800 : 0);
-    } else {
-      const validPlans = newPlans.filter(p => p.trim().length > 0).length;
-      setFinalScore(validPlans);
-      setShowResult(true);
-    }
-  };
-
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setPlans([]);
-    setCoins(0);
-    setFinalScore(0);
-    setEntry("");
+  const handleSubmit = () => {
+    if (showResult) return; // Prevent multiple submissions
+    
     resetFeedback();
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
+    }
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Weekly Plan Journal"
-      score={coins}
-  subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Plan your week!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-97"
-      gameType="uvls"
-      totalLevels={100}
-      currentLevel={97}
-      showConfetti={showResult && finalScore >= 3}
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
-    >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">{getCurrentLevel().prompt}</p>
-              <textarea 
-                value={entry}
-                onChange={(e) => setEntry(e.target.value)}
-                placeholder="Write your plan..." 
-                className="w-full p-2 rounded h-20 bg-white/20 text-white placeholder-white/50"
-              ></textarea>
-              <button 
-                onClick={handlePlan}
-                disabled={!entry.trim()}
-                className={`mt-2 px-6 py-2 rounded-full font-semibold transition ${
-                  entry.trim() 
-                    ? "bg-purple-500 text-white hover:opacity-90" 
-                    : "bg-gray-500 text-gray-300 cursor-not-allowed"
-                }`}
-              >
-                Submit
-              </button>
+      score={finalScore}
+      gameId={gameId}
+      gameType="uvls"
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-10 h-10 text-yellow-300" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
+            <textarea
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
+              disabled={showResult}
+            />
+            <div className="mt-2 text-white/50 text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Weekly Planner!" : "💪 Plan More!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You planned {finalScore} weeks!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned 5 Coins! 🪙" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
-            )}
+            <button
+              onClick={handleSubmit}
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
+            >
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
+            </button>
           </div>
         )}
       </div>

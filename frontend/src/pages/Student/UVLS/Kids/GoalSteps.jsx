@@ -14,7 +14,6 @@ const GoalSteps = () => {
   const totalXp = gameData?.xp || 1;
   const [coins, setCoins] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(0);
-  const [steps, setSteps] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
@@ -24,76 +23,83 @@ const GoalSteps = () => {
       id: 1,
       goal: "Read 10 books.",
       monthly: [
-        { id: "a", text: "1 book/month", emoji: "📖", isGood: true },
-        { id: "b", text: "10 at once", emoji: "😵", isGood: false },
-        { id: "c", text: "No reading", emoji: "🚫", isGood: false }
+        { id: "a", text: "1 book/month", emoji: "📖", isCorrect: true },
+        { id: "b", text: "10 at once", emoji: "😵", isCorrect: false },
+        { id: "c", text: "No reading", emoji: "🚫", isCorrect: false }
       ]
     },
     {
       id: 2,
       goal: "Save 20 coins.",
       monthly: [
-        { id: "a", text: "2 coins/month", emoji: "🪙", isGood: true },
-        { id: "b", text: "Spend all", emoji: "💸", isGood: false },
-        { id: "c", text: "20 one day", emoji: "😰", isGood: false }
+        { id: "a", text: "2 coins/month", emoji: "🪙", isCorrect: true },
+        { id: "b", text: "Spend all", emoji: "💸", isCorrect: false },
+        { id: "c", text: "20 one day", emoji: "😰", isCorrect: false }
       ]
     },
     {
       id: 3,
       goal: "Learn bike.",
       monthly: [
-        { id: "a", text: "Practice weekly", emoji: "🚲", isGood: true },
-        { id: "b", text: "Never try", emoji: "😔", isGood: false },
-        { id: "c", text: "One long day", emoji: "🏃", isGood: false }
+        { id: "a", text: "Practice weekly", emoji: "🚲", isCorrect: true },
+        { id: "b", text: "Never try", emoji: "😔", isCorrect: false },
+        { id: "c", text: "One long day", emoji: "🏃", isCorrect: false }
       ]
     },
     {
       id: 4,
       goal: "Plant garden.",
       monthly: [
-        { id: "a", text: "Seed then water", emoji: "🌱", isGood: true },
-        { id: "b", text: "Forget water", emoji: "🥀", isGood: false },
-        { id: "c", text: "All at end", emoji: "😩", isGood: false }
+        { id: "a", text: "Seed then water", emoji: "🌱", isCorrect: true },
+        { id: "b", text: "Forget water", emoji: "🥀", isCorrect: false },
+        { id: "c", text: "All at end", emoji: "😩", isCorrect: false }
       ]
     },
     {
       id: 5,
       goal: "Draw 5 pictures.",
       monthly: [
-        { id: "a", text: "1 per week", emoji: "🎨", isGood: true },
-        { id: "b", text: "5 last day", emoji: "😓", isGood: false },
-        { id: "c", text: "No draw", emoji: "🚫", isGood: false }
+        { id: "a", text: "1 per week", emoji: "🎨", isCorrect: true },
+        { id: "b", text: "5 last day", emoji: "😓", isCorrect: false },
+        { id: "c", text: "No draw", emoji: "🚫", isCorrect: false }
       ]
     }
   ];
 
-  const handleStep = (selected) => {
-    const newSteps = [...steps, selected];
-    setSteps(newSteps);
+  const [answered, setAnswered] = useState(false);
 
-    const isGood = questions[currentLevel].monthly.find(opt => opt.id === selected)?.isGood;
-    if (isGood) {
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+
+    if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
+    const isLastQuestion = currentLevel === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setFinalScore(coins + (isCorrect ? 1 : 0));
+        setShowResult(true);
+      } else {
         setCurrentLevel(prev => prev + 1);
-      }, isGood ? 800 : 0);
-    } else {
-      const goodSteps = newSteps.filter((sel, idx) => questions[idx].monthly.find(opt => opt.id === sel)?.isGood).length;
-      setFinalScore(goodSteps);
-      setShowResult(true);
-    }
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
     setCurrentLevel(0);
-    setSteps([]);
     setCoins(0);
     setFinalScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
@@ -107,59 +113,93 @@ const GoalSteps = () => {
     <GameShell
       title="Goal Steps"
       score={coins}
-  subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
+      subtitle={!showResult ? `Question ${currentLevel + 1} of ${questions.length}` : "Quiz Complete!"}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-95"
-      gameType="uvls"
-      totalLevels={100}
-      currentLevel={95}
+      showGameOver={showResult}
+      maxScore={questions.length}
+      currentLevel={currentLevel + 1}
+      totalLevels={questions.length}
       showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId="uvls-kids-95"
+      gameType="uvls"
     >
       <div className="space-y-8">
         {!showResult ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4 font-semibold">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentLevel + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
                 Break {getCurrentLevel().goal}
-              </p>
-              <div className="space-y-3">
-                {getCurrentLevel().monthly.map(option => (
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentLevel().monthly.map((option) => (
                   <button
                     key={option.id}
-                    onClick={() => handleStep(option.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102 flex items-center gap-3"
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-3xl">{option.emoji}</div>
-                    <div className="text-white font-medium text-left">{option.text}</div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Goal Breaker!" : "💪 Break Better!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You broke goals well {finalScore} times!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned 5 Coins! 🪙" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Goal Breaker!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} correct!
+                  You know how to break goals into steps!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{finalScore} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Breaking big goals into small steps makes them easier to achieve!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Break Better!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} correct.
+                  Remember: Break goals into small, manageable steps!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Instead of doing everything at once, break goals into small steps you can do regularly!
+                </p>
+              </div>
             )}
           </div>
         )}

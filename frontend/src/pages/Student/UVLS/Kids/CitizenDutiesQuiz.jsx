@@ -1,176 +1,287 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const CitizenDutiesQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-kids-82";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      question: "Keep park clean?",
+      text: "Should you keep the park clean?",
       options: [
-        { id: "a", text: "Yes, duty", emoji: "🛝", isCorrect: true },
-        { id: "b", text: "No, others do", emoji: "🤷", isCorrect: false },
-        { id: "c", text: "Litter more", emoji: "🚮", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Yes, it's my duty", 
+          emoji: "🛝", 
+          description: "We all share public spaces",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "No, others will do it", 
+          emoji: "🤷", 
+          description: "Everyone should help",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Litter more", 
+          emoji: "🚮", 
+          description: "This makes things worse",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 2,
-      question: "Help neighbor?",
+      text: "Should you help your neighbor?",
       options: [
-        { id: "a", text: "Yes, good citizen", emoji: "🤝", isCorrect: true },
-        { id: "b", text: "Ignore", emoji: "🙈", isCorrect: false },
-        { id: "c", text: "Make mess", emoji: "😈", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Yes, good citizens help", 
+          emoji: "🤝", 
+          description: "Helping builds community",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Ignore them", 
+          emoji: "🙈", 
+          description: "We should help each other",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Make a mess", 
+          emoji: "😈", 
+          description: "This is not helpful",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 3,
-      question: "Obey rules?",
+      text: "Should you obey rules?",
       options: [
-        { id: "a", text: "Always", emoji: "📜", isCorrect: true },
-        { id: "b", text: "Sometimes", emoji: "🤔", isCorrect: false },
-        { id: "c", text: "Never", emoji: "🚫", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Always", 
+          emoji: "📜", 
+          description: "Rules keep us safe",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Sometimes", 
+          emoji: "🤔", 
+          description: "Rules should always be followed",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Never", 
+          emoji: "🚫", 
+          description: "This causes problems",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 4,
-      question: "Vote when adult?",
+      text: "Should you vote when you're an adult?",
       options: [
-        { id: "a", text: "Important duty", emoji: "🗳️", isCorrect: true },
-        { id: "b", text: "Skip it", emoji: "😴", isCorrect: false },
-        { id: "c", text: "Don't care", emoji: "🤷", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Yes, it's an important duty", 
+          emoji: "🗳️", 
+          description: "Voting is a citizen's right and duty",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Skip it", 
+          emoji: "😴", 
+          description: "Voting matters for everyone",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Don't care", 
+          emoji: "🤷", 
+          description: "Voting affects our future",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 5,
-      question: "Recycle trash?",
+      text: "Should you recycle trash?",
       options: [
-        { id: "a", text: "Yes, help earth", emoji: "♻️", isCorrect: true },
-        { id: "b", text: "Throw anywhere", emoji: "🗑️", isCorrect: false },
-        { id: "c", text: "Burn it", emoji: "🔥", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Yes, help the earth", 
+          emoji: "♻️", 
+          description: "Recycling protects our planet",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Throw anywhere", 
+          emoji: "🗑️", 
+          description: "We should recycle properly",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Burn it", 
+          emoji: "🔥", 
+          description: "This harms the environment",
+          isCorrect: false 
+        }
       ]
     }
   ];
 
-  const handleAnswer = (selectedOption) => {
-    const newAnswers = [...answers, { 
-      questionId: questions[currentQuestion].id, 
-      answer: selectedOption,
-      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
-    }];
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
     
-    setAnswers(newAnswers);
+    setAnswered(true);
+    resetFeedback();
     
-    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect;
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 800 : 0);
     } else {
-      const correctAnswers = newAnswers.filter(ans => ans.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
     setCurrentQuestion(0);
-    setAnswers([]);
-    setCoins(0);
-    setFinalScore(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
-
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Citizen Duties Quiz"
-      score={coins}
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 4}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 4}
-      
-      gameId="uvls-kids-82"
-      gameType="uvls"
-      totalLevels={100}
-      currentLevel={82}
-      showConfetti={showResult && finalScore >= 4}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId={gameId}
+      gameType="uvls"
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {answers.filter(a => a.isCorrect).length}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-lg mb-6 font-semibold">
-                {getCurrentQuestion().question}
-              </p>
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
               
-              <div className="space-y-3">
-                {getCurrentQuestion().options.map(option => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
                   <button
                     key={option.id}
-                    onClick={() => handleAnswer(option.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102 flex items-center gap-3"
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-3xl">{option.emoji}</div>
-                    <div className="text-white font-medium text-left">{option.text}</div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <span className="text-sm opacity-90">{option.description}</span>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 4 ? "🎉 Duty Expert!" : "💪 Learn Duties!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You got {finalScore} out of {questions.length} correct!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 4 ? "You earned 3 Coins! 🪙" : "Try again!"}
-            </p>
-            {finalScore < 4 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Citizen Duties Star!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You understand your duties as a citizen!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Good citizens help keep their community clean, follow rules, help neighbors, and take care of the environment. When you're older, voting is an important duty too!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: We all have duties as citizens!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Good citizens help keep their community clean, follow rules, help others, and take care of the environment!
+                </p>
+              </div>
             )}
           </div>
         )}

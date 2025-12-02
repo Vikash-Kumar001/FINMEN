@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -7,177 +7,261 @@ import { getGameDataById } from "../../../../utils/getGameData";
 const FundraiserStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-kids-85";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [plans, setPlans] = useState([]);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
-  const [selectedActions, setSelectedActions] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      goal: "Raise for books.",
-      actions: [
-        { id: "a", text: "Sell cookies", emoji: "🍪", isFeasible: true },
-        { id: "b", text: "Do nothing", emoji: "😴", isFeasible: false },
-        { id: "c", text: "Make poster", emoji: "🖼️", isFeasible: true }
+      text: "You want to raise money for books. What would you like to do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Sell Cookies", 
+          emoji: "🍪", 
+          description: "Organize a cookie sale",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Do Nothing", 
+          emoji: "😴", 
+          description: "Wait and hope for money",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Make Poster", 
+          emoji: "🖼️", 
+          description: "Create a fundraising poster",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 2,
-      goal: "Fund park toy.",
-      actions: [
-        { id: "a", text: "Lemonade stand", emoji: "🍋", isFeasible: true },
-        { id: "b", text: "Wait magic", emoji: "🪄", isFeasible: false },
-        { id: "c", text: "Car wash", emoji: "🚗", isFeasible: true }
+      text: "You want to fund a park toy. What's the best approach?",
+      options: [
+        { 
+          id: "a", 
+          text: "Lemonade Stand", 
+          emoji: "🍋", 
+          description: "Set up a lemonade stand",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Wait for Magic", 
+          emoji: "🪄", 
+          description: "Hope money appears magically",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Car Wash", 
+          emoji: "🚗", 
+          description: "Organize a car wash event",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 3,
-      goal: "Help animals.",
-      actions: [
-        { id: "a", text: "Bake sale", emoji: "🥧", isFeasible: true },
-        { id: "b", text: "Sleep all day", emoji: "🛌", isFeasible: false },
-        { id: "c", text: "Yard sale", emoji: "🏡", isFeasible: true }
+      text: "You want to help animals. How would you raise funds?",
+      options: [
+        { 
+          id: "a", 
+          text: "Bake Sale", 
+          emoji: "🥧", 
+          description: "Host a bake sale",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Sleep All Day", 
+          emoji: "🛌", 
+          description: "Do nothing to help",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Yard Sale", 
+          emoji: "🏡", 
+          description: "Organize a yard sale",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 4,
-      goal: "School trip fund.",
-      actions: [
-        { id: "a", text: "Craft sell", emoji: "🎨", isFeasible: true },
-        { id: "b", text: "Ignore goal", emoji: "🤷", isFeasible: false },
-        { id: "c", text: "Dance show", emoji: "💃", isFeasible: true }
+      text: "You need to fund a school trip. What would you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Craft Sale", 
+          emoji: "🎨", 
+          description: "Sell handmade crafts",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Ignore Goal", 
+          emoji: "🤷", 
+          description: "Give up on the goal",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Dance Show", 
+          emoji: "💃", 
+          description: "Organize a dance performance",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      goal: "Charity run.",
-      actions: [
-        { id: "a", text: "Sponsor seek", emoji: "🏃", isFeasible: true },
-        { id: "b", text: "Sit home", emoji: "🏠", isFeasible: false },
-        { id: "c", text: "Raffle tickets", emoji: "🎟️", isFeasible: true }
+      text: "You want to organize a charity run. What's your plan?",
+      options: [
+        { 
+          id: "a", 
+          text: "Seek Sponsors", 
+          emoji: "🏃", 
+          description: "Find sponsors for runners",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Stay Home", 
+          emoji: "🏠", 
+          description: "Don't organize anything",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Sell Raffle Tickets", 
+          emoji: "🎟️", 
+          description: "Sell raffle tickets for prizes",
+          isCorrect: true
+        }
       ]
     }
   ];
 
-  const handleActionToggle = (actionId) => {
-    if (selectedActions.includes(actionId)) {
-      setSelectedActions(selectedActions.filter(id => id !== actionId));
-    } else {
-      setSelectedActions([...selectedActions, actionId]);
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
     }
-  };
 
-  const handlePlan = () => {
-    const newPlans = [...plans, selectedActions];
-    setPlans(newPlans);
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
 
-    const isFeasible = selectedActions.every(sa => questions[currentLevel].actions.find(act => act.id === sa)?.isFeasible);
-    if (isFeasible) {
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentLevel < questions.length - 1) {
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setSelectedActions([]); // Reset for next level
-      }, isFeasible ? 800 : 0);
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      const feasiblePlans = newPlans.filter((sa, idx) => sa.every(s => questions[idx].actions.find(act => act.id === s)?.isFeasible)).length;
-      setFinalScore(feasiblePlans);
-      setShowResult(true);
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
-  };
-
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setPlans([]);
-    setCoins(0);
-    setFinalScore(0);
-    setSelectedActions([]);
-    resetFeedback();
   };
 
   const handleNext = () => {
     navigate("/games/uvls/kids");
   };
 
-  const getCurrentLevel = () => questions[currentLevel];
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Fundraiser Story"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-85"
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={100}
-      currentLevel={85}
-      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
-    >
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Plan for {getCurrentLevel().goal}</p>
-              <div className="space-y-3">
-                {getCurrentLevel().actions.map(action => (
-                  <button 
-                    key={action.id} 
-                    onClick={() => handleActionToggle(action.id)}
-                    className={`w-full p-4 rounded text-left ${selectedActions.includes(action.id) ? 'bg-green-500' : 'bg-white/20'}`}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    {action.text} {action.emoji} {selectedActions.includes(action.id) ? '✅' : '⬜'}
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>
-              <button 
-                onClick={handlePlan} 
-                className="mt-4 bg-purple-500 text-white p-2 rounded"
-                disabled={selectedActions.length === 0}
-              >
-                Submit Plan
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Fundraiser Planner!" : "💪 Plan Better!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You planned feasibly {finalScore} times!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned 5 Coins! 🪙" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

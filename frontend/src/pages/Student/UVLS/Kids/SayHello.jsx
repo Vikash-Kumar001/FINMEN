@@ -1,165 +1,287 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const SayHello = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-kids-61";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      scenario: "Meet new friend.",
+      text: "You meet a new friend. What do you say?",
       options: [
-        { id: "a", text: "Hi, nice to meet you!", emoji: "👋", isPolite: true },
-        { id: "b", text: "Hey you!", emoji: "🗣️", isPolite: false },
-        { id: "c", text: "Ignore", emoji: "🙈", isPolite: false }
+        { 
+          id: "a", 
+          text: "Hi, nice to meet you!", 
+          emoji: "👋", 
+          description: "Polite and friendly greeting",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Hey you!", 
+          emoji: "🗣️", 
+          description: "Too casual and impolite",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Ignore", 
+          emoji: "🙈", 
+          description: "Not greeting at all",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 2,
-      scenario: "Greet teacher.",
+      text: "You see your teacher. How do you greet them?",
       options: [
-        { id: "a", text: "Good morning, teacher!", emoji: "🌅", isPolite: true },
-        { id: "b", text: "Yo!", emoji: "✌️", isPolite: false },
-        { id: "c", text: "Walk past", emoji: "🚶", isPolite: false }
+        { 
+          id: "a", 
+          text: "Good morning, teacher!", 
+          emoji: "🌅", 
+          description: "Polite and respectful",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Yo!", 
+          emoji: "✌️", 
+          description: "Too casual for a teacher",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Walk past", 
+          emoji: "🚶", 
+          description: "Not greeting at all",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 3,
-      scenario: "Say hi to neighbor.",
+      text: "You see your neighbor. What do you say?",
       options: [
-        { id: "a", text: "Hello, how are you?", emoji: "🏡", isPolite: true },
-        { id: "b", text: "What?", emoji: "🤨", isPolite: false },
-        { id: "c", text: "Stare", emoji: "👀", isPolite: false }
+        { 
+          id: "a", 
+          text: "Hello, how are you?", 
+          emoji: "🏡", 
+          description: "Polite and friendly",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "What?", 
+          emoji: "🤨", 
+          description: "Rude and impolite",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Stare", 
+          emoji: "👀", 
+          description: "Not greeting at all",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 4,
-      scenario: "Greet family member.",
+      text: "You see a family member. How do you greet them?",
       options: [
-        { id: "a", text: "Hi mom/dad!", emoji: "👨‍👩‍👧", isPolite: true },
-        { id: "b", text: "Ugh", emoji: "😩", isPolite: false },
-        { id: "c", text: "No talk", emoji: "🤐", isPolite: false }
+        { 
+          id: "a", 
+          text: "Hi mom/dad!", 
+          emoji: "👨‍👩‍👧", 
+          description: "Warm and polite",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Ugh", 
+          emoji: "😩", 
+          description: "Rude and disrespectful",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "No talk", 
+          emoji: "🤐", 
+          description: "Not greeting at all",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 5,
-      scenario: "Meet classmate.",
+      text: "You meet a new classmate. What do you say?",
       options: [
-        { id: "a", text: "Hello, what's your name?", emoji: "📚", isPolite: true },
-        { id: "b", text: "Move over!", emoji: "👉", isPolite: false },
-        { id: "c", text: "Silence", emoji: "🫥", isPolite: false }
+        { 
+          id: "a", 
+          text: "Hello, what's your name?", 
+          emoji: "📚", 
+          description: "Polite and friendly",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Move over!", 
+          emoji: "👉", 
+          description: "Rude and impolite",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Silence", 
+          emoji: "🫥", 
+          description: "Not greeting at all",
+          isCorrect: false 
+        }
       ]
     }
   ];
 
-  const handleChoice = (selectedOption) => {
-    const newChoices = [...choices, selectedOption];
-    setChoices(newChoices);
-
-    const isPolite = questions[currentLevel].options.find(opt => opt.id === selectedOption)?.isPolite;
-    if (isPolite) {
-      setCoins(prev => prev + 1);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-      }, isPolite ? 800 : 0);
-    } else {
-      const politeChoices = newChoices.filter((sel, idx) => questions[idx].options.find(opt => opt.id === sel)?.isPolite).length;
-      setFinalScore(politeChoices);
-      setShowResult(true);
-    }
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentLevel(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
-
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
 
   return (
     <GameShell
       title="Say Hello"
-      score={coins}
-  subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-61"
-      gameType="uvls"
-      totalLevels={70}
-      currentLevel={61}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId={gameId}
+      gameType="uvls"
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4 font-semibold">
-                {getCurrentLevel().scenario}
-              </p>
-              <div className="space-y-3">
-                {getCurrentLevel().options.map(option => (
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
                   <button
                     key={option.id}
-                    onClick={() => handleChoice(option.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102 flex items-center gap-3"
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-3xl">{option.emoji}</div>
-                    <div className="text-white font-medium text-left">{option.text}</div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <span className="text-sm opacity-90">{option.description}</span>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Greeting Pro!" : "💪 Greet Better!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You greeted politely {finalScore} times!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned 5 Coins! 🪙" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Greeting Pro!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You know how to greet people politely!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Greeting people politely with "Hello", "Hi", or "Good morning" shows respect and makes others feel welcome. Always greet teachers, family, friends, and new people with a friendly and polite greeting!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: Always greet people politely!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Use polite greetings like "Hello", "Hi", "Good morning", or "Nice to meet you" when you see people. It shows respect and makes others feel good!
+                </p>
+              </div>
             )}
           </div>
         )}

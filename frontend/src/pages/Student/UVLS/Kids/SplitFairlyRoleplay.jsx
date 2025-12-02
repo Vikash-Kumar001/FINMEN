@@ -1,165 +1,287 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const SplitFairlyRoleplay = () => {
-  const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-kids-75";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      resource: "5 stickers.",
+      text: "You have 5 stickers to share with a friend. How should you split them?",
       options: [
-        { id: "a", text: "Split 2 and 3", emoji: "🖼️", isFair: false },
-        { id: "b", text: "Split 2.5 each", emoji: "🤝", isFair: true },
-        { id: "c", text: "One gets all", emoji: "👤", isFair: false }
+        { 
+          id: "a", 
+          text: "Split 2 and 3", 
+          emoji: "🖼️", 
+          description: "Not equal",
+          isCorrect: false 
+        },
+        { 
+          id: "b", 
+          text: "Split 2.5 each (or take turns)", 
+          emoji: "🤝", 
+          description: "Fair and equal",
+          isCorrect: true 
+        },
+        { 
+          id: "c", 
+          text: "One person gets all", 
+          emoji: "👤", 
+          description: "Not fair",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 2,
-      resource: "4 cakes.",
+      text: "You have 4 cakes to share with a friend. How should you split them?",
       options: [
-        { id: "a", text: "2 each", emoji: "🍰", isFair: true },
-        { id: "b", text: "3 and 1", emoji: "😔", isFair: false },
-        { id: "c", text: "Eat all alone", emoji: "😋", isFair: false }
+        { 
+          id: "a", 
+          text: "2 each", 
+          emoji: "🍰", 
+          description: "Fair and equal",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "3 and 1", 
+          emoji: "😔", 
+          description: "Not equal",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Eat all alone", 
+          emoji: "😋", 
+          description: "Not fair",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 3,
-      resource: "6 candies.",
+      text: "You have 6 candies to share with a friend. How should you split them?",
       options: [
-        { id: "a", text: "3 each", emoji: "🍬", isFair: true },
-        { id: "b", text: "4 and 2", emoji: "🤔", isFair: false },
-        { id: "c", text: "Throw half", emoji: "🗑️", isFair: false }
+        { 
+          id: "a", 
+          text: "3 each", 
+          emoji: "🍬", 
+          description: "Fair and equal",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "4 and 2", 
+          emoji: "🤔", 
+          description: "Not equal",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Throw half away", 
+          emoji: "🗑️", 
+          description: "Wasteful",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 4,
-      resource: "2 toys.",
+      text: "You have 2 toys to share with a friend. How should you split them?",
       options: [
-        { id: "a", text: "One each", emoji: "🧸", isFair: true },
-        { id: "b", text: "Both to one", emoji: "👥", isFair: false },
-        { id: "c", text: "Break one", emoji: "💥", isFair: false }
+        { 
+          id: "a", 
+          text: "One each", 
+          emoji: "🧸", 
+          description: "Fair and equal",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Both to one person", 
+          emoji: "👥", 
+          description: "Not fair",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Break one in half", 
+          emoji: "💥", 
+          description: "Destructive",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 5,
-      resource: "10 minutes play.",
+      text: "You have 10 minutes of playtime to share with a friend. How should you split it?",
       options: [
-        { id: "a", text: "5 each", emoji: "⏰", isFair: true },
-        { id: "b", text: "7 and 3", emoji: "😠", isFair: false },
-        { id: "c", text: "No play", emoji: "🚫", isFair: false }
+        { 
+          id: "a", 
+          text: "5 minutes each", 
+          emoji: "⏰", 
+          description: "Fair and equal",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "7 and 3 minutes", 
+          emoji: "😠", 
+          description: "Not equal",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "No playtime for anyone", 
+          emoji: "🚫", 
+          description: "Not helpful",
+          isCorrect: false 
+        }
       ]
     }
   ];
 
-  const handleChoice = (selectedOption) => {
-    const newChoices = [...choices, selectedOption];
-    setChoices(newChoices);
-
-    const isFair = questions[currentLevel].options.find(opt => opt.id === selectedOption)?.isFair;
-    if (isFair) {
-      setCoins(prev => prev + 1);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-      }, isFair ? 800 : 0);
-    } else {
-      const fairChoices = newChoices.filter((sel, idx) => questions[idx].options.find(opt => opt.id === sel)?.isFair).length;
-      setFinalScore(fairChoices);
-      setShowResult(true);
-    }
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentLevel(0);
-    setChoices([]);
-    setCoins(0);
-    setFinalScore(0);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
-
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
 
   return (
     <GameShell
       title="Split Fairly Roleplay"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-75"
-      gameType="uvls"
-      totalLevels={100}
-      currentLevel={75}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId={gameId}
+      gameType="uvls"
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4 font-semibold">
-                Share {getCurrentLevel().resource}
-              </p>
-              <div className="space-y-3">
-                {getCurrentLevel().options.map(option => (
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
                   <button
                     key={option.id}
-                    onClick={() => handleChoice(option.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102 flex items-center gap-3"
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-3xl">{option.emoji}</div>
-                    <div className="text-white font-medium text-left">{option.text}</div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <span className="text-sm opacity-90">{option.description}</span>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Fair Splitter!" : "💪 Split Fairer!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You split fairly {finalScore} times!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned 5 Coins! 🪙" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Fair Splitter!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You know how to split things fairly!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Splitting things fairly means dividing equally so everyone gets the same amount. When you can't split equally (like 5 stickers), take turns or find another fair way. Fair sharing makes everyone happy and shows you care about others!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: Split things equally and fairly!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: When sharing, split things equally so everyone gets the same amount. If you can't split equally, take turns or find another fair way!
+                </p>
+              </div>
             )}
           </div>
         )}

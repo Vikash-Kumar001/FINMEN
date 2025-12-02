@@ -14,86 +14,92 @@ const SupportRoleplay = () => {
   const totalXp = gameData?.xp || 1;
   const [coins, setCoins] = useState(0);
   const [currentLevel, setCurrentLevel] = useState(0);
-  const [responses, setResponses] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
+  const [answered, setAnswered] = useState(false);
+
   const questions = [
     {
       id: 1,
-      scenario: "Friend is told 'You can't do that because you're a girl.'",
+      text: "Friend is told 'You can't do that because you're a girl.'",
       options: [
-        { id: "a", text: "That's not true, you can!", emoji: "💪", isSupportive: true },
-        { id: "b", text: "Maybe they're right.", emoji: "🤷", isSupportive: false },
-        { id: "c", text: "Ignore it.", emoji: "🙈", isSupportive: false }
+        { id: "a", text: "That's not true, you can!", emoji: "💪", isCorrect: true },
+        { id: "b", text: "Maybe they're right.", emoji: "🤷", isCorrect: false },
+        { id: "c", text: "Ignore it.", emoji: "🙈", isCorrect: false }
       ]
     },
     {
       id: 2,
-      scenario: "Classmate discouraged from playing sports.",
+      text: "Classmate discouraged from playing sports.",
       options: [
-        { id: "a", text: "Let's play together!", emoji: "⚽", isSupportive: true },
-        { id: "b", text: "Sports aren't for you.", emoji: "🚫", isSupportive: false },
-        { id: "c", text: "Find something else.", emoji: "🔍", isSupportive: false }
+        { id: "a", text: "Let's play together!", emoji: "⚽", isCorrect: true },
+        { id: "b", text: "Sports aren't for you.", emoji: "🚫", isCorrect: false },
+        { id: "c", text: "Find something else.", emoji: "🔍", isCorrect: false }
       ]
     },
     {
       id: 3,
-      scenario: "Sibling mocked for career choice.",
+      text: "Sibling mocked for career choice.",
       options: [
-        { id: "a", text: "You'll be great at it!", emoji: "🌟", isSupportive: true },
-        { id: "b", text: "Choose differently.", emoji: "🔄", isSupportive: false },
-        { id: "c", text: "Laugh along.", emoji: "😂", isSupportive: false }
+        { id: "a", text: "You'll be great at it!", emoji: "🌟", isCorrect: true },
+        { id: "b", text: "Choose differently.", emoji: "🔄", isCorrect: false },
+        { id: "c", text: "Laugh along.", emoji: "😂", isCorrect: false }
       ]
     },
     {
       id: 4,
-      scenario: "Peer feels bad about stereotype.",
+      text: "Peer feels bad about stereotype.",
       options: [
-        { id: "a", text: "Stereotypes are wrong, be yourself!", emoji: "🦸", isSupportive: true },
-        { id: "b", text: "Get used to it.", emoji: "😔", isSupportive: false },
-        { id: "c", text: "Change to fit in.", emoji: "🕶️", isSupportive: false }
+        { id: "a", text: "Stereotypes are wrong, be yourself!", emoji: "🦸", isCorrect: true },
+        { id: "b", text: "Get used to it.", emoji: "😔", isCorrect: false },
+        { id: "c", text: "Change to fit in.", emoji: "🕶️", isCorrect: false }
       ]
     },
     {
       id: 5,
-      scenario: "Friend discouraged from hobby.",
+      text: "Friend discouraged from hobby.",
       options: [
-        { id: "a", text: "Keep doing what you love!", emoji: "❤️", isSupportive: true },
-        { id: "b", text: "Stop if others say so.", emoji: "🛑", isSupportive: false },
-        { id: "c", text: "Hide it.", emoji: "🙊", isSupportive: false }
+        { id: "a", text: "Keep doing what you love!", emoji: "❤️", isCorrect: true },
+        { id: "b", text: "Stop if others say so.", emoji: "🛑", isCorrect: false },
+        { id: "c", text: "Hide it.", emoji: "🙊", isCorrect: false }
       ]
     }
   ];
 
-  const handleResponse = (selectedOption) => {
-    const newResponses = [...responses, selectedOption];
-    setResponses(newResponses);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
 
-    const isSupportive = questions[currentLevel].options.find(opt => opt.id === selectedOption)?.isSupportive;
-    if (isSupportive) {
+    if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
+    const isLastQuestion = currentLevel === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setFinalScore(coins + (isCorrect ? 1 : 0));
+        setShowResult(true);
+      } else {
         setCurrentLevel(prev => prev + 1);
-      }, isSupportive ? 800 : 0);
-    } else {
-      const supportiveResponses = newResponses.filter((sel, idx) => questions[idx].options.find(opt => opt.id === sel)?.isSupportive).length;
-      setFinalScore(supportiveResponses);
-      setShowResult(true);
-    }
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
     setCurrentLevel(0);
-    setResponses([]);
     setCoins(0);
     setFinalScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
@@ -101,65 +107,97 @@ const SupportRoleplay = () => {
     navigate("/games/uvls/kids");
   };
 
-  const getCurrentLevel = () => questions[currentLevel];
-
   return (
     <GameShell
       title="Support Roleplay"
       score={coins}
-  subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
+      subtitle={!showResult ? `Question ${currentLevel + 1} of ${questions.length}` : "Quiz Complete!"}
       onNext={handleNext}
       nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-28"
-      gameType="uvls"
-      totalLevels={30}
-      currentLevel={28}
+      showGameOver={showResult}
+      maxScore={questions.length}
+      currentLevel={currentLevel + 1}
+      totalLevels={questions.length}
       showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId="uvls-kids-28"
+      gameType="uvls"
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+        {!showResult && questions[currentLevel] ? (
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4 font-semibold">
-                {getCurrentLevel().scenario}
-              </p>
-              <div className="space-y-3">
-                {getCurrentLevel().options.map(option => (
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentLevel + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentLevel].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentLevel].options.map((option) => (
                   <button
                     key={option.id}
-                    onClick={() => handleResponse(option.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102 flex items-center gap-3"
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-3xl">{option.emoji}</div>
-                    <div className="text-white font-medium text-left">{option.text}</div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Support Star!" : "💪 Support Better!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You supported in {finalScore} scenarios!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned 5 Coins! 🪙" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Support Star!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} correct!
+                  You know how to support others!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{finalScore} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Supporting others means encouraging them, standing up for them, and helping them feel valued!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} correct.
+                  Remember: Supporting others means encouraging and standing up for them!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Support others by encouraging them, standing up for them, and helping them feel valued!
+                </p>
+              </div>
             )}
           </div>
         )}

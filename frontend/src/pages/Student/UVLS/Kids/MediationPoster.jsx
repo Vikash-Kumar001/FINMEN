@@ -1,182 +1,135 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Paintbrush } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const MediationPoster = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-76";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [posters, setPosters] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [selectedSteps, setSelectedSteps] = useState([]);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-76");
+  const gameId = gameData?.id || "uvls-kids-76";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for MediationPoster, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const questions = [
+  const stages = [
     {
-      id: 1,
-      steps: ["Listen both", "Find fair", "Agree"]
+      question: 'Choose a poster: "Listen Both, Find Fair Solution."',
+      choices: [
+        { text: "Only Listen to One 👂", correct: false },
+        { text: "Listen Both, Find Fair Solution ⚖️", correct: true },
+        { text: "Don't Listen to Anyone 🚫", correct: false },
+      ],
     },
     {
-      id: 2,
-      steps: ["Calm down", "Share feelings", "Solve together"]
+      question: 'Choose a poster: "Calm Down, Share Feelings, Solve Together."',
+      choices: [
+        { text: "Calm Down, Share Feelings, Solve Together 🤝", correct: true },
+        { text: "Stay Angry and Fight 😠", correct: false },
+        { text: "Ignore the Problem 🙈", correct: false },
+      ],
     },
     {
-      id: 3,
-      steps: ["Stop argue", "Think win-win", "Try plan"]
+      question: 'Choose a poster: "Stop Argue, Think Win-Win."',
+      choices: [
+        { text: "Keep Arguing Forever 🗣️", correct: false },
+        { text: "Stop Argue, Think Win-Win 💭", correct: true },
+        { text: "Only One Person Wins 🏆", correct: false },
+      ],
     },
     {
-      id: 4,
-      steps: ["Hear sides", "Propose compromise", "Check happy"]
+      question: 'Choose a poster: "Hear Both Sides, Propose Compromise."',
+      choices: [
+        { text: "Hear Both Sides, Propose Compromise 🤝", correct: true },
+        { text: "Only One Side Matters 👆", correct: false },
+        { text: "No Compromise Needed 🚫", correct: false },
+      ],
     },
     {
-      id: 5,
-      steps: ["Breathe", "Talk kind", "Hug end"]
-    }
+      question: 'Why do mediation posters help kids?',
+      choices: [
+        { text: "Teach us to solve conflicts peacefully 📚", correct: true },
+        { text: "Encourage fighting 😠", correct: false },
+        { text: "Make us ignore conflicts 🙈", correct: false },
+      ],
+    },
   ];
 
-  const handleStepToggle = (step) => {
-    if (selectedSteps.includes(step)) {
-      setSelectedSteps(selectedSteps.filter(s => s !== step));
-    } else {
-      setSelectedSteps([...selectedSteps, step]);
-    }
-  };
-
-  const handlePoster = () => {
-    const newPosters = [...posters, selectedSteps];
-    setPosters(newPosters);
-
-    const isComplete = selectedSteps.length >= 3;
-    if (isComplete) {
-      setCoins(prev => prev + 1);
+  const handleSelect = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setSelectedSteps([]); // Reset for next level
-      }, isComplete ? 800 : 0);
-    } else {
-      const completePosters = newPosters.filter(sel => sel.length >= 3).length;
-      setFinalScore(completePosters);
-      setShowResult(true);
-    }
+    
+    const isLastQuestion = currentStage === stages.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentStage((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setPosters([]);
-    setCoins(0);
-    setFinalScore(0);
-    setSelectedSteps([]);
-    resetFeedback();
-  };
-
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Mediation Poster"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Choose posters that promote peaceful solutions!` : "Game Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-76"
-      gameType="uvls"
-      totalLevels={100}
-      currentLevel={76}
-      showConfetti={showResult && finalScore >= 3}
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
-    >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Create mediation poster!</p>
-              
-              {/* Display current selections */}
-              <div className="mb-4 min-h-[30px]">
-                {selectedSteps.length > 0 ? (
-                  <p className="text-white">Selected steps: {selectedSteps.join(', ')}</p>
-                ) : (
-                  <p className="text-white/50">Click steps below to add them to your poster</p>
-                )}
-              </div>
-              
-              {/* Steps */}
-              <div className="flex flex-wrap gap-4">
-                {getCurrentLevel().steps.map(step => (
-                  <div 
-                    key={step} 
-                    className={`p-2 rounded cursor-pointer ${selectedSteps.includes(step) ? 'bg-green-600' : 'bg-green-500'}`}
-                    onClick={() => handleStepToggle(step)}
-                  >
-                    {step} {selectedSteps.includes(step) ? '✅' : '⬜'}
-                  </div>
-                ))}
-              </div>
-              
-              {/* Poster Area */}
-              <div className="mt-4 bg-gray-500 h-40 rounded flex items-center justify-center">
-                {selectedSteps.length > 0 ? (
-                  <div className="text-center">
-                    <p className="text-white font-bold">Mediation Poster:</p>
-                    {selectedSteps.map((step, idx) => (
-                      <p key={idx} className="text-white">{idx + 1}. {step}</p>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-white/50">Poster Area - Select steps above</p>
-                )}
-              </div>
-              
-              <button 
-                onClick={handlePoster} 
-                className="mt-4 bg-purple-500 text-white p-2 rounded"
-                disabled={selectedSteps.length === 0}
-              >
-                Complete
-              </button>
+      score={finalScore}
+      gameId={gameId}
+      gameType="uvls"
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <Paintbrush className="mx-auto mb-4 w-8 h-8 text-yellow-400" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {stages[currentStage].choices.map((choice, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSelect(choice.correct)}
+                  className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-green-600 transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={answered}
+                >
+                  <div className="text-lg font-semibold">{choice.text}</div>
+                </button>
+              ))}
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Mediation Artist!" : "💪 Design More!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You completed {finalScore} posters!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned a Badge! 🏅" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
-            )}
           </div>
         )}
       </div>

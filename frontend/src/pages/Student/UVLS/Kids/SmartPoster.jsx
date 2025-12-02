@@ -1,136 +1,135 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Paintbrush } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const SmartPoster = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-96";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [posters, setPosters] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-96");
+  const gameId = gameData?.id || "uvls-kids-96";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for SmartPoster, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const questions = [
+  const stages = [
     {
-      id: 1,
-      fields: ["Specific", "Measurable", "Doable"]
+      question: 'Choose a poster: "Set Specific, Measurable, Doable Goals."',
+      choices: [
+        { text: "Vague, Unclear, Impossible Goals 🚫", correct: false },
+        { text: "Set Specific, Measurable, Doable Goals 🎯", correct: true },
+        { text: "No Goals Needed 🚫", correct: false },
+      ],
     },
     {
-      id: 2,
-      fields: ["Clear goal", "Track progress", "Achievable"]
+      question: 'Choose a poster: "Clear Goal, Track Progress, Achievable."',
+      choices: [
+        { text: "Clear Goal, Track Progress, Achievable 📈", correct: true },
+        { text: "Unclear Goal, No Tracking, Unrealistic 🚫", correct: false },
+        { text: "Never Set Goals 🚫", correct: false },
+      ],
     },
     {
-      id: 3,
-      fields: ["What to do", "How much", "When done"]
+      question: 'Choose a poster: "What to Do, How Much, When Done."',
+      choices: [
+        { text: "What to Do, How Much, When Done ✅", correct: true },
+        { text: "No Plan, No Amount, No Deadline 🚫", correct: false },
+        { text: "Never Plan 🚫", correct: false },
+      ],
     },
     {
-      id: 4,
-      fields: ["Simple aim", "Count it", "Possible"]
+      question: 'Choose a poster: "Simple Aim, Count It, Possible."',
+      choices: [
+        { text: "Simple Aim, Count It, Possible 📊", correct: true },
+        { text: "Complex Aim, Can't Count, Impossible 🚫", correct: false },
+        { text: "No Aims Needed 🚫", correct: false },
+      ],
     },
     {
-      id: 5,
-      fields: ["Exact target", "Measure success", "Realistic"]
-    }
+      question: 'Why do smart goal posters help kids?',
+      choices: [
+        { text: "Teach us to set good goals 📚", correct: true },
+        { text: "Encourage no planning 😠", correct: false },
+        { text: "Make us avoid goals 🙈", correct: false },
+      ],
+    },
   ];
 
-  const handlePoster = () => {
-    const inputs = document.querySelectorAll('.smart-input');
-    const filledFields = Array.from(inputs).map(input => input.value).filter(value => value.trim() !== '');
+  const handleSelect = (isCorrect) => {
+    if (answered) return;
     
-    const newPosters = [...posters, filledFields];
-    setPosters(newPosters);
-
-    const isComplete = filledFields.length >= 3;
-    if (isComplete) {
-      setCoins(prev => prev + 1);
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-      }, isComplete ? 800 : 0);
-    } else {
-      const completePosters = newPosters.filter(sel => sel.length >= 3).length;
-      setFinalScore(completePosters);
-      setShowResult(true);
-    }
+    
+    const isLastQuestion = currentStage === stages.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentStage((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setPosters([]);
-    setCoins(0);
-    setFinalScore(0);
-    resetFeedback();
-  };
-
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
+  const finalScore = score;
 
   return (
     <GameShell
-      title="SMART Poster"
-      score={coins}
-  subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      title="Smart Poster"
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Choose posters that promote smart goal setting!` : "Game Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-96"
-      gameType="uvls"
-      totalLevels={100}
-      currentLevel={96}
-      showConfetti={showResult && finalScore >= 3}
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
-    >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Fill SMART fields!</p>
-              <div className="space-y-3">
-                {getCurrentLevel().fields.map((field, index) => (
-                  <input key={index} placeholder={field} className="w-full p-2 rounded smart-input" />
-                ))}
-              </div>
-              <button onClick={handlePoster} className="mt-4 bg-purple-500 text-white p-2 rounded">Complete</button>
+      score={finalScore}
+      gameId={gameId}
+      gameType="uvls"
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <Paintbrush className="mx-auto mb-4 w-8 h-8 text-yellow-400" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {stages[currentStage].choices.map((choice, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSelect(choice.correct)}
+                  className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-green-600 transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={answered}
+                >
+                  <div className="text-lg font-semibold">{choice.text}</div>
+                </button>
+              ))}
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 SMART Artist!" : "💪 Fill More!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You completed {finalScore} posters!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned a Badge! 🏅" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
-            )}
           </div>
         )}
       </div>

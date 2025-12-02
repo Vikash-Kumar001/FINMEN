@@ -1,23 +1,27 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const EmpathyQuiz = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-2";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-teen-2");
+  const gameId = gameData?.id || "uvls-teen-2";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const scenarios = [
+  const questions = [
     {
       id: 1,
       text: "Your friend tells you they failed a test and feels terrible.",
@@ -80,117 +84,138 @@ const EmpathyQuiz = () => {
     }
   ];
 
-  const handleAnswer = (optionId) => {
-    const scenario = scenarios[currentQuestion];
-    const option = scenario.options.find(opt => opt.id === optionId);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
     
-    const newAnswers = [...answers, {
-      scenarioId: scenario.id,
-      answer: optionId,
-      isCorrect: option.isCorrect
-    }];
+    setAnswered(true);
+    resetFeedback();
     
-    setAnswers(newAnswers);
-    
-    if (option.isCorrect) {
-      setCoins(prev => prev + 1);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    if (currentQuestion < scenarios.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, option.isCorrect ? 1000 : 800);
     } else {
-      const correctCount = newAnswers.filter(a => a.isCorrect).length;
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
     setCurrentQuestion(0);
-    setAnswers([]);
-    setCoins(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/student/uvls/teen/perspective-puzzle");
-  };
-
-  const correctCount = answers.filter(a => a.isCorrect).length;
-  const percentage = Math.round((correctCount / scenarios.length) * 100);
+  const percentage = Math.round((score / questions.length) * 100);
 
   return (
     <GameShell
       title="Empathy Quiz"
-      subtitle={`Question ${currentQuestion + 1} of ${scenarios.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && percentage >= 70}
-      showGameOver={showResult && percentage >= 70}
-      score={coins}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-2"
-      gameType="uvls"
-      totalLevels={20}
-      currentLevel={2}
       showConfetti={showResult && percentage >= 70}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/teens"
+      gameId={gameId}
+      gameType="uvls"
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-6 font-semibold text-center">
-                {scenarios[currentQuestion].text}
-              </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
               
-              <div className="space-y-3 mb-4">
-                {scenarios[currentQuestion].options.map(option => (
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                {questions[currentQuestion].options.map((option) => (
                   <button
                     key={option.id}
-                    onClick={() => handleAnswer(option.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102 text-left"
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-white font-medium">{option.text}</div>
-                    <div className="text-white/60 text-xs mt-1">{option.type}</div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <span className="text-sm opacity-90 italic">{option.type}</span>
+                    </div>
                   </button>
                 ))}
               </div>
               
-              <div className="bg-blue-500/20 rounded-lg p-3 mt-4">
-                <p className="text-white/80 text-sm">
-                  💡 {scenarios[currentQuestion].explanation}
-                </p>
-              </div>
+              {answered && (
+                <div className="bg-blue-500/20 rounded-lg p-3 mt-4">
+                  <p className="text-white/80 text-sm">
+                    💡 {questions[currentQuestion].explanation}
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {percentage >= 70 ? "🎉 Empathy Master!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You got {correctCount} out of {scenarios.length} correct ({percentage}%)
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {percentage >= 70 ? "You earned 3 Coins! 🪙" : "Get 70% or higher to earn coins!"}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Use local culturally relevant examples when teaching empathy vs sympathy.
-            </p>
-            {percentage < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {percentage >= 70 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Empathy Master!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct ({percentage}%)!
+                  You understand empathy vs sympathy!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Empathy means understanding and sharing someone's feelings by putting yourself in their shoes. Sympathy is feeling sorry for someone. Empathy creates deeper connections!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct ({percentage}%).
+                  Get 70% or higher to earn coins!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Empathy means understanding how someone feels by imagining yourself in their situation. It's different from sympathy, which is just feeling sorry for them!
+                </p>
+              </div>
             )}
           </div>
         )}
@@ -200,4 +225,3 @@ const EmpathyQuiz = () => {
 };
 
 export default EmpathyQuiz;
-

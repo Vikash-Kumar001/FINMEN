@@ -1,138 +1,305 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from '../../../../utils/getGameData';
 
 const MatchFaces = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "uvls-kids-4";
-  const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
-  const [currentMatch, setCurrentMatch] = useState(0);
-  const [matches, setMatches] = useState([]);
-  const [selectedEmotion, setSelectedEmotion] = useState(null);
+  const gameData = getGameDataById("uvls-kids-4");
+  const gameId = gameData?.id || "uvls-kids-4";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for MatchFaces, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [answered, setAnswered] = useState(false);
 
-  const faceMatches = [
-    { id: 1, emoji: "😊", correct: "Happy", options: ["Happy", "Sad", "Angry"] },
-    { id: 2, emoji: "😢", correct: "Sad", options: ["Excited", "Sad", "Sleepy"] },
-    { id: 3, emoji: "😡", correct: "Angry", options: ["Happy", "Angry", "Scared"] },
-    { id: 4, emoji: "😨", correct: "Scared", options: ["Scared", "Bored", "Happy"] },
-    { id: 5, emoji: "😴", correct: "Sleepy", options: ["Angry", "Sleepy", "Excited"] }
+  const questions = [
+    {
+      id: 1,
+      text: "How is this person feeling?",
+      emoji: "😊",
+      correct: "Happy",
+      options: [
+        { 
+          id: "happy", 
+          text: "Happy", 
+          emoji: "😊", 
+          description: "Feeling joyful and cheerful",
+          isCorrect: true 
+        },
+        { 
+          id: "sad", 
+          text: "Sad", 
+          emoji: "😢", 
+          description: "Feeling down or upset",
+          isCorrect: false 
+        },
+        { 
+          id: "angry", 
+          text: "Angry", 
+          emoji: "😡", 
+          description: "Feeling mad or frustrated",
+          isCorrect: false 
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "How is this person feeling?",
+      emoji: "😢",
+      correct: "Sad",
+      options: [
+        { 
+          id: "excited", 
+          text: "Excited", 
+          emoji: "🤩", 
+          description: "Feeling thrilled and energetic",
+          isCorrect: false 
+        },
+        { 
+          id: "sad", 
+          text: "Sad", 
+          emoji: "😢", 
+          description: "Feeling down or upset",
+          isCorrect: true 
+        },
+        { 
+          id: "sleepy", 
+          text: "Sleepy", 
+          emoji: "😴", 
+          description: "Feeling tired and drowsy",
+          isCorrect: false 
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "How is this person feeling?",
+      emoji: "😡",
+      correct: "Angry",
+      options: [
+        { 
+          id: "angry", 
+          text: "Angry", 
+          emoji: "😡", 
+          description: "Feeling mad or frustrated",
+          isCorrect: true 
+        },
+        { 
+          id: "happy", 
+          text: "Happy", 
+          emoji: "😊", 
+          description: "Feeling joyful and cheerful",
+          isCorrect: false 
+        },
+        { 
+          id: "scared", 
+          text: "Scared", 
+          emoji: "😨", 
+          description: "Feeling afraid or worried",
+          isCorrect: false 
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "How is this person feeling?",
+      emoji: "😨",
+      correct: "Scared",
+      options: [
+        { 
+          id: "bored", 
+          text: "Bored", 
+          emoji: "😑", 
+          description: "Feeling uninterested",
+          isCorrect: false 
+        },
+        { 
+          id: "happy", 
+          text: "Happy", 
+          emoji: "😊", 
+          description: "Feeling joyful and cheerful",
+          isCorrect: false 
+        },
+        { 
+          id: "scared", 
+          text: "Scared", 
+          emoji: "😨", 
+          description: "Feeling afraid or worried",
+          isCorrect: true 
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "How is this person feeling?",
+      emoji: "😴",
+      correct: "Sleepy",
+      options: [
+        { 
+          id: "sleepy", 
+          text: "Sleepy", 
+          emoji: "😴", 
+          description: "Feeling tired and drowsy",
+          isCorrect: true 
+        },
+        { 
+          id: "angry", 
+          text: "Angry", 
+          emoji: "😡", 
+          description: "Feeling mad or frustrated",
+          isCorrect: false 
+        },
+        { 
+          id: "excited", 
+          text: "Excited", 
+          emoji: "🤩", 
+          description: "Feeling thrilled and energetic",
+          isCorrect: false 
+        }
+      ]
+    }
   ];
 
-  const handleEmotionSelect = (emotion) => {
-    setSelectedEmotion(emotion);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedEmotion) return;
-
-    const isCorrect = faceMatches[currentMatch].correct === selectedEmotion;
-    const newMatches = [...matches, {
-      faceId: faceMatches[currentMatch].id,
-      selected: selectedEmotion,
-      isCorrect
-    }];
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
     
-    setMatches(newMatches);
+    setAnswered(true);
+    resetFeedback();
     
     if (isCorrect) {
-      setCoins(prev => prev + 1); // 1 coin for correct answer
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    setSelectedEmotion(null);
-    
-    if (currentMatch < faceMatches.length - 1) {
-      setTimeout(() => {
-        setCurrentMatch(prev => prev + 1);
-      }, isCorrect ? 800 : 0);
     } else {
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
   };
-
-  const currentFace = faceMatches[currentMatch];
-  const correctMatches = matches.filter(m => m.isCorrect).length;
-  // Score should be the number of correct answers for backend
-  const finalScore = showResult ? correctMatches : coins;
 
   return (
     <GameShell
       title="Match Faces"
-      score={finalScore}
-      subtitle={`Face ${currentMatch + 1} of ${faceMatches.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && correctMatches === 5}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      totalLevels={5}
-      maxScore={5}
-      gameId="uvls-kids-4"
-      gameType="uvls"
-      showConfetti={showResult && correctMatches === 5}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId={gameId}
+      gameType="uvls"
     >
       <div className="space-y-8">
-        {!showResult && (
-          <div className="space-y-6">
-            <div className="max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Face {currentMatch + 1}/{faceMatches.length}</span>
-                <span className="text-yellow-400 font-bold">Matches: {correctMatches}/{currentMatch}</span>
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              <div className="text-9xl mb-6 text-center animate-pulse">{currentFace.emoji}</div>
+              <div className="text-9xl mb-6 text-center animate-pulse">{questions[currentQuestion].emoji}</div>
               
-              <p className="text-white text-lg mb-6 text-center font-semibold">
-                How is this person feeling?
-              </p>
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
               
-              <div className="grid grid-cols-3 gap-3 mb-6">
-                {currentFace.options.map((emotion) => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
                   <button
-                    key={emotion}
-                    onClick={() => handleEmotionSelect(emotion)}
-                    className={`border-2 rounded-xl p-4 transition-all transform hover:scale-105 ${
-                      selectedEmotion === emotion
-                        ? 'bg-blue-500/50 border-blue-400'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-white font-bold">{emotion}</div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <span className="text-sm opacity-90">{option.description}</span>
+                    </div>
                   </button>
                 ))}
               </div>
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedEmotion}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedEmotion
-                    ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Confirm Choice
-              </button>
             </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Emotion Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You can recognize emotions in faces!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Recognizing emotions in people's faces helps you understand how they feel. This helps you be more empathetic and know when someone needs help or support!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: Look at faces to understand feelings!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Pay attention to people's faces! A smile means happy, a frown means sad, and wide eyes might mean scared or surprised!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -141,4 +308,3 @@ const MatchFaces = () => {
 };
 
 export default MatchFaces;
-

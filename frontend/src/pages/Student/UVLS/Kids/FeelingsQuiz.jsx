@@ -1,200 +1,294 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from '../../../../utils/getGameData';
 
 const FeelingsQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "uvls-kids-2";
-  const gameData = getGameDataById(gameId);
-  const coinsPerLevel = gameData?.coins || 5;
-  const totalCoins = gameData?.coins || 5;
-  const totalXp = gameData?.xp || 10;
-  const [coins, setCoins] = useState(0);
+  const gameData = getGameDataById("uvls-kids-2");
+  const gameId = gameData?.id || "uvls-kids-2";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for FeelingsQuiz, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [score, setScore] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const vignettes = [
+  const questions = [
     {
       id: 1,
-      text: "Sarah sees her friend crying on the playground.",
-      question: "What is the caring action?",
+      text: "Sarah sees her friend crying on the playground. What is the caring action?",
       options: [
-        { id: "a", text: "Ask what's wrong and listen", emoji: "🤗", isCorrect: true },
-        { id: "b", text: "Laugh at them", emoji: "😂", isCorrect: false },
-        { id: "c", text: "Walk away", emoji: "🚶", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Ask what's wrong and listen", 
+          emoji: "🤗", 
+          description: "Show empathy and care",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Laugh at them", 
+          emoji: "😂", 
+          description: "Make fun of them",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Walk away", 
+          emoji: "🚶", 
+          description: "Ignore the situation",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 2,
-      text: "Tom's classmate dropped their books in the hallway.",
-      question: "What should Tom do?",
+      text: "Tom's classmate dropped their books in the hallway. What should Tom do?",
       options: [
-        { id: "a", text: "Help pick them up", emoji: "🤝", isCorrect: true },
-        { id: "b", text: "Step over them", emoji: "👣", isCorrect: false },
-        { id: "c", text: "Ignore and walk past", emoji: "🙈", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Step over them", 
+          emoji: "👣", 
+          description: "Walk around the books",
+          isCorrect: false 
+        },
+        { 
+          id: "b", 
+          text: "Help pick them up", 
+          emoji: "🤝", 
+          description: "Offer assistance",
+          isCorrect: true 
+        },
+        { 
+          id: "c", 
+          text: "Ignore and walk past", 
+          emoji: "🙈", 
+          description: "Pretend not to see",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 3,
-      text: "Maya's friend is sitting alone at lunch looking sad.",
-      question: "What is the kind thing to do?",
+      text: "Maya's friend is sitting alone at lunch looking sad. What is the kind thing to do?",
       options: [
-        { id: "a", text: "Invite them to sit together", emoji: "🍱", isCorrect: true },
-        { id: "b", text: "Sit far away", emoji: "🏃", isCorrect: false },
-        { id: "c", text: "Pretend not to see", emoji: "🙄", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Invite them to sit together", 
+          emoji: "🍱", 
+          description: "Include them in your group",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Sit far away", 
+          emoji: "🏃", 
+          description: "Avoid them",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Pretend not to see", 
+          emoji: "🙄", 
+          description: "Ignore their sadness",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 4,
-      text: "A new student looks confused about where to go.",
-      question: "What's the helpful action?",
+      text: "A new student looks confused about where to go. What's the helpful action?",
       options: [
-        { id: "a", text: "Offer to show them the way", emoji: "🗺️", isCorrect: true },
-        { id: "b", text: "Watch them struggle", emoji: "👀", isCorrect: false },
-        { id: "c", text: "Laugh at their confusion", emoji: "😏", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Watch them struggle", 
+          emoji: "👀", 
+          description: "Just observe",
+          isCorrect: false 
+        },
+        { 
+          id: "b", 
+          text: "Laugh at their confusion", 
+          emoji: "😏", 
+          description: "Make fun of them",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Offer to show them the way", 
+          emoji: "🗺️", 
+          description: "Help them find their way",
+          isCorrect: true 
+        }
       ]
     },
     {
       id: 5,
-      text: "Your friend forgot their lunch money.",
-      question: "What's the caring response?",
+      text: "Your friend forgot their lunch money. What's the caring response?",
       options: [
-        { id: "a", text: "Share your lunch with them", emoji: "🥪", isCorrect: true },
-        { id: "b", text: "Eat alone", emoji: "🍔", isCorrect: false },
-        { id: "c", text: "Ignore their problem", emoji: "🤷", isCorrect: false }
-      ]
-    },
-    {
-      id: 6,
-      text: "Someone is being teased by others.",
-      question: "What should you do?",
-      options: [
-        { id: "a", text: "Stand up for them or get help", emoji: "🦸", isCorrect: true },
-        { id: "b", text: "Join in the teasing", emoji: "😈", isCorrect: false },
-        { id: "c", text: "Do nothing", emoji: "🫥", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Share your lunch with them", 
+          emoji: "🥪", 
+          description: "Help them out",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Eat alone", 
+          emoji: "🍔", 
+          description: "Keep your food to yourself",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Ignore their problem", 
+          emoji: "🤷", 
+          description: "Not your concern",
+          isCorrect: false 
+        }
       ]
     }
   ];
 
-  const handleAnswer = (selectedOption) => {
-    const newAnswers = [...answers, { 
-      questionId: vignettes[currentQuestion].id, 
-      answer: selectedOption,
-      isCorrect: vignettes[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
-    }];
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
     
-    setAnswers(newAnswers);
+    setAnswered(true);
+    resetFeedback();
     
-    const isCorrect = vignettes[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect;
     if (isCorrect) {
-      setCoins(prev => prev + 1); // 1 coin for correct answer
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    if (currentQuestion < vignettes.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 800 : 0);
     } else {
-      const correctAnswers = newAnswers.filter(ans => ans.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
     setCurrentQuestion(0);
-    setAnswers([]);
-    setCoins(0);
-    setFinalScore(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentVignette = () => vignettes[currentQuestion];
+  const currentQuestionData = questions[currentQuestion];
 
   return (
     <GameShell
       title="Feelings Quiz"
-      score={coins}
-      subtitle={`Question ${currentQuestion + 1} of ${vignettes.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 4}
+      score={score}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 4}
-      
-      gameId="uvls-kids-2"
+      showGameOver={showResult}
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={10}
-      currentLevel={2}
-      showConfetti={showResult && finalScore >= 4}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{vignettes.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {answers.filter(a => a.isCorrect).length}/{vignettes.length}</span>
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-lg mb-2 font-semibold">
-                {getCurrentVignette().text}
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
               </p>
               
-              <p className="text-white/90 text-base mb-6">
-                {getCurrentVignette().question}
-              </p>
-              
-              <div className="space-y-3">
-                {getCurrentVignette().options.map(option => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
                   <button
                     key={option.id}
-                    onClick={() => handleAnswer(option.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102 flex items-center gap-3"
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-3xl">{option.emoji}</div>
-                    <div className="text-white font-medium text-left">{option.text}</div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <span className="text-sm opacity-90">{option.description}</span>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 4 ? "🎉 Great Job!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You got {finalScore} out of {vignettes.length} correct!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 4 ? "You earned 3 Coins! 🪙" : "Try again to earn coins!"}
-            </p>
-            {finalScore < 4 && (
-              <button
-                onClick={handleTryAgain}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Feelings Quiz Star!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You understand empathy and caring!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Showing empathy means understanding and caring about others' feelings. Always be kind and helpful!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: Empathy means understanding how others feel!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: When someone is sad or needs help, show you care by listening and offering to help!
+                </p>
+              </div>
             )}
           </div>
         )}

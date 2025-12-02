@@ -175,20 +175,40 @@ const ChallengeStereotypes = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Challenger!" : "💪 Challenge More!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You challenged correctly in {finalScore} levels!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned 3 Coins! 🪙" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Challenger!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You challenged correctly in {finalScore} out of {questions.length} levels!
+                  You know how to challenge stereotypes!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{finalScore} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Challenging stereotypes helps create a fair and equal world for everyone!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Challenge More!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You challenged correctly in {finalScore} out of {questions.length} levels.
+                  Keep learning to challenge stereotypes!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Challenge stereotypes by recognizing that anyone can do anything, regardless of gender, age, or background!
+                </p>
+              </div>
             )}
           </div>
         )}

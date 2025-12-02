@@ -1,143 +1,127 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { PenSquare } from "lucide-react";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const ResolutionJournal = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-77";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [journals, setJournals] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [journalEntry, setJournalEntry] = useState('');
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-77");
+  const gameId = gameData?.id || "uvls-kids-77";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for ResolutionJournal, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
+  const [showResult, setShowResult] = useState(false);
 
-  const questions = [
+  const stages = [
     {
-      id: 1,
-      prompt: "How solved fight with friend?"
+      question: 'Write: "I solved a fight with a friend by ___."',
+      minLength: 10,
     },
     {
-      id: 2,
-      prompt: "Resolved sibling argue?"
+      question: 'Write: "I resolved a sibling argument by ___."',
+      minLength: 10,
     },
     {
-      id: 3,
-      prompt: "Fixed team problem?"
+      question: 'Write: "I fixed a team problem by ___."',
+      minLength: 10,
     },
     {
-      id: 4,
-      prompt: "Solved play dispute?"
+      question: 'Write: "I solved a play dispute by ___."',
+      minLength: 10,
     },
     {
-      id: 5,
-      prompt: "Handled class conflict?"
-    }
+      question: 'Write: "I handled a class conflict by ___."',
+      minLength: 10,
+    },
   ];
 
-  const handleJournal = () => {
-    const newJournals = [...journals, journalEntry];
-    setJournals(newJournals);
-
-    const isValid = journalEntry.trim().length > 0;
-    if (isValid) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setJournalEntry(''); // Reset for next level
-      }, isValid ? 800 : 0);
-    } else {
-      const validJournals = newJournals.filter(j => j.trim().length > 0).length;
-      setFinalScore(validJournals);
-      setShowResult(true);
-    }
-  };
-
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setJournals([]);
-    setCoins(0);
-    setFinalScore(0);
-    setJournalEntry('');
+  const handleSubmit = () => {
+    if (showResult) return; // Prevent multiple submissions
+    
     resetFeedback();
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      
+      const isLastQuestion = currentStage === stages.length - 1;
+      
+      setTimeout(() => {
+        if (isLastQuestion) {
+          setShowResult(true);
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
+      }, 1500);
+    }
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Resolution Journal"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on conflict resolution!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-77"
-      gameType="uvls"
-      totalLevels={100}
-      currentLevel={77}
-      showConfetti={showResult && finalScore >= 3}
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
-    >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">{getCurrentLevel().prompt}</p>
-              <textarea 
-                placeholder="Write your story..." 
-                className="w-full p-2 rounded h-20"
-                value={journalEntry}
-                onChange={(e) => setJournalEntry(e.target.value)}
-              ></textarea>
-              <button 
-                onClick={handleJournal} 
-                className="mt-2 bg-purple-500 text-white p-2 rounded"
-                disabled={journalEntry.trim().length === 0}
-              >
-                Submit
-              </button>
+      score={finalScore}
+      gameId={gameId}
+      gameType="uvls"
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-10 h-10 text-yellow-300" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
+            <textarea
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
+              disabled={showResult}
+            />
+            <div className="mt-2 text-white/50 text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Resolution Writer!" : "💪 Write More!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You journaled {finalScore} resolutions!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned 5 Coins! 🪙" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
-            )}
+            <button
+              onClick={handleSubmit}
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
+            >
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
+            </button>
           </div>
         )}
       </div>

@@ -1,183 +1,292 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const InviteToPlay = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-15";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentScene, setCurrentScene] = useState(0);
-  const [invitations, setInvitations] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-15");
+  const gameId = gameData?.id || "uvls-kids-15";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for InviteToPlay, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const scenes = [
+  const questions = [
     {
       id: 1,
-      description: "You see a shy child sitting alone during recess",
-      emoji: "😔",
-      phrases: [
-        { id: "invite", text: "Hi! Want to come play with us?", isInviting: true },
-        { id: "ignore", text: "Walk past without saying anything", isInviting: false },
-        { id: "point", text: "Just point at them without speaking", isInviting: false }
+      text: "You see a shy child sitting alone during recess. What do you do?",
+      options: [
+        { 
+          id: "invite", 
+          text: "Hi! Want to come play with us?", 
+          emoji: "😊", 
+          description: "Invite them warmly to join",
+          isCorrect: true 
+        },
+        { 
+          id: "ignore", 
+          text: "Walk past without saying anything", 
+          emoji: "😐", 
+          description: "Ignore the situation",
+          isCorrect: false 
+        },
+        { 
+          id: "point", 
+          text: "Just point at them without speaking", 
+          emoji: "👆", 
+          description: "Point without inviting",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 2,
-      description: "A new student is watching your game from far away",
-      emoji: "👀",
-      phrases: [
-        { id: "wave", text: "Hey! Come join our team!", isInviting: true },
-        { id: "continue", text: "Keep playing and ignore them", isInviting: false },
-        { id: "stare", text: "Stare back at them", isInviting: false }
+      text: "A new student is watching your game from far away. What do you do?",
+      options: [
+        { 
+          id: "ignore", 
+          text: "Keep playing and ignore them", 
+          emoji: "🙈", 
+          description: "Continue without including them",
+          isCorrect: false 
+        },
+        { 
+          id: "wave", 
+          text: "Hey! Come join our team!", 
+          emoji: "👋", 
+          description: "Invite them to join your team",
+          isCorrect: true 
+        },
+        { 
+          id: "stare", 
+          text: "Stare back at them", 
+          emoji: "👀", 
+          description: "Make them uncomfortable",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 3,
-      description: "Someone is sitting alone at the art table",
-      emoji: "🎨",
-      phrases: [
-        { id: "invite", text: "We have extra crayons! Want to draw with us?", isInviting: true },
-        { id: "ask", text: "Why are you alone?", isInviting: false },
-        { id: "leave", text: "Move to another table", isInviting: false }
+      text: "Someone is sitting alone at the art table. What do you do?",
+      options: [
+        { 
+          id: "invite", 
+          text: "We have extra crayons! Want to draw with us?", 
+          emoji: "🎨", 
+          description: "Invite them to join your art activity",
+          isCorrect: true 
+        },
+        { 
+          id: "ask", 
+          text: "Why are you alone?", 
+          emoji: "🤔", 
+          description: "Ask a personal question",
+          isCorrect: false 
+        },
+        { 
+          id: "leave", 
+          text: "Move to another table", 
+          emoji: "🚶", 
+          description: "Avoid them",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 4,
-      description: "A classmate is standing near the swings looking sad",
-      emoji: "🛝",
-      phrases: [
-        { id: "offer", text: "Would you like to swing together?", isInviting: true },
-        { id: "take", text: "Take the swing without asking", isInviting: false },
-        { id: "walk", text: "Walk away to play elsewhere", isInviting: false }
+      text: "A classmate is standing near the swings looking sad. What do you do?",
+      options: [
+        { 
+          id: "take", 
+          text: "Take the swing without asking", 
+          emoji: "😠", 
+          description: "Be selfish",
+          isCorrect: false 
+        },
+        { 
+          id: "walk", 
+          text: "Walk away to play elsewhere", 
+          emoji: "🚶", 
+          description: "Ignore their sadness",
+          isCorrect: false 
+        },
+        { 
+          id: "offer", 
+          text: "Would you like to swing together?", 
+          emoji: "🛝", 
+          description: "Invite them to swing with you",
+          isCorrect: true 
+        }
       ]
     },
     {
       id: 5,
-      description: "Someone dropped their lunch and is sitting alone",
-      emoji: "🍱",
-      phrases: [
-        { id: "share", text: "I can share my lunch with you. Come sit!", isInviting: true },
-        { id: "laugh", text: "Laugh at them for dropping it", isInviting: false },
-        { id: "ignore", text: "Eat your own lunch silently", isInviting: false }
+      text: "Someone dropped their lunch and is sitting alone. What do you do?",
+      options: [
+        { 
+          id: "share", 
+          text: "I can share my lunch with you. Come sit!", 
+          emoji: "🍱", 
+          description: "Offer to share and invite them",
+          isCorrect: true 
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh at them for dropping it", 
+          emoji: "😂", 
+          description: "Make fun of them",
+          isCorrect: false 
+        },
+        { 
+          id: "ignore", 
+          text: "Eat your own lunch silently", 
+          emoji: "🍽️", 
+          description: "Ignore their situation",
+          isCorrect: false 
+        }
       ]
     }
   ];
 
-  const handlePhraseChoice = (phraseId) => {
-    const scene = scenes[currentScene];
-    const phrase = scene.phrases.find(p => p.id === phraseId);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
     
-    const newInvitations = [...invitations, {
-      sceneId: scene.id,
-      phraseId,
-      isInviting: phrase.isInviting
-    }];
+    setAnswered(true);
+    resetFeedback();
     
-    setInvitations(newInvitations);
-    
-    if (phrase.isInviting) {
-      setCoins(prev => prev + 1);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    if (currentScene < scenes.length - 1) {
-      setTimeout(() => {
-        setCurrentScene(prev => prev + 1);
-      }, phrase.isInviting ? 1000 : 0);
     } else {
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentScene(0);
-    setInvitations([]);
-    setCoins(0);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
-
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const invitingCount = invitations.filter(inv => inv.isInviting).length;
 
   return (
     <GameShell
       title="Invite to Play"
-      score={coins}
-      subtitle={`Scene ${currentScene + 1} of ${scenes.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && invitingCount >= 3}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && invitingCount >= 3}
-      
-      gameId="uvls-kids-15"
-      gameType="uvls"
-      totalLevels={20}
-      currentLevel={15}
-      showConfetti={showResult && invitingCount >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId={gameId}
+      gameType="uvls"
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-7xl mb-4 text-center">{scenes[currentScene].emoji}</div>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
               
-              <p className="text-white text-lg mb-6 text-center font-semibold">
-                {scenes[currentScene].description}
-              </p>
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
               
-              <p className="text-white/90 mb-4 text-center">What do you do?</p>
-              
-              <div className="space-y-3">
-                {scenes[currentScene].phrases.map(phrase => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
                   <button
-                    key={phrase.id}
-                    onClick={() => handlePhraseChoice(phrase.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102"
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-white font-medium">{phrase.text}</div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <span className="text-sm opacity-90">{option.description}</span>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {invitingCount >= 3 ? "🎉 You're So Welcoming!" : "💪 Practice Inviting!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You invited {invitingCount} out of {scenes.length} times!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              Total Coins: {coins} 🪙
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Tip: Make inviting a daily classroom task!
-            </p>
-            {invitingCount < 3 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Invitation Star!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You know how to invite and include others!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Inviting others to play, join activities, and share experiences makes everyone feel welcome and included. Always look for ways to include others, especially those who are alone!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: Inviting others makes them feel welcome!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: When you see someone alone or looking sad, invite them to join you! A simple "Want to play?" can make someone's day!
+                </p>
+              </div>
             )}
           </div>
         )}
@@ -187,4 +296,3 @@ const InviteToPlay = () => {
 };
 
 export default InviteToPlay;
-

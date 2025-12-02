@@ -1,240 +1,255 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const InclusiveKidBadge = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-20";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [completedActions, setCompletedActions] = useState([]);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-20");
+  const gameId = gameData?.id || "uvls-kids-20";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for InclusiveKidBadge, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [scenario, setScenario] = useState(0);
+  const [decisions, setDecisions] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [earnedBadge, setEarnedBadge] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const inclusionActions = [
+  const scenarios = [
     {
       id: 1,
-      title: "Invite Someone New",
-      description: "Invite a new or shy student to join your activity",
-      emoji: "🤝",
-      category: "Invitation"
+      title: "New Student",
+      description: "A new student joins your class and looks nervous. What do you do?",
+      choices: [
+        { 
+          id: "welcome", 
+          text: "Welcome and befriend them", 
+          emoji: "👋", 
+          description: "Introduce yourself and show them around",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore the new student", 
+          emoji: "🙈", 
+          description: "Continue with your friends",
+          isCorrect: false
+        },
+        { 
+          id: "tease", 
+          text: "Tease them", 
+          emoji: "😏", 
+          description: "Make jokes about them being new",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "Include Everyone",
-      description: "Make sure no one is left out of a game or activity",
-      emoji: "⚽",
-      category: "Inclusion"
+      title: "Someone is Excluded",
+      description: "You see someone being left out of a game. What do you do?",
+      choices: [
+        { 
+          id: "include", 
+          text: "Invite them to join", 
+          emoji: "🤝", 
+          description: "Ask them to play with your group",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Do nothing", 
+          emoji: "🙈", 
+          description: "Continue playing without them",
+          isCorrect: false
+        },
+        { 
+          id: "laugh", 
+          text: "Laugh along", 
+          emoji: "😂", 
+          description: "Join others in excluding them",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Welcome Newcomer",
-      description: "Greet and welcome a new student to the class",
-      emoji: "👋",
-      category: "Welcoming"
+      title: "Different Abilities",
+      description: "A student with different abilities wants to join your activity. What do you do?",
+      choices: [
+        { 
+          id: "include", 
+          text: "Include and adapt", 
+          emoji: "🤝", 
+          description: "Welcome them and adjust the activity",
+          isCorrect: true
+        },
+        { 
+          id: "exclude", 
+          text: "Say they can't join", 
+          emoji: "🚫", 
+          description: "Tell them the activity isn't for them",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore them", 
+          emoji: "🙈", 
+          description: "Pretend you don't see them",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      title: "Share Materials",
-      description: "Share your supplies with someone who needs them",
-      emoji: "✏️",
-      category: "Sharing"
+      title: "Sharing Materials",
+      description: "Someone needs supplies for a project but doesn't have any. What do you do?",
+      choices: [
+        { 
+          id: "share", 
+          text: "Share your materials", 
+          emoji: "✏️", 
+          description: "Offer to share what you have",
+          isCorrect: true
+        },
+        { 
+          id: "refuse", 
+          text: "Refuse to share", 
+          emoji: "🚫", 
+          description: "Keep everything for yourself",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore their need", 
+          emoji: "🙈", 
+          description: "Continue working on your own",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Defend Someone",
-      description: "Stand up for someone being excluded or teased",
-      emoji: "🛡️",
-      category: "Protection"
-    },
-    {
-      id: 6,
-      title: "Sit Together",
-      description: "Sit with someone who is sitting alone",
-      emoji: "🪑",
-      category: "Companionship"
-    },
-    {
-      id: 7,
-      title: "Listen to Ideas",
-      description: "Listen and value everyone's ideas in group work",
-      emoji: "💡",
-      category: "Respect"
-    },
-    {
-      id: 8,
-      title: "Be a Buddy",
-      description: "Be a buddy to help someone feel less alone",
-      emoji: "👫",
-      category: "Friendship"
-    },
-    {
-      id: 9,
-      title: "Celebrate Differences",
-      description: "Appreciate and celebrate what makes each person unique",
-      emoji: "🌈",
-      category: "Diversity"
-    },
-    {
-      id: 10,
-      title: "Make Room",
-      description: "Make space for someone to join your table or group",
-      emoji: "🎯",
-      category: "Inclusion"
+      title: "Group Work",
+      description: "During group work, everyone should contribute. What do you do?",
+      choices: [
+        { 
+          id: "include", 
+          text: "Include everyone's ideas", 
+          emoji: "💡", 
+          description: "Listen to and value all contributions",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore some members", 
+          emoji: "🙈", 
+          description: "Only listen to your friends",
+          isCorrect: false
+        },
+        { 
+          id: "dominate", 
+          text: "Dominate the group", 
+          emoji: "😤", 
+          description: "Make all decisions yourself",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleActionToggle = (actionId) => {
-    if (completedActions.includes(actionId)) {
-      setCompletedActions(completedActions.filter(id => id !== actionId));
+  const handleDecision = (selectedChoice) => {
+    const newDecisions = [...decisions, { 
+      scenarioId: scenarios[scenario].id, 
+      choice: selectedChoice,
+      isCorrect: scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setDecisions(newDecisions);
+    
+    // If the choice is correct, show flash/confetti and update score
+    const isCorrect = scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setFinalScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    // Move to next scenario or show results
+    if (scenario < scenarios.length - 1) {
+      setTimeout(() => {
+        setScenario(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      const newCompletedActions = [...completedActions, actionId];
-      setCompletedActions(newCompletedActions);
-      
-      if (newCompletedActions.length === 5) {
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, false);
-        setEarnedBadge(true);
-        setTimeout(() => {
-          setShowResult(true);
-        }, 1000);
-      }
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleNext = () => {
-    // This is the last level of the second set - navigate back to games menu
-    navigate("/games/uvls/kids");
-  };
-
-  const progressPercentage = (completedActions.length / 5) * 100;
+  const getCurrentScenario = () => scenarios[scenario];
 
   return (
     <GameShell
-      title="Inclusive Kid Badge"
-      subtitle={`Complete 5 Inclusion Acts (${completedActions.length}/5)`}
-      onNext={handleNext}
-      nextEnabled={showResult}
+      title="Badge: Inclusive Kid"
+      subtitle={showResult ? "Quiz Complete!" : `Scenario ${scenario + 1} of ${scenarios.length}`}
       showGameOver={showResult}
-      score={coins}
-      gameId="uvls-kids-20"
+      score={finalScore}
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
+      totalLevels={scenarios.length}
+      maxScore={scenarios.length}
       coinsPerLevel={coinsPerLevel}
-      currentLevel={20}
-      showConfetti={showResult}
-      backPath="/games/uvls/kids"
-    
-      maxScore={20} // Max score is total number of questions (all correct)
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      currentLevel={scenario + 1}
+      showConfetti={showResult && finalScore === 5}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && getCurrentScenario() ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-white font-semibold">Progress to Badge</span>
-                  <span className="text-yellow-400 font-bold">{completedActions.length}/5</span>
-                </div>
-                <div className="bg-white/20 rounded-full h-4 overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-green-500 to-blue-500 h-full transition-all duration-500 rounded-full"
-                    style={{ width: `${progressPercentage}%` }}
-                  />
-                </div>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Scenario {scenario + 1}/{scenarios.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{scenarios.length}</span>
               </div>
-
-              <p className="text-white/80 text-sm mb-6 text-center">
-                Complete 5 inclusion actions this week. Ask your teacher to verify each one!
+              
+              <h3 className="text-xl font-bold text-white mb-2">{getCurrentScenario().title}</h3>
+              <p className="text-white text-lg mb-6">
+                {getCurrentScenario().description}
               </p>
-
-              <div className="space-y-3">
-                {inclusionActions.map(action => (
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentScenario().choices.map(choice => (
                   <button
-                    key={action.id}
-                    onClick={() => handleActionToggle(action.id)}
-                    disabled={completedActions.length >= 5 && !completedActions.includes(action.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      completedActions.includes(action.id)
-                        ? 'bg-green-500/40 border-green-400 ring-2 ring-green-300'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    } ${completedActions.length >= 5 && !completedActions.includes(action.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    key={choice.id}
+                    onClick={() => handleDecision(choice.id)}
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="text-4xl">{action.emoji}</div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="text-white font-bold">{action.title}</h4>
-                          {completedActions.includes(action.id) && (
-                            <span className="text-green-400 text-xl">✓</span>
-                          )}
-                        </div>
-                        <p className="text-white/80 text-sm mb-1">{action.description}</p>
-                        <span className="inline-block bg-white/20 px-2 py-1 rounded text-white/70 text-xs">
-                          {action.category}
-                        </span>
-                      </div>
-                    </div>
+                    <div className="text-2xl mb-2">{choice.emoji}</div>
+                    <h4 className="font-bold text-xl mb-2">{choice.text}</h4>
+                    <p className="text-white/90">{choice.description}</p>
                   </button>
                 ))}
               </div>
-
-              <div className="mt-6 p-4 bg-blue-500/20 border-2 border-blue-400/50 rounded-xl">
-                <p className="text-white/90 text-sm">
-                  <strong>Teacher Tip:</strong> Celebrate completed actions in class circle. 
-                  Verify each action to ensure fairness and encourage genuine inclusion!
-                </p>
-              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-9xl mb-6 animate-bounce">🏆</div>
-            <h2 className="text-4xl font-bold text-white mb-4">🎉 Congratulations!</h2>
-            <p className="text-white/90 text-xl mb-6">
-              You've earned the Inclusive Kid Badge!
-            </p>
-            
-            <div className="bg-gradient-to-br from-green-400 via-blue-400 to-purple-400 rounded-2xl p-6 mb-6 transform hover:scale-105 transition-all">
-              <div className="text-6xl mb-3">🌟</div>
-              <h3 className="text-white text-2xl font-bold mb-2">Inclusive Kid</h3>
-              <p className="text-white/90 text-sm">Badge of Belonging & Unity</p>
-            </div>
-
-            <div className="bg-white/10 rounded-xl p-4 mb-6">
-              <p className="text-white font-semibold mb-3">Your Completed Actions:</p>
-              <div className="space-y-2">
-                {inclusionActions
-                  .filter(action => completedActions.includes(action.id))
-                  .map(action => (
-                    <div key={action.id} className="flex items-center gap-2 text-white/80 text-sm">
-                      <span>{action.emoji}</span>
-                      <span>{action.title}</span>
-                      <span className="text-green-400">✓</span>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            <p className="text-yellow-400 text-xl font-bold mb-4">
-              You earned 3 Coins! Achievement Unlocked! 🏆
-            </p>
-            <p className="text-white/70 text-sm">
-              Keep including everyone and making our classroom a welcoming place!
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default InclusiveKidBadge;
-

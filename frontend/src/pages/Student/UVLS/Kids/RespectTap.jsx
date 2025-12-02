@@ -1,171 +1,298 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
-const RespectTap = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const gameId = "uvls-kids-13";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [gameStarted, setGameStarted] = useState(false);
-  const [currentRound, setCurrentRound] = useState(0);
-  const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
-  const actions = [
-    { id: 1, emoji: "🙏", text: "Saying please", isRespectful: true },
-    { id: 2, emoji: "🫱", text: "Pushing others", isRespectful: false },
-    { id: 3, emoji: "👂", text: "Listening carefully", isRespectful: true },
-    { id: 4, emoji: "😤", text: "Yelling at people", isRespectful: false },
-    { id: 5, emoji: "🤝", text: "Handshake greeting", isRespectful: true },
-    { id: 6, emoji: "👅", text: "Sticking tongue out", isRespectful: false },
-    { id: 7, emoji: "🙇", text: "Bowing politely", isRespectful: true },
-    { id: 8, emoji: "🙄", text: "Rolling eyes", isRespectful: false },
-    { id: 9, emoji: "👋", text: "Waving hello", isRespectful: true },
-    { id: 10, emoji: "😠", text: "Making angry faces", isRespectful: false },
-    { id: 11, emoji: "🤲", text: "Offering help", isRespectful: true },
-    { id: 12, emoji: "🚫", text: "Refusing rudely", isRespectful: false },
-    { id: 13, emoji: "😊", text: "Smiling kindly", isRespectful: true },
-    { id: 14, emoji: "😏", text: "Mocking others", isRespectful: false },
-    { id: 15, emoji: "👍", text: "Encouraging others", isRespectful: true },
-    { id: 16, emoji: "👎", text: "Putting others down", isRespectful: false },
-    { id: 17, emoji: "🙌", text: "Celebrating together", isRespectful: true },
-    { id: 18, emoji: "😈", text: "Being mean", isRespectful: false },
-    { id: 19, emoji: "🤗", text: "Friendly hug", isRespectful: true },
-    { id: 20, emoji: "🤬", text: "Using bad words", isRespectful: false }
+const RespectTap = () => {
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-13");
+  const gameId = gameData?.id || "uvls-kids-13";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for RespectTap, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
+
+  const questions = [
+    {
+      id: 1,
+      question: "What shows respect?",
+      correctAnswer: "Saying please",
+      options: [
+        { text: "Saying please", isCorrect: true, emoji: "🙏" },
+        { text: "Pushing others", isCorrect: false, emoji: "👊" },
+        { text: "Yelling at people", isCorrect: false, emoji: "😤" },
+        { text: "Rolling eyes", isCorrect: false, emoji: "🙄" }
+      ]
+    },
+    {
+      id: 2,
+      question: "What is a respectful action?",
+      correctAnswer: "Listening carefully",
+      options: [
+        { text: "Interrupting others", isCorrect: false, emoji: "🗣️" },
+        { text: "Listening carefully", isCorrect: true, emoji: "👂" },
+        { text: "Sticking tongue out", isCorrect: false, emoji: "👅" },
+        { text: "Making angry faces", isCorrect: false, emoji: "😠" }
+      ]
+    },
+    {
+      id: 3,
+      question: "What demonstrates respect?",
+      correctAnswer: "Handshake greeting",
+      options: [
+        { text: "Refusing rudely", isCorrect: false, emoji: "🚫" },
+        { text: "Mocking others", isCorrect: false, emoji: "😏" },
+        { text: "Handshake greeting", isCorrect: true, emoji: "🤝" },
+        { text: "Putting others down", isCorrect: false, emoji: "👎" }
+      ]
+    },
+    {
+      id: 4,
+      question: "What is respectful behavior?",
+      correctAnswer: "Bowing politely",
+      options: [
+        { text: "Bowing politely", isCorrect: true, emoji: "🙇" },
+        { text: "Being mean", isCorrect: false, emoji: "😈" },
+        { text: "Using bad words", isCorrect: false, emoji: "🤬" },
+        { text: "Ignoring others", isCorrect: false, emoji: "🙈" }
+      ]
+    },
+    {
+      id: 5,
+      question: "What shows you respect others?",
+      correctAnswer: "Offering help",
+      options: [
+        { text: "Walking away", isCorrect: false, emoji: "🚶" },
+        { text: "Laughing at them", isCorrect: false, emoji: "😂" },
+        { text: "Avoiding them", isCorrect: false, emoji: "🙈" },
+        { text: "Offering help", isCorrect: true, emoji: "🤲" }
+      ]
+    }
   ];
 
-  const currentAction = actions[currentRound];
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-  const handleChoice = (isRespectful) => {
-    const isCorrect = currentAction.isRespectful === isRespectful;
-    
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
-    
-    if (currentRound < actions.length - 1) {
-      setTimeout(() => {
-        setCurrentRound(prev => prev + 1);
-      }, 300);
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
     } else {
-      const finalScore = score + (isCorrect ? 1 : 0);
-      setScore(finalScore);
-      setShowResult(true);
+      setGameState("finished");
     }
-  };
+  }, []);
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setGameStarted(false);
-    setCurrentRound(0);
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
     setScore(0);
-    setCoins(0);
+    setCurrentRound(1);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const isCorrect = option.isCorrect;
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    setTimeout(() => {
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
+      } else {
+        setGameState("finished");
+      }
+    }, 500);
   };
 
-  const accuracy = Math.round((score / actions.length) * 100);
+  const finalScore = score;
+
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Respect Tap"
-      score={coins}
-      subtitle={gameStarted ? `Action ${currentRound + 1} of ${actions.length}` : "Tap Game"}
-      onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Spot respectful actions quickly!` : "Spot respectful actions quickly!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
-      
-      gameId="uvls-kids-13"
-      gameType="uvls"
-      totalLevels={20}
-      currentLevel={13}
-      showConfetti={showResult && accuracy >= 70}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
-    >
-      <div className="space-y-8">
-        {!gameStarted ? (
+      score={finalScore}
+      gameId={gameId}
+      gameType="uvls"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Respect Tap Game!</h2>
-            <p className="text-white/80 mb-6">Tap 'Respectful' or 'Not Respectful' quickly!</p>
+            <div className="text-5xl mb-6">🙏</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about respectful actions!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
             <button
-              onClick={() => setGameStarted(true)}
-              className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-4 rounded-full font-bold text-xl hover:opacity-90 transition transform hover:scale-105"
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
             >
-              Start Game! 🚀
+              Start Game
             </button>
           </div>
-        ) : !showResult ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <div className="flex justify-between items-center mb-6">
-                <span className="text-white/80">Round {currentRound + 1}/{actions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}</span>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
               
-              <div className="text-8xl mb-6 text-center animate-bounce">{currentAction.emoji}</div>
-              
-              <p className="text-white text-2xl font-bold mb-8 text-center">
-                {currentAction.text}
-              </p>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleChoice(true)}
-                  className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-6 transition-all transform hover:scale-105"
-                >
-                  <div className="text-white font-bold text-xl">Respectful ✓</div>
-                </button>
-                <button
-                  onClick={() => handleChoice(false)}
-                  className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-6 transition-all transform hover:scale-105"
-                >
-                  <div className="text-white font-bold text-xl">Not Respectful ✗</div>
-                </button>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className={`w-full min-h-[80px] px-6 py-4 rounded-xl text-white font-bold text-lg transition-all transform flex items-center justify-center ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {accuracy >= 70 ? "🎉 Great Respect!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You got {score} out of {actions.length} correct!
-            </p>
-            <p className="text-white/80 text-lg mb-4">
-              Accuracy: {accuracy}%
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {accuracy >= 70 ? "You earned 3 Coins! 🪙" : "Get 70% or higher to earn coins!"}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Tip: Include cultural gestures (handshake/bow) where appropriate!
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Respect Expert!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {TOTAL_ROUNDS} correct!
+                  You know how to show respect!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{finalScore} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Respectful actions include saying please, listening carefully, greeting politely, bowing, and offering help. These actions show that you value and care about others!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {TOTAL_ROUNDS} correct.
+                  Remember: Show respect to others!
+                </p>
+                <button
+                  onClick={() => {
+                    setGameState("ready");
+                    setScore(0);
+                    setCurrentRound(0);
+                    setAnswered(false);
+                    resetFeedback();
+                  }}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Respectful actions include saying please, listening, greeting politely, and offering help. These show you care about others!
+                </p>
+              </div>
             )}
           </div>
         )}
@@ -175,4 +302,3 @@ const RespectTap = () => {
 };
 
 export default RespectTap;
-

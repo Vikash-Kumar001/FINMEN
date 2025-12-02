@@ -1,183 +1,135 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Paintbrush } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const InclusionPoster = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-16";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [selectedTheme, setSelectedTheme] = useState(null);
-  const [selectedStickers, setSelectedStickers] = useState([]);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-16");
+  const gameId = gameData?.id || "uvls-kids-16";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for InclusionPoster, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [answered, setAnswered] = useState(false);
 
-  const themes = [
-    { id: 1, name: "Everyone Belongs", emoji: "🌈", color: "from-red-400 via-yellow-400 to-blue-400" },
-    { id: 2, name: "Friendship Circle", emoji: "👥", color: "from-pink-400 via-purple-400 to-indigo-400" },
-    { id: 3, name: "Together We're Strong", emoji: "💪", color: "from-green-400 via-teal-400 to-cyan-400" },
-    { id: 4, name: "All Are Welcome", emoji: "🏠", color: "from-orange-400 via-amber-400 to-yellow-400" }
+  const stages = [
+    {
+      question: 'Choose a poster: "Everyone Belongs."',
+      choices: [
+        { text: "Exclude Some People 🚫", correct: false },
+        { text: "Only My Friends 👥", correct: false },
+        { text: "Everyone Belongs 🌈", correct: true },
+      ],
+    },
+    {
+      question: 'Choose a poster: "Together We\'re Strong."',
+      choices: [
+        { text: "Together We're Strong 💪", correct: true },
+        { text: "I Work Alone 😤", correct: false },
+        { text: "Don't Include Others 🚫", correct: false },
+      ],
+    },
+    {
+      question: 'Choose a poster: "All Are Welcome."',
+      choices: [
+        { text: "Only Some Welcome 🏠", correct: false },
+        { text: "All Are Welcome 🏠", correct: true },
+        { text: "Keep Others Out 🚫", correct: false },
+      ],
+    },
+    {
+      question: 'Choose a poster: "Friendship Circle."',
+      choices: [
+        { text: "Friendship Circle 👥", correct: true },
+        { text: "Small Group Only 👤", correct: false },
+        { text: "No New Friends 🚫", correct: false },
+      ],
+    },
+    {
+      question: 'Why do inclusion posters help kids?',
+      choices: [
+        { text: "Teach us to welcome everyone 📚", correct: true },
+        { text: "Encourage excluding others 🚫", correct: false },
+        { text: "Make us ignore new people 🙈", correct: false },
+      ],
+    },
   ];
 
-  const stickers = [
-    { id: 1, emoji: "👫", label: "Friends Together" },
-    { id: 2, emoji: "🤝", label: "Helping Hands" },
-    { id: 3, emoji: "❤️", label: "Love & Care" },
-    { id: 4, emoji: "🌟", label: "Everyone Shines" },
-    { id: 5, emoji: "🎈", label: "Celebration" },
-    { id: 6, emoji: "🌍", label: "One World" },
-    { id: 7, emoji: "🎨", label: "Different Colors" },
-    { id: 8, emoji: "🤗", label: "Warm Hugs" },
-    { id: 9, emoji: "👐", label: "Open Arms" },
-    { id: 10, emoji: "🌺", label: "Bloom Together" },
-    { id: 11, emoji: "🦋", label: "Be Yourself" },
-    { id: 12, emoji: "🏆", label: "All Win Together" }
-  ];
-
-  const handleThemeSelect = (themeId) => {
-    setSelectedTheme(themeId);
-  };
-
-  const handleStickerToggle = (stickerId) => {
-    if (selectedStickers.includes(stickerId)) {
-      setSelectedStickers(selectedStickers.filter(id => id !== stickerId));
-    } else if (selectedStickers.length < 3) {
-      setSelectedStickers([...selectedStickers, stickerId]);
+  const handleSelect = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
-
-  const handleSubmit = () => {
-    if (selectedTheme && selectedStickers.length === 3) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-      setTimeout(() => {
+    
+    const isLastQuestion = currentStage === stages.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
         setShowResult(true);
-      }, 500);
-    }
+      } else {
+        setCurrentStage((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const selectedThemeObj = themes.find(t => t.id === selectedTheme);
+  const finalScore = score;
 
   return (
     <GameShell
       title="Inclusion Poster"
-      subtitle="Create Your Inclusion Poster"
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={coins}
-      gameId="uvls-kids-16"
-      gameType="uvls"
-      totalLevels={20}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Choose posters that promote inclusion!` : "Game Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      currentLevel={16}
-      showConfetti={showResult}
-      backPath="/games/uvls/kids"
-    
-      maxScore={20} // Max score is total number of questions (all correct)
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="uvls"
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-white text-xl font-bold mb-4">1. Choose Your Theme</h3>
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {themes.map(theme => (
-                  <button
-                    key={theme.id}
-                    onClick={() => handleThemeSelect(theme.id)}
-                    className={`border-3 rounded-xl p-4 transition-all transform hover:scale-105 bg-gradient-to-br ${theme.color} ${
-                      selectedTheme === theme.id ? 'ring-4 ring-white' : ''
-                    }`}
-                  >
-                    <div className="text-4xl mb-2">{theme.emoji}</div>
-                    <div className="text-white font-bold text-sm">{theme.name}</div>
-                  </button>
-                ))}
-              </div>
-
-              <h3 className="text-white text-xl font-bold mb-4">
-                2. Add 3 Inclusion Stickers ({selectedStickers.length}/3)
-              </h3>
-              <div className="grid grid-cols-3 md:grid-cols-4 gap-3 mb-6">
-                {stickers.map(sticker => (
-                  <button
-                    key={sticker.id}
-                    onClick={() => handleStickerToggle(sticker.id)}
-                    disabled={!selectedStickers.includes(sticker.id) && selectedStickers.length >= 3}
-                    className={`border-2 rounded-xl p-3 transition-all transform hover:scale-105 ${
-                      selectedStickers.includes(sticker.id)
-                        ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    } ${!selectedStickers.includes(sticker.id) && selectedStickers.length >= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <div className="text-3xl mb-1">{sticker.emoji}</div>
-                    <div className="text-white text-xs">{sticker.label}</div>
-                  </button>
-                ))}
-              </div>
-
-              {selectedTheme && selectedStickers.length === 3 && (
-                <div className="mb-6">
-                  <h3 className="text-white text-xl font-bold mb-4">3. Preview Your Poster</h3>
-                  <div className={`rounded-xl p-8 bg-gradient-to-br ${selectedThemeObj.color} min-h-[200px] flex flex-col items-center justify-center`}>
-                    <div className="text-white text-2xl font-bold mb-4">{selectedThemeObj.name}</div>
-                    <div className="flex gap-6 text-6xl mb-2">
-                      {selectedStickers.map(stickerId => (
-                        <span key={stickerId}>
-                          {stickers.find(s => s.id === stickerId)?.emoji}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={handleSubmit}
-                disabled={!selectedTheme || selectedStickers.length !== 3}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedTheme && selectedStickers.length === 3
-                    ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Submit Poster! 🎨
-              </button>
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <Paintbrush className="mx-auto mb-4 w-8 h-8 text-yellow-400" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {stages[currentStage].choices.map((choice, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSelect(choice.correct)}
+                  className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-green-600 transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={answered}
+                >
+                  <div className="text-lg font-semibold">{choice.text}</div>
+                </button>
+              ))}
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">🎉 Beautiful Poster!</h2>
-            <div className="mb-6">
-              <div className={`rounded-xl p-8 bg-gradient-to-br ${selectedThemeObj.color} min-h-[200px] flex flex-col items-center justify-center`}>
-                <div className="text-white text-2xl font-bold mb-4">{selectedThemeObj.name}</div>
-                <div className="flex gap-6 text-6xl">
-                  {selectedStickers.map(stickerId => (
-                    <span key={stickerId}>
-                      {stickers.find(s => s.id === stickerId)?.emoji}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold mb-4">
-              You earned 3 Coins! 🏆
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Tip: Use posters to start class discussions about inclusion!
-            </p>
           </div>
         )}
       </div>
@@ -186,4 +138,3 @@ const InclusionPoster = () => {
 };
 
 export default InclusionPoster;
-

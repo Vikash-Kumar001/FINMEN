@@ -1,190 +1,250 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
+
 const StopListenReflex = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-63";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [selectedCues, setSelectedCues] = useState([]); // State for tracking selected cues
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-63");
+  const gameId = gameData?.id || "uvls-kids-63";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for StopListenReflex, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
       id: 1,
-      cues: [
-        { text: "Bell rings", shouldStop: true },
-        { text: "Bird sings", shouldStop: false },
-        { text: "Teacher calls", shouldStop: true }
+      question: "What should you do when the bell rings?",
+      correctAnswer: "Stop and listen",
+      options: [
+        { text: "Stop and listen", isCorrect: true, emoji: "🔔" },
+        { text: "Keep playing", isCorrect: false, emoji: "⚽" },
+        { text: "Ignore it", isCorrect: false, emoji: "🙈" },
+        { text: "Talk louder", isCorrect: false, emoji: "🗣️" }
       ]
     },
     {
       id: 2,
-      cues: [
-        { text: "Friend shouts", shouldStop: true },
-        { text: "Wind blows", shouldStop: false },
-        { text: "Whistle blows", shouldStop: true }
+      question: "What should you do when a teacher calls?",
+      correctAnswer: "Stop and pay attention",
+      options: [
+        { text: "Keep doing your thing", isCorrect: false, emoji: "🎮" },
+        { text: "Stop and pay attention", isCorrect: true, emoji: "👂" },
+        { text: "Ignore them", isCorrect: false, emoji: "🙈" },
+        { text: "Run away", isCorrect: false, emoji: "🏃" }
       ]
     },
     {
       id: 3,
-      cues: [
-        { text: "Mom says stop", shouldStop: true },
-        { text: "Cat meows", shouldStop: false },
-        { text: "Alarm sounds", shouldStop: true }
+      question: "What should you do when you hear a whistle?",
+      correctAnswer: "Stop immediately",
+      options: [
+        { text: "Stop immediately", isCorrect: true, emoji: "🛑" },
+        { text: "Keep moving", isCorrect: false, emoji: "🚶" },
+        { text: "Ignore it", isCorrect: false, emoji: "🙈" },
+        { text: "Whistle back", isCorrect: false, emoji: "🎵" }
       ]
     },
     {
       id: 4,
-      cues: [
-        { text: "Light flashes", shouldStop: true },
-        { text: "Rain falls", shouldStop: false },
-        { text: "Siren wails", shouldStop: true }
+      question: "What should you do when mom says stop?",
+      correctAnswer: "Stop right away",
+      options: [
+        { text: "Keep going", isCorrect: false, emoji: "🏃" },
+        { text: "Stop right away", isCorrect: true, emoji: "✋" },
+        { text: "Ignore her", isCorrect: false, emoji: "🙈" },
+        { text: "Say later", isCorrect: false, emoji: "⏰" }
       ]
     },
     {
       id: 5,
-      cues: [
-        { text: "Hand raise", shouldStop: true },
-        { text: "Leaf falls", shouldStop: false },
-        { text: "Clap hands", shouldStop: true }
+      question: "What should you do when you hear an alarm?",
+      correctAnswer: "Stop and listen",
+      options: [
+        { text: "Stop and listen", isCorrect: true, emoji: "🚨" },
+        { text: "Keep playing", isCorrect: false, emoji: "🎮" },
+        { text: "Ignore it", isCorrect: false, emoji: "🙈" },
+        { text: "Cover ears", isCorrect: false, emoji: "👂" }
       ]
     }
   ];
 
-  // Function to toggle cue selection
-  const toggleCueSelection = (index) => {
-    setSelectedCues(prev => {
-      if (prev.includes(index)) {
-        return prev.filter(i => i !== index);
-      } else {
-        return [...prev, index];
-      }
-    });
-  };
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-  const handleResponse = () => {
-    const newResponses = [...responses, selectedCues];
-    setResponses(newResponses);
-
-    const correctStop = questions[currentLevel].cues.filter(c => c.shouldStop).length;
-    const isCorrect = selectedCues.length === correctStop && selectedCues.every(s => questions[currentLevel].cues[s].shouldStop);
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
+  }, [currentRound, gameState]);
 
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setSelectedCues([]); // Reset selection for next level
-      }, isCorrect ? 800 : 0);
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
     } else {
-      const correctLevels = newResponses.filter((sel, idx) => {
-        const corr = questions[idx].cues.filter(c => c.shouldStop).length;
-        return sel.length === corr && sel.every(s => questions[idx].cues[s].shouldStop);
-      }).length;
-      setFinalScore(correctLevels);
-      setShowResult(true);
+      setGameState("finished");
     }
-  };
+  }, []);
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setResponses([]);
-    setCoins(0);
-    setFinalScore(0);
-    setSelectedCues([]); // Reset selection
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const isCorrect = option.isCorrect;
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    setTimeout(() => {
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
+      } else {
+        setGameState("finished");
+      }
+    }, 500);
   };
 
-  const getCurrentLevel = () => questions[currentLevel];
+  const finalScore = score;
+
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
-      title="Stop & Listen Reflex"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      title="Stop Listen Reflex"
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Stop and listen quickly!` : "Stop and listen quickly!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-63"
-      gameType="uvls"
-      totalLevels={70}
-      currentLevel={63}
-      showConfetti={showResult && finalScore >= 3}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
-    >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Tap to stop and listen on cues!</p>
-              <div className="space-y-3">
-                {getCurrentLevel().cues.map((cue, idx) => (
-                  <button 
-                    key={idx} 
-                    onClick={() => toggleCueSelection(idx)}
-                    className={`w-full p-4 rounded transition-all transform hover:scale-102 flex items-center gap-3 ${
-                      selectedCues.includes(idx)
-                        ? "bg-red-500/30 border-2 border-red-400" // Visual feedback for selected
-                        : "bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40"
-                    }`}
+      score={finalScore}
+      gameId={gameId}
+      gameType="uvls"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">👂</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about stopping and listening!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="text-2xl">
-                      {selectedCues.includes(idx) ? "🛑" : "🔔"}
-                    </div>
-                    <div className="text-white font-medium text-left">{cue.text}</div>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
                 ))}
               </div>
-              <button 
-                onClick={handleResponse} 
-                className="mt-4 bg-purple-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                disabled={selectedCues.length === 0} // Disable if no cues selected
-              >
-                Submit ({selectedCues.length} selected)
-              </button>
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Reflex Listener!" : "💪 Respond More!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You responded correctly in {finalScore} levels!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned 3 Coins! 🪙" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
-            )}
           </div>
         )}
       </div>

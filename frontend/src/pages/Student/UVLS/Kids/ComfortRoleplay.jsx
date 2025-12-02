@@ -27,11 +27,11 @@ const ComfortRoleplay = () => {
       situation: "Your friend is crying because they lost their favorite toy.",
       emoji: "😢",
       phrases: [
-        { id: 1, text: "I'm sorry you're sad. Can I help you look for it?", validating: true },
-        { id: 2, text: "It's just a toy, get over it.", validating: false },
-        { id: 3, text: "I understand how you feel. Want to talk about it?", validating: true },
-        { id: 4, text: "Stop crying, it's not a big deal.", validating: false },
-        { id: 5, text: "Let me sit with you until you feel better.", validating: true }
+        { id: 1, text: "I'm sorry you're sad. Can I help you look for it?", isCorrect: true },
+        { id: 2, text: "It's just a toy, get over it.", isCorrect: false },
+        { id: 3, text: "I understand how you feel. Want to talk about it?", isCorrect: true },
+        { id: 4, text: "Stop crying, it's not a big deal.", isCorrect: false },
+        { id: 5, text: "Let me sit with you until you feel better.", isCorrect: true }
       ],
       peerResponse: {
         good: "Thank you for being so kind and understanding! 😊",
@@ -43,11 +43,11 @@ const ComfortRoleplay = () => {
       situation: "Your classmate is upset because they got a bad grade.",
       emoji: "📝",
       phrases: [
-        { id: 1, text: "You can do better next time. I believe in you!", validating: true },
-        { id: 2, text: "You're not smart enough, that's why.", validating: false },
-        { id: 3, text: "Let's study together next time!", validating: true },
-        { id: 4, text: "I told you so, you should have studied more.", validating: false },
-        { id: 5, text: "It's okay to make mistakes. We all do.", validating: true }
+        { id: 1, text: "You can do better next time. I believe in you!", isCorrect: true },
+        { id: 2, text: "You're not smart enough, that's why.", isCorrect: false },
+        { id: 3, text: "Let's study together next time!", isCorrect: true },
+        { id: 4, text: "I told you so, you should have studied more.", isCorrect: false },
+        { id: 5, text: "It's okay to make mistakes. We all do.", isCorrect: true }
       ],
       peerResponse: {
         good: "Thanks for being supportive! I feel much better now. 🌟",
@@ -59,11 +59,11 @@ const ComfortRoleplay = () => {
       situation: "A new student is sitting alone and looks lonely.",
       emoji: "😔",
       phrases: [
-        { id: 1, text: "Hi! Want to sit with me and my friends?", validating: true },
-        { id: 2, text: "Why are you sitting alone? That's weird.", validating: false },
-        { id: 3, text: "Being new can be hard. I'm here if you want to talk.", validating: true },
-        { id: 4, text: "You look sad. What's wrong with you?", validating: false },
-        { id: 5, text: "Let me show you around and introduce you to people!", validating: true }
+        { id: 1, text: "Hi! Want to sit with me and my friends?", isCorrect: true },
+        { id: 2, text: "Why are you sitting alone? That's weird.", isCorrect: false },
+        { id: 3, text: "Being new can be hard. I'm here if you want to talk.", isCorrect: true },
+        { id: 4, text: "You look sad. What's wrong with you?", isCorrect: false },
+        { id: 5, text: "Let me show you around and introduce you to people!", isCorrect: true }
       ],
       peerResponse: {
         good: "Thank you so much! I feel welcome now! 😊",
@@ -85,14 +85,14 @@ const ComfortRoleplay = () => {
 
     const vignette = vignettes[currentVignette];
     const selectedPhraseObjects = vignette.phrases.filter(p => selectedPhrases.includes(p.id));
-    const validatingCount = selectedPhraseObjects.filter(p => p.validating).length;
-    const isGood = validatingCount >= 2; // Need at least 2 validating phrases
+    const correctCount = selectedPhraseObjects.filter(p => p.isCorrect).length;
+    const isGood = correctCount >= 2; // Need at least 2 correct phrases
 
     const result = {
       vignetteId: vignette.id,
       selectedPhrases: selectedPhraseObjects,
       isGood,
-      validatingCount
+      correctCount
     };
 
     setVignetteResults([...vignetteResults, result]);
@@ -210,26 +210,40 @@ const ComfortRoleplay = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {totalGood >= 2 ? "🎉 You're So Comforting!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You comforted {totalGood} out of {vignettes.length} friends well!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {totalGood >= 2 ? "You earned 3 Coins! 🪙" : "Get 2 or more right to earn coins!"}
-            </p>
-            <p className="text-white/70 text-sm mb-4">
-              Teacher Tip: Practice saying these phrases out loud with the right tone!
-            </p>
-            {totalGood < 2 && (
-              <button
-                onClick={handleTryAgain}
-                className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {totalGood >= 2 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">You're So Comforting!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You comforted {totalGood} out of {vignettes.length} friends well!
+                  You know how to be kind and supportive!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{totalGood} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Comforting others means showing empathy, offering help, and being understanding!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You comforted {totalGood} out of {vignettes.length} friends well.
+                  Remember: Choose kind and understanding phrases!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Comfort others by showing empathy, offering help, and being understanding. Practice saying these phrases out loud with the right tone!
+                </p>
+              </div>
             )}
           </div>
         )}

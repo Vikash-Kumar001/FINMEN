@@ -1,158 +1,252 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const MediatorBadge = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-80";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [acts, setActs] = useState([]);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-80");
+  const gameId = gameData?.id || "uvls-kids-80";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for MediatorBadge, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [scenario, setScenario] = useState(0);
+  const [decisions, setDecisions] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
-  const [completedActs, setCompletedActs] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const questions = [
+  const scenarios = [
     {
       id: 1,
-      acts: ["Mediate toy", "Win-win solution", "Calm tactic"]
+      title: "Toy Dispute",
+      description: "Two friends are fighting over a toy. How do you help?",
+      choices: [
+        { 
+          id: "mediate", 
+          text: "Help them find a fair solution", 
+          emoji: "⚖️", 
+          description: "Listen to both and suggest taking turns",
+          isCorrect: true
+        },
+        { 
+          id: "pick", 
+          text: "Pick a winner", 
+          emoji: "👆", 
+          description: "Choose who gets the toy",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Let them fight", 
+          emoji: "🙈", 
+          description: "Stay out of it completely",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      acts: ["Resolve steps", "Fair split", "Poster make"]
+      title: "Game Argument",
+      description: "Friends are arguing about game rules. What do you do?",
+      choices: [
+        { 
+          id: "mediate", 
+          text: "Help them agree on rules", 
+          emoji: "🤝", 
+          description: "Find a compromise that works for everyone",
+          isCorrect: true
+        },
+        { 
+          id: "side", 
+          text: "Take one side", 
+          emoji: "👆", 
+          description: "Support one friend over the other",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Walk away", 
+          emoji: "🚶", 
+          description: "Leave them to figure it out",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      acts: ["Journal resolution", "Family balance", "Needs identify"]
+      title: "Sharing Conflict",
+      description: "Two friends both want the same snack. How do you help?",
+      choices: [
+        { 
+          id: "mediate", 
+          text: "Suggest sharing equally", 
+          emoji: "🍎", 
+          description: "Help them split it fairly",
+          isCorrect: true
+        },
+        { 
+          id: "give", 
+          text: "Give it to one person", 
+          emoji: "👆", 
+          description: "Pick who gets it all",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Do nothing", 
+          emoji: "🙈", 
+          description: "Let them argue about it",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      acts: ["Help friend", "Share resource", "Compromise plan"]
+      title: "Team Disagreement",
+      description: "Your team can't agree on a project idea. What do you do?",
+      choices: [
+        { 
+          id: "mediate", 
+          text: "Help combine ideas", 
+          emoji: "💡", 
+          description: "Find a way to use everyone's ideas",
+          isCorrect: true
+        },
+        { 
+          id: "force", 
+          text: "Force your idea", 
+          emoji: "😤", 
+          description: "Make everyone use your idea",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Let them argue", 
+          emoji: "🙈", 
+          description: "Stay quiet and wait",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      acts: ["Badge tasks", "Mediate fair", "Achieve mediator"]
+      title: "Playground Dispute",
+      description: "Kids are fighting over who goes first. How do you help?",
+      choices: [
+        { 
+          id: "mediate", 
+          text: "Suggest fair rotation", 
+          emoji: "🔄", 
+          description: "Help them take turns fairly",
+          isCorrect: true
+        },
+        { 
+          id: "pick", 
+          text: "Pick someone", 
+          emoji: "👆", 
+          description: "Choose who goes first",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore the fight", 
+          emoji: "🙈", 
+          description: "Continue playing without them",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleActToggle = (act) => {
-    if (completedActs.includes(act)) {
-      setCompletedActs(completedActs.filter(a => a !== act));
-    } else {
-      setCompletedActs([...completedActs, act]);
-    }
-  };
-
-  const handleAct = () => {
-    const newActs = [...acts, completedActs];
-    setActs(newActs);
-
-    const isComplete = completedActs.length >= 2;
-    if (isComplete) {
-      setCoins(prev => prev + 1);
+  const handleDecision = (selectedChoice) => {
+    const newDecisions = [...decisions, { 
+      scenarioId: scenarios[scenario].id, 
+      choice: selectedChoice,
+      isCorrect: scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setDecisions(newDecisions);
+    
+    // If the choice is correct, show flash/confetti and update score
+    const isCorrect = scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setFinalScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentLevel < questions.length - 1) {
+    
+    // Move to next scenario or show results
+    if (scenario < scenarios.length - 1) {
       setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setCompletedActs([]); // Reset for next level
-      }, isComplete ? 800 : 0);
+        setScenario(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      const completeLevels = newActs.filter(sel => sel.length >= 2).length;
-      setFinalScore(completeLevels);
-      setShowResult(true);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setActs([]);
-    setCoins(0);
-    setFinalScore(0);
-    setCompletedActs([]);
-    resetFeedback();
-  };
-
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
+  const getCurrentScenario = () => scenarios[scenario];
 
   return (
     <GameShell
-      title="Mediator Badge"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      title="Badge: Mediator"
+      subtitle={showResult ? "Quiz Complete!" : `Scenario ${scenario + 1} of ${scenarios.length}`}
+      showGameOver={showResult}
+      score={finalScore}
+      gameId={gameId}
+      gameType="uvls"
+      totalLevels={scenarios.length}
+      maxScore={scenarios.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-80"
-      gameType="uvls"
-      totalLevels={100}
-      currentLevel={80}
-      showConfetti={showResult && finalScore >= 3}
+      currentLevel={scenario + 1}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && getCurrentScenario() ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Complete mediation acts!</p>
-              <div className="space-y-3">
-                {getCurrentLevel().acts.map(act => (
-                  <button 
-                    key={act} 
-                    onClick={() => handleActToggle(act)}
-                    className={`w-full p-4 rounded text-left ${completedActs.includes(act) ? 'bg-green-500' : 'bg-white/20'}`}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Scenario {scenario + 1}/{scenarios.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{scenarios.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{getCurrentScenario().title}</h3>
+              <p className="text-white text-lg mb-6">
+                {getCurrentScenario().description}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentScenario().choices.map(choice => (
+                  <button
+                    key={choice.id}
+                    onClick={() => handleDecision(choice.id)}
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    {act} {completedActs.includes(act) ? '🤝' : '⬜'}
+                    <div className="text-2xl mb-2">{choice.emoji}</div>
+                    <h4 className="font-bold text-xl mb-2">{choice.text}</h4>
+                    <p className="text-white/90">{choice.description}</p>
                   </button>
                 ))}
               </div>
-              <button 
-                onClick={handleAct} 
-                className="mt-4 bg-purple-500 text-white p-2 rounded"
-                disabled={completedActs.length === 0}
-              >
-                Submit
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Mediator Achieved!" : "💪 More Acts!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You completed acts in {finalScore} levels!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned the Badge! 🏆" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

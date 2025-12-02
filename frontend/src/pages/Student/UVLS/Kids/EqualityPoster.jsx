@@ -1,215 +1,135 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { Paintbrush } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const EqualityPoster = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-26";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [posters, setPosters] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [selectedStickers, setSelectedStickers] = useState([]); // State for tracking selected stickers
-  const [posterStickers, setPosterStickers] = useState([]); // State for stickers added to poster
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-26");
+  const gameId = gameData?.id || "uvls-kids-26";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for EqualityPoster, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const questions = [
+  const stages = [
     {
-      id: 1,
-      template: "Equal Play",
-      stickers: ["Boy playing", "Girl playing", "Together", "Fair"]
+      question: 'Choose a poster: "Equal Play for All."',
+      choices: [
+        { text: "Only Boys Play ⚽", correct: false },
+        { text: "Only Girls Play 🎀", correct: false },
+        { text: "Equal Play for All ⚽", correct: true },
+      ],
     },
     {
-      id: 2,
-      template: "Equal Jobs",
-      stickers: ["Doctor boy", "Doctor girl", "Engineer boy", "Engineer girl"]
+      question: 'Choose a poster: "Equal Jobs for Everyone."',
+      choices: [
+        { text: "Equal Jobs for Everyone 👩‍⚕️", correct: true },
+        { text: "Boys Only Jobs 👨", correct: false },
+        { text: "Girls Only Jobs 👩", correct: false },
+      ],
     },
     {
-      id: 3,
-      template: "Equal School",
-      stickers: ["Books for all", "Classroom mix", "Learning together"]
+      question: 'Choose a poster: "Equal School for All."',
+      choices: [
+        { text: "Some Can't Learn 📚", correct: false },
+        { text: "Equal School for All 📚", correct: true },
+        { text: "Only Smart Kids 📖", correct: false },
+      ],
     },
     {
-      id: 4,
-      template: "Equal Dreams",
-      stickers: ["Pilot girl", "Chef boy", "Artist all"]
+      question: 'Choose a poster: "Equal Dreams."',
+      choices: [
+        { text: "Equal Dreams ✨", correct: true },
+        { text: "Limited Dreams 🚫", correct: false },
+        { text: "Some Can't Dream 💭", correct: false },
+      ],
     },
     {
-      id: 5,
-      template: "Equal Rights",
-      stickers: ["Play", "Learn", "Safe", "Love"]
-    }
+      question: 'Why do equality posters help kids?',
+      choices: [
+        { text: "Teach us everyone is equal 📚", correct: true },
+        { text: "Encourage unfairness 😠", correct: false },
+        { text: "Make us exclude others 🚫", correct: false },
+      ],
+    },
   ];
 
-  // Function to toggle sticker selection
-  const toggleStickerSelection = (sticker) => {
-    setSelectedStickers(prev => {
-      if (prev.includes(sticker)) {
-        return prev.filter(s => s !== sticker);
-      } else {
-        return [...prev, sticker];
-      }
-    });
-  };
-
-  // Function to add selected stickers to poster
-  const addToPoster = () => {
-    setPosterStickers(prev => [...prev, ...selectedStickers]);
-    setSelectedStickers([]); // Clear selection after adding
-  };
-
-  const handlePoster = () => {
-    const allStickers = [...posterStickers, ...selectedStickers];
-    const newPosters = [...posters, allStickers];
-    setPosters(newPosters);
-
-    const isComplete = allStickers.length >= 3; // Arbitrary criteria for completeness
-    if (isComplete) {
-      setCoins(prev => prev + 1);
+  const handleSelect = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setSelectedStickers([]); // Reset selection for next level
-        setPosterStickers([]); // Reset poster for next level
-      }, isComplete ? 800 : 0);
-    } else {
-      const completePosters = newPosters.filter(sel => sel.length >= 3).length;
-      setFinalScore(completePosters);
-      setShowResult(true);
-    }
+    
+    const isLastQuestion = currentStage === stages.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentStage((prev) => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setPosters([]);
-    setCoins(0);
-    setFinalScore(0);
-    setSelectedStickers([]); // Reset selection
-    setPosterStickers([]); // Reset poster
-    resetFeedback();
-  };
-
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Equality Poster"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Choose posters that promote equality!` : "Game Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-26"
-      gameType="uvls"
-      totalLevels={30}
-      currentLevel={26}
-      showConfetti={showResult && finalScore >= 3}
+      showGameOver={showResult}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
-    >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Build poster for {getCurrentLevel().template}!</p>
-              
-              {/* Available stickers */}
-              <div className="mb-4">
-                <h3 className="text-white font-semibold mb-2">Stickers:</h3>
-                <div className="flex flex-wrap gap-3">
-                  {getCurrentLevel().stickers.map(sticker => (
-                    <button
-                      key={sticker}
-                      onClick={() => toggleStickerSelection(sticker)}
-                      className={`p-3 rounded-lg transition-all transform hover:scale-105 ${
-                        selectedStickers.includes(sticker)
-                          ? "bg-green-500 border-2 border-green-300" // Visual feedback for selected
-                          : "bg-yellow-500 hover:bg-yellow-400 border-2 border-yellow-600"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span>{sticker}</span>
-                        <span>🖼️</span>
-                        {selectedStickers.includes(sticker) && <span className="text-lg">✅</span>}
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-              
-              {/* Add to poster button */}
-              <button
-                onClick={addToPoster}
-                className="mt-2 bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold hover:bg-blue-600 transition"
-                disabled={selectedStickers.length === 0}
-              >
-                Add to Poster ({selectedStickers.length} selected)
-              </button>
-              
-              {/* Poster area */}
-              <div className="mt-6">
-                <h3 className="text-white font-semibold mb-2">Your Poster:</h3>
-                <div className="bg-gradient-to-br from-purple-500 to-pink-500 min-h-40 rounded-xl p-4 border-4 border-white/30 backdrop-blur-sm">
-                  <div className="flex flex-wrap gap-3">
-                    {posterStickers.map((sticker, index) => (
-                      <div key={index} className="bg-white/90 text-purple-900 px-3 py-2 rounded-lg font-medium">
-                        {sticker} 🎨
-                      </div>
-                    ))}
-                    {posterStickers.length === 0 && (
-                      <div className="text-white/80 italic self-center">
-                        Add stickers to create your equality poster!
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-              
-              <button 
-                onClick={handlePoster} 
-                className="mt-6 bg-purple-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Complete Poster ({posterStickers.length + selectedStickers.length} stickers)
-              </button>
+      score={finalScore}
+      gameId={gameId}
+      gameType="uvls"
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <Paintbrush className="mx-auto mb-4 w-8 h-8 text-yellow-400" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              {stages[currentStage].choices.map((choice, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => handleSelect(choice.correct)}
+                  className="p-6 rounded-2xl border bg-white/10 border-white/20 hover:bg-green-600 transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={answered}
+                >
+                  <div className="text-lg font-semibold">{choice.text}</div>
+                </button>
+              ))}
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Poster Master!" : "💪 Build More!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You completed {finalScore} posters!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned a Badge! 🏅" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
-            )}
           </div>
         )}
       </div>

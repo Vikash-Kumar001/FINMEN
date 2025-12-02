@@ -1,168 +1,252 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const LifeSkillsStarterBadge = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-100";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [skills, setSkills] = useState([]);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-100");
+  const gameId = gameData?.id || "uvls-kids-100";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for LifeSkillsStarterBadge, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [scenario, setScenario] = useState(0);
+  const [decisions, setDecisions] = useState([]);
   const [showResult, setShowResult] = useState(false);
   const [finalScore, setFinalScore] = useState(0);
-  const [selectedBehaviors, setSelectedBehaviors] = useState([]);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const questions = [
+  const scenarios = [
     {
       id: 1,
-      behaviors: ["Routine", "Priority", "Task check"]
+      title: "Planning Your Day",
+      description: "You have many things to do today. What should you do?",
+      choices: [
+        { 
+          id: "plan", 
+          text: "Make a plan and prioritize", 
+          emoji: "📋", 
+          description: "Organize tasks by importance",
+          isCorrect: true
+        },
+        { 
+          id: "random", 
+          text: "Do things randomly", 
+          emoji: "🎲", 
+          description: "Do whatever comes to mind",
+          isCorrect: false
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore everything", 
+          emoji: "🙈", 
+          description: "Don't do anything",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      behaviors: ["Day plan", "Goal steps", "SMART poster"]
+      title: "Setting Goals",
+      description: "You want to achieve something. What should you do?",
+      choices: [
+        { 
+          id: "set", 
+          text: "Set clear, achievable goals", 
+          emoji: "🎯", 
+          description: "Make specific goals you can reach",
+          isCorrect: true
+        },
+        { 
+          id: "vague", 
+          text: "Have vague dreams", 
+          emoji: "☁️", 
+          description: "Just wish for things",
+          isCorrect: false
+        },
+        { 
+          id: "none", 
+          text: "Have no goals", 
+          emoji: "🚫", 
+          description: "Don't plan anything",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      behaviors: ["Weekly journal", "Time budget", "Safety reflex"]
+      title: "Time Management",
+      description: "You have limited time for homework and play. What should you do?",
+      choices: [
+        { 
+          id: "balance", 
+          text: "Balance both activities", 
+          emoji: "⚖️", 
+          description: "Plan time for work and fun",
+          isCorrect: true
+        },
+        { 
+          id: "onlyplay", 
+          text: "Only play", 
+          emoji: "🎮", 
+          description: "Spend all time playing",
+          isCorrect: false
+        },
+        { 
+          id: "onlywork", 
+          text: "Only do homework", 
+          emoji: "📚", 
+          description: "Work all the time",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      behaviors: ["Life skills", "Time manage", "Goal set"]
+      title: "Staying Safe",
+      description: "You need to learn about safety. What should you do?",
+      choices: [
+        { 
+          id: "learn", 
+          text: "Learn safety rules", 
+          emoji: "🛡️", 
+          description: "Understand how to stay safe",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore safety", 
+          emoji: "🙈", 
+          description: "Don't think about safety",
+          isCorrect: false
+        },
+        { 
+          id: "risk", 
+          text: "Take unnecessary risks", 
+          emoji: "⚠️", 
+          description: "Do dangerous things",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      behaviors: ["Safety know", "Badge complete", "Starter achieved"]
+      title: "Life Skills",
+      description: "You want to learn important life skills. What should you do?",
+      choices: [
+        { 
+          id: "practice", 
+          text: "Practice and learn regularly", 
+          emoji: "📚", 
+          description: "Keep learning new skills",
+          isCorrect: true
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore learning", 
+          emoji: "🙈", 
+          description: "Don't try to learn",
+          isCorrect: false
+        },
+        { 
+          id: "giveup", 
+          text: "Give up easily", 
+          emoji: "😞", 
+          description: "Stop trying when it's hard",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const toggleBehavior = (behavior) => {
-    setSelectedBehaviors(prev => {
-      if (prev.includes(behavior)) {
-        return prev.filter(b => b !== behavior);
-      } else {
-        return [...prev, behavior];
-      }
-    });
-  };
-
-  const handleSkill = () => {
-    const newSkills = [...skills, selectedBehaviors];
-    setSkills(newSkills);
-
-    const isComplete = selectedBehaviors.length >= 2;
-    if (isComplete) {
-      setCoins(prev => prev + 1);
+  const handleDecision = (selectedChoice) => {
+    const newDecisions = [...decisions, { 
+      scenarioId: scenarios[scenario].id, 
+      choice: selectedChoice,
+      isCorrect: scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setDecisions(newDecisions);
+    
+    // If the choice is correct, show flash/confetti and update score
+    const isCorrect = scenarios[scenario].choices.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setFinalScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    if (currentLevel < questions.length - 1) {
+    
+    // Move to next scenario or show results
+    if (scenario < scenarios.length - 1) {
       setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setSelectedBehaviors([]); // Reset selection for next level
-      }, isComplete ? 800 : 0);
+        setScenario(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      const completeLevels = newSkills.filter(sel => sel.length >= 2).length;
-      setFinalScore(completeLevels);
-      setShowResult(true);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentLevel(0);
-    setSkills([]);
-    setCoins(0);
-    setFinalScore(0);
-    setSelectedBehaviors([]);
-    resetFeedback();
-  };
-
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentLevel = () => questions[currentLevel];
+  const getCurrentScenario = () => scenarios[scenario];
 
   return (
     <GameShell
-      title="Life Skills Starter Badge"
-      score={coins}
-  subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      title="Badge: Life Skills Starter"
+      subtitle={showResult ? "Quiz Complete!" : `Scenario ${scenario + 1} of ${scenarios.length}`}
+      showGameOver={showResult}
+      score={finalScore}
+      gameId={gameId}
+      gameType="uvls"
+      totalLevels={scenarios.length}
+      maxScore={scenarios.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-100"
-      gameType="uvls"
-      totalLevels={100}
-      currentLevel={100}
-      showConfetti={showResult && finalScore >= 3}
+      currentLevel={scenario + 1}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
     >
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && getCurrentScenario() ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Demonstrate life skills! Select at least 2 behaviors.</p>
-              <div className="space-y-3">
-                {getCurrentLevel().behaviors.map(beh => (
-                  <button 
-                    key={beh} 
-                    onClick={() => toggleBehavior(beh)}
-                    className={`w-full p-4 rounded text-left transition ${
-                      selectedBehaviors.includes(beh) 
-                        ? "bg-purple-500 text-white" 
-                        : "bg-white/20 text-white hover:bg-white/30"
-                    }`}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Scenario {scenario + 1}/{scenarios.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{scenarios.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{getCurrentScenario().title}</h3>
+              <p className="text-white text-lg mb-6">
+                {getCurrentScenario().description}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentScenario().choices.map(choice => (
+                  <button
+                    key={choice.id}
+                    onClick={() => handleDecision(choice.id)}
+                    className="bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    {beh} 🛠️
+                    <div className="text-2xl mb-2">{choice.emoji}</div>
+                    <h4 className="font-bold text-xl mb-2">{choice.text}</h4>
+                    <p className="text-white/90">{choice.description}</p>
                   </button>
                 ))}
               </div>
-              <button 
-                onClick={handleSkill}
-                disabled={selectedBehaviors.length < 2}
-                className={`mt-4 px-6 py-3 rounded-full font-semibold transition ${
-                  selectedBehaviors.length >= 2
-                    ? "bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90"
-                    : "bg-gray-500 text-gray-300 cursor-not-allowed"
-                }`}
-              >
-                Submit ({selectedBehaviors.length} selected)
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Skills Starter!" : "💪 More Skills!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You demonstrated {finalScore} behaviors!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned the Badge! 🏆" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

@@ -1,176 +1,292 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const EqualityQuiz = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  const gameId = "uvls-kids-22";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("uvls-kids-22");
+  const gameId = gameData?.id || "uvls-kids-22";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for EqualityQuiz, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
       text: "Can girls be doctors?",
       options: [
-        { id: "a", text: "Yes, anyone can!", emoji: "👩‍⚕️", isCorrect: true },
-        { id: "b", text: "No, only boys", emoji: "🚫", isCorrect: false },
-        { id: "c", text: "Maybe sometimes", emoji: "🤔", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Yes, anyone can!", 
+          emoji: "👩‍⚕️", 
+          description: "Anyone can pursue any career",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "No, only boys", 
+          emoji: "🚫", 
+          description: "This is not true",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Maybe sometimes", 
+          emoji: "🤔", 
+          description: "This is uncertain",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 2,
       text: "Should boys and girls both go to school?",
       options: [
-        { id: "a", text: "Yes, equal education!", emoji: "📚", isCorrect: true },
-        { id: "b", text: "Only boys need school", emoji: "👦", isCorrect: false },
-        { id: "c", text: "Girls don't need it", emoji: "👧", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Yes, equal education!", 
+          emoji: "📚", 
+          description: "Everyone deserves education",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Only boys need school", 
+          emoji: "👦", 
+          description: "This is not fair",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Girls don't need it", 
+          emoji: "👧", 
+          description: "This is not true",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 3,
       text: "Can boys play with dolls?",
       options: [
-        { id: "a", text: "Yes, toys for all!", emoji: "🧸", isCorrect: true },
-        { id: "b", text: "No, that's for girls", emoji: "🚫", isCorrect: false },
-        { id: "c", text: "Only if no one sees", emoji: "🙈", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Yes, toys for all!", 
+          emoji: "🧸", 
+          description: "Toys are for everyone",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "No, that's for girls", 
+          emoji: "🚫", 
+          description: "This is a stereotype",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Only if no one sees", 
+          emoji: "🙈", 
+          description: "This suggests shame",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 4,
       text: "Should everyone have the same rights?",
       options: [
-        { id: "a", text: "Yes, equality for all!", emoji: "⚖️", isCorrect: true },
-        { id: "b", text: "No, depends on gender", emoji: "🤷", isCorrect: false },
-        { id: "c", text: "Only for adults", emoji: "👴", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Yes, equality for all!", 
+          emoji: "⚖️", 
+          description: "Everyone deserves equal rights",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "No, depends on gender", 
+          emoji: "🤷", 
+          description: "This is not fair",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Only for adults", 
+          emoji: "👴", 
+          description: "Kids also have rights",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 5,
       text: "Can girls play sports?",
       options: [
-        { id: "a", text: "Yes, sports for everyone!", emoji: "⚽", isCorrect: true },
-        { id: "b", text: "No, too rough", emoji: "🚫", isCorrect: false },
-        { id: "c", text: "Only easy ones", emoji: "🏓", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Yes, sports for everyone!", 
+          emoji: "⚽", 
+          description: "Sports are for all",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "No, too rough", 
+          emoji: "🚫", 
+          description: "This is a stereotype",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Only easy ones", 
+          emoji: "🏓", 
+          description: "This limits opportunities",
+          isCorrect: false 
+        }
       ]
     }
   ];
 
-  const handleAnswer = (selectedOption) => {
-    const newAnswers = [...answers, { 
-      questionId: questions[currentQuestion].id, 
-      answer: selectedOption,
-      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect
-    }];
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
     
-    setAnswers(newAnswers);
+    setAnswered(true);
+    resetFeedback();
     
-    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedOption)?.isCorrect;
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 800 : 0);
     } else {
-      const correctAnswers = newAnswers.filter(ans => ans.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
     setCurrentQuestion(0);
-    setAnswers([]);
-    setCoins(0);
-    setFinalScore(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
-
-  const handleNext = () => {
-    navigate("/games/uvls/kids");
-  };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Equality Quiz"
-      score={coins}
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-22"
-      gameType="uvls"
-      totalLevels={30}
-      currentLevel={22}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId={gameId}
+      gameType="uvls"
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {answers.filter(a => a.isCorrect).length}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-lg mb-6 font-semibold">
-                {getCurrentQuestion().text}
-              </p>
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
               
-              <div className="space-y-3">
-                {getCurrentQuestion().options.map(option => (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
                   <button
                     key={option.id}
-                    onClick={() => handleAnswer(option.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102 flex items-center gap-3"
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-3xl">{option.emoji}</div>
-                    <div className="text-white font-medium text-left">{option.text}</div>
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <span className="text-sm opacity-90">{option.description}</span>
+                    </div>
                   </button>
                 ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {finalScore >= 3 ? "🎉 Equality Expert!" : "💪 Learn More!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You got {finalScore} out of {questions.length} correct!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {finalScore >= 3 ? "You earned 3 Coins! 🪙" : "Try again!"}
-            </p>
-            {finalScore < 3 && (
-              <button onClick={handleTryAgain} className="bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition">
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Equality Quiz Star!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You understand equality and fairness!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Everyone deserves equal rights and opportunities, regardless of gender, age, or background. Treat everyone with fairness and respect!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: Equality means everyone has the same rights and opportunities!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Boys and girls can do anything they want! Everyone deserves equal opportunities in education, sports, and careers!
+                </p>
+              </div>
             )}
           </div>
         )}

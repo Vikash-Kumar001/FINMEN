@@ -184,26 +184,40 @@ const InviteRoleplay = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {inclusiveCount >= 2 ? "🎉 Great Inviting!" : "💪 Keep Practicing!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You used inclusive phrases {inclusiveCount} out of {scenes.length} times!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {inclusiveCount >= 2 ? "You earned 3 Coins! 🪙" : "Get 2 or more right to earn coins!"}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Tip: Pair shy students with buddies!
-            </p>
-            {inclusiveCount < 2 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {inclusiveCount >= 2 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Inviting!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You used inclusive phrases {inclusiveCount} out of {scenes.length} times!
+                  You know how to make everyone feel welcome!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{inclusiveCount} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Inviting others and being inclusive makes everyone feel welcome and valued!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Practicing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You used inclusive phrases {inclusiveCount} out of {scenes.length} times.
+                  Remember to invite others and be welcoming!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Use phrases that invite others to join and make them feel welcome. Pair shy students with buddies!
+                </p>
+              </div>
             )}
           </div>
         )}

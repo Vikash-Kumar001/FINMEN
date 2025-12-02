@@ -1,95 +1,203 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const CampaignStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-teen-79";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentStep, setCurrentStep] = useState(0);
-  const [selections, setSelections] = useState([]);
-  const [impact, setImpact] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const steps = [
+  const questions = [
     {
       id: 1,
-      question: "Choose goal for campaign.",
+      text: "You're planning a campaign. What should be your first step?",
       options: [
-        { id: 1, text: "Reduce plastic use", value: 20 },
-        { id: 2, text: "Vague awareness", value: 5 },
-        { id: 3, text: "Specific targets", value: 25 },
-        { id: 4, text: "No goal", value: 0 }
+        { 
+          id: "a", 
+          text: "Set Specific Goals", 
+          emoji: "🎯", 
+          description: "Define clear, measurable objectives",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Vague Awareness", 
+          emoji: "🌫️", 
+          description: "Just raise general awareness",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "No Goal", 
+          emoji: "❌", 
+          description: "Start without any plan",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      question: "Select audience.",
+      text: "Who should be your target audience?",
       options: [
-        { id: 1, text: "Students and teachers", value: 20 },
-        { id: 2, text: "Everyone", value: 10 },
-        { id: 3, text: "Targeted groups", value: 25 },
-        { id: 4, text: "No audience", value: 0 }
+        { 
+          id: "a", 
+          text: "Targeted Groups", 
+          emoji: "👥", 
+          description: "Focus on specific demographics",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Everyone", 
+          emoji: "🌍", 
+          description: "Try to reach everyone",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "No Audience", 
+          emoji: "🚫", 
+          description: "Don't identify an audience",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      question: "Choose channel.",
+      text: "How will you spread your message?",
       options: [
-        { id: 1, text: "Posters and social media", value: 20 },
-        { id: 2, text: "One channel", value: 10 },
-        { id: 3, text: "Multi-channel", value: 25 },
-        { id: 4, text: "No channel", value: 0 }
+        { 
+          id: "a", 
+          text: "Multi-Channel", 
+          emoji: "📱", 
+          description: "Use multiple platforms and methods",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "One Channel", 
+          emoji: "📺", 
+          description: "Use only one method",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "No Channel", 
+          emoji: "🔇", 
+          description: "Don't plan any communication",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      question: "Set timeline.",
+      text: "What timeline should you set for your campaign?",
       options: [
-        { id: 1, text: "One month campaign", value: 20 },
-        { id: 2, text: "Indefinite", value: 10 },
-        { id: 3, text: "With milestones", value: 25 },
-        { id: 4, text: "No timeline", value: 0 }
+        { 
+          id: "a", 
+          text: "With Milestones", 
+          emoji: "📅", 
+          description: "Set clear deadlines and checkpoints",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Indefinite", 
+          emoji: "♾️", 
+          description: "No specific timeline",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "No Timeline", 
+          emoji: "⏸️", 
+          description: "Don't set any deadlines",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      question: "Measure impact.",
+      text: "How will you measure the success of your campaign?",
       options: [
-        { id: 1, text: "Surveys and data", value: 20 },
-        { id: 2, text: "Guess", value: 5 },
-        { id: 3, text: "KPI tracking", value: 25 },
-        { id: 4, text: "No measurement", value: 0 }
+        { 
+          id: "a", 
+          text: "KPI Tracking", 
+          emoji: "📊", 
+          description: "Use key performance indicators",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Guess", 
+          emoji: "🔮", 
+          description: "Estimate without data",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "No Measurement", 
+          emoji: "🙈", 
+          description: "Don't track results",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleSelect = (optionId) => {
-    const step = steps[currentStep];
-    const option = step.options.find(o => o.id === optionId);
-    setSelections([...selections, option.value]);
-    setCoins(prev => prev + 1);
-    showCorrectAnswerFeedback(1, false);
-    if (currentStep < steps.length - 1) {
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
+    
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+    
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
       setTimeout(() => {
-        setCurrentStep(prev => prev + 1);
-      }, 1500);
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
     } else {
-      const total = selections.reduce((sum, val) => sum + val, 0);
-      setImpact(total);
-      if (total > 100) {
-        setCoins(prev => prev + 1);
-      }
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
       setTimeout(() => {
         setShowResult(true);
-      }, 1500);
+      }, isCorrect ? 1000 : 800);
     }
   };
 
@@ -97,57 +205,63 @@ const CampaignStory = () => {
     navigate("/games/uvls/teens");
   };
 
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
+
   return (
     <GameShell
       title="Campaign Story"
-      subtitle={`Step ${currentStep + 1} of ${steps.length}`}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
       onNext={handleNext}
-      nextEnabled={showResult && impact > 100}
-      showGameOver={showResult && impact > 100}
+      nextEnabled={false}
+      showGameOver={showResult}
       score={coins}
-      gameId="civic-181"
-      gameType="civic"
-      totalLevels={10}
-      currentLevel={1}
-      showConfetti={showResult && impact > 100}
+      gameId={gameId}
+      gameType="uvls"
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
-    >
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
       <div className="space-y-8">
-        {!showResult ? (
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-xl mb-6">{steps[currentStep].question}</p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
               
-              <div className="space-y-3 mb-6">
-                {steps[currentStep].options.map(option => (
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
                   <button
                     key={option.id}
-                    onClick={() => handleSelect(option.id)}
-                    className="w-full text-left border-2 rounded-xl p-4 transition-all bg-white/20 border-white/40 hover:bg-white/30"
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <span className="text-white font-medium">{option.text}</span>
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
                   </button>
                 ))}
               </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Campaign Planned!
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Impact Score: {impact}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {impact > 100 ? "Earned 5 Coins!" : "Improve for better impact."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Encourage school-level implementation.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

@@ -1,204 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const TradeOffsPuzzle = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-40";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentChoice, setCurrentChoice] = useState(0);
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-53";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedOption, setSelectedOption] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const choices = [
+  const questions = [
     {
       id: 1,
-      dilemma: "Study all night or sleep?",
-      emoji: "📚",
+      text: "Dilemma: Study all night or sleep? What's the best balanced approach?",
       options: [
-        { id: 1, text: "Study all night", balanced: false },
-        { id: 2, text: "Sleep and study early", balanced: true },
-        { id: 3, text: "Skip exam", balanced: false },
-        { id: 4, text: "Balance study and rest", balanced: true }
+        { 
+          id: "a", 
+          text: "Balance study and rest - study early, get sleep", 
+          emoji: "📚",
+          description: "Balanced compromise",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Study all night, skip sleep completely", 
+          emoji: "🌙",
+          description: "Unbalanced, harmful",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Skip exam entirely", 
+          emoji: "🚫",
+          description: "Avoids the dilemma but fails",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      dilemma: "Spend money on game or save?",
-      emoji: "💰",
+      text: "Dilemma: Spend money on game or save? What's the best compromise?",
       options: [
-        { id: 1, text: "Buy game", balanced: false },
-        { id: 2, text: "Save for future", balanced: true },
-        { id: 3, text: "Borrow money", balanced: false },
-        { id: 4, text: "Budget for both", balanced: true }
+        { 
+          id: "b", 
+          text: "Buy game immediately with all money", 
+          emoji: "🛒",
+          description: "No balance",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Budget for both - save some, spend some wisely", 
+          emoji: "💰",
+          description: "Balanced approach",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Borrow money to get both", 
+          emoji: "💳",
+          description: "Creates debt problem",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      dilemma: "Help friend or do homework?",
-      emoji: "👥",
+      text: "Dilemma: Help friend or do homework? What's the best solution?",
       options: [
-        { id: 1, text: "Ignore friend", balanced: false },
-        { id: 2, text: "Quick help then homework", balanced: true },
-        { id: 3, text: "Do friend's work", balanced: false },
-        { id: 4, text: "Schedule time", balanced: true }
+        { 
+          id: "a", 
+          text: "Quick help then homework, or schedule time for both", 
+          emoji: "👥",
+          description: "Addresses both needs",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Ignore friend completely", 
+          emoji: "🙈",
+          description: "Not supportive",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Do friend's work instead of your own", 
+          emoji: "✍️",
+          description: "Compromises your own work",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      dilemma: "Eat junk or healthy food?",
-      emoji: "🍎",
+      text: "Dilemma: Eat junk or healthy food? What's the best balance?",
       options: [
-        { id: 1, text: "All junk", balanced: false },
-        { id: 2, text: "Balanced diet", balanced: true },
-        { id: 3, text: "Skip meals", balanced: false },
-        { id: 4, text: "Occasional treat", balanced: true }
+        { 
+          id: "b", 
+          text: "Eat only junk food", 
+          emoji: "🍔",
+          description: "Unhealthy",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Never eat anything fun", 
+          emoji: "🚫",
+          description: "Too restrictive",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Balance - mostly healthy with occasional treats", 
+          emoji: "🍎",
+          description: "Realistic compromise",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      dilemma: "Watch TV or exercise?",
-      emoji: "🏃",
+      text: "Dilemma: Social time or study time? What's the best compromise?",
       options: [
-        { id: 1, text: "All TV", balanced: false },
-        { id: 2, text: "Exercise then TV", balanced: true },
-        { id: 3, text: "No activity", balanced: false },
-        { id: 4, text: "Active hobbies", balanced: true }
+        { 
+          id: "a", 
+          text: "Schedule both - dedicated study time and social time", 
+          emoji: "📅",
+          description: "Balanced schedule",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Only socialize, never study", 
+          emoji: "🎉",
+          description: "Neglects academics",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Only study, never socialize", 
+          emoji: "📚",
+          description: "Neglects relationships",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
     setSelectedOption(optionId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedOption) return;
-
-    const choice = choices[currentChoice];
-    const option = choice.options.find(o => o.id === selectedOption);
+    resetFeedback();
     
-    const isBalanced = option.balanced;
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    const newResponses = [...responses, {
-      choiceId: choice.id,
-      optionId: selectedOption,
-      isBalanced,
-      option: option.text
-    }];
-    
-    setResponses(newResponses);
-    
-    if (isBalanced) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedOption(null);
-    
-    if (currentChoice < choices.length - 1) {
-      setTimeout(() => {
-        setCurrentChoice(prev => prev + 1);
-      }, 1500);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const balancedCount = responses.filter(r => r.isBalanced).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Trade-offs Puzzle"
-      subtitle={`Choice ${currentChoice + 1} of ${choices.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && balancedCount >= 4}
-      showGameOver={showResult && balancedCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-40"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={40}
-      showConfetti={showResult && balancedCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-5xl mb-4 text-center">{choices[currentChoice].emoji}</div>
-              
-              <div className="bg-red-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white italic">
-                  {choices[currentChoice].dilemma}
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white/90 mb-4 text-center">Pick balanced option:</p>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <div className="space-y-3 mb-6">
-                {choices[currentChoice].options.map(option => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleOptionSelect(option.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedOption === option.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{option.text}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedOption}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedOption
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Choose
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {balancedCount >= 4 ? "🎉 Balanced Chooser!" : "💪 More Balance!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Balanced choices: {balancedCount} out of {choices.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {balancedCount >= 4 ? "Earned 5 Coins!" : "Need 4+ balanced."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Use real student dilemmas.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

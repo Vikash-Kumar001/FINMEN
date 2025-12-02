@@ -1,170 +1,248 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const WalkInShoes = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-teen-4";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentNode, setCurrentNode] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const decisionNodes = [
+  const questions = [
     {
       id: 1,
-      scenario: "You're a new student who speaks a different language. During lunch, you sit alone because you're not sure how to join others.",
-      emoji: "🍱",
-      question: "What do you do?",
+      text: "You're a new student who speaks a different language. During lunch, you sit alone because you're not sure how to join others. What do you do?",
       options: [
-        { id: "ask", text: "Try to ask someone if you can join (supportive)", isHelpful: true },
-        { id: "hide", text: "Hide in the library to avoid everyone", isHelpful: false },
-        { id: "cry", text: "Just sit alone and feel sad", isHelpful: false },
-        { id: "teacher", text: "Talk to a teacher about feeling lonely (help-seeking)", isHelpful: true }
-      ],
-      outcome: {
-        supportive: "Someone notices your courage and invites you over! 😊",
-        negative: "You continue feeling isolated and lonely... 😔"
-      }
+        { 
+          id: "a", 
+          text: "Try to ask someone if you can join", 
+          emoji: "🤝", 
+          description: "Shows courage and helps you connect",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Hide in the library to avoid everyone", 
+          emoji: "📚", 
+          description: "Avoids the problem and increases isolation",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Just sit alone and feel sad", 
+          emoji: "😔", 
+          description: "Doesn't help the situation",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 2,
-      scenario: "You have a learning disability and the class is moving too fast. You're falling behind and feeling overwhelmed.",
-      emoji: "📖",
-      question: "How do you handle this?",
+      text: "You have a learning disability and the class is moving too fast. You're falling behind and feeling overwhelmed. How do you handle this?",
       options: [
-        { id: "advocate", text: "Ask the teacher for help or accommodations (help-seeking)", isHelpful: true },
-        { id: "quit", text: "Give up and stop trying", isHelpful: false },
-        { id: "copy", text: "Copy someone else's work", isHelpful: false },
-        { id: "peer", text: "Ask a supportive classmate to study together (supportive)", isHelpful: true }
-      ],
-      outcome: {
-        supportive: "You get the support you need and start understanding! 📚",
-        negative: "You fall further behind and feel more stressed... 😰"
-      }
+        { 
+          id: "b", 
+          text: "Give up and stop trying", 
+          emoji: "😔", 
+          description: "Not helpful and makes things worse",
+          isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Ask the teacher for help or accommodations", 
+          emoji: "🙋", 
+          description: "Advocating for yourself is important",
+          isCorrect: true 
+        },
+        { 
+          id: "c", 
+          text: "Copy someone else's work", 
+          emoji: "📋", 
+          description: "Dishonest and doesn't help you learn",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      scenario: "You're being excluded from group activities because of your background. Others make comments that hurt.",
-      emoji: "💔",
-      question: "What's your choice?",
+      text: "You're being excluded from group activities because of your background. Others make comments that hurt. What's your choice?",
       options: [
-        { id: "report", text: "Report the exclusion to a trusted adult (help-seeking)", isHelpful: true },
-        { id: "accept", text: "Accept it and try to change who you are", isHelpful: false },
-        { id: "anger", text: "React with anger and aggression", isHelpful: false },
-        { id: "support", text: "Find supportive friends who accept you (supportive)", isHelpful: true }
-      ],
-      outcome: {
-        supportive: "You find allies and the situation is addressed! 🤝",
-        negative: "The exclusion continues and affects your wellbeing... 😞"
-      }
+        { 
+          id: "b", 
+          text: "Accept it and try to change who you are", 
+          emoji: "😞", 
+          description: "Hurts your self-esteem",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "React with anger and aggression", 
+          emoji: "😠", 
+          description: "Can make the situation worse",
+          isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Report the exclusion to a trusted adult", 
+          emoji: "🛡️", 
+          description: "Gets you the help and support you need",
+          isCorrect: true 
+        }
+      ]
     },
     {
       id: 4,
-      scenario: "You're dealing with family financial struggles and can't afford school supplies. Others seem to have everything they need.",
-      emoji: "💰",
-      question: "How do you respond?",
+      text: "You're dealing with family financial struggles and can't afford school supplies. Others seem to have everything they need. How do you respond?",
       options: [
-        { id: "share", text: "Ask the school counselor for resources (help-seeking)", isHelpful: true },
-        { id: "shame", text: "Feel ashamed and try to hide your situation", isHelpful: false },
-        { id: "steal", text: "Take supplies from others without asking", isHelpful: false },
-        { id: "connect", text: "Connect with a teacher or counselor who can help (supportive)", isHelpful: true }
-      ],
-      outcome: {
-        supportive: "You receive the help you need and feel supported! ✨",
-        negative: "The stress continues to build and affects your studies... 😓"
-      }
+        { 
+          id: "b", 
+          text: "Feel ashamed and try to hide your situation", 
+          emoji: "😳", 
+          description: "Prevents you from getting help",
+          isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Ask the school counselor for resources", 
+          emoji: "💼", 
+          description: "Gets you the support you need",
+          isCorrect: true 
+        },
+        { 
+          id: "c", 
+          text: "Take supplies from others without asking", 
+          emoji: "🚫", 
+          description: "Wrong and can cause problems",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 5,
-      scenario: "You're experiencing mental health challenges and feel like you're the only one struggling. Others seem happy and carefree.",
-      emoji: "🧠",
-      question: "What action do you take?",
+      text: "You're experiencing mental health challenges and feel like you're the only one struggling. Others seem happy and carefree. What action do you take?",
       options: [
-        { id: "therapy", text: "Seek help from a school counselor or therapist (help-seeking)", isHelpful: true },
-        { id: "isolate", text: "Withdraw and isolate yourself from everyone", isHelpful: false },
-        { id: "deny", text: "Pretend everything is fine and ignore your feelings", isHelpful: false },
-        { id: "trust", text: "Talk to a trusted adult or friend about your feelings (supportive)", isHelpful: true }
-      ],
-      outcome: {
-        supportive: "You find support and start feeling better! 🌈",
-        negative: "Your struggles continue to grow in silence... 💙"
-      }
+        { 
+          id: "b", 
+          text: "Withdraw and isolate yourself from everyone", 
+          emoji: "🚪", 
+          description: "Makes things worse",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Pretend everything is fine and ignore your feelings", 
+          emoji: "😶", 
+          description: "Doesn't address the problem",
+          isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Seek help from a school counselor or therapist", 
+          emoji: "💙", 
+          description: "Professional help can make a big difference",
+          isCorrect: true 
+        }
+      ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (isProcessing || showResult) return; // Prevent double clicks
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    setIsProcessing(true);
-    const node = decisionNodes[currentNode];
-    const option = node.options.find(opt => opt.id === optionId);
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newChoices = [...choices, {
-      nodeId: node.id,
-      choice: optionId,
-      isHelpful: option.isHelpful
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setChoices(newChoices);
-    
-    if (option.isHelpful) {
-      setCoins(prev => prev + 1);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
-    if (currentNode < decisionNodes.length - 1) {
-      setTimeout(() => {
-        setCurrentNode(prev => prev + 1);
-        setIsProcessing(false);
-      }, 1500);
-    } else {
-      setTimeout(() => {
-        setShowResult(true);
-        setIsProcessing(false);
-      }, 1500);
-    }
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const helpfulCount = choices.filter(c => c.isHelpful).length;
-  // Score should be the number of correct answers for backend
-  const finalScore = showResult ? helpfulCount : coins;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Walk in Their Shoes"
-      subtitle={`Situation ${currentNode + 1} of ${decisionNodes.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && helpfulCount === 5}
-      showGameOver={showResult}
+      subtitle={levelCompleted ? "Simulation Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-4"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={5}
-      maxScore={5}
-      showConfetti={showResult && helpfulCount === 5}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult && (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="bg-yellow-500/20 border-2 border-yellow-400/50 rounded-lg p-3 mb-4">
@@ -173,51 +251,46 @@ const WalkInShoes = () => {
                 </p>
               </div>
               
-              <div className="text-6xl mb-4 text-center">{decisionNodes[currentNode].emoji}</div>
-              
-              <div className="bg-purple-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white text-lg">
-                  {decisionNodes[currentNode].scenario}
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white/90 mb-4 text-center font-semibold">
-                {decisionNodes[currentNode].question}
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
               
-              <div className="space-y-3">
-                {decisionNodes[currentNode].options.map(option => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.id)}
-                    disabled={isProcessing || choices.length > currentNode}
-                    className={`w-full backdrop-blur-sm border-2 rounded-xl p-4 transition-all transform text-left ${
-                      isProcessing || choices.length > currentNode
-                        ? 'bg-gray-500/20 border-gray-400/40 cursor-not-allowed opacity-50'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30 hover:scale-102'
-                    }`}
-                  >
-                    <div className="text-white font-medium">{option.text}</div>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              {choices.length > 0 && (
-                <div className={`mt-4 p-4 rounded-xl ${
-                  choices[choices.length - 1].isHelpful
-                    ? 'bg-green-500/30 border-2 border-green-400'
-                    : 'bg-red-500/30 border-2 border-red-400'
-                }`}>
-                  <p className="text-white font-medium">
-                    {choices[choices.length - 1].isHelpful 
-                      ? decisionNodes[choices.length - 1].outcome.supportive
-                      : decisionNodes[choices.length - 1].outcome.negative}
-                  </p>
-                </div>
-              )}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

@@ -1,209 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const EthicalRoleplay = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-88";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [selectedApproach, setSelectedApproach] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [badge, setBadge] = useState(false);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-55";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      dilemma: "Copy homework or do it yourself?",
-      emoji: "📝",
-      approaches: [
-        { id: 1, text: "Copy", ethical: false },
-        { id: 2, text: "Do yourself", ethical: true },
-        { id: 3, text: "Ask for help", ethical: true },
-        { id: 4, text: "Skip assignment", ethical: false }
+      text: "Dilemma: Copy homework from a friend or do it yourself?",
+      options: [
+        { 
+          id: "a", 
+          text: "Do it yourself or ask for help", 
+          emoji: "✍️",
+          description: "Ethical approach - honest learning",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Copy the homework", 
+          emoji: "📋",
+          description: "Unethical - academic dishonesty",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Skip the assignment entirely", 
+          emoji: "⏭️",
+          description: "Avoids the dilemma but fails the assignment",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      dilemma: "Lie to friend or tell truth?",
-      emoji: "🤥",
-      approaches: [
-        { id: 1, text: "Lie", ethical: false },
-        { id: 2, text: "Tell truth kindly", ethical: true },
-        { id: 3, text: "Avoid topic", ethical: false },
-        { id: 4, text: "Be honest", ethical: true }
+      text: "Dilemma: Tell your friend an uncomfortable truth or lie to avoid conflict?",
+      options: [
+        { 
+          id: "b", 
+          text: "Tell the truth kindly and honestly", 
+          emoji: "💬",
+          description: "Ethical - respects honesty",
+          isCorrect: true
+        },
+        { 
+          id: "a", 
+          text: "Lie to avoid the conflict", 
+          emoji: "🤥",
+          description: "Unethical - deception",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Avoid the topic completely", 
+          emoji: "🙈",
+          description: "Doesn't address the situation",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      dilemma: "Cheat on test or study?",
-      emoji: "📝",
-      approaches: [
-        { id: 1, text: "Cheat", ethical: false },
-        { id: 2, text: "Study hard", ethical: true },
-        { id: 3, text: "Guess answers", ethical: false },
-        { id: 4, text: "Prepare ethically", ethical: true }
+      text: "Dilemma: Cheat on a test or study hard?",
+      options: [
+        { 
+          id: "a", 
+          text: "Study hard and prepare ethically", 
+          emoji: "📚",
+          description: "Ethical - honest preparation",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Cheat on the test", 
+          emoji: "👀",
+          description: "Unethical - academic dishonesty",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Guess all answers randomly", 
+          emoji: "🎲",
+          description: "Not a responsible approach",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      dilemma: "Steal small item or pay?",
-      emoji: "🛒",
-      approaches: [
-        { id: 1, text: "Steal", ethical: false },
-        { id: 2, text: "Pay for it", ethical: true },
-        { id: 3, text: "Leave it", ethical: true },
-        { id: 4, text: "Rationalize theft", ethical: false }
+      text: "Dilemma: Take a small item without paying or pay for it?",
+      options: [
+        { 
+          id: "b", 
+          text: "Pay for it or leave it", 
+          emoji: "💳",
+          description: "Ethical - respects property",
+          isCorrect: true
+        },
+        { 
+          id: "a", 
+          text: "Take it without paying", 
+          emoji: "🛒",
+          description: "Unethical - theft",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Rationalize taking it", 
+          emoji: "🤔",
+          description: "Justifies unethical behavior",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      dilemma: "Gossip or stay silent?",
-      emoji: "🗣️",
-      approaches: [
-        { id: 1, text: "Gossip", ethical: false },
-        { id: 2, text: "Stay silent", ethical: true },
-        { id: 3, text: "Defend person", ethical: true },
-        { id: 4, text: "Spread rumor", ethical: false }
+      text: "Dilemma: Spread gossip about someone or stay silent?",
+      options: [
+        { 
+          id: "a", 
+          text: "Stay silent or defend the person", 
+          emoji: "🤐",
+          description: "Ethical - respectful behavior",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Spread the gossip", 
+          emoji: "🗣️",
+          description: "Unethical - harmful behavior",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Add more rumors", 
+          emoji: "📢",
+          description: "Very unethical - causes harm",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleApproachSelect = (approachId) => {
-    setSelectedApproach(approachId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedApproach) return;
-
-    const scenario = scenarios[currentScenario];
-    const approach = scenario.approaches.find(a => a.id === selectedApproach);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isEthical = approach.ethical;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      scenarioId: scenario.id,
-      approachId: selectedApproach,
-      isEthical,
-      approach: approach.text
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isEthical) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedApproach(null);
-    
-    if (currentScenario < scenarios.length - 1) {
-      setTimeout(() => {
-        setCurrentScenario(prev => prev + 1);
-      }, 1500);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      const ethicalCount = newResponses.filter(r => r.isEthical).length;
-      if (ethicalCount >= 4) {
-        setBadge(true);
-      }
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const ethicalCount = responses.filter(r => r.isEthical).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Ethical Roleplay"
-      subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && ethicalCount >= 4}
-      showGameOver={showResult && ethicalCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Roleplay Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-88"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={88}
-      showConfetti={showResult && ethicalCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-5xl mb-4 text-center">{scenarios[currentScenario].emoji}</div>
-              
-              <div className="bg-red-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white italic">
-                  {scenarios[currentScenario].dilemma}
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white/90 mb-4 text-center">Choose ethical approach:</p>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <div className="space-y-3 mb-6">
-                {scenarios[currentScenario].approaches.map(approach => (
-                  <button
-                    key={approach.id}
-                    onClick={() => handleApproachSelect(approach.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedApproach === approach.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{approach.text}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedApproach}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedApproach
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Decide
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {ethicalCount >= 4 ? "🎉 Ethical Thinker!" : "💪 More Ethics!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Ethical choices: {ethicalCount} out of {scenarios.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {ethicalCount >= 4 ? "Earned Badge!" : "Need 4+ ethical."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Discuss pressure & incentives.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

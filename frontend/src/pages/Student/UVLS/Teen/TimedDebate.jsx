@@ -1,200 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const TimedDebate = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-98";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentRound, setCurrentRound] = useState(0);
-  const [selectedArgument, setSelectedArgument] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-58";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const rounds = [
+  const questions = [
     {
       id: 1,
-      topic: "Homework should be banned.",
-      emoji: "📚",
-      arguments: [
-        { id: 1, text: "Pro: More free time", logical: true },
-        { id: 2, text: "Con: Less practice", logical: true },
-        { id: 3, text: "Emotional rant", logical: false },
-        { id: 4, text: "Evidence-based pro", logical: true }
+      text: "Topic: 'Homework should be banned.' Your peer argues: 'Homework reduces free time.' What's the best logical response?",
+      options: [
+        { 
+          id: "a", 
+          text: "While homework takes time, research shows it improves retention when balanced appropriately", 
+          emoji: "📚",
+          description: "Balanced, evidence-based argument",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "I hate homework too, it's so annoying!", 
+          emoji: "😠",
+          description: "Emotional, not logical",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "You're completely wrong about everything", 
+          emoji: "❌",
+          description: "Dismissive and illogical",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      topic: "Social media is harmful.",
-      emoji: "📱",
-      arguments: [
-        { id: 1, text: "Pro: Addiction", logical: true },
-        { id: 2, text: "Con: Connectivity", logical: true },
-        { id: 3, text: "Personal story", logical: false },
-        { id: 4, text: "Study citation con", logical: true }
+      text: "Topic: 'Social media is harmful.' Your peer argues: 'It helps people connect.' How do you respond logically?",
+      options: [
+        { 
+          id: "b", 
+          text: "That's dumb, social media is evil", 
+          emoji: "😤",
+          description: "Emotional, not logical",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Connection is valuable, but studies show excessive use can lead to mental health issues - balance is key", 
+          emoji: "⚖️",
+          description: "Acknowledges both sides with evidence",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "I don't care what you think", 
+          emoji: "🤷",
+          description: "Not engaging in debate",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      topic: "School uniforms are good.",
-      emoji: "👕",
-      arguments: [
-        { id: 1, text: "Pro: Equality", logical: true },
-        { id: 2, text: "Con: Expression limit", logical: true },
-        { id: 3, text: "I hate them", logical: false },
-        { id: 4, text: "Research pro", logical: true }
+      text: "Topic: 'School uniforms are good.' Your peer argues: 'They limit self-expression.' What's the best logical counter?",
+      options: [
+        { 
+          id: "a", 
+          text: "Uniforms can reduce socioeconomic pressures while allowing expression through accessories and personal style", 
+          emoji: "👕",
+          description: "Balanced, logical argument",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Uniforms are ugly and I hate them", 
+          emoji: "😠",
+          description: "Personal opinion, not logical",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "You're wrong, end of discussion", 
+          emoji: "🚫",
+          description: "Closes debate, not logical",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      topic: "Video games cause violence.",
-      emoji: "🎮",
-      arguments: [
-        { id: 1, text: "Pro: Correlation studies", logical: true },
-        { id: 2, text: "Con: No causation", logical: true },
-        { id: 3, text: "My opinion", logical: false },
-        { id: 4, text: "Expert quote con", logical: true }
+      text: "Topic: 'Video games cause violence.' Your peer argues: 'There's no direct causation proven.' How do you respond?",
+      options: [
+        { 
+          id: "b", 
+          text: "Games definitely make people violent, I know it", 
+          emoji: "🎮",
+          description: "Assumption without evidence",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "I don't want to debate this", 
+          emoji: "🙈",
+          description: "Avoids the debate",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "You're right that causation isn't proven - correlation exists but many factors contribute to violence", 
+          emoji: "🔬",
+          description: "Logical, evidence-based response",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      topic: "Pets in class?",
-      emoji: "🐶",
-      arguments: [
-        { id: 1, text: "Pro: Reduces stress", logical: true },
-        { id: 2, text: "Con: Allergies", logical: true },
-        { id: 3, text: "Cute animals!", logical: false },
-        { id: 4, text: "Study on benefits", logical: true }
+      text: "Topic: 'Pets in class should be allowed.' Your peer argues: 'They could cause allergies.' What's the best response?",
+      options: [
+        { 
+          id: "a", 
+          text: "Allergies are a valid concern - perhaps designated pet-free zones could accommodate everyone", 
+          emoji: "🐶",
+          description: "Addresses concern with solution",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Allergies don't matter, pets are cute", 
+          emoji: "😍",
+          description: "Dismisses valid concern",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "This topic is stupid", 
+          emoji: "🤦",
+          description: "Not engaging logically",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleArgumentSelect = (argumentId) => {
-    setSelectedArgument(argumentId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedArgument) return;
-
-    const round = rounds[currentRound];
-    const argument = round.arguments.find(a => a.id === selectedArgument);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isLogical = argument.logical;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      roundId: round.id,
-      argumentId: selectedArgument,
-      isLogical,
-      argument: argument.text
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isLogical) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedArgument(null);
-    
-    if (currentRound < rounds.length - 1) {
-      setTimeout(() => {
-        setCurrentRound(prev => prev + 1);
-      }, 1500);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const logicalCount = responses.filter(r => r.isLogical).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Timed Debate"
-      subtitle={`Round ${currentRound + 1} of ${rounds.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && logicalCount >= 4}
-      showGameOver={showResult && logicalCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Debate Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-98"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={98}
-      showConfetti={showResult && logicalCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-5xl mb-4 text-center">{rounds[currentRound].emoji}</div>
-              
-              <p className="text-white text-xl mb-6">Topic: {rounds[currentRound].topic}</p>
-              
-              <p className="text-white/90 mb-4 text-center">Choose logical argument:</p>
-              
-              <div className="space-y-3 mb-6">
-                {rounds[currentRound].arguments.map(argument => (
-                  <button
-                    key={argument.id}
-                    onClick={() => handleArgumentSelect(argument.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedArgument === argument.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{argument.text}</span>
-                  </button>
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedArgument}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedArgument
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Argue
-              </button>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {logicalCount >= 4 ? "🎉 Debate Master!" : "💪 More Logic!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Logical arguments: {logicalCount} out of {rounds.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {logicalCount >= 4 ? "Earned 10 Coins!" : "Need 4+ logical."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Rotate roles: pro/con/judge.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

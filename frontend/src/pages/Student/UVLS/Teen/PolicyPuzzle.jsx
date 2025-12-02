@@ -1,204 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const PolicyPuzzle = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-48";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentPolicy, setCurrentPolicy] = useState(0);
-  const [selectedImprovement, setSelectedImprovement] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-59";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const policies = [
+  const questions = [
     {
       id: 1,
-      policy: "No phones in school.",
-      emoji: "📱",
-      improvements: [
-        { id: 1, text: "Allow educational use", feasible: true },
-        { id: 2, text: "Ban all tech", feasible: false },
-        { id: 3, text: "Phone zones", feasible: true },
-        { id: 4, text: "Ignore rule", feasible: false }
+      text: "Policy: 'No phones in school.' What's the most practical improvement?",
+      options: [
+        { 
+          id: "a", 
+          text: "Allow phones for educational use during designated times", 
+          emoji: "📱",
+          description: "Balances restriction with practical use",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Ban all technology completely", 
+          emoji: "🚫",
+          description: "Too restrictive and impractical",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore the policy entirely", 
+          emoji: "🙈",
+          description: "Doesn't improve the policy",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      policy: "Uniform required.",
-      emoji: "👕",
-      improvements: [
-        { id: 1, text: "Casual Fridays", feasible: true },
-        { id: 2, text: "No uniforms", feasible: false },
-        { id: 3, text: "Customize uniforms", feasible: true },
-        { id: 4, text: "Strict enforcement", feasible: false }
+      text: "Policy: 'Uniform required.' What's the most feasible improvement?",
+      options: [
+        { 
+          id: "b", 
+          text: "Abolish uniforms completely", 
+          emoji: "👕",
+          description: "Not an improvement, just elimination",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Allow casual Fridays or uniform customization options", 
+          emoji: "🎨",
+          description: "Practical compromise that maintains structure",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Make uniforms even stricter", 
+          emoji: "⚡",
+          description: "Not an improvement for students",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      policy: "Homework every day.",
-      emoji: "📚",
-      improvements: [
-        { id: 1, text: "Reduce load", feasible: true },
-        { id: 2, text: "More homework", feasible: false },
-        { id: 3, text: "Project-based", feasible: true },
-        { id: 4, text: "No homework", feasible: false }
+      text: "Policy: 'Homework every day.' What's the most feasible improvement?",
+      options: [
+        { 
+          id: "a", 
+          text: "Reduce homework load and make it project-based", 
+          emoji: "📚",
+          description: "Balances learning with student wellbeing",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Give even more homework", 
+          emoji: "📝",
+          description: "Worsens the problem",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Eliminate all homework", 
+          emoji: "🗑️",
+          description: "Removes practice opportunities",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      policy: "No recess for misbehavior.",
-      emoji: "🏃",
-      improvements: [
-        { id: 1, text: "Alternative activities", feasible: true },
-        { id: 2, text: "Longer punishment", feasible: false },
-        { id: 3, text: "Counseling instead", feasible: true },
-        { id: 4, text: "Ignore behavior", feasible: false }
+      text: "Policy: 'No recess for misbehavior.' What's the most practical improvement?",
+      options: [
+        { 
+          id: "b", 
+          text: "Make punishment even longer", 
+          emoji: "⏰",
+          description: "Not an improvement",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore misbehavior completely", 
+          emoji: "🙈",
+          description: "Doesn't address the issue",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Provide alternative constructive activities instead of removing recess", 
+          emoji: "🏃",
+          description: "Addresses behavior while maintaining physical activity",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      policy: "Grading on curve.",
-      emoji: "📊",
-      improvements: [
-        { id: 1, text: "Absolute grading", feasible: true },
-        { id: 2, text: "No grades", feasible: false },
-        { id: 3, text: "Mixed system", feasible: true },
-        { id: 4, text: "Curve stricter", feasible: false }
+      text: "Policy: 'Grading on curve.' What's the most feasible improvement?",
+      options: [
+        { 
+          id: "a", 
+          text: "Use a combination of absolute grading and curve when appropriate", 
+          emoji: "📊",
+          description: "Balanced approach to fair assessment",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Remove all grading", 
+          emoji: "✂️",
+          description: "Not practical for assessment",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Make the curve even stricter", 
+          emoji: "📉",
+          description: "Not an improvement",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleImprovementSelect = (improvementId) => {
-    setSelectedImprovement(improvementId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedImprovement) return;
-
-    const policy = policies[currentPolicy];
-    const improvement = policy.improvements.find(i => i.id === selectedImprovement);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isFeasible = improvement.feasible;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      policyId: policy.id,
-      improvementId: selectedImprovement,
-      isFeasible,
-      improvement: improvement.text
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isFeasible) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedImprovement(null);
-    
-    if (currentPolicy < policies.length - 1) {
-      setTimeout(() => {
-        setCurrentPolicy(prev => prev + 1);
-      }, 1500);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const feasibleCount = responses.filter(r => r.isFeasible).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Policy Puzzle"
-      subtitle={`Policy ${currentPolicy + 1} of ${policies.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && feasibleCount >= 4}
-      showGameOver={showResult && feasibleCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-48"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={48}
-      showConfetti={showResult && feasibleCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-5xl mb-4 text-center">{policies[currentPolicy].emoji}</div>
-              
-              <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white italic">
-                  Policy: {policies[currentPolicy].policy}
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white/90 mb-4 text-center">Suggest improvement:</p>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <div className="space-y-3 mb-6">
-                {policies[currentPolicy].improvements.map(improvement => (
-                  <button
-                    key={improvement.id}
-                    onClick={() => handleImprovementSelect(improvement.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedImprovement === improvement.id
-                        ? 'bg-green-500/50 border-green-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{improvement.text}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedImprovement}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedImprovement
-                    ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Suggest
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {feasibleCount >= 4 ? "🎉 Policy Improver!" : "💪 More Feasible!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Feasible improvements: {feasibleCount} out of {policies.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {feasibleCount >= 4 ? "Earned 5 Coins!" : "Need 4+ feasible."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Collate proposals for admin review.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

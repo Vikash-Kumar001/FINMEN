@@ -1,231 +1,293 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const AccessibilityPuzzle = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-teen-13";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentMatch, setCurrentMatch] = useState(0);
-  const [selectedAccommodation, setSelectedAccommodation] = useState(null);
-  const [matches, setMatches] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const matchPairs = [
+  const questions = [
     {
       id: 1,
-      need: "Student with visual impairment",
-      emoji: "👓",
-      correctAccommodation: "Large print materials or screen reader software",
-      accommodations: [
-        "Large print materials or screen reader software",
-        "Require them to sit in front",
-        "Give them easier assignments"
+      text: "A student with visual impairment needs accommodations. What's the best accommodation?",
+      options: [
+        { 
+          id: "a", 
+          text: "Large print materials or screen reader software", 
+          emoji: "👓",
+          description: "Provides accessible format for learning",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Require them to sit in front", 
+          emoji: "🪑",
+          description: "Doesn't address their specific needs",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Give them easier assignments", 
+          emoji: "📝",
+          description: "Unnecessarily lowers expectations",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      need: "Student with hearing impairment",
-      emoji: "👂",
-      correctAccommodation: "Sign language interpreter or written instructions",
-      accommodations: [
-        "Speak louder at them",
-        "Sign language interpreter or written instructions",
-        "Excuse them from class discussions"
+      text: "A student with hearing impairment needs accommodations. What's the best accommodation?",
+      options: [
+        { 
+          id: "b", 
+          text: "Speak louder at them", 
+          emoji: "📢",
+          description: "Doesn't address hearing loss",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Sign language interpreter or written instructions", 
+          emoji: "👂",
+          description: "Provides accessible communication",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Excuse them from class discussions", 
+          emoji: "🙈",
+          description: "Excludes them unnecessarily",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      need: "Student using wheelchair",
-      emoji: "♿",
-      correctAccommodation: "Ramps, elevators, accessible desks",
-      accommodations: [
-        "Ramps, elevators, accessible desks",
-        "Schedule all classes on ground floor only",
-        "Have others carry them upstairs"
+      text: "A student using a wheelchair needs accommodations. What's the best accommodation?",
+      options: [
+        { 
+          id: "a", 
+          text: "Ramps, elevators, accessible desks", 
+          emoji: "♿",
+          description: "Removes physical barriers",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Schedule all classes on ground floor only", 
+          emoji: "🚫",
+          description: "Limits their access unnecessarily",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Have others carry them upstairs", 
+          emoji: "👥",
+          description: "Not practical or respectful",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      need: "Student with ADHD",
-      emoji: "🧠",
-      correctAccommodation: "Extended time, breaks, fidget tools",
-      accommodations: [
-        "Tell them to sit still and focus better",
-        "Extended time, breaks, fidget tools",
-        "Separate them from other students"
+      text: "A student with ADHD needs accommodations. What's the best accommodation?",
+      options: [
+        { 
+          id: "b", 
+          text: "Tell them to sit still and focus better", 
+          emoji: "👆",
+          description: "Doesn't address the condition",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Extended time, breaks, fidget tools", 
+          emoji: "🧠",
+          description: "Supports their learning needs",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Separate them from other students", 
+          emoji: "🚫",
+          description: "Isolates them unnecessarily",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      need: "Student with dyslexia",
-      emoji: "📖",
-      correctAccommodation: "Audiobooks, extra time for reading tasks",
-      accommodations: [
-        "Audiobooks, extra time for reading tasks",
-        "Lower reading level assignments only",
-        "Exempt them from all reading"
-      ]
-    },
-    {
-      id: 6,
-      need: "Student with anxiety disorder",
-      emoji: "😰",
-      correctAccommodation: "Quiet testing space, advance notice of changes",
-      accommodations: [
-        "Tell them to just relax",
-        "Quiet testing space, advance notice of changes",
-        "Excuse them from presentations entirely"
+      text: "A student with dyslexia needs accommodations. What's the best accommodation?",
+      options: [
+        { 
+          id: "a", 
+          text: "Audiobooks, extra time for reading tasks", 
+          emoji: "📖",
+          description: "Provides alternative learning methods",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Lower reading level assignments only", 
+          emoji: "📉",
+          description: "Unnecessarily limits their learning",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Exempt them from all reading", 
+          emoji: "❌",
+          description: "Prevents skill development",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleAccommodationSelect = (accommodation) => {
-    setSelectedAccommodation(accommodation);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedAccommodation) return;
-
-    const pair = matchPairs[currentMatch];
-    const isCorrect = selectedAccommodation === pair.correctAccommodation;
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const newMatches = [...matches, {
-      pairId: pair.id,
-      selected: selectedAccommodation,
-      isCorrect
-    }];
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    setMatches(newMatches);
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    setSelectedAccommodation(null);
-    
-    if (currentMatch < matchPairs.length - 1) {
-      setTimeout(() => {
-        setCurrentMatch(prev => prev + 1);
-      }, isCorrect ? 1000 : 800);
     } else {
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentMatch(0);
-    setSelectedAccommodation(null);
-    setMatches([]);
-    setCoins(0);
-    resetFeedback();
-  };
-
-  const handleNext = () => {
-    navigate("/student/uvls/teen/inclusive-class-simulation");
-  };
-
-  const correctCount = matches.filter(m => m.isCorrect).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Accessibility Puzzle"
-      subtitle={`Match ${currentMatch + 1} of ${matchPairs.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && correctCount >= 5}
-      showGameOver={showResult && correctCount >= 5}
-      score={coins}
+      subtitle={levelCompleted ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-13"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={13}
-      showConfetti={showResult && correctCount >= 5}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-xl p-6 mb-6">
-                <div className="text-6xl mb-3 text-center">{matchPairs[currentMatch].emoji}</div>
-                <p className="text-white text-xl font-bold text-center">
-                  {matchPairs[currentMatch].need}
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white/90 mb-4 text-center">What's the best accommodation?</p>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <div className="space-y-3 mb-6">
-                {matchPairs[currentMatch].accommodations.map((accommodation, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleAccommodationSelect(accommodation)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedAccommodation === accommodation
-                        ? 'bg-green-500/50 border-green-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{accommodation}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedAccommodation}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedAccommodation
-                    ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Confirm Match
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {correctCount >= 5 ? "🎉 Accessibility Pro!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You matched {correctCount} out of {matchPairs.length} correctly!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {correctCount >= 5 ? "You earned 3 Coins! 🪙" : "Get 5 or more correct to earn coins!"}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Invite local accessibility examples and discuss real accommodations in your school!
-            </p>
-            {correctCount < 5 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default AccessibilityPuzzle;
-

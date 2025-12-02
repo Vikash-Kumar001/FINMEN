@@ -1,204 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const ToughConversation = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-36";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [selectedPhrasing, setSelectedPhrasing] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-61";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      topic: "Friend borrowing money without returning.",
-      emoji: "💰",
-      phrasings: [
-        { id: 1, text: "I feel worried when money isn't returned.", constructive: true },
-        { id: 2, text: "You're a thief!", constructive: false },
-        { id: 3, text: "Can we discuss the loan?", constructive: true },
-        { id: 4, text: "Forget it.", constructive: false }
+      text: "Scenario: Your friend borrowed money and hasn't returned it. What's the most constructive way to address this?",
+      options: [
+        { 
+          id: "a", 
+          text: "I feel worried when money isn't returned. Can we discuss a plan to pay it back?", 
+          emoji: "💰",
+          description: "Uses 'I' statements and seeks solution",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "You're a thief! Give me my money back now!", 
+          emoji: "😠",
+          description: "Accusatory and aggressive",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Forget it, I don't care anymore", 
+          emoji: "🤷",
+          description: "Avoids addressing the issue",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      topic: "Group project slacking.",
-      emoji: "👥",
-      phrasings: [
-        { id: 1, text: "I notice unequal work, let's divide tasks.", constructive: true },
-        { id: 2, text: "You're lazy!", constructive: false },
-        { id: 3, text: "How can we collaborate better?", constructive: true },
-        { id: 4, text: "I'll do it all.", constructive: false }
+      text: "Scenario: A group member isn't pulling their weight on a project. How do you address this constructively?",
+      options: [
+        { 
+          id: "b", 
+          text: "You're lazy and not doing your part!", 
+          emoji: "😤",
+          description: "Attacking and judgmental",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "I notice the work isn't evenly divided. How can we better collaborate to finish the project?", 
+          emoji: "👥",
+          description: "Observational, solution-focused",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "I'll just do everything myself", 
+          emoji: "😓",
+          description: "Doesn't address the problem",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      topic: "Friend spreading rumors.",
-      emoji: "🗣️",
-      phrasings: [
-        { id: 1, text: "I heard rumors, can we talk about it?", constructive: true },
-        { id: 2, text: "You're a liar!", constructive: false },
-        { id: 3, text: "It hurts when rumors spread.", constructive: true },
-        { id: 4, text: "Ignore friend.", constructive: false }
+      text: "Scenario: You heard your friend is spreading rumors about you. What's the best way to handle this conversation?",
+      options: [
+        { 
+          id: "a", 
+          text: "I heard some things are being said about me. Can we talk about it so I understand what's happening?", 
+          emoji: "💬",
+          description: "Open, non-accusatory approach",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "You're a liar and I hate you!", 
+          emoji: "😡",
+          description: "Emotional and destructive",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "I'll just ignore them completely", 
+          emoji: "🙈",
+          description: "Avoids resolving the issue",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      topic: "Disagreement on plans.",
-      emoji: "🗓️",
-      phrasings: [
-        { id: 1, text: "I prefer this, what do you think?", constructive: true },
-        { id: 2, text: "Your idea is stupid!", constructive: false },
-        { id: 3, text: "Let's find a compromise.", constructive: true },
-        { id: 4, text: "Do it my way.", constructive: false }
+      text: "Scenario: You and a friend disagree about weekend plans. How do you handle it constructively?",
+      options: [
+        { 
+          id: "b", 
+          text: "Your idea is stupid, let's do my plan", 
+          emoji: "😒",
+          description: "Dismissive and disrespectful",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Whatever, do what you want", 
+          emoji: "🤷",
+          description: "Passive, doesn't find compromise",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "I prefer this option, but I'd like to hear what you think so we can find something we both enjoy", 
+          emoji: "🤝",
+          description: "Shares preference, seeks compromise",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      topic: "Borrowed item damaged.",
-      emoji: "🛠️",
-      phrasings: [
-        { id: 1, text: "The item is damaged, how to fix?", constructive: true },
-        { id: 2, text: "You broke it on purpose!", constructive: false },
-        { id: 3, text: "I feel upset about the damage.", constructive: true },
-        { id: 4, text: "Never lend again.", constructive: false }
+      text: "Scenario: A friend returned something you lent them in damaged condition. How do you address this?",
+      options: [
+        { 
+          id: "a", 
+          text: "I noticed the item came back damaged. How can we figure out how to fix this together?", 
+          emoji: "🛠️",
+          description: "Observational, solution-oriented",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "You broke it on purpose, you're so careless!", 
+          emoji: "😠",
+          description: "Assumes intent, accusatory",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "I'll never lend you anything again, forget about it", 
+          emoji: "🚫",
+          description: "Creates distance, doesn't solve problem",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handlePhrasingSelect = (phrasingId) => {
-    setSelectedPhrasing(phrasingId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedPhrasing) return;
-
-    const scenario = scenarios[currentScenario];
-    const phrasing = scenario.phrasings.find(p => p.id === selectedPhrasing);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isConstructive = phrasing.constructive;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      scenarioId: scenario.id,
-      phrasingId: selectedPhrasing,
-      isConstructive,
-      phrasing: phrasing.text
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isConstructive) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedPhrasing(null);
-    
-    if (currentScenario < scenarios.length - 1) {
-      setTimeout(() => {
-        setCurrentScenario(prev => prev + 1);
-      }, 1500);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const constructiveCount = responses.filter(r => r.isConstructive).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Tough Conversation"
-      subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && constructiveCount >= 4}
-      showGameOver={showResult && constructiveCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Conversation Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-36"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={36}
-      showConfetti={showResult && constructiveCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-5xl mb-4 text-center">{scenarios[currentScenario].emoji}</div>
-              
-              <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white italic">
-                  {scenarios[currentScenario].topic}
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white/90 mb-4 text-center">Choose constructive phrasing:</p>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <div className="space-y-3 mb-6">
-                {scenarios[currentScenario].phrasings.map(phrasing => (
-                  <button
-                    key={phrasing.id}
-                    onClick={() => handlePhrasingSelect(phrasing.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedPhrasing === phrasing.id
-                        ? 'bg-green-500/50 border-green-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{phrasing.text}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedPhrasing}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedPhrasing
-                    ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Speak
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {constructiveCount >= 4 ? "🎉 Conversation Pro!" : "💪 More Constructive!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Constructive phrasings: {constructiveCount} out of {scenarios.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {constructiveCount >= 4 ? "Earned 5 Coins!" : "Need 4+ constructive."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Model “I” statements.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

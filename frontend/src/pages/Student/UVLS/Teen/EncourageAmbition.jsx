@@ -1,208 +1,287 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const EncourageAmbition = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  
   const gameId = "uvls-teen-21";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedResponse, setSelectedResponse] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30); // 30 seconds timer per question
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
-
-  useEffect(() => {
-    if (timeLeft > 0 && !showResult) {
-      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timerId);
-    } else if (timeLeft === 0) {
-      handleConfirm(); // Auto confirm if time out
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
-  }, [timeLeft, showResult]);
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      ambition: "I want to be an astronaut.",
-      emoji: "🚀",
-      responses: [
-        { id: 1, text: "That's ambitious! Go for it.", supportive: true },
-        { id: 2, text: "Too hard for you.", supportive: false },
-        { id: 3, text: "Boys are better at that.", supportive: false },
-        { id: 4, text: "Let's learn about space.", supportive: true }
+      text: "A peer says: 'I want to be an astronaut.' How do you respond supportively?",
+      options: [
+        { 
+          id: "a", 
+          text: "That's ambitious! Go for it and explore space careers.", 
+          emoji: "🚀",
+          description: "Encouraging and supportive",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Too hard for you.", 
+          emoji: "😞",
+          description: "Discouraging",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Boys are better at that.", 
+          emoji: "🚫",
+          description: "Sexist and wrong",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      ambition: "I dream of being a chef.",
-      emoji: "👩‍🍳",
-      responses: [
-        { id: 1, text: "Great! Cook something.", supportive: true },
-        { id: 2, text: "Girls should cook anyway.", supportive: false },
-        { id: 3, text: "Not a real job.", supportive: false },
-        { id: 4, text: "Explore recipes.", supportive: true }
+      text: "A peer says: 'I dream of being a chef.' How do you respond supportively?",
+      options: [
+        { 
+          id: "b", 
+          text: "Girls should cook anyway.", 
+          emoji: "😐",
+          description: "Sexist assumption",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Great! That's a creative career. Explore cooking and culinary school.", 
+          emoji: "👩‍🍳",
+          description: "Supportive and encouraging",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Not a real job.", 
+          emoji: "❌",
+          description: "Dismissive",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      ambition: "I want to be a teacher.",
-      emoji: "👩‍🏫",
-      responses: [
-        { id: 1, text: "Wonderful! Help others learn.", supportive: true },
-        { id: 2, text: "Low pay.", supportive: false },
-        { id: 3, text: "Women are teachers.", supportive: false },
-        { id: 4, text: "Practice teaching.", supportive: true }
+      text: "A peer says: 'I want to be a teacher.' How do you respond supportively?",
+      options: [
+        { 
+          id: "a", 
+          text: "Wonderful! Teaching makes a real difference. Help others learn and grow.", 
+          emoji: "👩‍🏫",
+          description: "Encouraging and positive",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Low pay.", 
+          emoji: "💰",
+          description: "Only focuses on negatives",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Women are teachers.", 
+          emoji: "👥",
+          description: "Stereotypical",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      ambition: "Aim to be a programmer.",
-      emoji: "💻",
-      responses: [
-        { id: 1, text: "Cool! Learn coding.", supportive: true },
-        { id: 2, text: "Boys dominate tech.", supportive: false },
-        { id: 3, text: "Too complicated.", supportive: false },
-        { id: 4, text: "Build an app.", supportive: true }
+      text: "A peer says: 'I aim to be a programmer.' How do you respond supportively?",
+      options: [
+        { 
+          id: "b", 
+          text: "Boys dominate tech.", 
+          emoji: "💻",
+          description: "Discouraging stereotype",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Cool! Tech is exciting. Learn coding and build projects.", 
+          emoji: "💻",
+          description: "Supportive and encouraging",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Too complicated.", 
+          emoji: "😕",
+          description: "Discouraging",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      ambition: "Become a doctor.",
-      emoji: "👩‍⚕️",
-      responses: [
-        { id: 1, text: "Amazing! Study hard.", supportive: true },
-        { id: 2, text: "Long studies.", supportive: false },
-        { id: 3, text: "Men are better doctors.", supportive: false },
-        { id: 4, text: "Volunteer at hospital.", supportive: true }
+      text: "A peer says: 'I want to become a doctor.' How do you respond supportively?",
+      options: [
+        { 
+          id: "a", 
+          text: "Amazing! Medicine helps people. Study hard and pursue your dream.", 
+          emoji: "👩‍⚕️",
+          description: "Encouraging and supportive",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Men are better doctors.", 
+          emoji: "🚫",
+          description: "Sexist and incorrect",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Long studies.", 
+          emoji: "⏰",
+          description: "Only focuses on difficulty",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleResponseSelect = (responseId) => {
-    setSelectedResponse(responseId);
-  };
-
-  const handleConfirm = () => {
-    const question = questions[currentQuestion];
-    const response = question.responses.find(r => r.id === selectedResponse) || { supportive: false }; // Default to false if time out
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isSupportive = response.supportive;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      questionId: question.id,
-      isSupportive
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isSupportive) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedResponse(null);
-    setTimeLeft(30);
-    
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const supportiveCount = responses.filter(r => r.isSupportive).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Encourage Ambition"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && supportiveCount >= 4}
-      showGameOver={showResult && supportiveCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-21"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={21}
-      showConfetti={showResult && supportiveCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white mb-2">Time left: {timeLeft}s</p>
-              <div className="text-5xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
-              
-              <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white italic">
-                  "{questions[currentQuestion].ambition}"
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white/90 mb-4 text-center">Choose supportive response:</p>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <div className="space-y-3 mb-6">
-                {questions[currentQuestion].responses.map(response => (
-                  <button
-                    key={response.id}
-                    onClick={() => handleResponseSelect(response.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedResponse === response.id
-                        ? 'bg-green-500/50 border-green-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{response.text}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedResponse && timeLeft > 0}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedResponse || timeLeft === 0
-                    ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Confirm
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {supportiveCount >= 4 ? "🎉 Great Encourager!" : "💪 Practice More!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Supportive responses: {supportiveCount} out of {questions.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {supportiveCount >= 4 ? "Earned 5 Coins!" : "Need 4+ for coins."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Highlight diverse role models.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

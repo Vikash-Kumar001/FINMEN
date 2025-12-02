@@ -1,235 +1,294 @@
-import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const PerspectivePuzzle = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-teen-3";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentVignette, setCurrentVignette] = useState(0);
-  const [selectedResponse, setSelectedResponse] = useState(null);
-  const [matches, setMatches] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const vignettes = [
+  const questions = [
     {
       id: 1,
-      situation: "A student is struggling with homework and looks frustrated",
-      emoji: "📚",
-      correctResponse: "Offer to help explain the concept",
-      responses: [
-        "Offer to help explain the concept",
-        "Tell them they should have paid attention in class",
-        "Ignore them and continue your work"
-      ],
-      why: "Offering help validates their struggle and provides support"
+      text: "A student is struggling with homework and looks frustrated. What's the best response?",
+      options: [
+        { 
+          id: "a", 
+          text: "Offer to help explain the concept", 
+          emoji: "🤝", 
+          description: "Validates their struggle and provides support",
+          isCorrect: true 
+        },
+        { 
+          id: "b", 
+          text: "Tell them they should have paid attention in class", 
+          emoji: "😠", 
+          description: "Not helpful and dismissive",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Ignore them and continue your work", 
+          emoji: "🙈", 
+          description: "Shows lack of empathy",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 2,
-      situation: "Someone is being excluded from a group project",
-      emoji: "👥",
-      correctResponse: "Invite them to join your group",
-      responses: [
-        "Laugh along with others",
-        "Invite them to join your group",
-        "Pretend not to notice"
-      ],
-      why: "Including them shows you understand how being excluded feels"
+      text: "Someone is being excluded from a group project. What's the best response?",
+      options: [
+        { 
+          id: "b", 
+          text: "Laugh along with others", 
+          emoji: "😄", 
+          description: "Hurts the excluded person",
+          isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Invite them to join your group", 
+          emoji: "👥", 
+          description: "Shows understanding of how exclusion feels",
+          isCorrect: true 
+        },
+        { 
+          id: "c", 
+          text: "Pretend not to notice", 
+          emoji: "🫥", 
+          description: "Doesn't help the situation",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      situation: "A peer is upset about family problems",
-      emoji: "🏠",
-      correctResponse: "Listen without judgment and offer support",
-      responses: [
-        "Tell them your problems are worse",
-        "Listen without judgment and offer support",
-        "Change the subject quickly"
-      ],
-      why: "Listening helps them feel heard and understood"
+      text: "A peer is upset about family problems. What's the best response?",
+      options: [
+        { 
+          id: "b", 
+          text: "Tell them your problems are worse", 
+          emoji: "😤", 
+          description: "Dismisses their feelings",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Change the subject quickly", 
+          emoji: "🔄", 
+          description: "Avoids their need for support",
+          isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Listen without judgment and offer support", 
+          emoji: "👂", 
+          description: "Helps them feel heard and understood",
+          isCorrect: true 
+        }
+      ]
     },
     {
       id: 4,
-      situation: "Someone made a mistake in front of the class",
-      emoji: "😳",
-      correctResponse: "Reassure them that mistakes happen to everyone",
-      responses: [
-        "Make fun of them later",
-        "Reassure them that mistakes happen to everyone",
-        "Act like it was embarrassing"
-      ],
-      why: "Reassurance helps them feel less alone in their embarrassment"
+      text: "Someone made a mistake in front of the class. What's the best response?",
+      options: [
+        { 
+          id: "b", 
+          text: "Make fun of them later", 
+          emoji: "😈", 
+          description: "Hurts their feelings",
+          isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Reassure them that mistakes happen to everyone", 
+          emoji: "💪", 
+          description: "Helps them feel less alone",
+          isCorrect: true 
+        },
+        { 
+          id: "c", 
+          text: "Act like it was embarrassing", 
+          emoji: "😳", 
+          description: "Makes them feel worse",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 5,
-      situation: "A new student doesn't understand the local language well",
-      emoji: "🗣️",
-      correctResponse: "Speak slowly and offer to help translate",
-      responses: [
-        "Speak slowly and offer to help translate",
-        "Speak louder thinking they'll understand",
-        "Avoid talking to them"
-      ],
-      why: "Patient communication shows understanding of their challenge"
-    },
-    {
-      id: 6,
-      situation: "Someone is crying in the bathroom",
-      emoji: "😢",
-      correctResponse: "Ask if they're okay and if they want to talk",
-      responses: [
-        "Walk away to give them privacy",
-        "Ask if they're okay and if they want to talk",
-        "Tell others about it"
-      ],
-      why: "Checking on them shows you care about their wellbeing"
+      text: "A new student doesn't understand the local language well. What's the best response?",
+      options: [
+        { 
+          id: "b", 
+          text: "Speak louder thinking they'll understand", 
+          emoji: "📢", 
+          description: "Doesn't help with language barrier",
+          isCorrect: false 
+        },
+        { 
+          id: "c", 
+          text: "Avoid talking to them", 
+          emoji: "🚶", 
+          description: "Excludes them further",
+          isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Speak slowly and offer to help translate", 
+          emoji: "🗣️", 
+          description: "Shows understanding of their challenge",
+          isCorrect: true 
+        }
+      ]
     }
   ];
 
-  const handleResponseSelect = (response) => {
-    setSelectedResponse(response);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedResponse) return;
-
-    const vignette = vignettes[currentVignette];
-    const isCorrect = selectedResponse === vignette.correctResponse;
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
     
-    const newMatches = [...matches, {
-      vignetteId: vignette.id,
-      selected: selectedResponse,
-      isCorrect
-    }];
-    
-    setMatches(newMatches);
+    setAnswered(true);
+    resetFeedback();
     
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    setSelectedResponse(null);
-    
-    if (currentVignette < vignettes.length - 1) {
-      setTimeout(() => {
-        setCurrentVignette(prev => prev + 1);
-      }, isCorrect ? 1000 : 800);
     } else {
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentVignette(0);
-    setSelectedResponse(null);
-    setMatches([]);
-    setCoins(0);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
   const handleNext = () => {
-    navigate("/student/uvls/teen/walk-in-shoes");
+    navigate("/games/uvls/teens");
   };
-
-  const correctCount = matches.filter(m => m.isCorrect).length;
 
   return (
     <GameShell
       title="Perspective Puzzle"
-      subtitle={`Vignette ${currentVignette + 1} of ${vignettes.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && correctCount >= 5}
-      showGameOver={showResult && correctCount >= 5}
-      score={coins}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-3"
-      gameType="uvls"
-      totalLevels={20}
-      currentLevel={3}
-      showConfetti={showResult && correctCount >= 5}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/teens"
+      gameId={gameId}
+      gameType="uvls"
+      onNext={handleNext}
+      nextEnabled={showResult && score >= 3}
     >
       <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="max-w-4xl mx-auto">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-6xl mb-4 text-center">{vignettes[currentVignette].emoji}</div>
-              
-              <p className="text-white text-lg mb-6 text-center font-semibold">
-                {vignettes[currentVignette].situation}
-              </p>
-              
-              <p className="text-white/90 mb-4 text-center">What's the best response?</p>
-              
-              <div className="space-y-3 mb-6">
-                {vignettes[currentVignette].responses.map((response, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleResponseSelect(response)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedResponse === response
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{response}</span>
-                  </button>
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedResponse}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedResponse
-                    ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Confirm Choice
-              </button>
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
               
-              <div className="bg-purple-500/20 rounded-lg p-3 mt-4">
-                <p className="text-white/80 text-sm">
-                  💡 {vignettes[currentVignette].why}
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-center transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex flex-col items-center justify-center gap-3">
+                      <span className="text-4xl">{option.emoji}</span>
+                      <span className="font-semibold text-lg">{option.text}</span>
+                      <span className="text-sm opacity-90">{option.description}</span>
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {correctCount >= 5 ? "🎉 Perspective Pro!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You got {correctCount} out of {vignettes.length} correct!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {correctCount >= 5 ? "You earned 3 Coins! 🪙" : "Get 5 or more correct to earn coins!"}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Debrief on why certain choices feel more helpful to others.
-            </p>
-            {correctCount < 5 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Perspective Pro!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct!
+                  You understand how to see things from others' perspectives!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Understanding others' perspectives helps us respond with empathy and support. When we see situations from someone else's point of view, we can offer help, inclusion, and kindness that truly makes a difference!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} correct.
+                  Remember: Try to see situations from others' perspectives!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: When someone is struggling, excluded, or upset, think about how you would feel in their situation. This helps you respond with empathy and support!
+                </p>
+              </div>
             )}
           </div>
         )}

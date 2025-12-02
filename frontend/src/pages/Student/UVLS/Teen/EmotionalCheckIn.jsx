@@ -1,183 +1,287 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const EmotionalCheckIn = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-71";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedEmotions, setSelectedEmotions] = useState([]);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
-
-  useEffect(() => {
-    if (timeLeft > 0 && !showResult) {
-      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timerId);
-    } else if (timeLeft === 0) {
-      handleConfirm();
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-41";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
-  }, [timeLeft, showResult]);
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      vignette: "Friend ignores you.",
-      emoji: "😔",
-      correctEmotions: ["hurt", "sad"]
+      text: "A friend ignores you. Which emotion accurately describes how you might feel?",
+      options: [
+        { 
+          id: "a", 
+          text: "Hurt or sad", 
+          emoji: "😔",
+          description: "Accurate emotional response",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Happy and excited", 
+          emoji: "😄",
+          description: "Doesn't match the situation",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Completely neutral", 
+          emoji: "😐",
+          description: "May not reflect true feelings",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      vignette: "Win a prize.",
-      emoji: "🏆",
-      correctEmotions: ["happy", "proud"]
+      text: "You win a prize. Which emotion accurately describes how you might feel?",
+      options: [
+        { 
+          id: "b", 
+          text: "Sad and disappointed", 
+          emoji: "😢",
+          description: "Doesn't match the situation",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Happy or proud", 
+          emoji: "🏆",
+          description: "Accurate emotional response",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Angry", 
+          emoji: "😠",
+          description: "Doesn't match the situation",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      vignette: "Fail a task.",
-      emoji: "😞",
-      correctEmotions: ["frustrated", "disappointed"]
+      text: "You fail at a task you tried hard on. Which emotion accurately describes how you might feel?",
+      options: [
+        { 
+          id: "a", 
+          text: "Frustrated or disappointed", 
+          emoji: "😞",
+          description: "Accurate emotional response",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Ecstatic and joyful", 
+          emoji: "🎉",
+          description: "Doesn't match the situation",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Completely unaffected", 
+          emoji: "😑",
+          description: "May not reflect true feelings",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      vignette: "New challenge.",
-      emoji: "🚀",
-      correctEmotions: ["excited", "nervous"]
+      text: "Someone compliments your work. Which emotion accurately describes how you might feel?",
+      options: [
+        { 
+          id: "b", 
+          text: "Ashamed", 
+          emoji: "😳",
+          description: "Doesn't match the situation",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Angry", 
+          emoji: "😠",
+          description: "Doesn't match the situation",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Grateful or proud", 
+          emoji: "🙏",
+          description: "Accurate emotional response",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 5,
-      vignette: "Argument with family.",
-      emoji: "😠",
-      correctEmotions: ["angry", "upset"]
+      text: "You receive unexpected criticism. Which emotion accurately describes how you might feel?",
+      options: [
+        { 
+          id: "a", 
+          text: "Defensive or hurt", 
+          emoji: "🛡️",
+          description: "Accurate emotional response",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Overjoyed", 
+          emoji: "😃",
+          description: "Doesn't match the situation",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Completely emotionless", 
+          emoji: "😶",
+          description: "May not reflect true feelings",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const emotions = ["happy", "sad", "angry", "frustrated", "excited", "disappointed", "hurt", "proud", "nervous", "upset"];
-
-  const handleEmotionToggle = (emotion) => {
-    if (selectedEmotions.includes(emotion)) {
-      setSelectedEmotions(selectedEmotions.filter(e => e !== emotion));
-    } else if (selectedEmotions.length < 2) {
-      setSelectedEmotions([...selectedEmotions, emotion]);
-    }
-  };
-
-  const handleConfirm = () => {
-    const question = questions[currentQuestion];
-    const isAccurate = selectedEmotions.every(e => question.correctEmotions.includes(e)) && selectedEmotions.length === question.correctEmotions.length;
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const newResponses = [...responses, {
-      questionId: question.id,
-      isAccurate
-    }];
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    setResponses(newResponses);
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    if (isAccurate) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedEmotions([]);
-    setTimeLeft(30);
-    
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const accurateCount = responses.filter(r => r.isAccurate).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Emotional Check-in"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && accurateCount >= 4}
-      showGameOver={showResult && accurateCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Check-in Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-71"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={71}
-      showConfetti={showResult && accurateCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white mb-2">Time left: {timeLeft}s</p>
-              <div className="text-5xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
-              
-              <p className="text-white italic mb-6">
-                "{questions[currentQuestion].vignette}"
-              </p>
-              
-              <p className="text-white/90 mb-4 text-center">Select 2 emotions:</p>
-              
-              <div className="grid grid-cols-3 gap-2 mb-6">
-                {emotions.map(emotion => (
-                  <button
-                    key={emotion}
-                    onClick={() => handleEmotionToggle(emotion)}
-                    className={`py-2 rounded-xl text-white ${
-                      selectedEmotions.includes(emotion) ? 'bg-blue-500' : 'bg-white/20'
-                    }`}
-                  >
-                    {emotion}
-                  </button>
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <button
-                onClick={handleConfirm}
-                disabled={selectedEmotions.length === 0 && timeLeft > 0}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedEmotions.length > 0 || timeLeft === 0
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Confirm
-              </button>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {accurateCount >= 4 ? "🎉 Emotion Labeler!" : "💪 More Accurate!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Accurate labels: {accurateCount} out of {questions.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {accurateCount >= 4 ? "Earned 5 Coins!" : "Need 4+ accurate."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Teach mixed emotions vocabulary.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

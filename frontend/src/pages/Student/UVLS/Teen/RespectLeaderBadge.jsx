@@ -1,236 +1,323 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const RespectLeaderBadge = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  
   const gameId = "uvls-teen-20";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [completedTasks, setCompletedTasks] = useState([]);
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [scenario, setScenario] = useState(0);
+  const [decisions, setDecisions] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [earnedBadge, setEarnedBadge] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
 
-  const leadershipTasks = [
+  const scenarios = [
     {
       id: 1,
-      title: "Lead an Inclusion Initiative",
-      description: "Organize and lead an activity or event that promotes inclusion in your school",
-      emoji: "🎯",
-      category: "Leadership",
-      example: "Start a buddy program, organize a diversity celebration, create an inclusion club"
+      title: "Leading Inclusion Initiative",
+      description: "You want to organize an inclusion event at school. Some students say it's not necessary. How do you lead?",
+      choices: [
+        { 
+          id: "a", 
+          text: "Listen to concerns, explain benefits, and invite everyone to participate", 
+          emoji: "🤝", 
+          description: "Shows inclusive leadership",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Force everyone to participate", 
+          emoji: "👆", 
+          description: "Too controlling",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Give up and cancel the event", 
+          emoji: "🚶", 
+          description: "Doesn't show leadership",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "Mentor a Peer",
-      description: "Mentor someone who is struggling with feeling excluded or different",
-      emoji: "🤝",
-      category: "Mentorship",
-      example: "Regular check-ins, help with social integration, academic support"
+      title: "Mentoring a Peer",
+      description: "A peer feels excluded. They're hesitant about joining activities. How do you mentor them?",
+      choices: [
+        { 
+          id: "b", 
+          text: "Tell them to just get over it", 
+          emoji: "😐", 
+          description: "Not supportive",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Offer to attend activities together and provide ongoing support", 
+          emoji: "💙", 
+          description: "Shows genuine mentorship",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Ignore their hesitation", 
+          emoji: "🙈", 
+          description: "Doesn't address their needs",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Challenge Discrimination",
-      description: "Actively challenge discriminatory behavior or policies (safely)",
-      emoji: "🛡️",
-      category: "Advocacy",
-      example: "Report bullying, propose policy changes, support affected students"
+      title: "Challenging Discrimination",
+      description: "You witness discriminatory behavior. Someone is being treated unfairly based on their background. How do you respond as a leader?",
+      choices: [
+        { 
+          id: "a", 
+          text: "Speak up safely, report it, and support the affected person", 
+          emoji: "🛡️", 
+          description: "Shows courageous leadership",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Stay quiet to avoid conflict", 
+          emoji: "🤐", 
+          description: "Doesn't show leadership",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Join in the discrimination", 
+          emoji: "😞", 
+          description: "Wrong choice",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      title: "Create Inclusive Content",
-      description: "Create content (poster, presentation, video) promoting respect and inclusion",
-      emoji: "🎨",
-      category: "Creativity",
-      example: "Anti-bullying campaign, diversity awareness materials, inclusive messaging"
+      title: "Creating Inclusive Content",
+      description: "You're creating content to promote inclusion. How do you ensure it's truly inclusive?",
+      choices: [
+        { 
+          id: "c", 
+          text: "Only feature one group", 
+          emoji: "👥", 
+          description: "Not inclusive",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Include diverse voices and perspectives in the creation process", 
+          emoji: "🎨", 
+          description: "Ensures true inclusion",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Create it alone without input", 
+          emoji: "🚫", 
+          description: "Misses diverse perspectives",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Facilitate Dialogue",
-      description: "Facilitate a respectful dialogue on a challenging inclusion topic",
-      emoji: "💬",
-      category: "Facilitation",
-      example: "Lead classroom discussion, moderate peer conversations, bridge differences"
-    },
-    {
-      id: 6,
-      title: "Support Policy Change",
-      description: "Research and advocate for an inclusive policy change at your school",
-      emoji: "📋",
-      category: "Policy",
-      example: "Gender-neutral facilities, accessibility improvements, anti-bias curriculum"
-    },
-    {
-      id: 7,
-      title: "Build Bridges",
-      description: "Create connections between different groups or communities in your school",
-      emoji: "🌉",
-      category: "Community Building",
-      example: "Cross-cultural events, mixed-ability activities, peer mentoring across grades"
-    },
-    {
-      id: 8,
-      title: "Document Impact",
-      description: "Document and share stories of inclusion successes in your school",
-      emoji: "📸",
-      category: "Documentation",
-      example: "Interview peers, create case studies, share positive changes"
+      title: "Facilitating Dialogue",
+      description: "You're facilitating a discussion about inclusion. People have strong, conflicting opinions. How do you lead?",
+      choices: [
+        { 
+          id: "a", 
+          text: "Create safe space for respectful dialogue, ensure everyone is heard", 
+          emoji: "💬", 
+          description: "Shows excellent facilitation",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Let one person dominate the conversation", 
+          emoji: "👑", 
+          description: "Not fair",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Avoid the difficult topics", 
+          emoji: "🙈", 
+          description: "Doesn't address issues",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleTaskToggle = (taskId) => {
-    if (completedTasks.includes(taskId)) {
-      setCompletedTasks(completedTasks.filter(id => id !== taskId));
+  const handleDecision = (choiceId) => {
+    if (answered || showResult) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const currentScenario = scenarios[scenario];
+    const selectedChoice = currentScenario.choices.find(c => c.id === choiceId);
+    const isCorrect = selectedChoice?.isCorrect || false;
+    
+    const newDecisions = [...decisions, {
+      scenarioId: currentScenario.id,
+      choiceId,
+      isCorrect
+    }];
+    setDecisions(newDecisions);
+    
+    if (isCorrect) {
+      setFinalScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      const newCompletedTasks = [...completedTasks, taskId];
-      setCompletedTasks(newCompletedTasks);
-      
-      if (newCompletedTasks.length === 5) {
-        setEarnedBadge(true);
-        showCorrectAnswerFeedback(1, false);
-        setTimeout(() => {
-          setShowResult(true);
-        }, 1000);
-      }
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (scenario < scenarios.length - 1) {
+        setScenario(prev => prev + 1);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setShowResult(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    // Last game - navigate back to category
-    navigate("/games/uvls/teens");
-  };
-
-  const progressPercentage = (completedTasks.length / 5) * 100;
+  const currentScenarioData = scenarios[scenario];
 
   return (
     <GameShell
       title="Respect Leader Badge"
-      subtitle={`Complete 5 Leadership Tasks (${completedTasks.length}/5)`}
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={earnedBadge ? 1 : 0}
+      subtitle={showResult ? "Badge Complete!" : `Scenario ${scenario + 1} of ${scenarios.length}`}
+      score={finalScore}
+      currentLevel={scenario + 1}
+      totalLevels={scenarios.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-20"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={20}
-      showConfetti={showResult}
-      backPath="/games/uvls/teens"
+      showGameOver={showResult}
+      maxScore={scenarios.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={showResult && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!showResult && currentScenarioData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-white font-semibold">Progress to Badge</span>
-                  <span className="text-yellow-400 font-bold">{completedTasks.length}/5</span>
-                </div>
-                <div className="bg-white/20 rounded-full h-4 overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all duration-500 rounded-full"
-                    style={{ width: `${progressPercentage}%` }}
-                  />
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Scenario {scenario + 1}/{scenarios.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{scenarios.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{currentScenarioData.title}</h3>
+              <p className="text-white/90 mb-6">{currentScenarioData.description}</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentScenarioData.choices.map(choice => {
+                  const isSelected = decisions.find(d => d.scenarioId === currentScenarioData.id && d.choiceId === choice.id);
+                  const showCorrect = answered && choice.isCorrect;
+                  const showIncorrect = answered && isSelected && !choice.isCorrect;
+                  
+                  return (
+                    <button
+                      key={choice.id}
+                      onClick={() => handleDecision(choice.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{choice.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{choice.text}</h4>
+                      <p className="text-white/90 text-sm">{choice.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        ) : showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {scenarios.length} correct!
+                  You're a Respect Leader!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{finalScore} Coins</span>
                 </div>
               </div>
-
-              <p className="text-white/80 text-sm mb-6 text-center">
-                Complete 5 inclusion leadership tasks to earn your Respect Leader credential!
-              </p>
-
-              <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
-                {leadershipTasks.map(task => (
-                  <button
-                    key={task.id}
-                    onClick={() => handleTaskToggle(task.id)}
-                    disabled={completedTasks.length >= 5 && !completedTasks.includes(task.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      completedTasks.includes(task.id)
-                        ? 'bg-purple-500/40 border-purple-400 ring-2 ring-purple-300'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    } ${completedTasks.length >= 5 && !completedTasks.includes(task.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="text-3xl">{task.emoji}</div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="text-white font-bold">{task.title}</h4>
-                          {completedTasks.includes(task.id) && (
-                            <span className="text-green-400 text-xl">✓</span>
-                          )}
-                        </div>
-                        <p className="text-white/80 text-sm mb-2">{task.description}</p>
-                        <div className="flex items-center gap-2">
-                          <span className="inline-block bg-white/20 px-2 py-1 rounded text-white/70 text-xs">
-                            {task.category}
-                          </span>
-                        </div>
-                        <p className="text-white/60 text-xs mt-2 italic">
-                          Example: {task.example}
-                        </p>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-6 p-4 bg-blue-500/20 border-2 border-blue-400/50 rounded-xl">
-                <p className="text-white/90 text-sm">
-                  <strong>Teacher Note:</strong> Use this badge as a leadership credential. 
-                  Recognize badge winners publicly to inspire others!
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {scenarios.length} correct.
+                  Practice leadership skills by supporting inclusion and respect!
                 </p>
               </div>
-            </div>
+            )}
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-9xl mb-6 animate-bounce">👑</div>
-            <h2 className="text-4xl font-bold text-white mb-4">🎉 Congratulations, Leader!</h2>
-            <p className="text-white/90 text-xl mb-6">
-              You've earned the Respect Leader Badge!
-            </p>
-            
-            <div className="bg-gradient-to-br from-purple-400 via-pink-400 to-red-400 rounded-2xl p-6 mb-6 transform hover:scale-105 transition-all">
-              <div className="text-6xl mb-3">🏆</div>
-              <h3 className="text-white text-2xl font-bold mb-2">Respect Leader</h3>
-              <p className="text-white/90 text-sm">Champion of Inclusion & Diversity</p>
-            </div>
-
-            <div className="bg-white/10 rounded-xl p-4 mb-6 max-h-48 overflow-y-auto">
-              <p className="text-white font-semibold mb-3">Your Leadership Accomplishments:</p>
-              <div className="space-y-2">
-                {leadershipTasks
-                  .filter(task => completedTasks.includes(task.id))
-                  .map(task => (
-                    <div key={task.id} className="flex items-center gap-2 text-white/80 text-sm">
-                      <span>{task.emoji}</span>
-                      <span>{task.title}</span>
-                      <span className="text-green-400">✓</span>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            <p className="text-yellow-400 text-xl font-bold mb-4">
-              You earned 3 Coins! Leadership Credential Unlocked! 🏆
-            </p>
-            <p className="text-white/70 text-sm">
-              Continue leading with respect and inclusion in your community!
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default RespectLeaderBadge;
-

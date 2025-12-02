@@ -1,212 +1,326 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const EmpathyChampionBadge = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-teen-10";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [completedTasks, setCompletedTasks] = useState([]);
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [scenario, setScenario] = useState(0);
+  const [decisions, setDecisions] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [earnedBadge, setEarnedBadge] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
 
-  const empathyTasks = [
+  const scenarios = [
     {
       id: 1,
-      title: "Active Listening Practice",
-      description: "Have a 10-minute conversation where you actively listen without interrupting",
-      emoji: "👂",
-      category: "Listening"
+      title: "Peer in Distress",
+      description: "A classmate looks upset and withdrawn. They've been quiet all day. What's the best empathetic response?",
+      choices: [
+        { 
+          id: "a", 
+          text: "Ask if they're okay and offer to listen", 
+          emoji: "💙", 
+          description: "Shows care and offers support",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Ignore them to give space", 
+          emoji: "🙈", 
+          description: "They might need someone to reach out",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Tell them to cheer up", 
+          emoji: "😐", 
+          description: "Dismisses their feelings",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "Support Someone in Need",
-      description: "Offer genuine support to someone going through a difficult time",
-      emoji: "🤝",
-      category: "Support"
+      title: "Cultural Misunderstanding",
+      description: "Someone from a different culture does something that seems strange to you. How do you respond with empathy?",
+      choices: [
+        { 
+          id: "b", 
+          text: "Make fun of it with friends", 
+          emoji: "😄", 
+          description: "Hurts their feelings",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Ask them to help you understand their perspective", 
+          emoji: "🤝", 
+          description: "Shows respect and willingness to learn",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Avoid them", 
+          emoji: "🚶", 
+          description: "Doesn't help bridge understanding",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Perspective Taking",
-      description: "Write about a situation from someone else's perspective",
-      emoji: "👁️",
-      category: "Understanding"
+      title: "Exclusion Scenario",
+      description: "You see someone being left out of a group activity. What's the empathetic action?",
+      choices: [
+        { 
+          id: "a", 
+          text: "Invite them to join your group", 
+          emoji: "👥", 
+          description: "Shows inclusion and empathy",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Pretend not to notice", 
+          emoji: "🫥", 
+          description: "Doesn't help the situation",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Laugh along with others", 
+          emoji: "😄", 
+          description: "Hurts the excluded person",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      title: "Challenge Exclusion",
-      description: "Speak up when you see someone being excluded or treated unfairly",
-      emoji: "🛡️",
-      category: "Advocacy"
+      title: "Sharing Personal Struggle",
+      description: "A friend opens up about a family problem. They seem overwhelmed. How do you respond with empathy?",
+      choices: [
+        { 
+          id: "c", 
+          text: "Tell them your problems are worse", 
+          emoji: "😤", 
+          description: "Makes it about you",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Listen without judgment and validate their feelings", 
+          emoji: "👂", 
+          description: "Shows true empathy and support",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Change the subject quickly", 
+          emoji: "🔄", 
+          description: "Avoids their need for support",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      title: "Validate Emotions",
-      description: "Validate someone's feelings without trying to fix or minimize them",
-      emoji: "💝",
-      category: "Validation"
-    },
-    {
-      id: 6,
-      title: "Cultural Understanding",
-      description: "Learn about and appreciate a culture different from your own",
-      emoji: "🌍",
-      category: "Diversity"
-    },
-    {
-      id: 7,
-      title: "Empathetic Response",
-      description: "Respond empathetically to someone sharing a personal struggle",
-      emoji: "💬",
-      category: "Communication"
+      title: "Different Ability",
+      description: "A peer with a different ability struggles with something you find easy. What's the empathetic response?",
+      choices: [
+        { 
+          id: "b", 
+          text: "Do it for them without asking", 
+          emoji: "🙌", 
+          description: "Takes away their agency",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore their struggle", 
+          emoji: "🙈", 
+          description: "Doesn't show empathy",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Offer help only if they want it, without pity", 
+          emoji: "💪", 
+          description: "Respects their autonomy and shows empathy",
+          isCorrect: true
+        }
+      ]
     }
   ];
 
-  const handleTaskToggle = (taskId) => {
-    if (completedTasks.includes(taskId)) {
-      setCompletedTasks(completedTasks.filter(id => id !== taskId));
+  const handleDecision = (choiceId) => {
+    if (answered || showResult) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const currentScenario = scenarios[scenario];
+    const selectedChoice = currentScenario.choices.find(c => c.id === choiceId);
+    const isCorrect = selectedChoice?.isCorrect || false;
+    
+    const newDecisions = [...decisions, {
+      scenarioId: currentScenario.id,
+      choiceId,
+      isCorrect
+    }];
+    setDecisions(newDecisions);
+    
+    if (isCorrect) {
+      setFinalScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      const newCompletedTasks = [...completedTasks, taskId];
-      setCompletedTasks(newCompletedTasks);
-      
-      if (newCompletedTasks.length === 5) {
-        setEarnedBadge(true);
-        showCorrectAnswerFeedback(1, false);
-        setTimeout(() => {
-          setShowResult(true);
-        }, 1000);
-      }
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (scenario < scenarios.length - 1) {
+        setScenario(prev => prev + 1);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setShowResult(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/student/uvls/teen/cultural-greeting");
-  };
-
-  const progressPercentage = (completedTasks.length / 5) * 100;
+  const currentScenarioData = scenarios[scenario];
 
   return (
     <GameShell
       title="Empathy Champion Badge"
-      subtitle={`Complete 5 Empathy Tasks (${completedTasks.length}/5)`}
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={earnedBadge ? 1 : 0}
+      subtitle={showResult ? "Badge Complete!" : `Scenario ${scenario + 1} of ${scenarios.length}`}
+      score={finalScore}
+      currentLevel={scenario + 1}
+      totalLevels={scenarios.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-10"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={10}
-      showConfetti={showResult}
-      backPath="/games/uvls/teens"
+      showGameOver={showResult}
+      maxScore={scenarios.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={showResult && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!showResult && currentScenarioData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="mb-6">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-white font-semibold">Progress to Badge</span>
-                  <span className="text-yellow-400 font-bold">{completedTasks.length}/5</span>
-                </div>
-                <div className="bg-white/20 rounded-full h-4 overflow-hidden">
-                  <div 
-                    className="bg-gradient-to-r from-purple-500 to-pink-500 h-full transition-all duration-500 rounded-full"
-                    style={{ width: `${progressPercentage}%` }}
-                  />
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Scenario {scenario + 1}/{scenarios.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{scenarios.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{currentScenarioData.title}</h3>
+              <p className="text-white/90 mb-6">{currentScenarioData.description}</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentScenarioData.choices.map(choice => {
+                  const isSelected = decisions.find(d => d.scenarioId === currentScenarioData.id && d.choiceId === choice.id);
+                  const showCorrect = answered && choice.isCorrect;
+                  const showIncorrect = answered && isSelected && !choice.isCorrect;
+                  
+                  return (
+                    <button
+                      key={choice.id}
+                      onClick={() => handleDecision(choice.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{choice.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{choice.text}</h4>
+                      <p className="text-white/90 text-sm">{choice.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        ) : showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-6xl mb-4">🏆</div>
+                <h3 className="text-3xl font-bold text-white mb-4">Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {scenarios.length} correct!
+                  You're an Empathy Champion!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{finalScore} Coins</span>
                 </div>
               </div>
-
-              <p className="text-white/80 text-sm mb-6 text-center">
-                Complete 5 empathy tasks to earn your champion badge!
-              </p>
-
-              <div className="space-y-3">
-                {empathyTasks.map(task => (
-                  <button
-                    key={task.id}
-                    onClick={() => handleTaskToggle(task.id)}
-                    disabled={completedTasks.length >= 5 && !completedTasks.includes(task.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      completedTasks.includes(task.id)
-                        ? 'bg-purple-500/40 border-purple-400 ring-2 ring-purple-300'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    } ${completedTasks.length >= 5 && !completedTasks.includes(task.id) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="text-4xl">{task.emoji}</div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          <h4 className="text-white font-bold">{task.title}</h4>
-                          {completedTasks.includes(task.id) && (
-                            <span className="text-green-400 text-xl">✓</span>
-                          )}
-                        </div>
-                        <p className="text-white/80 text-sm mb-1">{task.description}</p>
-                        <span className="inline-block bg-white/20 px-2 py-1 rounded text-white/70 text-xs">
-                          {task.category}
-                        </span>
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-
-              <div className="mt-6 p-4 bg-purple-500/20 border-2 border-purple-400/50 rounded-xl">
-                <p className="text-white/90 text-sm">
-                  <strong>Teacher Note:</strong> Encourage peer recognition for badge winners.
-                  These tasks build deep empathy skills!
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {scenarios.length} correct.
+                  Practice empathy by trying to see situations from others' perspectives!
                 </p>
               </div>
-            </div>
+            )}
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-9xl mb-6 animate-bounce">🏆</div>
-            <h2 className="text-4xl font-bold text-white mb-4">🎉 Congratulations!</h2>
-            <p className="text-white/90 text-xl mb-6">
-              You've earned the Empathy Champion Badge!
-            </p>
-            
-            <div className="bg-gradient-to-br from-purple-400 via-pink-400 to-red-400 rounded-2xl p-6 mb-6 transform hover:scale-105 transition-all">
-              <div className="text-6xl mb-3">🌟</div>
-              <h3 className="text-white text-2xl font-bold mb-2">Empathy Champion</h3>
-              <p className="text-white/90 text-sm">Master of Understanding & Compassion</p>
-            </div>
-
-            <div className="bg-white/10 rounded-xl p-4 mb-6">
-              <p className="text-white font-semibold mb-3">Your Completed Tasks:</p>
-              <div className="space-y-2">
-                {empathyTasks
-                  .filter(task => completedTasks.includes(task.id))
-                  .map(task => (
-                    <div key={task.id} className="flex items-center gap-2 text-white/80 text-sm">
-                      <span>{task.emoji}</span>
-                      <span>{task.title}</span>
-                      <span className="text-green-400">✓</span>
-                    </div>
-                  ))}
-              </div>
-            </div>
-
-            <p className="text-yellow-400 text-xl font-bold mb-4">
-              You earned 3 Coins! Achievement Unlocked! 🏆
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default EmpathyChampionBadge;
-

@@ -1,227 +1,328 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const InclusiveClassSimulation = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-teen-14";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [designChoices, setDesignChoices] = useState({
-    roles: null,
-    time: null,
-    materials: null
-  });
-  const [simulationRun, setSimulationRun] = useState(false);
-  const [inclusionScore, setInclusionScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
-
-  const designOptions = {
-    roles: [
-      { id: 1, name: "Different roles for different strengths", inclusive: true, score: 30 },
-      { id: 2, name: "Everyone does the exact same role", inclusive: false, score: 10 },
-      { id: 3, name: "Only high achievers get lead roles", inclusive: false, score: 5 }
-    ],
-    time: [
-      { id: 1, name: "Flexible timing with breaks", inclusive: true, score: 30 },
-      { id: 2, name: "Strict time limit for everyone", inclusive: false, score: 15 },
-      { id: 3, name: "Unlimited time only for some", inclusive: false, score: 10 }
-    ],
-    materials: [
-      { id: 1, name: "Multiple format options (text, audio, visual)", inclusive: true, score: 30 },
-      { id: 2, name: "Only textbooks provided", inclusive: false, score: 10 },
-      { id: 3, name: "Digital only (no alternatives)", inclusive: false, score: 15 }
-    ]
-  };
-
-  const handleDesignChoice = (category, choiceId) => {
-    setDesignChoices({
-      ...designChoices,
-      [category]: choiceId
-    });
-  };
-
-  const handleRunSimulation = () => {
-    const roleChoice = designOptions.roles.find(r => r.id === designChoices.roles);
-    const timeChoice = designOptions.time.find(t => t.id === designChoices.time);
-    const materialChoice = designOptions.materials.find(m => m.id === designChoices.materials);
-    
-    const totalScore = (roleChoice?.score || 0) + (timeChoice?.score || 0) + (materialChoice?.score || 0);
-    setInclusionScore(totalScore);
-    
-    if (totalScore >= 80) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
     
-    setSimulationRun(true);
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
+
+  const questions = [
+    {
+      id: 1,
+      text: "You're designing a group activity. How should roles be assigned to ensure all students can participate?",
+      options: [
+        { 
+          id: "a", 
+          text: "Different roles for different strengths", 
+          emoji: "👥",
+          description: "Leverages everyone's abilities",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Everyone does the exact same role", 
+          emoji: "🔄",
+          description: "Doesn't accommodate different abilities",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Only high achievers get lead roles", 
+          emoji: "⭐",
+          description: "Excludes many students",
+          isCorrect: false
+        },
+        { 
+          id: "d", 
+          text: "Let students pick their own roles", 
+          emoji: "🎲",
+          description: "May lead to exclusion",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "How should time be structured in an inclusive classroom activity?",
+      options: [
+        { 
+          id: "b", 
+          text: "Strict time limit for everyone", 
+          emoji: "⏱️",
+          description: "Doesn't accommodate different paces",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Flexible timing with breaks", 
+          emoji: "⏰",
+          description: "Accommodates different needs",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Unlimited time only for some", 
+          emoji: "🚫",
+          description: "Creates unfair advantage",
+          isCorrect: false
+        },
+        { 
+          id: "d", 
+          text: "No time structure at all", 
+          emoji: "❌",
+          description: "Lacks organization",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "What materials should be provided to make an activity inclusive?",
+      options: [
+        { 
+          id: "a", 
+          text: "Multiple format options (text, audio, visual)", 
+          emoji: "📚",
+          description: "Accommodates different learning styles",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Only textbooks provided", 
+          emoji: "📖",
+          description: "Limits accessibility",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Digital only (no alternatives)", 
+          emoji: "💻",
+          description: "Excludes those without access",
+          isCorrect: false
+        },
+        { 
+          id: "d", 
+          text: "No materials provided", 
+          emoji: "🚫",
+          description: "Not helpful for learning",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "How should group formation work in an inclusive activity?",
+      options: [
+        { 
+          id: "b", 
+          text: "Let popular students choose teams", 
+          emoji: "👑",
+          description: "Leads to exclusion",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Group only similar students", 
+          emoji: "👥",
+          description: "Limits diversity",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Diverse groups with mixed abilities", 
+          emoji: "🌈",
+          description: "Promotes inclusion and learning",
+          isCorrect: true
+        },
+        { 
+          id: "d", 
+          text: "Let students work alone", 
+          emoji: "🚶",
+          description: "Misses collaboration benefits",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "What communication approach ensures all students can participate?",
+      options: [
+        { 
+          id: "a", 
+          text: "Multiple communication methods (verbal, written, visual)", 
+          emoji: "💬",
+          description: "Accommodates different communication needs",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Only spoken instructions", 
+          emoji: "🗣️",
+          description: "Excludes those with hearing difficulties",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Only written instructions", 
+          emoji: "📝",
+          description: "Excludes those with reading difficulties",
+          isCorrect: false
+        },
+        { 
+          id: "d", 
+          text: "No instructions given", 
+          emoji: "🤷",
+          description: "Not helpful for anyone",
+          isCorrect: false
+        }
+      ]
+    }
+  ];
+
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
     setTimeout(() => {
-      setShowResult(true);
-    }, 2000);
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleRevise = () => {
-    setSimulationRun(false);
-    setInclusionScore(0);
-  };
-
-  const handleNext = () => {
-    navigate("/student/uvls/teen/respect-debate");
-  };
-
-  const allSelected = designChoices.roles && designChoices.time && designChoices.materials;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Inclusive Class Simulation"
-      subtitle="Design an Activity for All"
-      onNext={handleNext}
-      nextEnabled={showResult && inclusionScore >= 80}
-      showGameOver={showResult && inclusionScore >= 80}
-      score={coins}
+      subtitle={levelCompleted ? "Simulation Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-14"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={14}
-      showConfetti={showResult && inclusionScore >= 80}
-      backPath="/games/uvls/teens"
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!simulationRun ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-white text-xl font-bold mb-4">Design Your Activity</h3>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
               
-              <div className="space-y-6">
-                <div>
-                  <label className="text-white font-semibold mb-3 block">1. How are roles assigned?</label>
-                  <div className="space-y-2">
-                    {designOptions.roles.map(option => (
-                      <button
-                        key={option.id}
-                        onClick={() => handleDesignChoice('roles', option.id)}
-                        className={`w-full text-left border-2 rounded-xl p-3 transition-all ${
-                          designChoices.roles === option.id
-                            ? 'bg-blue-500/50 border-blue-400'
-                            : 'bg-white/20 border-white/40 hover:bg-white/30'
-                        }`}
-                      >
-                        <span className="text-white font-medium text-sm">{option.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-white font-semibold mb-3 block">2. How is time structured?</label>
-                  <div className="space-y-2">
-                    {designOptions.time.map(option => (
-                      <button
-                        key={option.id}
-                        onClick={() => handleDesignChoice('time', option.id)}
-                        className={`w-full text-left border-2 rounded-xl p-3 transition-all ${
-                          designChoices.time === option.id
-                            ? 'bg-blue-500/50 border-blue-400'
-                            : 'bg-white/20 border-white/40 hover:bg-white/30'
-                        }`}
-                      >
-                        <span className="text-white font-medium text-sm">{option.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="text-white font-semibold mb-3 block">3. What materials are provided?</label>
-                  <div className="space-y-2">
-                    {designOptions.materials.map(option => (
-                      <button
-                        key={option.id}
-                        onClick={() => handleDesignChoice('materials', option.id)}
-                        className={`w-full text-left border-2 rounded-xl p-3 transition-all ${
-                          designChoices.materials === option.id
-                            ? 'bg-blue-500/50 border-blue-400'
-                            : 'bg-white/20 border-white/40 hover:bg-white/30'
-                        }`}
-                      >
-                        <span className="text-white font-medium text-sm">{option.name}</span>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-
-              <button
-                onClick={handleRunSimulation}
-                disabled={!allSelected}
-                className={`w-full py-3 rounded-xl font-bold text-white transition mt-6 ${
-                  allSelected
-                    ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Run Simulation! 🎮
-              </button>
             </div>
           </div>
-        ) : !showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-2xl font-bold text-white mb-4">Simulation Results</h3>
-            
-            <div className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-xl p-6 mb-6">
-              <div className="text-6xl mb-3 text-center">
-                {inclusionScore >= 80 ? "🎉" : inclusionScore >= 50 ? "😊" : "😕"}
-              </div>
-              <p className="text-white text-xl font-bold text-center mb-2">
-                Inclusion Score: {inclusionScore}%
-              </p>
-              <p className="text-white/80 text-center">
-                {inclusionScore >= 80 
-                  ? "Excellent! All students can participate meaningfully!"
-                  : inclusionScore >= 50
-                  ? "Good start, but some students may struggle to participate"
-                  : "Many students are excluded. Consider revisions."}
-              </p>
-            </div>
-
-            {inclusionScore < 80 && (
-              <button
-                onClick={handleRevise}
-                className="w-full bg-gradient-to-r from-yellow-500 to-orange-500 text-white px-6 py-3 rounded-xl font-semibold hover:opacity-90 transition mb-4"
-              >
-                Revise Design 🔄
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {inclusionScore >= 80 ? "🎉 Inclusive Designer!" : "💪 Try Different Options!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Final Inclusion Score: {inclusionScore}%
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {inclusionScore >= 80 ? "You earned 3 Coins! 🪙" : "Get 80% or higher to earn coins!"}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Use this as a mini-project to design real inclusive class activities!
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default InclusiveClassSimulation;
-

@@ -1,190 +1,274 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const SpotDistressReflex = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-teen-9";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [gameStarted, setGameStarted] = useState(false);
-  const [currentCard, setCurrentCard] = useState(0);
-  const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [cardTimer, setCardTimer] = useState(3);
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
-  const distressCues = [
-    { id: 1, cue: "😔", text: "Avoiding eye contact, hunched shoulders", hasDistress: true },
-    { id: 2, cue: "😊", text: "Smiling genuinely, relaxed posture", hasDistress: false },
-    { id: 3, cue: "😰", text: "Sweating, fidgeting hands, rapid breathing", hasDistress: true },
-    { id: 4, cue: "😄", text: "Laughing with friends, animated gestures", hasDistress: false },
-    { id: 5, cue: "😢", text: "Tears in eyes, withdrawn body language", hasDistress: true },
-    { id: 6, cue: "🙂", text: "Calm expression, steady voice", hasDistress: false },
-    { id: 7, cue: "😣", text: "Clenched fists, tense jaw, furrowed brow", hasDistress: true },
-    { id: 8, cue: "😌", text: "Peaceful demeanor, open posture", hasDistress: false },
-    { id: 9, cue: "😟", text: "Biting nails, pacing, looking worried", hasDistress: true },
-    { id: 10, cue: "😁", text: "Engaged in conversation, making jokes", hasDistress: false },
-    { id: 11, cue: "😞", text: "Slumped shoulders, staring at nothing", hasDistress: true },
-    { id: 12, cue: "🤗", text: "Embracing friends, cheerful attitude", hasDistress: false },
-    { id: 13, cue: "😨", text: "Wide eyes, shaking, backing away", hasDistress: true },
-    { id: 14, cue: "😎", text: "Confident stance, relaxed smile", hasDistress: false },
-    { id: 15, cue: "😖", text: "Holding head, avoiding people", hasDistress: true },
-    { id: 16, cue: "🥰", text: "Happy interactions, bright mood", hasDistress: false },
-    { id: 17, cue: "😓", text: "Wiping tears, trembling voice", hasDistress: true },
-    { id: 18, cue: "😃", text: "Participating actively, energetic", hasDistress: false },
-    { id: 19, cue: "😥", text: "Looking down, quiet, isolated", hasDistress: true },
-    { id: 20, cue: "🤩", text: "Excited, sharing good news", hasDistress: false }
+  const questions = [
+    {
+      id: 1,
+      question: "You see someone with hunched shoulders, avoiding eye contact, and looking sad. Is this a distress cue?",
+      correctAnswer: "Yes, distress",
+      options: [
+        { text: "Yes, distress", isCorrect: true, emoji: "😔" },
+        { text: "No distress", isCorrect: false, emoji: "😊" },
+        { text: "Not sure", isCorrect: false, emoji: "🤷" },
+        { text: "Maybe later", isCorrect: false, emoji: "⏰" }
+      ]
+    },
+    {
+      id: 2,
+      question: "Someone is sweating, fidgeting with hands, and breathing rapidly. Is this a distress cue?",
+      correctAnswer: "Yes, distress",
+      options: [
+        { text: "No distress", isCorrect: false, emoji: "😌" },
+        { text: "Yes, distress", isCorrect: true, emoji: "😰" },
+        { text: "Just nervous", isCorrect: false, emoji: "😐" },
+        { text: "Maybe", isCorrect: false, emoji: "🤔" }
+      ]
+    },
+    {
+      id: 3,
+      question: "A peer has tears in their eyes and withdrawn body language. Is this a distress cue?",
+      correctAnswer: "Yes, distress",
+      options: [
+        { text: "Maybe", isCorrect: false, emoji: "🤔" },
+        { text: "No distress", isCorrect: false, emoji: "😊" },
+        { text: "Yes, distress", isCorrect: true, emoji: "😢" },
+        { text: "Not sure", isCorrect: false, emoji: "🤷" }
+      ]
+    },
+    {
+      id: 4,
+      question: "Someone has clenched fists, tense jaw, and furrowed brow. Is this a distress cue?",
+      correctAnswer: "Yes, distress",
+      options: [
+        { text: "Yes, distress", isCorrect: true, emoji: "😣" },
+        { text: "No distress", isCorrect: false, emoji: "😌" },
+        { text: "Just tired", isCorrect: false, emoji: "😴" },
+        { text: "Maybe", isCorrect: false, emoji: "🤷" }
+      ]
+    },
+    {
+      id: 5,
+      question: "A student is biting nails, pacing, and looking worried. Is this a distress cue?",
+      correctAnswer: "Yes, distress",
+      options: [
+        { text: "No distress", isCorrect: false, emoji: "😊" },
+        { text: "Just thinking", isCorrect: false, emoji: "💭" },
+        { text: "Maybe", isCorrect: false, emoji: "🤔" },
+        { text: "Yes, distress", isCorrect: true, emoji: "😟" }
+      ]
+    }
   ];
 
-  const currentCue = distressCues[currentCard];
-
   useEffect(() => {
-    if (gameStarted && !showResult && cardTimer > 0) {
-      const timer = setTimeout(() => setCardTimer(prev => prev - 1), 1000);
-      return () => clearTimeout(timer);
-    } else if (gameStarted && cardTimer === 0 && currentCard < distressCues.length - 1) {
-      setCurrentCard(prev => prev + 1);
-      setCardTimer(3);
-    } else if (gameStarted && cardTimer === 0 && currentCard === distressCues.length - 1) {
-      setShowResult(true);
-    }
-  }, [gameStarted, showResult, cardTimer, currentCard, score]);
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-  const handleFlag = (hasDistress) => {
-    const isCorrect = currentCue.hasDistress === hasDistress;
-    
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
-    
-    if (currentCard < distressCues.length - 1) {
-      setTimeout(() => {
-        setCurrentCard(prev => prev + 1);
-        setCardTimer(3);
-      }, 300);
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
     } else {
-      const finalScore = score + (isCorrect ? 1 : 0);
-      setScore(finalScore);
-      setShowResult(true);
+      setGameState("finished");
     }
-  };
+  }, []);
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setGameStarted(false);
-    setCurrentCard(0);
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
     setScore(0);
-    setCoins(0);
-    setCardTimer(3);
+    setCurrentRound(1);
+    setAnswered(false);
     resetFeedback();
   };
 
-  const handleNext = () => {
-    navigate("/student/uvls/teen/empathy-champion-badge");
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const isCorrect = option.isCorrect;
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    setTimeout(() => {
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
+      } else {
+        setGameState("finished");
+      }
+    }, 500);
   };
 
-  const accuracy = Math.round((score / distressCues.length) * 100);
+  const finalScore = score;
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Spot Distress Reflex"
-      subtitle={gameStarted ? `Card ${currentCard + 1} of ${distressCues.length}` : "Quick Detection Game"}
-      onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
-      showGameOver={showResult && accuracy >= 70}
-      score={coins}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Rapidly detect distress cues!` : "Rapidly detect distress cues!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      gameId="uvls-teen-9"
-      gameType="uvls"
-      totalLevels={20}
-      currentLevel={9}
-      showConfetti={showResult && accuracy >= 70}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/teens"
+      score={finalScore}
+      gameId={gameId}
+      gameType="uvls"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <div className="space-y-8">
-        {!gameStarted ? (
+      <div className="text-center text-white space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {gameState === "ready" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Distress Detection!</h2>
-            <p className="text-white/80 mb-6">Flag distress cues quickly - you have 3 seconds per card!</p>
+            <div className="text-5xl mb-6">🚩</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Detect distress cues quickly!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
             <button
-              onClick={() => setGameStarted(true)}
-              className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-8 py-4 rounded-full font-bold text-xl hover:opacity-90 transition transform hover:scale-105"
+              onClick={startGame}
+              className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
             >
-              Start Game! 🚀
+              Start Game
             </button>
           </div>
-        ) : !showResult ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <div className="flex justify-between items-center mb-6">
-                <span className="text-white/80">Card {currentCard + 1}/{distressCues.length}</span>
-                <div className="flex gap-4">
-                  <span className="text-yellow-400 font-bold">Score: {score}</span>
-                  <span className="text-red-400 font-bold">Time: {cardTimer}s</span>
-                </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              
-              <div className="text-9xl mb-6 text-center animate-pulse">{currentCue.cue}</div>
-              
-              <p className="text-white text-lg font-bold mb-8 text-center">
-                {currentCue.text}
-              </p>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleFlag(true)}
-                  className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-6 transition-all transform hover:scale-105 active:scale-95"
-                >
-                  <div className="text-4xl mb-2">🚩</div>
-                  <div className="text-white font-bold text-xl">Distress</div>
-                </button>
-                <button
-                  onClick={() => handleFlag(false)}
-                  className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-6 transition-all transform hover:scale-105 active:scale-95"
-                >
-                  <div className="text-4xl mb-2">✓</div>
-                  <div className="text-white font-bold text-xl">No Distress</div>
-                </button>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
               </div>
             </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {accuracy >= 70 ? "🎉 Sharp Detection!" : "💪 Keep Practicing!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You detected {score} out of {distressCues.length} correctly!
-            </p>
-            <p className="text-white/80 text-lg mb-4">
-              Accuracy: {accuracy}%
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {accuracy >= 70 ? "You earned 3 Coins! 🪙" : "Get 70% or higher to earn coins!"}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Use varied cues (nonverbal and verbal) to teach comprehensive distress recognition.
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
@@ -193,4 +277,3 @@ const SpotDistressReflex = () => {
 };
 
 export default SpotDistressReflex;
-

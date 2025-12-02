@@ -1,229 +1,300 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const CaseResponsePuzzle = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-teen-8";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentStep, setCurrentStep] = useState(0);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  const caseStudy = {
-    title: "Alex's Story",
-    background: "Alex is a talented student who recently lost a parent. They've been withdrawn, missing assignments, and avoiding friends.",
-    steps: [
-      {
-        id: 1,
-        situation: "You notice Alex sitting alone at lunch, looking at their phone, avoiding eye contact.",
-        question: "What's the best first response?",
-        options: [
-          { id: 1, text: "Hey Alex, mind if I sit here? No pressure to talk.", isAppropriate: true },
-          { id: 2, text: "Why are you always so sad? Cheer up!", isAppropriate: false },
-          { id: 3, text: "Are you okay? You seem weird lately.", isAppropriate: false }
-        ]
-      },
-      {
-        id: 2,
-        situation: "Alex opens up a bit: 'Things have been really hard at home.'",
-        question: "How do you respond?",
-        options: [
-          { id: 1, text: "I can't imagine how difficult this is for you. I'm here to listen.", isAppropriate: true },
-          { id: 2, text: "At least you still have one parent.", isAppropriate: false },
-          { id: 3, text: "Oh, that's tough. Want to talk about something else?", isAppropriate: false }
-        ]
-      },
-      {
-        id: 3,
-        situation: "Alex mentions they're falling behind in classes and feeling overwhelmed.",
-        question: "What's helpful to say?",
-        options: [
-          { id: 1, text: "Would you like me to help you catch up, or find resources together?", isAppropriate: true },
-          { id: 2, text: "You just need to try harder.", isAppropriate: false },
-          { id: 3, text: "Everyone has problems, you're not special.", isAppropriate: false }
-        ]
-      },
-      {
-        id: 4,
-        situation: "Alex says: 'I don't think anyone understands what I'm going through.'",
-        question: "What validates their feelings?",
-        options: [
-          { id: 1, text: "I may not fully understand, but I want to support you. You're not alone.", isAppropriate: true },
-          { id: 2, text: "I totally understand because I went through something similar.", isAppropriate: false },
-          { id: 3, text: "You're right, no one can understand.", isAppropriate: false }
-        ]
-      },
-      {
-        id: 5,
-        situation: "Alex seems hesitant about seeking professional help.",
-        question: "How do you encourage them?",
-        options: [
-          { id: 1, text: "Talking to a counselor could really help. Would you like me to go with you?", isAppropriate: true },
-          { id: 2, text: "You're not crazy, you don't need therapy.", isAppropriate: false },
-          { id: 3, text: "Just deal with it on your own.", isAppropriate: false }
-        ]
-      },
-      {
-        id: 6,
-        situation: "Alex thanks you for being there but says they need space sometimes.",
-        question: "What respects their boundary?",
-        options: [
-          { id: 1, text: "I understand. I'm here whenever you need me, no pressure.", isAppropriate: true },
-          { id: 2, text: "Fine, I was just trying to help.", isAppropriate: false },
-          { id: 3, text: "You shouldn't push friends away.", isAppropriate: false }
-        ]
-      },
-      {
-        id: 7,
-        situation: "You notice Alex returning to some normal activities but still seems fragile.",
-        question: "How do you support their progress?",
-        options: [
-          { id: 1, text: "I've noticed you're doing some things you enjoy again. That's great to see.", isAppropriate: true },
-          { id: 2, text: "So you're all better now?", isAppropriate: false },
-          { id: 3, text: "See? I told you it would get better.", isAppropriate: false }
-        ]
-      },
-      {
-        id: 8,
-        situation: "Other students ask you about Alex's situation.",
-        question: "How do you respond?",
-        options: [
-          { id: 1, text: "That's Alex's private business. Maybe ask them yourself if you care.", isAppropriate: true },
-          { id: 2, text: "Tell them all the details Alex shared with you", isAppropriate: false },
-          { id: 3, text: "Yeah, Alex has been acting really weird.", isAppropriate: false }
-        ]
-      },
-      {
-        id: 9,
-        situation: "Alex has a bad day and snaps at you unfairly.",
-        question: "What's the empathetic response?",
-        options: [
-          { id: 1, text: "I can see you're having a hard time. I'm not upset, take care of yourself.", isAppropriate: true },
-          { id: 2, text: "Wow, I was just trying to help. Forget it.", isAppropriate: false },
-          { id: 3, text: "You're so ungrateful after all I've done.", isAppropriate: false }
-        ]
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
       }
-    ]
-  };
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const handleResponseSelect = (optionId) => {
-    const step = caseStudy.steps[currentStep];
-    const option = step.options.find(opt => opt.id === optionId);
+  const questions = [
+    {
+      id: 1,
+      text: "Alex is a student who recently lost a parent. You notice Alex sitting alone at lunch, looking at their phone, avoiding eye contact. What's the best first response?",
+      options: [
+        { 
+          id: "a", 
+          text: "Hey Alex, mind if I sit here? No pressure to talk.", 
+          emoji: "🤝",
+          description: "Offers gentle connection without pressure",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Why are you always so sad? Cheer up!", 
+          emoji: "😠",
+          description: "Dismissive and hurtful",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Are you okay? You seem weird lately.", 
+          emoji: "😐",
+          description: "Judgmental and insensitive",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "Alex opens up: 'Things have been really hard at home.' How do you respond?",
+      options: [
+        { 
+          id: "b", 
+          text: "At least you still have one parent.", 
+          emoji: "😕",
+          description: "Minimizes their loss",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "I can't imagine how difficult this is for you. I'm here to listen.", 
+          emoji: "💙",
+          description: "Validates their feelings and offers support",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Oh, that's tough. Want to talk about something else?", 
+          emoji: "🔄",
+          description: "Avoids their need to share",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "Alex mentions they're falling behind in classes and feeling overwhelmed. What's helpful to say?",
+      options: [
+        { 
+          id: "a", 
+          text: "Would you like me to help you catch up, or find resources together?", 
+          emoji: "🤝",
+          description: "Offers practical support",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "You just need to try harder.", 
+          emoji: "👆",
+          description: "Blaming and unhelpful",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Everyone has problems, you're not special.", 
+          emoji: "😤",
+          description: "Dismissive and hurtful",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "Alex says: 'I don't think anyone understands what I'm going through.' What validates their feelings?",
+      options: [
+        { 
+          id: "b", 
+          text: "I totally understand because I went through something similar.", 
+          emoji: "🔄",
+          description: "Makes it about yourself",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "I may not fully understand, but I want to support you. You're not alone.", 
+          emoji: "💝",
+          description: "Honest and supportive",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "You're right, no one can understand.", 
+          emoji: "😞",
+          description: "Reinforces isolation",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Alex seems hesitant about seeking professional help. How do you encourage them?",
+      options: [
+        { 
+          id: "c", 
+          text: "Just deal with it on your own.", 
+          emoji: "🚫",
+          description: "Unsupportive",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Talking to a counselor could really help. Would you like me to go with you?", 
+          emoji: "💙",
+          description: "Encourages help-seeking and offers support",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "You're not crazy, you don't need therapy.", 
+          emoji: "😐",
+          description: "Stigmatizes help-seeking",
+          isCorrect: false
+        }
+      ]
+    }
+  ];
+
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const newResponses = [...responses, {
-      stepId: step.id,
-      optionId,
-      isAppropriate: option.isAppropriate
-    }];
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    setResponses(newResponses);
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    if (option.isAppropriate) {
-      setCoins(prev => prev + 1);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
-    if (currentStep < caseStudy.steps.length - 1) {
-      setTimeout(() => {
-        setCurrentStep(prev => prev + 1);
-      }, option.isAppropriate ? 1000 : 800);
-    } else {
-      setShowResult(true);
-    }
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/student/uvls/teen/spot-distress-reflex");
-  };
-
-  const appropriateCount = responses.filter(r => r.isAppropriate).length;
-  const percentage = Math.round((appropriateCount / caseStudy.steps.length) * 100);
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Case-Response Puzzle"
-      subtitle={`Step ${currentStep + 1} of ${caseStudy.steps.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && percentage >= 80}
-      showGameOver={showResult && percentage >= 80}
-      score={coins}
+      subtitle={levelCompleted ? "Case Study Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-8"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={8}
-      showConfetti={showResult && percentage >= 80}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {currentStep === 0 && responses.length === 0 && (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {currentQuestion === 0 && !answered && (
           <div className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-xl p-6 mb-4 border-2 border-purple-400/50">
-            <h3 className="text-white text-xl font-bold mb-2">{caseStudy.title}</h3>
-            <p className="text-white/90">{caseStudy.background}</p>
+            <h3 className="text-white text-xl font-bold mb-2">Alex's Story</h3>
+            <p className="text-white/90">Alex is a talented student who recently lost a parent. They've been withdrawn, missing assignments, and avoiding friends.</p>
           </div>
         )}
         
-        {!showResult ? (
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Step {currentStep + 1}/{caseStudy.steps.length}</span>
-                <span className="text-green-400 font-bold">Appropriate: {appropriateCount}</span>
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-lg mb-6 font-semibold">
-                {caseStudy.steps[currentStep].situation}
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
               
-              <p className="text-white/90 mb-4 text-center">
-                {caseStudy.steps[currentStep].question}
-              </p>
-              
-              <div className="space-y-3">
-                {caseStudy.steps[currentStep].options.map(option => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleResponseSelect(option.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102 text-left"
-                  >
-                    <div className="text-white font-medium">{option.text}</div>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {percentage >= 80 ? "🎉 Empathetic Responses!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You gave {appropriateCount} out of {caseStudy.steps.length} appropriate responses ({percentage}%)
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {percentage >= 80 ? "You earned 3 Coins! 🪙" : "Get 80% or higher to earn coins!"}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Discuss alternative acceptable responses and why empathy matters in supporting peers.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default CaseResponsePuzzle;
-

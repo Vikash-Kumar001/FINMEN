@@ -1,192 +1,290 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const CorrectingBiasRoleplay = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  
   const gameId = "uvls-teen-17";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [selectedApproach, setSelectedApproach] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      biasStatement: "A classmate says: 'Girls aren't good at math.'",
-      emoji: "🔢",
-      approaches: [
-        { id: 1, text: "Hey, that's not true. Many girls excel at math, and everyone can learn it.", respectful: true, safe: true },
-        { id: 2, text: "You're being sexist and ignorant!", respectful: false, safe: false },
-        { id: 3, text: "Whatever, I don't care.", respectful: false, safe: true },
-        { id: 4, text: "I understand you may think that, but research shows gender doesn't determine math ability.", respectful: true, safe: true }
+      text: "A classmate says: 'Girls aren't good at math.' How do you respond respectfully?",
+      options: [
+        { 
+          id: "a", 
+          text: "Hey, that's not true. Many girls excel at math, and everyone can learn it.", 
+          emoji: "🔢",
+          description: "Challenges bias respectfully",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "You're being sexist and ignorant!", 
+          emoji: "😠",
+          description: "Too aggressive",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Whatever, I don't care.", 
+          emoji: "🤷",
+          description: "Doesn't address the bias",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      biasStatement: "Someone says: 'People from that country are all lazy.'",
-      emoji: "🌍",
-      approaches: [
-        { id: 1, text: "That's a stereotype. I know hardworking people from many countries.", respectful: true, safe: true },
-        { id: 2, text: "You're racist! Stop talking!", respectful: false, safe: false },
-        { id: 3, text: "Just ignore and walk away", respectful: false, safe: true },
-        { id: 4, text: "Actually, that's a harmful generalization. Each person is unique.", respectful: true, safe: true }
+      text: "Someone says: 'People from that country are all lazy.' How do you respond respectfully?",
+      options: [
+        { 
+          id: "b", 
+          text: "You're racist! Stop talking!", 
+          emoji: "😤",
+          description: "Too aggressive",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "That's a stereotype. I know hardworking people from many countries.", 
+          emoji: "🌍",
+          description: "Challenges stereotype respectfully",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Just ignore and walk away", 
+          emoji: "🚶",
+          description: "Doesn't address the bias",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      biasStatement: "A peer jokes: 'That's so gay' as an insult.",
-      emoji: "🏳️‍🌈",
-      approaches: [
-        { id: 1, text: "Hey, using 'gay' as an insult is hurtful. Let's choose better words.", respectful: true, safe: true },
-        { id: 2, text: "Shut up, you're so offensive!", respectful: false, safe: false },
-        { id: 3, text: "Say nothing but feel uncomfortable", respectful: false, safe: true },
-        { id: 4, text: "I don't think you meant harm, but that language can hurt people. Let's be more mindful.", respectful: true, safe: true }
+      text: "A peer jokes: 'That's so gay' as an insult. How do you respond respectfully?",
+      options: [
+        { 
+          id: "a", 
+          text: "Hey, using 'gay' as an insult is hurtful. Let's choose better words.", 
+          emoji: "🏳️‍🌈",
+          description: "Addresses the issue respectfully",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Shut up, you're so offensive!", 
+          emoji: "😠",
+          description: "Too aggressive",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Say nothing but feel uncomfortable", 
+          emoji: "😐",
+          description: "Doesn't address the problem",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "A friend says: 'That job is for boys only.' How do you correct this bias respectfully?",
+      options: [
+        { 
+          id: "c", 
+          text: "Just laugh along", 
+          emoji: "😄",
+          description: "Doesn't challenge the bias",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Actually, many successful people in that field are from all genders. Anyone can do it.", 
+          emoji: "💼",
+          description: "Provides respectful correction",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "You're so wrong!", 
+          emoji: "❌",
+          description: "Not constructive",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Someone says: 'People with disabilities can't do that.' How do you respond respectfully?",
+      options: [
+        { 
+          id: "a", 
+          text: "That's not accurate. Many people with disabilities excel in various fields with accommodations.", 
+          emoji: "♿",
+          description: "Challenges bias with facts respectfully",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "That's mean!", 
+          emoji: "😠",
+          description: "Too simplistic",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Maybe you're right", 
+          emoji: "🤷",
+          description: "Doesn't challenge the bias",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleApproachSelect = (approachId) => {
-    setSelectedApproach(approachId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedApproach) return;
-
-    const scenario = scenarios[currentScenario];
-    const approach = scenario.approaches.find(a => a.id === selectedApproach);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isGood = approach.respectful && approach.safe;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      scenarioId: scenario.id,
-      approachId: selectedApproach,
-      isGood,
-      approach: approach.text
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isGood) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedApproach(null);
-    
-    if (currentScenario < scenarios.length - 1) {
-      setTimeout(() => {
-        setCurrentScenario(prev => prev + 1);
-      }, 1500);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/student/uvls/teen/name-respect-reflex");
-  };
-
-  const goodCount = responses.filter(r => r.isGood).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Correcting Bias Roleplay"
-      subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && goodCount >= 2}
-      showGameOver={showResult && goodCount >= 2}
-      score={coins}
+      subtitle={levelCompleted ? "Roleplay Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-17"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={17}
-      showConfetti={showResult && goodCount >= 2}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="bg-yellow-500/20 border-2 border-yellow-400/50 rounded-lg p-3 mb-4">
-                <p className="text-yellow-200 text-xs font-semibold">
-                  💡 Remember: Safety first. If you feel unsafe, get adult help.
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <div className="text-5xl mb-4 text-center">{scenarios[currentScenario].emoji}</div>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <div className="bg-red-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white italic">
-                  "{scenarios[currentScenario].biasStatement}"
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <p className="text-white/90 mb-4 text-center">How do you respond?</p>
-              
-              <div className="space-y-3 mb-6">
-                {scenarios[currentScenario].approaches.map(approach => (
-                  <button
-                    key={approach.id}
-                    onClick={() => handleApproachSelect(approach.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedApproach === approach.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{approach.text}</span>
-                  </button>
-                ))}
-              </div>
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedApproach}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedApproach
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Respond
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {goodCount >= 2 ? "🎉 Respectful Advocate!" : "💪 Keep Practicing!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You used {goodCount} out of {scenarios.length} respectful and safe approaches!
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {goodCount >= 2 ? "You earned 3 Coins! 🏆" : "Use 2+ respectful approaches to earn coins!"}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Emphasize safety and escalation paths. Students should know when to get adult help!
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default CorrectingBiasRoleplay;
-

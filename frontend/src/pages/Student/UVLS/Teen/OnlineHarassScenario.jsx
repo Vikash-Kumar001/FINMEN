@@ -1,208 +1,287 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const OnlineHarassScenario = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  
   const gameId = "uvls-teen-51";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedResponse, setSelectedResponse] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
-
-  useEffect(() => {
-    if (timeLeft > 0 && !showResult) {
-      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timerId);
-    } else if (timeLeft === 0) {
-      handleConfirm();
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
-  }, [timeLeft, showResult]);
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      post: "Insulting comment.",
-      emoji: "💬",
-      responses: [
-        { id: 1, text: "Report post", safe: true },
-        { id: 2, text: "Insult back", safe: false },
-        { id: 3, text: "Block user", safe: true },
-        { id: 4, text: "Ignore", safe: false }
+      text: "You see an insulting comment online. What's the safest response?",
+      options: [
+        { 
+          id: "a", 
+          text: "Report the post and block the user", 
+          emoji: "🛡️",
+          description: "Safe and responsible action",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Insult back", 
+          emoji: "😠",
+          description: "Escalates conflict",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore it completely", 
+          emoji: "🙈",
+          description: "Doesn't stop the harassment",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      post: "Fake rumor spread.",
-      emoji: "🔗",
-      responses: [
-        { id: 1, text: "Report to admin", safe: true },
-        { id: 2, text: "Spread counter rumor", safe: false },
-        { id: 3, text: "Tell friends truth", safe: true },
-        { id: 4, text: "Delete account", safe: false }
+      text: "Someone spreads a fake rumor about you online. How do you respond safely?",
+      options: [
+        { 
+          id: "b", 
+          text: "Spread counter rumors", 
+          emoji: "📢",
+          description: "Makes things worse",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Report to platform admin and tell trusted friends the truth", 
+          emoji: "✅",
+          description: "Safe response that addresses the issue",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Delete your account", 
+          emoji: "🚫",
+          description: "Extreme reaction",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      post: "Threat message.",
-      emoji: "⚠️",
-      responses: [
-        { id: 1, text: "Save and report police", safe: true },
-        { id: 2, text: "Threaten back", safe: false },
-        { id: 3, text: "Inform adult", safe: true },
-        { id: 4, text: "Reply jokingly", safe: false }
+      text: "You receive a threat message online. What should you do?",
+      options: [
+        { 
+          id: "a", 
+          text: "Save evidence, report to police, and inform a trusted adult", 
+          emoji: "🚨",
+          description: "Most safe and responsible action",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Threaten back", 
+          emoji: "👊",
+          description: "Dangerous escalation",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Reply jokingly", 
+          emoji: "😄",
+          description: "Doesn't take threat seriously",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      post: "Stalking online.",
-      emoji: "🕵️",
-      responses: [
-        { id: 1, text: "Block and report", safe: true },
-        { id: 2, text: "Confront stalker", safe: false },
-        { id: 3, text: "Privacy settings", safe: true },
-        { id: 4, text: "Share more info", safe: false }
+      text: "Someone is stalking you online, repeatedly messaging and watching your posts. What's the safest response?",
+      options: [
+        { 
+          id: "b", 
+          text: "Confront the stalker directly", 
+          emoji: "👆",
+          description: "Can be dangerous",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Share more personal information", 
+          emoji: "📱",
+          description: "Makes stalking worse",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Block them, update privacy settings, and report to platform", 
+          emoji: "🔒",
+          description: "Protects your safety",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      post: "Cyberbullying group.",
-      emoji: "👥",
-      responses: [
-        { id: 1, text: "Report group", safe: true },
-        { id: 2, text: "Join and argue", safe: false },
-        { id: 3, text: "Seek support", safe: true },
-        { id: 4, text: "Ignore group", safe: false }
+      text: "A cyberbullying group is targeting you and your friends. How do you respond safely?",
+      options: [
+        { 
+          id: "a", 
+          text: "Report the group, seek support from trusted adults, and document everything", 
+          emoji: "🛡️",
+          description: "Comprehensive safe response",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Join the group and argue", 
+          emoji: "💬",
+          description: "Engages with bullies",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore it completely", 
+          emoji: "🙈",
+          description: "Doesn't stop the bullying",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleResponseSelect = (responseId) => {
-    setSelectedResponse(responseId);
-  };
-
-  const handleConfirm = () => {
-    const question = questions[currentQuestion];
-    const response = question.responses.find(r => r.id === selectedResponse) || { safe: false };
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isSafe = response.safe;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      questionId: question.id,
-      isSafe
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isSafe) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedResponse(null);
-    setTimeLeft(30);
-    
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const safeCount = responses.filter(r => r.isSafe).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Online Harass Scenario"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && safeCount >= 4}
-      showGameOver={showResult && safeCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Scenario Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-51"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={51}
-      showConfetti={showResult && safeCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white mb-2">Time left: {timeLeft}s</p>
-              <div className="text-5xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
-              
-              <div className="bg-red-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white italic">
-                  Post: {questions[currentQuestion].post}
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white/90 mb-4 text-center">Choose safe response:</p>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <div className="space-y-3 mb-6">
-                {questions[currentQuestion].responses.map(response => (
-                  <button
-                    key={response.id}
-                    onClick={() => handleResponseSelect(response.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedResponse === response.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{response.text}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedResponse && timeLeft > 0}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedResponse || timeLeft === 0
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Respond
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {safeCount >= 4 ? "🎉 Safe Responder!" : "💪 More Safe!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Safe responses: {safeCount} out of {questions.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {safeCount >= 4 ? "Earned 5 Coins!" : "Need 4+ safe."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Provide reporting channels.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

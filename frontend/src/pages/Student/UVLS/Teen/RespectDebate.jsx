@@ -1,208 +1,290 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const RespectDebate = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-15";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [debateStage, setDebateStage] = useState("prep");
-  const [selectedArguments, setSelectedArguments] = useState([]);
-  const [listeningScore, setListeningScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
-
-  const debateTopic = "Does respect mean you must agree with everyone?";
+  const location = useLocation();
   
-  const argumentOptions = [
-    { id: 1, text: "Respect means listening even when you disagree", strong: true },
-    { id: 2, text: "I just think respect is good", strong: false },
-    { id: 3, text: "You can disagree respectfully by acknowledging their view first", strong: true },
-    { id: 4, text: "Everyone should think the same way", strong: false },
-    { id: 5, text: "Respect involves understanding different perspectives", strong: true },
-    { id: 6, text: "My friend said respect is important", strong: false }
-  ];
-
-  const listeningBehaviors = [
-    { id: 1, text: "Maintained eye contact and nodded", isGood: true },
-    { id: 2, text: "Interrupted frequently", isGood: false },
-    { id: 3, text: "Asked clarifying questions", isGood: true },
-    { id: 4, text: "Checked phone during opponent's turn", isGood: false },
-    { id: 5, text: "Took notes on opponent's points", isGood: true }
-  ];
-
-  const handleArgumentToggle = (argId) => {
-    if (selectedArguments.includes(argId)) {
-      setSelectedArguments(selectedArguments.filter(id => id !== argId));
-    } else if (selectedArguments.length < 3) {
-      setSelectedArguments([...selectedArguments, argId]);
-    }
-  };
-
-  const handleStartDebate = () => {
-    if (selectedArguments.length === 3) {
-      setDebateStage("listening");
-    }
-  };
-
-  const handleListeningBehavior = (behaviorId) => {
-    const behavior = listeningBehaviors.find(b => b.id === behaviorId);
-    if (behavior.isGood) {
-      setListeningScore(prev => prev + 1);
+  const gameId = "uvls-teen-15";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
     
-    if (behaviorId === listeningBehaviors.length) {
-      const strongArgs = selectedArguments.filter(id => 
-        argumentOptions.find(a => a.id === id)?.strong
-      ).length;
-      
-      const totalScore = strongArgs + listeningScore;
-      
-      if (totalScore >= 4) {
-        setCoins(prev => prev + 1);
-        showCorrectAnswerFeedback(1, false);
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
       }
-      
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1000);
+    } catch (error) {
+      console.warn("Error finding next game:", error);
     }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
+
+  const questions = [
+    {
+      id: 1,
+      text: "Does respect mean you must agree with everyone? What's the best argument for respectful disagreement?",
+      options: [
+        { 
+          id: "a", 
+          text: "Respect means listening even when you disagree", 
+          emoji: "👂",
+          description: "Shows true respect",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "I just think respect is good", 
+          emoji: "🤷",
+          description: "Weak personal opinion",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Everyone should think the same way", 
+          emoji: "🔄",
+          description: "Unrealistic and not respectful",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "How can you disagree with someone respectfully? What's the best approach?",
+      options: [
+        { 
+          id: "b", 
+          text: "Shout your opinion louder", 
+          emoji: "📢",
+          description: "Not respectful",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "You can disagree respectfully by acknowledging their view first", 
+          emoji: "💬",
+          description: "Shows respect while maintaining your view",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Just ignore them", 
+          emoji: "🙈",
+          description: "Doesn't address the disagreement",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "What does respect involve in a debate? Which argument is most effective?",
+      options: [
+        { 
+          id: "a", 
+          text: "Respect involves understanding different perspectives", 
+          emoji: "🌍",
+          description: "Shows true respect",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "My friend said respect is important", 
+          emoji: "👥",
+          description: "Not a strong argument",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Just agree with everything", 
+          emoji: "✅",
+          description: "Not genuine respect",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "How should you listen during a respectful debate?",
+      options: [
+        { 
+          id: "b", 
+          text: "Interrupt frequently", 
+          emoji: "⏸️",
+          description: "Disrespectful",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Check phone during opponent's turn", 
+          emoji: "📱",
+          description: "Shows lack of respect",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Maintain eye contact and ask clarifying questions", 
+          emoji: "👀",
+          description: "Shows respect and engagement",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "What's the best way to show respect when you disagree?",
+      options: [
+        { 
+          id: "a", 
+          text: "Acknowledge their point, then present your view respectfully", 
+          emoji: "🤝",
+          description: "Balanced and respectful approach",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Tell them they're completely wrong", 
+          emoji: "❌",
+          description: "Dismissive and disrespectful",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Pretend to agree", 
+          emoji: "😐",
+          description: "Not honest or respectful",
+          isCorrect: false
+        }
+      ]
+    }
+  ];
+
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/student/uvls/teen/inclusion-journal");
-  };
-
-  const strongArgs = selectedArguments.filter(id => 
-    argumentOptions.find(a => a.id === id)?.strong
-  ).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Respect Debate"
-      subtitle={debateStage === "prep" ? "Preparation" : "Listening Skills"}
-      onNext={handleNext}
-      nextEnabled={showResult && (strongArgs + listeningScore) >= 4}
-      showGameOver={showResult && (strongArgs + listeningScore) >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Debate Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-15"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={15}
-      showConfetti={showResult && (strongArgs + listeningScore) >= 4}
-      backPath="/games/uvls/teens"
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {debateStage === "prep" && (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-lg p-4 mb-6">
-                <p className="text-white text-lg font-bold text-center">
-                  {debateTopic}
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <h3 className="text-white text-xl font-bold mb-4">
-                Select 3 Arguments ({selectedArguments.length}/3)
-              </h3>
-              
-              <div className="space-y-3 mb-6">
-                {argumentOptions.map(arg => (
-                  <button
-                    key={arg.id}
-                    onClick={() => handleArgumentToggle(arg.id)}
-                    disabled={!selectedArguments.includes(arg.id) && selectedArguments.length >= 3}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedArguments.includes(arg.id)
-                        ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    } ${!selectedArguments.includes(arg.id) && selectedArguments.length >= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <div className="flex justify-between items-center">
-                      <span className="text-white font-medium">{arg.text}</span>
-                      <span className={`text-xs px-2 py-1 rounded ${
-                        arg.strong ? 'bg-green-500/50' : 'bg-yellow-500/50'
-                      }`}>
-                        {arg.strong ? 'strong' : 'weak'}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-              
-              <button
-                onClick={handleStartDebate}
-                disabled={selectedArguments.length !== 3}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedArguments.length === 3
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Start Debate! 🎤
-              </button>
-            </div>
-          </div>
-        )}
-        
-        {debateStage === "listening" && !showResult && (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-6 text-center">
-                During the debate, which listening behaviors did you demonstrate?
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
               
-              <div className="space-y-3">
-                {listeningBehaviors.map(behavior => (
-                  <button
-                    key={behavior.id}
-                    onClick={() => handleListeningBehavior(behavior.id)}
-                    className="w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 transition-all transform hover:scale-102 text-left"
-                  >
-                    <div className="text-white font-medium">{behavior.text}</div>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           </div>
-        )}
-        
-        {showResult && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {(strongArgs + listeningScore) >= 4 ? "🎉 Great Debater!" : "💪 Keep Practicing!"}
-            </h2>
-            <div className="space-y-3 mb-4">
-              <div className="flex justify-between items-center">
-                <span className="text-white/80">Strong Arguments:</span>
-                <span className="text-white font-bold">{strongArgs}/3</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-white/80">Good Listening:</span>
-                <span className="text-white font-bold">{listeningScore}/{listeningBehaviors.filter(b => b.isGood).length}</span>
-              </div>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {(strongArgs + listeningScore) >= 4 ? "You earned 10 Coins! 🪙" : "Score 4+ for coins!"}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Teach "agree to disagree" skills - you can respect someone without agreeing!
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default RespectDebate;
-

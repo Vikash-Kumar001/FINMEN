@@ -1,94 +1,203 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const EmpathyQuiz = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameData = getGameDataById("uvls-teen-2");
-  const gameId = gameData?.id || "uvls-teen-2";
+  const gameId = "uvls-teen-2";
+  const gameData = getGameDataById(gameId);
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  const [levelCompleted, setLevelCompleted] = useState(false);
   const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      text: "Your friend tells you they failed a test and feels terrible.",
+      text: "Your friend tells you they failed a test and feels terrible. Which response shows empathy?",
       options: [
-        { id: "empathy", text: "I understand how disappointing that must feel. I'm here for you.", type: "empathy", isCorrect: true },
-        { id: "sympathy", text: "Oh, poor you. That's so sad.", type: "sympathy", isCorrect: false },
-        { id: "dismiss", text: "It's just one test, get over it.", type: "dismissive", isCorrect: false }
-      ],
-      explanation: "Empathy means understanding and sharing feelings. Sympathy is feeling sorry for someone."
+        { 
+          id: "empathy", 
+          text: "I understand how disappointing that must feel. I'm here for you.", 
+          emoji: "💙", 
+          description: "Empathy - understanding and sharing feelings",
+          isCorrect: true
+        },
+        { 
+          id: "sympathy", 
+          text: "Oh, poor you. That's so sad.", 
+          emoji: "😢", 
+          description: "Sympathy - feeling sorry for someone",
+          isCorrect: false
+        },
+        { 
+          id: "dismiss", 
+          text: "It's just one test, get over it.", 
+          emoji: "🙈", 
+          description: "Dismissive - not acknowledging feelings",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      text: "A classmate is anxious about presenting in front of the class.",
+      text: "A classmate is anxious about presenting in front of the class. Which response shows empathy?",
       options: [
-        { id: "empathy", text: "I can see you're nervous. I felt the same way before my presentation. You'll do great.", type: "empathy", isCorrect: true },
-        { id: "sympathy", text: "I feel so sorry for you having to present.", type: "sympathy", isCorrect: false },
-        { id: "minimize", text: "Everyone has to present, just do it.", type: "minimize", isCorrect: false }
-      ],
-      explanation: "Empathy connects by sharing similar feelings and offering support."
+        { 
+          id: "sympathy", 
+          text: "I feel so sorry for you having to present.", 
+          emoji: "😢", 
+          description: "Sympathy - pitying them",
+          isCorrect: false
+        },
+        { 
+          id: "empathy", 
+          text: "I can see you're nervous. I felt the same way before my presentation. You'll do great.", 
+          emoji: "💝", 
+          description: "Empathy - sharing similar feelings and offering support",
+          isCorrect: true
+        },
+        { 
+          id: "minimize", 
+          text: "Everyone has to present, just do it.", 
+          emoji: "🤷", 
+          description: "Minimizing - not acknowledging their anxiety",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "Someone shares that they're being bullied.",
+      text: "Someone shares that they're being bullied. Which response shows empathy?",
       options: [
-        { id: "empathy", text: "That sounds really scary and hurtful. Let's talk about how to get help.", type: "empathy", isCorrect: true },
-        { id: "sympathy", text: "Oh no, you poor thing. I pity you.", type: "sympathy", isCorrect: false },
-        { id: "blame", text: "What did you do to make them bully you?", type: "blame", isCorrect: false }
-      ],
-      explanation: "Empathy involves understanding their pain and offering to help, not pitying them."
+        { 
+          id: "empathy", 
+          text: "That sounds really scary and hurtful. Let's talk about how to get help.", 
+          emoji: "🛡️", 
+          description: "Empathy - understanding their pain and offering help",
+          isCorrect: true
+        },
+        { 
+          id: "sympathy", 
+          text: "Oh no, you poor thing. I pity you.", 
+          emoji: "😢", 
+          description: "Sympathy - pitying them",
+          isCorrect: false
+        },
+        { 
+          id: "blame", 
+          text: "What did you do to make them bully you?", 
+          emoji: "👆", 
+          description: "Blaming - making them responsible",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      text: "Your friend's pet passed away and they're very sad.",
+      text: "Your friend's pet passed away and they're very sad. Which response shows empathy?",
       options: [
-        { id: "empathy", text: "I can imagine how heartbroken you must be. Your pet was so special to you.", type: "empathy", isCorrect: true },
-        { id: "sympathy", text: "That's so sad. Poor little pet.", type: "sympathy", isCorrect: false },
-        { id: "minimize", text: "It's just a pet, you can get another one.", type: "minimize", isCorrect: false }
-      ],
-      explanation: "Empathy acknowledges their unique bond and pain."
+        { 
+          id: "sympathy", 
+          text: "That's so sad. Poor little pet.", 
+          emoji: "😢", 
+          description: "Sympathy - feeling sad about the pet",
+          isCorrect: false
+        },
+        { 
+          id: "empathy", 
+          text: "I can imagine how heartbroken you must be. Your pet was so special to you.", 
+          emoji: "💔", 
+          description: "Empathy - acknowledging their unique bond and pain",
+          isCorrect: true
+        },
+        { 
+          id: "minimize", 
+          text: "It's just a pet, you can get another one.", 
+          emoji: "🙈", 
+          description: "Minimizing - dismissing their loss",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "A peer is struggling with family financial problems.",
+      text: "A peer is struggling with family financial problems. Which response shows empathy?",
       options: [
-        { id: "empathy", text: "That must be really stressful for you and your family. I'm here to listen.", type: "empathy", isCorrect: true },
-        { id: "sympathy", text: "Oh, that's terrible. I feel so bad for you.", type: "sympathy", isCorrect: false },
-        { id: "compare", text: "We all have money problems sometimes.", type: "compare", isCorrect: false }
-      ],
-      explanation: "Empathy validates their specific struggle without comparing or pitying."
-    },
-    {
-      id: 6,
-      text: "Someone is upset about not making the sports team.",
-      options: [
-        { id: "empathy", text: "I can see how disappointed you are. You worked really hard for this.", type: "empathy", isCorrect: true },
-        { id: "sympathy", text: "Aww, that's sad. Poor thing.", type: "sympathy", isCorrect: false },
-        { id: "toxic", text: "You probably weren't good enough anyway.", type: "toxic", isCorrect: false }
-      ],
-      explanation: "Empathy recognizes their effort and shares in their disappointment."
+        { 
+          id: "empathy", 
+          text: "That must be really stressful for you and your family. I'm here to listen.", 
+          emoji: "💙", 
+          description: "Empathy - validating their specific struggle",
+          isCorrect: true
+        },
+        { 
+          id: "sympathy", 
+          text: "Oh, that's terrible. I feel so bad for you.", 
+          emoji: "😢", 
+          description: "Sympathy - feeling bad for them",
+          isCorrect: false
+        },
+        { 
+          id: "compare", 
+          text: "We all have money problems sometimes.", 
+          emoji: "🤷", 
+          description: "Comparing - dismissing their unique situation",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleAnswer = (isCorrect) => {
-    if (answered) return;
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
     setAnswered(true);
+    setSelectedOption(optionId);
     resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -96,129 +205,86 @@ const EmpathyQuiz = () => {
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-
-    const isLastQuestion = currentQuestion === questions.length - 1;
     
     setTimeout(() => {
-      if (isLastQuestion) {
-        setShowResult(true);
-      } else {
+      if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
         setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
       }
-    }, 500);
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentQuestion(0);
-    setScore(0);
-    setAnswered(false);
-    resetFeedback();
-  };
-
-  const percentage = Math.round((score / questions.length) * 100);
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Empathy Quiz"
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
-      score={score}
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
-      showGameOver={showResult}
-      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && percentage >= 70}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
       gameId={gameId}
       gameType="uvls"
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult && questions[currentQuestion] ? (
-          <div className="max-w-4xl mx-auto">
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
+          <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <h3 className="text-xl font-bold text-white mb-6 text-center">
-                {questions[currentQuestion].text}
-              </h3>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                {questions[currentQuestion].options.map((option) => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleAnswer(option.isCorrect)}
-                    disabled={answered}
-                    className={`p-6 rounded-2xl text-center transition-all transform ${
-                      answered
-                        ? option.isCorrect
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
                           ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
-                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                    } ${answered ? "cursor-not-allowed" : ""}`}
-                  >
-                    <div className="flex flex-col items-center justify-center gap-3">
-                      <span className="font-semibold text-lg">{option.text}</span>
-                      <span className="text-sm opacity-90 italic">{option.type}</span>
-                    </div>
-                  </button>
-                ))}
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              {answered && (
-                <div className="bg-blue-500/20 rounded-lg p-3 mt-4">
-                  <p className="text-white/80 text-sm">
-                    💡 {questions[currentQuestion].explanation}
-                  </p>
-                </div>
-              )}
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {percentage >= 70 ? (
-              <div>
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Empathy Master!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You got {score} out of {questions.length} correct ({percentage}%)!
-                  You understand empathy vs sympathy!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{score} Coins</span>
-                </div>
-                <p className="text-white/80">
-                  Lesson: Empathy means understanding and sharing someone's feelings by putting yourself in their shoes. Sympathy is feeling sorry for someone. Empathy creates deeper connections!
-                </p>
-              </div>
-            ) : (
-              <div>
-                <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
-                <p className="text-white/90 text-lg mb-4">
-                  You got {score} out of {questions.length} correct ({percentage}%).
-                  Get 70% or higher to earn coins!
-                </p>
-                <button
-                  onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
-                >
-                  Try Again
-                </button>
-                <p className="text-white/80 text-sm">
-                  Tip: Empathy means understanding how someone feels by imagining yourself in their situation. It's different from sympathy, which is just feeling sorry for them!
-                </p>
-              </div>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

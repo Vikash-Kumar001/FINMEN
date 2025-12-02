@@ -1,213 +1,287 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const CounselorRoleplay = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-92";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedStep, setSelectedStep] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [badge, setBadge] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(30);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
-
-  useEffect(() => {
-    if (timeLeft > 0 && !showResult) {
-      const timerId = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearTimeout(timerId);
-    } else if (timeLeft === 0) {
-      handleConfirm();
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-37";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
-  }, [timeLeft, showResult]);
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      prompt: "Explain incident.",
-      emoji: "🗣️",
-      steps: [
-        { id: 1, text: "Describe clearly", supportive: true },
-        { id: 2, text: "Vague description", supportive: false },
-        { id: 3, text: "Provide details", supportive: true },
-        { id: 4, text: "Downplay", supportive: false }
+      text: "You're talking to a counselor about an incident. How do you explain it effectively?",
+      options: [
+        { 
+          id: "a", 
+          text: "Describe clearly what happened and provide details about when and where it occurred", 
+          emoji: "🗣️",
+          description: "Clear and detailed explanation",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Give a vague description without details", 
+          emoji: "🌫️",
+          description: "Not helpful for understanding",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Downplay what happened", 
+          emoji: "😐",
+          description: "Doesn't address the problem",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      prompt: "Share feelings.",
-      emoji: "😟",
-      steps: [
-        { id: 1, text: "Express honestly", supportive: true },
-        { id: 2, text: "Hide emotions", supportive: false },
-        { id: 3, text: "Use I statements", supportive: true },
-        { id: 4, text: "Blame others", supportive: false }
+      text: "The counselor asks how you're feeling. How do you respond?",
+      options: [
+        { 
+          id: "b", 
+          text: "Hide your emotions completely", 
+          emoji: "😶",
+          description: "Prevents getting help",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Express your feelings honestly so they can understand and help", 
+          emoji: "😟",
+          description: "Open and honest communication",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Pretend everything is fine", 
+          emoji: "😊",
+          description: "Doesn't get you support",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      prompt: "Counselor follow-up.",
-      emoji: "❓",
-      steps: [
-        { id: 1, text: "Answer questions", supportive: true },
-        { id: 2, text: "Avoid answers", supportive: false },
-        { id: 3, text: "Ask for clarification", supportive: true },
-        { id: 4, text: "Get angry", supportive: false }
+      text: "The counselor asks what support you need. How do you respond?",
+      options: [
+        { 
+          id: "a", 
+          text: "Clearly state what kind of support would help you feel safe and supported", 
+          emoji: "🤝",
+          description: "Direct and clear about needs",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Say you don't need any support", 
+          emoji: "🚫",
+          description: "Limits available help",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Change the subject completely", 
+          emoji: "🔄",
+          description: "Avoids getting help",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      prompt: "Make plan.",
-      emoji: "📅",
-      steps: [
-        { id: 1, text: "Set actions", supportive: true },
-        { id: 2, text: "No plan", supportive: false },
-        { id: 3, text: "Follow-up schedule", supportive: true },
-        { id: 4, text: "Ignore advice", supportive: false }
+      text: "The counselor offers a plan. How do you respond?",
+      options: [
+        { 
+          id: "b", 
+          text: "Reject the plan immediately", 
+          emoji: "❌",
+          description: "Not collaborative",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Agree without understanding", 
+          emoji: "👍",
+          description: "Not thoughtful",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Ask questions to understand the plan and discuss any concerns", 
+          emoji: "💬",
+          description: "Engaged and collaborative",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      prompt: "Thank counselor.",
-      emoji: "🙏",
-      steps: [
-        { id: 1, text: "Express thanks", supportive: true },
-        { id: 2, text: "Leave rudely", supportive: false },
-        { id: 3, text: "Appreciate help", supportive: true },
-        { id: 4, text: "Complain", supportive: false }
+      text: "How do you follow up after the counseling session?",
+      options: [
+        { 
+          id: "a", 
+          text: "Check in as planned and communicate if the support is helping", 
+          emoji: "📞",
+          description: "Follows through and communicates",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Never follow up", 
+          emoji: "🙈",
+          description: "Doesn't maintain support",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore any follow-up plans", 
+          emoji: "🚫",
+          description: "Not helpful",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleStepSelect = (stepId) => {
-    setSelectedStep(stepId);
-  };
-
-  const handleConfirm = () => {
-    const question = questions[currentQuestion];
-    const step = question.steps.find(s => s.id === selectedStep) || { supportive: false };
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isSupportive = step.supportive;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      questionId: question.id,
-      isSupportive
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isSupportive) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedStep(null);
-    setTimeLeft(30);
-    
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      const supportiveCount = newResponses.filter(r => r.isSupportive).length;
-      if (supportiveCount >= 4) {
-        setBadge(true);
-      }
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const supportiveCount = responses.filter(r => r.isSupportive).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Counselor Roleplay"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && supportiveCount >= 4}
-      showGameOver={showResult && supportiveCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Roleplay Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-92"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={92}
-      showConfetti={showResult && supportiveCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white mb-2">Time left: {timeLeft}s</p>
-              <div className="text-5xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
-              
-              <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white italic">
-                  Prompt: {questions[currentQuestion].prompt}
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white/90 mb-4 text-center">Choose step:</p>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <div className="space-y-3 mb-6">
-                {questions[currentQuestion].steps.map(step => (
-                  <button
-                    key={step.id}
-                    onClick={() => handleStepSelect(step.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedStep === step.id
-                        ? 'bg-green-500/50 border-green-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{step.text}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedStep && timeLeft > 0}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedStep || timeLeft === 0
-                    ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Report
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {supportiveCount >= 4 ? "🎉 Reporter!" : "💪 More Supportive!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Supportive steps: {supportiveCount} out of {questions.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {supportiveCount >= 4 ? "Earned Badge!" : "Need 4+ supportive."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Optional live roleplay with counselor.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

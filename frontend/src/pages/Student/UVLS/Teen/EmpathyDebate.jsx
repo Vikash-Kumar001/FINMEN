@@ -1,220 +1,293 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const EmpathyDebate = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "uvls-teen-5";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
+  const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  // Find next game path and ID if not provided in location.state
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const [answers, setAnswers] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const debateQuestions = [
+  const questions = [
     {
       id: 1,
-      topic: "Should empathy be a required part of the school curriculum?",
-      question: "Which argument is most effective for supporting empathy in schools?",
+      text: "Should empathy be a required part of the school curriculum? Which argument is most effective for supporting empathy in schools?",
       options: [
-        { id: "a", text: "Studies show empathetic students perform better academically", isCorrect: true },
-        { id: "b", text: "I think empathy is nice to have", isCorrect: false },
-        { id: "c", text: "My friend said empathy is important", isCorrect: false },
-        { id: "d", text: "Empathy doesn't matter for education", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Studies show empathetic students perform better academically", 
+          emoji: "📚",
+          description: "Evidence-based argument",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "I think empathy is nice to have", 
+          emoji: "🤷",
+          description: "Weak personal opinion",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "My friend said empathy is important", 
+          emoji: "👥",
+          description: "Not a strong argument",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      topic: "How can empathy reduce conflicts in schools?",
-      question: "What's the best way to respond when someone disagrees with you?",
+      text: "How can empathy reduce conflicts in schools? What's the best way to respond when someone disagrees with you?",
       options: [
-        { id: "a", text: "I understand your concern, but evidence shows...", isCorrect: true },
-        { id: "b", text: "That's completely wrong and you don't know what you're talking about", isCorrect: false },
-        { id: "c", text: "You're just making that up", isCorrect: false },
-        { id: "d", text: "Ignore them completely", isCorrect: false }
+        { 
+          id: "b", 
+          text: "That's completely wrong and you don't know what you're talking about", 
+          emoji: "😠",
+          description: "Aggressive and dismissive",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "I understand your concern, but evidence shows...", 
+          emoji: "💬",
+          description: "Respectful and evidence-based",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Ignore them completely", 
+          emoji: "🙈",
+          description: "Doesn't address the disagreement",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      topic: "Can empathy be taught or is it natural?",
-      question: "Which evidence best supports that empathy can be learned?",
+      text: "Can empathy be taught or is it natural? Which evidence best supports that empathy can be learned?",
       options: [
-        { id: "a", text: "Research shows empathy training programs reduce bullying by 40%", isCorrect: true },
-        { id: "b", text: "Some people are just born nice", isCorrect: false },
-        { id: "c", text: "You either have it or you don't", isCorrect: false },
-        { id: "d", text: "Empathy can't be taught in schools", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Research shows empathy training programs reduce bullying by 40%", 
+          emoji: "📊",
+          description: "Strong research evidence",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Some people are just born nice", 
+          emoji: "🎲",
+          description: "Suggests it's only natural",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "You either have it or you don't", 
+          emoji: "❌",
+          description: "Fixed mindset",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      topic: "How does empathy affect academic performance?",
-      question: "What's the relationship between empathy and learning?",
+      text: "How does empathy affect academic performance? What's the relationship between empathy and learning?",
       options: [
-        { id: "a", text: "Empathetic students collaborate better, leading to improved group project outcomes", isCorrect: true },
-        { id: "b", text: "Empathy has no impact on academics", isCorrect: false },
-        { id: "c", text: "Empathy actually hurts test scores", isCorrect: false },
-        { id: "d", text: "Only smart students can be empathetic", isCorrect: false }
+        { 
+          id: "b", 
+          text: "Empathy has no impact on academics", 
+          emoji: "🚫",
+          description: "Incorrect claim",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Empathetic students collaborate better, leading to improved group project outcomes", 
+          emoji: "🤝",
+          description: "Shows positive impact",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Empathy actually hurts test scores", 
+          emoji: "📉",
+          description: "Negative and incorrect",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      topic: "Why is respectful disagreement important?",
-      question: "When debating, what makes a rebuttal effective and respectful?",
+      text: "Why is respectful disagreement important? When debating, what makes a rebuttal effective and respectful?",
       options: [
-        { id: "a", text: "I see your point, however, consider this evidence...", isCorrect: true },
-        { id: "b", text: "Your opinion is stupid", isCorrect: false },
-        { id: "c", text: "Just agree to avoid conflict", isCorrect: false },
-        { id: "d", text: "Shout louder than your opponent", isCorrect: false }
+        { 
+          id: "a", 
+          text: "I see your point, however, consider this evidence...", 
+          emoji: "💭",
+          description: "Respectful and constructive",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Your opinion is stupid", 
+          emoji: "😤",
+          description: "Disrespectful and dismissive",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Just agree to avoid conflict", 
+          emoji: "🤐",
+          description: "Avoids meaningful discussion",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleAnswerSelect = (answerId) => {
-    if (isProcessing || showResult) return;
-    setSelectedAnswer(answerId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedAnswer || isProcessing || showResult) return;
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    setIsProcessing(true);
-    const currentQ = debateQuestions[currentQuestion];
-    const selectedOption = currentQ.options.find(opt => opt.id === selectedAnswer);
-    const isCorrect = selectedOption?.isCorrect === true;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newAnswers = [...answers, {
-      questionId: currentQ.id,
-      selected: selectedAnswer,
-      isCorrect
-    }];
-    
-    setAnswers(newAnswers);
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    setSelectedAnswer(null);
-    
-    if (currentQuestion < debateQuestions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-        setIsProcessing(false);
-      }, isCorrect ? 1500 : 0);
     } else {
-      setTimeout(() => {
-        setShowResult(true);
-        setIsProcessing(false);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const currentQ = debateQuestions[currentQuestion];
-  const correctAnswers = answers.filter(a => a.isCorrect).length;
-  // Score should be the number of correct answers for backend
-  const finalScore = showResult ? correctAnswers : coins;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Empathy Debate"
-      subtitle={`Question ${currentQuestion + 1} of ${debateQuestions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && correctAnswers === 5}
-      showGameOver={showResult}
+      subtitle={levelCompleted ? "Debate Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-5"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={5}
-      maxScore={5}
-      showConfetti={showResult && correctAnswers === 5}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult && currentQ && (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
-            <div className="max-w-2xl mx-auto bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-lg p-4 mb-6">
-                <p className="text-white text-sm font-semibold text-center mb-2">
-                  Topic:
-                </p>
-                <p className="text-white text-lg font-bold text-center">
-                  {currentQ.topic}
-                </p>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-xl mb-6 text-center font-semibold">
-                {currentQ.question}
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
               </p>
               
-              <div className="space-y-3 mb-6">
-                {currentQ.options.map(option => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleAnswerSelect(option.id)}
-                    disabled={isProcessing || answers.length > currentQuestion}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedAnswer === option.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    } ${isProcessing || answers.length > currentQuestion ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    <div className="text-white font-medium">{option.text}</div>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              {answers.length > 0 && answers[currentQuestion] && (
-                <div className={`mt-4 p-4 rounded-xl mb-4 ${
-                  answers[currentQuestion].isCorrect
-                    ? 'bg-green-500/30 border-2 border-green-400'
-                    : 'bg-red-500/30 border-2 border-red-400'
-                }`}>
-                  <p className="text-white font-medium text-center">
-                    {answers[currentQuestion].isCorrect 
-                      ? "✓ Correct! Great debate point!" 
-                      : "✗ Not quite. Keep practicing your argumentation skills!"}
-                  </p>
-                </div>
-              )}
-              
-              {answers.length <= currentQuestion && (
-                <button
-                  onClick={handleConfirm}
-                  disabled={!selectedAnswer || isProcessing}
-                  className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                    selectedAnswer && !isProcessing
-                      ? 'bg-gradient-to-r from-blue-500 to-purple-500 hover:opacity-90'
-                      : 'bg-gray-500/50 cursor-not-allowed'
-                  }`}
-                >
-                  Confirm Answer
-                </button>
-              )}
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default EmpathyDebate;
-

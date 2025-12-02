@@ -136,11 +136,11 @@ const CleanUpStory = () => {
               </div>
               
               <h3 className="text-xl font-bold text-white mb-6 text-center">
-                {questions[currentLevel].text}
+                {questions[currentLevel].scene}
               </h3>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {questions[currentLevel].options.map((option) => (
+                {questions[currentLevel].tasks.map((option) => (
                   <button
                     key={option.id}
                     onClick={() => handleAnswer(option.isCorrect)}

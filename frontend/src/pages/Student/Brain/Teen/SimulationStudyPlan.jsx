@@ -272,7 +272,7 @@ const SimulationStudyPlan = () => {
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
+      <div className="space-y-6 md:space-y-8 min-h-[calc(100vh-200px)] flex flex-col justify-center px-4">
         {!levelCompleted && currentScenario ? (
           <div className="space-y-4 md:space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">

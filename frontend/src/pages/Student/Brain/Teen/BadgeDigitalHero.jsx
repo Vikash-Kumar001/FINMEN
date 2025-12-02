@@ -104,11 +104,6 @@ const BadgeDigitalHero = () => {
           isCorrect: true
         },
         { 
-          text: "Never take breaks", 
-          emoji: "📱", 
-          isCorrect: false
-        },
-        { 
           text: "Use screens constantly", 
           emoji: "😵", 
           isCorrect: false

@@ -142,21 +142,6 @@ const BadgeEmotionHero = () => {
           text: "Talk to a loved one", 
           emoji: "💬❤️", 
           isCorrect: true
-        },
-        { 
-          text: "Isolate completely", 
-          emoji: "🚶‍♂️", 
-          isCorrect: false
-        },
-        { 
-          text: "Suppress all feelings", 
-          emoji: "😐", 
-          isCorrect: false
-        },
-        { 
-          text: "Take it out on others", 
-          emoji: "😡", 
-          isCorrect: false
         }
       ]
     },

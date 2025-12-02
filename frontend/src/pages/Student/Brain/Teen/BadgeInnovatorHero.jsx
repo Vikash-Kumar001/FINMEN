@@ -104,11 +104,6 @@ const BadgeInnovatorHero = () => {
           isCorrect: true
         },
         { 
-          text: "Copy existing work", 
-          emoji: "📋", 
-          isCorrect: false
-        },
-        { 
           text: "Plagiarize others' ideas", 
           emoji: "🚫", 
           isCorrect: false

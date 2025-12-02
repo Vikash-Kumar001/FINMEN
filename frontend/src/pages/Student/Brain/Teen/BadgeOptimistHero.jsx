@@ -104,11 +104,6 @@ const BadgeOptimistHero = () => {
           isCorrect: true
         },
         { 
-          text: "Dwell on everything that went wrong", 
-          emoji: "😠", 
-          isCorrect: false
-        },
-        { 
           text: "Blame everyone else", 
           emoji: "👉", 
           isCorrect: false

@@ -59,18 +59,18 @@ const SnackChoice = () => {
       text: "You need energy for homework. What should you choose?",
       options: [
         { 
-          id: "a", 
-          text: "Banana", 
-          emoji: "🍌", 
-          description: "Natural energy boost",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Soda", 
           emoji: "🥤", 
           description: "Sugary drink",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Banana", 
+          emoji: "🍌", 
+          description: "Natural energy boost",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -86,13 +86,6 @@ const SnackChoice = () => {
       text: "You're feeling tired. What should you choose?",
       options: [
         { 
-          id: "a", 
-          text: "Yogurt", 
-          emoji: "🥛", 
-          description: "Protein-rich snack",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Ice cream", 
           emoji: "🍨", 
@@ -105,6 +98,13 @@ const SnackChoice = () => {
           emoji: "🍰", 
           description: "Sweet dessert",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Yogurt", 
+          emoji: "🥛", 
+          description: "Protein-rich snack",
+          isCorrect: true 
         }
       ]
     },
@@ -113,18 +113,18 @@ const SnackChoice = () => {
       text: "You want a before bed snack. What should you choose?",
       options: [
         { 
-          id: "a", 
-          text: "Milk", 
-          emoji: "🥛", 
-          description: "Calming drink",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Chocolate", 
           emoji: "🍫", 
           description: "Sugary treat",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Milk", 
+          emoji: "🥛", 
+          description: "Calming drink",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -140,13 +140,6 @@ const SnackChoice = () => {
       text: "You finished sports. What should you choose?",
       options: [
         { 
-          id: "a", 
-          text: "Orange", 
-          emoji: "🍊", 
-          description: "Vitamin C and hydration",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Donut", 
           emoji: "🍩", 
@@ -159,6 +152,13 @@ const SnackChoice = () => {
           emoji: "🍕", 
           description: "Heavy meal",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Orange", 
+          emoji: "🍊", 
+          description: "Vitamin C and hydration",
+          isCorrect: true 
         }
       ]
     }

@@ -54,18 +54,18 @@ const AskForHelpRoleplay = () => {
       text: "You're feeling sad and need someone to talk to. What should you say?",
       options: [
         { 
-          id: "a", 
-          text: "Can we talk? I'm feeling sad", 
-          emoji: "🗣️", 
-          description: "Polite and clear",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Leave me alone!", 
           emoji: "🚫", 
           description: "Pushing people away",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Can we talk? I'm feeling sad", 
+          emoji: "🗣️", 
+          description: "Polite and clear",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +81,6 @@ const AskForHelpRoleplay = () => {
       text: "You saw a bullying incident. What should you say?",
       options: [
         { 
-          id: "a", 
-          text: "I need to report this to an adult", 
-          emoji: "🚨", 
-          description: "Responsible and clear",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Handle it yourself!", 
           emoji: "👊", 
@@ -100,6 +93,13 @@ const AskForHelpRoleplay = () => {
           emoji: "🫥", 
           description: "Not responsible",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "I need to report this to an adult", 
+          emoji: "🚨", 
+          description: "Responsible and clear",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +108,18 @@ const AskForHelpRoleplay = () => {
       text: "You're confused in class. What should you say?",
       options: [
         { 
-          id: "a", 
-          text: "Can you explain that again, please?", 
-          emoji: "🤔", 
-          description: "Polite and respectful",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "This is stupid!", 
           emoji: "🤬", 
           description: "Rude and disrespectful",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Can you explain that again, please?", 
+          emoji: "🤔", 
+          description: "Polite and respectful",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -135,13 +135,6 @@ const AskForHelpRoleplay = () => {
       text: "You're having trouble with a friend. What should you say?",
       options: [
         { 
-          id: "a", 
-          text: "Can I get some advice, please?", 
-          emoji: "💡", 
-          description: "Polite and respectful",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Fix this for me now!", 
           emoji: "😡", 
@@ -154,6 +147,13 @@ const AskForHelpRoleplay = () => {
           emoji: "🙄", 
           description: "Not asking for help",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Can I get some advice, please?", 
+          emoji: "💡", 
+          description: "Polite and respectful",
+          isCorrect: true 
         }
       ]
     }

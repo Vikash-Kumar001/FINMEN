@@ -54,18 +54,18 @@ const ActiveListeningQuiz = () => {
       text: "You repeat back what your friend said. Is this active listening?",
       options: [
         { 
-          id: "a", 
-          text: "Active listening", 
-          emoji: "🗣️", 
-          description: "Repeating shows you understood",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Ignoring", 
           emoji: "🙈", 
           description: "Repeating means you're listening",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Active listening", 
+          emoji: "🗣️", 
+          description: "Repeating shows you understood",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +81,6 @@ const ActiveListeningQuiz = () => {
       text: "You play on your phone while someone is talking. Is this good?",
       options: [
         { 
-          id: "a", 
-          text: "Bad", 
-          emoji: "📱", 
-          description: "Phones distract from listening",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Good", 
           emoji: "👍", 
@@ -100,6 +93,13 @@ const ActiveListeningQuiz = () => {
           emoji: "😄", 
           description: "Listening is more important",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Bad", 
+          emoji: "📱", 
+          description: "Phones distract from listening",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +108,18 @@ const ActiveListeningQuiz = () => {
       text: "You nod and make eye contact while listening. Is this active listening?",
       options: [
         { 
-          id: "a", 
-          text: "Active listening", 
-          emoji: "👀", 
-          description: "Nodding and eye contact show you're engaged",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Sleeping", 
           emoji: "😴", 
           description: "Nodding shows you're awake and listening",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Active listening", 
+          emoji: "👀", 
+          description: "Nodding and eye contact show you're engaged",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -135,13 +135,6 @@ const ActiveListeningQuiz = () => {
       text: "You interrupt someone while they're talking. Is this good listening?",
       options: [
         { 
-          id: "a", 
-          text: "Poor listening", 
-          emoji: "🛑", 
-          description: "Interrupting shows you're not listening well",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Helpful", 
           emoji: "🤝", 
@@ -154,6 +147,13 @@ const ActiveListeningQuiz = () => {
           emoji: "🤫", 
           description: "Interrupting is not quiet",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Poor listening", 
+          emoji: "🛑", 
+          description: "Interrupting shows you're not listening well",
+          isCorrect: true 
         }
       ]
     }

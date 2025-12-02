@@ -54,18 +54,18 @@ const CauseEffectQuiz = () => {
       text: "What happens when you share toys?",
       options: [
         { 
-          id: "a", 
-          text: "Make friends", 
-          emoji: "👭", 
-          description: "Sharing builds friendships",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Lose toys", 
           emoji: "😢", 
           description: "Sharing doesn't mean losing",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Make friends", 
+          emoji: "👭", 
+          description: "Sharing builds friendships",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +81,6 @@ const CauseEffectQuiz = () => {
       text: "What happens if you run in the hallway?",
       options: [
         { 
-          id: "a", 
-          text: "Fall down", 
-          emoji: "🤕", 
-          description: "Running can cause accidents",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Win race", 
           emoji: "🏆", 
@@ -100,6 +93,13 @@ const CauseEffectQuiz = () => {
           emoji: "🕊️", 
           description: "This is impossible",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Fall down", 
+          emoji: "🤕", 
+          description: "Running can cause accidents",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +108,18 @@ const CauseEffectQuiz = () => {
       text: "What happens when you help at home?",
       options: [
         { 
-          id: "a", 
-          text: "Happy family", 
-          emoji: "🏡", 
-          description: "Helping makes everyone happy",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Messy house", 
           emoji: "🗑️", 
           description: "Helping keeps things clean",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Happy family", 
+          emoji: "🏡", 
+          description: "Helping makes everyone happy",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -135,13 +135,6 @@ const CauseEffectQuiz = () => {
       text: "What happens when you study hard?",
       options: [
         { 
-          id: "a", 
-          text: "Good grades", 
-          emoji: "📚", 
-          description: "Studying leads to success",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Bad test", 
           emoji: "😞", 
@@ -154,6 +147,13 @@ const CauseEffectQuiz = () => {
           emoji: "🏫", 
           description: "Studying helps you stay in school",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Good grades", 
+          emoji: "📚", 
+          description: "Studying leads to success",
+          isCorrect: true 
         }
       ]
     }

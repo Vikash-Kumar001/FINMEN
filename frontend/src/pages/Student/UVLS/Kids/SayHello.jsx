@@ -54,18 +54,18 @@ const SayHello = () => {
       text: "You see your teacher. How do you greet them?",
       options: [
         { 
-          id: "a", 
-          text: "Good morning, teacher!", 
-          emoji: "🌅", 
-          description: "Polite and respectful",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Yo!", 
           emoji: "✌️", 
           description: "Too casual for a teacher",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Good morning, teacher!", 
+          emoji: "🌅", 
+          description: "Polite and respectful",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +81,6 @@ const SayHello = () => {
       text: "You see your neighbor. What do you say?",
       options: [
         { 
-          id: "a", 
-          text: "Hello, how are you?", 
-          emoji: "🏡", 
-          description: "Polite and friendly",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "What?", 
           emoji: "🤨", 
@@ -100,6 +93,13 @@ const SayHello = () => {
           emoji: "👀", 
           description: "Not greeting at all",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Hello, how are you?", 
+          emoji: "🏡", 
+          description: "Polite and friendly",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +108,18 @@ const SayHello = () => {
       text: "You see a family member. How do you greet them?",
       options: [
         { 
-          id: "a", 
-          text: "Hi mom/dad!", 
-          emoji: "👨‍👩‍👧", 
-          description: "Warm and polite",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Ugh", 
           emoji: "😩", 
           description: "Rude and disrespectful",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Hi mom/dad!", 
+          emoji: "👨‍👩‍👧", 
+          description: "Warm and polite",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -135,13 +135,6 @@ const SayHello = () => {
       text: "You meet a new classmate. What do you say?",
       options: [
         { 
-          id: "a", 
-          text: "Hello, what's your name?", 
-          emoji: "📚", 
-          description: "Polite and friendly",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Move over!", 
           emoji: "👉", 
@@ -154,6 +147,13 @@ const SayHello = () => {
           emoji: "🫥", 
           description: "Not greeting at all",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Hello, what's your name?", 
+          emoji: "📚", 
+          description: "Polite and friendly",
+          isCorrect: true 
         }
       ]
     }

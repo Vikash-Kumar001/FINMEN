@@ -54,18 +54,18 @@ const ToyDispute = () => {
       text: "Siblings are arguing over a ball. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Share by time", 
-          emoji: "⏰", 
-          description: "Take turns fairly",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Hide it", 
           emoji: "🕳️", 
           description: "Not helpful",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Share by time", 
+          emoji: "⏰", 
+          description: "Take turns fairly",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +81,6 @@ const ToyDispute = () => {
       text: "Classmates want the same book. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Read together", 
-          emoji: "📖", 
-          description: "Share and cooperate",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Tear pages", 
           emoji: "📄", 
@@ -100,6 +93,13 @@ const ToyDispute = () => {
           emoji: "👤", 
           description: "Not fair",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Read together", 
+          emoji: "📖", 
+          description: "Share and cooperate",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +108,18 @@ const ToyDispute = () => {
       text: "Friends are disputing over a game. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Play in turns", 
-          emoji: "🎲", 
-          description: "Share fairly",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Quit game", 
           emoji: "🚫", 
           description: "Not helpful",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Play in turns", 
+          emoji: "🎲", 
+          description: "Share fairly",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -135,13 +135,6 @@ const ToyDispute = () => {
       text: "Cousins want the same puzzle. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Solve together", 
-          emoji: "🧩", 
-          description: "Cooperate and share",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Throw pieces", 
           emoji: "🤬", 
@@ -154,6 +147,13 @@ const ToyDispute = () => {
           emoji: "🤦", 
           description: "Not fair",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Solve together", 
+          emoji: "🧩", 
+          description: "Cooperate and share",
+          isCorrect: true 
         }
       ]
     }

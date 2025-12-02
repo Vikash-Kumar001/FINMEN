@@ -54,18 +54,18 @@ const PriorityQuiz = () => {
       text: "What should you do after school?",
       options: [
         { 
-          id: "a", 
-          text: "Study then have fun", 
-          emoji: "🧠", 
-          description: "Balance work and play",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Watch TV first", 
           emoji: "📺", 
           description: "Work should come first",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Study then have fun", 
+          emoji: "🧠", 
+          description: "Balance work and play",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +81,6 @@ const PriorityQuiz = () => {
       text: "What's the best weekend plan?",
       options: [
         { 
-          id: "a", 
-          text: "Do chores then play", 
-          emoji: "🧹", 
-          description: "Responsibilities first",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Play only", 
           emoji: "🏃", 
@@ -100,6 +93,13 @@ const PriorityQuiz = () => {
           emoji: "🤷", 
           description: "Stay productive",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Do chores then play", 
+          emoji: "🧹", 
+          description: "Responsibilities first",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +108,18 @@ const PriorityQuiz = () => {
       text: "What should you do before bed?",
       options: [
         { 
-          id: "a", 
-          text: "Brush your teeth", 
-          emoji: "🦷", 
-          description: "Health comes first",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Watch videos", 
           emoji: "📱", 
           description: "Health is more important",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Brush your teeth", 
+          emoji: "🦷", 
+          description: "Health comes first",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -135,13 +135,6 @@ const PriorityQuiz = () => {
       text: "What should you do first in the morning?",
       options: [
         { 
-          id: "a", 
-          text: "Eat breakfast", 
-          emoji: "🍳", 
-          description: "Start the day right",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Play games", 
           emoji: "🎲", 
@@ -154,6 +147,13 @@ const PriorityQuiz = () => {
           emoji: "📺", 
           description: "Eat first, then play",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Eat breakfast", 
+          emoji: "🍳", 
+          description: "Start the day right",
+          isCorrect: true 
         }
       ]
     }

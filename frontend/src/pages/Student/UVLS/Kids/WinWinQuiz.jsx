@@ -54,18 +54,18 @@ const WinWinQuiz = () => {
       text: "You have one cookie to share. What's the best way?",
       options: [
         { 
-          id: "a", 
-          text: "Split it in half", 
-          emoji: "🍪", 
-          description: "Both get to enjoy",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Eat it alone", 
           emoji: "😋", 
           description: "The other person loses",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Split it in half", 
+          emoji: "🍪", 
+          description: "Both get to enjoy",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +81,6 @@ const WinWinQuiz = () => {
       text: "You and a friend want to play different games. What's best?",
       options: [
         { 
-          id: "a", 
-          text: "Play both games", 
-          emoji: "🎲", 
-          description: "Everyone gets what they want",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Play only one", 
           emoji: "1️⃣", 
@@ -100,6 +93,13 @@ const WinWinQuiz = () => {
           emoji: "😔", 
           description: "Everyone loses",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Play both games", 
+          emoji: "🎲", 
+          description: "Everyone gets what they want",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +108,18 @@ const WinWinQuiz = () => {
       text: "You and your sibling want to watch different TV shows. What's best?",
       options: [
         { 
-          id: "a", 
-          text: "Watch one then the other", 
-          emoji: "📺", 
-          description: "Both get to watch their show",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Watch nothing", 
           emoji: "🚫", 
           description: "Everyone loses",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Watch one then the other", 
+          emoji: "📺", 
+          description: "Both get to watch their show",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -135,13 +135,6 @@ const WinWinQuiz = () => {
       text: "You both need crayons for coloring. What's the best solution?",
       options: [
         { 
-          id: "a", 
-          text: "Share and trade colors", 
-          emoji: "🖍️", 
-          description: "Everyone gets what they need",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Keep all for yourself", 
           emoji: "🤲", 
@@ -154,6 +147,13 @@ const WinWinQuiz = () => {
           emoji: "💥", 
           description: "Everyone loses",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Share and trade colors", 
+          emoji: "🖍️", 
+          description: "Everyone gets what they need",
+          isCorrect: true 
         }
       ]
     }

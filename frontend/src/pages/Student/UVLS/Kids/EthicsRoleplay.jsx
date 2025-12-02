@@ -54,18 +54,18 @@ const EthicsRoleplay = () => {
       text: "You accidentally broke your friend's toy. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Admit it and apologize", 
-          emoji: "🙏", 
-          description: "Honest and responsible",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Hide it and pretend you don't know", 
           emoji: "🕳️", 
           description: "Dishonest",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Admit it and apologize", 
+          emoji: "🙏", 
+          description: "Honest and responsible",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +81,6 @@ const EthicsRoleplay = () => {
       text: "You saw someone cheating on a test. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Tell the teacher privately", 
-          emoji: "🧑‍🏫", 
-          description: "Honest and responsible",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Cheat too", 
           emoji: "📋", 
@@ -100,6 +93,13 @@ const EthicsRoleplay = () => {
           emoji: "🫥", 
           description: "Not responsible",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Tell the teacher privately", 
+          emoji: "🧑‍🏫", 
+          description: "Honest and responsible",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +108,18 @@ const EthicsRoleplay = () => {
       text: "You took an extra cookie without permission. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Confess and apologize", 
-          emoji: "🍪", 
-          description: "Honest and responsible",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Eat it secretly", 
           emoji: "🤐", 
           description: "Dishonest",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Confess and apologize", 
+          emoji: "🍪", 
+          description: "Honest and responsible",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -135,13 +135,6 @@ const EthicsRoleplay = () => {
       text: "You lied about not doing your homework. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Tell the truth and do it", 
-          emoji: "📖", 
-          description: "Honest and responsible",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Keep lying", 
           emoji: "🤥", 
@@ -154,6 +147,13 @@ const EthicsRoleplay = () => {
           emoji: "😵", 
           description: "Not responsible",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Tell the truth and do it", 
+          emoji: "📖", 
+          description: "Honest and responsible",
+          isCorrect: true 
         }
       ]
     }

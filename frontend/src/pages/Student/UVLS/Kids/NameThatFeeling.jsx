@@ -59,18 +59,18 @@ const NameThatFeeling = () => {
       text: "You lost a toy. How do you feel?",
       options: [
         { 
-          id: "a", 
-          text: "Sad", 
-          emoji: "😢", 
-          description: "Feeling down or upset",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Happy", 
           emoji: "😊", 
           description: "Feeling joyful and pleased",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Sad", 
+          emoji: "😢", 
+          description: "Feeling down or upset",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -86,13 +86,6 @@ const NameThatFeeling = () => {
       text: "You're in a dark room alone. How do you feel?",
       options: [
         { 
-          id: "a", 
-          text: "Scared", 
-          emoji: "😱", 
-          description: "Feeling afraid or worried",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Excited", 
           emoji: "🤩", 
@@ -105,6 +98,13 @@ const NameThatFeeling = () => {
           emoji: "😌", 
           description: "Feeling peaceful and relaxed",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Scared", 
+          emoji: "😱", 
+          description: "Feeling afraid or worried",
+          isCorrect: true 
         }
       ]
     },
@@ -113,18 +113,18 @@ const NameThatFeeling = () => {
       text: "A friend shares candy with you. How do you feel?",
       options: [
         { 
-          id: "a", 
-          text: "Happy", 
-          emoji: "😊", 
-          description: "Feeling joyful and pleased",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Angry", 
           emoji: "😠", 
           description: "Feeling mad or frustrated",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Happy", 
+          emoji: "😊", 
+          description: "Feeling joyful and pleased",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -140,13 +140,6 @@ const NameThatFeeling = () => {
       text: "Someone takes your turn. How do you feel?",
       options: [
         { 
-          id: "a", 
-          text: "Angry", 
-          emoji: "😠", 
-          description: "Feeling mad or frustrated",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Happy", 
           emoji: "😊", 
@@ -159,6 +152,13 @@ const NameThatFeeling = () => {
           emoji: "😢", 
           description: "Feeling down or upset",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Angry", 
+          emoji: "😠", 
+          description: "Feeling mad or frustrated",
+          isCorrect: true 
         }
       ]
     }

@@ -56,18 +56,18 @@ const AskClearlyStory = () => {
       text: "You want to borrow a toy. What would you say?",
       options: [
         { 
-          id: "a", 
-          text: "May I borrow your toy?", 
-          emoji: "🧸", 
-          description: "Ask politely and clearly",
-          isCorrect: true
-        },
-        { 
           id: "b", 
           text: "Give me!", 
           emoji: "🤲", 
           description: "Demand rudely",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "May I borrow your toy?", 
+          emoji: "🧸", 
+          description: "Ask politely and clearly",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -83,13 +83,6 @@ const AskClearlyStory = () => {
       text: "You're thirsty and need water. How do you ask?",
       options: [
         { 
-          id: "a", 
-          text: "Can I have water please?", 
-          emoji: "💧", 
-          description: "Ask clearly and politely",
-          isCorrect: true
-        },
-        { 
           id: "b", 
           text: "Thirsty!", 
           emoji: "🥵", 
@@ -102,6 +95,13 @@ const AskClearlyStory = () => {
           emoji: "⏰", 
           description: "Demand without asking",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Can I have water please?", 
+          emoji: "💧", 
+          description: "Ask clearly and politely",
+          isCorrect: true
         }
       ]
     },
@@ -110,18 +110,18 @@ const AskClearlyStory = () => {
       text: "You didn't understand something. How would you ask for help?",
       options: [
         { 
-          id: "a", 
-          text: "Can you explain again?", 
-          emoji: "📖", 
-          description: "Ask clearly for explanation",
-          isCorrect: true
-        },
-        { 
           id: "b", 
           text: "Huh?", 
           emoji: "😕", 
           description: "Unclear response",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Can you explain again?", 
+          emoji: "📖", 
+          description: "Ask clearly for explanation",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -137,13 +137,6 @@ const AskClearlyStory = () => {
       text: "You want to play outside. How do you ask permission?",
       options: [
         { 
-          id: "a", 
-          text: "May we play outside?", 
-          emoji: "🌳", 
-          description: "Ask politely and clearly",
-          isCorrect: true
-        },
-        { 
           id: "b", 
           text: "Outside!", 
           emoji: "🏃", 
@@ -156,6 +149,13 @@ const AskClearlyStory = () => {
           emoji: "😴", 
           description: "Complain without asking",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "May we play outside?", 
+          emoji: "🌳", 
+          description: "Ask politely and clearly",
+          isCorrect: true
         }
       ]
     }

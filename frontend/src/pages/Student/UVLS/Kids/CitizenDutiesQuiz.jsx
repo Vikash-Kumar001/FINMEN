@@ -54,18 +54,18 @@ const CitizenDutiesQuiz = () => {
       text: "Should you help your neighbor?",
       options: [
         { 
-          id: "a", 
-          text: "Yes, good citizens help", 
-          emoji: "🤝", 
-          description: "Helping builds community",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Ignore them", 
           emoji: "🙈", 
           description: "We should help each other",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Yes, good citizens help", 
+          emoji: "🤝", 
+          description: "Helping builds community",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +81,6 @@ const CitizenDutiesQuiz = () => {
       text: "Should you obey rules?",
       options: [
         { 
-          id: "a", 
-          text: "Always", 
-          emoji: "📜", 
-          description: "Rules keep us safe",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Sometimes", 
           emoji: "🤔", 
@@ -100,6 +93,13 @@ const CitizenDutiesQuiz = () => {
           emoji: "🚫", 
           description: "This causes problems",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Always", 
+          emoji: "📜", 
+          description: "Rules keep us safe",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +108,18 @@ const CitizenDutiesQuiz = () => {
       text: "Should you vote when you're an adult?",
       options: [
         { 
-          id: "a", 
-          text: "Yes, it's an important duty", 
-          emoji: "🗳️", 
-          description: "Voting is a citizen's right and duty",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Skip it", 
           emoji: "😴", 
           description: "Voting matters for everyone",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Yes, it's an important duty", 
+          emoji: "🗳️", 
+          description: "Voting is a citizen's right and duty",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -135,13 +135,6 @@ const CitizenDutiesQuiz = () => {
       text: "Should you recycle trash?",
       options: [
         { 
-          id: "a", 
-          text: "Yes, help the earth", 
-          emoji: "♻️", 
-          description: "Recycling protects our planet",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Throw anywhere", 
           emoji: "🗑️", 
@@ -154,6 +147,13 @@ const CitizenDutiesQuiz = () => {
           emoji: "🔥", 
           description: "This harms the environment",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Yes, help the earth", 
+          emoji: "♻️", 
+          description: "Recycling protects our planet",
+          isCorrect: true 
         }
       ]
     }

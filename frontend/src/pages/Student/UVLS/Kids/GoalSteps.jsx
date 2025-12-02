@@ -32,8 +32,8 @@ const GoalSteps = () => {
       id: 2,
       goal: "Save 20 coins.",
       monthly: [
-        { id: "a", text: "2 coins/month", emoji: "🪙", isCorrect: true },
         { id: "b", text: "Spend all", emoji: "💸", isCorrect: false },
+        { id: "a", text: "2 coins/month", emoji: "🪙", isCorrect: true },
         { id: "c", text: "20 one day", emoji: "😰", isCorrect: false }
       ]
     },
@@ -41,17 +41,17 @@ const GoalSteps = () => {
       id: 3,
       goal: "Learn bike.",
       monthly: [
-        { id: "a", text: "Practice weekly", emoji: "🚲", isCorrect: true },
         { id: "b", text: "Never try", emoji: "😔", isCorrect: false },
-        { id: "c", text: "One long day", emoji: "🏃", isCorrect: false }
+        { id: "c", text: "One long day", emoji: "🏃", isCorrect: false },
+        { id: "a", text: "Practice weekly", emoji: "🚲", isCorrect: true }
       ]
     },
     {
       id: 4,
       goal: "Plant garden.",
       monthly: [
-        { id: "a", text: "Seed then water", emoji: "🌱", isCorrect: true },
         { id: "b", text: "Forget water", emoji: "🥀", isCorrect: false },
+        { id: "a", text: "Seed then water", emoji: "🌱", isCorrect: true },
         { id: "c", text: "All at end", emoji: "😩", isCorrect: false }
       ]
     },
@@ -59,9 +59,9 @@ const GoalSteps = () => {
       id: 5,
       goal: "Draw 5 pictures.",
       monthly: [
-        { id: "a", text: "1 per week", emoji: "🎨", isCorrect: true },
         { id: "b", text: "5 last day", emoji: "😓", isCorrect: false },
-        { id: "c", text: "No draw", emoji: "🚫", isCorrect: false }
+        { id: "c", text: "No draw", emoji: "🚫", isCorrect: false },
+        { id: "a", text: "1 per week", emoji: "🎨", isCorrect: true }
       ]
     }
   ];

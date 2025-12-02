@@ -54,18 +54,18 @@ const CalmChoice = () => {
       text: "You're having an argument with a friend. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Count to 10", 
-          emoji: "🔟", 
-          description: "Take time to calm down",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Fight back", 
           emoji: "👊", 
           description: "Respond with aggression",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Count to 10", 
+          emoji: "🔟", 
+          description: "Take time to calm down",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +81,6 @@ const CalmChoice = () => {
       text: "You're feeling anxious about a test. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Positive talk", 
-          emoji: "💭", 
-          description: "Encourage yourself",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Panic", 
           emoji: "😱", 
@@ -100,6 +93,13 @@ const CalmChoice = () => {
           emoji: "🤫", 
           description: "Take the easy way out",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Positive talk", 
+          emoji: "💭", 
+          description: "Encourage yourself",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +108,18 @@ const CalmChoice = () => {
       text: "Your sibling took your toy. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Ask nicely", 
-          emoji: "🙏", 
-          description: "Communicate calmly",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Grab it", 
           emoji: "🤲", 
           description: "Take it back forcefully",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Ask nicely", 
+          emoji: "🙏", 
+          description: "Communicate calmly",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -135,13 +135,6 @@ const CalmChoice = () => {
       text: "You had a bad day at school. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Draw or play", 
-          emoji: "🎨", 
-          description: "Do something calming",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Sulk alone", 
           emoji: "😔", 
@@ -154,6 +147,13 @@ const CalmChoice = () => {
           emoji: "👉", 
           description: "Get angry at others",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Draw or play", 
+          emoji: "🎨", 
+          description: "Do something calming",
+          isCorrect: true 
         }
       ]
     }

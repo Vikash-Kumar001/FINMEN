@@ -54,18 +54,18 @@ const RiskyOffer = () => {
       text: "A stranger offers you candy. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Say no and tell an adult", 
-          emoji: "🛑", 
-          description: "Stay safe and get help",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Take it", 
           emoji: "🍬", 
           description: "This is dangerous",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Say no and tell an adult", 
+          emoji: "🛑", 
+          description: "Stay safe and get help",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +81,6 @@ const RiskyOffer = () => {
       text: "Friends dare you to climb a very high tree. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Choose safe play", 
-          emoji: "🛝", 
-          description: "Stay safe",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Climb anyway", 
           emoji: "🌳", 
@@ -100,6 +93,13 @@ const RiskyOffer = () => {
           emoji: "👀", 
           description: "Not helping",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Choose safe play", 
+          emoji: "🛝", 
+          description: "Stay safe",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +108,18 @@ const RiskyOffer = () => {
       text: "A friend asks you to share your password for a game. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Keep it private", 
-          emoji: "🔒", 
-          description: "Protect your privacy",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Share with friend", 
           emoji: "🔑", 
           description: "This is not safe",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Keep it private", 
+          emoji: "🔒", 
+          description: "Protect your privacy",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -135,13 +135,6 @@ const RiskyOffer = () => {
       text: "Friends want to cross the road without looking. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Wait and look both ways", 
-          emoji: "👀", 
-          description: "Stay safe",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Run across", 
           emoji: "🏃", 
@@ -154,6 +147,13 @@ const RiskyOffer = () => {
           emoji: "👥", 
           description: "Not safe",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Wait and look both ways", 
+          emoji: "👀", 
+          description: "Stay safe",
+          isCorrect: true 
         }
       ]
     }

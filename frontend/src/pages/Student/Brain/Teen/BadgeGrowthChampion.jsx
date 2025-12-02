@@ -5,6 +5,7 @@ import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 import { TrendingUp, Target, Award, Star, Trophy } from 'lucide-react';
+// eslint-disable-next-line no-unused-vars
 import { motion } from 'framer-motion';
 
 const BadgeGrowthChampion = () => {
@@ -102,11 +103,6 @@ const BadgeGrowthChampion = () => {
           text: "Learn from it and try again", 
           emoji: "💪", 
           isCorrect: true
-        },
-        { 
-          text: "Quit forever", 
-          emoji: "🚫", 
-          isCorrect: false
         },
         { 
           text: "Blame external factors", 

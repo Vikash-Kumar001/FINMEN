@@ -52,6 +52,7 @@ const PuzzleOfDistractions = () => {
   const [selectedRight, setSelectedRight] = useState(null);
   const [showResult, setShowResult] = useState(false);
   const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
 
   // Environments (left side)
   const leftItems = [
@@ -119,6 +120,7 @@ const PuzzleOfDistractions = () => {
     // If the match is correct, add score and show feedback
     if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
@@ -165,7 +167,7 @@ const PuzzleOfDistractions = () => {
   return (
     <GameShell
       title="Puzzle of Distractions"
-      score={score}
+      score={coins}
       subtitle={showResult ? "Game Complete!" : `Match environments with their effects on focus (${matches.length}/${leftItems.length} matched)`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
@@ -182,7 +184,7 @@ const PuzzleOfDistractions = () => {
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-5xl mx-auto px-4">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-5xl mx-auto px-4 py-4">
         {!showResult ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             {/* Left column - Environments */}
@@ -238,7 +240,7 @@ const PuzzleOfDistractions = () => {
                   </div>
                 )}
                 <div className="mt-3 md:mt-4 text-white/80 text-xs md:text-sm">
-                  <p>Score: {score}</p>
+                  <p>Coins: {coins}</p>
                   <p>Matched: {matches.length}/{leftItems.length}</p>
                 </div>
               </div>
@@ -281,7 +283,7 @@ const PuzzleOfDistractions = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center">
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
             {score >= 3 ? (
               <div>
                 <div className="text-4xl md:text-5xl mb-4">🎉</div>

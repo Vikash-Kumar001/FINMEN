@@ -70,8 +70,8 @@ const FaillureStory = () => {
       id: 2,
       text: "You failed to achieve a goal. What should you do?",
       choices: [
-        { id: 'a', text: 'Analyze what went wrong and try again' },
         { id: 'b', text: 'Never try again' },
+        { id: 'a', text: 'Analyze what went wrong and try again' },
         { id: 'c', text: 'Blame external factors only' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const FaillureStory = () => {
       id: 3,
       text: "A project you worked hard on failed. How do you respond?",
       choices: [
-        { id: 'a', text: 'Reflect on lessons learned and apply them' },
         { id: 'b', text: 'Feel like a complete failure' },
-        { id: 'c', text: 'Avoid similar projects forever' }
+        { id: 'c', text: 'Avoid similar projects forever' },
+        { id: 'a', text: 'Reflect on lessons learned and apply them' }
       ],
       correct: 'a',
       explanation: 'Every failure teaches valuable lessons that make future attempts more successful!'
@@ -92,9 +92,9 @@ const FaillureStory = () => {
       id: 4,
       text: "You made a mistake that hurt someone. What's the best action?",
       choices: [
-        { id: 'a', text: 'Apologize, learn, and do better' },
         { id: 'b', text: 'Ignore the mistake' },
-        { id: 'c', text: 'Make excuses' }
+        { id: 'c', text: 'Make excuses' },
+        { id: 'a', text: 'Apologize, learn, and do better' }
       ],
       correct: 'a',
       explanation: 'Taking responsibility, apologizing, and learning from mistakes shows maturity and growth!'
@@ -103,9 +103,9 @@ const FaillureStory = () => {
       id: 5,
       text: "After multiple failures, what mindset helps most?",
       choices: [
-        { id: 'a', text: 'Growth mindset - failures are learning opportunities' },
         { id: 'b', text: 'Fixed mindset - you\'re just not good enough' },
-        { id: 'c', text: 'Avoidance mindset - stop trying' }
+        { id: 'c', text: 'Avoidance mindset - stop trying' },
+        { id: 'a', text: 'Growth mindset - failures are learning opportunities' }
       ],
       correct: 'a',
       explanation: 'A growth mindset turns failures into stepping stones toward success and personal development!'

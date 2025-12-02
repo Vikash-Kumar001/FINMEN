@@ -161,6 +161,7 @@ const DebateShowOrHideEmotions = () => {
   return (
     <GameShell
       title="Debate: Show or Hide Emotions?"
+      subtitle={!levelCompleted ? `Question ${currentQuestion + 1} of ${questions.length}` : "Debate Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -171,6 +172,7 @@ const DebateShowOrHideEmotions = () => {
       gameType="brain"
       showGameOver={levelCompleted}
       maxScore={questions.length}
+      showConfetti={levelCompleted && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}

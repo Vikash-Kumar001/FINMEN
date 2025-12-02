@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
@@ -59,7 +59,7 @@ const ReflexRecallQuick = () => {
   const questions = [
     {
       id: 1,
-      text: "Tap for 'Repeat,' avoid 'Forget Fast.'",
+      text: "Which action helps strengthen memory recall?",
       options: [
         { id: "repeat", text: "Repeat", emoji: "🔁", description: "Repeating strengthens memory", isCorrect: true },
         { id: "forget", text: "Forget Fast", emoji: "⚡🗑️", description: "Not actively remembering", isCorrect: false },
@@ -71,9 +71,9 @@ const ReflexRecallQuick = () => {
       id: 2,
       text: "Which action helps quick recall?",
       options: [
-        { id: "quiz", text: "Quiz Yourself", emoji: "❓", description: "Active recall practice", isCorrect: true },
         { id: "watch", text: "Watch TV", emoji: "📺", description: "Passive activity", isCorrect: false },
         { id: "procrastinate", text: "Procrastinate", emoji: "⏰", description: "Delays learning", isCorrect: false },
+        { id: "quiz", text: "Quiz Yourself", emoji: "❓", description: "Active recall practice", isCorrect: true },
         { id: "distract", text: "Get Distracted", emoji: "📱", description: "Interferes with memory", isCorrect: false }
       ]
     },
@@ -81,9 +81,9 @@ const ReflexRecallQuick = () => {
       id: 3,
       text: "What boosts quick memory recall?",
       options: [
-        { id: "associations", text: "Associations", emoji: "🔗", description: "Links new to known info", isCorrect: true },
         { id: "procrastination", text: "Procrastination", emoji: "⌛", description: "Delays learning", isCorrect: false },
         { id: "cramming", text: "Cramming", emoji: "📚", description: "Poor for retention", isCorrect: false },
+        { id: "associations", text: "Associations", emoji: "🔗", description: "Links new to known info", isCorrect: true },
         { id: "forgetting", text: "Forgetting", emoji: "🧠", description: "Opposite of recall", isCorrect: false }
       ]
     },
@@ -91,8 +91,8 @@ const ReflexRecallQuick = () => {
       id: 4,
       text: "Which helps memory formation?",
       options: [
-        { id: "spaced", text: "Spaced Repetition", emoji: "🔄", description: "Strengthens memory over time", isCorrect: true },
         { id: "ignore", text: "Ignore Information", emoji: "🚫", description: "No memory formation", isCorrect: false },
+        { id: "spaced", text: "Spaced Repetition", emoji: "🔄", description: "Strengthens memory over time", isCorrect: true },
         { id: "rush", text: "Rush Through", emoji: "⚡", description: "Superficial learning", isCorrect: false },
         { id: "skip", text: "Skip Practice", emoji: "⏭️", description: "No reinforcement", isCorrect: false }
       ]
@@ -101,13 +101,38 @@ const ReflexRecallQuick = () => {
       id: 5,
       text: "What improves recall speed?",
       options: [
-        { id: "practice", text: "Regular Practice", emoji: "🎯", description: "Builds retrieval pathways", isCorrect: true },
         { id: "avoid", text: "Avoid Challenges", emoji: "🏃", description: "No skill development", isCorrect: false },
         { id: "forget", text: "Forget Regularly", emoji: "🗑️", description: "Weakens memory", isCorrect: false },
-        { id: "distract", text: "Stay Distracted", emoji: "📱", description: "Interferes with focus", isCorrect: false }
+        { id: "distract", text: "Stay Distracted", emoji: "📱", description: "Interferes with focus", isCorrect: false },
+        { id: "practice", text: "Regular Practice", emoji: "🎯", description: "Builds retrieval pathways", isCorrect: true }
       ]
     }
   ];
+
+  const moveToNextQuestion = useCallback(() => {
+    setCurrentQuestion(prev => {
+      if (prev < questions.length - 1) {
+        return prev + 1;
+      } else {
+        setShowResult(true);
+        return prev;
+      }
+    });
+    setTimeLeft(QUESTION_TIME);
+    setAnswered(false);
+    setSelectedOptionId(null);
+  }, [questions.length]);
+
+  const handleTimeUp = useCallback(() => {
+    if (answered) return;
+    setAnswered(true);
+    resetFeedback();
+    showCorrectAnswerFeedback(0, false);
+    
+    setTimeout(() => {
+      moveToNextQuestion();
+    }, 1500);
+  }, [answered, resetFeedback, showCorrectAnswerFeedback, moveToNextQuestion]);
 
   // Timer effect
   useEffect(() => {
@@ -129,29 +154,7 @@ const ReflexRecallQuick = () => {
         clearInterval(timerRef.current);
       }
     };
-  }, [currentQuestion, answered, showResult]);
-
-  const handleTimeUp = () => {
-    if (answered) return;
-    setAnswered(true);
-    resetFeedback();
-    showCorrectAnswerFeedback(0, false);
-    
-    setTimeout(() => {
-      moveToNextQuestion();
-    }, 1500);
-  };
-
-  const moveToNextQuestion = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(prev => prev + 1);
-      setTimeLeft(QUESTION_TIME);
-      setAnswered(false);
-      setSelectedOptionId(null);
-    } else {
-      setShowResult(true);
-    }
-  };
+  }, [currentQuestion, answered, showResult, handleTimeUp]);
 
   const handleOptionClick = (optionId, isCorrect) => {
     if (answered) return;

@@ -1,12 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const JunkFoodStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -47,115 +46,198 @@ const JunkFoodStory = () => {
   }, [location.state, gameId]);
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({}); // Track answers for each question
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const questions = [
     {
       id: 1,
       text: "Sam eats junk food every day. Does this weaken brain function?",
-      choices: [
-        { id: 'yes', text: 'Yes, it impairs cognitive function' },
-        { id: 'no', text: 'No, it has no effect' },
-        { id: 'maybe', text: 'Maybe, depends on the type' }
-      ],
-      correct: 'yes',
-      explanation: 'Excessive junk food consumption can lead to inflammation and impair cognitive function over time!'
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes, it impairs cognitive function", 
+          emoji: "⚠️", 
+          description: "Excessive junk food consumption can lead to inflammation and impair cognitive function over time",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No, it has no effect", 
+          emoji: "❌", 
+          description: "Junk food actually has negative effects on brain function",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe, depends on the type", 
+          emoji: "🤔", 
+          description: "All types of junk food have negative effects on brain health",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "Which nutrient is essential for brain development and function?",
-      choices: [
-        { id: 'a', text: 'Trans fats' },
-        { id: 'b', text: 'Omega-3 fatty acids' },
-        { id: 'c', text: 'High fructose corn syrup' }
-      ],
-      correct: 'b',
-      explanation: 'Omega-3 fatty acids are crucial for brain cell membrane health and cognitive function!'
+      options: [
+        { 
+          id: "trans", 
+          text: "Trans fats", 
+          emoji: "🍟", 
+          description: "Trans fats are harmful to brain health",
+          isCorrect: false
+        },
+        { 
+          id: "omega", 
+          text: "Omega-3 fatty acids", 
+          emoji: "🐟", 
+          description: "Omega-3 fatty acids are crucial for brain cell membrane health and cognitive function",
+          isCorrect: true
+        },
+        { 
+          id: "sugar", 
+          text: "High fructose corn syrup", 
+          emoji: "🍬", 
+          description: "High sugar intake harms brain function",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "How does sugar consumption affect focus and attention?",
-      choices: [
-        { id: 'a', text: 'Causes energy crashes' },
-        { id: 'b', text: 'Improves sustained attention' },
-        { id: 'c', text: 'Has no effect on focus' }
-      ],
-      correct: 'a',
-      explanation: 'High sugar intake causes blood sugar spikes followed by crashes, leading to decreased focus and irritability!'
+      options: [
+        { 
+          id: "crashes", 
+          text: "Causes energy crashes", 
+          emoji: "📉", 
+          description: "High sugar intake causes blood sugar spikes followed by crashes, leading to decreased focus and irritability",
+          isCorrect: true
+        },
+        { 
+          id: "improves", 
+          text: "Improves sustained attention", 
+          emoji: "📈", 
+          description: "Sugar actually decreases sustained attention",
+          isCorrect: false
+        },
+        { 
+          id: "noeffect", 
+          text: "Has no effect on focus", 
+          emoji: "➡️", 
+          description: "Sugar significantly affects focus and attention",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       text: "Which food group provides steady energy for the brain?",
-      choices: [
-        { id: 'a', text: 'Processed snacks' },
-        { id: 'b', text: 'Sugary drinks' },
-        { id: 'c', text: 'Complex carbohydrates' }
-      ],
-      correct: 'c',
-      explanation: 'Complex carbohydrates provide steady glucose release, maintaining consistent brain energy levels!'
+      options: [
+        { 
+          id: "processed", 
+          text: "Processed snacks", 
+          emoji: "🍪", 
+          description: "Processed snacks cause energy spikes and crashes",
+          isCorrect: false
+        },
+        { 
+          id: "sugary", 
+          text: "Sugary drinks", 
+          emoji: "🥤", 
+          description: "Sugary drinks cause rapid energy spikes followed by crashes",
+          isCorrect: false
+        },
+        { 
+          id: "complex", 
+          text: "Complex carbohydrates", 
+          emoji: "🌾", 
+          description: "Complex carbohydrates provide steady glucose release, maintaining consistent brain energy levels",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 5,
       text: "What is the effect of a balanced diet on academic performance?",
-      choices: [
-        { id: 'a', text: 'Improves concentration and grades' },
-        { id: 'b', text: 'Decreases test scores' },
-        { id: 'c', text: 'Only affects physical health' }
-      ],
-      correct: 'a',
-      explanation: 'A balanced diet rich in nutrients supports optimal brain function, improving concentration, memory, and academic performance!'
+      options: [
+        { 
+          id: "improves", 
+          text: "Improves concentration and grades", 
+          emoji: "📚", 
+          description: "A balanced diet rich in nutrients supports optimal brain function, improving concentration, memory, and academic performance",
+          isCorrect: true
+        },
+        { 
+          id: "decreases", 
+          text: "Decreases test scores", 
+          emoji: "📉", 
+          description: "A balanced diet actually improves academic performance",
+          isCorrect: false
+        },
+        { 
+          id: "onlyphysical", 
+          text: "Only affects physical health", 
+          emoji: "💪", 
+          description: "A balanced diet affects both physical and mental health, including brain function",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
     
-    // Auto-advance to next question after delay
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
-      } else {
-        setLevelCompleted(true);
-      }
-    }, 1500);
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (levelCompleted) {
-      console.log(`🎮 Junk Food Story game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (showResult) {
+      console.log(`🎮 Junk Food Story game completed! Score: ${finalScore}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -166,96 +248,93 @@ const JunkFoodStory = () => {
         }, '');
       }
     }
-  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, questions.length]);
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-      setFeedbackType(null);
-      setShowConfetti(false);
-    }
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/teens');
-  };
-
-  const currentQuestionData = questions[currentQuestion];
-
-  // Calculate coins based on correct answers (1 coin per question)
-  const calculateTotalCoins = () => {
-    const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 1;
-  };
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell
       title="Junk Food Story"
-      score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
-        {!levelCompleted && currentQuestionData ? (
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
           <div className="space-y-4 md:space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
                 <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
               </div>
               
               <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
-                {currentQuestionData.text}
+                {getCurrentQuestion().text}
               </p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-                {currentQuestionData.choices.map((choice) => {
-                  const isSelected = selectedOption === choice.id;
-                  const showCorrect = showFeedback && isSelected && choice.id === questions[currentQuestion].correct;
-                  const showIncorrect = showFeedback && isSelected && choice.id !== questions[currentQuestion].correct;
-                  
-                  return (
-                    <button
-                      key={choice.id}
-                      onClick={() => handleOptionSelect(choice.id)}
-                      disabled={!!selectedOption}
-                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform ${
-                        showCorrect
-                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
-                          : showIncorrect
-                          ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
-                          : isSelected
-                          ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none text-white font-bold text-sm md:text-base`}
-                    >
-                      {choice.text}
-                    </button>
-                  );
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
+                  </button>
+                ))}
               </div>
-              
-              {showFeedback && feedbackType === "wrong" && (
-                <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
-                  <p>💡 {currentQuestionData.explanation}</p>
-                </div>
-              )}
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning how junk food affects brain function!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  You understand that excessive junk food can impair cognitive function, while a balanced diet supports optimal brain health!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, junk food can harm brain function, while nutritious foods support it!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows how junk food negatively affects brain health.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

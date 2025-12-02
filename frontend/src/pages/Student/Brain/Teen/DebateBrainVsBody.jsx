@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const DebateBrainVsBody = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -47,117 +46,189 @@ const DebateBrainVsBody = () => {
   }, [location.state, gameId]);
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({});
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
-  const debateTopics = [
+  const questions = [
     {
       id: 1,
-      question: "Is brain health more important than body health?",
+      text: "Is brain health more important than body health?",
       options: [
-        { id: 'both', text: 'Both are equally important' },
-        { id: 'brain', text: 'Brain health is more important' },
-        { id: 'body', text: 'Body health is more important' }
-      ],
-      correct: "both",
-      explanation: "Both brain and body health are equally important and interconnected. A healthy body supports brain function, and a healthy brain helps maintain body wellness!"
+        { 
+          id: "brain", 
+          text: "Brain health is more important", 
+          emoji: "🧠", 
+          description: "Brain health is crucial, but body health is equally important",
+          isCorrect: false
+        },
+        { 
+          id: "both", 
+          text: "Both are equally important", 
+          emoji: "⚖️", 
+          description: "Both brain and body health are equally important and interconnected. A healthy body supports brain function, and a healthy brain helps maintain body wellness",
+          isCorrect: true
+        },
+        { 
+          id: "body", 
+          text: "Body health is more important", 
+          emoji: "💪", 
+          description: "Body health is important, but brain health is equally crucial",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      question: "Is multitasking effective for studying?",
+      text: "Is multitasking effective for studying?",
       options: [
-        { id: 'yes', text: 'Yes, multitasking boosts productivity' },
-        { id: 'no', text: 'No, multitasking reduces efficiency' },
-        { id: 'sometimes', text: 'Sometimes, depends on the tasks' }
-      ],
-      correct: "no",
-      explanation: "Multitasking actually reduces efficiency and learning. The brain needs focused attention on one task at a time for optimal performance and retention!"
+        { 
+          id: "no", 
+          text: "No, multitasking reduces efficiency", 
+          emoji: "❌", 
+          description: "Multitasking actually reduces efficiency and learning. The brain needs focused attention on one task at a time for optimal performance and retention",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes, multitasking boosts productivity", 
+          emoji: "✅", 
+          description: "Multitasking actually decreases productivity and learning quality",
+          isCorrect: false
+        },
+        { 
+          id: "sometimes", 
+          text: "Sometimes, depends on the tasks", 
+          emoji: "🤔", 
+          description: "Even with simple tasks, multitasking reduces efficiency",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      question: "Is it better to study for long hours or take breaks?",
+      text: "Is it better to study for long hours or take breaks?",
       options: [
-        { id: 'long', text: 'Study for long hours without breaks' },
-        { id: 'both', text: 'Both approaches work equally well' },
-        { id: 'breaks', text: 'Take regular breaks during study' }
-      ],
-      correct: "breaks",
-      explanation: "Taking regular breaks during study sessions improves focus and retention. The brain needs rest periods to consolidate information and prevent mental fatigue!"
+        { 
+          id: "long", 
+          text: "Study for long hours without breaks", 
+          emoji: "⏰", 
+          description: "Long study sessions without breaks lead to mental fatigue and reduced retention",
+          isCorrect: false
+        },
+        { 
+          id: "both", 
+          text: "Both approaches work equally well", 
+          emoji: "⚖️", 
+          description: "Regular breaks are more effective than continuous long study sessions",
+          isCorrect: false
+        },
+        { 
+          id: "breaks", 
+          text: "Take regular breaks during study", 
+          emoji: "☕", 
+          description: "Taking regular breaks during study sessions improves focus and retention. The brain needs rest periods to consolidate information and prevent mental fatigue",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      question: "Does listening to music help with concentration?",
+      text: "Does listening to music help with concentration?",
       options: [
-        { id: 'depends', text: 'Depends on the type of music and task' },
-        { id: 'help', text: 'Yes, music always helps concentration' },
-        { id: 'hurt', text: 'No, music always hurts concentration' }
-      ],
-      correct: "depends",
-      explanation: "The effect of music on concentration depends on the task and music type. Instrumental music can help with repetitive tasks, but lyrical music can interfere with reading and writing!"
+        { 
+          id: "help", 
+          text: "Yes, music always helps concentration", 
+          emoji: "🎵", 
+          description: "Music doesn't always help - it depends on the task and music type",
+          isCorrect: false
+        },
+        { 
+          id: "hurt", 
+          text: "No, music always hurts concentration", 
+          emoji: "🔇", 
+          description: "Music doesn't always hurt - it depends on the task and music type",
+          isCorrect: false
+        },
+        { 
+          id: "depends", 
+          text: "Depends on the type of music and task", 
+          emoji: "🎧", 
+          description: "The effect of music on concentration depends on the task and music type. Instrumental music can help with repetitive tasks, but lyrical music can interfere with reading and writing",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 5,
-      question: "Is it better to study the same subject every day or vary subjects?",
+      text: "Is it better to study the same subject every day or vary subjects?",
       options: [
-        { id: 'same', text: 'Study the same subject every day' },
-        { id: 'either', text: 'Either approach works the same' },
-        { id: 'vary', text: 'Vary subjects during study sessions' }
-      ],
-      correct: "vary",
-      explanation: "Varying subjects during study sessions can improve learning through interleaving. Switching between different types of material helps strengthen memory and problem-solving skills!"
+        { 
+          id: "vary", 
+          text: "Vary subjects during study sessions", 
+          emoji: "🔄", 
+          description: "Varying subjects during study sessions can improve learning through interleaving. Switching between different types of material helps strengthen memory and problem-solving skills",
+          isCorrect: true
+        },
+        { 
+          id: "same", 
+          text: "Study the same subject every day", 
+          emoji: "📚", 
+          description: "Focusing on one subject can be limiting - varying subjects improves learning",
+          isCorrect: false
+        },
+        { 
+          id: "either", 
+          text: "Either approach works the same", 
+          emoji: "⚖️", 
+          description: "Varying subjects is more effective than studying the same subject",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const currentTopic = debateTopics[currentQuestion];
-
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setSelectedOption(optionId);
-    const isCorrect = optionId === currentTopic.correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prevScore => prevScore + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
     
-    // Auto-move to next question or complete after delay
-    setTimeout(() => {
-      setShowFeedback(false);
-      setSelectedOption(null);
-      
-      if (currentQuestion < debateTopics.length - 1) {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      } else {
-        setLevelCompleted(true);
-      }
-    }, 2000);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (levelCompleted) {
-      console.log(`🎮 Debate Brain vs Body game completed! Score: ${score}/${debateTopics.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (showResult) {
+      console.log(`🎮 Debate Brain vs Body game completed! Score: ${finalScore}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -168,68 +239,54 @@ const DebateBrainVsBody = () => {
         }, '');
       }
     }
-  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, debateTopics.length]);
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell
       title="Debate: Brain vs Body"
-      score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={debateTopics.length}
+      score={coins}
+      subtitle={showResult ? "Debate Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      maxScore={debateTopics.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={questions.length}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
-        {!levelCompleted && currentTopic ? (
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
           <div className="space-y-4 md:space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-              <h3 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6 text-center">Debate Topic</h3>
-              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl md:rounded-2xl p-4 md:p-6 mb-6 md:mb-8">
-                <p className="text-lg md:text-xl font-semibold text-white text-center">"{currentTopic.question}"</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {coins}/{questions.length}</span>
               </div>
               
-              <div className="space-y-3 md:space-y-4 mb-6">
-                <h4 className="text-base md:text-lg font-semibold text-white mb-4">Choose your position:</h4>
-                {currentTopic.options.map((option) => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = showFeedback && isSelected && option.id === currentTopic.correct;
-                  const showIncorrect = showFeedback && isSelected && option.id !== currentTopic.correct;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleOptionSelect(option.id)}
-                      disabled={!!selectedOption}
-                      className={`w-full p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
-                        showCorrect
-                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
-                          : showIncorrect
-                          ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
-                          : isSelected
-                          ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none text-white font-bold text-sm md:text-base`}
-                    >
-                      {option.text}
-                    </button>
-                  );
-                })}
-              </div>
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </p>
               
-              {showFeedback && feedbackType === "wrong" && (
-                <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
-                  <p>💡 {currentTopic.explanation}</p>
-                </div>
-              )}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-4 md:p-6 rounded-xl md:rounded-2xl text-base md:text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : null}

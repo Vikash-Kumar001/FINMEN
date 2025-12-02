@@ -70,8 +70,8 @@ const MidnightStory = () => {
       id: 2,
       text: "What happens when you scroll on your phone until late at night?",
       choices: [
-        { id: 'a', text: 'Sleep quality decreases and you feel tired' },
         { id: 'b', text: 'You sleep better' },
+        { id: 'a', text: 'Sleep quality decreases and you feel tired' },
         { id: 'c', text: 'It has no effect on sleep' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const MidnightStory = () => {
       id: 3,
       text: "What's the best practice for phone use at night?",
       choices: [
-        { id: 'a', text: 'Stop using phone 1 hour before bedtime' },
         { id: 'b', text: 'Use phone until you fall asleep' },
-        { id: 'c', text: 'Keep scrolling all night' }
+        { id: 'c', text: 'Keep scrolling all night' },
+        { id: 'a', text: 'Stop using phone 1 hour before bedtime' }
       ],
       correct: 'a',
       explanation: 'Stopping phone use 1 hour before bedtime allows your brain to wind down and promotes better sleep quality!'
@@ -92,9 +92,9 @@ const MidnightStory = () => {
       id: 4,
       text: "How does late-night scrolling affect your next day?",
       choices: [
-        { id: 'a', text: 'Reduces energy, focus, and productivity' },
         { id: 'b', text: 'Increases energy and alertness' },
-        { id: 'c', text: 'Has no effect on the next day' }
+        { id: 'c', text: 'Has no effect on the next day' },
+        { id: 'a', text: 'Reduces energy, focus, and productivity' }
       ],
       correct: 'a',
       explanation: 'Late-night scrolling disrupts sleep, leading to reduced energy, poor focus, and decreased productivity the next day!'
@@ -103,9 +103,9 @@ const MidnightStory = () => {
       id: 5,
       text: "What should you do instead of scrolling until 1 AM?",
       choices: [
-        { id: 'a', text: 'Set a phone curfew and engage in relaxing activities' },
         { id: 'b', text: 'Keep scrolling until you\'re exhausted' },
-        { id: 'c', text: 'Use phone with bright lights on' }
+        { id: 'c', text: 'Use phone with bright lights on' },
+        { id: 'a', text: 'Set a phone curfew and engage in relaxing activities' }
       ],
       correct: 'a',
       explanation: 'Setting a phone curfew and doing relaxing activities like reading or meditation helps you wind down and sleep better!'

@@ -50,6 +50,7 @@ const ReflexConcentration = () => {
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
@@ -104,18 +105,18 @@ const ReflexConcentration = () => {
           isCorrect: false
         },
         { 
-          id: "meditation", 
-          text: "Mindfulness Meditation", 
-          emoji: "🧘", 
-          description: "Enhances attention and emotional regulation",
-          isCorrect: true
-        },
-        { 
           id: "organized", 
           text: "Organized Study Space", 
           emoji: "✨", 
           description: "Clean environment reduces distractions",
           isCorrect: false
+        },
+        { 
+          id: "meditation", 
+          text: "Mindfulness Meditation", 
+          emoji: "🧘", 
+          description: "Enhances attention and emotional regulation",
+          isCorrect: true
         },
         { 
           id: "allnight", 
@@ -145,18 +146,18 @@ const ReflexConcentration = () => {
           isCorrect: false
         },
         { 
-          id: "quiet", 
-          text: "Quiet Environment", 
-          emoji: "🔇", 
-          description: "Minimizes distractions and improves focus",
-          isCorrect: true
-        },
-        { 
           id: "pomodoro", 
           text: "Pomodoro Technique", 
           emoji: "⏱️", 
           description: "Structured breaks maintain focus",
           isCorrect: false
+        },
+        { 
+          id: "quiet", 
+          text: "Quiet Environment", 
+          emoji: "🔇", 
+          description: "Minimizes distractions and improves focus",
+          isCorrect: true
         }
       ]
     },
@@ -164,6 +165,13 @@ const ReflexConcentration = () => {
       id: 4,
       text: "What helps maintain attention?",
       options: [
+        { 
+          id: "sleep", 
+          text: "Adequate Sleep", 
+          emoji: "😴", 
+          description: "Essential for optimal cognitive function",
+          isCorrect: true
+        },
         { 
           id: "noise", 
           text: "Loud Music", 
@@ -177,13 +185,6 @@ const ReflexConcentration = () => {
           emoji: "📖", 
           description: "Leads to mental fatigue and poor retention",
           isCorrect: false
-        },
-        { 
-          id: "sleep", 
-          text: "Adequate Sleep", 
-          emoji: "😴", 
-          description: "Essential for optimal cognitive function",
-          isCorrect: true
         },
         { 
           id: "hydration", 
@@ -206,18 +207,18 @@ const ReflexConcentration = () => {
           isCorrect: false
         },
         { 
-          id: "chaos", 
-          text: "Chaotic Environment", 
-          emoji: "🌪️", 
-          description: "Increases stress and reduces focus",
-          isCorrect: false
-        },
-        { 
           id: "single", 
           text: "Single Task Focus", 
           emoji: "🎯", 
           description: "Improves concentration and productivity",
           isCorrect: true
+        },
+        { 
+          id: "chaos", 
+          text: "Chaotic Environment", 
+          emoji: "🌪️", 
+          description: "Increases stress and reduces focus",
+          isCorrect: false
         },
         { 
           id: "routine", 
@@ -233,19 +234,22 @@ const ReflexConcentration = () => {
   // Timer effect
   useEffect(() => {
     if (!showResult && !answered && timeLeft > 0) {
-      timerRef.current = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (timeLeft === 0 && !answered) {
-      // Time's up, move to next question
-      handleTimeUp();
     }
     return () => {
       if (timerRef.current) {
-        clearTimeout(timerRef.current);
+        clearInterval(timerRef.current);
       }
     };
-  }, [timeLeft, answered, showResult]);
+  }, [answered, showResult, currentQuestion]);
 
   // Reset timer when question changes
   useEffect(() => {
@@ -257,6 +261,12 @@ const ReflexConcentration = () => {
   }, [currentQuestion, showResult]);
 
   const handleTimeUp = () => {
+    if (answered) return;
+    
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
     setAnswered(true);
     resetFeedback();
     showCorrectAnswerFeedback(0, false);
@@ -275,12 +285,17 @@ const ReflexConcentration = () => {
   const handleChoice = (option) => {
     if (answered) return;
     
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
+    
     setAnswered(true);
     setSelectedOptionId(option.id);
     resetFeedback();
     
     if (option.isCorrect) {
       setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
@@ -319,9 +334,10 @@ const ReflexConcentration = () => {
   return (
     <GameShell
       title="Reflex Concentration"
-      score={score}
+      score={coins}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
+      subtitle={showResult ? "Game Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -329,19 +345,20 @@ const ReflexConcentration = () => {
       gameType="brain"
       showGameOver={showResult}
       maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult && currentQuestionData ? (
           <div className="space-y-4 md:space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
                 <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
                 <div className="flex items-center gap-4">
-                  <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
+                  <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
                   <div className={`text-lg md:text-xl font-bold ${timerColor}`}>
                     ⏱️ {timeLeft}s
                   </div>

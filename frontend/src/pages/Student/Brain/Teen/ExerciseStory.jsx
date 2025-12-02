@@ -1,12 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const ExerciseStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -47,115 +46,198 @@ const ExerciseStory = () => {
   }, [location.state, gameId]);
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({}); // Track answers for each question
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const questions = [
     {
       id: 1,
       text: "Alex plays 30 minutes of sports every day. Is this good for brain health?",
-      choices: [
-        { id: 'yes', text: 'Yes, it boosts brain function' },
-        { id: 'no', text: 'No, exercise has no effect' },
-        { id: 'maybe', text: 'Maybe, depends on the sport' }
-      ],
-      correct: 'yes',
-      explanation: 'Regular physical activity increases blood flow to the brain and promotes the growth of new brain cells!'
+      options: [
+        { 
+          id: "yes", 
+          text: "Yes, it boosts brain function", 
+          emoji: "🧠", 
+          description: "Regular physical activity increases blood flow to the brain and promotes the growth of new brain cells",
+          isCorrect: true
+        },
+        { 
+          id: "no", 
+          text: "No, exercise has no effect", 
+          emoji: "❌", 
+          description: "Exercise actually has significant positive effects on brain health",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe, depends on the sport", 
+          emoji: "🤔", 
+          description: "All types of exercise benefit the brain, though some may have different effects",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "Which type of exercise is most beneficial for brain health?",
-      choices: [
-        { id: 'a', text: 'Only weight lifting' },
-        { id: 'b', text: 'A mix of cardio and strength training' },
-        { id: 'c', text: 'Only running' }
-      ],
-      correct: 'b',
-      explanation: 'A combination of cardio and strength training provides the most comprehensive benefits for brain health!'
+      options: [
+        { 
+          id: "weight", 
+          text: "Only weight lifting", 
+          emoji: "💪", 
+          description: "Weight lifting alone doesn't provide comprehensive brain benefits",
+          isCorrect: false
+        },
+        { 
+          id: "mix", 
+          text: "A mix of cardio and strength training", 
+          emoji: "🏃", 
+          description: "A combination provides the most comprehensive benefits for brain health",
+          isCorrect: true
+        },
+        { 
+          id: "running", 
+          text: "Only running", 
+          emoji: "🏃‍♂️", 
+          description: "Running is good, but a mix of exercises is better",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "How does exercise affect memory?",
-      choices: [
-        { id: 'a', text: 'It improves memory formation' },
-        { id: 'b', text: 'It worsens memory' },
-        { id: 'c', text: 'It has no effect on memory' }
-      ],
-      correct: 'a',
-      explanation: 'Exercise promotes the growth of new brain cells and strengthens connections between existing ones, enhancing memory!'
+      options: [
+        { 
+          id: "worsens", 
+          text: "It worsens memory", 
+          emoji: "📉", 
+          description: "Exercise actually improves memory, not worsens it",
+          isCorrect: false
+        },
+        { 
+          id: "noeffect", 
+          text: "It has no effect on memory", 
+          emoji: "➡️", 
+          description: "Exercise has significant positive effects on memory",
+          isCorrect: false
+        },
+        { 
+          id: "improves", 
+          text: "It improves memory formation", 
+          emoji: "📈", 
+          description: "Exercise promotes the growth of new brain cells and strengthens connections, enhancing memory",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
       text: "When is the best time to exercise for optimal brain benefits?",
-      choices: [
-        { id: 'a', text: 'Late at night' },
-        { id: 'b', text: 'Early morning' },
-        { id: 'c', text: 'Any consistent time' }
-      ],
-      correct: 'c',
-      explanation: 'Consistency matters more than timing - regular exercise at any time provides brain benefits!'
+      options: [
+        { 
+          id: "night", 
+          text: "Late at night", 
+          emoji: "🌙", 
+          description: "Late night exercise can disrupt sleep patterns",
+          isCorrect: false
+        },
+        { 
+          id: "morning", 
+          text: "Early morning", 
+          emoji: "🌅", 
+          description: "Morning is good, but consistency matters more than timing",
+          isCorrect: false
+        },
+        { 
+          id: "consistent", 
+          text: "Any consistent time", 
+          emoji: "⏰", 
+          description: "Consistency matters more than timing - regular exercise at any time provides brain benefits",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 5,
       text: "How long should you exercise to see brain health benefits?",
-      choices: [
-        { id: 'a', text: 'Only on weekends' },
-        { id: 'b', text: 'Just 5 minutes weekly' },
-        { id: 'c', text: 'At least 30 minutes daily' }
-      ],
-      correct: 'c',
-      explanation: 'Research shows that at least 30 minutes of moderate exercise daily provides significant brain health benefits!'
+      options: [
+        { 
+          id: "weekends", 
+          text: "Only on weekends", 
+          emoji: "📅", 
+          description: "Regular daily exercise is more beneficial than only weekend workouts",
+          isCorrect: false
+        },
+        { 
+          id: "minutes", 
+          text: "Just 5 minutes weekly", 
+          emoji: "⏱️", 
+          description: "This is too little to see significant brain health benefits",
+          isCorrect: false
+        },
+        { 
+          id: "daily", 
+          text: "At least 30 minutes daily", 
+          emoji: "✅", 
+          description: "Research shows that at least 30 minutes of moderate exercise daily provides significant brain health benefits",
+          isCorrect: true
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
     
-    // Auto-advance to next question after delay
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
-      } else {
-        setLevelCompleted(true);
-      }
-    }, 1500);
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (levelCompleted) {
-      console.log(`🎮 Exercise Story game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (showResult) {
+      console.log(`🎮 Exercise Story game completed! Score: ${finalScore}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -166,96 +248,93 @@ const ExerciseStory = () => {
         }, '');
       }
     }
-  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, questions.length]);
-
-  const handleNext = () => {
-    if (currentQuestion < questions.length - 1) {
-      setCurrentQuestion(currentQuestion + 1);
-      setSelectedOption(null);
-      setShowFeedback(false);
-      setFeedbackType(null);
-      setShowConfetti(false);
-    }
-  };
-
-  const handleGameComplete = () => {
-    navigate('/games/brain-health/teens');
-  };
-
-  const currentQuestionData = questions[currentQuestion];
-
-  // Calculate coins based on correct answers (1 coin per question)
-  const calculateTotalCoins = () => {
-    const correctAnswers = Object.values(answers).filter(answer => answer.correct).length;
-    return correctAnswers * 1;
-  };
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell
       title="Exercise Story"
-      score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
-        {!levelCompleted && currentQuestionData ? (
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
           <div className="space-y-4 md:space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
               <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
                 <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
               </div>
               
               <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
-                {currentQuestionData.text}
+                {getCurrentQuestion().text}
               </p>
               
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
-                {currentQuestionData.choices.map((choice) => {
-                  const isSelected = selectedOption === choice.id;
-                  const showCorrect = showFeedback && isSelected && choice.id === questions[currentQuestion].correct;
-                  const showIncorrect = showFeedback && isSelected && choice.id !== questions[currentQuestion].correct;
-                  
-                  return (
-                    <button
-                      key={choice.id}
-                      onClick={() => handleOptionSelect(choice.id)}
-                      disabled={!!selectedOption}
-                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform ${
-                        showCorrect
-                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
-                          : showIncorrect
-                          ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
-                          : isSelected
-                          ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none text-white font-bold text-sm md:text-base`}
-                    >
-                      {choice.text}
-                    </button>
-                  );
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
+                  </button>
+                ))}
               </div>
-              
-              {showFeedback && feedbackType === "wrong" && (
-                <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
-                  <p>💡 {currentQuestionData.explanation}</p>
-                </div>
-              )}
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning how daily exercise benefits brain health!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  You understand that regular physical activity increases blood flow to the brain and promotes the growth of new brain cells!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, regular exercise is essential for optimal brain health!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose the option that shows exercise benefits brain health in most situations.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

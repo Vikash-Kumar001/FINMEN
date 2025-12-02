@@ -71,8 +71,8 @@ const ReflexNeverQuit = () => {
       id: 2,
       text: "What's the best response to difficulty?",
       options: [
-        { id: "persist", text: "Keep Going", emoji: "💪", description: "Shows determination", isCorrect: true },
         { id: "stop", text: "Stop Forever", emoji: "🚫", description: "Gives up", isCorrect: false },
+        { id: "persist", text: "Keep Going", emoji: "💪", description: "Shows determination", isCorrect: true },
         { id: "quit", text: "Quit", emoji: "🏃", description: "No persistence", isCorrect: false },
         { id: "avoid", text: "Avoid", emoji: "🙈", description: "No growth", isCorrect: false }
       ]
@@ -81,10 +81,10 @@ const ReflexNeverQuit = () => {
       id: 3,
       text: "How should you handle challenges?",
       options: [
-        { id: "continue", text: "Keep Going", emoji: "🔥", description: "Shows resilience", isCorrect: true },
         { id: "stop", text: "Stop Forever", emoji: "🚫", description: "Gives up", isCorrect: false },
         { id: "quit", text: "Quit", emoji: "🏃", description: "No persistence", isCorrect: false },
-        { id: "avoid", text: "Avoid", emoji: "🙈", description: "No growth", isCorrect: false }
+        { id: "avoid", text: "Avoid", emoji: "🙈", description: "No growth", isCorrect: false },
+        { id: "continue", text: "Keep Going", emoji: "🔥", description: "Shows resilience", isCorrect: true }
       ]
     },
     {
@@ -101,10 +101,10 @@ const ReflexNeverQuit = () => {
       id: 5,
       text: "Which mindset leads to success?",
       options: [
-        { id: "keepgoing", text: "Keep Going", emoji: "💪", description: "Shows persistence", isCorrect: true },
         { id: "stop", text: "Stop Forever", emoji: "🚫", description: "Gives up", isCorrect: false },
         { id: "quit", text: "Quit", emoji: "🏃", description: "No persistence", isCorrect: false },
-        { id: "avoid", text: "Avoid", emoji: "🙈", description: "No growth", isCorrect: false }
+        { id: "avoid", text: "Avoid", emoji: "🙈", description: "No growth", isCorrect: false },
+        { id: "keepgoing", text: "Keep Going", emoji: "💪", description: "Shows persistence", isCorrect: true }
       ]
     }
   ];

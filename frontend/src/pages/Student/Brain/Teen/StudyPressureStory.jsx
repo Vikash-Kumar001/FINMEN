@@ -70,8 +70,8 @@ const StudyPressureStory = () => {
       id: 2,
       text: "When feeling stressed about studying, what should you do?",
       choices: [
-        { id: 'a', text: 'Take short breaks and breathe deeply' },
         { id: 'b', text: 'Study non-stop without breaks' },
+        { id: 'a', text: 'Take short breaks and breathe deeply' },
         { id: 'c', text: 'Avoid studying completely' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const StudyPressureStory = () => {
       id: 3,
       text: "What's the best way to handle exam pressure?",
       choices: [
-        { id: 'a', text: 'Use positive self-talk and stay organized' },
         { id: 'b', text: 'Worry constantly about failing' },
-        { id: 'c', text: 'Ignore the exam completely' }
+        { id: 'c', text: 'Ignore the exam completely' },
+        { id: 'a', text: 'Use positive self-talk and stay organized' }
       ],
       correct: 'a',
       explanation: 'Positive self-talk and organization help build confidence and reduce exam anxiety!'
@@ -92,9 +92,9 @@ const StudyPressureStory = () => {
       id: 4,
       text: "How can you manage study pressure effectively?",
       choices: [
-        { id: 'a', text: 'Create a study schedule and stick to it' },
         { id: 'b', text: 'Cram everything at the last minute' },
-        { id: 'c', text: 'Study randomly without a plan' }
+        { id: 'c', text: 'Study randomly without a plan' },
+        { id: 'a', text: 'Create a study schedule and stick to it' }
       ],
       correct: 'a',
       explanation: 'A structured study schedule helps manage time effectively and reduces last-minute pressure!'
@@ -103,9 +103,9 @@ const StudyPressureStory = () => {
       id: 5,
       text: "What helps reduce stress during exam preparation?",
       choices: [
-        { id: 'a', text: 'Regular exercise and adequate sleep' },
         { id: 'b', text: 'Staying up all night studying' },
-        { id: 'c', text: 'Skipping meals to save time' }
+        { id: 'c', text: 'Skipping meals to save time' },
+        { id: 'a', text: 'Regular exercise and adequate sleep' }
       ],
       correct: 'a',
       explanation: 'Exercise and sleep are essential for managing stress and maintaining optimal brain function during exam prep!'
@@ -171,6 +171,7 @@ const StudyPressureStory = () => {
   return (
     <GameShell
       title="Study Pressure Story"
+      subtitle={!levelCompleted ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -181,6 +182,7 @@ const StudyPressureStory = () => {
       gameType="brain"
       showGameOver={levelCompleted}
       maxScore={questions.length}
+      showConfetti={levelCompleted && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}

@@ -166,6 +166,7 @@ const SimulationStressfulDay = () => {
   return (
     <GameShell
       title="Simulation: Stressful Day"
+      subtitle={!levelCompleted ? `Question ${currentQuestion + 1} of ${questions.length}` : "Simulation Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -176,6 +177,7 @@ const SimulationStressfulDay = () => {
       gameType="brain"
       showGameOver={levelCompleted}
       maxScore={questions.length}
+      showConfetti={levelCompleted && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}

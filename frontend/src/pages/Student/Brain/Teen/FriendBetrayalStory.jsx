@@ -70,8 +70,8 @@ const FriendBetrayalStory = () => {
       id: 2,
       text: "A friend betrayed your trust. How should you handle it?",
       choices: [
-        { id: 'a', text: 'Talk about it and set boundaries' },
         { id: 'b', text: 'Cut them off completely without explanation' },
+        { id: 'a', text: 'Talk about it and set boundaries' },
         { id: 'c', text: 'Betray them back' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const FriendBetrayalStory = () => {
       id: 3,
       text: "You discover a friend spread rumors about you. What's the best response?",
       choices: [
-        { id: 'a', text: 'Address it calmly and decide if the friendship is worth saving' },
         { id: 'b', text: 'Spread rumors about them' },
-        { id: 'c', text: 'Never trust anyone again' }
+        { id: 'c', text: 'Never trust anyone again' },
+        { id: 'a', text: 'Address it calmly and decide if the friendship is worth saving' }
       ],
       correct: 'a',
       explanation: 'Handling betrayal with maturity helps you make informed decisions about relationships!'
@@ -92,9 +92,9 @@ const FriendBetrayalStory = () => {
       id: 4,
       text: "After being betrayed, what helps you heal?",
       choices: [
-        { id: 'a', text: 'Focus on other positive relationships and self-care' },
         { id: 'b', text: 'Isolate yourself from everyone' },
-        { id: 'c', text: 'Become suspicious of all friends' }
+        { id: 'c', text: 'Become suspicious of all friends' },
+        { id: 'a', text: 'Focus on other positive relationships and self-care' }
       ],
       correct: 'a',
       explanation: 'Nurturing other relationships and taking care of yourself helps you recover and grow!'
@@ -103,9 +103,9 @@ const FriendBetrayalStory = () => {
       id: 5,
       text: "Can you rebuild trust after betrayal?",
       choices: [
-        { id: 'a', text: 'Yes, with time, honesty, and consistent actions' },
         { id: 'b', text: 'No, trust can never be rebuilt' },
-        { id: 'c', text: 'Only if you pretend it never happened' }
+        { id: 'c', text: 'Only if you pretend it never happened' },
+        { id: 'a', text: 'Yes, with time, honesty, and consistent actions' }
       ],
       correct: 'a',
       explanation: 'Trust can be rebuilt through genuine effort, honesty, and consistent positive actions over time!'

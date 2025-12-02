@@ -70,8 +70,8 @@ const DebateSleepVsStudy = () => {
       id: 2,
       text: "What happens when you sacrifice sleep to study?",
       choices: [
-        { id: 'a', text: 'Poor memory retention and reduced learning efficiency' },
         { id: 'b', text: 'Better learning and memory' },
+        { id: 'a', text: 'Poor memory retention and reduced learning efficiency' },
         { id: 'c', text: 'No effect on learning' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const DebateSleepVsStudy = () => {
       id: 3,
       text: "What's the best strategy for exam preparation?",
       choices: [
-        { id: 'a', text: 'Get adequate sleep and study during the day' },
         { id: 'b', text: 'Stay up all night cramming' },
-        { id: 'c', text: 'Skip sleep for multiple nights' }
+        { id: 'c', text: 'Skip sleep for multiple nights' },
+        { id: 'a', text: 'Get adequate sleep and study during the day' }
       ],
       correct: 'a',
       explanation: 'Getting adequate sleep and studying during the day when you\'re alert leads to better retention and exam performance!'
@@ -103,9 +103,9 @@ const DebateSleepVsStudy = () => {
       id: 5,
       text: "What's the ideal balance between sleep and study?",
       choices: [
-        { id: 'a', text: 'Prioritize 8-10 hours sleep, study during peak alertness' },
         { id: 'b', text: 'Study all night, sleep during the day' },
-        { id: 'c', text: 'Study constantly, sleep only when exhausted' }
+        { id: 'c', text: 'Study constantly, sleep only when exhausted' },
+        { id: 'a', text: 'Prioritize 8-10 hours sleep, study during peak alertness' }
       ],
       correct: 'a',
       explanation: 'Prioritizing 8-10 hours of sleep and studying during your peak alertness hours maximizes learning efficiency and retention!'

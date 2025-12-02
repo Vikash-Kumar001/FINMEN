@@ -94,6 +94,11 @@ const BadgeInnovatorHero = () => {
       question: "How should you approach a new project?",
       options: [
         { 
+          text: "Copy existing work", 
+          emoji: "📋", 
+          isCorrect: false
+        },
+        { 
           text: "Create original ideas and solutions", 
           emoji: "✨", 
           isCorrect: true
@@ -124,14 +129,14 @@ const BadgeInnovatorHero = () => {
       question: "What makes someone an innovator?",
       options: [
         { 
-          text: "Creating new solutions to problems", 
-          emoji: "🎨", 
-          isCorrect: true
-        },
-        { 
           text: "Only copying others", 
           emoji: "📋", 
           isCorrect: false
+        },
+        { 
+          text: "Creating new solutions to problems", 
+          emoji: "🎨", 
+          isCorrect: true
         },
         { 
           text: "Avoiding challenges", 
@@ -154,11 +159,6 @@ const BadgeInnovatorHero = () => {
       question: "How do innovators solve problems?",
       options: [
         { 
-          text: "With creative and original solutions", 
-          emoji: "💡", 
-          isCorrect: true
-        },
-        { 
           text: "By copying existing solutions", 
           emoji: "📋", 
           isCorrect: false
@@ -172,6 +172,11 @@ const BadgeInnovatorHero = () => {
           text: "By giving up quickly", 
           emoji: "🚫", 
           isCorrect: false
+        },
+        { 
+          text: "With creative and original solutions", 
+          emoji: "💡", 
+          isCorrect: true
         }
       ]
     },
@@ -183,11 +188,6 @@ const BadgeInnovatorHero = () => {
       color: "bg-amber-500",
       question: "What defines an Innovator Hero?",
       options: [
-        { 
-          text: "Creates original solutions and solves problems innovatively", 
-          emoji: "🏆", 
-          isCorrect: true
-        },
         { 
           text: "Only copies others' work", 
           emoji: "📋", 
@@ -202,6 +202,11 @@ const BadgeInnovatorHero = () => {
           text: "Never creates anything new", 
           emoji: "😐", 
           isCorrect: false
+        },
+        { 
+          text: "Creates original solutions and solves problems innovatively", 
+          emoji: "🏆", 
+          isCorrect: true
         }
       ]
     }

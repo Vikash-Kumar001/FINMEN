@@ -94,6 +94,11 @@ const BadgeDigitalHero = () => {
       question: "How often should you take digital detox breaks?",
       options: [
         { 
+          text: "Never take breaks", 
+          emoji: "📱", 
+          isCorrect: false
+        },
+        { 
           text: "Regular breaks from screens", 
           emoji: "🧘", 
           isCorrect: true
@@ -124,14 +129,14 @@ const BadgeDigitalHero = () => {
       question: "What creates a healthy tech-life balance?",
       options: [
         { 
-          text: "Balance screen time with offline activities", 
-          emoji: "⚖️", 
-          isCorrect: true
-        },
-        { 
           text: "Only use screens all day", 
           emoji: "📱", 
           isCorrect: false
+        },
+        { 
+          text: "Balance screen time with offline activities", 
+          emoji: "⚖️", 
+          isCorrect: true
         },
         { 
           text: "Avoid all activities", 
@@ -184,11 +189,6 @@ const BadgeDigitalHero = () => {
       question: "What makes someone a Digital Hero?",
       options: [
         { 
-          text: "Balanced tech use with healthy limits", 
-          emoji: "🏆", 
-          isCorrect: true
-        },
-        { 
           text: "Using technology all the time", 
           emoji: "📱", 
           isCorrect: false
@@ -202,6 +202,11 @@ const BadgeDigitalHero = () => {
           text: "Addictive screen patterns", 
           emoji: "😵", 
           isCorrect: false
+        },
+        { 
+          text: "Balanced tech use with healthy limits", 
+          emoji: "🏆", 
+          isCorrect: true
         }
       ]
     }

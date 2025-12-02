@@ -70,8 +70,8 @@ const DebateOptimismVsRealism = () => {
       id: 2,
       text: "What's the benefit of balanced optimism?",
       choices: [
-        { id: 'a', text: 'Maintains hope while preparing for challenges' },
         { id: 'b', text: 'Always expects failure' },
+        { id: 'a', text: 'Maintains hope while preparing for challenges' },
         { id: 'c', text: 'Ignores potential problems completely' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const DebateOptimismVsRealism = () => {
       id: 3,
       text: "How does optimism help in difficult situations?",
       choices: [
-        { id: 'a', text: 'Provides motivation and resilience to keep trying' },
         { id: 'b', text: 'Makes you ignore problems' },
-        { id: 'c', text: 'Leads to disappointment when things go wrong' }
+        { id: 'c', text: 'Leads to disappointment when things go wrong' },
+        { id: 'a', text: 'Provides motivation and resilience to keep trying' }
       ],
       correct: 'a',
       explanation: 'Optimism fuels persistence and resilience, helping you overcome challenges!'
@@ -92,9 +92,9 @@ const DebateOptimismVsRealism = () => {
       id: 4,
       text: "What's the risk of being too optimistic?",
       choices: [
-        { id: 'a', text: 'May overlook potential problems without planning' },
         { id: 'b', text: 'Always succeeds in everything' },
-        { id: 'c', text: 'Never faces any challenges' }
+        { id: 'c', text: 'Never faces any challenges' },
+        { id: 'a', text: 'May overlook potential problems without planning' }
       ],
       correct: 'a',
       explanation: 'Excessive optimism without realistic planning can lead to unpreparedness for challenges!'
@@ -103,9 +103,9 @@ const DebateOptimismVsRealism = () => {
       id: 5,
       text: "What's the best approach to life's challenges?",
       choices: [
-        { id: 'a', text: 'Hope for the best, prepare for challenges' },
         { id: 'b', text: 'Only expect the worst' },
-        { id: 'c', text: 'Only expect the best with no preparation' }
+        { id: 'c', text: 'Only expect the best with no preparation' },
+        { id: 'a', text: 'Hope for the best, prepare for challenges' }
       ],
       correct: 'a',
       explanation: 'Balanced optimism - hoping for the best while preparing for challenges - leads to the best outcomes!'

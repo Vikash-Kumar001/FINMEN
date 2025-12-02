@@ -70,8 +70,8 @@ const PositivittyQuiz = () => {
       id: 2,
       text: "Which statement shows a positive mindset?",
       choices: [
-        { id: 'a', text: 'I can learn and improve' },
         { id: 'b', text: 'I\'m just not good at this' },
+        { id: 'a', text: 'I can learn and improve' },
         { id: 'c', text: 'This is too hard for me' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const PositivittyQuiz = () => {
       id: 3,
       text: "What's a positive way to view challenges?",
       choices: [
-        { id: 'a', text: 'Challenges help me grow' },
         { id: 'b', text: 'Challenges prove I\'m weak' },
-        { id: 'c', text: 'Challenges should be avoided' }
+        { id: 'c', text: 'Challenges should be avoided' },
+        { id: 'a', text: 'Challenges help me grow' }
       ],
       correct: 'a',
       explanation: 'Viewing challenges as opportunities for growth builds resilience and confidence!'
@@ -92,9 +92,9 @@ const PositivittyQuiz = () => {
       id: 4,
       text: "Which thought is most positive?",
       choices: [
-        { id: 'a', text: 'I\'m grateful for what I have' },
         { id: 'b', text: 'I never get what I want' },
-        { id: 'c', text: 'Life is unfair to me' }
+        { id: 'c', text: 'Life is unfair to me' },
+        { id: 'a', text: 'I\'m grateful for what I have' }
       ],
       correct: 'a',
       explanation: 'Gratitude is a powerful positive emotion that improves well-being and perspective!'
@@ -103,9 +103,9 @@ const PositivittyQuiz = () => {
       id: 5,
       text: "What's a positive response to criticism?",
       choices: [
-        { id: 'a', text: 'I can learn from this feedback' },
         { id: 'b', text: 'They\'re just being mean' },
-        { id: 'c', text: 'I\'m a failure' }
+        { id: 'c', text: 'I\'m a failure' },
+        { id: 'a', text: 'I can learn from this feedback' }
       ],
       correct: 'a',
       explanation: 'Viewing criticism as constructive feedback helps you grow and improve!'

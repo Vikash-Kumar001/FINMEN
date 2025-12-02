@@ -1,14 +1,14 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
-const QUESTION_TIME = 10; // 10 seconds per question
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const ReflexMindCheck = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -49,266 +49,161 @@ const ReflexMindCheck = () => {
   }, [location.state, gameId]);
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
   const [score, setScore] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
   const [answered, setAnswered] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(QUESTION_TIME);
-  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
       id: 1,
-      text: "Which action is best for your mind?",
+      question: "What should you do to boost your mind?",
+      correctAnswer: "Meditate",
       options: [
-        { 
-          id: "meditate", 
-          text: "Meditate", 
-          emoji: "🧘", 
-          description: "Reduces stress and improves emotional regulation",
-          isCorrect: true
-        },
-        { 
-          id: "stress", 
-          text: "Chronic stress", 
-          emoji: "😰", 
-          description: "Prolonged stress damages brain cells",
-          isCorrect: false
-        },
-        { 
-          id: "gratitude", 
-          text: "Express gratitude", 
-          emoji: "🙏", 
-          description: "Boosts mood and strengthens neural pathways",
-          isCorrect: false
-        },
-        { 
-          id: "ruminate", 
-          text: "Ruminate on negatives", 
-          emoji: "😞", 
-          description: "Increases anxiety and depression risk",
-          isCorrect: false
-        }
+        { text: "Meditate", isCorrect: true, emoji: "🧘" },
+        { text: "Chronic stress", isCorrect: false, emoji: "😰" },
+        { text: "Express gratitude", isCorrect: false, emoji: "🙏" },
+        { text: "Ruminate on negatives", isCorrect: false, emoji: "😞" }
       ]
     },
     {
       id: 2,
-      text: "What helps improve brain function?",
+      question: "What helps improve brain function?",
+      correctAnswer: "Read for pleasure",
       options: [
-        { 
-          id: "compare", 
-          text: "Social media comparison", 
-          emoji: "📱", 
-          description: "Reduces self-esteem and happiness",
-          isCorrect: false
-        },
-        { 
-          id: "read", 
-          text: "Read for pleasure", 
-          emoji: "📚", 
-          description: "Enhances vocabulary and cognitive flexibility",
-          isCorrect: true
-        },
-        { 
-          id: "sleep", 
-          text: "Get adequate sleep", 
-          emoji: "😴", 
-          description: "Essential for memory consolidation",
-          isCorrect: false
-        },
-        { 
-          id: "violent", 
-          text: "Play violent video games", 
-          emoji: "🎮", 
-          description: "Can increase aggression and reduce empathy",
-          isCorrect: false
-        }
+        { text: "Social media comparison", isCorrect: false, emoji: "📱" },
+        { text: "Read for pleasure", isCorrect: true, emoji: "📚" },
+        { text: "Get adequate sleep", isCorrect: false, emoji: "😴" },
+        { text: "Play violent video games", isCorrect: false, emoji: "🎮" }
       ]
     },
     {
       id: 3,
-      text: "Which activity supports mental wellness?",
+      question: "Which activity supports mental wellness?",
+      correctAnswer: "Learn new skills",
       options: [
-        { 
-          id: "isolate", 
-          text: "Isolate yourself", 
-          emoji: "🚪", 
-          description: "Can lead to depression and loneliness",
-          isCorrect: false
-        },
-        { 
-          id: "exercise", 
-          text: "Regular exercise", 
-          emoji: "🏃", 
-          description: "Increases blood flow to the brain",
-          isCorrect: false
-        },
-        { 
-          id: "learn", 
-          text: "Learn new skills", 
-          emoji: "🎓", 
-          description: "Promotes neuroplasticity and brain growth",
-          isCorrect: true
-        },
-        { 
-          id: "procrastinate", 
-          text: "Procrastinate constantly", 
-          emoji: "⏰", 
-          description: "Increases stress and reduces productivity",
-          isCorrect: false
-        }
+        { text: "Isolate yourself", isCorrect: false, emoji: "🚪" },
+        { text: "Regular exercise", isCorrect: false, emoji: "🏃" },
+        { text: "Learn new skills", isCorrect: true, emoji: "🎓" },
+        { text: "Procrastinate constantly", isCorrect: false, emoji: "⏰" }
       ]
     },
     {
       id: 4,
-      text: "What is good for emotional regulation?",
+      question: "What is good for emotional regulation?",
+      correctAnswer: "Journal your thoughts",
       options: [
-        { 
-          id: "bottle", 
-          text: "Bottle up emotions", 
-          emoji: "💔", 
-          description: "Can lead to emotional outbursts",
-          isCorrect: false
-        },
-        { 
-          id: "journal", 
-          text: "Journal your thoughts", 
-          emoji: "📝", 
-          description: "Helps process emotions and reduce stress",
-          isCorrect: true
-        },
-        { 
-          id: "talk", 
-          text: "Talk to someone", 
-          emoji: "💬", 
-          description: "Provides support and perspective",
-          isCorrect: false
-        },
-        { 
-          id: "ignore", 
-          text: "Ignore your feelings", 
-          emoji: "🙈", 
-          description: "Doesn't help with emotional regulation",
-          isCorrect: false
-        }
+        { text: "Bottle up emotions", isCorrect: false, emoji: "💔" },
+        { text: "Talk to someone", isCorrect: false, emoji: "💬" },
+        { text: "Ignore your feelings", isCorrect: false, emoji: "🙈" },
+        { text: "Journal your thoughts", isCorrect: true, emoji: "📝" }
       ]
     },
     {
       id: 5,
-      text: "Which habit boosts cognitive performance?",
+      question: "Which habit boosts cognitive performance?",
+      correctAnswer: "Eat healthy foods",
       options: [
-        { 
-          id: "junk", 
-          text: "Eat only junk food", 
-          emoji: "🍔", 
-          description: "Can impair cognitive function",
-          isCorrect: false
-        },
-        { 
-          id: "skip", 
-          text: "Skip meals regularly", 
-          emoji: "🍽️", 
-          description: "Can cause brain fog and fatigue",
-          isCorrect: false
-        },
-        { 
-          id: "healthy", 
-          text: "Eat healthy foods", 
-          emoji: "🥗", 
-          description: "Provides essential nutrients for the brain",
-          isCorrect: true
-        },
-        { 
-          id: "hydrate", 
-          text: "Stay hydrated", 
-          emoji: "💧", 
-          description: "Maintains optimal brain function",
-          isCorrect: false
-        }
+        { text: "Eat healthy foods", isCorrect: true, emoji: "🥗" },
+        { text: "Eat only junk food", isCorrect: false, emoji: "🍔" },
+        { text: "Skip meals regularly", isCorrect: false, emoji: "🍽️" },
+        { text: "Stay hydrated", isCorrect: false, emoji: "💧" }
       ]
     }
   ];
 
-  // Shuffle options for each question to vary correct answer positions
-  const shuffledQuestions = useMemo(() => {
-    return questions.map(q => {
-      const shuffled = [...q.options].sort(() => Math.random() - 0.5);
-      return { ...q, options: shuffled };
-    });
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
   }, []);
 
   // Timer effect
   useEffect(() => {
-    if (!showResult && !answered && timeLeft > 0) {
-      timerRef.current = setTimeout(() => {
-        setTimeLeft(timeLeft - 1);
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (timeLeft === 0 && !answered) {
-      // Time's up, move to next question
-      handleTimeUp();
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     }
+
     return () => {
       if (timerRef.current) {
-        clearTimeout(timerRef.current);
+        clearInterval(timerRef.current);
+        timerRef.current = null;
       }
     };
-  }, [timeLeft, answered, showResult]);
+  }, [gameState, answered, timeLeft, handleTimeUp]);
 
-  // Reset timer when question changes
-  useEffect(() => {
-    if (!showResult) {
-      setTimeLeft(QUESTION_TIME);
-      setAnswered(false);
-      setSelectedOptionId(null);
-    }
-  }, [currentQuestion, showResult]);
-
-  const handleTimeUp = () => {
-    setAnswered(true);
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
     resetFeedback();
-    showCorrectAnswerFeedback(0, false);
-    
-    const isLastQuestion = currentQuestion === shuffledQuestions.length - 1;
-    
-    setTimeout(() => {
-      if (isLastQuestion) {
-        setShowResult(true);
-      } else {
-        setCurrentQuestion(prev => prev + 1);
-      }
-    }, 1500);
   };
 
-  const handleChoice = (option) => {
-    if (answered) return;
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
     
     setAnswered(true);
-    setSelectedOptionId(option.id);
     resetFeedback();
     
-    if (option.isCorrect) {
-      setScore(prev => prev + 1);
+    const isCorrect = option.isCorrect;
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    const isLastQuestion = currentQuestion === shuffledQuestions.length - 1;
-    
+
     setTimeout(() => {
-      if (isLastQuestion) {
-        setShowResult(true);
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
       } else {
-        setCurrentQuestion(prev => prev + 1);
+        setGameState("finished");
       }
-    }, 1500);
+    }, 500);
   };
+
+  const finalScore = score;
+
+  const currentQuestion = questions[currentRound - 1];
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (showResult) {
-      console.log(`🎮 Reflex Mind Check game completed! Score: ${score}/${shuffledQuestions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (gameState === "finished") {
+      console.log(`🎮 Reflex Mind Check game completed! Score: ${finalScore}/${TOTAL_ROUNDS}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -319,82 +214,83 @@ const ReflexMindCheck = () => {
         }, '');
       }
     }
-  }, [showResult, score, gameId, nextGamePath, nextGameId, shuffledQuestions.length]);
-
-  const currentQuestionData = shuffledQuestions[currentQuestion];
-  const timerColor = timeLeft <= 3 ? 'text-red-400' : timeLeft <= 6 ? 'text-yellow-400' : 'text-green-400';
+  }, [gameState, finalScore, gameId, nextGamePath, nextGameId]);
 
   return (
     <GameShell
       title="Reflex Mind Check"
-      score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={shuffledQuestions.length}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Tap quickly for mind-boosting actions!` : "Test your mind-boosting reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      gameId={gameId}
-      gameType="brain"
-      showGameOver={showResult}
-      maxScore={shuffledQuestions.length}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="brain"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
-        {!showResult && currentQuestionData ? (
-          <div className="space-y-4 md:space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
-                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{shuffledQuestions.length}</span>
-                <div className="flex items-center gap-4">
-                  <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{shuffledQuestions.length}</span>
-                  <div className={`text-lg md:text-xl font-bold ${timerColor}`}>
-                    ⏱️ {timeLeft}s
-                  </div>
-                </div>
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center text-center text-white space-y-6 md:space-y-8 max-w-4xl mx-auto px-4 py-4">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center">
+            <div className="text-4xl md:text-5xl mb-4 md:mb-6">🧠</div>
+            <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-base md:text-lg mb-4 md:mb-6">
+              Answer questions about mind-boosting actions!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-4 md:mb-6 text-sm md:text-base">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 md:py-4 px-6 md:px-8 rounded-full text-lg md:text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-6 md:space-y-8 flex-1 flex flex-col justify-center">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-2 bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="text-white text-sm md:text-base">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              
-              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
+              <div className={`font-bold text-sm md:text-base ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white text-sm md:text-base">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20 text-center">
+              <h3 className="text-xl md:text-2xl lg:text-3xl font-bold mb-4 md:mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
               
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {currentQuestionData.options.map((option) => {
-                  const isSelected = selectedOptionId === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleChoice(option)}
-                      disabled={answered}
-                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
-                        showCorrect
-                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
-                          : showIncorrect
-                          ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
-                          : isSelected
-                          ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl md:text-3xl">{option.emoji}</span>
-                        <div className="flex-1">
-                          <div className="text-white font-bold text-sm md:text-base mb-1">{option.text}</div>
-                          <div className="text-white/80 text-xs md:text-sm">{option.description}</div>
-                        </div>
-                      </div>
-                    </button>
-                  );
-                })}
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[70px] md:min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-4 md:px-6 py-3 md:py-4 rounded-xl text-white font-bold text-base md:text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-2xl md:text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
               </div>
             </div>
           </div>
-        ) : null}
+        )}
       </div>
     </GameShell>
   );

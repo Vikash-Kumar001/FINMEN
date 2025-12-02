@@ -76,8 +76,8 @@ const BadgeMemoryHero = () => {
       color: "bg-purple-500",
       question: "What memory technique uses mental images?",
       options: [
-        { text: "Visualization", emoji: "🖼️", isCorrect: true },
         { text: "Distraction", emoji: "📱", isCorrect: false },
+        { text: "Visualization", emoji: "🖼️", isCorrect: true },
         { text: "Forgetting", emoji: "🧠", isCorrect: false },
         { text: "Ignoring", emoji: "🚫", isCorrect: false }
       ]
@@ -90,9 +90,9 @@ const BadgeMemoryHero = () => {
       color: "bg-yellow-500",
       question: "How should you apply spaced repetition?",
       options: [
-        { text: "Daily review sessions", emoji: "📅", isCorrect: true },
         { text: "Once only", emoji: "1️⃣", isCorrect: false },
         { text: "Never review", emoji: "❌", isCorrect: false },
+        { text: "Daily review sessions", emoji: "📅", isCorrect: true },
         { text: "Random intervals", emoji: "🎲", isCorrect: false }
       ]
     },
@@ -104,10 +104,10 @@ const BadgeMemoryHero = () => {
       color: "bg-green-500",
       question: "How does exercise boost memory?",
       options: [
-        { text: "Increases blood flow to brain", emoji: "🏃", isCorrect: true },
         { text: "Makes you tired", emoji: "😴", isCorrect: false },
         { text: "Reduces brain function", emoji: "📉", isCorrect: false },
-        { text: "Has no effect", emoji: "⚪", isCorrect: false }
+        { text: "Has no effect", emoji: "⚪", isCorrect: false },
+        { text: "Increases blood flow to brain", emoji: "🏃", isCorrect: true }
       ]
     },
     {
@@ -118,10 +118,10 @@ const BadgeMemoryHero = () => {
       color: "bg-red-500",
       question: "What nutrition supports memory?",
       options: [
-        { text: "Fruits & vegetables", emoji: "🥦", isCorrect: true },
         { text: "Junk food only", emoji: "🍔", isCorrect: false },
         { text: "Skipping meals", emoji: "🍽️", isCorrect: false },
-        { text: "Unhealthy snacks", emoji: "🍟", isCorrect: false }
+        { text: "Unhealthy snacks", emoji: "🍟", isCorrect: false },
+        { text: "Fruits & vegetables", emoji: "🥦", isCorrect: true }
       ]
     }
   ];
@@ -129,8 +129,8 @@ const BadgeMemoryHero = () => {
   const handleAnswer = (option) => {
     if (answered) return;
     
-    setSelectedAnswer(option);
     setAnswered(true);
+    setSelectedAnswer(option);
     resetFeedback();
     
     if (option.isCorrect) {
@@ -172,6 +172,7 @@ const BadgeMemoryHero = () => {
   return (
     <GameShell
       title="Badge: Memory Hero"
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Earned!"}
       score={score}
       currentLevel={challenge + 1}
       totalLevels={challenges.length}
@@ -182,63 +183,77 @@ const BadgeMemoryHero = () => {
       gameType="brain"
       showGameOver={showResult}
       maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
+      <div className="space-y-8 max-w-4xl mx-auto px-4">
         {!showResult && currentChallenge ? (
-          <div className="space-y-4 md:space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
-                <span className="text-white/80 text-sm md:text-base">Challenge {challenge + 1}/{challenges.length}</span>
-                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{challenges.length}</span>
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
+              <span className="text-white/80 text-sm md:text-base">Challenge {challenge + 1}/{challenges.length}</span>
+              <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{challenges.length}</span>
+            </div>
+            
+            <div className={`${currentChallenge.color} rounded-xl p-4 md:p-6 mb-6 text-center`}>
+              <div className="flex justify-center mb-3">
+                {currentChallenge.icon}
               </div>
-              
-              <div className="flex items-center gap-3 mb-4 md:mb-6">
-                <div className={`${currentChallenge.color} p-3 rounded-xl`}>
-                  {currentChallenge.icon}
+              <h3 className="text-xl md:text-2xl font-bold text-white mb-2">{currentChallenge.title}</h3>
+              <p className="text-white/90 text-sm md:text-base">{currentChallenge.description}</p>
+            </div>
+            
+            <p className="text-white text-lg md:text-xl mb-6 text-center">
+              {currentChallenge.question}
+            </p>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {currentChallenge.options.map((option, idx) => {
+                const isSelected = selectedAnswer === option;
+                const showCorrect = answered && option.isCorrect;
+                const showIncorrect = answered && isSelected && !option.isCorrect;
+                
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className={`p-4 md:p-6 rounded-xl transition-all text-left ${
+                      showCorrect
+                        ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300"
+                        : showIncorrect
+                        ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
+                        : isSelected
+                        ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300"
+                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent"
+                    } disabled:opacity-70 disabled:cursor-not-allowed`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl md:text-3xl">{option.emoji}</span>
+                      <span className="text-white font-bold text-sm md:text-base">{option.text}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ) : showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center">
+            <div className="text-6xl md:text-7xl mb-4">
+              🏆
+            </div>
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Memory Hero Badge Earned!</h3>
+            <p className="text-white/90 text-base md:text-lg mb-6">
+              You've demonstrated excellent memory skills by correctly answering {score} out of {challenges.length} challenges!
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-8">
+              {challenges.map((ch, idx) => (
+                <div key={idx} className={`${ch.color} rounded-lg p-3 text-center`}>
+                  {ch.icon}
                 </div>
-                <div>
-                  <h3 className="text-lg md:text-xl font-bold text-white">{currentChallenge.title}</h3>
-                  <p className="text-white/70 text-sm md:text-base">{currentChallenge.description}</p>
-                </div>
-              </div>
-              
-              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
-                {currentChallenge.question}
-              </p>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                {currentChallenge.options.map((option, idx) => {
-                  const isSelected = selectedAnswer === option;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => handleAnswer(option)}
-                      disabled={answered}
-                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
-                        showCorrect
-                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
-                          : showIncorrect
-                          ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
-                          : isSelected
-                          ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                      } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
-                    >
-                      <div className="flex items-center gap-2">
-                        <span className="text-2xl">{option.emoji}</span>
-                        <span className="text-white font-bold text-sm md:text-base">{option.text}</span>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              ))}
             </div>
           </div>
         ) : null}

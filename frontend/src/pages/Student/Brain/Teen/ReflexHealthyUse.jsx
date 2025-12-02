@@ -71,8 +71,8 @@ const ReflexHealthyUse = () => {
       id: 2,
       text: "What's the best practice for screen time?",
       options: [
-        { id: "limit", text: "Set Time Limits", emoji: "⏰", description: "Healthy boundaries", isCorrect: true },
         { id: "unlimited", text: "Unlimited Use", emoji: "♾️", description: "No control", isCorrect: false },
+        { id: "limit", text: "Set Time Limits", emoji: "⏰", description: "Healthy boundaries", isCorrect: true },
         { id: "ignore", text: "Ignore Recommendations", emoji: "🙈", description: "No self-control", isCorrect: false },
         { id: "excessive", text: "Excessive Screen Time", emoji: "📱", description: "Harmful pattern", isCorrect: false }
       ]
@@ -81,10 +81,10 @@ const ReflexHealthyUse = () => {
       id: 3,
       text: "How should you manage device notifications?",
       options: [
-        { id: "control", text: "Control and Limit", emoji: "🔕", description: "Reduce distractions", isCorrect: true },
         { id: "all", text: "All Notifications On", emoji: "🔔", description: "Constant interruptions", isCorrect: false },
         { id: "ignore", text: "Ignore Settings", emoji: "🚫", description: "No management", isCorrect: false },
-        { id: "excessive", text: "Excessive Alerts", emoji: "📢", description: "Overwhelming", isCorrect: false }
+        { id: "excessive", text: "Excessive Alerts", emoji: "📢", description: "Overwhelming", isCorrect: false },
+        { id: "control", text: "Control and Limit", emoji: "🔕", description: "Reduce distractions", isCorrect: true }
       ]
     },
     {
@@ -101,10 +101,10 @@ const ReflexHealthyUse = () => {
       id: 5,
       text: "Which habit promotes healthy tech use?",
       options: [
-        { id: "breaks", text: "Regular Screen Breaks", emoji: "⏸️", description: "Rest for eyes and mind", isCorrect: true },
         { id: "continuous", text: "Continuous Use", emoji: "📱", description: "No breaks", isCorrect: false },
         { id: "ignore", text: "Ignore Health Warnings", emoji: "⚠️", description: "Risky behavior", isCorrect: false },
-        { id: "addict", text: "Addictive Patterns", emoji: "😵", description: "Unhealthy habit", isCorrect: false }
+        { id: "addict", text: "Addictive Patterns", emoji: "😵", description: "Unhealthy habit", isCorrect: false },
+        { id: "breaks", text: "Regular Screen Breaks", emoji: "⏸️", description: "Rest for eyes and mind", isCorrect: true }
       ]
     }
   ];

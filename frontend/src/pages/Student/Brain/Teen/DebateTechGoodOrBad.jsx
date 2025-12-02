@@ -69,8 +69,8 @@ const DebateTechGoodOrBad = () => {
       id: 2,
       text: "What makes technology harmful?",
       choices: [
-        { id: 'a', text: 'Overuse and lack of balance' },
         { id: 'b', text: 'Technology itself is always bad' },
+        { id: 'a', text: 'Overuse and lack of balance' },
         { id: 'c', text: 'Using it at all is harmful' }
       ],
       correct: 'a',
@@ -80,9 +80,9 @@ const DebateTechGoodOrBad = () => {
       id: 3,
       text: "What are the benefits of balanced technology use?",
       choices: [
-        { id: 'a', text: 'Learning, communication, and productivity' },
         { id: 'b', text: 'No benefits at all' },
-        { id: 'c', text: 'Only negative effects' }
+        { id: 'c', text: 'Only negative effects' },
+        { id: 'a', text: 'Learning, communication, and productivity' }
       ],
       correct: 'a',
       explanation: 'Balanced technology use provides learning opportunities, enables communication, enhances productivity, and offers entertainment when used wisely!'
@@ -91,9 +91,9 @@ const DebateTechGoodOrBad = () => {
       id: 4,
       text: "How can technology be used positively?",
       choices: [
-        { id: 'a', text: 'Set limits, use for learning and connection' },
         { id: 'b', text: 'Use it constantly without limits' },
-        { id: 'c', text: 'Avoid technology completely' }
+        { id: 'c', text: 'Avoid technology completely' },
+        { id: 'a', text: 'Set limits, use for learning and connection' }
       ],
       correct: 'a',
       explanation: 'Technology is positive when used with limits, for learning, staying connected with family and friends, and enhancing productivity!'
@@ -102,9 +102,9 @@ const DebateTechGoodOrBad = () => {
       id: 5,
       text: "What's the key to healthy technology use?",
       choices: [
-        { id: 'a', text: 'Balance, limits, and prioritizing real-life activities' },
         { id: 'b', text: 'Using technology all the time' },
-        { id: 'c', text: 'Never using technology' }
+        { id: 'c', text: 'Never using technology' },
+        { id: 'a', text: 'Balance, limits, and prioritizing real-life activities' }
       ],
       correct: 'a',
       explanation: 'The key is balance - setting time limits, prioritizing studies, sleep, exercise, and real-life relationships over screen time!'

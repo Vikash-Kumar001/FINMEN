@@ -71,8 +71,8 @@ const SimulationExamPrep = () => {
       id: 2,
       text: "You have an exam tomorrow. What's the best preparation strategy?",
       options: [
-        { id: 'plan', text: 'Study during the day, sleep 8-10 hours', description: 'Balanced approach', isCorrect: true },
         { id: 'allnight', text: 'Stay up all night studying', description: 'Exhausting approach', isCorrect: false },
+        { id: 'plan', text: 'Study during the day, sleep 8-10 hours', description: 'Balanced approach', isCorrect: true },
         { id: 'panic', text: 'Panic and study continuously', description: 'Stressful approach', isCorrect: false },
         { id: 'ignore', text: 'Ignore the exam completely', description: 'Avoidance approach', isCorrect: false }
       ],
@@ -83,10 +83,10 @@ const SimulationExamPrep = () => {
       id: 3,
       text: "How should you balance study time and sleep before an exam?",
       options: [
-        { id: 'balance', text: 'Study in advance, maintain sleep schedule', description: 'Long-term preparation', isCorrect: true },
         { id: 'cram', text: 'Cram the night before, skip sleep', description: 'Short-term approach', isCorrect: false },
         { id: 'stress', text: 'Study constantly, minimal sleep', description: 'Exhausting approach', isCorrect: false },
-        { id: 'procrastinate', text: 'Procrastinate, then panic study', description: 'Ineffective approach', isCorrect: false }
+        { id: 'procrastinate', text: 'Procrastinate, then panic study', description: 'Ineffective approach', isCorrect: false },
+        { id: 'balance', text: 'Study in advance, maintain sleep schedule', description: 'Long-term preparation', isCorrect: true }
       ],
       correct: 'balance',
       explanation: 'Studying in advance and maintaining your sleep schedule leads to better memory consolidation and exam performance!'
@@ -107,10 +107,10 @@ const SimulationExamPrep = () => {
       id: 5,
       text: "What's the best approach for exam preparation?",
       options: [
-        { id: 'routine', text: 'Regular study schedule with consistent sleep', description: 'Sustainable approach', isCorrect: true },
         { id: 'lastminute', text: 'Last-minute all-night study sessions', description: 'Ineffective approach', isCorrect: false },
         { id: 'sacrifice', text: 'Sacrifice sleep for extra study hours', description: 'Counterproductive', isCorrect: false },
-        { id: 'random', text: 'Random study times, irregular sleep', description: 'Unpredictable approach', isCorrect: false }
+        { id: 'random', text: 'Random study times, irregular sleep', description: 'Unpredictable approach', isCorrect: false },
+        { id: 'routine', text: 'Regular study schedule with consistent sleep', description: 'Sustainable approach', isCorrect: true }
       ],
       correct: 'routine',
       explanation: 'A regular study schedule combined with consistent sleep creates the best conditions for learning and exam success!'

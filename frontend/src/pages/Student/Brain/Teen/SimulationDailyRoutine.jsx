@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, OptionButton, FeedbackBubble } from '../../Finance/GameShell';
+import { useLocation } from 'react-router-dom';
+import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const SimulationDailyRoutine = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -47,14 +46,11 @@ const SimulationDailyRoutine = () => {
   }, [location.state, gameId]);
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({});
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const questions = [
     {
@@ -62,187 +58,221 @@ const SimulationDailyRoutine = () => {
       text: "You have a busy day ahead. Which daily routine will best support your brain health?",
       options: [
         { 
-          id: 'sleep', 
-          text: 'Sleep 8 hours only', 
-          description: 'Focus on rest but skip physical activity' 
+          id: "sleep", 
+          text: "Sleep 8 hours only", 
+          emoji: "😴", 
+          description: "Focus on rest but skip physical activity",
+          isCorrect: false
         },
         { 
-          id: 'both', 
-          text: 'Sleep 8 hours and play sport', 
-          description: 'Get adequate rest and engage in physical activity' 
+          id: "both", 
+          text: "Sleep 8 hours and play sport", 
+          emoji: "⚖️", 
+          description: "Get adequate rest and engage in physical activity",
+          isCorrect: true
         },
         { 
-          id: 'sport', 
-          text: 'Play sport only', 
-          description: 'Stay active but sacrifice sleep' 
+          id: "sport", 
+          text: "Play sport only", 
+          emoji: "🏃", 
+          description: "Stay active but sacrifice sleep",
+          isCorrect: false
         },
         { 
-          id: 'junk', 
-          text: 'Eat junk food all day', 
-          description: 'Poor nutrition choices' 
+          id: "junk", 
+          text: "Eat junk food all day", 
+          emoji: "🍔", 
+          description: "Poor nutrition choices",
+          isCorrect: false
         }
-      ],
-      correct: "both",
-      explanation: "Both 8 hours of sleep and playing sports are essential for optimal brain function. Sleep helps consolidate memories, while exercise increases blood flow to the brain!"
+      ]
     },
     {
       id: 2,
       text: "It's 10 PM and you have an exam tomorrow. What's the best approach for your brain?",
       options: [
         { 
-          id: 'study', 
-          text: 'Study all night', 
-          description: 'Cram as much as possible' 
+          id: "study", 
+          text: "Study all night", 
+          emoji: "📚", 
+          description: "Cram as much as possible",
+          isCorrect: false
         },
         { 
-          id: 'panic', 
-          text: 'Panic and stress', 
-          description: 'Feel anxious about the exam' 
+          id: "panic", 
+          text: "Panic and stress", 
+          emoji: "😰", 
+          description: "Feel anxious about the exam",
+          isCorrect: false
         },
         { 
-          id: 'sleep', 
-          text: 'Sleep well and review briefly', 
-          description: 'Get rest and light review' 
+          id: "sleep", 
+          text: "Sleep well and review briefly", 
+          emoji: "😴", 
+          description: "Get rest and light review",
+          isCorrect: true
         },
         { 
-          id: 'ignore', 
-          text: 'Ignore the exam completely', 
-          description: 'Do nothing to prepare' 
+          id: "ignore", 
+          text: "Ignore the exam completely", 
+          emoji: "🙈", 
+          description: "Do nothing to prepare",
+          isCorrect: false
         }
-      ],
-      correct: "sleep",
-      explanation: "Adequate sleep is crucial for memory consolidation. Brief review before a good night's sleep is more effective than all-night cramming!"
+      ]
     },
     {
       id: 3,
       text: "During study breaks, what activity is most beneficial for your brain?",
       options: [
         { 
-          id: 'social', 
-          text: 'Scroll social media', 
-          description: 'Check notifications and messages' 
+          id: "walk", 
+          text: "Take a short walk outdoors", 
+          emoji: "🚶", 
+          description: "Get fresh air and movement",
+          isCorrect: true
         },
         { 
-          id: 'snack', 
-          text: 'Eat sugary snacks', 
-          description: 'Quick energy boost' 
+          id: "social", 
+          text: "Scroll social media", 
+          emoji: "📱", 
+          description: "Check notifications and messages",
+          isCorrect: false
         },
         { 
-          id: 'walk', 
-          text: 'Take a short walk outdoors', 
-          description: 'Get fresh air and movement' 
+          id: "snack", 
+          text: "Eat sugary snacks", 
+          emoji: "🍬", 
+          description: "Quick energy boost",
+          isCorrect: false
         },
         { 
-          id: 'nap', 
-          text: 'Take a long nap', 
-          description: 'Extended rest period' 
+          id: "nap", 
+          text: "Take a long nap", 
+          emoji: "😴", 
+          description: "Extended rest period",
+          isCorrect: false
         }
-      ],
-      correct: "walk",
-      explanation: "Short walks increase blood flow to the brain and refresh your mind, making you more focused when you return to studying!"
+      ]
     },
     {
       id: 4,
       text: "How should you structure your daily study schedule for optimal brain performance?",
       options: [
         { 
-          id: 'marathon', 
-          text: 'Study for 4 hours straight', 
-          description: 'Long continuous sessions' 
+          id: "pomodoro", 
+          text: "Use Pomodoro technique (25 min study, 5 min break)", 
+          emoji: "⏱️", 
+          description: "Structured work-break intervals",
+          isCorrect: true
         },
         { 
-          id: 'random', 
-          text: 'Study randomly throughout the day', 
-          description: 'Irregular timing' 
+          id: "marathon", 
+          text: "Study for 4 hours straight", 
+          emoji: "📖", 
+          description: "Long continuous sessions",
+          isCorrect: false
         },
         { 
-          id: 'night', 
-          text: 'Only study late at night', 
-          description: 'Single time period focus' 
+          id: "random", 
+          text: "Study randomly throughout the day", 
+          emoji: "🎲", 
+          description: "Irregular timing",
+          isCorrect: false
         },
         { 
-          id: 'pomodoro', 
-          text: 'Use Pomodoro technique (25 min study, 5 min break)', 
-          description: 'Structured work-break intervals' 
+          id: "night", 
+          text: "Only study late at night", 
+          emoji: "🌙", 
+          description: "Single time period focus",
+          isCorrect: false
         }
-      ],
-      correct: "pomodoro",
-      explanation: "The Pomodoro technique helps maintain focus and prevents mental fatigue by balancing work and rest periods!"
+      ]
     },
     {
       id: 5,
       text: "What's the best way to start your morning for brain health?",
       options: [
         { 
-          id: 'rush', 
-          text: 'Rush out without eating', 
-          description: 'Quick start to the day' 
+          id: "rush", 
+          text: "Rush out without eating", 
+          emoji: "🏃", 
+          description: "Quick start to the day",
+          isCorrect: false
         },
         { 
-          id: 'heavy', 
-          text: 'Heavy meal and stay in bed', 
-          description: 'Large breakfast and minimal movement' 
+          id: "healthy", 
+          text: "Healthy breakfast and light stretching", 
+          emoji: "🥗", 
+          description: "Nourish body and activate muscles",
+          isCorrect: true
         },
         { 
-          id: 'skip', 
-          text: 'Skip breakfast entirely', 
-          description: 'No morning meal' 
+          id: "heavy", 
+          text: "Heavy meal and stay in bed", 
+          emoji: "🍔", 
+          description: "Large breakfast and minimal movement",
+          isCorrect: false
         },
         { 
-          id: 'healthy', 
-          text: 'Healthy breakfast and light stretching', 
-          description: 'Nourish body and activate muscles' 
+          id: "skip", 
+          text: "Skip breakfast entirely", 
+          emoji: "🚫", 
+          description: "No morning meal",
+          isCorrect: false
         }
-      ],
-      correct: "healthy",
-      explanation: "A healthy breakfast provides glucose for brain energy, and light stretching increases blood flow to wake up your brain!"
+      ]
     }
   ];
 
-  const currentScenario = questions[currentQuestion];
-
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setSelectedOption(optionId);
-    const isCorrect = optionId === currentScenario.correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prevScore => prevScore + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
     
-    // Auto-move to next question or complete after delay
-    setTimeout(() => {
-      setShowFeedback(false);
-      setSelectedOption(null);
-      
-      if (currentQuestion < questions.length - 1) {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      } else {
-        setLevelCompleted(true);
-      }
-    }, 2000);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (levelCompleted) {
-      console.log(`🎮 Simulation Daily Routine game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (showResult) {
+      console.log(`🎮 Simulation Daily Routine game completed! Score: ${finalScore}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -253,73 +283,97 @@ const SimulationDailyRoutine = () => {
         }, '');
       }
     }
-  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, questions.length]);
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell
       title="Simulation: Daily Routine"
-      score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      score={coins}
+      subtitle={showResult ? "Simulation Complete!" : `Scenario ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
-        {!levelCompleted && currentScenario ? (
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
           <div className="space-y-4 md:space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-              <h3 className="text-xl md:text-2xl font-bold text-white mb-4 md:mb-6 text-center">Daily Routine Simulator</h3>
-              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl md:rounded-2xl p-4 md:p-6 mb-6 md:mb-8">
-                <p className="text-lg md:text-xl font-semibold text-white text-center">"{currentScenario.text}"</p>
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Scenario {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-4 md:mb-6 text-center">Daily Routine Simulator</h3>
+              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
+                <p className="text-base md:text-lg lg:text-xl font-semibold text-white text-center">"{getCurrentQuestion().text}"</p>
               </div>
               
-              <div className="space-y-3 md:space-y-4 mb-6">
-                <h4 className="text-base md:text-lg font-semibold text-white mb-4">Choose the best option:</h4>
-                {currentScenario.options.map((option) => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = showFeedback && isSelected && option.id === currentScenario.correct;
-                  const showIncorrect = showFeedback && isSelected && option.id !== currentScenario.correct;
-                  
-                  return (
-                    <div 
-                      key={option.id}
-                      onClick={() => handleOptionSelect(option.id)}
-                      className={`p-4 md:p-6 rounded-xl md:rounded-2xl border-2 cursor-pointer transition duration-200 ${
-                        showCorrect
-                          ? "bg-gradient-to-r from-green-500 to-emerald-600 border-green-300"
-                          : showIncorrect
-                          ? "bg-gradient-to-r from-red-500 to-red-600 border-red-300"
-                          : isSelected
-                          ? 'bg-white/20 border-white'
-                          : levelCompleted
-                          ? 'opacity-70 cursor-not-allowed'
-                          : 'bg-white/10 hover:bg-white/20 border-white/30'
-                      }`}
-                    >
-                      <h5 className="font-bold text-white text-sm md:text-base">{option.text}</h5>
-                      <p className="text-white/80 text-xs md:text-sm mt-1">{option.description}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                  >
+                    <div className="flex items-start">
+                      <div className="text-2xl md:text-3xl mr-3">{option.emoji}</div>
+                      <div>
+                        <h5 className="font-bold text-white text-sm md:text-base mb-1">{option.text}</h5>
+                        <p className="text-white/80 text-xs md:text-sm">{option.description}</p>
+                      </div>
                     </div>
-                  );
-                })}
+                  </button>
+                ))}
               </div>
-              
-              {showFeedback && feedbackType === "wrong" && (
-                <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
-                  <p>💡 {currentScenario.explanation}</p>
-                </div>
-              )}
             </div>
           </div>
-        ) : null}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Excellent!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} scenarios correct!
+                  You know how to structure a brain-healthy daily routine!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  You understand that both sleep and exercise are essential, and that structured study breaks improve brain performance!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} scenarios correct.
+                  Remember, a balanced routine with sleep, exercise, and healthy breaks supports optimal brain health!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to choose routines that balance sleep, exercise, nutrition, and study breaks.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

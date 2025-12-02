@@ -94,14 +94,14 @@ const BadgeEmotionHero = () => {
       question: "You lost a game. What's the positive action?",
       options: [
         { 
-          text: "Congratulate opponent", 
-          emoji: "🏆👍", 
-          isCorrect: true
-        },
-        { 
           text: "Complain about unfairness", 
           emoji: "😠", 
           isCorrect: false
+        },
+        { 
+          text: "Congratulate opponent", 
+          emoji: "🏆👍", 
+          isCorrect: true
         },
         { 
           text: "Blame teammates", 
@@ -123,6 +123,21 @@ const BadgeEmotionHero = () => {
       color: "bg-blue-500",
       question: "You're having a sad day. What's the positive action?",
       options: [
+        { 
+          text: "Isolate completely", 
+          emoji: "🚶‍♂️", 
+          isCorrect: false
+        },
+        { 
+          text: "Suppress all feelings", 
+          emoji: "😐", 
+          isCorrect: false
+        },
+        { 
+          text: "Take it out on others", 
+          emoji: "😡", 
+          isCorrect: false
+        },
         { 
           text: "Talk to a loved one", 
           emoji: "💬❤️", 
@@ -154,11 +169,6 @@ const BadgeEmotionHero = () => {
       question: "You have exciting news. How should you share it?",
       options: [
         { 
-          text: "Share with others and include them", 
-          emoji: "🎉👥", 
-          isCorrect: true
-        },
-        { 
           text: "Keep it to yourself only", 
           emoji: "🔒😊", 
           isCorrect: false
@@ -172,6 +182,11 @@ const BadgeEmotionHero = () => {
           text: "Make others feel bad", 
           emoji: "😏", 
           isCorrect: false
+        },
+        { 
+          text: "Share with others and include them", 
+          emoji: "🎉👥", 
+          isCorrect: true
         }
       ]
     },
@@ -183,11 +198,6 @@ const BadgeEmotionHero = () => {
       color: "bg-purple-500",
       question: "You're in a conflict. What's the positive approach?",
       options: [
-        { 
-          text: "Listen & compromise", 
-          emoji: "👂🤝", 
-          isCorrect: true
-        },
         { 
           text: "Win at all costs", 
           emoji: "🏆⚔️", 
@@ -202,6 +212,11 @@ const BadgeEmotionHero = () => {
           text: "Escalate the conflict", 
           emoji: "🔥", 
           isCorrect: false
+        },
+        { 
+          text: "Listen & compromise", 
+          emoji: "👂🤝", 
+          isCorrect: true
         }
       ]
     }

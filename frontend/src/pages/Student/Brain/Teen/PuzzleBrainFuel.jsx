@@ -1,13 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
-import { Fish, Zap, Apple, Coffee, Brain } from 'lucide-react';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const PuzzleBrainFuel = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -48,11 +46,12 @@ const PuzzleBrainFuel = () => {
   }, [location.state, gameId]);
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
   const [matches, setMatches] = useState([]);
   const [selectedLeft, setSelectedLeft] = useState(null);
   const [selectedRight, setSelectedRight] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [score, setScore] = useState(0);
+  const [finalScore, setFinalScore] = useState(0);
 
   // Brain fuels (left side)
   const leftItems = [
@@ -117,9 +116,9 @@ const PuzzleBrainFuel = () => {
     const newMatches = [...matches, newMatch];
     setMatches(newMatches);
 
-    // If the match is correct, add score and show feedback
+    // If the match is correct, add coins and show feedback
     if (newMatch.isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
@@ -127,6 +126,9 @@ const PuzzleBrainFuel = () => {
 
     // Check if all items are matched
     if (newMatches.length === leftItems.length) {
+      // Calculate final score
+      const correctCount = newMatches.filter(match => match.isCorrect).length;
+      setFinalScore(correctCount);
       setShowResult(true);
     }
 
@@ -147,10 +149,20 @@ const PuzzleBrainFuel = () => {
     return match ? match.isCorrect : null;
   };
 
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setMatches([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
     if (showResult) {
-      console.log(`🎮 Puzzle Brain Fuel game completed! Score: ${score}/${leftItems.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      console.log(`🎮 Puzzle Brain Fuel game completed! Score: ${finalScore}/${leftItems.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -161,29 +173,29 @@ const PuzzleBrainFuel = () => {
         }, '');
       }
     }
-  }, [showResult, score, gameId, nextGamePath, nextGameId, leftItems.length]);
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, leftItems.length]);
 
   return (
     <GameShell
       title="Puzzle: Brain Fuel"
-      score={score}
-      subtitle={showResult ? "Game Complete!" : `Match brain fuels with their sources or benefits (${matches.length}/${leftItems.length} matched)`}
+      score={coins}
+      subtitle={showResult ? "Game Complete!" : "Match brain fuels with their sources or benefits"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
+      showGameOver={showResult && finalScore >= 3}
       gameId={gameId}
       gameType="brain"
       totalLevels={leftItems.length}
       currentLevel={matches.length + 1}
       maxScore={leftItems.length}
-      showConfetti={showResult && score >= 3}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-5xl mx-auto px-4">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-5xl mx-auto px-4 py-4">
         {!showResult ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             {/* Left column - Brain Fuels */}
@@ -239,7 +251,7 @@ const PuzzleBrainFuel = () => {
                   </div>
                 )}
                 <div className="mt-3 md:mt-4 text-white/80 text-xs md:text-sm">
-                  <p>Score: {score}</p>
+                  <p>Coins: {coins}</p>
                   <p>Matched: {matches.length}/{leftItems.length}</p>
                 </div>
               </div>
@@ -282,26 +294,38 @@ const PuzzleBrainFuel = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center">
-            {score >= 3 ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
               <div>
                 <div className="text-4xl md:text-5xl mb-4">🎉</div>
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Great Matching!</h3>
                 <p className="text-white/90 text-base md:text-lg mb-4">
-                  You correctly matched {score} out of {leftItems.length} brain fuels!
+                  You correctly matched {finalScore} out of {leftItems.length} brain fuels!
                   You understand how different nutrients and activities support brain health!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
-                  <span>+{score} Coins</span>
+                  <span>+{coins} Coins</span>
                 </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  You know that Omega-3 from fish supports brain function, while exercise increases blood flow to the brain!
+                </p>
               </div>
             ) : (
               <div>
                 <div className="text-4xl md:text-5xl mb-4">😔</div>
                 <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-base md:text-lg mb-4">
-                  You matched {score} out of {leftItems.length} brain fuels correctly.
+                  You matched {finalScore} out of {leftItems.length} brain fuels correctly.
                   Remember, different nutrients and activities support brain health in different ways!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to match each brain fuel with its appropriate source or benefit.
                 </p>
               </div>
             )}

@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import GameShell, { GameCard, FeedbackBubble } from '../../Finance/GameShell';
+import { useLocation } from 'react-router-dom';
+import { PenSquare } from 'lucide-react';
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const JournalOfBrainFitness = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -44,96 +45,65 @@ const JournalOfBrainFitness = () => {
     
     return { nextGamePath: null, nextGameId: null };
   }, [location.state, gameId]);
-  const [currentPrompt, setCurrentPrompt] = useState(0);
-  const [journalEntries, setJournalEntries] = useState({});
-  const [currentEntry, setCurrentEntry] = useState('');
-  const [isSubmitted, setIsSubmitted] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [feedbackMessage, setFeedbackMessage] = useState('');
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
   const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [entry, setEntry] = useState("");
+  const [showResult, setShowResult] = useState(false);
 
-  const prompts = [
+  const stages = [
     {
-      id: 1,
-      text: "One way I will keep my brain fit daily is ___",
-      guidance: "Think about activities that challenge your mind, improve focus, or support brain health. Be specific about what you'll do and when."
+      question: 'Write: "One brain-healthy habit I practice daily is ___."',
+      minLength: 10,
     },
     {
-      id: 2,
-      text: "Today I challenged my brain by ___",
-      guidance: "Reflect on specific activities that required mental effort today, such as learning something new, solving problems, or practicing skills."
+      question: 'Write: "Exercise helps my brain by ___."',
+      minLength: 10,
     },
     {
-      id: 3,
-      text: "My brain feels most energized after ___",
-      guidance: "Identify activities or habits that boost your mental energy and cognitive performance, such as exercise, healthy meals, or adequate sleep."
+      question: 'Write: "When I eat healthy foods, my brain feels ___."',
+      minLength: 10,
     },
     {
-      id: 4,
-      text: "I can improve my memory by ___",
-      guidance: "Think about specific techniques or habits that could help you remember information better, such as repetition, visualization, or organization."
+      question: 'Write: "Getting enough sleep makes me feel ___."',
+      minLength: 10,
     },
     {
-      id: 5,
-      text: "This week I grew my brain power by ___",
-      guidance: "Celebrate your progress! Reflect on specific actions or achievements that contributed to your cognitive development this week."
-    }
+      question: 'Write: "One way I will improve my brain fitness is ___."',
+      minLength: 10,
+    },
   ];
 
-  const currentPromptData = prompts[currentPrompt];
-
-  // Load existing entry when prompt changes
-  useEffect(() => {
-    setCurrentEntry(journalEntries[currentPrompt] || '');
-    setIsSubmitted(false);
-    setShowFeedback(false);
-  }, [currentPrompt]);
-
-  const handleEntryChange = (e) => {
-    setCurrentEntry(e.target.value);
-  };
-
-  const handleSubmitEntry = () => {
-    if (currentEntry.trim().length > 10) {
-      // Save entry
-      setJournalEntries(prev => ({
-        ...prev,
-        [currentPrompt]: currentEntry
-      }));
+  const handleSubmit = () => {
+    if (showResult) return; // Prevent multiple submissions
+    
+    resetFeedback();
+    const entryText = entry.trim();
+    
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
       
-      setIsSubmitted(true);
-      setFeedbackType("correct");
-      setFeedbackMessage("Great journal entry!");
-      setShowFeedback(true);
-      setScore(prevScore => prevScore + 1); // 1 coin per entry
+      const isLastQuestion = currentStage === stages.length - 1;
       
-      // Move to next prompt or complete
       setTimeout(() => {
-        setShowFeedback(false);
-        if (currentPrompt < prompts.length - 1) {
-          setCurrentPrompt(prev => prev + 1);
+        if (isLastQuestion) {
+          setShowResult(true);
         } else {
-          setLevelCompleted(true);
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
         }
       }, 1500);
-    } else {
-      setFeedbackType("wrong");
-      setFeedbackMessage("Please write a more detailed entry (at least 10 words)");
-      setShowFeedback(true);
-      
-      // Hide feedback after delay
-      setTimeout(() => {
-        setShowFeedback(false);
-      }, 2000);
     }
   };
+
+  const finalScore = score;
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (levelCompleted) {
-      console.log(`🎮 Journal of Brain Fitness game completed! Score: ${score}/${prompts.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (showResult) {
+      console.log(`🎮 Journal of Brain Fitness game completed! Score: ${finalScore}/${stages.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -144,68 +114,60 @@ const JournalOfBrainFitness = () => {
         }, '');
       }
     }
-  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, prompts.length]);
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, stages.length]);
 
   return (
     <GameShell
       title="Journal of Brain Fitness"
-      score={score}
-      currentLevel={currentPrompt + 1}
-      totalLevels={prompts.length}
+      subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on daily brain fitness habits!` : "Journal Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      maxScore={prompts.length}
+      maxScore={stages.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === stages.length}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
-        {!levelCompleted && currentPromptData ? (
-          <div className="space-y-4 md:space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-              <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Brain Fitness Journal</h3>
-              <div className="rounded-xl md:rounded-2xl p-4 md:p-6 mb-6 bg-white/10 backdrop-blur-sm">
-                <h4 className="text-lg md:text-xl font-semibold mb-4 text-white">Journal Prompt:</h4>
-                <p className="mb-4 text-white/90 text-base md:text-lg">"{currentPromptData.text}"</p>
-                
-                <div className="bg-blue-500/20 border border-blue-400/30 rounded-xl p-3 md:p-4 mb-6">
-                  <h5 className="font-medium text-blue-300 mb-2 text-sm md:text-base">Guidance:</h5>
-                  <p className="text-white/80 text-xs md:text-sm">{currentPromptData.guidance}</p>
-                </div>
-                
-                <textarea
-                  value={currentEntry}
-                  onChange={handleEntryChange}
-                  placeholder="Write your journal entry here..."
-                  className="w-full h-32 md:h-40 p-3 md:p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 text-sm md:text-base"
-                  disabled={isSubmitted}
-                />
-                
-                <button
-                  onClick={handleSubmitEntry}
-                  disabled={!currentEntry.trim() || isSubmitted}
-                  className={`mt-4 px-4 md:px-6 py-2 md:py-3 rounded-full font-bold transition duration-200 text-sm md:text-base ${
-                    currentEntry.trim() && !isSubmitted
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:opacity-90 shadow-lg'
-                      : 'bg-white/20 text-white/50 cursor-not-allowed'
-                  }`}
-                >
-                  {isSubmitted ? 'Entry Submitted!' : 'Submit Entry'}
-                </button>
-              </div>
-              
-              {showFeedback && (
-                <FeedbackBubble 
-                  message={feedbackMessage}
-                  type={feedbackType}
-                />
-              )}
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center text-center text-white space-y-6 md:space-y-8 max-w-4xl mx-auto px-4 py-4">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-6 md:p-8 rounded-xl md:rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-8 h-8 md:w-10 md:h-10 text-yellow-300" />
+            <h3 className="text-xl md:text-2xl font-bold mb-4 text-white">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4 text-sm md:text-base">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-xs md:text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
+            </p>
+            <textarea
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-base md:text-lg bg-white/90 min-h-[120px] md:min-h-[150px]"
+              disabled={showResult}
+            />
+            <div className="mt-2 text-white/50 text-xs md:text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
             </div>
+            <button
+              onClick={handleSubmit}
+              className={`mt-4 px-6 md:px-8 py-3 md:py-4 rounded-full text-base md:text-lg font-semibold transition-transform ${
+                entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+              }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
+            >
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
+            </button>
           </div>
-        ) : null}
+        )}
       </div>
     </GameShell>
   );

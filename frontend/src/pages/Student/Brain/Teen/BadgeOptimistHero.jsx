@@ -94,6 +94,11 @@ const BadgeOptimistHero = () => {
       question: "After a bad day, what's the positive action?",
       options: [
         { 
+          text: "Dwell on everything that went wrong", 
+          emoji: "😠", 
+          isCorrect: false
+        },
+        { 
           text: "Find things to be grateful for", 
           emoji: "🙏", 
           isCorrect: true
@@ -124,14 +129,14 @@ const BadgeOptimistHero = () => {
       question: "Facing a difficult challenge, what's the positive mindset?",
       options: [
         { 
-          text: "This is an opportunity to grow", 
-          emoji: "🌟", 
-          isCorrect: true
-        },
-        { 
           text: "This will definitely fail", 
           emoji: "❌", 
           isCorrect: false
+        },
+        { 
+          text: "This is an opportunity to grow", 
+          emoji: "🌟", 
+          isCorrect: true
         },
         { 
           text: "I'm not capable of this", 
@@ -154,11 +159,6 @@ const BadgeOptimistHero = () => {
       question: "When things seem hopeless, what's the positive approach?",
       options: [
         { 
-          text: "Believe things can improve with effort", 
-          emoji: "💪", 
-          isCorrect: true
-        },
-        { 
           text: "Accept that nothing will change", 
           emoji: "😐", 
           isCorrect: false
@@ -172,6 +172,11 @@ const BadgeOptimistHero = () => {
           text: "Blame circumstances completely", 
           emoji: "🌪️", 
           isCorrect: false
+        },
+        { 
+          text: "Believe things can improve with effort", 
+          emoji: "💪", 
+          isCorrect: true
         }
       ]
     },
@@ -183,11 +188,6 @@ const BadgeOptimistHero = () => {
       color: "bg-purple-500",
       question: "What's the positive way to talk to yourself?",
       options: [
-        { 
-          text: "I can learn and improve with practice", 
-          emoji: "🎯", 
-          isCorrect: true
-        },
         { 
           text: "I'm just not good enough", 
           emoji: "😔", 
@@ -202,6 +202,11 @@ const BadgeOptimistHero = () => {
           text: "I should stop trying", 
           emoji: "🚫", 
           isCorrect: false
+        },
+        { 
+          text: "I can learn and improve with practice", 
+          emoji: "🎯", 
+          isCorrect: true
         }
       ]
     }

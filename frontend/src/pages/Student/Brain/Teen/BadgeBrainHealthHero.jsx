@@ -48,6 +48,7 @@ const BadgeBrainHealthHero = () => {
   
   const [challenge, setChallenge] = useState(0);
   const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
@@ -93,14 +94,14 @@ const BadgeBrainHealthHero = () => {
       question: "Which activity supports mental wellness?",
       options: [
         { 
-          text: "Isolating yourself completely", 
-          emoji: "🚪", 
-          isCorrect: false
-        },
-        { 
           text: "Regular exercise and social connection", 
           emoji: "🤝", 
           isCorrect: true
+        },
+        { 
+          text: "Isolating yourself completely", 
+          emoji: "🚪", 
+          isCorrect: false
         },
         { 
           text: "Chronic stress and worry", 
@@ -158,11 +159,6 @@ const BadgeBrainHealthHero = () => {
           isCorrect: false
         },
         { 
-          text: "Omega-3 rich foods and antioxidants", 
-          emoji: "🐟", 
-          isCorrect: true
-        },
-        { 
           text: "Sugary snacks only", 
           emoji: "🍬", 
           isCorrect: false
@@ -171,6 +167,11 @@ const BadgeBrainHealthHero = () => {
           text: "Fast food every day", 
           emoji: "🍔", 
           isCorrect: false
+        },
+        { 
+          text: "Omega-3 rich foods and antioxidants", 
+          emoji: "🐟", 
+          isCorrect: true
         }
       ]
     },
@@ -188,11 +189,6 @@ const BadgeBrainHealthHero = () => {
           isCorrect: false
         },
         { 
-          text: "Practicing consistent brain-healthy habits", 
-          emoji: "🌟", 
-          isCorrect: true
-        },
-        { 
           text: "Only focusing on physical health", 
           emoji: "💪", 
           isCorrect: false
@@ -201,6 +197,11 @@ const BadgeBrainHealthHero = () => {
           text: "Avoiding all challenges", 
           emoji: "😰", 
           isCorrect: false
+        },
+        { 
+          text: "Practicing consistent brain-healthy habits", 
+          emoji: "🌟", 
+          isCorrect: true
         }
       ]
     }
@@ -215,6 +216,7 @@ const BadgeBrainHealthHero = () => {
     
     if (option.isCorrect) {
       setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
@@ -254,9 +256,10 @@ const BadgeBrainHealthHero = () => {
   return (
     <GameShell
       title="Badge: Brain Health Hero"
-      score={score}
+      score={coins}
       currentLevel={challenge + 1}
       totalLevels={challenges.length}
+      subtitle={showResult ? "Game Complete!" : `Challenge ${challenge + 1} of ${challenges.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -264,12 +267,13 @@ const BadgeBrainHealthHero = () => {
       gameType="brain"
       showGameOver={showResult}
       maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult && currentChallenge ? (
           <div className="space-y-4 md:space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
@@ -320,6 +324,14 @@ const BadgeBrainHealthHero = () => {
                 })}
               </div>
             </div>
+          </div>
+        ) : showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            <div className="text-4xl md:text-5xl mb-4">🏆</div>
+            <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Badge Earned!</h3>
+            <p className="text-white/90 text-base md:text-lg mb-4">
+              You completed {score} out of {challenges.length} challenges!
+            </p>
           </div>
         ) : null}
       </div>

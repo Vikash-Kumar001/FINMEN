@@ -70,8 +70,8 @@ const StresssQuiz = () => {
       id: 2,
       text: "Which activity helps reduce stress quickly?",
       choices: [
-        { id: 'a', text: 'Deep breathing exercises' },
         { id: 'b', text: 'Scrolling social media endlessly' },
+        { id: 'a', text: 'Deep breathing exercises' },
         { id: 'c', text: 'Arguing with others' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const StresssQuiz = () => {
       id: 3,
       text: "What is an effective way to manage stress?",
       choices: [
-        { id: 'a', text: 'Getting adequate sleep' },
         { id: 'b', text: 'Staying up all night worrying' },
-        { id: 'c', text: 'Skipping meals' }
+        { id: 'c', text: 'Skipping meals' },
+        { id: 'a', text: 'Getting adequate sleep' }
       ],
       correct: 'a',
       explanation: 'Adequate sleep helps your body and mind recover from stress and maintain emotional balance!'
@@ -92,9 +92,9 @@ const StresssQuiz = () => {
       id: 4,
       text: "Which is a healthy stress management technique?",
       choices: [
-        { id: 'a', text: 'Talking to friends or family' },
         { id: 'b', text: 'Bottling up emotions' },
-        { id: 'c', text: 'Isolating yourself completely' }
+        { id: 'c', text: 'Isolating yourself completely' },
+        { id: 'a', text: 'Talking to friends or family' }
       ],
       correct: 'a',
       explanation: 'Sharing your feelings with trusted friends or family provides support and helps process stress!'
@@ -103,9 +103,9 @@ const StresssQuiz = () => {
       id: 5,
       text: "What helps reduce stress in the long term?",
       choices: [
-        { id: 'a', text: 'Regular meditation or mindfulness' },
         { id: 'b', text: 'Avoiding all challenges' },
-        { id: 'c', text: 'Ignoring stress completely' }
+        { id: 'c', text: 'Ignoring stress completely' },
+        { id: 'a', text: 'Regular meditation or mindfulness' }
       ],
       correct: 'a',
       explanation: 'Regular meditation and mindfulness practices build resilience and help manage stress effectively over time!'
@@ -171,6 +171,7 @@ const StresssQuiz = () => {
   return (
     <GameShell
       title="Stress Quiz"
+      subtitle={!levelCompleted ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -181,6 +182,7 @@ const StresssQuiz = () => {
       gameType="brain"
       showGameOver={levelCompleted}
       maxScore={questions.length}
+      showConfetti={levelCompleted && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}

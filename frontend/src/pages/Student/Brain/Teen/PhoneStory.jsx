@@ -70,8 +70,8 @@ const PhoneStory = () => {
       id: 2,
       text: "What should you do with your phone before bedtime?",
       choices: [
-        { id: 'a', text: 'Put it away at least 1 hour before bed' },
         { id: 'b', text: 'Keep scrolling until you fall asleep' },
+        { id: 'a', text: 'Put it away at least 1 hour before bed' },
         { id: 'c', text: 'Use it right until bedtime' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const PhoneStory = () => {
       id: 3,
       text: "How do late-night phone notifications affect sleep?",
       choices: [
-        { id: 'a', text: 'They disrupt sleep and reduce rest quality' },
         { id: 'b', text: 'They help you sleep better' },
-        { id: 'c', text: 'They have no effect on sleep' }
+        { id: 'c', text: 'They have no effect on sleep' },
+        { id: 'a', text: 'They disrupt sleep and reduce rest quality' }
       ],
       correct: 'a',
       explanation: 'Late-night notifications disrupt sleep cycles, reduce deep sleep, and make you feel tired the next day!'
@@ -103,9 +103,9 @@ const PhoneStory = () => {
       id: 5,
       text: "Why is it important to limit phone use before sleep?",
       choices: [
-        { id: 'a', text: 'Blue light and stimulation interfere with natural sleep' },
         { id: 'b', text: 'It doesn\'t matter when you use your phone' },
-        { id: 'c', text: 'Phone use helps you sleep faster' }
+        { id: 'c', text: 'Phone use helps you sleep faster' },
+        { id: 'a', text: 'Blue light and stimulation interfere with natural sleep' }
       ],
       correct: 'a',
       explanation: 'Blue light from screens suppresses melatonin production and mental stimulation keeps your brain active, both interfering with natural sleep!'

@@ -1129,7 +1129,7 @@ export const getBrainTeenGames = (gameCompletionStatus) => {
           coins: 5,
           xp: 10,
           completed: gameCompletionStatus["brain-teens-77"] || false,
-          path: "/student/brain/teen/journal-of-balance",
+          path: "/student/brain/teen/journal-balancee",
           isSpecial: true,
           index: 76,
         },

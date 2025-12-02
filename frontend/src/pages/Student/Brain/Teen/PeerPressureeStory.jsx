@@ -70,8 +70,8 @@ const PeerPressureeStory = () => {
       id: 2,
       text: "Friends pressure you to skip homework. What should you do?",
       choices: [
-        { id: 'a', text: 'Say no politely and explain your priorities' },
         { id: 'b', text: 'Give in to fit in with the group' },
+        { id: 'a', text: 'Say no politely and explain your priorities' },
         { id: 'c', text: 'Avoid them completely' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const PeerPressureeStory = () => {
       id: 3,
       text: "Friends push you toward risky behavior. How do you respond?",
       choices: [
-        { id: 'a', text: 'Walk away and find better friends' },
         { id: 'b', text: 'Join in to be cool and accepted' },
-        { id: 'c', text: 'Stay but don\'t participate' }
+        { id: 'c', text: 'Stay but don\'t participate' },
+        { id: 'a', text: 'Walk away and find better friends' }
       ],
       correct: 'a',
       explanation: 'True friends respect your choices and safety. Walking away protects you and helps you find better friends!'
@@ -92,9 +92,9 @@ const PeerPressureeStory = () => {
       id: 4,
       text: "You're teased for being different. What's the best response?",
       choices: [
-        { id: 'a', text: 'Own your uniqueness with confidence' },
         { id: 'b', text: 'Change yourself to match others' },
-        { id: 'c', text: 'Hide your true self' }
+        { id: 'c', text: 'Hide your true self' },
+        { id: 'a', text: 'Own your uniqueness with confidence' }
       ],
       correct: 'a',
       explanation: 'Embracing your uniqueness builds confidence and helps you resist negative peer pressure!'
@@ -103,9 +103,9 @@ const PeerPressureeStory = () => {
       id: 5,
       text: "When facing peer pressure, should you seek help from a trusted adult?",
       choices: [
-        { id: 'a', text: 'Yes, adults can provide guidance and support' },
         { id: 'b', text: 'No, handle it alone to prove independence' },
-        { id: 'c', text: 'Only if it\'s a serious problem' }
+        { id: 'c', text: 'Only if it\'s a serious problem' },
+        { id: 'a', text: 'Yes, adults can provide guidance and support' }
       ],
       correct: 'a',
       explanation: 'Seeking help from trusted adults shows maturity and provides valuable guidance in difficult situations!'
@@ -171,6 +171,7 @@ const PeerPressureeStory = () => {
   return (
     <GameShell
       title="Peer Pressure Story"
+      subtitle={!levelCompleted ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -181,6 +182,7 @@ const PeerPressureeStory = () => {
       gameType="brain"
       showGameOver={levelCompleted}
       maxScore={questions.length}
+      showConfetti={levelCompleted && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}

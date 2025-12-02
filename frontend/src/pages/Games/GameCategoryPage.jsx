@@ -652,23 +652,12 @@ const GameCategoryPage = () => {
       socket.on('game-completed', handleGameCompletedSocket);
     }
 
-    // Refresh game completion status when page becomes visible again
-    // This ensures status is updated when user navigates back from a game
-    const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        // Small delay to ensure any pending state updates have completed
-        setTimeout(() => {
-          loadGameCompletionStatus();
-        }, 200);
-      }
-    };
-
-    document.addEventListener('visibilitychange', handleVisibilityChange);
+    // Removed visibilitychange event listener to prevent auto-refresh
+    // Status will be updated via game completion events and socket events instead
 
     return () => {
       window.removeEventListener("gameCompleted", handleGameCompleted);
       window.removeEventListener("gameReplayed", handleGameReplayedEvent);
-      document.removeEventListener('visibilitychange', handleVisibilityChange);
       if (socket) {
         socket.off('wallet:updated', handleWalletUpdate);
         socket.off('game-replayed', handleGameReplayedSocket);
@@ -1399,7 +1388,7 @@ const GameCategoryPage = () => {
       }
     }
 
-    // Special handling for financial literacy kids and teens games
+    // Special handling for all special games (finance, brain-health, UVLS, DCOS, etc.) with isSpecial=true
     if (game.isSpecial && game.path) {
       // Check if this is a replay
       const progress = gameProgressData[game.id];

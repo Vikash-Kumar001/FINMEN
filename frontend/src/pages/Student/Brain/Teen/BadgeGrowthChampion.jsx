@@ -94,6 +94,11 @@ const BadgeGrowthChampion = () => {
       question: "You fail at something. What should you do?",
       options: [
         { 
+          text: "Quit forever", 
+          emoji: "🚫", 
+          isCorrect: false
+        },
+        { 
           text: "Learn from it and try again", 
           emoji: "💪", 
           isCorrect: true
@@ -154,11 +159,6 @@ const BadgeGrowthChampion = () => {
       question: "What shows resilience?",
       options: [
         { 
-          text: "Bouncing back from setbacks and continuing", 
-          emoji: "🔥", 
-          isCorrect: true
-        },
-        { 
           text: "Giving up after failure", 
           emoji: "🚫", 
           isCorrect: false
@@ -172,6 +172,11 @@ const BadgeGrowthChampion = () => {
           text: "Quitting immediately", 
           emoji: "🏃", 
           isCorrect: false
+        },
+        { 
+          text: "Bouncing back from setbacks and continuing", 
+          emoji: "🔥", 
+          isCorrect: true
         }
       ]
     },
@@ -183,11 +188,6 @@ const BadgeGrowthChampion = () => {
       color: "bg-amber-500",
       question: "What defines a Growth Champion?",
       options: [
-        { 
-          text: "Embraces challenges, learns from failures, and never gives up", 
-          emoji: "🏆", 
-          isCorrect: true
-        },
         { 
           text: "Gives up easily", 
           emoji: "🚫", 
@@ -202,6 +202,11 @@ const BadgeGrowthChampion = () => {
           text: "Blames others for failures", 
           emoji: "👆", 
           isCorrect: false
+        },
+        { 
+          text: "Embraces challenges, learns from failures, and never gives up", 
+          emoji: "🏆", 
+          isCorrect: true
         }
       ]
     }

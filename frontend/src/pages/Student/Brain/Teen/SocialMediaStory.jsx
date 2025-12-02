@@ -1,12 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const SocialMediaStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -47,115 +46,198 @@ const SocialMediaStory = () => {
   }, [location.state, gameId]);
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({}); // Track answers for each question
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const questions = [
     {
       id: 1,
       text: "Taylor scrolls through social media while studying. Is this good for focus?",
-      choices: [
-        { id: 'yes', text: 'Yes' },
-        { id: 'no', text: 'No' },
-        { id: 'maybe', text: 'Maybe, depends on the person' }
-      ],
-      correct: 'no',
-      explanation: 'Multitasking with social media while studying significantly reduces focus and retention. It\'s best to study in a distraction-free environment!'
+      options: [
+        { 
+          id: "no", 
+          text: "No, it reduces focus", 
+          emoji: "❌", 
+          description: "Multitasking with social media while studying significantly reduces focus and retention",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes, it helps", 
+          emoji: "✅", 
+          description: "Social media actually distracts from studying and reduces learning",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe, depends on the person", 
+          emoji: "🤔", 
+          description: "Social media always distracts from effective studying",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
       text: "How does excessive social media use affect sleep quality?",
-      choices: [
-        { id: 'a', text: 'Improves sleep' },
-        { id: 'b', text: 'Disrupts sleep patterns' },
-        { id: 'c', text: 'Has no effect' }
-      ],
-      correct: 'b',
-      explanation: 'The blue light from screens and mental stimulation from social media can interfere with sleep quality and duration!'
+      options: [
+        { 
+          id: "a", 
+          text: "Improves sleep", 
+          emoji: "😴", 
+          description: "Screen time actually disrupts sleep patterns",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Disrupts sleep patterns", 
+          emoji: "🌙", 
+          description: "Blue light from screens and mental stimulation interfere with sleep quality and duration",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Has no effect", 
+          emoji: "➡️", 
+          description: "Social media use significantly affects sleep",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
       text: "What is the impact of social media comparison on mental health?",
-      choices: [
-        { id: 'a', text: 'Boosts self-esteem' },
-        { id: 'b', text: 'Can lead to anxiety and depression' },
-        { id: 'c', text: 'Only affects adults' }
-      ],
-      correct: 'b',
-      explanation: 'Constant comparison with others on social media can negatively impact self-esteem and contribute to anxiety and depression!'
+      options: [
+        { 
+          id: "b", 
+          text: "Can lead to anxiety and depression", 
+          emoji: "😰", 
+          description: "Constant comparison with others on social media can negatively impact self-esteem and contribute to anxiety and depression",
+          isCorrect: true
+        },
+        { 
+          id: "a", 
+          text: "Boosts self-esteem", 
+          emoji: "📈", 
+          description: "Comparison typically harms self-esteem, not boosts it",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Only affects adults", 
+          emoji: "👤", 
+          description: "Social media affects people of all ages, especially teens",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
       text: "What is a healthy approach to social media usage?",
-      choices: [
-        { id: 'a', text: 'Unlimited scrolling anytime' },
-        { id: 'b', text: 'Set time limits and take breaks' },
-        { id: 'c', text: 'Avoid it completely' }
-      ],
-      correct: 'b',
-      explanation: 'Setting time limits and taking regular breaks helps maintain a healthy relationship with social media while preserving mental well-being!'
+      options: [
+        { 
+          id: "a", 
+          text: "Unlimited scrolling anytime", 
+          emoji: "📱", 
+          description: "Unlimited use can lead to addiction and negative effects",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Avoid it completely", 
+          emoji: "🚫", 
+          description: "Complete avoidance isn't necessary - moderation is key",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Set time limits and take breaks", 
+          emoji: "⏰", 
+          description: "Setting time limits and taking regular breaks helps maintain a healthy relationship with social media while preserving mental well-being",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 5,
       text: "How does social media affect face-to-face communication skills?",
-      choices: [
-        { id: 'a', text: 'Improves communication skills' },
-        { id: 'b', text: 'Can reduce empathy and social skills' },
-        { id: 'c', text: 'Only affects older people' }
-      ],
-      correct: 'b',
-      explanation: 'Over-reliance on digital communication can reduce empathy and face-to-face social skills, especially in teens still developing these abilities!'
+      options: [
+        { 
+          id: "a", 
+          text: "Improves communication skills", 
+          emoji: "💬", 
+          description: "Over-reliance on digital communication can reduce real-world skills",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Only affects older people", 
+          emoji: "👴", 
+          description: "Social media affects all age groups, especially developing teens",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Can reduce empathy and social skills", 
+          emoji: "🤝", 
+          description: "Over-reliance on digital communication can reduce empathy and face-to-face social skills, especially in teens still developing these abilities",
+          isCorrect: true
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
     
-    // Auto-advance to next question after delay
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(currentQuestion + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
-        setFeedbackType(null);
-      } else {
-        setLevelCompleted(true);
-      }
-    }, 1500);
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (levelCompleted) {
-      console.log(`🎮 Social Media Story game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (showResult) {
+      console.log(`🎮 Social Media Story game completed! Score: ${finalScore}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -166,69 +248,93 @@ const SocialMediaStory = () => {
         }, '');
       }
     }
-  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, questions.length]);
-
-  const currentQuestionData = questions[currentQuestion];
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell
       title="Social Media Story"
-      score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      score={coins}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult && finalScore >= 3}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
-        {!levelCompleted && currentQuestionData ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-            <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
-              {currentQuestionData.text}
-            </p>
-            
-            <div className="space-y-3 md:space-y-4">
-              {currentQuestionData.choices.map((choice) => {
-                const isSelected = selectedOption === choice.id;
-                const showCorrect = showFeedback && choice.id === questions[currentQuestion].correct;
-                const showIncorrect = showFeedback && isSelected && !showCorrect;
-                
-                return (
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
                   <button
-                    key={choice.id}
-                    onClick={() => handleOptionSelect(choice.id)}
-                    disabled={!!selectedOption}
-                    className={`w-full p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
-                      showCorrect
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
-                        : showIncorrect
-                        ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
-                        : isSelected
-                        ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
-                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                    } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <div className="text-white font-bold text-sm md:text-base">{choice.text}</div>
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
-            
-            {showFeedback && feedbackType === "wrong" && (
-              <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
-                <p>💡 {currentQuestionData.explanation}</p>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You're learning how social media affects focus!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  You understand that social media can distract from studying, disrupt sleep, and impact mental health when used excessively!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, social media can distract from studying and affect sleep and mental health!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to identify how social media affects focus, sleep, and mental well-being.
+                </p>
               </div>
             )}
           </div>
-        ) : null}
+        )}
       </div>
     </GameShell>
   );

@@ -71,8 +71,8 @@ const ReflexStressCheck = () => {
       id: 2,
       text: "Which action helps reduce stress quickly?",
       options: [
-        { id: "breathe", text: "Deep Breathing", emoji: "🌬️", description: "Activates relaxation response", isCorrect: true },
         { id: "ignore", text: "Ignore Feelings", emoji: "🙈", description: "Bottles up stress", isCorrect: false },
+        { id: "breathe", text: "Deep Breathing", emoji: "🌬️", description: "Activates relaxation response", isCorrect: true },
         { id: "complain", text: "Complain", emoji: "😠", description: "Increases negative emotions", isCorrect: false },
         { id: "isolate", text: "Isolate Yourself", emoji: "🚶", description: "Reduces support", isCorrect: false }
       ]
@@ -81,9 +81,9 @@ const ReflexStressCheck = () => {
       id: 3,
       text: "What helps manage stress effectively?",
       options: [
-        { id: "stretch", text: "Stretch", emoji: "🤸", description: "Releases muscle tension", isCorrect: true },
         { id: "clench", text: "Clench Fists", emoji: "✊", description: "Increases tension", isCorrect: false },
         { id: "tense", text: "Tense Up", emoji: "💪", description: "Creates more stress", isCorrect: false },
+        { id: "stretch", text: "Stretch", emoji: "🤸", description: "Releases muscle tension", isCorrect: true },
         { id: "freeze", text: "Freeze", emoji: "❄️", description: "Paralyzes response", isCorrect: false }
       ]
     },
@@ -91,10 +91,10 @@ const ReflexStressCheck = () => {
       id: 4,
       text: "Which activity reduces stress?",
       options: [
-        { id: "laugh", text: "Laugh", emoji: "😂", description: "Boosts mood and lowers stress", isCorrect: true },
         { id: "frown", text: "Frown", emoji: "😠", description: "Increases negative feelings", isCorrect: false },
         { id: "cry", text: "Cry Alone", emoji: "😢", description: "Can increase isolation", isCorrect: false },
-        { id: "sulk", text: "Sulk", emoji: "😔", description: "Maintains negative state", isCorrect: false }
+        { id: "sulk", text: "Sulk", emoji: "😔", description: "Maintains negative state", isCorrect: false },
+        { id: "laugh", text: "Laugh", emoji: "😂", description: "Boosts mood and lowers stress", isCorrect: true }
       ]
     },
     {
@@ -111,7 +111,12 @@ const ReflexStressCheck = () => {
 
   // Timer effect
   useEffect(() => {
-    if (answered || showResult) return;
+    if (answered || showResult) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      return;
+    }
 
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
@@ -197,6 +202,7 @@ const ReflexStressCheck = () => {
   return (
     <GameShell
       title="Reflex Stress Check"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Check Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -207,6 +213,7 @@ const ReflexStressCheck = () => {
       gameType="brain"
       showGameOver={showResult}
       maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}

@@ -63,19 +63,19 @@ const PuzzleInnovators = () => {
 
   // Right items (innovations) - manually ordered for varied correct positions
   const rightItems = [
-    { id: 1, text: "Plane", emoji: "✈️" }, // Matches with "Wright Brothers"
-    { id: 2, text: "Bulb", emoji: "💡" }, // Matches with "Thomas Edison"
-    { id: 3, text: "Radium", emoji: "⚛️" }, // Matches with "Marie Curie"
-    { id: 4, text: "iPhone", emoji: "📱" }, // Matches with "Steve Jobs"
-    { id: 5, text: "Relativity", emoji: "🌌" } // Matches with "Einstein"
+    { id: 2, text: "Bulb", emoji: "💡" }, // Matches with "Thomas Edison" (position 1)
+    { id: 3, text: "Radium", emoji: "⚛️" }, // Matches with "Marie Curie" (position 2)
+    { id: 4, text: "iPhone", emoji: "📱" }, // Matches with "Steve Jobs" (position 3)
+    { id: 5, text: "Relativity", emoji: "🌌" }, // Matches with "Einstein" (position 4)
+    { id: 1, text: "Plane", emoji: "✈️" } // Matches with "Wright Brothers" (position 5)
   ];
 
   const correctPairs = {
-    1: 1, // Wright Brothers → Plane
-    2: 2, // Thomas Edison → Bulb
-    3: 3, // Marie Curie → Radium
-    4: 4, // Steve Jobs → iPhone
-    5: 5  // Einstein → Relativity
+    1: 1, // Wright Brothers → Plane (now at position 5)
+    2: 2, // Thomas Edison → Bulb (now at position 1)
+    3: 3, // Marie Curie → Radium (now at position 2)
+    4: 4, // Steve Jobs → iPhone (now at position 3)
+    5: 5  // Einstein → Relativity (now at position 4)
   };
 
   const handleLeftClick = (leftId) => {

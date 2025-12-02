@@ -71,8 +71,8 @@ const ReflexSmartRest = () => {
       id: 2,
       text: "Which action promotes smart rest?",
       options: [
-        { id: "short", text: "Short Breaks During Study", emoji: "⏸️", description: "Regular rest intervals", isCorrect: true },
         { id: "continuous", text: "Study Continuously", emoji: "📚", description: "No breaks at all", isCorrect: false },
+        { id: "short", text: "Short Breaks During Study", emoji: "⏸️", description: "Regular rest intervals", isCorrect: true },
         { id: "push", text: "Push Through Exhaustion", emoji: "💪", description: "Ignore tiredness", isCorrect: false },
         { id: "skip", text: "Skip All Breaks", emoji: "🚫", description: "No rest time", isCorrect: false }
       ]
@@ -81,10 +81,10 @@ const ReflexSmartRest = () => {
       id: 3,
       text: "What's the smart way to handle fatigue?",
       options: [
-        { id: "rest", text: "Take Rest When Needed", emoji: "🧘", description: "Listen to your body", isCorrect: true },
         { id: "ignore", text: "Ignore Fatigue Signs", emoji: "😐", description: "Push through it", isCorrect: false },
         { id: "caffeine", text: "Rely Only on Caffeine", emoji: "☕", description: "Mask tiredness", isCorrect: false },
-        { id: "work", text: "Work Until Collapse", emoji: "💀", description: "No limits", isCorrect: false }
+        { id: "work", text: "Work Until Collapse", emoji: "💀", description: "No limits", isCorrect: false },
+        { id: "rest", text: "Take Rest When Needed", emoji: "🧘", description: "Listen to your body", isCorrect: true }
       ]
     },
     {
@@ -101,10 +101,10 @@ const ReflexSmartRest = () => {
       id: 5,
       text: "What helps maintain productivity and well-being?",
       options: [
-        { id: "balance", text: "Balance Work and Rest", emoji: "⚖️", description: "Sustainable approach", isCorrect: true },
         { id: "workonly", text: "Work Without Rest", emoji: "💼", description: "Burnout risk", isCorrect: false },
         { id: "restonly", text: "Rest Without Work", emoji: "🛋️", description: "No productivity", isCorrect: false },
-        { id: "extreme", text: "Extreme Work or Rest", emoji: "🌊", description: "Unbalanced approach", isCorrect: false }
+        { id: "extreme", text: "Extreme Work or Rest", emoji: "🌊", description: "Unbalanced approach", isCorrect: false },
+        { id: "balance", text: "Balance Work and Rest", emoji: "⚖️", description: "Sustainable approach", isCorrect: true }
       ]
     }
   ];

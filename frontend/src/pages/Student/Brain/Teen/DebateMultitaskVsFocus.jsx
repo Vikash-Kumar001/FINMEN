@@ -1,12 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const DebateMultitaskVsFocus = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -47,117 +46,198 @@ const DebateMultitaskVsFocus = () => {
   }, [location.state, gameId]);
   
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedbackType, setFeedbackType] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
-  const [answers, setAnswers] = useState({});
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const debateTopics = [
     {
       id: 1,
-      question: "Is multitasking effective for productivity?",
+      text: "Is multitasking effective for productivity?",
       options: [
-        { id: 'yes', text: 'Yes, multitasking is effective' },
-        { id: 'no', text: 'No, focus on one task' },
-        { id: 'sometimes', text: 'Sometimes it depends' }
-      ],
-      correct: "no",
-      explanation: "Research shows that multitasking actually reduces productivity by up to 40%. Focusing on one task at a time (single-tasking) is much more effective!"
+        { 
+          id: "no", 
+          text: "No, focus on one task", 
+          emoji: "🎯", 
+          description: "Research shows multitasking reduces productivity by up to 40%. Single-tasking is much more effective",
+          isCorrect: true
+        },
+        { 
+          id: "yes", 
+          text: "Yes, multitasking is effective", 
+          emoji: "📱", 
+          description: "Multitasking actually decreases productivity and increases errors",
+          isCorrect: false
+        },
+        { 
+          id: "sometimes", 
+          text: "Sometimes it depends", 
+          emoji: "🤔", 
+          description: "Multitasking consistently reduces efficiency regardless of task type",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      question: "Is it better to study with background music or in silence?",
+      text: "Is it better to study with background music or in silence?",
       options: [
-        { id: 'music', text: 'Music helps with studying' },
-        { id: 'silence', text: 'Silence is better for focus' },
-        { id: 'depends', text: 'Depends on the type of music' }
-      ],
-      correct: "depends",
-      explanation: "The effectiveness of background music depends on the type of music and task. Instrumental music can help with repetitive tasks, but lyrical music can interfere with reading comprehension!"
+        { 
+          id: "music", 
+          text: "Music helps with studying", 
+          emoji: "🎵", 
+          description: "Music doesn't always help - it depends on the task and music type",
+          isCorrect: false
+        },
+        { 
+          id: "depends", 
+          text: "Depends on the type of music", 
+          emoji: "🎧", 
+          description: "Instrumental music can help with repetitive tasks, but lyrical music can interfere with reading comprehension",
+          isCorrect: true
+        },
+        { 
+          id: "silence", 
+          text: "Silence is better for focus", 
+          emoji: "🔇", 
+          description: "Silence is good, but some music types can be beneficial for certain tasks",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      question: "Should you study the same subject for hours or switch subjects?",
+      text: "Should you study the same subject for hours or switch subjects?",
       options: [
-        { id: 'same', text: 'Study same subject for hours' },
-        { id: 'switch', text: 'Switch between different subjects' },
-        { id: 'either', text: 'Either approach works equally well' }
-      ],
-      correct: "switch",
-      explanation: "Switching between different subjects (interleaving) can improve learning and retention. It helps strengthen memory connections and enhances problem-solving skills by varying the types of material!"
+        { 
+          id: "same", 
+          text: "Study same subject for hours", 
+          emoji: "📚", 
+          description: "Focusing on one subject can be limiting - switching improves learning",
+          isCorrect: false
+        },
+        { 
+          id: "either", 
+          text: "Either approach works equally well", 
+          emoji: "⚖️", 
+          description: "Switching subjects is more effective than studying the same subject",
+          isCorrect: false
+        },
+        { 
+          id: "switch", 
+          text: "Switch between different subjects", 
+          emoji: "🔄", 
+          description: "Switching between subjects (interleaving) improves learning and retention by strengthening memory connections",
+          isCorrect: true
+        }
+      ]
     },
     {
       id: 4,
-      question: "Is it better to take short breaks or study for long periods?",
+      text: "Is it better to take short breaks or study for long periods?",
       options: [
-        { id: 'short', text: 'Take frequent short breaks' },
-        { id: 'long', text: 'Study for long periods without breaks' },
-        { id: 'no', text: 'Don\'t take any breaks at all' }
-      ],
-      correct: "short",
-      explanation: "Taking frequent short breaks during study sessions improves focus and prevents mental fatigue. The brain needs rest periods to consolidate information and maintain optimal performance!"
+        { 
+          id: "short", 
+          text: "Take frequent short breaks", 
+          emoji: "☕", 
+          description: "Short breaks improve focus and prevent mental fatigue, helping the brain consolidate information",
+          isCorrect: true
+        },
+        { 
+          id: "long", 
+          text: "Study for long periods without breaks", 
+          emoji: "⏰", 
+          description: "Long sessions without breaks lead to mental fatigue and reduced retention",
+          isCorrect: false
+        },
+        { 
+          id: "no", 
+          text: "Don't take any breaks at all", 
+          emoji: "🚫", 
+          description: "Breaks are essential for maintaining focus and learning",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      question: "Is digital note-taking or handwriting more effective for learning?",
+      text: "Is digital note-taking or handwriting more effective for learning?",
       options: [
-        { id: 'digital', text: 'Digital note-taking is more effective' },
-        { id: 'hand', text: 'Handwriting notes is more effective' },
-        { id: 'both', text: 'Both methods work equally well' }
-      ],
-      correct: "hand",
-      explanation: "Handwriting notes is more effective for learning because it engages the brain more actively. The slower pace of writing forces you to process and summarize information, leading to better retention!"
+        { 
+          id: "digital", 
+          text: "Digital note-taking is more effective", 
+          emoji: "💻", 
+          description: "Digital notes are convenient but less effective for learning than handwriting",
+          isCorrect: false
+        },
+        { 
+          id: "both", 
+          text: "Both methods work equally well", 
+          emoji: "⚖️", 
+          description: "Handwriting is more effective for learning than digital note-taking",
+          isCorrect: false
+        },
+        { 
+          id: "hand", 
+          text: "Handwriting notes is more effective", 
+          emoji: "✍️", 
+          description: "Handwriting engages the brain more actively, forcing you to process and summarize information for better retention",
+          isCorrect: true
+        }
+      ]
     }
   ];
 
-  const currentTopic = debateTopics[currentQuestion];
-
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || levelCompleted) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: debateTopics[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: debateTopics[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setSelectedOption(optionId);
-    const isCorrect = optionId === currentTopic.correct;
-    setFeedbackType(isCorrect ? "correct" : "wrong");
-    setShowFeedback(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = debateTopics[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
     
-    // Auto-move to next question or complete after delay
-    setTimeout(() => {
-      setShowFeedback(false);
-      setSelectedOption(null);
-      
-      if (currentQuestion < debateTopics.length - 1) {
+    // Move to next question or show results
+    if (currentQuestion < debateTopics.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-      } else {
-        setLevelCompleted(true);
-      }
-    }, 1500);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const getCurrentQuestion = () => debateTopics[currentQuestion];
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {
-    if (levelCompleted) {
-      console.log(`🎮 Debate: Multitask vs Focus game completed! Score: ${score}/${debateTopics.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+    if (showResult) {
+      console.log(`🎮 Debate: Multitask vs Focus game completed! Score: ${finalScore}/${debateTopics.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
       
       // Update location state with nextGameId for GameOverModal
       if (nextGameId && window.history && window.history.replaceState) {
@@ -168,69 +248,95 @@ const DebateMultitaskVsFocus = () => {
         }, '');
       }
     }
-  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, debateTopics.length]);
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, debateTopics.length]);
 
   return (
     <GameShell
       title="Debate: Multitask vs Focus"
-      score={score}
-      currentLevel={currentQuestion + 1}
-      totalLevels={debateTopics.length}
+      score={coins}
+      subtitle={showResult ? "Debate Complete!" : `Topic ${currentQuestion + 1} of ${debateTopics.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="brain"
-      showGameOver={levelCompleted}
-      maxScore={debateTopics.length}
+      totalLevels={debateTopics.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={debateTopics.length}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
-        {!levelCompleted && currentTopic ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-            <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 text-center">Debate Topic</h3>
-            <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
-              <p className="text-base md:text-lg lg:text-xl font-semibold text-white text-center">"{currentTopic.question}"</p>
-            </div>
-            
-            <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
-              <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Choose your position:</h4>
-              {currentTopic.options.map((option) => {
-                const isSelected = selectedOption === option.id;
-                const showCorrect = showFeedback && option.id === currentTopic.correct;
-                const showIncorrect = showFeedback && isSelected && !showCorrect;
-                
-                return (
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
+        {!showResult ? (
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Topic {currentQuestion + 1}/{debateTopics.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {coins}/{debateTopics.length}</span>
+              </div>
+              
+              <h3 className="text-lg md:text-xl lg:text-2xl font-bold text-white mb-4 md:mb-6 text-center">Debate Topic</h3>
+              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
+                <p className="text-base md:text-lg lg:text-xl font-semibold text-white text-center">"{getCurrentQuestion().text}"</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
                   <button
                     key={option.id}
-                    onClick={() => handleOptionSelect(option.id)}
-                    disabled={!!selectedOption}
-                    className={`w-full p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
-                      showCorrect
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
-                        : showIncorrect
-                        ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
-                        : isSelected
-                        ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
-                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                    } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-4 md:p-6 rounded-xl md:rounded-2xl text-base md:text-lg font-semibold transition-all transform hover:scale-105"
                   >
-                    <div className="text-white font-bold text-sm md:text-base">{option.text}</div>
+                    <div className="text-2xl md:text-3xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-base md:text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
                   </button>
-                );
-              })}
+                ))}
+              </div>
             </div>
-            
-            {showFeedback && feedbackType === "wrong" && (
-              <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
-                <p>💡 {currentTopic.explanation}</p>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Excellent Debate!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {debateTopics.length} topics correct!
+                  You understand the effectiveness of focus vs multitasking!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  You know that single-tasking, strategic breaks, and handwriting notes improve learning and productivity!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {debateTopics.length} topics correct.
+                  Remember, focus and single-tasking are more effective than multitasking!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to identify which study techniques and approaches improve focus and productivity.
+                </p>
               </div>
             )}
           </div>
-        ) : null}
+        )}
       </div>
     </GameShell>
   );

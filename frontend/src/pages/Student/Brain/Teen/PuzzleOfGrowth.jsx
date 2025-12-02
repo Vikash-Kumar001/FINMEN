@@ -63,19 +63,19 @@ const PuzzleOfGrowth = () => {
 
   // Right items (outcomes) - manually ordered for varied correct positions
   const rightItems = [
-    { id: 1, text: "Success", emoji: "✅" }, // Matches with "Effort"
-    { id: 2, text: "Failure", emoji: "❌" }, // Matches with "Giving Up"
-    { id: 3, text: "Improvement", emoji: "📈" }, // Matches with "Practice"
-    { id: 4, text: "Growth", emoji: "🌱" }, // Matches with "Learning"
-    { id: 5, text: "Achievement", emoji: "🏆" } // Matches with "Persistence"
+    { id: 2, text: "Failure", emoji: "❌" }, // Matches with "Giving Up" (position 1)
+    { id: 3, text: "Improvement", emoji: "📈" }, // Matches with "Practice" (position 2)
+    { id: 4, text: "Growth", emoji: "🌱" }, // Matches with "Learning" (position 3)
+    { id: 5, text: "Achievement", emoji: "🏆" }, // Matches with "Persistence" (position 4)
+    { id: 1, text: "Success", emoji: "✅" } // Matches with "Effort" (position 5)
   ];
 
   const correctPairs = {
-    1: 1, // Effort → Success
-    2: 2, // Giving Up → Failure
-    3: 3, // Practice → Improvement
-    4: 4, // Learning → Growth
-    5: 5  // Persistence → Achievement
+    1: 1, // Effort → Success (now at position 5)
+    2: 2, // Giving Up → Failure (now at position 1)
+    3: 3, // Practice → Improvement (now at position 2)
+    4: 4, // Learning → Growth (now at position 3)
+    5: 5  // Persistence → Achievement (now at position 4)
   };
 
   const handleLeftClick = (leftId) => {

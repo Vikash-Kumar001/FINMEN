@@ -71,8 +71,8 @@ const ReflexEmotionControl = () => {
       id: 2,
       text: "Which action helps control emotions?",
       options: [
-        { id: "breathe", text: "Deep Breathing", emoji: "🌬️", description: "Regulates emotional response", isCorrect: true },
         { id: "isolate", text: "Isolate Yourself", emoji: "🚶", description: "Reduces support", isCorrect: false },
+        { id: "breathe", text: "Deep Breathing", emoji: "🌬️", description: "Regulates emotional response", isCorrect: true },
         { id: "panic", text: "Panic", emoji: "😱", description: "Amplifies emotions", isCorrect: false },
         { id: "freeze", text: "Freeze", emoji: "❄️", description: "Paralyzes response", isCorrect: false }
       ]
@@ -81,10 +81,10 @@ const ReflexEmotionControl = () => {
       id: 3,
       text: "What helps manage strong emotions?",
       options: [
-        { id: "pause", text: "Pause & Reflect", emoji: "⏸️🧠", description: "Prevents impulsive actions", isCorrect: true },
         { id: "impulse", text: "Act Impulsively", emoji: "⚡", description: "Leads to regret", isCorrect: false },
         { id: "react", text: "React Immediately", emoji: "🔥", description: "Often makes things worse", isCorrect: false },
-        { id: "rush", text: "Rush Into Action", emoji: "🏃", description: "No time to think", isCorrect: false }
+        { id: "rush", text: "Rush Into Action", emoji: "🏃", description: "No time to think", isCorrect: false },
+        { id: "pause", text: "Pause & Reflect", emoji: "⏸️🧠", description: "Prevents impulsive actions", isCorrect: true }
       ]
     },
     {
@@ -101,17 +101,22 @@ const ReflexEmotionControl = () => {
       id: 5,
       text: "What helps when feeling anxious?",
       options: [
-        { id: "grounding", text: "Grounding Exercise", emoji: "🌍", description: "Brings you to present moment", isCorrect: true },
         { id: "worry", text: "Worry Loop", emoji: "🔄😟", description: "Amplifies anxiety", isCorrect: false },
         { id: "avoid", text: "Avoid Everything", emoji: "🏃", description: "Limits life experiences", isCorrect: false },
-        { id: "panic", text: "Panic", emoji: "😱", description: "Increases stress", isCorrect: false }
+        { id: "panic", text: "Panic", emoji: "😱", description: "Increases stress", isCorrect: false },
+        { id: "grounding", text: "Grounding Exercise", emoji: "🌍", description: "Brings you to present moment", isCorrect: true }
       ]
     }
   ];
 
   // Timer effect
   useEffect(() => {
-    if (answered || showResult) return;
+    if (answered || showResult) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      return;
+    }
 
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
@@ -197,6 +202,7 @@ const ReflexEmotionControl = () => {
   return (
     <GameShell
       title="Reflex Emotion Control"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Reflex Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -207,6 +213,7 @@ const ReflexEmotionControl = () => {
       gameType="brain"
       showGameOver={showResult}
       maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}

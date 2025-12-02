@@ -71,8 +71,8 @@ const ReflexRestHabits = () => {
       id: 2,
       text: "Which sleep habit is healthy?",
       options: [
-        { id: "routine", text: "Regular Bedtime Routine", emoji: "🛏️", description: "Consistent sleep schedule", isCorrect: true },
         { id: "late", text: "Sleep Very Late", emoji: "🌃", description: "Irregular timing", isCorrect: false },
+        { id: "routine", text: "Regular Bedtime Routine", emoji: "🛏️", description: "Consistent sleep schedule", isCorrect: true },
         { id: "random", text: "Random Sleep Times", emoji: "🎲", description: "No schedule", isCorrect: false },
         { id: "skip", text: "Skip Sleep Often", emoji: "😴", description: "Insufficient rest", isCorrect: false }
       ]
@@ -81,10 +81,10 @@ const ReflexRestHabits = () => {
       id: 3,
       text: "What helps you get better sleep?",
       options: [
-        { id: "screen", text: "Turn Off Screens Before Bed", emoji: "📱", description: "Reduces blue light", isCorrect: true },
         { id: "phone", text: "Use Phone Until Sleep", emoji: "📲", description: "Disrupts sleep", isCorrect: false },
         { id: "bright", text: "Bright Lights Before Bed", emoji: "💡", description: "Interferes with sleep", isCorrect: false },
-        { id: "caffeine", text: "Drink Caffeine Late", emoji: "☕", description: "Keeps you awake", isCorrect: false }
+        { id: "caffeine", text: "Drink Caffeine Late", emoji: "☕", description: "Keeps you awake", isCorrect: false },
+        { id: "screen", text: "Turn Off Screens Before Bed", emoji: "📱", description: "Reduces blue light", isCorrect: true }
       ]
     },
     {

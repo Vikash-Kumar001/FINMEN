@@ -71,9 +71,9 @@ const SimulationStudyyPlan = () => {
       id: 2,
       text: "What's the best study plan for exam preparation?",
       options: [
-        { id: 'spaced', text: 'Spaced sessions over weeks', description: 'Distributed learning' },
         { id: 'allnight', text: 'All-nighters before exam', description: 'Last-minute cramming' },
         { id: 'ignore', text: 'Ignore difficult topics', description: 'Avoid challenges' },
+        { id: 'spaced', text: 'Spaced sessions over weeks', description: 'Distributed learning' },
         { id: 'copy', text: 'Copy friend\'s notes', description: 'Passive learning' }
       ],
       correct: 'spaced',
@@ -83,10 +83,10 @@ const SimulationStudyyPlan = () => {
       id: 3,
       text: "Should you include breaks in your study plan?",
       options: [
-        { id: 'yes', text: 'Yes, regular breaks', description: 'Prevent burnout' },
         { id: 'no', text: 'No breaks needed', description: 'Study continuously' },
         { id: 'long', text: 'One long break only', description: 'Minimal rest' },
-        { id: 'skip', text: 'Skip studying entirely', description: 'No preparation' }
+        { id: 'skip', text: 'Skip studying entirely', description: 'No preparation' },
+        { id: 'yes', text: 'Yes, regular breaks', description: 'Prevent burnout' }
       ],
       correct: 'yes',
       explanation: 'Regular breaks prevent mental fatigue, maintain focus, and improve overall study effectiveness!'
@@ -95,8 +95,8 @@ const SimulationStudyyPlan = () => {
       id: 4,
       text: "How should you prioritize subjects in your study plan?",
       options: [
-        { id: 'weak', text: 'Focus on weak areas', description: 'Address challenges' },
         { id: 'easy', text: 'Only easy subjects', description: 'Avoid difficulty' },
+        { id: 'weak', text: 'Focus on weak areas', description: 'Address challenges' },
         { id: 'ignore', text: 'Ignore all subjects', description: 'No preparation' },
         { id: 'random', text: 'Study randomly', description: 'No structure' }
       ],
@@ -107,10 +107,10 @@ const SimulationStudyyPlan = () => {
       id: 5,
       text: "Should you track progress in your study plan?",
       options: [
-        { id: 'track', text: 'Yes, with goals', description: 'Monitor progress' },
         { id: 'no', text: 'No tracking needed', description: 'Study without goals' },
         { id: 'guess', text: 'Guess your progress', description: 'No measurement' },
-        { id: 'ignore', text: 'Ignore progress', description: 'No awareness' }
+        { id: 'ignore', text: 'Ignore progress', description: 'No awareness' },
+        { id: 'track', text: 'Yes, with goals', description: 'Monitor progress' }
       ],
       correct: 'track',
       explanation: 'Tracking progress with specific goals helps you stay motivated, identify areas needing more attention, and adjust your plan accordingly!'

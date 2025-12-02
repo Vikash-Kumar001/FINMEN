@@ -71,8 +71,8 @@ const ReflexHealthyCalm = () => {
       id: 2,
       text: "Which action promotes healthy calm?",
       options: [
-        { id: "tea", text: "Tea Time", emoji: "🍵", description: "Herbal tea soothes nerves", isCorrect: true },
         { id: "energy", text: "Energy Drinks", emoji: "⚡🥤", description: "Can increase anxiety", isCorrect: false },
+        { id: "tea", text: "Tea Time", emoji: "🍵", description: "Herbal tea soothes nerves", isCorrect: true },
         { id: "caffeine", text: "Excess Caffeine", emoji: "☕", description: "Can cause jitters", isCorrect: false },
         { id: "sugar", text: "Sugar Rush", emoji: "🍬", description: "Temporary, then crash", isCorrect: false }
       ]
@@ -81,10 +81,10 @@ const ReflexHealthyCalm = () => {
       id: 3,
       text: "What helps maintain calm?",
       options: [
-        { id: "mindful", text: "Mindful Walk", emoji: "🚶🧠", description: "Grounds you in the present", isCorrect: true },
         { id: "rush", text: "Rush Around", emoji: "🏃‍♂️💨", description: "Increases stress", isCorrect: false },
         { id: "panic", text: "Panic", emoji: "😱", description: "Triggers fight-or-flight", isCorrect: false },
-        { id: "worry", text: "Worry Constantly", emoji: "😟", description: "Maintains anxiety", isCorrect: false }
+        { id: "worry", text: "Worry Constantly", emoji: "😟", description: "Maintains anxiety", isCorrect: false },
+        { id: "mindful", text: "Mindful Walk", emoji: "🚶🧠", description: "Grounds you in the present", isCorrect: true }
       ]
     },
     {
@@ -101,17 +101,22 @@ const ReflexHealthyCalm = () => {
       id: 5,
       text: "What promotes calm habits?",
       options: [
-        { id: "sleep", text: "Routine Sleep", emoji: "🛌", description: "Regulates stress hormones", isCorrect: true },
         { id: "late", text: "Late Nights", emoji: "🌙", description: "Disrupts circadian rhythm", isCorrect: false },
         { id: "irregular", text: "Irregular Sleep", emoji: "😴", description: "Increases stress", isCorrect: false },
-        { id: "skip", text: "Skip Sleep", emoji: "🚫", description: "Impairs recovery", isCorrect: false }
+        { id: "skip", text: "Skip Sleep", emoji: "🚫", description: "Impairs recovery", isCorrect: false },
+        { id: "sleep", text: "Routine Sleep", emoji: "🛌", description: "Regulates stress hormones", isCorrect: true }
       ]
     }
   ];
 
   // Timer effect
   useEffect(() => {
-    if (answered || showResult) return;
+    if (answered || showResult) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+      return;
+    }
 
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
@@ -197,6 +202,7 @@ const ReflexHealthyCalm = () => {
   return (
     <GameShell
       title="Reflex Healthy Calm"
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Reflex Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -207,6 +213,7 @@ const ReflexHealthyCalm = () => {
       gameType="brain"
       showGameOver={showResult}
       maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}

@@ -53,7 +53,6 @@ const SimulationStudyPlan = () => {
   const [feedbackType, setFeedbackType] = useState(null);
   const [score, setScore] = useState(0);
   const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
   const [answers, setAnswers] = useState({});
 
   const questions = [
@@ -90,14 +89,14 @@ const SimulationStudyPlan = () => {
       text: "You're feeling overwhelmed with assignments. What's the best approach?",
       options: [
         { 
-          id: 'breakdown', 
-          text: 'Break tasks into smaller parts', 
-          description: 'Create manageable chunks' 
-        },
-        { 
           id: 'procrastinate', 
           text: 'Procrastinate and do last minute', 
           description: 'Delay work until deadline' 
+        },
+        { 
+          id: 'breakdown', 
+          text: 'Break tasks into smaller parts', 
+          description: 'Create manageable chunks' 
         },
         { 
           id: 'panic', 
@@ -118,11 +117,6 @@ const SimulationStudyPlan = () => {
       text: "During exam week, how should you manage your time?",
       options: [
         { 
-          id: 'schedule', 
-          text: 'Create study schedule', 
-          description: 'Plan study sessions in advance' 
-        },
-        { 
           id: 'cram', 
           text: 'Cram all night before', 
           description: 'Study intensively at last minute' 
@@ -131,6 +125,11 @@ const SimulationStudyPlan = () => {
           id: 'random', 
           text: 'Study randomly when you feel like it', 
           description: 'No structured approach' 
+        },
+        { 
+          id: 'schedule', 
+          text: 'Create study schedule', 
+          description: 'Plan study sessions in advance' 
         },
         { 
           id: 'skip', 
@@ -146,11 +145,6 @@ const SimulationStudyPlan = () => {
       text: "You've been studying for 90 minutes straight. What should you do?",
       options: [
         { 
-          id: 'break', 
-          text: 'Take a 10-minute break', 
-          description: 'Rest to refresh your mind' 
-        },
-        { 
           id: 'continue', 
           text: 'Keep studying without break', 
           description: 'Push through fatigue' 
@@ -164,6 +158,11 @@ const SimulationStudyPlan = () => {
           id: 'snack', 
           text: 'Eat sugary snacks for energy', 
           description: 'Quick energy boost' 
+        },
+        { 
+          id: 'break', 
+          text: 'Take a 10-minute break', 
+          description: 'Rest to refresh your mind' 
         }
       ],
       correct: "break",
@@ -275,18 +274,24 @@ const SimulationStudyPlan = () => {
     >
       <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
         {!levelCompleted && currentScenario ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-            <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 text-center">Study Plan Simulator</h3>
-            <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
-              <p className="text-base md:text-lg lg:text-xl font-semibold text-white text-center">"{currentScenario.text}"</p>
-            </div>
-            
-            <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
-              <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Choose the best option:</h4>
-              {currentScenario.options.map((option) => {
-                const isSelected = selectedOption === option.id;
-                const showCorrect = showFeedback && option.id === currentScenario.correct;
-                const showIncorrect = showFeedback && isSelected && !showCorrect;
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 text-center">Study Plan Simulator</h3>
+              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
+                <p className="text-base md:text-lg lg:text-xl font-semibold text-white text-center">"{currentScenario.text}"</p>
+              </div>
+              
+              <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
+                <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Choose the best option:</h4>
+                {currentScenario.options.map((option) => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = showFeedback && isSelected && option.id === currentScenario.correct;
+                  const showIncorrect = showFeedback && isSelected && option.id !== currentScenario.correct;
                 
                 return (
                   <button
@@ -310,11 +315,12 @@ const SimulationStudyPlan = () => {
               })}
             </div>
             
-            {showFeedback && feedbackType === "wrong" && (
-              <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
-                <p>💡 {currentScenario.explanation}</p>
-              </div>
-            )}
+              {showFeedback && feedbackType === "wrong" && (
+                <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
+                  <p>💡 {currentScenario.explanation}</p>
+                </div>
+              )}
+            </div>
           </div>
         ) : null}
       </div>

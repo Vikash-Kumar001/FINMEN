@@ -70,41 +70,41 @@ const DebateRoteVsUnderstanding = () => {
       id: 2,
       text: "Does rote learning help in creative problem-solving?",
       choices: [
-        { id: 'a', text: 'Rarely, understanding fosters creativity' },
-        { id: 'b', text: 'Always, rote is best for creativity' },
+        { id: 'b', text: 'Rarely, understanding fosters creativity' },
+        { id: 'a', text: 'Always, rote is best for creativity' },
         { id: 'c', text: 'Only for math problems' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'Understanding concepts allows you to apply knowledge flexibly and creatively, while rote learning limits you to memorized patterns!'
     },
     {
       id: 3,
       text: "Which method retains information longer?",
       choices: [
-        { id: 'a', text: 'Understanding creates lasting memories' },
-        { id: 'b', text: 'Rote memorization' },
-        { id: 'c', text: 'Both are the same' }
+        { id: 'a', text: 'Rote memorization' },
+        { id: 'b', text: 'Both are the same' },
+        { id: 'c', text: 'Understanding creates lasting memories' }
       ],
-      correct: 'a',
+      correct: 'c',
       explanation: 'Deep understanding creates stronger neural connections and moves information to long-term memory more effectively!'
     },
     {
       id: 4,
       text: "Should you use rote for facts and understanding for concepts?",
       choices: [
-        { id: 'a', text: 'Balance both, but prioritize understanding' },
-        { id: 'b', text: 'Rote only for everything' },
-        { id: 'c', text: 'Understanding is never needed' }
+        { id: 'a', text: 'Rote only for everything' },
+        { id: 'c', text: 'Understanding is never needed' },
+        { id: 'b', text: 'Balance both, but prioritize understanding' }
       ],
-      correct: 'a',
+      correct: 'b',
       explanation: 'While some facts require memorization, understanding the underlying concepts helps you remember facts better and apply them!'
     },
     {
       id: 5,
       text: "In exams, does understanding help you adapt to new questions?",
       choices: [
-        { id: 'a', text: 'Yes, understanding allows flexible application' },
         { id: 'b', text: 'No, rote is better for exams' },
+        { id: 'a', text: 'Yes, understanding allows flexible application' },
         { id: 'c', text: 'Only for easy questions' }
       ],
       correct: 'a',

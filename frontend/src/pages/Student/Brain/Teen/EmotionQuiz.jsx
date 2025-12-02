@@ -70,8 +70,8 @@ const EmotionQuiz = () => {
       id: 2,
       text: "What emotion is 'joy'?",
       choices: [
-        { id: 'a', text: 'Happiness and delight' },
         { id: 'b', text: 'Sadness' },
+        { id: 'a', text: 'Happiness and delight' },
         { id: 'c', text: 'Anger' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const EmotionQuiz = () => {
       id: 3,
       text: "What's a healthy response to sadness?",
       choices: [
-        { id: 'a', text: 'Cry or talk to someone' },
         { id: 'b', text: 'Pretend to be happy' },
-        { id: 'c', text: 'Ignore the feeling completely' }
+        { id: 'c', text: 'Ignore the feeling completely' },
+        { id: 'a', text: 'Cry or talk to someone' }
       ],
       correct: 'a',
       explanation: 'Expressing sadness through crying or talking helps process the emotion and promotes emotional healing!'
@@ -92,9 +92,9 @@ const EmotionQuiz = () => {
       id: 4,
       text: "How does fear help us?",
       choices: [
-        { id: 'a', text: 'Activates survival instincts' },
         { id: 'b', text: 'Helps us relax' },
-        { id: 'c', text: 'Makes us stronger physically' }
+        { id: 'c', text: 'Makes us stronger physically' },
+        { id: 'a', text: 'Activates survival instincts' }
       ],
       correct: 'a',
       explanation: 'Fear triggers the fight-or-flight response, preparing our body to respond to danger and protect ourselves!'
@@ -103,9 +103,9 @@ const EmotionQuiz = () => {
       id: 5,
       text: "What does emotional intelligence include?",
       choices: [
-        { id: 'a', text: 'Self-awareness and managing emotions' },
         { id: 'b', text: 'Avoiding all feelings' },
-        { id: 'c', text: 'Only showing positive emotions' }
+        { id: 'c', text: 'Only showing positive emotions' },
+        { id: 'a', text: 'Self-awareness and managing emotions' }
       ],
       correct: 'a',
       explanation: 'Emotional intelligence includes recognizing, understanding, and managing your own emotions and those of others!'
@@ -171,6 +171,7 @@ const EmotionQuiz = () => {
   return (
     <GameShell
       title="Emotion Quiz"
+      subtitle={!levelCompleted ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -181,6 +182,7 @@ const EmotionQuiz = () => {
       gameType="brain"
       showGameOver={levelCompleted}
       maxScore={questions.length}
+      showConfetti={levelCompleted && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}

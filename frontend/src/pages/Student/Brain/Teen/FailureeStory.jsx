@@ -70,8 +70,8 @@ const FailureeStory = () => {
       id: 2,
       text: "What's the best attitude after a failure?",
       choices: [
-        { id: 'a', text: 'Growth mindset - learn from mistakes' },
         { id: 'b', text: 'Fixed mindset - blame others' },
+        { id: 'a', text: 'Growth mindset - learn from mistakes' },
         { id: 'c', text: 'Avoid thinking about it' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const FailureeStory = () => {
       id: 3,
       text: "Does failure help build resilience?",
       choices: [
-        { id: 'a', text: 'Yes, overcoming setbacks strengthens you' },
         { id: 'b', text: 'No, failure only weakens you' },
-        { id: 'c', text: 'Only if you never fail again' }
+        { id: 'c', text: 'Only if you never fail again' },
+        { id: 'a', text: 'Yes, overcoming setbacks strengthens you' }
       ],
       correct: 'a',
       explanation: 'Facing and overcoming failures builds mental toughness and resilience for future challenges!'
@@ -92,9 +92,9 @@ const FailureeStory = () => {
       id: 4,
       text: "After failing, should you seek feedback?",
       choices: [
-        { id: 'a', text: 'Yes, feedback helps you improve' },
         { id: 'b', text: 'No, avoid feedback' },
-        { id: 'c', text: 'Only from friends, not teachers' }
+        { id: 'c', text: 'Only from friends, not teachers' },
+        { id: 'a', text: 'Yes, feedback helps you improve' }
       ],
       correct: 'a',
       explanation: 'Constructive feedback helps identify areas for improvement and guides your learning journey!'
@@ -103,9 +103,9 @@ const FailureeStory = () => {
       id: 5,
       text: "Have successful people experienced failure?",
       choices: [
-        { id: 'a', text: 'Yes, many successful people failed first' },
         { id: 'b', text: 'No, successful people never fail' },
-        { id: 'c', text: 'Only in unimportant areas' }
+        { id: 'c', text: 'Only in unimportant areas' },
+        { id: 'a', text: 'Yes, many successful people failed first' }
       ],
       correct: 'a',
       explanation: 'Many successful people, like Thomas Edison and J.K. Rowling, experienced multiple failures before achieving success!'
@@ -171,6 +171,7 @@ const FailureeStory = () => {
   return (
     <GameShell
       title="Failure Story"
+      subtitle={!levelCompleted ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -181,6 +182,7 @@ const FailureeStory = () => {
       gameType="brain"
       showGameOver={levelCompleted}
       maxScore={questions.length}
+      showConfetti={levelCompleted && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}

@@ -70,8 +70,8 @@ const SleepStory = () => {
       id: 2,
       text: "What happens when you don't get enough sleep before an exam?",
       choices: [
-        { id: 'a', text: 'Poor concentration and memory recall' },
         { id: 'b', text: 'Better performance' },
+        { id: 'a', text: 'Poor concentration and memory recall' },
         { id: 'c', text: 'No effect on performance' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const SleepStory = () => {
       id: 3,
       text: "How many hours of sleep should teens get before an important test?",
       choices: [
-        { id: 'a', text: '8-10 hours for optimal performance' },
         { id: 'b', text: '4-5 hours is enough' },
-        { id: 'c', text: '2-3 hours is fine' }
+        { id: 'c', text: '2-3 hours is fine' },
+        { id: 'a', text: '8-10 hours for optimal performance' }
       ],
       correct: 'a',
       explanation: 'Teens need 8-10 hours of sleep for optimal brain function, memory consolidation, and peak performance!'
@@ -103,9 +103,9 @@ const SleepStory = () => {
       id: 5,
       text: "Why is sleep important for learning and memory?",
       choices: [
-        { id: 'a', text: 'Sleep helps consolidate memories and improves recall' },
         { id: 'b', text: 'Sleep has no effect on memory' },
-        { id: 'c', text: 'Less sleep improves memory' }
+        { id: 'c', text: 'Less sleep improves memory' },
+        { id: 'a', text: 'Sleep helps consolidate memories and improves recall' }
       ],
       correct: 'a',
       explanation: 'During sleep, your brain consolidates memories, processes information, and prepares for better recall and learning!'

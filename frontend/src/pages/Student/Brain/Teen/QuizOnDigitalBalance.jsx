@@ -70,8 +70,8 @@ const QuizOnDigitalBalance = () => {
       id: 2,
       text: "Why is digital balance important?",
       choices: [
-        { id: 'a', text: 'Prevents screen addiction and improves real-life connections' },
         { id: 'b', text: 'Allows unlimited screen time' },
+        { id: 'a', text: 'Prevents screen addiction and improves real-life connections' },
         { id: 'c', text: 'Encourages constant device use' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const QuizOnDigitalBalance = () => {
       id: 3,
       text: "What's a sign of unhealthy digital use?",
       choices: [
-        { id: 'a', text: 'Using devices late at night, ignoring responsibilities' },
         { id: 'b', text: 'Setting time limits for device use' },
-        { id: 'c', text: 'Taking regular breaks from screens' }
+        { id: 'c', text: 'Taking regular breaks from screens' },
+        { id: 'a', text: 'Using devices late at night, ignoring responsibilities' }
       ],
       correct: 'a',
       explanation: 'Unhealthy digital use includes using devices late at night, neglecting responsibilities, and being unable to disconnect!'
@@ -103,9 +103,9 @@ const QuizOnDigitalBalance = () => {
       id: 5,
       text: "What are the benefits of digital balance?",
       choices: [
-        { id: 'a', text: 'Better sleep, improved focus, and stronger relationships' },
         { id: 'b', text: 'More screen time and less sleep' },
-        { id: 'c', text: 'Constant device use and isolation' }
+        { id: 'c', text: 'Constant device use and isolation' },
+        { id: 'a', text: 'Better sleep, improved focus, and stronger relationships' }
       ],
       correct: 'a',
       explanation: 'Digital balance leads to better sleep, improved focus, stronger real-life relationships, and overall better mental health!'

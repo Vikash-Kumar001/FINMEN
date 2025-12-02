@@ -63,19 +63,19 @@ const PuzzleOfBalanceHabits = () => {
 
   // Right items (effects/outcomes) - manually ordered for varied correct positions
   const rightItems = [
-    { id: 1, text: "Healthy", emoji: "✅" }, // Matches with "Sleep Early"
-    { id: 2, text: "Tired", emoji: "😴" }, // Matches with "Midnight Phone"
-    { id: 3, text: "Refreshed", emoji: "⚡" }, // Matches with "Regular Breaks"
-    { id: 4, text: "Exhausted", emoji: "😵" }, // Matches with "Screen All Day"
-    { id: 5, text: "Balanced", emoji: "⚖️" } // Matches with "Digital Detox"
+    { id: 2, text: "Tired", emoji: "😴" }, // Matches with "Midnight Phone" (position 1)
+    { id: 3, text: "Refreshed", emoji: "⚡" }, // Matches with "Regular Breaks" (position 2)
+    { id: 4, text: "Exhausted", emoji: "😵" }, // Matches with "Screen All Day" (position 3)
+    { id: 5, text: "Balanced", emoji: "⚖️" }, // Matches with "Digital Detox" (position 4)
+    { id: 1, text: "Healthy", emoji: "✅" } // Matches with "Sleep Early" (position 5)
   ];
 
   const correctPairs = {
-    1: 1, // Sleep Early → Healthy
-    2: 2, // Midnight Phone → Tired
-    3: 3, // Regular Breaks → Refreshed
-    4: 4, // Screen All Day → Exhausted
-    5: 5  // Digital Detox → Balanced
+    1: 1, // Sleep Early → Healthy (now at position 5)
+    2: 2, // Midnight Phone → Tired (now at position 1)
+    3: 3, // Regular Breaks → Refreshed (now at position 2)
+    4: 4, // Screen All Day → Exhausted (now at position 3)
+    5: 5  // Digital Detox → Balanced (now at position 4)
   };
 
   const handleLeftClick = (leftId) => {

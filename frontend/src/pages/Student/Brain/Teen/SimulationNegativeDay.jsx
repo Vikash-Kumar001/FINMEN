@@ -71,8 +71,8 @@ const SimulationNegativeDay = () => {
       id: 2,
       text: "You got a bad grade. How should you respond?",
       options: [
-        { id: 'learn', text: 'Learn from mistakes and improve', description: 'Growth mindset approach', isCorrect: true },
         { id: 'blame', text: 'Blame the teacher', description: 'Avoids responsibility', isCorrect: false },
+        { id: 'learn', text: 'Learn from mistakes and improve', description: 'Growth mindset approach', isCorrect: true },
         { id: 'giveup', text: 'Give up on the subject', description: 'No growth', isCorrect: false },
         { id: 'ignore', text: 'Ignore the grade', description: 'Doesn\'t address problem', isCorrect: false }
       ],
@@ -83,10 +83,10 @@ const SimulationNegativeDay = () => {
       id: 3,
       text: "Friends excluded you. What's the best approach?",
       options: [
-        { id: 'reflect', text: 'Reflect, then find supportive friends', description: 'Healthy response', isCorrect: true },
         { id: 'revenge', text: 'Seek revenge', description: 'Escalates conflict', isCorrect: false },
         { id: 'isolate', text: 'Isolate completely', description: 'Limits social connections', isCorrect: false },
-        { id: 'blame', text: 'Blame yourself harshly', description: 'Damages self-esteem', isCorrect: false }
+        { id: 'blame', text: 'Blame yourself harshly', description: 'Damages self-esteem', isCorrect: false },
+        { id: 'reflect', text: 'Reflect, then find supportive friends', description: 'Healthy response', isCorrect: true }
       ],
       correct: 'reflect',
       explanation: 'Reflecting on the situation and seeking supportive relationships helps you move forward positively!'
@@ -107,10 +107,10 @@ const SimulationNegativeDay = () => {
       id: 5,
       text: "After a negative day, how should you end it?",
       options: [
-        { id: 'reflect', text: 'Reflect on lessons and plan better tomorrow', description: 'Constructive approach', isCorrect: true },
         { id: 'dwell', text: 'Dwell on all the negatives', description: 'Maintains negative state', isCorrect: false },
         { id: 'ignore', text: 'Ignore the day completely', description: 'Misses learning', isCorrect: false },
-        { id: 'blame', text: 'Blame others for everything', description: 'No personal growth', isCorrect: false }
+        { id: 'blame', text: 'Blame others for everything', description: 'No personal growth', isCorrect: false },
+        { id: 'reflect', text: 'Reflect on lessons and plan better tomorrow', description: 'Constructive approach', isCorrect: true }
       ],
       correct: 'reflect',
       explanation: 'Reflecting on lessons learned and planning for a better tomorrow helps you grow and move forward!'

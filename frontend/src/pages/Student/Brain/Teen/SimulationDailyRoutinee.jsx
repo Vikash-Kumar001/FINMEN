@@ -70,8 +70,8 @@ const SimulationDailyRoutinee = () => {
       id: 2,
       text: "You have 3 hours free. What's the best way to spend it?",
       options: [
-        { id: 'mix', text: 'Mix of exercise, study, and relaxation', description: 'Well-rounded', isCorrect: true },
         { id: 'only', text: 'Only screen time', description: 'Unbalanced', isCorrect: false },
+        { id: 'mix', text: 'Mix of exercise, study, and relaxation', description: 'Well-rounded', isCorrect: true },
         { id: 'nothing', text: 'Do nothing', description: 'Waste of time', isCorrect: false },
         { id: 'stress', text: 'Stress about time', description: 'Unproductive', isCorrect: false }
       ],
@@ -82,10 +82,10 @@ const SimulationDailyRoutinee = () => {
       id: 3,
       text: "How should you balance screen time with other activities?",
       options: [
-        { id: 'limit', text: 'Set limits and include other activities', description: 'Healthy balance', isCorrect: true },
         { id: 'all', text: 'Screen time all the time', description: 'Unhealthy', isCorrect: false },
         { id: 'avoid', text: 'Avoid all activities', description: 'No balance', isCorrect: false },
-        { id: 'random', text: 'No plan or structure', description: 'Chaotic', isCorrect: false }
+        { id: 'random', text: 'No plan or structure', description: 'Chaotic', isCorrect: false },
+        { id: 'limit', text: 'Set limits and include other activities', description: 'Healthy balance', isCorrect: true }
       ],
       correct: 'limit',
       explanation: 'Setting screen time limits and including physical activity, study, and social time creates a healthy daily routine!'
@@ -106,10 +106,10 @@ const SimulationDailyRoutinee = () => {
       id: 5,
       text: "What makes a daily routine effective?",
       options: [
-        { id: 'effective', text: 'Balance of work, play, and rest', description: 'Comprehensive', isCorrect: true },
         { id: 'only', text: 'Only one type of activity', description: 'Unbalanced', isCorrect: false },
         { id: 'no', text: 'No structure at all', description: 'Ineffective', isCorrect: false },
-        { id: 'extreme', text: 'Extreme focus on one thing', description: 'Unhealthy', isCorrect: false }
+        { id: 'extreme', text: 'Extreme focus on one thing', description: 'Unhealthy', isCorrect: false },
+        { id: 'effective', text: 'Balance of work, play, and rest', description: 'Comprehensive', isCorrect: true }
       ],
       correct: 'effective',
       explanation: 'An effective routine balances work (studies), play (entertainment), and rest (sleep/relaxation) for optimal well-being!'

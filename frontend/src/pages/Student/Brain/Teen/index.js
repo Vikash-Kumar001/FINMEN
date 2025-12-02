@@ -128,6 +128,7 @@ const teenBrainGames = {
   // Third set of 10 games (memory focused)
   'exam-recall-story': ExamRecallStory,
   'quiz-on-memory-hacks': QuizOnMemoryHacks,
+  'quiz-memory-hacks': QuizOnMemoryHacks, // Alias for backward compatibility
   'reflex-memory-boost': ReflexMemoryBoost,
   'puzzle-mnemonic-match': PuzzleMnemonicMatch,
   'note-taking-story': NoteTakingStory,

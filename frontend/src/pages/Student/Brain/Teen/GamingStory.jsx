@@ -69,8 +69,8 @@ const GamingStory = () => {
       id: 2,
       text: "What happens when gaming takes priority over studies?",
       choices: [
-        { id: 'a', text: 'Grades drop and responsibilities are neglected' },
         { id: 'b', text: 'Studies improve automatically' },
+        { id: 'a', text: 'Grades drop and responsibilities are neglected' },
         { id: 'c', text: 'No effect on academic performance' }
       ],
       correct: 'a',
@@ -80,9 +80,9 @@ const GamingStory = () => {
       id: 3,
       text: "How much gaming time is reasonable for a teen?",
       choices: [
-        { id: 'a', text: '1-2 hours daily with breaks' },
         { id: 'b', text: '6+ hours daily' },
-        { id: 'c', text: 'All day without limits' }
+        { id: 'c', text: 'All day without limits' },
+        { id: 'a', text: '1-2 hours daily with breaks' }
       ],
       correct: 'a',
       explanation: '1-2 hours of gaming daily with breaks is reasonable, allowing time for studies, sleep, exercise, and social activities!'
@@ -91,9 +91,9 @@ const GamingStory = () => {
       id: 4,
       text: "What's the impact of excessive gaming on sleep?",
       choices: [
-        { id: 'a', text: 'Reduces sleep quality and quantity' },
         { id: 'b', text: 'Improves sleep patterns' },
-        { id: 'c', text: 'Has no effect on sleep' }
+        { id: 'c', text: 'Has no effect on sleep' },
+        { id: 'a', text: 'Reduces sleep quality and quantity' }
       ],
       correct: 'a',
       explanation: 'Excessive gaming, especially before bed, reduces sleep quality and quantity, leading to fatigue and poor performance!'
@@ -102,9 +102,9 @@ const GamingStory = () => {
       id: 5,
       text: "How should gaming be balanced with other activities?",
       choices: [
-        { id: 'a', text: 'Set limits and prioritize studies, sleep, and exercise' },
         { id: 'b', text: 'Gaming should come first' },
-        { id: 'c', text: 'Ignore other responsibilities' }
+        { id: 'c', text: 'Ignore other responsibilities' },
+        { id: 'a', text: 'Set limits and prioritize studies, sleep, and exercise' }
       ],
       correct: 'a',
       explanation: 'Gaming should be balanced by setting time limits and prioritizing studies, sleep, exercise, and social activities!'

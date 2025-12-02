@@ -70,8 +70,8 @@ const AngerStory = () => {
       id: 2,
       text: "You're angry about a mistake. What should you do?",
       choices: [
-        { id: 'a', text: 'Learn from it and move forward' },
         { id: 'b', text: 'Blame yourself harshly' },
+        { id: 'a', text: 'Learn from it and move forward' },
         { id: 'c', text: 'Ignore the mistake completely' }
       ],
       correct: 'a',
@@ -81,9 +81,9 @@ const AngerStory = () => {
       id: 3,
       text: "A friend makes you angry. How should you respond?",
       choices: [
-        { id: 'a', text: 'Express your feelings calmly' },
         { id: 'b', text: 'Ignore them or explode' },
-        { id: 'c', text: 'Hold a grudge silently' }
+        { id: 'c', text: 'Hold a grudge silently' },
+        { id: 'a', text: 'Express your feelings calmly' }
       ],
       correct: 'a',
       explanation: 'Calmly expressing your feelings maintains relationships and helps resolve conflicts constructively!'
@@ -92,9 +92,9 @@ const AngerStory = () => {
       id: 4,
       text: "You notice physical signs of anger. What should you do?",
       choices: [
-        { id: 'a', text: 'Count to 10 and breathe deeply' },
         { id: 'b', text: 'Punch something to release tension' },
-        { id: 'c', text: 'Act on the anger immediately' }
+        { id: 'c', text: 'Act on the anger immediately' },
+        { id: 'a', text: 'Count to 10 and breathe deeply' }
       ],
       correct: 'a',
       explanation: 'Counting and deep breathing interrupts the anger impulse and gives you time to respond thoughtfully!'
@@ -103,9 +103,9 @@ const AngerStory = () => {
       id: 5,
       text: "After your anger cools down, what should you do?",
       choices: [
-        { id: 'a', text: 'Apologize if you hurt someone' },
         { id: 'b', text: 'Hold a grudge' },
-        { id: 'c', text: 'Pretend nothing happened' }
+        { id: 'c', text: 'Pretend nothing happened' },
+        { id: 'a', text: 'Apologize if you hurt someone' }
       ],
       correct: 'a',
       explanation: 'Apologizing when appropriate repairs relationships, shows maturity, and helps you move forward!'
@@ -171,6 +171,7 @@ const AngerStory = () => {
   return (
     <GameShell
       title="Anger Story"
+      subtitle={!levelCompleted ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -181,6 +182,7 @@ const AngerStory = () => {
       gameType="brain"
       showGameOver={levelCompleted}
       maxScore={questions.length}
+      showConfetti={levelCompleted && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}

@@ -94,6 +94,11 @@ const BadgeRestHero = () => {
       question: "You're feeling tired while studying. What should you do?",
       options: [
         { 
+          text: "Push through exhaustion", 
+          emoji: "💪", 
+          isCorrect: false
+        },
+        { 
           text: "Take a short break and rest", 
           emoji: "⏸️", 
           isCorrect: true
@@ -124,14 +129,14 @@ const BadgeRestHero = () => {
       question: "What's the best practice for phone use before bed?",
       options: [
         { 
-          text: "Turn off screens 1 hour before bed", 
-          emoji: "📱", 
-          isCorrect: true
-        },
-        { 
           text: "Use phone until you fall asleep", 
           emoji: "📲", 
           isCorrect: false
+        },
+        { 
+          text: "Turn off screens 1 hour before bed", 
+          emoji: "📱", 
+          isCorrect: true
         },
         { 
           text: "Keep notifications on all night", 
@@ -184,11 +189,6 @@ const BadgeRestHero = () => {
       question: "What's the key to being a Rest Hero?",
       options: [
         { 
-          text: "Prioritize sleep and take smart breaks", 
-          emoji: "🏆", 
-          isCorrect: true
-        },
-        { 
           text: "Work without any rest", 
           emoji: "💼", 
           isCorrect: false
@@ -202,6 +202,11 @@ const BadgeRestHero = () => {
           text: "Sacrifice sleep for productivity", 
           emoji: "⏰", 
           isCorrect: false
+        },
+        { 
+          text: "Prioritize sleep and take smart breaks", 
+          emoji: "🏆", 
+          isCorrect: true
         }
       ]
     }

@@ -57,7 +57,7 @@ const SimulationStressDay = () => {
   const questions = [
     {
       id: 1,
-      text: "You feel stressed. Options: (a) Eat junk, (b) Sleep, (c) Walk & breathe. Correct = Walk & breathe.",
+      text: "You feel stressed. What should you do?",
       options: [
         { id: 'walk', text: 'Walk & breathe', description: 'Physical activity and deep breathing', isCorrect: true },
         { id: 'junk', text: 'Eat junk food', description: 'Temporary comfort, long-term harm', isCorrect: false },
@@ -71,8 +71,8 @@ const SimulationStressDay = () => {
       id: 2,
       text: "You're in an argument. How should you handle it?",
       options: [
-        { id: 'step', text: 'Step away & cool down', description: 'Prevents escalation', isCorrect: true },
         { id: 'yell', text: 'Yell back', description: 'Increases conflict', isCorrect: false },
+        { id: 'step', text: 'Step away & cool down', description: 'Prevents escalation', isCorrect: true },
         { id: 'ignore', text: 'Ignore completely', description: 'Doesn\'t address issue', isCorrect: false },
         { id: 'blame', text: 'Blame the other person', description: 'Creates more tension', isCorrect: false }
       ],
@@ -83,10 +83,10 @@ const SimulationStressDay = () => {
       id: 3,
       text: "You have a busy, overwhelming day. What should you do?",
       options: [
-        { id: 'prioritize', text: 'Prioritize and make a list', description: 'Organizes thoughts', isCorrect: true },
         { id: 'multitask', text: 'Try to do everything at once', description: 'Increases overwhelm', isCorrect: false },
         { id: 'panic', text: 'Panic and rush', description: 'Creates more stress', isCorrect: false },
-        { id: 'avoid', text: 'Avoid all tasks', description: 'Makes situation worse', isCorrect: false }
+        { id: 'avoid', text: 'Avoid all tasks', description: 'Makes situation worse', isCorrect: false },
+        { id: 'prioritize', text: 'Prioritize and make a list', description: 'Organizes thoughts', isCorrect: true }
       ],
       correct: 'prioritize',
       explanation: 'Making a prioritized list helps organize thoughts, reduces overwhelm, and makes tasks more manageable!'
@@ -107,10 +107,10 @@ const SimulationStressDay = () => {
       id: 5,
       text: "At the end of a stressful day, how should you reflect?",
       options: [
-        { id: 'positive', text: 'Reflect on what went well', description: 'Builds resilience', isCorrect: true },
         { id: 'negative', text: 'Dwell on negatives only', description: 'Increases stress', isCorrect: false },
         { id: 'ignore', text: 'Ignore the day completely', description: 'Misses learning', isCorrect: false },
-        { id: 'blame', text: 'Blame others for everything', description: 'Creates resentment', isCorrect: false }
+        { id: 'blame', text: 'Blame others for everything', description: 'Creates resentment', isCorrect: false },
+        { id: 'positive', text: 'Reflect on what went well', description: 'Builds resilience', isCorrect: true }
       ],
       correct: 'positive',
       explanation: 'Positive reflection helps build resilience, improves mood, and sets a better tone for the next day!'
@@ -176,6 +176,7 @@ const SimulationStressDay = () => {
   return (
     <GameShell
       title="Simulation: Stress Day"
+      subtitle={!levelCompleted ? `Question ${currentQuestion + 1} of ${questions.length}` : "Simulation Complete!"}
       score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -186,6 +187,7 @@ const SimulationStressDay = () => {
       gameType="brain"
       showGameOver={levelCompleted}
       maxScore={questions.length}
+      showConfetti={levelCompleted && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}

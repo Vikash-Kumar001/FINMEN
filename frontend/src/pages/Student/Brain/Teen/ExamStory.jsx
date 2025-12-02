@@ -52,8 +52,8 @@ const ExamStory = () => {
   const [showFeedback, setShowFeedback] = useState(false);
   const [feedbackType, setFeedbackType] = useState(null);
   const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
   const [levelCompleted, setLevelCompleted] = useState(false);
-  const [showConfetti, setShowConfetti] = useState(false);
   const [answers, setAnswers] = useState({}); // Track answers for each question
 
   const questions = [
@@ -61,8 +61,8 @@ const ExamStory = () => {
       id: 1,
       text: "Jamie studies for 1 hour with their phone nearby. Will this lead to strong focus?",
       choices: [
-        { id: 'yes', text: 'Yes' },
         { id: 'no', text: 'No' },
+        { id: 'yes', text: 'Yes' },
         { id: 'maybe', text: 'Maybe, depends on the person' }
       ],
       correct: 'no',
@@ -84,8 +84,8 @@ const ExamStory = () => {
       text: "How does multitasking affect exam performance?",
       choices: [
         { id: 'a', text: 'Improves performance' },
-        { id: 'b', text: 'Reduces efficiency by up to 40%' },
-        { id: 'c', text: 'Has no effect' }
+        { id: 'c', text: 'Has no effect' },
+        { id: 'b', text: 'Reduces efficiency by up to 40%' }
       ],
       correct: 'b',
       explanation: 'Multitasking actually reduces productivity and increases errors, as the brain struggles to switch between tasks!'
@@ -94,8 +94,8 @@ const ExamStory = () => {
       id: 4,
       text: "What is the benefit of taking short breaks during study sessions?",
       choices: [
-        { id: 'a', text: 'Decreases focus' },
         { id: 'b', text: 'Prevents mental fatigue' },
+        { id: 'a', text: 'Decreases focus' },
         { id: 'c', text: 'Wastes valuable study time' }
       ],
       correct: 'b',
@@ -106,8 +106,8 @@ const ExamStory = () => {
       text: "Which environment is best for exam preparation?",
       choices: [
         { id: 'a', text: 'Noisy café with friends' },
-        { id: 'b', text: 'Quiet, dedicated study space' },
-        { id: 'c', text: 'Loud party atmosphere' }
+        { id: 'c', text: 'Loud party atmosphere' },
+        { id: 'b', text: 'Quiet, dedicated study space' }
       ],
       correct: 'b',
       explanation: 'A quiet, dedicated study space minimizes distractions and maximizes focus and retention!'
@@ -134,6 +134,7 @@ const ExamStory = () => {
     
     if (isCorrect) {
       setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
@@ -173,9 +174,10 @@ const ExamStory = () => {
   return (
     <GameShell
       title="Exam Story"
-      score={score}
+      score={coins}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
+      subtitle={levelCompleted ? "Game Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -183,30 +185,37 @@ const ExamStory = () => {
       gameType="brain"
       showGameOver={levelCompleted}
       maxScore={questions.length}
+      showConfetti={levelCompleted && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!levelCompleted && currentQuestionData ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-            <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
-              {currentQuestionData.text}
-            </p>
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
             
-            <div className="space-y-3 md:space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
               {currentQuestionData.choices.map((choice) => {
                 const isSelected = selectedOption === choice.id;
-                const showCorrect = showFeedback && choice.id === questions[currentQuestion].correct;
-                const showIncorrect = showFeedback && isSelected && !showCorrect;
+                const showCorrect = showFeedback && isSelected && choice.id === questions[currentQuestion].correct;
+                const showIncorrect = showFeedback && isSelected && choice.id !== questions[currentQuestion].correct;
                 
                 return (
                   <button
                     key={choice.id}
                     onClick={() => handleOptionSelect(choice.id)}
                     disabled={!!selectedOption}
-                    className={`w-full p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
+                    className={`p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform ${
                       showCorrect
                         ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
                         : showIncorrect
@@ -214,19 +223,20 @@ const ExamStory = () => {
                         : isSelected
                         ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
                         : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                    } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
+                    } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none text-white font-bold text-sm md:text-base`}
                   >
-                    <div className="text-white font-bold text-sm md:text-base">{choice.text}</div>
+                    {choice.text}
                   </button>
                 );
               })}
             </div>
             
-            {showFeedback && feedbackType === "wrong" && (
-              <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
-                <p>💡 {currentQuestionData.explanation}</p>
-              </div>
-            )}
+              {showFeedback && feedbackType === "wrong" && (
+                <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
+                  <p>💡 {currentQuestionData.explanation}</p>
+                </div>
+              )}
+            </div>
           </div>
         ) : null}
       </div>

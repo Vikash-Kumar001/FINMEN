@@ -73,6 +73,14 @@ const MiniJournal = () => {
     }
   };
 
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentStage(0);
+    setScore(0);
+    setEntry("");
+    resetFeedback();
+  };
+
   const finalScore = score;
 
   return (
@@ -80,7 +88,7 @@ const MiniJournal = () => {
       title="Mini Journal"
       subtitle={!showResult ? `Question ${currentStage + 1} of ${stages.length}: Reflect on your kindness!` : "Journal Complete!"}
       currentLevel={currentStage + 1}
-      totalLevels={5}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
       showGameOver={showResult}
       flashPoints={flashPoints}
@@ -88,12 +96,12 @@ const MiniJournal = () => {
       score={finalScore}
       gameId={gameId}
       gameType="uvls"
-      maxScore={5}
+      maxScore={stages.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && finalScore === 5}>
+      showConfetti={showResult && finalScore >= 3}>
       <div className="text-center text-white space-y-8">
-        {!showResult && stages[currentStage] && (
+        {!showResult && stages[currentStage] ? (
           <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
             <PenSquare className="mx-auto mb-4 w-10 h-10 text-yellow-300" />
             <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
@@ -122,6 +130,43 @@ const MiniJournal = () => {
             >
               {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
             </button>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Journal Complete!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You completed {finalScore} out of {stages.length} journal entries!
+                  Great job reflecting on your kindness!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{finalScore} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Reflecting on acts of kindness helps us become more aware and compassionate!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Reflecting!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You completed {finalScore} out of {stages.length} journal entries.
+                  Keep practicing to complete all entries!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Take time to reflect on your kindness and how it helps others!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

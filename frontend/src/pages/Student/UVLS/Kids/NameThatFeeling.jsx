@@ -204,7 +204,6 @@ const NameThatFeeling = () => {
       title="Name That Feeling"
       score={score}
       subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
-      score={score}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}

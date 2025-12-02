@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -8,110 +8,189 @@ const ChallengeStereotypes = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const gameId = "uvls-kids-29";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [challenges, setChallenges] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [selectedStatements, setSelectedStatements] = useState([]); // State for tracking selected statements
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      statements: [
-        { text: "Girls can't be strong.", challenges: true },
-        { text: "Boys can be nurses.", challenges: true },
-        { text: "Everyone can cook.", challenges: true },
-        { text: "Pink is for girls.", challenges: false }
+      text: "Which statement challenges stereotypes?",
+      emoji: "🛡️",
+      options: [
+        { 
+          id: "challenge1", 
+          text: "Girls can't be strong.", 
+          emoji: "🚫", 
+          description: "This is a stereotype, not a challenge",
+          isCorrect: false 
+        },
+        { 
+          id: "challenge2", 
+          text: "Boys can be nurses.", 
+          emoji: "👨‍⚕️", 
+          description: "Challenges gender stereotypes",
+          isCorrect: true 
+        },
+        { 
+          id: "fact1", 
+          text: "Pink is for girls.", 
+          emoji: "💗", 
+          description: "This is a stereotype",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 2,
-      statements: [
-        { text: "Boys don't play with dolls.", challenges: false },
-        { text: "Girls can be leaders.", challenges: true },
-        { text: "Anyone can cry.", challenges: true },
-        { text: "Dads can stay home.", challenges: true }
+      text: "Which statement challenges stereotypes?",
+      emoji: "🛡️",
+      options: [
+        { 
+          id: "stereotype1", 
+          text: "Boys don't play with dolls.", 
+          emoji: "🚫", 
+          description: "This is a stereotype",
+          isCorrect: false 
+        },
+        { 
+          id: "challenge3", 
+          text: "Girls can be leaders.", 
+          emoji: "👩‍💼", 
+          description: "Challenges gender stereotypes",
+          isCorrect: true 
+        },
+        { 
+          id: "stereotype2", 
+          text: "Only boys can be strong.", 
+          emoji: "💪", 
+          description: "This is a stereotype",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 3,
-      statements: [
-        { text: "Moms must cook.", challenges: false },
-        { text: "Kids can choose toys freely.", challenges: true },
-        { text: "Girls play sports too.", challenges: true },
-        { text: "Boys like blue only.", challenges: false }
+      text: "Which statement challenges stereotypes?",
+      emoji: "🛡️",
+      options: [
+        { 
+          id: "stereotype3", 
+          text: "Moms must cook.", 
+          emoji: "🚫", 
+          description: "This is a gender stereotype",
+          isCorrect: false 
+        },
+        { 
+          id: "challenge4", 
+          text: "Kids can choose toys freely.", 
+          emoji: "🧸", 
+          description: "Challenges gender toy stereotypes",
+          isCorrect: true 
+        },
+        { 
+          id: "stereotype4", 
+          text: "Boys like blue only.", 
+          emoji: "🔵", 
+          description: "This is a stereotype",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 4,
-      statements: [
-        { text: "Engineers can be women.", challenges: true },
-        { text: "Teachers can be men.", challenges: true },
-        { text: "Stereotypes are wrong.", challenges: true },
-        { text: "Girls are weak.", challenges: false }
+      text: "Which statement challenges stereotypes?",
+      emoji: "🛡️",
+      options: [
+        { 
+          id: "challenge5", 
+          text: "Engineers can be women.", 
+          emoji: "👩‍🔧", 
+          description: "Challenges career gender stereotypes",
+          isCorrect: true 
+        },
+        { 
+          id: "stereotype5", 
+          text: "Girls are weak.", 
+          emoji: "🚫", 
+          description: "This is a harmful stereotype",
+          isCorrect: false 
+        },
+        { 
+          id: "stereotype6", 
+          text: "Only men can be doctors.", 
+          emoji: "👨‍⚕️", 
+          description: "This is a stereotype",
+          isCorrect: false 
+        }
       ]
     },
     {
       id: 5,
-      statements: [
-        { text: "Anyone can dance.", challenges: true },
-        { text: "Boys can't sew.", challenges: false },
-        { text: "Equality for all.", challenges: true },
-        { text: "Girls don't like cars.", challenges: false }
+      text: "Which statement challenges stereotypes?",
+      emoji: "🛡️",
+      options: [
+        { 
+          id: "stereotype7", 
+          text: "Boys can't sew.", 
+          emoji: "🚫", 
+          description: "This is a stereotype",
+          isCorrect: false 
+        },
+        { 
+          id: "stereotype8", 
+          text: "Girls don't like cars.", 
+          emoji: "🚗", 
+          description: "This is a stereotype",
+          isCorrect: false 
+        },
+        { 
+          id: "challenge6", 
+          text: "Anyone can dance.", 
+          emoji: "💃", 
+          description: "Challenges gender activity stereotypes",
+          isCorrect: true 
+        }
       ]
     }
   ];
 
-  // Function to toggle statement selection
-  const toggleStatementSelection = (index) => {
-    setSelectedStatements(prev => {
-      if (prev.includes(index)) {
-        return prev.filter(i => i !== index);
-      } else {
-        return [...prev, index];
-      }
-    });
-  };
-
-  const handleChallenge = () => {
-    const newChallenges = [...challenges, selectedStatements];
-    setChallenges(newChallenges);
-
-    const correctChallenges = questions[currentLevel].statements.filter(s => s.challenges).length;
-    const isCorrect = selectedStatements.length === correctChallenges && selectedStatements.every(s => questions[currentLevel].statements[s].challenges);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setSelectedStatements([]); // Reset selection for next level
-      }, isCorrect ? 800 : 0);
-    } else {
-      const correctLevels = newChallenges.filter((sel, idx) => {
-        const corr = questions[idx].statements.filter(s => s.challenges).length;
-        return sel.length === corr && sel.every(s => questions[idx].statements[s].challenges);
-      }).length;
-      setFinalScore(correctLevels);
-      setShowResult(true);
-    }
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentLevel(0);
-    setChallenges([]);
-    setCoins(0);
-    setFinalScore(0);
-    setSelectedStatements([]); // Reset selection
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
@@ -119,76 +198,81 @@ const ChallengeStereotypes = () => {
     navigate("/games/uvls/kids");
   };
 
-  const getCurrentLevel = () => questions[currentLevel];
-
   return (
     <GameShell
       title="Challenge Stereotypes"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-29"
-      gameType="uvls"
-      totalLevels={30}
-      currentLevel={29}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId={gameId}
+      gameType="uvls"
+      onNext={handleNext}
+      nextEnabled={showResult && score >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {!showResult && questions[currentQuestion] ? (
+          <div>
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Tap statements that challenge stereotypes!</p>
-              <div className="space-y-3">
-                {getCurrentLevel().statements.map((stmt, idx) => (
-                  <button 
-                    key={idx} 
-                    onClick={() => toggleStatementSelection(idx)}
-                    className={`w-full p-4 rounded transition-all transform hover:scale-102 flex items-center gap-3 ${
-                      selectedStatements.includes(idx)
-                        ? "bg-green-500/30 border-2 border-green-400" // Visual feedback for selected challenging statements
-                        : "bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40"
-                    }`}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <div className="bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-xl p-6 mb-6 text-center">
+                <div className="text-6xl mb-3">{questions[currentQuestion].emoji}</div>
+                <h3 className="text-white text-xl font-bold">{questions[currentQuestion].text}</h3>
+              </div>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`w-full text-left p-4 rounded-xl transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <div className="text-2xl">
-                      {selectedStatements.includes(idx) ? "✅" : "🛡️"}
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{option.emoji}</span>
+                      <div className="flex-1">
+                        <div className="font-semibold text-lg">{option.text}</div>
+                        <div className="text-sm opacity-90">{option.description}</div>
+                      </div>
                     </div>
-                    <div className="text-white font-medium text-left">{stmt.text}</div>
                   </button>
                 ))}
               </div>
-              <button 
-                onClick={handleChallenge} 
-                className="mt-4 bg-purple-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                disabled={selectedStatements.length === 0} // Disable if no statements selected
-              >
-                Submit ({selectedStatements.length} selected)
-              </button>
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 3 ? (
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Challenger!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You challenged correctly in {finalScore} out of {questions.length} levels!
+                  You got {score} out of {questions.length} correct!
                   You know how to challenge stereotypes!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{finalScore} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Challenging stereotypes helps create a fair and equal world for everyone!
+                  Lesson: Challenging stereotypes helps create a fair and equal world for everyone. Anyone can do anything, regardless of gender, age, or background!
                 </p>
               </div>
             ) : (
@@ -196,7 +280,7 @@ const ChallengeStereotypes = () => {
                 <div className="text-5xl mb-4">💪</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Challenge More!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You challenged correctly in {finalScore} out of {questions.length} levels.
+                  You got {score} out of {questions.length} correct.
                   Keep learning to challenge stereotypes!
                 </p>
                 <button
@@ -206,7 +290,7 @@ const ChallengeStereotypes = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Challenge stereotypes by recognizing that anyone can do anything, regardless of gender, age, or background!
+                  Tip: Challenge stereotypes by recognizing that anyone can do anything - girls can be engineers, boys can be nurses, and everyone can choose their own interests!
                 </p>
               </div>
             )}

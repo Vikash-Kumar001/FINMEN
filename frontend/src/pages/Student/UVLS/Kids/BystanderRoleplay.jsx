@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const BystanderRoleplay = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -54,18 +55,18 @@ const BystanderRoleplay = () => {
       text: "You see someone being excluded from a game. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Invite the excluded person to join", 
-          emoji: "👋", 
-          description: "Include them",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Yell at the group", 
           emoji: "😠", 
           description: "Aggressive response",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Invite the excluded person to join", 
+          emoji: "👋", 
+          description: "Include them",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +82,6 @@ const BystanderRoleplay = () => {
       text: "You hear name-calling in class. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Tell the teacher quietly", 
-          emoji: "🧑‍🏫", 
-          description: "Get help from an adult",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Name-call back", 
           emoji: "🗣️", 
@@ -100,6 +94,13 @@ const BystanderRoleplay = () => {
           emoji: "🙈", 
           description: "Not helping",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Tell the teacher quietly", 
+          emoji: "🧑‍🏫", 
+          description: "Get help from an adult",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +109,18 @@ const BystanderRoleplay = () => {
       text: "You see a mean comment online. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Support the victim online", 
-          emoji: "❤️", 
-          description: "Show support",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Comment meanly too", 
           emoji: "😈", 
           description: "This makes it worse",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Support the victim online", 
+          emoji: "❤️", 
+          description: "Show support",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -192,6 +193,10 @@ const BystanderRoleplay = () => {
     resetFeedback();
   };
 
+  const handleNext = () => {
+    navigate("/games/uvls/kids");
+  };
+
   return (
     <GameShell
       title="Bystander Roleplay"
@@ -209,6 +214,8 @@ const BystanderRoleplay = () => {
       showAnswerConfetti={showAnswerConfetti}
       gameId={gameId}
       gameType="uvls"
+      onNext={handleNext}
+      nextEnabled={showResult && score >= 3}
     >
       <div className="space-y-8">
         {!showResult && questions[currentQuestion] ? (

@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const EncourageDream = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -54,18 +55,18 @@ const EncourageDream = () => {
       text: "Classmate dreams of being a chef. What do you say?",
       options: [
         { 
-          id: "a", 
-          text: "Great idea, go for it!", 
-          emoji: "👩‍🍳", 
-          description: "Support their dream",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Cooking is not for you", 
           emoji: "🚫", 
           description: "Discourage them",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Great idea, go for it!", 
+          emoji: "👩‍🍳", 
+          description: "Support their dream",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +82,6 @@ const EncourageDream = () => {
       text: "Friend wants to be an engineer. What do you say?",
       options: [
         { 
-          id: "a", 
-          text: "Awesome, build cool things!", 
-          emoji: "🛠️", 
-          description: "Encourage their ambition",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Too hard for girls/boys", 
           emoji: "🚫", 
@@ -100,6 +94,13 @@ const EncourageDream = () => {
           emoji: "😕", 
           description: "Discourage them",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Awesome, build cool things!", 
+          emoji: "🛠️", 
+          description: "Encourage their ambition",
+          isCorrect: true 
         }
       ]
     },
@@ -107,13 +108,6 @@ const EncourageDream = () => {
       id: 4,
       text: "Sibling aims to be a teacher. What do you say?",
       options: [
-        { 
-          id: "a", 
-          text: "You'll be amazing!", 
-          emoji: "👩‍🏫", 
-          description: "Support their goal",
-          isCorrect: true 
-        },
         { 
           id: "b", 
           text: "That's boring", 
@@ -127,6 +121,13 @@ const EncourageDream = () => {
           emoji: "🚫", 
           description: "This is a stereotype",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "You'll be amazing!", 
+          emoji: "👩‍🏫", 
+          description: "Support their goal",
+          isCorrect: true 
         }
       ]
     },
@@ -192,6 +193,10 @@ const EncourageDream = () => {
     resetFeedback();
   };
 
+  const handleNext = () => {
+    navigate("/games/uvls/kids");
+  };
+
   return (
     <GameShell
       title="Encourage Dream"
@@ -209,6 +214,8 @@ const EncourageDream = () => {
       showAnswerConfetti={showAnswerConfetti}
       gameId={gameId}
       gameType="uvls"
+      onNext={handleNext}
+      nextEnabled={showResult && score >= 3}
     >
       <div className="space-y-8">
         {!showResult && questions[currentQuestion] ? (

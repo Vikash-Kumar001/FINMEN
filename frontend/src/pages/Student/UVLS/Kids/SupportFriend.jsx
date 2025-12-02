@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const SupportFriend = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -54,18 +55,18 @@ const SupportFriend = () => {
       text: "A classmate is being excluded from games. What do you do?",
       options: [
         { 
-          id: "a", 
-          text: "Invite them to join", 
-          emoji: "👋", 
-          description: "Include them in activities",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Laugh at them", 
           emoji: "😂", 
           description: "Be unkind",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Invite them to join", 
+          emoji: "👋", 
+          description: "Include them in activities",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +82,6 @@ const SupportFriend = () => {
       text: "Someone is being called mean names. What do you do?",
       options: [
         { 
-          id: "a", 
-          text: "Report to teacher", 
-          emoji: "🧑‍🏫", 
-          description: "Get help from an adult",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Join in the name-calling", 
           emoji: "😈", 
@@ -100,6 +94,13 @@ const SupportFriend = () => {
           emoji: "🫥", 
           description: "Not helping",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Report to teacher", 
+          emoji: "🧑‍🏫", 
+          description: "Get help from an adult",
+          isCorrect: true 
         }
       ]
     },
@@ -108,18 +109,18 @@ const SupportFriend = () => {
       text: "Your friend's things are being hidden by others. What do you do?",
       options: [
         { 
-          id: "a", 
-          text: "Help find and support them", 
-          emoji: "🔍", 
-          description: "Help and stand with them",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Blame your friend", 
           emoji: "🤬", 
           description: "This is not helpful",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Help find and support them", 
+          emoji: "🔍", 
+          description: "Help and stand with them",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -135,13 +136,6 @@ const SupportFriend = () => {
       text: "A peer is receiving mean messages online. What do you do?",
       options: [
         { 
-          id: "a", 
-          text: "Advise to block and report", 
-          emoji: "🚫", 
-          description: "Help them stay safe",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Reply with mean messages", 
           emoji: "💻", 
@@ -154,6 +148,13 @@ const SupportFriend = () => {
           emoji: "🙄", 
           description: "They need help",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Advise to block and report", 
+          emoji: "🚫", 
+          description: "Help them stay safe",
+          isCorrect: true 
         }
       ]
     }
@@ -192,6 +193,10 @@ const SupportFriend = () => {
     resetFeedback();
   };
 
+  const handleNext = () => {
+    navigate("/games/uvls/kids");
+  };
+
   return (
     <GameShell
       title="Support Friend"
@@ -209,6 +214,8 @@ const SupportFriend = () => {
       showAnswerConfetti={showAnswerConfetti}
       gameId={gameId}
       gameType="uvls"
+      onNext={handleNext}
+      nextEnabled={showResult && score >= 3}
     >
       <div className="space-y-8">
         {!showResult && questions[currentQuestion] ? (

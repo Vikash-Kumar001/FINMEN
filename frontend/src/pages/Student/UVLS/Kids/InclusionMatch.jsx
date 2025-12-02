@@ -63,18 +63,18 @@ const InclusionMatch = () => {
       correct: "They feel grateful and cared for",
       options: [
         { 
-          id: "grateful", 
-          text: "They feel grateful and cared for", 
-          emoji: "🙏", 
-          description: "They appreciate your kindness",
-          isCorrect: true 
-        },
-        { 
           id: "angry", 
           text: "They get angry", 
           emoji: "😠", 
           description: "They react negatively",
           isCorrect: false 
+        },
+        { 
+          id: "grateful", 
+          text: "They feel grateful and cared for", 
+          emoji: "🙏", 
+          description: "They appreciate your kindness",
+          isCorrect: true 
         },
         { 
           id: "hungry", 
@@ -92,13 +92,6 @@ const InclusionMatch = () => {
       correct: "They understand better and feel supported",
       options: [
         { 
-          id: "supported", 
-          text: "They understand better and feel supported", 
-          emoji: "💪", 
-          description: "They learn and feel helped",
-          isCorrect: true 
-        },
-        { 
           id: "confused", 
           text: "They feel confused", 
           emoji: "😕", 
@@ -111,6 +104,13 @@ const InclusionMatch = () => {
           emoji: "😞", 
           description: "They stop trying",
           isCorrect: false 
+        },
+        { 
+          id: "supported", 
+          text: "They understand better and feel supported", 
+          emoji: "💪", 
+          description: "They learn and feel helped",
+          isCorrect: true 
         }
       ]
     },
@@ -121,18 +121,18 @@ const InclusionMatch = () => {
       correct: "Everyone has fun together",
       options: [
         { 
-          id: "cries", 
-          text: "Someone cries", 
-          emoji: "😢", 
-          description: "Someone gets upset",
-          isCorrect: false 
-        },
-        { 
           id: "fun", 
           text: "Everyone has fun together", 
           emoji: "🎉", 
           description: "All enjoy playing together",
           isCorrect: true 
+        },
+        { 
+          id: "cries", 
+          text: "Someone cries", 
+          emoji: "😢", 
+          description: "Someone gets upset",
+          isCorrect: false 
         },
         { 
           id: "fight", 
@@ -150,18 +150,18 @@ const InclusionMatch = () => {
       correct: "They feel less lonely",
       options: [
         { 
-          id: "lonely", 
-          text: "They feel less lonely", 
-          emoji: "😊", 
-          description: "They feel included and happy",
-          isCorrect: true 
-        },
-        { 
           id: "annoyed", 
           text: "They feel annoyed", 
           emoji: "😤", 
           description: "They don't want company",
           isCorrect: false 
+        },
+        { 
+          id: "lonely", 
+          text: "They feel less lonely", 
+          emoji: "😊", 
+          description: "They feel included and happy",
+          isCorrect: true 
         },
         { 
           id: "leave", 

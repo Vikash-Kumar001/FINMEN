@@ -1,10 +1,11 @@
 import React, { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const EqualityQuiz = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -59,18 +60,18 @@ const EqualityQuiz = () => {
       text: "Should boys and girls both go to school?",
       options: [
         { 
-          id: "a", 
-          text: "Yes, equal education!", 
-          emoji: "📚", 
-          description: "Everyone deserves education",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Only boys need school", 
           emoji: "👦", 
           description: "This is not fair",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Yes, equal education!", 
+          emoji: "📚", 
+          description: "Everyone deserves education",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -86,13 +87,6 @@ const EqualityQuiz = () => {
       text: "Can boys play with dolls?",
       options: [
         { 
-          id: "a", 
-          text: "Yes, toys for all!", 
-          emoji: "🧸", 
-          description: "Toys are for everyone",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "No, that's for girls", 
           emoji: "🚫", 
@@ -105,6 +99,13 @@ const EqualityQuiz = () => {
           emoji: "🙈", 
           description: "This suggests shame",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Yes, toys for all!", 
+          emoji: "🧸", 
+          description: "Toys are for everyone",
+          isCorrect: true 
         }
       ]
     },
@@ -140,18 +141,18 @@ const EqualityQuiz = () => {
       text: "Can girls play sports?",
       options: [
         { 
-          id: "a", 
-          text: "Yes, sports for everyone!", 
-          emoji: "⚽", 
-          description: "Sports are for all",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "No, too rough", 
           emoji: "🚫", 
           description: "This is a stereotype",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Yes, sports for everyone!", 
+          emoji: "⚽", 
+          description: "Sports are for all",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -197,6 +198,10 @@ const EqualityQuiz = () => {
     resetFeedback();
   };
 
+  const handleNext = () => {
+    navigate("/games/uvls/kids");
+  };
+
   return (
     <GameShell
       title="Equality Quiz"
@@ -214,6 +219,8 @@ const EqualityQuiz = () => {
       showAnswerConfetti={showAnswerConfetti}
       gameId={gameId}
       gameType="uvls"
+      onNext={handleNext}
+      nextEnabled={showResult && score >= 3}
     >
       <div className="space-y-8">
         {!showResult && questions[currentQuestion] ? (

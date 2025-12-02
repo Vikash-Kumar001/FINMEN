@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -8,112 +8,189 @@ const RightsMatch = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const gameId = "uvls-kids-24";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [matches, setMatches] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [selectedRight, setSelectedRight] = useState(null); // State for tracking selected right
-  const [selectedScene, setSelectedScene] = useState(null); // State for tracking selected scene
-  const [userMatches, setUserMatches] = useState({}); // State for tracking user matches
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      rights: ["Learn", "Play", "Safety"],
-      scenes: ["School time", "Park fun", "Safe home"],
-      correct: { "Learn": "School time", "Play": "Park fun", "Safety": "Safe home" }
+      text: "Which right matches 'School time'?",
+      emoji: "📚",
+      options: [
+        { 
+          id: "learn", 
+          text: "Learn", 
+          emoji: "📖", 
+          description: "The right to education and learning",
+          isCorrect: true 
+        },
+        { 
+          id: "play", 
+          text: "Play", 
+          emoji: "🎮", 
+          description: "The right to play and have fun",
+          isCorrect: false 
+        },
+        { 
+          id: "safety", 
+          text: "Safety", 
+          emoji: "🛡️", 
+          description: "The right to be safe and protected",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 2,
-      rights: ["Food", "Friends", "Rest"],
-      scenes: ["Eating meal", "Playing with pals", "Sleeping well"],
-      correct: { "Food": "Eating meal", "Friends": "Playing with pals", "Rest": "Sleeping well" }
+      text: "Which right matches 'Park fun'?",
+      emoji: "🌳",
+      options: [
+        { 
+          id: "food", 
+          text: "Food", 
+          emoji: "🍎", 
+          description: "The right to nutritious food",
+          isCorrect: false 
+        },
+        { 
+          id: "play", 
+          text: "Play", 
+          emoji: "🎮", 
+          description: "The right to play and have fun",
+          isCorrect: true 
+        },
+        { 
+          id: "rest", 
+          text: "Rest", 
+          emoji: "😴", 
+          description: "The right to rest and sleep",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      rights: ["Voice", "Health", "Family"],
-      scenes: ["Speaking up", "Doctor visit", "With parents"],
-      correct: { "Voice": "Speaking up", "Health": "Doctor visit", "Family": "With parents" }
+      text: "Which right matches 'Safe home'?",
+      emoji: "🏠",
+      options: [
+        { 
+          id: "voice", 
+          text: "Voice", 
+          emoji: "🗣️", 
+          description: "The right to express your opinion",
+          isCorrect: false 
+        },
+        { 
+          id: "safety", 
+          text: "Safety", 
+          emoji: "🛡️", 
+          description: "The right to be safe and protected",
+          isCorrect: true 
+        },
+        { 
+          id: "family", 
+          text: "Family", 
+          emoji: "👨‍👩‍👧", 
+          description: "The right to be with your family",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 4,
-      rights: ["Education", "Fun", "Protection"],
-      scenes: ["Books and class", "Games and toys", "No harm"],
-      correct: { "Education": "Books and class", "Fun": "Games and toys", "Protection": "No harm" }
+      text: "Which right matches 'Eating meal'?",
+      emoji: "🍽️",
+      options: [
+        { 
+          id: "food", 
+          text: "Food", 
+          emoji: "🍎", 
+          description: "The right to nutritious food",
+          isCorrect: true 
+        },
+        { 
+          id: "health", 
+          text: "Health", 
+          emoji: "🏥", 
+          description: "The right to healthcare",
+          isCorrect: false 
+        },
+        { 
+          id: "care", 
+          text: "Care", 
+          emoji: "❤️", 
+          description: "The right to be cared for",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 5,
-      rights: ["Equality", "Care", "Growth"],
-      scenes: ["Fair treatment", "Love and hugs", "Learning new things"],
-      correct: { "Equality": "Fair treatment", "Care": "Love and hugs", "Growth": "Learning new things" }
+      text: "Which right matches 'Speaking up'?",
+      emoji: "🗣️",
+      options: [
+        { 
+          id: "equality", 
+          text: "Equality", 
+          emoji: "⚖️", 
+          description: "The right to be treated equally",
+          isCorrect: false 
+        },
+        { 
+          id: "voice", 
+          text: "Voice", 
+          emoji: "🗣️", 
+          description: "The right to express your opinion",
+          isCorrect: true 
+        },
+        { 
+          id: "growth", 
+          text: "Growth", 
+          emoji: "🌱", 
+          description: "The right to grow and develop",
+          isCorrect: false 
+        }
+      ]
     }
   ];
 
-  // Function to select a right
-  const selectRight = (right) => {
-    setSelectedRight(right);
-    // If a scene is already selected, create a match
-    if (selectedScene) {
-      setUserMatches(prev => ({
-        ...prev,
-        [right]: selectedScene
-      }));
-      setSelectedScene(null); // Clear scene selection after matching
-    }
-  };
-
-  // Function to select a scene
-  const selectScene = (scene) => {
-    setSelectedScene(scene);
-    // If a right is already selected, create a match
-    if (selectedRight) {
-      setUserMatches(prev => ({
-        ...prev,
-        [selectedRight]: scene
-      }));
-      setSelectedRight(null); // Clear right selection after matching
-    }
-  };
-
-  const handleMatch = () => {
-    const newMatches = [...matches, userMatches];
-    setMatches(newMatches);
-
-    const isCorrect = Object.keys(questions[currentLevel].correct).every(key => userMatches[key] === questions[currentLevel].correct[key]);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
     if (isCorrect) {
-      setCoins(prev => prev + 1);
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setSelectedRight(null); // Reset selection for next level
-        setSelectedScene(null); // Reset selection for next level
-        setUserMatches({}); // Reset matches for next level
-      }, isCorrect ? 800 : 0);
-    } else {
-      const correctMatches = newMatches.filter((um, idx) => Object.keys(questions[idx].correct).every(key => um[key] === questions[idx].correct[key])).length;
-      setFinalScore(correctMatches);
-      setShowResult(true);
-    }
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentLevel(0);
-    setMatches([]);
-    setCoins(0);
-    setFinalScore(0);
-    setSelectedRight(null); // Reset selection
-    setSelectedScene(null); // Reset selection
-    setUserMatches({}); // Reset matches
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
@@ -121,151 +198,81 @@ const RightsMatch = () => {
     navigate("/games/uvls/kids");
   };
 
-  const getCurrentLevel = () => questions[currentLevel];
-
-  // Function to check if a right is matched
-  const isRightMatched = (right) => {
-    return userMatches[right] !== undefined;
-  };
-
-  // Function to check if a scene is matched
-  const isSceneMatched = (scene) => {
-    return Object.values(userMatches).includes(scene);
-  };
-
-  // Function to get the matched right for a scene
-  const getMatchedRight = (scene) => {
-    return Object.keys(userMatches).find(right => userMatches[right] === scene);
-  };
-
   return (
     <GameShell
       title="Rights Match"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 4}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 4}
-      
-      gameId="uvls-kids-24"
-      gameType="uvls"
-      totalLevels={30}
-      currentLevel={24}
-      showConfetti={showResult && finalScore >= 4}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId={gameId}
+      gameType="uvls"
+      onNext={handleNext}
+      nextEnabled={showResult && score >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {!showResult && questions[currentQuestion] ? (
+          <div>
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Match rights to scenes!</p>
-              
-              {/* Rights section */}
-              <div className="mb-6">
-                <h3 className="text-white font-semibold mb-2">Rights:</h3>
-                <div className="flex flex-wrap gap-3">
-                  {getCurrentLevel().rights.map(right => (
-                    <button
-                      key={right}
-                      onClick={() => selectRight(right)}
-                      className={`p-3 rounded-lg transition-all transform hover:scale-105 flex items-center gap-2 ${
-                        selectedRight === right
-                          ? "bg-blue-400 border-2 border-blue-200" // Visual feedback for selected
-                          : isRightMatched(right)
-                          ? "bg-green-500 border-2 border-green-300" // Visual feedback for matched
-                          : "bg-blue-500 hover:bg-blue-400 border-2 border-blue-600"
-                      }`}
-                    >
-                      <span>{right}</span>
-                      <span>⚖️</span>
-                      {isRightMatched(right) && <span className="text-lg">✅</span>}
-                    </button>
-                  ))}
-                </div>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              {/* Scenes section */}
-              <div className="mb-6">
-                <h3 className="text-white font-semibold mb-2">Scenes:</h3>
-                <div className="flex flex-wrap gap-3">
-                  {getCurrentLevel().scenes.map(scene => (
-                    <button
-                      key={scene}
-                      onClick={() => selectScene(scene)}
-                      className={`p-3 rounded-lg transition-all transform hover:scale-105 flex items-center gap-2 ${
-                        selectedScene === scene
-                          ? "bg-green-400 border-2 border-green-200" // Visual feedback for selected
-                          : isSceneMatched(scene)
-                          ? "bg-purple-500 border-2 border-purple-300" // Visual feedback for matched
-                          : "bg-green-500 hover:bg-green-400 border-2 border-green-600"
-                      }`}
-                    >
-                      <span>{scene}</span>
-                      <span>🖼️</span>
-                      {isSceneMatched(scene) && (
-                        <span className="text-sm bg-white/20 px-2 py-1 rounded">
-                          {getMatchedRight(scene)}
-                        </span>
-                      )}
-                    </button>
-                  ))}
-                </div>
+              <div className="bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-xl p-6 mb-6 text-center">
+                <div className="text-6xl mb-3">{questions[currentQuestion].emoji}</div>
+                <h3 className="text-white text-xl font-bold">{questions[currentQuestion].text}</h3>
               </div>
               
-              {/* Current matches display */}
-              <div className="mb-4">
-                <h3 className="text-white font-semibold mb-2">Your Matches:</h3>
-                <div className="flex flex-wrap gap-2">
-                  {Object.entries(userMatches).map(([right, scene]) => (
-                    <div key={`${right}-${scene}`} className="bg-purple-500 text-white px-3 py-2 rounded-lg flex items-center gap-2">
-                      <span>{right} ↔ {scene}</span>
-                      <button 
-                        onClick={() => {
-                          const newMatches = {...userMatches};
-                          delete newMatches[right];
-                          setUserMatches(newMatches);
-                        }}
-                        className="text-white hover:text-red-200"
-                      >
-                        ✕
-                      </button>
+              <div className="grid grid-cols-1 gap-4">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`w-full text-left p-4 rounded-xl transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{option.emoji}</span>
+                      <div className="flex-1">
+                        <div className="font-semibold text-lg">{option.text}</div>
+                        <div className="text-sm opacity-90">{option.description}</div>
+                      </div>
                     </div>
-                  ))}
-                  {Object.keys(userMatches).length === 0 && (
-                    <div className="text-white/70 italic">No matches yet. Click a right and a scene to create a match.</div>
-                  )}
-                </div>
+                  </button>
+                ))}
               </div>
-              
-              <button 
-                onClick={handleMatch} 
-                className="mt-2 bg-purple-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                disabled={Object.keys(userMatches).length === 0}
-              >
-                Submit Match ({Object.keys(userMatches).length} pairs)
-              </button>
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 4 ? (
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Perfect Match!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched correctly in {finalScore} out of {questions.length} levels!
+                  You got {score} out of {questions.length} correct!
                   You understand children's rights!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{finalScore} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Understanding your rights helps you know what you deserve and how to protect yourself!
+                  Lesson: Understanding your rights helps you know what you deserve - like the right to learn, play, safety, food, and to express your voice!
                 </p>
               </div>
             ) : (
@@ -273,7 +280,7 @@ const RightsMatch = () => {
                 <div className="text-5xl mb-4">💪</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Match Better!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You matched correctly in {finalScore} out of {questions.length} levels.
+                  You got {score} out of {questions.length} correct.
                   Keep learning about children's rights!
                 </p>
                 <button
@@ -283,7 +290,7 @@ const RightsMatch = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Learn about your rights - you have the right to learn, play, safety, and more!
+                  Tip: You have the right to learn, play, safety, food, health, family, voice, and more. Match situations to these rights!
                 </p>
               </div>
             )}

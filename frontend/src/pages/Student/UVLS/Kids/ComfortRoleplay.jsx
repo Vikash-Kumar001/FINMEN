@@ -14,112 +14,185 @@ const ComfortRoleplay = () => {
   const coinsPerLevel = gameData?.coins || 5;
   const totalCoins = gameData?.coins || 5;
   const totalXp = gameData?.xp || 10;
-  const [currentVignette, setCurrentVignette] = useState(0);
-  const [selectedPhrases, setSelectedPhrases] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [vignetteResults, setVignetteResults] = useState([]);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const vignettes = [
+  const questions = [
     {
       id: 1,
-      situation: "Your friend is crying because they lost their favorite toy.",
+      text: "Your friend is crying because they lost their favorite toy. What's the best way to comfort them?",
       emoji: "😢",
-      phrases: [
-        { id: 1, text: "I'm sorry you're sad. Can I help you look for it?", isCorrect: true },
-        { id: 2, text: "It's just a toy, get over it.", isCorrect: false },
-        { id: 3, text: "I understand how you feel. Want to talk about it?", isCorrect: true },
-        { id: 4, text: "Stop crying, it's not a big deal.", isCorrect: false },
-        { id: 5, text: "Let me sit with you until you feel better.", isCorrect: true }
-      ],
-      peerResponse: {
-        good: "Thank you for being so kind and understanding! 😊",
-        bad: "That didn't make me feel better... 😔"
-      }
+      options: [
+        { 
+          id: "help", 
+          text: "I'm sorry you're sad. Can I help you look for it?", 
+          emoji: "🔍", 
+          description: "Show empathy and offer help",
+          isCorrect: true 
+        },
+        { 
+          id: "dismiss", 
+          text: "It's just a toy, get over it.", 
+          emoji: "😤", 
+          description: "Dismissive and unkind",
+          isCorrect: false 
+        },
+        { 
+          id: "ignore", 
+          text: "Stop crying, it's not a big deal.", 
+          emoji: "🚫", 
+          description: "Invalidates their feelings",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 2,
-      situation: "Your classmate is upset because they got a bad grade.",
+      text: "Your classmate is upset because they got a bad grade. How should you comfort them?",
       emoji: "📝",
-      phrases: [
-        { id: 1, text: "You can do better next time. I believe in you!", isCorrect: true },
-        { id: 2, text: "You're not smart enough, that's why.", isCorrect: false },
-        { id: 3, text: "Let's study together next time!", isCorrect: true },
-        { id: 4, text: "I told you so, you should have studied more.", isCorrect: false },
-        { id: 5, text: "It's okay to make mistakes. We all do.", isCorrect: true }
-      ],
-      peerResponse: {
-        good: "Thanks for being supportive! I feel much better now. 🌟",
-        bad: "Your words made me feel worse... 😢"
-      }
+      options: [
+        { 
+          id: "support", 
+          text: "You can do better next time. I believe in you!", 
+          emoji: "💪", 
+          description: "Encouraging and supportive",
+          isCorrect: true 
+        },
+        { 
+          id: "insult", 
+          text: "You're not smart enough, that's why.", 
+          emoji: "😔", 
+          description: "Hurts their self-esteem",
+          isCorrect: false 
+        },
+        { 
+          id: "blame", 
+          text: "I told you so, you should have studied more.", 
+          emoji: "👆", 
+          description: "Blaming and unhelpful",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      situation: "A new student is sitting alone and looks lonely.",
+      text: "A new student is sitting alone and looks lonely. What should you do?",
       emoji: "😔",
-      phrases: [
-        { id: 1, text: "Hi! Want to sit with me and my friends?", isCorrect: true },
-        { id: 2, text: "Why are you sitting alone? That's weird.", isCorrect: false },
-        { id: 3, text: "Being new can be hard. I'm here if you want to talk.", isCorrect: true },
-        { id: 4, text: "You look sad. What's wrong with you?", isCorrect: false },
-        { id: 5, text: "Let me show you around and introduce you to people!", isCorrect: true }
-      ],
-      peerResponse: {
-        good: "Thank you so much! I feel welcome now! 😊",
-        bad: "That made me feel even more alone... 😞"
-      }
+      options: [
+        { 
+          id: "invite", 
+          text: "Hi! Want to sit with me and my friends?", 
+          emoji: "👋", 
+          description: "Welcoming and inclusive",
+          isCorrect: true 
+        },
+        { 
+          id: "judge", 
+          text: "Why are you sitting alone? That's weird.", 
+          emoji: "🤨", 
+          description: "Judgmental and unkind",
+          isCorrect: false 
+        },
+        { 
+          id: "ignore", 
+          text: "You look sad. What's wrong with you?", 
+          emoji: "😕", 
+          description: "Insensitive question",
+          isCorrect: false 
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "Your sibling is scared about their first day at a new school. How can you comfort them?",
+      emoji: "😰",
+      options: [
+        { 
+          id: "support", 
+          text: "I'll walk with you to school. You'll be okay!", 
+          emoji: "🚶", 
+          description: "Offers practical support",
+          isCorrect: true 
+        },
+        { 
+          id: "dismiss", 
+          text: "Stop being scared, it's just school.", 
+          emoji: "😒", 
+          description: "Dismisses their fear",
+          isCorrect: false 
+        },
+        { 
+          id: "scare", 
+          text: "Everyone will laugh at you.", 
+          emoji: "😱", 
+          description: "Makes them more scared",
+          isCorrect: false 
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Your friend is worried about a test tomorrow. What's the best way to help?",
+      emoji: "😟",
+      options: [
+        { 
+          id: "study", 
+          text: "Want to study together? We can practice!", 
+          emoji: "📚", 
+          description: "Offers help and support",
+          isCorrect: true 
+        },
+        { 
+          id: "discourage", 
+          text: "You'll probably fail anyway.", 
+          emoji: "😞", 
+          description: "Discouraging and negative",
+          isCorrect: false 
+        },
+        { 
+          id: "dismiss", 
+          text: "Tests are easy, why are you worried?", 
+          emoji: "🤷", 
+          description: "Minimizes their concern",
+          isCorrect: false 
+        }
+      ]
     }
   ];
 
-  const handlePhraseToggle = (phraseId) => {
-    if (selectedPhrases.includes(phraseId)) {
-      setSelectedPhrases(selectedPhrases.filter(id => id !== phraseId));
-    } else if (selectedPhrases.length < 3) {
-      setSelectedPhrases([...selectedPhrases, phraseId]);
-    }
-  };
-
-  const handleConfirm = () => {
-    if (selectedPhrases.length !== 3) return;
-
-    const vignette = vignettes[currentVignette];
-    const selectedPhraseObjects = vignette.phrases.filter(p => selectedPhrases.includes(p.id));
-    const correctCount = selectedPhraseObjects.filter(p => p.isCorrect).length;
-    const isGood = correctCount >= 2; // Need at least 2 correct phrases
-
-    const result = {
-      vignetteId: vignette.id,
-      selectedPhrases: selectedPhraseObjects,
-      isGood,
-      correctCount
-    };
-
-    setVignetteResults([...vignetteResults, result]);
-
-    if (isGood) {
-      setCoins(prev => prev + 1); // 1 coin for correct vignette
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
 
-    if (currentVignette < vignettes.length - 1) {
-      setTimeout(() => {
-        setCurrentVignette(prev => prev + 1);
-        setSelectedPhrases([]);
-      }, 1500);
-    } else {
-      setTimeout(() => {
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    setTimeout(() => {
+      if (isLastQuestion) {
         setShowResult(true);
-      }, 1500);
-    }
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentVignette(0);
-    setSelectedPhrases([]);
-    setVignetteResults([]);
-    setCoins(0);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
@@ -127,100 +200,79 @@ const ComfortRoleplay = () => {
     navigate("/games/uvls/kids");
   };
 
-  const vignette = vignettes[currentVignette];
-  const totalGood = vignetteResults.filter(r => r.isGood).length;
-
   return (
     <GameShell
       title="Comfort Roleplay"
-      score={coins}
-      subtitle={`Situation ${currentVignette + 1} of ${vignettes.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && totalGood >= 2}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && totalGood >= 2}
-      
-      gameId="uvls-kids-8"
-      gameType="uvls"
-      totalLevels={10}
-      currentLevel={8}
-      showConfetti={showResult && totalGood >= 2}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId={gameId}
+      gameType="uvls"
+      onNext={handleNext}
+      nextEnabled={showResult && score >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {!showResult && questions[currentQuestion] ? (
+          <div>
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-6xl mb-4 text-center">{vignette.emoji}</div>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
               
-              <p className="text-white text-lg mb-6 font-semibold text-center">
-                {vignette.situation}
-              </p>
-
-              <p className="text-white/90 mb-4 text-center">
-                Choose 3 kind phrases to say ({selectedPhrases.length}/3):
-              </p>
-
-              <div className="space-y-3 mb-6">
-                {vignette.phrases.map(phrase => (
+              <div className="text-6xl mb-4 text-center">{questions[currentQuestion].emoji}</div>
+              
+              <h3 className="text-xl font-bold text-white mb-6 text-center">
+                {questions[currentQuestion].text}
+              </h3>
+              
+              <div className="grid grid-cols-1 gap-4">
+                {questions[currentQuestion].options.map((option) => (
                   <button
-                    key={phrase.id}
-                    onClick={() => handlePhraseToggle(phrase.id)}
-                    disabled={!selectedPhrases.includes(phrase.id) && selectedPhrases.length >= 3}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedPhrases.includes(phrase.id)
-                        ? 'bg-green-500/50 border-green-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    } ${!selectedPhrases.includes(phrase.id) && selectedPhrases.length >= 3 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`w-full text-left p-4 rounded-xl transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
                   >
-                    <span className="text-white font-medium">{phrase.text}</span>
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{option.emoji}</span>
+                      <div className="flex-1">
+                        <div className="font-semibold text-lg">{option.text}</div>
+                        <div className="text-sm opacity-90">{option.description}</div>
+                      </div>
+                    </div>
                   </button>
                 ))}
               </div>
-
-              <button
-                onClick={handleConfirm}
-                disabled={selectedPhrases.length !== 3}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedPhrases.length === 3
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Say These Phrases
-              </button>
-
-              {vignetteResults.length > 0 && vignetteResults[vignetteResults.length - 1] && (
-                <div className={`mt-4 p-4 rounded-xl ${
-                  vignetteResults[vignetteResults.length - 1].isGood
-                    ? 'bg-green-500/30 border-2 border-green-400'
-                    : 'bg-red-500/30 border-2 border-red-400'
-                }`}>
-                  <p className="text-white font-medium">
-                    {vignetteResults[vignetteResults.length - 1].isGood
-                      ? vignettes[vignetteResults.length - 1].peerResponse.good
-                      : vignettes[vignetteResults.length - 1].peerResponse.bad}
-                  </p>
-                </div>
-              )}
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {totalGood >= 2 ? (
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold text-white mb-4">You're So Comforting!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You comforted {totalGood} out of {vignettes.length} friends well!
+                  You got {score} out of {questions.length} correct!
                   You know how to be kind and supportive!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{totalGood} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
                   Lesson: Comforting others means showing empathy, offering help, and being understanding!
@@ -231,8 +283,8 @@ const ComfortRoleplay = () => {
                 <div className="text-5xl mb-4">💪</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You comforted {totalGood} out of {vignettes.length} friends well.
-                  Remember: Choose kind and understanding phrases!
+                  You got {score} out of {questions.length} correct.
+                  Remember: Choose kind and understanding responses!
                 </p>
                 <button
                   onClick={handleTryAgain}
@@ -253,4 +305,3 @@ const ComfortRoleplay = () => {
 };
 
 export default ComfortRoleplay;
-

@@ -34,8 +34,8 @@ const SupportRoleplay = () => {
       id: 2,
       text: "Classmate discouraged from playing sports.",
       options: [
-        { id: "a", text: "Let's play together!", emoji: "⚽", isCorrect: true },
         { id: "b", text: "Sports aren't for you.", emoji: "🚫", isCorrect: false },
+        { id: "a", text: "Let's play together!", emoji: "⚽", isCorrect: true },
         { id: "c", text: "Find something else.", emoji: "🔍", isCorrect: false }
       ]
     },
@@ -43,17 +43,17 @@ const SupportRoleplay = () => {
       id: 3,
       text: "Sibling mocked for career choice.",
       options: [
-        { id: "a", text: "You'll be great at it!", emoji: "🌟", isCorrect: true },
         { id: "b", text: "Choose differently.", emoji: "🔄", isCorrect: false },
-        { id: "c", text: "Laugh along.", emoji: "😂", isCorrect: false }
+        { id: "c", text: "Laugh along.", emoji: "😂", isCorrect: false },
+        { id: "a", text: "You'll be great at it!", emoji: "🌟", isCorrect: true }
       ]
     },
     {
       id: 4,
       text: "Peer feels bad about stereotype.",
       options: [
-        { id: "a", text: "Stereotypes are wrong, be yourself!", emoji: "🦸", isCorrect: true },
         { id: "b", text: "Get used to it.", emoji: "😔", isCorrect: false },
+        { id: "a", text: "Stereotypes are wrong, be yourself!", emoji: "🦸", isCorrect: true },
         { id: "c", text: "Change to fit in.", emoji: "🕶️", isCorrect: false }
       ]
     },
@@ -61,9 +61,9 @@ const SupportRoleplay = () => {
       id: 5,
       text: "Friend discouraged from hobby.",
       options: [
-        { id: "a", text: "Keep doing what you love!", emoji: "❤️", isCorrect: true },
         { id: "b", text: "Stop if others say so.", emoji: "🛑", isCorrect: false },
-        { id: "c", text: "Hide it.", emoji: "🙊", isCorrect: false }
+        { id: "c", text: "Hide it.", emoji: "🙊", isCorrect: false },
+        { id: "a", text: "Keep doing what you love!", emoji: "❤️", isCorrect: true }
       ]
     }
   ];

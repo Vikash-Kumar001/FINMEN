@@ -252,7 +252,9 @@ const RespectTap = () => {
               </div>
             </div>
           </div>
-        ) : (
+        )}
+
+        {gameState === "finished" && (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
             {finalScore >= 3 ? (
               <div>

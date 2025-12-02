@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -8,147 +8,189 @@ const ShareChores = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const gameId = "uvls-kids-21";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [coins, setCoins] = useState(0);
-  const [currentLevel, setCurrentLevel] = useState(0);
-  const [assignments, setAssignments] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const [selectedChore, setSelectedChore] = useState(null); // State for tracking selected chore
-  const [selectedCharacter, setSelectedCharacter] = useState(null); // State for tracking selected character
-  const [choreAssignments, setChoreAssignments] = useState([]); // State for tracking chore assignments
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      chores: ["Wash dishes", "Clean room", "Take out trash"],
-      characters: ["Boy", "Girl", "Dad", "Mom"],
-      text: "Assign chores in the home fairly."
+      text: "How should chores be shared in a family?",
+      emoji: "🏠",
+      options: [
+        { 
+          id: "fair", 
+          text: "Everyone helps equally", 
+          emoji: "⚖️", 
+          description: "Fair distribution of work",
+          isCorrect: true 
+        },
+        { 
+          id: "one", 
+          text: "Only one person does everything", 
+          emoji: "😤", 
+          description: "Unfair and exhausting",
+          isCorrect: false 
+        },
+        { 
+          id: "none", 
+          text: "No one does chores", 
+          emoji: "😴", 
+          description: "Creates a messy home",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 2,
-      chores: ["Sweep floor", "Water plants", "Set table"],
-      characters: ["Sister", "Brother", "Grandma", "Grandpa"],
-      text: "Make sure everyone shares classroom duties."
+      text: "What's the best way to assign chores?",
+      emoji: "📋",
+      options: [
+        { 
+          id: "gender", 
+          text: "Based on gender stereotypes", 
+          emoji: "🚫", 
+          description: "Unfair and outdated",
+          isCorrect: false 
+        },
+        { 
+          id: "equal", 
+          text: "Share tasks fairly among everyone", 
+          emoji: "🤝", 
+          description: "Fair and inclusive approach",
+          isCorrect: true 
+        },
+        { 
+          id: "age", 
+          text: "Only older kids do chores", 
+          emoji: "👴", 
+          description: "Unfair to older children",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 3,
-      chores: ["Fold laundry", "Dust shelves", "Walk dog"],
-      characters: ["Kid1", "Kid2", "Teacher", "Parent"],
-      text: "Balance chores equally among family."
+      text: "If there are 3 chores and 3 people, how should they be divided?",
+      emoji: "🧹",
+      options: [
+        { 
+          id: "one", 
+          text: "One person does all 3", 
+          emoji: "😓", 
+          description: "Unfair and overwhelming",
+          isCorrect: false 
+        },
+        { 
+          id: "skip", 
+          text: "Skip the chores", 
+          emoji: "🙈", 
+          description: "Not responsible",
+          isCorrect: false 
+        },
+        { 
+          id: "each", 
+          text: "Each person does 1 chore", 
+          emoji: "✅", 
+          description: "Fair and balanced",
+          isCorrect: true 
+        }
+      ]
     },
     {
       id: 4,
-      chores: ["Mop floor", "Cook meal", "Garden work"],
-      characters: ["Uncle", "Aunt", "Cousin Boy", "Cousin Girl"],
-      text: "Assign tasks without gender bias."
+      text: "What should you do if someone has more chores than others?",
+      emoji: "⚖️",
+      options: [
+        { 
+          id: "redistribute", 
+          text: "Redistribute to make it fair", 
+          emoji: "🔄", 
+          description: "Ensures fairness for everyone",
+          isCorrect: true 
+        },
+        { 
+          id: "ignore", 
+          text: "Ignore the unfairness", 
+          emoji: "😐", 
+          description: "Doesn't solve the problem",
+          isCorrect: false 
+        },
+        { 
+          id: "add", 
+          text: "Give them even more chores", 
+          emoji: "😤", 
+          description: "Makes it more unfair",
+          isCorrect: false 
+        }
+      ]
     },
     {
       id: 5,
-      chores: ["Vacuum", "Shop groceries", "Fix toy"],
-      characters: ["Friend1", "Friend2", "Boy", "Girl"],
-      text: "Ensure fair distribution in group."
+      text: "Why is it important to share chores fairly?",
+      emoji: "💡",
+      options: [
+        { 
+          id: "easy", 
+          text: "So chores are easier", 
+          emoji: "😊", 
+          description: "Chores still need to be done",
+          isCorrect: false 
+        },
+        { 
+          id: "unfair", 
+          text: "So one person doesn't get overwhelmed", 
+          emoji: "😰", 
+          description: "Prevents burnout and stress",
+          isCorrect: true 
+        },
+        { 
+          id: "avoid", 
+          text: "To avoid doing chores", 
+          emoji: "🙈", 
+          description: "Chores still need to be done",
+          isCorrect: false 
+        }
+      ]
     }
   ];
 
-  // Function to select a chore
-  const selectChore = (chore) => {
-    setSelectedChore(chore);
-    // If a character is already selected, create an assignment
-    if (selectedCharacter) {
-      // Check if this chore is already assigned
-      const isAlreadyAssigned = choreAssignments.some(ass => ass.chore === chore);
-      if (!isAlreadyAssigned) {
-        setChoreAssignments(prev => [
-          ...prev,
-          { chore, character: selectedCharacter }
-        ]);
-      }
-      setSelectedCharacter(null); // Clear character selection after assignment
-    }
-  };
-
-  // Function to select a character
-  const selectCharacter = (character) => {
-    setSelectedCharacter(character);
-    // If a chore is already selected, create an assignment
-    if (selectedChore) {
-      // Check if this chore is already assigned
-      const isAlreadyAssigned = choreAssignments.some(ass => ass.chore === selectedChore);
-      if (!isAlreadyAssigned) {
-        setChoreAssignments(prev => [
-          ...prev,
-          { chore: selectedChore, character }
-        ]);
-      }
-      setSelectedChore(null); // Clear chore selection after assignment
-    }
-  };
-
-  const handleAssignment = () => {
-    const newAssignments = [...assignments, choreAssignments];
-    setAssignments(newAssignments);
-
-    const isFair = checkFairness(choreAssignments);
-    if (isFair) {
-      setCoins(prev => prev + 1);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-
-    if (currentLevel < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentLevel(prev => prev + 1);
-        setSelectedChore(null); // Reset selection for next level
-        setSelectedCharacter(null); // Reset selection for next level
-        setChoreAssignments([]); // Reset assignments for next level
-      }, isFair ? 800 : 0);
     } else {
-      const fairAssignments = newAssignments.filter(ass => checkFairness(ass)).length;
-      setFinalScore(fairAssignments);
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
-  };
 
-  const checkFairness = (assignments) => {
-    // For this game, we'll consider it fair if all chores are assigned
-    // and no character has significantly more chores than others
-    if (assignments.length === 0) return false;
+    const isLastQuestion = currentQuestion === questions.length - 1;
     
-    const countPerChar = {};
-    assignments.forEach(ass => {
-      countPerChar[ass.character] = (countPerChar[ass.character] || 0) + 1;
-    });
-    
-    // Check if all chores are assigned (equal to chores in current level)
-    const allChoresAssigned = assignments.length === getCurrentLevel().chores.length;
-    
-    // Check if distribution is relatively fair
-    const counts = Object.values(countPerChar);
-    const maxCount = Math.max(...counts);
-    const minCount = Math.min(...counts);
-    const isDistributionFair = maxCount - minCount <= 1;
-    
-    return allChoresAssigned && isDistributionFair;
-  };
-
-  // Function to remove an assignment
-  const removeAssignment = (chore) => {
-    setChoreAssignments(prev => prev.filter(ass => ass.chore !== chore));
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
+      }
+    }, 500);
   };
 
   const handleTryAgain = () => {
     setShowResult(false);
-    setCurrentLevel(0);
-    setAssignments([]);
-    setCoins(0);
-    setFinalScore(0);
-    setSelectedChore(null); // Reset selection
-    setSelectedCharacter(null); // Reset selection
-    setChoreAssignments([]); // Reset assignments
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
     resetFeedback();
   };
 
@@ -156,127 +198,81 @@ const ShareChores = () => {
     navigate("/games/uvls/kids");
   };
 
-  const getCurrentLevel = () => questions[currentLevel];
-
   return (
     <GameShell
       title="Share Chores"
-      score={coins}
-      subtitle={`Question ${currentLevel + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && finalScore >= 3}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
+      score={score}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={questions.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && finalScore >= 3}
-      
-      gameId="uvls-kids-21"
-      gameType="uvls"
-      totalLevels={30}
-      currentLevel={21}
-      showConfetti={showResult && finalScore >= 3}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/uvls/kids"
+      gameId={gameId}
+      gameType="uvls"
+      onNext={handleNext}
+      nextEnabled={showResult && score >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
-          <div className="space-y-6">
+      <div className="space-y-8 max-w-2xl mx-auto">
+        {!showResult && questions[currentQuestion] ? (
+          <div>
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">{getCurrentLevel().text}</p>
-              
-              {/* Chores section */}
-              <div className="mb-6">
-                <h3 className="text-white font-semibold mb-2">Chores:</h3>
-                <div className="flex flex-wrap gap-3">
-                  {getCurrentLevel().chores.map(chore => (
-                    <button
-                      key={chore}
-                      onClick={() => selectChore(chore)}
-                      className={`p-3 rounded-lg transition-all transform hover:scale-105 flex items-center gap-2 ${
-                        selectedChore === chore
-                          ? "bg-blue-400 border-2 border-blue-200" // Visual feedback for selected
-                          : choreAssignments.some(ass => ass.chore === chore)
-                          ? "bg-green-500 border-2 border-green-300" // Visual feedback for assigned
-                          : "bg-blue-500 hover:bg-blue-400 border-2 border-blue-600"
-                      }`}
-                    >
-                      <span>{chore}</span>
-                      <span>🧹</span>
-                      {choreAssignments.some(ass => ass.chore === chore) && (
-                        <span className="text-lg">✅</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
               </div>
               
-              {/* Characters section */}
-              <div className="mb-6">
-                <h3 className="text-white font-semibold mb-2">Characters:</h3>
-                <div className="flex flex-wrap gap-3">
-                  {getCurrentLevel().characters.map(char => (
-                    <button
-                      key={char}
-                      onClick={() => selectCharacter(char)}
-                      className={`p-3 rounded-lg transition-all transform hover:scale-105 flex items-center gap-2 ${
-                        selectedCharacter === char
-                          ? "bg-green-400 border-2 border-green-200" // Visual feedback for selected
-                          : "bg-green-500 hover:bg-green-400 border-2 border-green-600"
-                      }`}
-                    >
-                      <span>{char}</span>
-                      <span>👤</span>
-                    </button>
-                  ))}
-                </div>
+              <div className="bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-xl p-6 mb-6 text-center">
+                <div className="text-6xl mb-3">{questions[currentQuestion].emoji}</div>
+                <h3 className="text-white text-xl font-bold">{questions[currentQuestion].text}</h3>
               </div>
               
-              {/* Current assignments display */}
-              <div className="mb-4">
-                <h3 className="text-white font-semibold mb-2">Your Assignments:</h3>
-                <div className="flex flex-wrap gap-2">
-                  {choreAssignments.map((assignment, index) => (
-                    <div key={index} className="bg-purple-500 text-white px-3 py-2 rounded-lg flex items-center gap-2">
-                      <span>{assignment.chore} → {assignment.character}</span>
-                      <button 
-                        onClick={() => removeAssignment(assignment.chore)}
-                        className="text-white hover:text-red-200"
-                      >
-                        ✕
-                      </button>
+              <div className="grid grid-cols-1 gap-4">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    disabled={answered}
+                    className={`w-full text-left p-4 rounded-xl transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : "bg-red-500/20 border-2 border-red-400 opacity-75"
+                        : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-3xl">{option.emoji}</span>
+                      <div className="flex-1">
+                        <div className="font-semibold text-lg">{option.text}</div>
+                        <div className="text-sm opacity-90">{option.description}</div>
+                      </div>
                     </div>
-                  ))}
-                  {choreAssignments.length === 0 && (
-                    <div className="text-white/70 italic">No assignments yet. Click a chore and a character to create an assignment.</div>
-                  )}
-                </div>
+                  </button>
+                ))}
               </div>
-              
-              <button 
-                onClick={handleAssignment} 
-                className="mt-2 bg-purple-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                disabled={choreAssignments.length === 0}
-              >
-                Submit Assignment ({choreAssignments.length} assigned)
-              </button>
             </div>
           </div>
         ) : (
           <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            {finalScore >= 3 ? (
+            {score >= 3 ? (
               <div>
                 <div className="text-5xl mb-4">🎉</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Fair Sharing!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {finalScore} out of {questions.length} fair assignments!
+                  You got {score} out of {questions.length} correct!
                   You know how to share chores fairly!
                 </p>
                 <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
-                  <span>+{finalScore} Coins</span>
+                  <span>+{score} Coins</span>
                 </div>
                 <p className="text-white/80">
-                  Lesson: Sharing chores fairly means everyone helps and no one is left with too much work!
+                  Lesson: Sharing chores fairly means everyone helps equally and no one is left with too much work. This creates a happy and fair home!
                 </p>
               </div>
             ) : (
@@ -284,8 +280,8 @@ const ShareChores = () => {
                 <div className="text-5xl mb-4">💪</div>
                 <h3 className="text-2xl font-bold text-white mb-4">Try Fairer!</h3>
                 <p className="text-white/90 text-lg mb-4">
-                  You got {finalScore} out of {questions.length} fair assignments.
-                  Keep practicing to share chores fairly!
+                  You got {score} out of {questions.length} correct.
+                  Remember: Chores should be shared fairly among everyone!
                 </p>
                 <button
                   onClick={handleTryAgain}
@@ -294,7 +290,7 @@ const ShareChores = () => {
                   Try Again
                 </button>
                 <p className="text-white/80 text-sm">
-                  Tip: Make sure everyone gets a fair share of chores. Balance the work equally!
+                  Tip: Fair sharing means everyone gets an equal amount of work. Balance chores so no one person is overwhelmed!
                 </p>
               </div>
             )}

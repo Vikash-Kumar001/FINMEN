@@ -8,7 +8,7 @@ import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/te
 const WorkplaceConflictSim = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-96";
+  const gameId = "uvls-teen-79";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;

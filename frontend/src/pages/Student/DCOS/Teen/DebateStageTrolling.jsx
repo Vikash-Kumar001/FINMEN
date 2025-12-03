@@ -1,108 +1,196 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const DebateStageTrolling = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  const gameId = "dcos-teen-14";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentDebate, setCurrentDebate] = useState(0);
   const [selectedPosition, setSelectedPosition] = useState(null);
   const [argument, setArgument] = useState("");
-  const [rebuttal, setRebuttal] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const topic = "Is trolling funny?";
-  const positions = [
-    { id: 1, position: "Yes - it's just harmless fun", emoji: "😂", isCorrect: false },
-    { id: 2, position: "No - it hurts people and causes harm", emoji: "💔", isCorrect: true }
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+
+  const debates = [
+    {
+      id: 1,
+      topic: "Is trolling funny?",
+      emoji: "💭",
+      positions: [
+        { id: 1, position: "Yes - it's just harmless fun", emoji: "😂", isCorrect: false },
+        { id: 2, position: "No - it hurts people and causes harm", emoji: "💔", isCorrect: true }
+      ]
+    },
+    {
+      id: 2,
+      topic: "Should cyberbullying be taken seriously?",
+      emoji: "🤔",
+      positions: [
+        { id: 1, position: "No - it's just online", emoji: "😐", isCorrect: false },
+        { id: 2, position: "Yes - it causes real harm", emoji: "🛡️", isCorrect: true }
+      ]
+    },
+    {
+      id: 3,
+      topic: "Is spreading rumors okay?",
+      emoji: "💬",
+      positions: [
+        { id: 1, position: "Yes - it's just gossip", emoji: "😏", isCorrect: false },
+        { id: 2, position: "No - it destroys reputations", emoji: "🚫", isCorrect: true }
+      ]
+    },
+    {
+      id: 4,
+      topic: "Should we ignore online hate?",
+      emoji: "👁️",
+      positions: [
+        { id: 1, position: "Yes - just ignore it", emoji: "😑", isCorrect: false },
+        { id: 2, position: "No - report and stand up", emoji: "💪", isCorrect: true }
+      ]
+    },
+    {
+      id: 5,
+      topic: "Is peer pressure to bully okay?",
+      emoji: "👥",
+      positions: [
+        { id: 1, position: "Yes - to fit in", emoji: "😞", isCorrect: false },
+        { id: 2, position: "No - stand up for what's right", emoji: "🛡️", isCorrect: true }
+      ]
+    }
   ];
 
   const handleSubmit = () => {
-    if (selectedPosition === 2 && argument.trim().length >= 30 && rebuttal.trim().length >= 20) {
-      showCorrectAnswerFeedback(10, true);
-      setCoins(10);
-      setShowFeedback(true);
-    } else if (selectedPosition && argument.trim().length >= 30 && rebuttal.trim().length >= 20) {
-      setShowFeedback(true);
+    if (answered) return;
+    
+    if (!selectedPosition || argument.trim().length < 20) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const currentDebateData = debates[currentDebate];
+    const selectedPos = currentDebateData.positions.find(p => p.id === selectedPosition);
+    const isCorrect = selectedPos?.isCorrect || false;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentDebate < debates.length - 1) {
+        setCurrentDebate(prev => prev + 1);
+        setSelectedPosition(null);
+        setArgument("");
+        setAnswered(false);
+      } else {
+        setShowResult(true);
+      }
+    }, 500);
   };
 
-  const handleNext = () => {
-    navigate("/student/dcos/teen/diversity-quiz");
-  };
-
-  const selectedPos = positions.find(p => p.id === selectedPosition);
+  const currentDebateData = debates[currentDebate];
+  const selectedPos = currentDebateData.positions.find(p => p.id === selectedPosition);
 
   return (
     <GameShell
       title="Debate Stage"
-      subtitle="Is Trolling Funny?"
-      onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
-      showGameOver={showFeedback && coins > 0}
-      score={coins}
-      gameId="dcos-teen-14"
+      score={score}
+      subtitle={!showResult ? `Debate ${currentDebate + 1} of ${debates.length}` : "Game Complete!"}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
       gameType="dcos"
-      totalLevels={20}
-      currentLevel={14}
-      showConfetti={showFeedback && coins > 0}
+      totalLevels={debates.length}
+      currentLevel={currentDebate + 1}
+      maxScore={debates.length}
+      showConfetti={showResult && score === debates.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/digital-citizenship/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-4 text-center">💭</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">Debate Topic</h2>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+        {!showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <div className="text-6xl mb-4 text-center">{currentDebateData.emoji}</div>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 text-center">Debate Topic</h2>
             <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-xl font-semibold text-center">{topic}</p>
+              <p className="text-white text-lg md:text-xl font-semibold text-center">{currentDebateData.topic}</p>
             </div>
 
             <h3 className="text-white font-bold mb-4">1. Choose Your Position</h3>
             <div className="grid grid-cols-2 gap-3 mb-6">
-              {positions.map(pos => (
+              {currentDebateData.positions.map(pos => (
                 <button
                   key={pos.id}
-                  onClick={() => setSelectedPosition(pos.id)}
+                  onClick={() => !answered && setSelectedPosition(pos.id)}
+                  disabled={answered}
                   className={`border-2 rounded-xl p-4 transition-all ${
                     selectedPosition === pos.id
                       ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
+                      : answered && pos.isCorrect
+                      ? 'bg-green-500/50 border-green-400'
                       : 'bg-white/20 border-white/40 hover:bg-white/30'
                   }`}
                 >
                   <div className="text-3xl mb-2">{pos.emoji}</div>
-                  <div className="text-white font-semibold text-sm">{pos.position}</div>
+                  <div className="text-white font-semibold text-xs md:text-sm">{pos.position}</div>
                 </button>
               ))}
             </div>
 
-            <h3 className="text-white font-bold mb-2">2. Build Your Argument (min 30 chars)</h3>
+            <h3 className="text-white font-bold mb-2">2. Build Your Argument (min 20 chars)</h3>
             <textarea
               value={argument}
-              onChange={(e) => setArgument(e.target.value)}
+              onChange={(e) => !answered && setArgument(e.target.value)}
+              disabled={answered}
               placeholder="Provide evidence and reasoning for your position..."
               className="w-full h-24 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
               maxLength={200}
             />
             <div className="text-white/50 text-sm mb-4 text-right">{argument.length}/200</div>
 
-            <h3 className="text-white font-bold mb-2">3. Prepare Your Rebuttal (min 20 chars)</h3>
-            <textarea
-              value={rebuttal}
-              onChange={(e) => setRebuttal(e.target.value)}
-              placeholder="Counter the opposing view..."
-              className="w-full h-20 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={150}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{rebuttal.length}/150</div>
-
             <button
               onClick={handleSubmit}
-              disabled={!selectedPosition || argument.trim().length < 30 || rebuttal.trim().length < 20}
+              disabled={!selectedPosition || argument.trim().length < 20 || answered}
               className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedPosition && argument.trim().length >= 30 && rebuttal.trim().length >= 20
+                selectedPosition && argument.trim().length >= 20 && !answered
                   ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
                   : 'bg-gray-500/50 cursor-not-allowed'
               }`}
@@ -111,42 +199,21 @@ const DebateStageTrolling = () => {
             </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedPos.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedPos.isCorrect ? "🏆 Compassionate Leader!" : "Reconsider This..."}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="text-7xl mb-4">🏆</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === debates.length ? "Perfect Compassionate Leader! 🎉" : `You got ${score} out of ${debates.length}!`}
             </h2>
-            
-            {selectedPos.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Excellent position! Trolling is NOT funny - it causes real psychological harm. 
-                    Victims experience anxiety, depression, and trauma. What seems like a "joke" to 
-                    the troll can devastate someone's mental health. Empathy and kindness should guide 
-                    our online behavior, not cruelty disguised as humor.
-                  </p>
-                </div>
-                <div className="bg-purple-500/20 rounded-lg p-3 mb-4">
-                  <p className="text-white/80 text-sm mb-1">Your Argument:</p>
-                  <p className="text-white italic">"{argument}"</p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 10 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Trolling is harmful, not funny. It causes real pain - depression, anxiety, and 
-                    even self-harm. "Just joking" doesn't erase the damage. Would YOU find it funny 
-                    if someone targeted you or your loved ones? Choose empathy over cruelty.
-                  </p>
-                </div>
-                <p className="text-white/70 text-center">Try again with a more compassionate view!</p>
-              </>
-            )}
+            <p className="text-white/90 text-lg mb-6">
+              {score === debates.length 
+                ? "Excellent position! Trolling is NOT funny - it causes real psychological harm. Victims experience anxiety, depression, and trauma. What seems like a \"joke\" to the troll can devastate someone's mental health. Empathy and kindness should guide our online behavior, not cruelty disguised as humor."
+                : "Great job! Keep learning to make compassionate choices!"}
+            </p>
+            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
+              <p className="text-white text-center text-sm">
+                💡 Choose empathy over cruelty. Stand up for what's right online!
+              </p>
+            </div>
           </div>
         )}
       </div>
@@ -155,4 +222,3 @@ const DebateStageTrolling = () => {
 };
 
 export default DebateStageTrolling;
-

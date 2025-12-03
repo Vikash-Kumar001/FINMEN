@@ -11,7 +11,7 @@ const ROUND_TIME = 10;
 const CivicReflex = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-68";
+  const gameId = "uvls-teen-89";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;

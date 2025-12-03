@@ -8,7 +8,7 @@ import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/te
 const CoalitionSimulation = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-67";
+  const gameId = "uvls-teen-88";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;

@@ -8,7 +8,7 @@ import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/te
 const LifeSkillsChampionBadge = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-65";
+  const gameId = "uvls-teen-100";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;

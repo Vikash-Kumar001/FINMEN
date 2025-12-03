@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -8,7 +8,7 @@ import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/te
 const BATNAPuzzle = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-71";
+  const gameId = "uvls-teen-74";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
@@ -197,26 +197,48 @@ const BATNAPuzzle = () => {
     const isCorrect = selectedOptionData?.isCorrect || false;
     
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      const newScore = score + 1;
+      setScore(newScore);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
+    if (isLastQuestion) {
+      // Add delay to ensure state updates propagate before showing result
+      setTimeout(() => {
+        setLevelCompleted(true);
+      }, 200);
+    } else {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
         setSelectedOption(null);
         setAnswered(false);
         resetFeedback();
-      } else {
-        setLevelCompleted(true);
-      }
-    }, isCorrect ? 1000 : 800);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
   const currentQuestionData = questions[currentQuestion];
   const finalScore = score;
+  
+  // Log completion and update location state when game completes
+  useEffect(() => {
+    if (levelCompleted) {
+      console.log(`🎮 BATNA Puzzle game completed! Score: ${score}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [levelCompleted, score, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell

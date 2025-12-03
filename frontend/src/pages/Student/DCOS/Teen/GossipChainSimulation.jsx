@@ -1,16 +1,46 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const GossipChainSimulation = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  const gameId = "dcos-teen-13";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [currentStep, setCurrentStep] = useState(0);
   const [selectedAction, setSelectedAction] = useState(null);
-  const [stoppedRumor, setStoppedRumor] = useState(false);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
 
   const steps = [
     {
@@ -45,126 +75,131 @@ const GossipChainSimulation = () => {
         { id: 2, text: "Defend Alex and stop rumor", stops: true },
         { id: 3, text: "Stay silent", stops: false }
       ]
+    },
+    {
+      id: 4,
+      chat: "Group Chat 4",
+      message: "I heard Alex got caught cheating!",
+      emoji: "📢",
+      actions: [
+        { id: 1, text: "Forward the message", stops: false },
+        { id: 2, text: "Stop and verify first", stops: true },
+        { id: 3, text: "Add more details", stops: false }
+      ]
+    },
+    {
+      id: 5,
+      chat: "Group Chat 5",
+      message: "Alex is a known cheater now",
+      emoji: "🔥",
+      actions: [
+        { id: 1, text: "Keep spreading", stops: false },
+        { id: 2, text: "Defend and stop the rumor", stops: true },
+        { id: 3, text: "Just watch", stops: false }
+      ]
     }
   ];
 
-  const currentStepData = steps[currentStep];
-
   const handleAction = (actionId) => {
-    setSelectedAction(actionId);
-  };
-
-  const handleConfirm = () => {
-    const action = currentStepData.actions.find(a => a.id === selectedAction);
+    if (answered) return;
     
-    if (action.stops) {
-      setStoppedRumor(true);
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
-      setShowResult(true);
-    } else if (currentStep < steps.length - 1) {
-      setCurrentStep(prev => prev + 1);
-      setSelectedAction(null);
+    setSelectedAction(actionId);
+    setAnswered(true);
+    resetFeedback();
+    
+    const currentStepData = steps[currentStep];
+    const action = currentStepData.actions.find(a => a.id === actionId);
+    const isCorrect = action?.stops || false;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentStep < steps.length - 1) {
+        setCurrentStep(prev => prev + 1);
+        setSelectedAction(null);
+        setAnswered(false);
+      } else {
+        setShowResult(true);
+      }
+    }, 500);
   };
 
-  const handleNext = () => {
-    navigate("/student/dcos/teen/debate-stage-trolling");
-  };
+  const currentStepData = steps[currentStep];
 
   return (
     <GameShell
       title="Gossip Chain Simulation"
-      subtitle={!showResult ? `Chat ${currentStep + 1} of ${steps.length}` : "Rumor Result"}
-      onNext={handleNext}
-      nextEnabled={showResult && stoppedRumor}
-      showGameOver={showResult && stoppedRumor}
-      score={coins}
-      gameId="dcos-teen-13"
+      score={score}
+      subtitle={!showResult ? `Chat ${currentStep + 1} of ${steps.length}` : "Game Complete!"}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
       gameType="dcos"
-      totalLevels={20}
-      currentLevel={13}
-      showConfetti={showResult && stoppedRumor}
+      totalLevels={steps.length}
+      currentLevel={currentStep + 1}
+      maxScore={steps.length}
+      showConfetti={showResult && score === steps.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/digital-citizenship/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <div className="space-y-8">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{currentStepData.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">{currentStepData.chat}</h2>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <div className="text-6xl md:text-8xl mb-4 text-center">{currentStepData.emoji}</div>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 text-center">{currentStepData.chat}</h2>
             
-            <div className="bg-orange-500/20 border-2 border-orange-400 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg font-semibold text-center">
+            <div className="bg-orange-500/20 border-2 border-orange-400 rounded-lg p-4 md:p-5 mb-6">
+              <p className="text-white text-base md:text-lg font-semibold text-center">
                 "{currentStepData.message}"
               </p>
             </div>
 
-            <h3 className="text-white font-bold mb-4">What will you do?</h3>
+            <h3 className="text-white font-bold mb-4 text-center">What will you do?</h3>
             
-            <div className="space-y-3 mb-6">
+            <div className="space-y-3">
               {currentStepData.actions.map(action => (
                 <button
                   key={action.id}
                   onClick={() => handleAction(action.id)}
+                  disabled={answered}
                   className={`w-full border-2 rounded-xl p-4 transition-all ${
-                    selectedAction === action.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
+                    answered && action.stops
+                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
+                      : answered && !action.stops
+                      ? 'bg-red-500/30 border-red-400 opacity-60'
                       : 'bg-white/20 border-white/40 hover:bg-white/30'
                   }`}
                 >
-                  <div className="text-white font-semibold text-center">{action.text}</div>
+                  <div className="text-white font-semibold text-center text-base md:text-lg">{action.text}</div>
                 </button>
               ))}
             </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedAction}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedAction
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Confirm Action
-            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{stoppedRumor ? "🛡️" : "💔"}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {stoppedRumor ? "🌟 Rumor Stopped!" : "😢 Rumor Spread"}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="text-7xl mb-4">{score === steps.length ? "🛡️" : "💔"}</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === steps.length ? "Perfect Rumor Stopper! 🎉" : `You stopped ${score} out of ${steps.length} rumors!`}
             </h2>
-            
-            {stoppedRumor ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Excellent! You stopped the rumor from spreading further. Gossip and rumors can 
-                    destroy reputations and cause serious emotional harm. Always verify information 
-                    and refuse to spread unconfirmed stories. You protected Alex!
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    The rumor spread across {currentStep + 1} group chats and hurt Alex's reputation. 
-                    Gossip causes real damage - anxiety, depression, and social isolation. Always 
-                    stop rumors, don't spread them!
-                  </p>
-                </div>
-                <p className="text-white/70 text-center">Choose to stop rumors early next time!</p>
-              </>
-            )}
+            <p className="text-white/90 text-lg mb-6">
+              {score === steps.length 
+                ? "Excellent! You stopped all rumors from spreading further. Gossip and rumors can destroy reputations and cause serious emotional harm. Always verify information and refuse to spread unconfirmed stories. You protected Alex!"
+                : `You stopped ${score} out of ${steps.length} rumors! Keep learning to stop gossip chains!`}
+            </p>
+            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
+              <p className="text-white text-center text-sm">
+                💡 Always stop rumors, don't spread them! Gossip causes real damage - anxiety, depression, and social isolation.
+              </p>
+            </div>
           </div>
         )}
       </div>
@@ -173,4 +208,3 @@ const GossipChainSimulation = () => {
 };
 
 export default GossipChainSimulation;
-

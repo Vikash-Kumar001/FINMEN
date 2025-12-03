@@ -8,7 +8,7 @@ import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/te
 const ToughBargainRoleplay = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-84";
+  const gameId = "uvls-teen-75";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;

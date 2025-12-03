@@ -1449,7 +1449,7 @@ export const getUvlsTeenGames = (gameCompletionStatus)=> {
         {
           id: "uvls-teen-99",
           title: "Solo Trip Simulation",
-          description: "Plan a safe solo trip checklist.",
+      description: "Plan a safe solo trip checklist.",
           icon: <MapPin className="w-6 h-6" />,
           difficulty: "Hard",
           duration: "12–15 min",

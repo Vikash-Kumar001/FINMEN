@@ -9,7 +9,7 @@ import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/te
 const HabitChangeJournal = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-79";
+  const gameId = "uvls-teen-98";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;

@@ -8,7 +8,7 @@ import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/te
 const CrisisSimulation = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-66";
+  const gameId = "uvls-teen-94";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;

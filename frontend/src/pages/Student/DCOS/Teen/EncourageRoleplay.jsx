@@ -1,80 +1,179 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const EncourageRoleplay = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  const gameId = "dcos-teen-16";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentScenario, setCurrentScenario] = useState(0);
   const [selectedApproach, setSelectedApproach] = useState(null);
   const [encouragingWords, setEncouragingWords] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const scenario = {
-    situation: "Your classmate Maya is being cyberbullied. She's posting about feeling sad and alone.",
-    emoji: "😢",
-    approaches: [
-      { id: 1, text: "Ignore it - not my business", isCorrect: false },
-      { id: 2, text: "Encourage her and report the bullying", isCorrect: true },
-      { id: 3, text: "Tell her to just delete social media", isCorrect: false }
-    ]
-  };
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+
+  const scenarios = [
+    {
+      id: 1,
+      situation: "Your classmate Maya is being cyberbullied. She's posting about feeling sad and alone.",
+      emoji: "😢",
+      approaches: [
+        { id: 1, text: "Ignore it - not my business", isCorrect: false },
+        { id: 2, text: "Encourage her and report the bullying", isCorrect: true },
+        { id: 3, text: "Tell her to just delete social media", isCorrect: false }
+      ]
+    },
+    {
+      id: 2,
+      situation: "Your friend Sam is being trolled online and feels hopeless.",
+      emoji: "💔",
+      approaches: [
+        { id: 1, text: "Stay out of it", isCorrect: false },
+        { id: 2, text: "Support them and report the trolling", isCorrect: true },
+        { id: 3, text: "Tell them to ignore it", isCorrect: false }
+      ]
+    },
+    {
+      id: 3,
+      situation: "A classmate is being excluded and bullied in a group chat.",
+      emoji: "😞",
+      approaches: [
+        { id: 1, text: "Don't get involved", isCorrect: false },
+        { id: 2, text: "Include them and report the bullying", isCorrect: true },
+        { id: 3, text: "Just watch", isCorrect: false }
+      ]
+    },
+    {
+      id: 4,
+      situation: "Someone you know is being harassed online and feels scared.",
+      emoji: "😰",
+      approaches: [
+        { id: 1, text: "It's not my problem", isCorrect: false },
+        { id: 2, text: "Encourage them and report harassment", isCorrect: true },
+        { id: 3, text: "Tell them to block everyone", isCorrect: false }
+      ]
+    },
+    {
+      id: 5,
+      situation: "A friend is being cyberbullied and losing confidence.",
+      emoji: "😔",
+      approaches: [
+        { id: 1, text: "Ignore the situation", isCorrect: false },
+        { id: 2, text: "Support them and report the bullying", isCorrect: true },
+        { id: 3, text: "Tell them to toughen up", isCorrect: false }
+      ]
+    }
+  ];
 
   const handleSubmit = () => {
-    if (selectedApproach === 2 && encouragingWords.trim().length >= 20) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
-      setShowFeedback(true);
-    } else if (selectedApproach && encouragingWords.trim().length >= 20) {
-      setShowFeedback(true);
+    if (answered) return;
+    
+    if (!selectedApproach || encouragingWords.trim().length < 20) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const currentScenarioData = scenarios[currentScenario];
+    const selectedApp = currentScenarioData.approaches.find(a => a.id === selectedApproach);
+    const isCorrect = selectedApp?.isCorrect || false;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentScenario < scenarios.length - 1) {
+        setCurrentScenario(prev => prev + 1);
+        setSelectedApproach(null);
+        setEncouragingWords("");
+        setAnswered(false);
+      } else {
+        setShowResult(true);
+      }
+    }, 500);
   };
 
-  const handleNext = () => {
-    navigate("/student/dcos/teen/empathy-journal");
-  };
-
-  const selectedApp = scenario.approaches.find(a => a.id === selectedApproach);
+  const currentScenarioData = scenarios[currentScenario];
+  const selectedApp = currentScenarioData.approaches.find(a => a.id === selectedApproach);
 
   return (
     <GameShell
       title="Encourage Roleplay"
-      subtitle="Support Bullying Victims"
-      onNext={handleNext}
-      nextEnabled={showFeedback && coins > 0}
-      showGameOver={showFeedback && coins > 0}
-      score={coins}
-      gameId="dcos-teen-16"
+      score={score}
+      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
       gameType="dcos"
-      totalLevels={20}
-      currentLevel={16}
-      showConfetti={showFeedback && coins > 0}
+      totalLevels={scenarios.length}
+      currentLevel={currentScenario + 1}
+      maxScore={scenarios.length}
+      showConfetti={showResult && score === scenarios.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/digital-citizenship/teens"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <div className="space-y-8">
-        {!showFeedback ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-8xl mb-4 text-center">{scenario.emoji}</div>
-            <div className="bg-red-500/20 border-2 border-red-400 rounded-lg p-5 mb-6">
-              <p className="text-white text-lg leading-relaxed">{scenario.situation}</p>
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+        {!showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
+            <div className="bg-red-500/20 border-2 border-red-400 rounded-lg p-4 md:p-5 mb-6">
+              <p className="text-white text-base md:text-lg leading-relaxed">{currentScenarioData.situation}</p>
             </div>
 
             <h3 className="text-white font-bold mb-4">1. Choose Your Approach</h3>
             <div className="space-y-3 mb-6">
-              {scenario.approaches.map(app => (
+              {currentScenarioData.approaches.map(app => (
                 <button
                   key={app.id}
-                  onClick={() => setSelectedApproach(app.id)}
+                  onClick={() => !answered && setSelectedApproach(app.id)}
+                  disabled={answered}
                   className={`w-full border-2 rounded-xl p-4 transition-all ${
                     selectedApproach === app.id
                       ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
+                      : answered && app.isCorrect
+                      ? 'bg-green-500/50 border-green-400'
                       : 'bg-white/20 border-white/40 hover:bg-white/30'
                   }`}
                 >
-                  <div className="text-white font-semibold">{app.text}</div>
+                  <div className="text-white font-semibold text-base md:text-lg">{app.text}</div>
                 </button>
               ))}
             </div>
@@ -82,8 +181,9 @@ const EncourageRoleplay = () => {
             <h3 className="text-white font-bold mb-2">2. Write Encouraging Words (min 20 chars)</h3>
             <textarea
               value={encouragingWords}
-              onChange={(e) => setEncouragingWords(e.target.value)}
-              placeholder="What would you say to encourage Maya?..."
+              onChange={(e) => !answered && setEncouragingWords(e.target.value)}
+              disabled={answered}
+              placeholder="What would you say to encourage them?..."
               className="w-full h-32 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
               maxLength={200}
             />
@@ -91,9 +191,9 @@ const EncourageRoleplay = () => {
 
             <button
               onClick={handleSubmit}
-              disabled={!selectedApproach || encouragingWords.trim().length < 20}
+              disabled={!selectedApproach || encouragingWords.trim().length < 20 || answered}
               className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedApproach && encouragingWords.trim().length >= 20
+                selectedApproach && encouragingWords.trim().length >= 20 && !answered
                   ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
                   : 'bg-gray-500/50 cursor-not-allowed'
               }`}
@@ -102,41 +202,21 @@ const EncourageRoleplay = () => {
             </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">{selectedApp.isCorrect ? "💖" : "😔"}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedApp.isCorrect ? "🌟 Compassionate Helper!" : "Not the Best Approach..."}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="text-7xl mb-4">{score === scenarios.length ? "💖" : "😔"}</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === scenarios.length ? "Perfect Compassionate Helper! 🎉" : `You got ${score} out of ${scenarios.length}!`}
             </h2>
-            
-            {selectedApp.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Perfect! Encouraging victims and reporting bullying are both essential. Your support 
-                    can help Maya feel less alone and the report can stop the bullying. Be the friend 
-                    who stands up and speaks out!
-                  </p>
-                </div>
-                <div className="bg-purple-500/20 rounded-lg p-3 mb-4">
-                  <p className="text-white/80 text-sm mb-1">Your Encouraging Words:</p>
-                  <p className="text-white italic">"{encouragingWords}"</p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    {selectedApproach === 1
-                      ? "Ignoring bullying allows it to continue and makes victims feel more isolated. Always offer support!"
-                      : "While taking a break can help, the real solution is encouraging Maya and reporting the bullying to stop it!"}
-                  </p>
-                </div>
-                <p className="text-white/70 text-center">Choose a more supportive approach!</p>
-              </>
-            )}
+            <p className="text-white/90 text-lg mb-6">
+              {score === scenarios.length 
+                ? "Perfect! Encouraging victims and reporting bullying are both essential. Your support can help them feel less alone and the report can stop the bullying. Be the friend who stands up and speaks out!"
+                : "Great job! Keep learning to support bullying victims!"}
+            </p>
+            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
+              <p className="text-white text-center text-sm">
+                💡 Always offer support and report bullying! Your kindness makes a difference!
+              </p>
+            </div>
           </div>
         )}
       </div>
@@ -145,4 +225,3 @@ const EncourageRoleplay = () => {
 };
 
 export default EncourageRoleplay;
-

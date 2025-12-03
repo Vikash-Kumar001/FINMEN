@@ -117,7 +117,7 @@ const kidDcosGames = {
   'smile-story': SmileStory,
   'gossip-puzzle': GossipPuzzle,
   'playground-bystander': PlaygroundBystander,
-  'cyber-bully-report': CyberBullyReport,
+  'cyberbully-report': CyberBullyReport,
   'role-swap': RoleSwap,
   'kindness-journal': KindnessJournal,
   'friendship-reflex': FriendshipReflex,

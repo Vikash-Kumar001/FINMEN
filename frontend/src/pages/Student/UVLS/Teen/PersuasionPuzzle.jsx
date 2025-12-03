@@ -8,7 +8,7 @@ import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/te
 const PersuasionPuzzle = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-87";
+  const gameId = "uvls-teen-66";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;

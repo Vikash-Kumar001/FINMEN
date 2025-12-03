@@ -198,34 +198,34 @@ const TimeBudgetSimulation = () => {
       showAnswerConfetti={showAnswerConfetti}
       backPath="/games/uvls/kids"
     >
-      <div className="space-y-8">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
         {!showResult ? (
-          <div className="space-y-6 max-w-3xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="w-full max-w-4xl space-y-6">
+            <div className="bg-gradient-to-br from-purple-900/30 via-blue-900/30 to-indigo-900/30 backdrop-blur-md rounded-3xl p-6 md:p-8 border-2 border-white/20 shadow-2xl">
               {/* Scenario Description */}
-              <div className="bg-blue-500/20 border-2 border-blue-400/50 rounded-lg p-4 mb-6">
-                <p className="text-white text-lg font-semibold mb-2">{getCurrentLevel().scenario}</p>
-                <p className="text-blue-200 text-sm">{getCurrentLevel().instruction}</p>
+              <div className="bg-gradient-to-r from-blue-500/20 via-indigo-500/20 to-purple-500/20 border-2 border-blue-400/50 rounded-2xl p-5 md:p-6 mb-6">
+                <p className="text-white text-lg md:text-xl font-semibold mb-3 leading-relaxed">{getCurrentLevel().scenario}</p>
+                <p className="text-blue-200 text-sm md:text-base">{getCurrentLevel().instruction}</p>
               </div>
 
               {/* Total Time Display */}
-              <div className="bg-yellow-500/20 border-2 border-yellow-400/50 rounded-lg p-4 mb-6 text-center">
-                <div className="flex items-center justify-center gap-4">
-                  <div>
-                    <p className="text-yellow-200 text-sm">Total Time Available</p>
-                    <p className="text-yellow-300 text-3xl font-bold">{getCurrentLevel().totalMinutes} min</p>
+              <div className="bg-gradient-to-r from-yellow-500/20 via-orange-500/20 to-amber-500/20 border-2 border-yellow-400/50 rounded-2xl p-5 md:p-6 mb-6">
+                <div className="flex flex-col md:flex-row items-center justify-center gap-4 md:gap-6">
+                  <div className="text-center">
+                    <p className="text-yellow-200 text-xs md:text-sm mb-1">Total Time Available</p>
+                    <p className="text-yellow-300 text-2xl md:text-4xl font-bold">{getCurrentLevel().totalMinutes} min</p>
                   </div>
-                  <div className="text-white/50 text-2xl">→</div>
-                  <div>
-                    <p className="text-yellow-200 text-sm">Time Allocated</p>
-                    <p className={`text-3xl font-bold ${getRemainingTime() === 0 ? 'text-green-400' : getRemainingTime() < 0 ? 'text-red-400' : 'text-yellow-300'}`}>
+                  <div className="text-white/50 text-xl md:text-2xl hidden md:block">→</div>
+                  <div className="text-center">
+                    <p className="text-yellow-200 text-xs md:text-sm mb-1">Time Allocated</p>
+                    <p className={`text-2xl md:text-4xl font-bold ${getRemainingTime() === 0 ? 'text-green-400' : getRemainingTime() < 0 ? 'text-red-400' : 'text-yellow-300'}`}>
                       {getTotalAllocated()} min
                     </p>
                   </div>
-                  <div className="text-white/50 text-2xl">→</div>
-                  <div>
-                    <p className="text-yellow-200 text-sm">Remaining</p>
-                    <p className={`text-3xl font-bold ${getRemainingTime() === 0 ? 'text-green-400' : getRemainingTime() < 0 ? 'text-red-400' : 'text-yellow-300'}`}>
+                  <div className="text-white/50 text-xl md:text-2xl hidden md:block">→</div>
+                  <div className="text-center">
+                    <p className="text-yellow-200 text-xs md:text-sm mb-1">Remaining</p>
+                    <p className={`text-2xl md:text-4xl font-bold ${getRemainingTime() === 0 ? 'text-green-400' : getRemainingTime() < 0 ? 'text-red-400' : 'text-yellow-300'}`}>
                       {getRemainingTime()} min
                     </p>
                   </div>
@@ -233,7 +233,7 @@ const TimeBudgetSimulation = () => {
               </div>
 
               {/* Activity Inputs */}
-              <div className="space-y-3 mb-6">
+              <div className="space-y-4 mb-6">
                 {getCurrentLevel().activities.map(activity => {
                   const allocated = timeAllocations[activity.name] || 0;
                   const percentage = getCurrentLevel().totalMinutes > 0 
@@ -241,13 +241,13 @@ const TimeBudgetSimulation = () => {
                     : 0;
                   
                   return (
-                    <div key={activity.name} className="bg-white/10 border-2 border-white/20 rounded-lg p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl">{activity.emoji}</span>
-                          <span className="text-white font-semibold text-lg">{activity.name}</span>
+                    <div key={activity.name} className="bg-gradient-to-r from-white/10 to-white/5 border-2 border-white/20 rounded-2xl p-4 md:p-5 hover:border-white/40 transition-all">
+                      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 md:gap-4 mb-3">
+                        <div className="flex items-center gap-3 md:gap-4 flex-1">
+                          <span className="text-3xl md:text-4xl">{activity.emoji}</span>
+                          <span className="text-white font-semibold text-base md:text-xl">{activity.name}</span>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto">
                           <input
                             type="number"
                             min="0"
@@ -255,21 +255,21 @@ const TimeBudgetSimulation = () => {
                             max={getCurrentLevel().totalMinutes}
                             value={timeAllocations[activity.name] || ''}
                             onChange={(e) => handleTimeChange(activity.name, e.target.value)}
-                            className="w-24 p-2 rounded bg-white/30 text-white placeholder-white/50 text-center font-semibold border-2 border-white/30 focus:border-blue-400 focus:outline-none"
+                            className="w-20 md:w-28 p-2 md:p-3 rounded-lg bg-white/30 text-white placeholder-white/50 text-center font-bold text-base md:text-lg border-2 border-white/30 focus:border-blue-400 focus:outline-none focus:ring-2 focus:ring-blue-400/50"
                             placeholder="0"
                           />
-                          <span className="text-white/70 text-sm w-12">min</span>
+                          <span className="text-white/70 text-sm md:text-base font-medium w-10 md:w-12">min</span>
                           {allocated > 0 && (
-                            <span className="text-blue-300 text-sm font-semibold w-12">
+                            <span className="text-blue-300 text-sm md:text-base font-bold w-12 md:w-16">
                               {percentage}%
                             </span>
                           )}
                         </div>
                       </div>
                       {allocated > 0 && (
-                        <div className="w-full bg-white/10 rounded-full h-2 mt-2">
+                        <div className="w-full bg-white/10 rounded-full h-3 md:h-4 mt-2">
                           <div 
-                            className="bg-gradient-to-r from-blue-400 to-cyan-400 h-2 rounded-full transition-all"
+                            className="bg-gradient-to-r from-blue-400 to-cyan-400 h-3 md:h-4 rounded-full transition-all duration-300"
                             style={{ width: `${Math.min(percentage, 100)}%` }}
                           ></div>
                         </div>
@@ -280,12 +280,12 @@ const TimeBudgetSimulation = () => {
               </div>
 
               {/* Validation Message */}
-              <div className={`rounded-lg p-3 mb-4 ${
+              <div className={`rounded-2xl p-4 md:p-5 mb-6 ${
                 getRemainingTime() === 0 && getCurrentLevel().activities.every(a => (timeAllocations[a.name] || 0) > 0)
-                  ? 'bg-green-500/20 border-2 border-green-400'
-                  : 'bg-orange-500/20 border-2 border-orange-400'
+                  ? 'bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-2 border-green-400'
+                  : 'bg-gradient-to-r from-orange-500/20 to-amber-500/20 border-2 border-orange-400'
               }`}>
-                <p className={`text-sm font-semibold ${
+                <p className={`text-sm md:text-base font-semibold ${
                   getRemainingTime() === 0 && getCurrentLevel().activities.every(a => (timeAllocations[a.name] || 0) > 0)
                     ? 'text-green-200'
                     : 'text-orange-200'
@@ -298,9 +298,9 @@ const TimeBudgetSimulation = () => {
               <button 
                 onClick={handleAllocation}
                 disabled={!checkBalance(timeAllocations)}
-                className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
+                className={`w-full py-4 md:py-5 rounded-2xl font-bold text-white text-base md:text-lg transition-all transform ${
                   checkBalance(timeAllocations)
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg'
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 shadow-lg hover:scale-105'
                     : 'bg-gray-500/50 cursor-not-allowed opacity-50'
                 }`}
               >
@@ -309,39 +309,43 @@ const TimeBudgetSimulation = () => {
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+          <div className="w-full max-w-3xl bg-gradient-to-br from-green-900/30 via-emerald-900/30 to-teal-900/30 backdrop-blur-md rounded-3xl p-6 md:p-8 border-2 border-white/20 shadow-2xl text-center">
             {finalScore >= 3 ? (
               <div>
-                <div className="text-5xl mb-4">🎉</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Time Balancer!</h3>
-                <p className="text-white/90 text-lg mb-4">
+                <div className="text-6xl md:text-8xl mb-6 animate-bounce">🎉</div>
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4 bg-gradient-to-r from-yellow-300 to-green-300 bg-clip-text text-transparent">Time Balancer!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-6 leading-relaxed">
                   You balanced {finalScore} out of {questions.length} times!
                   You know how to manage your time well!
                 </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 md:py-4 px-6 md:px-8 rounded-full inline-flex items-center gap-2 mb-6 text-base md:text-lg font-bold">
                   <span>+{finalScore} Coins</span>
                 </div>
-                <p className="text-white/80">
-                  Lesson: Balancing your time between study, play, and rest helps you stay healthy and happy!
-                </p>
+                <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl p-4 md:p-5 border-2 border-green-400/30">
+                  <p className="text-white/90 text-sm md:text-base">
+                    💡 Lesson: Balancing your time between study, play, and rest helps you stay healthy and happy!
+                  </p>
+                </div>
               </div>
             ) : (
               <div>
-                <div className="text-5xl mb-4">💪</div>
-                <h3 className="text-2xl font-bold text-white mb-4">Balance Better!</h3>
-                <p className="text-white/90 text-lg mb-4">
+                <div className="text-6xl md:text-8xl mb-6">💪</div>
+                <h3 className="text-2xl md:text-3xl font-bold text-white mb-4">Balance Better!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-6 leading-relaxed">
                   You balanced {finalScore} out of {questions.length} times.
                   Keep practicing to balance your time better!
                 </p>
                 <button
                   onClick={handleTryAgain}
-                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 md:py-4 px-6 md:px-8 rounded-full font-bold text-base md:text-lg transition-all transform hover:scale-105 mb-6"
                 >
                   Try Again
                 </button>
-                <p className="text-white/80 text-sm">
-                  Tip: Make sure to allocate time for all activities - study, play, rest, and chores!
-                </p>
+                <div className="bg-gradient-to-r from-orange-500/20 to-amber-500/20 rounded-2xl p-4 md:p-5 border-2 border-orange-400/30">
+                  <p className="text-white/90 text-sm md:text-base">
+                    💡 Tip: Make sure to allocate time for all activities - study, play, rest, and chores!
+                  </p>
+                </div>
               </div>
             )}
           </div>

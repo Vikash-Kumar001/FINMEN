@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -77,23 +77,44 @@ const CommunicationJournal = () => {
     const entryText = entry.trim();
     
     if (entryText.length >= stages[currentStage].minLength) {
-      setScore((prev) => prev + 1);
+      const newScore = score + 1;
+      setScore(newScore);
       showCorrectAnswerFeedback(1, true);
       
       const isLastQuestion = currentStage === stages.length - 1;
       
-      setTimeout(() => {
-        if (isLastQuestion) {
+      if (isLastQuestion) {
+        // Add delay to ensure state updates propagate before showing result
+        setTimeout(() => {
           setShowResult(true);
-        } else {
+        }, 200);
+      } else {
+        setTimeout(() => {
           setEntry("");
           setCurrentStage((prev) => prev + 1);
-        }
-      }, 1500);
+        }, 1500);
+      }
     }
   };
 
+  // Calculate final score - use score directly as it should be updated by now
   const finalScore = score;
+  
+  // Log completion and update location state when game completes
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Communication Journal game completed! Score: ${score}/${stages.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, score, gameId, nextGamePath, nextGameId, stages.length]);
 
   return (
     <GameShell

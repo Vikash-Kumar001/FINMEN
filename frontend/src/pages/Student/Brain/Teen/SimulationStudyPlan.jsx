@@ -1,12 +1,11 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 import { getGameDataById } from '../../../../utils/getGameData';
 import { getBrainTeenGames } from '../../../../pages/Games/GameCategories/Brain/teenGamesData';
 
 const SimulationStudyPlan = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -53,7 +52,6 @@ const SimulationStudyPlan = () => {
   const [feedbackType, setFeedbackType] = useState(null);
   const [score, setScore] = useState(0);
   const [levelCompleted, setLevelCompleted] = useState(false);
-  const [answers, setAnswers] = useState({});
 
   const questions = [
     {
@@ -198,7 +196,7 @@ const SimulationStudyPlan = () => {
     }
   ];
 
-  const currentScenario = questions[currentQuestion];
+  const currentScenario = questions[currentQuestion] || null;
 
   const handleOptionSelect = (optionId) => {
     if (selectedOption || levelCompleted) return;
@@ -208,15 +206,6 @@ const SimulationStudyPlan = () => {
     setFeedbackType(isCorrect ? "correct" : "wrong");
     setShowFeedback(true);
     resetFeedback();
-    
-    // Save answer
-    setAnswers(prev => ({
-      ...prev,
-      [currentQuestion]: {
-        selected: optionId,
-        correct: isCorrect
-      }
-    }));
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -258,6 +247,7 @@ const SimulationStudyPlan = () => {
     <GameShell
       title="Simulation: Study Plan"
       score={score}
+      subtitle={!levelCompleted ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
@@ -271,56 +261,136 @@ const SimulationStudyPlan = () => {
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
+      showConfetti={levelCompleted && score === questions.length}
     >
-      <div className="space-y-6 md:space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
         {!levelCompleted && currentScenario ? (
-          <div className="space-y-4 md:space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
-              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
-                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold text-sm md:text-base">Score: {score}/{questions.length}</span>
+          <div className="w-full max-w-4xl space-y-6">
+            <div className="bg-gradient-to-br from-purple-900/30 via-blue-900/30 to-indigo-900/30 backdrop-blur-md rounded-3xl p-6 md:p-8 border-2 border-white/20 shadow-2xl">
+              {/* Header Section */}
+              <div className="text-center mb-6">
+                <div className="flex justify-center items-center gap-3 mb-4">
+                  <span className="text-5xl md:text-6xl">📚</span>
+                  <h3 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
+                    Study Plan Simulator
+                  </h3>
+                </div>
+                <div className="flex justify-center items-center gap-3 text-white/60 text-sm md:text-base">
+                  <span>Question {currentQuestion + 1} of {questions.length}</span>
+                  <span>•</span>
+                  <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+                </div>
+              </div>
+
+              {/* Question Card */}
+              <div className="bg-gradient-to-r from-purple-500/20 via-indigo-500/20 to-blue-500/20 border-2 border-purple-400/50 rounded-2xl p-5 md:p-6 mb-6">
+                <div className="flex items-start gap-3">
+                  <div className="text-3xl md:text-4xl">💭</div>
+                  <p className="text-base md:text-lg lg:text-xl font-semibold text-white leading-relaxed flex-1">
+                    {currentScenario.text}
+                  </p>
+                </div>
               </div>
               
-              <h3 className="text-lg md:text-xl font-bold text-white mb-4 md:mb-6 text-center">Study Plan Simulator</h3>
-              <div className="bg-gradient-to-r from-purple-500/20 to-blue-500/20 border border-purple-400/30 rounded-xl md:rounded-2xl p-4 md:p-6 mb-4 md:mb-6">
-                <p className="text-base md:text-lg lg:text-xl font-semibold text-white text-center">"{currentScenario.text}"</p>
+              {/* Options Section */}
+              <div className="mb-6">
+                <h4 className="text-base md:text-lg font-semibold text-white mb-4 md:mb-5 text-center">
+                  Choose the best option: 🤔
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {currentScenario.options.map((option, index) => {
+                    const isSelected = selectedOption === option.id;
+                    const showCorrect = showFeedback && isSelected && option.id === currentScenario.correct;
+                    const showIncorrect = showFeedback && isSelected && option.id !== currentScenario.correct;
+                  
+                    return (
+                      <button
+                        key={option.id}
+                        onClick={() => handleOptionSelect(option.id)}
+                        disabled={!!selectedOption}
+                        className={`w-full p-5 md:p-6 rounded-2xl transition-all transform text-left relative overflow-hidden border-2 ${
+                          showCorrect
+                            ? "bg-gradient-to-r from-green-500/70 to-emerald-600/70 border-green-400 ring-4 ring-green-300/50 scale-105 shadow-lg"
+                            : showIncorrect
+                            ? "bg-gradient-to-r from-red-500/50 to-rose-600/50 border-red-400 opacity-80 scale-95"
+                            : isSelected
+                            ? "bg-gradient-to-r from-blue-600/70 to-cyan-700/70 border-blue-400 scale-105"
+                            : "bg-gradient-to-r from-white/20 to-white/10 border-white/40 hover:from-white/30 hover:to-white/20 hover:scale-105 hover:shadow-xl"
+                        } ${selectedOption ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                      >
+                        {/* Option Number Badge */}
+                        <div className={`absolute top-3 right-3 w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold ${
+                          showCorrect ? 'bg-green-400 text-white' : 
+                          showIncorrect ? 'bg-red-400 text-white' : 
+                          'bg-white/30 text-white'
+                        }`}>
+                          {String.fromCharCode(65 + index)}
+                        </div>
+                        
+                        <div className="pr-10">
+                          <h5 className="font-bold text-white text-base md:text-lg mb-2 leading-tight">
+                            {option.text}
+                          </h5>
+                          <p className="text-white/80 text-sm md:text-base leading-relaxed">
+                            {option.description}
+                          </p>
+                        </div>
+                        
+                        {showCorrect && (
+                          <div className="absolute bottom-3 right-3 text-2xl md:text-3xl animate-pulse">✅</div>
+                        )}
+                        {showIncorrect && (
+                          <div className="absolute bottom-3 right-3 text-2xl md:text-3xl">❌</div>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
               
-              <div className="space-y-3 md:space-y-4 mb-4 md:mb-6">
-                <h4 className="text-base md:text-lg font-semibold text-white mb-3 md:mb-4">Choose the best option:</h4>
-                {currentScenario.options.map((option) => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = showFeedback && isSelected && option.id === currentScenario.correct;
-                  const showIncorrect = showFeedback && isSelected && option.id !== currentScenario.correct;
-                
-                return (
-                  <button
-                    key={option.id}
-                    onClick={() => handleOptionSelect(option.id)}
-                    disabled={!!selectedOption}
-                    className={`w-full p-4 md:p-6 rounded-xl md:rounded-2xl transition-all transform text-left ${
-                      showCorrect
-                        ? "bg-gradient-to-r from-green-500 to-emerald-600 border-2 border-green-300 scale-105"
-                        : showIncorrect
-                        ? "bg-gradient-to-r from-red-500 to-red-600 border-2 border-red-300"
-                        : isSelected
-                        ? "bg-gradient-to-r from-blue-600 to-cyan-700 border-2 border-blue-300 scale-105"
-                        : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-2 border-transparent hover:scale-105"
-                    } disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none`}
-                  >
-                    <h5 className="font-bold text-white text-sm md:text-base mb-1">{option.text}</h5>
-                    <p className="text-white/80 text-xs md:text-sm">{option.description}</p>
-                  </button>
-                );
-              })}
-            </div>
-            
-              {showFeedback && feedbackType === "wrong" && (
-                <div className="mt-4 md:mt-6 text-white/90 text-center text-sm md:text-base">
-                  <p>💡 {currentScenario.explanation}</p>
+              {/* Feedback Message */}
+              {showFeedback && (
+                <div className={`rounded-2xl p-4 md:p-5 border-2 mb-6 ${
+                  feedbackType === "correct"
+                    ? "bg-gradient-to-r from-green-500/20 to-emerald-500/20 border-green-400"
+                    : "bg-gradient-to-r from-orange-500/20 to-amber-500/20 border-orange-400"
+                }`}>
+                  <p className={`text-sm md:text-base font-semibold text-center ${
+                    feedbackType === "correct" ? "text-green-200" : "text-orange-200"
+                  }`}>
+                    💡 {currentScenario.explanation}
+                  </p>
                 </div>
               )}
+
+              {/* Progress Bar */}
+              <div className="w-full bg-white/10 rounded-full h-3 mt-6">
+                <div 
+                  className="bg-gradient-to-r from-yellow-400 to-orange-400 h-3 rounded-full transition-all duration-500"
+                  style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
+                ></div>
+              </div>
             </div>
+          </div>
+        ) : levelCompleted ? (
+          <div className="w-full max-w-3xl bg-gradient-to-br from-green-900/30 via-emerald-900/30 to-teal-900/30 backdrop-blur-md rounded-3xl p-6 md:p-8 border-2 border-white/20 shadow-2xl text-center">
+            <div className="text-8xl md:text-9xl mb-6 animate-bounce">🎓</div>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 bg-gradient-to-r from-yellow-300 to-green-300 bg-clip-text text-transparent">
+              {score === questions.length ? "Perfect Study Plan! 🎉" : `You got ${score} out of ${questions.length}!`}
+            </h2>
+            <p className="text-white/90 text-lg md:text-xl mb-6 leading-relaxed">
+              {score === questions.length 
+                ? "Excellent! You understand how to create effective study plans. Keep applying these strategies!"
+                : "Great job! You're learning how to plan your study time effectively. Keep practicing!"}
+            </p>
+            <div className="bg-gradient-to-r from-green-500/20 to-emerald-500/20 rounded-2xl p-5 md:p-6 mb-4 border-2 border-green-400/30">
+              <p className="text-white text-center text-base md:text-lg font-medium">
+                💡 Remember: A good study plan includes a quiet environment, regular breaks, and consistent practice!
+              </p>
+            </div>
+            {score === questions.length && (
+              <div className="mt-4 text-6xl animate-pulse">🌟</div>
+            )}
           </div>
         ) : null}
       </div>

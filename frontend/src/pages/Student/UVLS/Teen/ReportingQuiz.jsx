@@ -8,7 +8,7 @@ import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/te
 const ReportingQuiz = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-31";
+  const gameId = "uvls-teen-32";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;

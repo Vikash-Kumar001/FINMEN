@@ -170,7 +170,7 @@ const teenUvlsGames = {
   // Emotional Intelligence Games (41-50)
   'emotional-check-in': EmotionalCheckIn,
   'trigger-quiz': TriggerQuiz,
-  'advanced-breathing': AdvancedBreathing,
+  'advanced-breathing-sim': AdvancedBreathing,
   'coping-strategy-puzzle': CopingStrategyPuzzle,
   'de-escalation-roleplay': DeEscalationRoleplay,
   'emotion-pattern-journal': EmotionPatternJournal,

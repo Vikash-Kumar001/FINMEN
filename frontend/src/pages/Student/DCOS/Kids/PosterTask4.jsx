@@ -1,292 +1,235 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const PosterTask4 = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const gameId = "dcos-kids-96";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentStage, setCurrentStage] = useState(0);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [selectedDesign, setSelectedDesign] = useState(null);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  // Multi-poster flow
-  const TOTAL_POSTERS = 5;
-  const [currentPoster, setCurrentPoster] = useState(0);
-  const [showPreview, setShowPreview] = useState(false);
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
 
-  // Store selections per poster index (0..4)
-  const [selections, setSelections] = useState(
-    Array.from({ length: TOTAL_POSTERS }, () => ({
-      message: null,
-      design: null,
-      symbol: null,
-      color: null,
-      textStyle: null,
-    }))
-  );
-
-  const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
-
-  // Option lists (same as your single question)
-  const messages = [
-    { id: 1, text: "Use Tech to Learn 📚", color: "from-blue-400 to-purple-500" },
-    { id: 2, text: "Be Smart, Learn Online 💡", color: "from-green-400 to-blue-500" },
-    { id: 3, text: "Technology = Knowledge 🌐", color: "from-pink-400 to-red-400" },
-    { id: 4, text: "Explore the World with Tech 🌍", color: "from-yellow-400 to-orange-400" },
-    { id: 5, text: "Learn, Create, Inspire 💻", color: "from-teal-400 to-cyan-500" }
+  const stages = [
+    {
+      id: 1,
+      title: "Use Tech to Learn",
+      messages: [
+        { id: 1, text: "Use Tech to Learn 📚", emoji: "💻", color: "from-blue-400 to-purple-500", isCorrect: true },
+        { id: 2, text: "Tech is Only for Games", emoji: "🎮", color: "from-gray-400 to-gray-500", isCorrect: false },
+        { id: 3, text: "Don't Use Tech", emoji: "🚫", color: "from-red-400 to-red-500", isCorrect: false }
+      ],
+      correctMessage: 1
+    },
+    {
+      id: 2,
+      title: "Be Smart, Learn Online",
+      messages: [
+        { id: 1, text: "Be Smart, Learn Online 💡", emoji: "🌐", color: "from-green-400 to-blue-500", isCorrect: true },
+        { id: 2, text: "Online is Only for Fun", emoji: "😄", color: "from-orange-400 to-orange-500", isCorrect: false },
+        { id: 3, text: "Never Learn Online", emoji: "🙅", color: "from-red-400 to-red-500", isCorrect: false }
+      ],
+      correctMessage: 1
+    },
+    {
+      id: 3,
+      title: "Technology = Knowledge",
+      messages: [
+        { id: 1, text: "Technology = Knowledge 🌐", emoji: "🧠", color: "from-pink-400 to-red-400", isCorrect: true },
+        { id: 2, text: "Tech is Useless", emoji: "😒", color: "from-gray-400 to-gray-500", isCorrect: false },
+        { id: 3, text: "Only Books Matter", emoji: "📖", color: "from-blue-400 to-blue-500", isCorrect: false }
+      ],
+      correctMessage: 1
+    },
+    {
+      id: 4,
+      title: "Explore the World with Tech",
+      messages: [
+        { id: 1, text: "Explore the World with Tech 🌍", emoji: "🚀", color: "from-yellow-400 to-orange-400", isCorrect: true },
+        { id: 2, text: "Stay Home Only", emoji: "🏠", color: "from-gray-400 to-gray-500", isCorrect: false },
+        { id: 3, text: "Tech is Dangerous", emoji: "⚠️", color: "from-red-400 to-red-500", isCorrect: false }
+      ],
+      correctMessage: 1
+    },
+    {
+      id: 5,
+      title: "Learn, Create, Inspire",
+      messages: [
+        { id: 1, text: "Learn, Create, Inspire 💻", emoji: "✨", color: "from-teal-400 to-cyan-500", isCorrect: true },
+        { id: 2, text: "Just Watch Videos", emoji: "📺", color: "from-gray-400 to-gray-500", isCorrect: false },
+        { id: 3, text: "Don't Create Anything", emoji: "🚫", color: "from-red-400 to-red-500", isCorrect: false }
+      ],
+      correctMessage: 1
+    }
   ];
 
   const designs = [
     { id: 1, name: "Laptop Frame", emoji: "💻" },
     { id: 2, name: "Lightbulb", emoji: "💡" },
-    { id: 3, name: "Rocket", emoji: "🚀" },
-    { id: 4, name: "Book", emoji: "📖" },
-    { id: 5, name: "Brain", emoji: "🧠" }
+    { id: 3, name: "Rocket", emoji: "🚀" }
   ];
 
-  const symbols = [
-    { id: 1, emoji: "🌈" },
-    { id: 2, emoji: "⭐" },
-    { id: 3, emoji: "🎨" },
-    { id: 4, emoji: "🪐" },
-    { id: 5, emoji: "✨" }
-  ];
-
-  const colors = [
-    { id: 1, name: "Blue", gradient: "from-blue-400 to-indigo-500" },
-    { id: 2, name: "Pink", gradient: "from-pink-400 to-rose-500" },
-    { id: 3, name: "Green", gradient: "from-green-400 to-emerald-500" },
-    { id: 4, name: "Orange", gradient: "from-orange-400 to-yellow-500" },
-    { id: 5, name: "Purple", gradient: "from-purple-400 to-fuchsia-500" }
-  ];
-
-  const textStyles = [
-    { id: 1, name: "Bold", style: "font-extrabold text-3xl" },
-    { id: 2, name: "Italic", style: "italic text-2xl" },
-    { id: 3, name: "Outline", style: "font-bold text-3xl tracking-wide" },
-    { id: 4, name: "Glow", style: "font-bold text-3xl text-shadow-md" },
-    { id: 5, name: "Fun Font", style: "font-semibold text-3xl" }
-  ];
-
-  const handleSet = (key, value) => {
-    setSelections(prev => {
-      const next = [...prev];
-      next[currentPoster] = { ...next[currentPoster], [key]: value };
-      return next;
-    });
-  };
+  const currentStageData = stages[currentStage];
 
   const handleCreatePoster = () => {
-    const cur = selections[currentPoster];
-    if (cur.message && cur.design && cur.symbol && cur.color && cur.textStyle) {
-      // Every completed poster = +5 coins (same as your single one)
-      showCorrectAnswerFeedback(5, false);
-      setCoins(prev => prev + 5);
-      setShowPreview(true);
+    if (!selectedMessage || !selectedDesign) return;
+    
+    resetFeedback();
+    const isCorrect = selectedMessage === currentStageData.correctMessage;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentStage < stages.length - 1) {
+        setCurrentStage(prev => prev + 1);
+        setSelectedMessage(null);
+        setSelectedDesign(null);
+      } else {
+        setShowResult(true);
+      }
+    }, 500);
   };
 
-  const handleNextPoster = () => {
-    if (currentPoster < TOTAL_POSTERS - 1) {
-      setCurrentPoster(p => p + 1);
-      setShowPreview(false);
-    }
-  };
-
-  const handleNext = () => {
-    navigate("/student/dcos/kids/sharing-good-content-story");
-  };
-
-  // Current poster selections
-  const curSel = selections[currentPoster];
-
-  const selectedMsg = messages.find(m => m.id === curSel.message);
-  const selectedDsgn = designs.find(d => d.id === curSel.design);
-  const selectedSym = symbols.find(s => s.id === curSel.symbol);
-  const selectedClr = colors.find(c => c.id === curSel.color);
-  const selectedTxt = textStyles.find(t => t.id === curSel.textStyle);
-
-  const isLast = currentPoster === TOTAL_POSTERS - 1;
-  const canProceed = showPreview && isLast;
+  const selectedMsg = currentStageData.messages.find(m => m.id === selectedMessage);
+  const selectedDsgn = designs.find(d => d.id === selectedDesign);
 
   return (
     <GameShell
-      title="Poster Task 4"
-      subtitle={`Use Tech to Learn • Poster ${currentPoster + 1} of ${TOTAL_POSTERS}`}
-      onNext={handleNext}
-      nextEnabled={canProceed}
-      showGameOver={canProceed}
-      score={coins}
-      gameId="dcos-kids-96"
-      gameType="creative"
-      totalLevels={100}
-      currentLevel={96}
-      showConfetti={canProceed}
-      backPath="/games/digital-citizenship/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      title="Poster Task4"
+      score={score}
+      subtitle={!showResult ? `Poster ${currentStage + 1} of ${stages.length}` : "Game Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!showPreview ? (
-          <div className="space-y-6">
-            {/* Q1: Choose Message */}
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex items-center justify-between mb-2">
-                <h3 className="text-white text-xl font-bold">1. Choose Poster Message</h3>
-                <span className="text-white/70 text-sm">Poster {currentPoster + 1} / {TOTAL_POSTERS}</span>
-              </div>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={stages.length}
+      currentLevel={currentStage + 1}
+      maxScore={stages.length}
+      showConfetti={showResult && score === stages.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+    >
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+        {!showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <h3 className="text-white text-lg md:text-xl font-bold mb-2">
+              Task {currentStageData.id} of {stages.length}: {currentStageData.title}
+            </h3>
+            <p className="text-white/70 mb-4 text-sm">Create a poster about using tech to learn!</p>
 
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {messages.map((msg) => (
-                  <button
-                    key={msg.id}
-                    onClick={() => handleSet("message", msg.id)}
-                    className={`border-3 rounded-xl p-4 transition-all bg-gradient-to-br ${msg.color} ${
-                      curSel.message === msg.id ? "ring-4 ring-white" : ""
-                    }`}
-                  >
-                    <div className="text-white font-bold text-sm">{msg.text}</div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Q2: Choose Design */}
-              <h3 className="text-white text-xl font-bold mb-4">2. Choose Design Icon</h3>
-              <div className="grid grid-cols-5 gap-3 mb-6">
-                {designs.map((design) => (
-                  <button
-                    key={design.id}
-                    onClick={() => handleSet("design", design.id)}
-                    className={`border-2 rounded-xl p-3 transition-all ${
-                      curSel.design === design.id
-                        ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
-                    }`}
-                  >
-                    <div className="text-3xl mb-1">{design.emoji}</div>
-                    <div className="text-white text-xs">{design.name}</div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Q3: Choose Symbol */}
-              <h3 className="text-white text-xl font-bold mb-4">3. Choose Fun Symbol</h3>
-              <div className="grid grid-cols-5 gap-3 mb-6">
-                {symbols.map((symbol) => (
-                  <button
-                    key={symbol.id}
-                    onClick={() => handleSet("symbol", symbol.id)}
-                    className={`border-2 rounded-xl p-3 transition-all ${
-                      curSel.symbol === symbol.id
-                        ? "bg-green-500/50 border-green-400 ring-2 ring-white"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
-                    }`}
-                  >
-                    <div className="text-3xl">{symbol.emoji}</div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Q4: Choose Color */}
-              <h3 className="text-white text-xl font-bold mb-4">4. Choose Poster Color Theme</h3>
-              <div className="grid grid-cols-5 gap-3 mb-6">
-                {colors.map((color) => (
-                  <button
-                    key={color.id}
-                    onClick={() => handleSet("color", color.id)}
-                    className={`rounded-xl p-4 bg-gradient-to-br ${color.gradient} transition-all ${
-                      curSel.color === color.id ? "ring-4 ring-white" : ""
-                    }`}
-                  >
-                    <div className="text-white text-xs font-bold">{color.name}</div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Q5: Choose Text Style */}
-              <h3 className="text-white text-xl font-bold mb-4">5. Choose Text Style</h3>
-              <div className="grid grid-cols-3 gap-3 mb-6">
-                {textStyles.map((style) => (
-                  <button
-                    key={style.id}
-                    onClick={() => handleSet("textStyle", style.id)}
-                    className={`rounded-xl p-3 bg-white/20 hover:bg-white/30 text-white transition-all ${
-                      curSel.textStyle === style.id ? "ring-4 ring-white" : ""
-                    }`}
-                  >
-                    <div className={`${style.style}`}>{style.name}</div>
-                  </button>
-                ))}
-              </div>
-
-              {/* Create Button */}
-              <button
-                onClick={handleCreatePoster}
-                disabled={
-                  !curSel.message ||
-                  !curSel.design ||
-                  !curSel.symbol ||
-                  !curSel.color ||
-                  !curSel.textStyle
-                }
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  curSel.message &&
-                  curSel.design &&
-                  curSel.symbol &&
-                  curSel.color &&
-                  curSel.textStyle
-                    ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Create Poster! 🎨
-              </button>
+            <h4 className="text-white text-base font-bold mb-3">1. Choose Message</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+              {currentStageData.messages.map((msg) => (
+                <button
+                  key={msg.id}
+                  onClick={() => setSelectedMessage(msg.id)}
+                  className={`border-3 rounded-xl p-4 transition-all bg-gradient-to-br ${msg.color} ${
+                    selectedMessage === msg.id ? "ring-4 ring-white" : ""
+                  }`}
+                >
+                  <div className="text-3xl md:text-4xl mb-2">{msg.emoji}</div>
+                  <div className="text-white font-bold text-xs md:text-sm text-center">{msg.text}</div>
+                </button>
+              ))}
             </div>
+
+            <h4 className="text-white text-base font-bold mb-3">2. Choose Design</h4>
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {designs.map((design) => (
+                <button
+                  key={design.id}
+                  onClick={() => setSelectedDesign(design.id)}
+                  className={`border-2 rounded-xl p-3 transition-all ${
+                    selectedDesign === design.id
+                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
+                      : "bg-white/20 border-white/40 hover:bg-white/30"
+                  }`}
+                >
+                  <div className="text-3xl mb-1">{design.emoji}</div>
+                  <div className="text-white text-xs text-center">{design.name}</div>
+                </button>
+              ))}
+            </div>
+
+            {selectedMessage && selectedDesign && (
+              <div className="mb-6">
+                <h4 className="text-white text-base font-bold mb-3">3. Preview Poster</h4>
+                <div
+                  className={`rounded-xl p-6 md:p-8 bg-gradient-to-br ${selectedMsg.color} min-h-[150px] md:min-h-[200px] flex flex-col items-center justify-center border-4 border-white`}
+                >
+                  <div className="text-5xl md:text-6xl mb-4">{selectedDsgn.emoji}</div>
+                  <div className="text-white text-xl md:text-2xl font-bold text-center mb-2">
+                    {selectedMsg.text}
+                  </div>
+                  <div className="text-4xl md:text-5xl">{selectedMsg.emoji}</div>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={handleCreatePoster}
+              disabled={!selectedMessage || !selectedDesign}
+              className={`w-full py-3 rounded-xl font-bold text-white transition ${
+                selectedMessage && selectedDesign
+                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
+                  : "bg-gray-500/50 cursor-not-allowed"
+              }`}
+            >
+              {currentStage < stages.length - 1 ? "Create Poster! 🎨" : "Finish Posters! 🏁"}
+            </button>
           </div>
         ) : (
-          // Preview for current poster
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-3xl font-bold text-white mb-2">
-              {isLast ? "🎉 Amazing Poster!" : "🎉 Great Poster!"}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="text-7xl mb-4">🌟</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === stages.length ? "Perfect Amazing Posters! 🎉" : `You created ${score} great posters!`}
             </h2>
-            <p className="text-white/70 mb-4">
-              Poster {currentPoster + 1} of {TOTAL_POSTERS}
+            <p className="text-white/90 text-lg mb-6">
+              {score === stages.length 
+                ? "Amazing creativity! Your posters inspire using technology for learning and growth!"
+                : "Great job creating tech learning awareness posters! Keep learning about using tech wisely!"}
             </p>
-            <div
-              className={`rounded-xl p-8 bg-gradient-to-br ${
-                selectedClr?.gradient || "from-slate-600 to-slate-800"
-              } min-h-[200px] flex flex-col items-center justify-center border-4 border-white`}
-            >
-              <div className="text-6xl mb-4">
-                {selectedDsgn?.emoji} {selectedSym?.emoji}
-              </div>
-              <div className={`text-white text-center ${selectedTxt?.style || ""}`}>
-                {selectedMsg?.text || "Your Poster Text"}
-              </div>
-            </div>
-
-            {/* Coins line — same style; adds +5 each poster */}
-            <p className="text-yellow-400 text-2xl font-bold mt-6">
-              You earned {isLast ? coins : 5} Coins! 🪙
-            </p>
-
-            {!isLast ? (
-              <button
-                onClick={handleNextPoster}
-                className="mt-6 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Next Poster →
-              </button>
-            ) : (
-              <p className="text-white/70 text-sm mt-3">
-                All posters completed! Use the Next button to continue.
-              </p>
-            )}
           </div>
         )}
       </div>

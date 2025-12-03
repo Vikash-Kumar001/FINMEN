@@ -1,240 +1,202 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const StrangerGiftStory = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentStory, setCurrentStory] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [earnedBadge, setEarnedBadge] = useState(false);
+  const gameId = "dcos-kids-44";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentScenario, setCurrentScenario] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const stories = [
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+
+  const scenarios = [
     {
+      id: 1,
       title: "Free Game Code Offer",
       emoji: "🎮",
       situation: "A new online friend says: 'I can send you a free game code if you share your email!'",
-      choices: [
+      options: [
         { id: 1, text: "Share your email", emoji: "📧", isCorrect: false },
         { id: 2, text: "Refuse politely", emoji: "🙅‍♀️", isCorrect: true },
         { id: 3, text: "Ask for more codes", emoji: "😄", isCorrect: false }
-      ],
-      feedback:
-        "Never share your personal info with strangers online — even if it sounds like a gift!",
+      ]
     },
     {
+      id: 2,
       title: "Stranger Sends a Link",
       emoji: "🔗",
       situation: "Someone online says: 'Click this link to get 5000 free coins!'",
-      choices: [
+      options: [
         { id: 1, text: "Click the link fast!", emoji: "⚡", isCorrect: false },
-        { id: 2, text: "Don’t click and tell an adult", emoji: "🛡️", isCorrect: true },
+        { id: 2, text: "Don't click and tell an adult", emoji: "🛡️", isCorrect: true },
         { id: 3, text: "Share link with friends", emoji: "👥", isCorrect: false }
-      ],
-      feedback:
-        "Smart move! Fake links can steal your info or install viruses. Always tell an adult.",
+      ]
     },
     {
+      id: 3,
       title: "Mystery Gift Pop-up",
       emoji: "🎁",
       situation: "A pop-up appears: 'You won a free tablet! Enter your home address to claim.'",
-      choices: [
+      options: [
         { id: 1, text: "Type your address", emoji: "🏠", isCorrect: false },
         { id: 2, text: "Close the pop-up", emoji: "🚫", isCorrect: true },
         { id: 3, text: "Send it to a friend", emoji: "📤", isCorrect: false }
-      ],
-      feedback:
-        "Excellent! Never share your address online. Real gifts don’t ask for personal info.",
+      ]
     },
     {
+      id: 4,
       title: "Friend Requests Personal Info",
       emoji: "💬",
       situation: "Your online gaming buddy says, 'Can I have your phone number to text you?'",
-      choices: [
+      options: [
         { id: 1, text: "Say no and tell a parent", emoji: "📞", isCorrect: true },
         { id: 2, text: "Share your number", emoji: "☎️", isCorrect: false },
         { id: 3, text: "Ignore and stay quiet", emoji: "🤐", isCorrect: false }
-      ],
-      feedback:
-        "Good job! Only your parents decide who can contact you outside the game.",
+      ]
     },
     {
+      id: 5,
       title: "Gift Code for Friendship",
       emoji: "🎫",
-      situation: "Someone says, 'I’ll give you a secret code if you keep our chat private.'",
-      choices: [
+      situation: "Someone says, 'I'll give you a secret code if you keep our chat private.'",
+      options: [
         { id: 1, text: "Refuse and report them", emoji: "🚨", isCorrect: true },
         { id: 2, text: "Agree and keep it secret", emoji: "🤫", isCorrect: false },
         { id: 3, text: "Take the code first", emoji: "😬", isCorrect: false }
-      ],
-      feedback:
-        "That’s right! Always tell a trusted adult if someone online asks you to keep secrets.",
-    },
+      ]
+    }
   ];
 
-  const current = stories[currentStory];
-  const handleChoice = (id) => setSelectedChoice(id);
-
-  const handleConfirm = () => {
-    const choice = current.choices.find(c => c.id === selectedChoice);
-    if (choice.isCorrect) {
-      showCorrectAnswerFeedback(1, true);
-      setCoins(coins + 1);
-    }
-    setShowFeedback(true);
-  };
-
-  const handleNextStory = () => {
-    if (currentStory + 1 < stories.length) {
-      setCurrentStory(currentStory + 1);
-      setSelectedChoice(null);
-      setShowFeedback(false);
-      resetFeedback();
-    } else {
-      setEarnedBadge(true);
-    }
-  };
-
-  const handleTryAgain = () => {
-    setSelectedChoice(null);
-    setShowFeedback(false);
+  const handleChoice = (optionId) => {
+    if (answered) return;
+    
+    setAnswered(true);
     resetFeedback();
+    
+    const currentScenarioData = scenarios[currentScenario];
+    const selectedOption = currentScenarioData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption?.isCorrect || false;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    setTimeout(() => {
+      if (currentScenario < scenarios.length - 1) {
+        setCurrentScenario(prev => prev + 1);
+        setAnswered(false);
+      } else {
+        setShowResult(true);
+      }
+    }, 500);
   };
 
-  const handleNext = () => {
-    navigate("/student/dcos/kids/otp-reflex");
-  };
-
-  const selectedChoiceData = current.choices.find(c => c.id === selectedChoice);
+  const currentScenarioData = scenarios[currentScenario];
 
   return (
     <GameShell
       title="Stranger Gift Story"
-      subtitle="Be Smart with Online Gifts"
-      onNext={handleNext}
-      nextEnabled={earnedBadge}
-      showGameOver={earnedBadge}
-      score={coins}
-      gameId="dcos-kids-44"
-      gameType="story"
-      totalLevels={100}
-      currentLevel={44}
-      showConfetti={earnedBadge}
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/digital-citizenship/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        {!earnedBadge && !showFeedback && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20  max-w-xl mx-auto">
-            <div className="text-6xl mb-4 text-center">{current.emoji}</div>
-            <h2 className="text-2xl font-bold text-white mb-4 text-center">
-              {current.title}
-            </h2>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-lg leading-relaxed">{current.situation}</p>
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={scenarios.length}
+      currentLevel={currentScenario + 1}
+      maxScore={scenarios.length}
+      showConfetti={showResult && score === scenarios.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+    >
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+        {!showResult ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 text-center">{currentScenarioData.title}</h2>
+            <div className="bg-blue-500/20 rounded-lg p-4 md:p-5 mb-6">
+              <p className="text-white text-base md:text-lg leading-relaxed">{currentScenarioData.situation}</p>
             </div>
 
             <h3 className="text-white font-bold mb-4">What should you do?</h3>
 
             <div className="space-y-3 mb-6">
-              {current.choices.map(choice => (
+              {currentScenarioData.options.map(option => (
                 <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  className={`w-full border-2 rounded-xl p-4 transition-all text-left ${
-                    selectedChoice === choice.id
-                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                      : "bg-white/20 border-white/40 hover:bg-white/30"
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={answered}
+                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all text-left ${
+                    answered && option.isCorrect
+                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
+                      : answered && !option.isCorrect
+                      ? 'bg-red-500/30 border-red-400 opacity-60'
+                      : 'bg-white/20 border-white/40 hover:bg-white/30'
                   }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold">{choice.text}</div>
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
+                    <div className="text-white font-semibold text-base md:text-lg">{option.text}</div>
                   </div>
                 </button>
               ))}
             </div>
-
-            <button
-              onClick={handleConfirm}
-              disabled={!selectedChoice}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedChoice
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              Confirm Choice
-            </button>
           </div>
-        )}
-
-        {showFeedback && (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20  max-w-xl mx-auto">
-            <div className="text-6xl mb-4 text-center">{selectedChoiceData.emoji}</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {selectedChoiceData.isCorrect ? "Nice Decision! 🌟" : "Oops! Try Again"}
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="text-7xl mb-4">🎖️</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === scenarios.length ? "Perfect Safe Surfer! 🎉" : `You got ${score} out of ${scenarios.length}!`}
             </h2>
-            <p className="text-white/90 text-lg mb-6 text-center">{selectedChoiceData.text}</p>
-
-            {selectedChoiceData.isCorrect ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">{current.feedback}</p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  +1 Coin Earned! 🪙
-                </p>
-                <button
-                  onClick={handleNextStory}
-                  className="mt-4 w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Next Story →
-                </button>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    {current.feedback}
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
-          </div>
-        )}
-
-        {earnedBadge && (
-          <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-2xl p-8 text-center border border-white/20">
-            <div className="text-6xl mb-3">🎖️</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Safe Surfer Hero!
-            </h2>
-            <p className="text-white text-lg mb-4">
-              You learned to refuse online stranger gifts and protect your info!
+            <p className="text-white/90 text-lg mb-6">
+              {score === scenarios.length 
+                ? "Excellent! You learned to refuse online stranger gifts and protect your info!"
+                : "Great job! Keep learning to stay safe from online strangers."}
             </p>
-            <p className="text-white font-semibold text-xl">
-              +5 Coins Earned 💰
-            </p>
+            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
+              <p className="text-white text-center text-sm">
+                💡 Never share your personal info with strangers online — even if it sounds like a gift!
+              </p>
+            </div>
           </div>
         )}
       </div>

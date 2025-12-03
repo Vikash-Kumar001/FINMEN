@@ -1,132 +1,189 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const StrongPasswordReflex = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [gameStarted, setGameStarted] = useState(false);
-  const [currentRound, setCurrentRound] = useState(0);
+  
+  const gameId = "dcos-kids-1";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAction, setSelectedAction] = useState(null);
   const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const passwords = [
-    { id: 1, password: "12345", emoji: "❌", isStrong: false },
-    { id: 2, password: "Tiger@2025", emoji: "✓", isStrong: true },
-    { id: 3, password: "password", emoji: "❌", isStrong: false },
-    { id: 4, password: "Star#123!", emoji: "✓", isStrong: true },
-    { id: 5, password: "Secure$99", emoji: "✓", isStrong: true }
+  const questions = [
+    {
+      id: 1,
+      text: "Password: '12345'",
+      password: "12345",
+      isStrong: false,
+      correctAction: "weak"
+    },
+    {
+      id: 2,
+      text: "Password: 'Tiger@2025'",
+      password: "Tiger@2025",
+      isStrong: true,
+      correctAction: "strong"
+    },
+    {
+      id: 3,
+      text: "Password: 'password'",
+      password: "password",
+      isStrong: false,
+      correctAction: "weak"
+    },
+    {
+      id: 4,
+      text: "Password: 'Star#123!'",
+      password: "Star#123!",
+      isStrong: true,
+      correctAction: "strong"
+    },
+    {
+      id: 5,
+      text: "Password: 'Secure$99'",
+      password: "Secure$99",
+      isStrong: true,
+      correctAction: "strong"
+    }
   ];
 
-  const currentPassword = passwords[currentRound];
-
-  const handleChoice = (isStrong) => {
-    const isCorrect = currentPassword.isStrong === isStrong;
+  const handleAction = (action) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedAction(action);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const isCorrect = action === currentQuestionData.correctAction;
     
     if (isCorrect) {
-      const newScore = score + 1;
-      setScore(newScore);
-      showCorrectAnswerFeedback(1, false);
-      
-      if (currentRound < passwords.length - 1) {
-        setTimeout(() => {
-          setCurrentRound(prev => prev + 1);
-        }, 300);
-      } else {
-        // All questions answered - check if all correct
-        const finalScore = newScore;
-        setScore(finalScore);
-        setShowResult(true);
-      }
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      if (currentRound < passwords.length - 1) {
-        setTimeout(() => {
-          setCurrentRound(prev => prev + 1);
-        }, 300);
-      } else {
-        // All questions answered
-        setShowResult(true);
-      }
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedAction(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/student/dcos/kids/stranger-chat-story");
-  };
-
-  // Calculate final score (number of correct answers)
+  const currentQuestionData = questions[currentQuestion];
   const finalScore = score;
 
   return (
     <GameShell
       title="Strong Password Reflex"
+      subtitle={levelCompleted ? "Reflex Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       score={finalScore}
-      subtitle={gameStarted ? `Password ${currentRound + 1} of ${passwords.length}` : "Password Security Game"}
-      onNext={handleNext}
-      nextEnabled={false}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      
-      gameId="dcos-kids-1"
-      gameType="educational"
-      totalLevels={5}
-      maxScore={5}
-      currentLevel={1}
-      showConfetti={showResult && finalScore === 5}
+      gameId={gameId}
+      gameType="dcos"
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/digital-citizenship/kids"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!gameStarted ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Password Security!</h2>
-            <p className="text-white/80 mb-6">Can you spot strong vs weak passwords quickly? 🔒</p>
-            <button
-              onClick={() => setGameStarted(true)}
-              className="bg-gradient-to-r from-green-500 to-blue-500 text-white px-8 py-4 rounded-full font-bold text-xl hover:opacity-90 transition transform hover:scale-105"
-            >
-              Start Game! 🚀
-            </button>
-          </div>
-        ) : !showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <div className="flex justify-between items-center mb-6">
-                <span className="text-white/80">Round {currentRound + 1}/{passwords.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}</span>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <div className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-xl p-8 mb-8">
-                <p className="text-white text-4xl font-mono font-bold text-center">
-                  {currentPassword.password}
+              <div className="bg-gradient-to-r from-purple-500/30 to-pink-500/30 rounded-xl p-8 mb-6">
+                <p className="text-white text-3xl md:text-4xl font-mono font-bold text-center">
+                  {currentQuestionData.password}
                 </p>
               </div>
               
-              <p className="text-white text-lg mb-6 text-center">Is this password strong?</p>
+              <p className="text-white text-lg md:text-xl mb-6 text-center font-semibold">
+                Is this password strong or weak?
+              </p>
               
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <button
-                  onClick={() => handleChoice(true)}
-                  className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-6 transition-all transform hover:scale-105"
+                  onClick={() => handleAction("strong")}
+                  disabled={answered}
+                  className={`py-6 px-8 rounded-2xl font-bold text-white text-lg transition-all transform ${
+                    answered && selectedAction === "strong"
+                      ? currentQuestionData.correctAction === "strong"
+                        ? "bg-green-500 border-4 border-green-300 ring-4 ring-green-400 scale-105"
+                        : "bg-red-500/50 border-2 border-red-400 opacity-75"
+                      : "bg-green-500 hover:bg-green-600 hover:scale-105 border-2 border-green-300"
+                  } ${answered ? "cursor-not-allowed" : ""}`}
                 >
                   <div className="text-4xl mb-2">✓</div>
-                  <div className="text-white font-bold text-xl">Strong</div>
+                  <div>Strong</div>
                 </button>
                 <button
-                  onClick={() => handleChoice(false)}
-                  className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-6 transition-all transform hover:scale-105"
+                  onClick={() => handleAction("weak")}
+                  disabled={answered}
+                  className={`py-6 px-8 rounded-2xl font-bold text-white text-lg transition-all transform ${
+                    answered && selectedAction === "weak"
+                      ? currentQuestionData.correctAction === "weak"
+                        ? "bg-green-500 border-4 border-green-300 ring-4 ring-green-400 scale-105"
+                        : "bg-red-500/50 border-2 border-red-400 opacity-75"
+                      : "bg-red-500 hover:bg-red-600 hover:scale-105 border-2 border-red-300"
+                  } ${answered ? "cursor-not-allowed" : ""}`}
                 >
                   <div className="text-4xl mb-2">✗</div>
-                  <div className="text-white font-bold text-xl">Weak</div>
+                  <div>Weak</div>
                 </button>
               </div>
             </div>
@@ -138,4 +195,3 @@ const StrongPasswordReflex = () => {
 };
 
 export default StrongPasswordReflex;
-

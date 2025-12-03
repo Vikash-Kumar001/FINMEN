@@ -1,196 +1,195 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const GossipPuzzle = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [connections, setConnections] = useState([]);
-  const [selectedStart, setSelectedStart] = useState(null);
+  const gameId = "dcos-kids-14";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentMatch, setCurrentMatch] = useState(0);
+  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const [answered, setAnswered] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const startItems = [
-    { id: 1, text: "Spreading Rumors", emoji: "🗣️" },
-    { id: 2, text: "Telling Secrets", emoji: "🤫" },
-    { id: 3, text: "Gossiping", emoji: "💬" }
-  ];
-
-  const endItems = [
-    { id: 1, text: "Hurt Feelings", emoji: "😢" },
-    { id: 2, text: "Broken Trust", emoji: "💔" },
-    { id: 3, text: "Damaged Friendships", emoji: "👥" }
-  ];
-
-  const correctPairs = [
-    { start: 1, end: 1 },
-    { start: 2, end: 2 },
-    { start: 3, end: 3 }
-  ];
-
-  const handleStartClick = (startId) => {
-    setSelectedStart(startId);
-  };
-
-  const handleEndClick = (endId) => {
-    if (!selectedStart) return;
-    
-    if (connections.find(c => c.start === selectedStart || c.end === endId)) {
-      return; // Already connected
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
     }
-    
-    const newConnections = [...connections, { start: selectedStart, end: endId }];
-    setConnections(newConnections);
-    setSelectedStart(null);
-    
-    if (newConnections.length === 3) {
-      // Check if all connections are correct
-      const allCorrect = newConnections.every(conn => 
-        correctPairs.some(pair => pair.start === conn.start && pair.end === conn.end)
-      );
-      
-      if (allCorrect) {
-        showCorrectAnswerFeedback(5, true);
-        setCoins(5);
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
       }
-      setShowResult(true);
+    } catch (error) {
+      console.warn("Error finding next game:", error);
     }
-  };
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
 
-  const handleTryAgain = () => {
-    setConnections([]);
-    setSelectedStart(null);
-    setShowResult(false);
-    setCoins(0);
-  };
+  const items = [
+    {
+      id: 1,
+      text: "Spreading Rumors",
+      emoji: "🗣️",
+      correctCategory: "Hurt Feelings"
+    },
+    {
+      id: 2,
+      text: "Telling Secrets",
+      emoji: "🤫",
+      correctCategory: "Broken Trust"
+    },
+    {
+      id: 3,
+      text: "Gossiping",
+      emoji: "💬",
+      correctCategory: "Damaged Friendships"
+    },
+    {
+      id: 4,
+      text: "Making Fun of Someone",
+      emoji: "😢",
+      correctCategory: "Hurt Feelings"
+    },
+    {
+      id: 5,
+      text: "Sharing Private Info",
+      emoji: "🔒",
+      correctCategory: "Broken Trust"
+    }
+  ];
 
-  const handleNext = () => {
-    navigate("/student/dcos/kids/playground-bystander");
-  };
+  const categories = [
+    { id: "Hurt Feelings", emoji: "😢" },
+    { id: "Broken Trust", emoji: "💔" },
+    { id: "Damaged Friendships", emoji: "👥" }
+  ];
 
-  const isConnected = (id, type) => {
-    return connections.some(c => type === 'start' ? c.start === id : c.end === id);
+  const currentItem = items[currentMatch];
+
+  const handleConfirm = () => {
+    if (!selectedCategory || answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const isCorrect = selectedCategory === currentItem.correctCategory;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+    
+    setTimeout(() => {
+      if (currentMatch < items.length - 1) {
+        setCurrentMatch(prev => prev + 1);
+        setSelectedCategory(null);
+        setAnswered(false);
+      } else {
+        setShowResult(true);
+      }
+    }, 500);
   };
 
   return (
     <GameShell
       title="Gossip Puzzle"
-      score={coins}
-      subtitle="Connect Actions to Outcomes"
-      onNext={handleNext}
-      nextEnabled={showResult && coins > 0}
+      score={score}
+      subtitle={!showResult ? `Item ${currentMatch + 1} of ${items.length}` : "Game Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && coins > 0}
-      
-      gameId="dcos-kids-14"
-      gameType="educational"
-      totalLevels={20}
-      currentLevel={14}
-      showConfetti={showResult && coins > 0}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={items.length}
+      currentLevel={currentMatch + 1}
+      maxScore={items.length}
+      showConfetti={showResult && score === items.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/digital-citizenship/kids"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <div className="space-y-8">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h3 className="text-white text-xl font-bold mb-4 text-center">
-              Connect each action to its outcome
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <h3 className="text-white text-lg md:text-xl font-bold mb-4 text-center">
+              What does this action lead to?
             </h3>
-            <p className="text-white/70 text-sm mb-6 text-center">
-              Click an action, then click its matching outcome
-            </p>
             
-            <div className="grid grid-cols-2 gap-8">
-              <div className="space-y-3">
-                <h4 className="text-white font-bold text-center mb-3">Actions</h4>
-                {startItems.map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleStartClick(item.id)}
-                    disabled={isConnected(item.id, 'start')}
-                    className={`w-full border-2 rounded-xl p-4 transition-all ${
-                      isConnected(item.id, 'start')
-                        ? 'bg-green-500/30 border-green-400'
-                        : selectedStart === item.id
-                        ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <div className="text-3xl mb-2">{item.emoji}</div>
-                    <div className="text-white font-semibold text-sm">{item.text}</div>
-                  </button>
-                ))}
-              </div>
-
-              <div className="space-y-3">
-                <h4 className="text-white font-bold text-center mb-3">Outcomes</h4>
-                {endItems.map(item => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleEndClick(item.id)}
-                    disabled={isConnected(item.id, 'end')}
-                    className={`w-full border-2 rounded-xl p-4 transition-all ${
-                      isConnected(item.id, 'end')
-                        ? 'bg-green-500/30 border-green-400'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <div className="text-3xl mb-2">{item.emoji}</div>
-                    <div className="text-white font-semibold text-sm">{item.text}</div>
-                  </button>
-                ))}
-              </div>
+            <div className="bg-purple-500/20 rounded-lg p-6 mb-6 text-center">
+              <div className="text-6xl md:text-8xl mb-4">{currentItem.emoji}</div>
+              <div className="text-white text-xl md:text-2xl font-bold">{currentItem.text}</div>
             </div>
 
-            <div className="mt-6 bg-blue-500/20 rounded-lg p-3">
-              <p className="text-white/80 text-sm text-center">
-                Connections: {connections.length}/3
-              </p>
+            <h4 className="text-white font-bold mb-4 text-center">Select the outcome:</h4>
+            
+            <div className="space-y-3 mb-6">
+              {categories.map(category => (
+                <button
+                  key={category.id}
+                  onClick={() => !answered && setSelectedCategory(category.id)}
+                  disabled={answered}
+                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all ${
+                    answered && category.id === currentItem.correctCategory
+                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
+                      : answered && selectedCategory === category.id && category.id !== currentItem.correctCategory
+                      ? 'bg-red-500/30 border-red-400 opacity-60'
+                      : selectedCategory === category.id
+                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
+                      : 'bg-white/20 border-white/40 hover:bg-white/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 md:gap-4">
+                    <div className="text-3xl md:text-4xl">{category.emoji}</div>
+                    <div className="text-white font-semibold text-base md:text-lg">{category.id}</div>
+                  </div>
+                </button>
+              ))}
             </div>
+
+            <button
+              onClick={handleConfirm}
+              disabled={!selectedCategory || answered}
+              className={`w-full py-3 rounded-xl font-bold text-white transition ${
+                selectedCategory && !answered
+                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
+                  : 'bg-gray-500/50 cursor-not-allowed'
+              }`}
+            >
+              Confirm
+            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              {coins > 0 ? "🎉 Perfect Connections!" : "Not Quite Right"}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="text-7xl mb-4">🏆</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === items.length ? "Perfect Score! 🎉" : `You got ${score} out of ${items.length}!`}
             </h2>
-            
-            {coins > 0 ? (
-              <>
-                <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Excellent! You understand that gossiping and spreading rumors hurt people. 
-                    Always think before you speak and protect others' privacy!
-                  </p>
-                </div>
-                <p className="text-yellow-400 text-2xl font-bold text-center">
-                  You earned 5 Coins! 🪙
-                </p>
-              </>
-            ) : (
-              <>
-                <div className="bg-red-500/20 rounded-lg p-4 mb-4">
-                  <p className="text-white text-center">
-                    Remember: Rumors → Hurt Feelings, Secrets → Broken Trust, Gossip → Damaged Friendships. 
-                    Let's try again!
-                  </p>
-                </div>
-                <button
-                  onClick={handleTryAgain}
-                  className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-                >
-                  Try Again
-                </button>
-              </>
-            )}
+            <p className="text-white/90 text-lg mb-6">
+              {score === items.length 
+                ? "Excellent! You understand how gossip and rumors hurt people. Always think before you speak!"
+                : "Great job! Remember that gossip and rumors can hurt feelings and break trust."}
+            </p>
           </div>
         )}
       </div>
@@ -199,4 +198,3 @@ const GossipPuzzle = () => {
 };
 
 export default GossipPuzzle;
-

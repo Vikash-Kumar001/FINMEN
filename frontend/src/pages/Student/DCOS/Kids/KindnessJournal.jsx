@@ -1,76 +1,129 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const KindnessJournal = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const gameId = "dcos-kids-18";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentTask, setCurrentTask] = useState(0);
   const [journalEntry, setJournalEntry] = useState("");
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const prompts = [
-    "Today I was kind online by...",
-    "I helped someone when...",
-    "I made someone smile by...",
-    "I stood up for someone when..."
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+
+  const tasks = [
+    {
+      id: 1,
+      prompt: "Today I was kind online by...",
+      emoji: "💻"
+    },
+    {
+      id: 2,
+      prompt: "I helped someone when...",
+      emoji: "🤝"
+    },
+    {
+      id: 3,
+      prompt: "I made someone smile by...",
+      emoji: "😊"
+    },
+    {
+      id: 4,
+      prompt: "I stood up for someone when...",
+      emoji: "🛡️"
+    },
+    {
+      id: 5,
+      prompt: "I showed kindness by...",
+      emoji: "💖"
+    }
   ];
-
-  const [selectedPrompt] = useState(prompts[Math.floor(Math.random() * prompts.length)]);
 
   const handleSubmit = () => {
     if (journalEntry.trim().length >= 10) {
-      showCorrectAnswerFeedback(5, true);
-      setCoins(5);
-      setShowResult(true);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      resetFeedback();
+      
+      setTimeout(() => {
+        if (currentTask < tasks.length - 1) {
+          setCurrentTask(prev => prev + 1);
+          setJournalEntry("");
+        } else {
+          setShowResult(true);
+        }
+      }, 500);
     }
   };
 
-  const handleNext = () => {
-    navigate("/student/dcos/kids/friendship-reflex");
-  };
+  const currentTaskData = tasks[currentTask];
 
   return (
     <GameShell
       title="Journal of Kindness"
-      subtitle="Write About Your Kind Act"
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={coins}
-      gameId="dcos-kids-18"
-      gameType="educational"
-      totalLevels={20}
-      currentLevel={18}
-      showConfetti={showResult}
-      backPath="/games/digital-citizenship/kids"
-    
-      maxScore={20} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Task ${currentTask + 1} of ${tasks.length}` : "Game Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={tasks.length}
+      currentLevel={currentTask + 1}
+      maxScore={tasks.length}
+      showConfetti={showResult && score === tasks.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+    >
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-4 text-center">📝</div>
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">Share Your Kindness Story</h2>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <div className="text-6xl md:text-8xl mb-4 text-center">{currentTaskData.emoji}</div>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">Share Your Kindness Story</h2>
             
             <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
               <p className="text-white/70 text-sm mb-2">Your Prompt:</p>
-              <p className="text-white text-xl font-semibold">{selectedPrompt}</p>
+              <p className="text-white text-lg md:text-xl font-semibold">{currentTaskData.prompt}</p>
             </div>
 
             <textarea
               value={journalEntry}
               onChange={(e) => setJournalEntry(e.target.value)}
               placeholder="Write your story here... (at least 10 characters)"
-              className="w-full h-40 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 resize-none"
+              className="w-full h-32 md:h-40 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 resize-none"
               maxLength={200}
             />
             
@@ -87,31 +140,25 @@ const KindnessJournal = () => {
                   : 'bg-gray-500/50 cursor-not-allowed'
               }`}
             >
-              Submit Journal Entry
+              {currentTask < tasks.length - 1 ? "Next Task" : "Finish"}
             </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">🌟</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              Beautiful Story!
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="text-7xl mb-4">🌟</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === tasks.length ? "Perfect! All Tasks Complete! 🎉" : `You completed ${score} out of ${tasks.length} tasks!`}
             </h2>
-            
-            <div className="bg-purple-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white/70 text-sm mb-2">Your Entry:</p>
-              <p className="text-white text-lg font-semibold italic">"{journalEntry}"</p>
-            </div>
-
+            <p className="text-white/90 text-lg mb-6">
+              {score === tasks.length 
+                ? "Beautiful! Writing about your kind actions helps you remember how good it feels to help others. Keep being kind!"
+                : "Great job! Writing about kindness helps you remember how good it feels to help others."}
+            </p>
             <div className="bg-green-500/20 rounded-lg p-4 mb-4">
               <p className="text-white text-center text-sm">
-                💡 Writing about your kind actions helps you remember how good it feels to help others. 
-                Keep being kind online and in real life!
+                💡 Keep being kind online and in real life! Your kindness makes the world a better place!
               </p>
             </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned 5 Coins! 🪙
-            </p>
           </div>
         )}
       </div>
@@ -120,4 +167,3 @@ const KindnessJournal = () => {
 };
 
 export default KindnessJournal;
-

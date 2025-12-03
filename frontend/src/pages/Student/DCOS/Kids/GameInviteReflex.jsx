@@ -1,175 +1,193 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const GameInviteReflex = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [gameStarted, setGameStarted] = useState(false);
-  const [currentInvite, setCurrentInvite] = useState(0);
-  const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
-  const [showResult, setShowResult] = useState(false);
+  
+  const gameId = "dcos-kids-5";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAction, setSelectedAction] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const invites = [
-    { id: 1, from: "Unknown User", message: "Play Super Game!", emoji: "🎮", shouldDecline: true },
-    { id: 2, from: "Your Friend Tom", message: "Join my game!", emoji: "👦", shouldDecline: false },
-    { id: 3, from: "Stranger123", message: "Free coins! Click here!", emoji: "💰", shouldDecline: true },
-    { id: 4, from: "Your Classmate Sara", message: "Want to play?", emoji: "👧", shouldDecline: false },
-    { id: 5, from: "Winner999", message: "You won a prize! Play now!", emoji: "🏆", shouldDecline: true },
-    { id: 6, from: "Your Cousin Mike", message: "Game time!", emoji: "👨", shouldDecline: false },
-    { id: 7, from: "Anonymous", message: "Secret game invitation", emoji: "❓", shouldDecline: true },
-    { id: 8, from: "Your Friend Emma", message: "Join our team!", emoji: "👧", shouldDecline: false },
-    { id: 9, from: "ProGamer2024", message: "Be my partner!", emoji: "🎯", shouldDecline: true },
-    { id: 10, from: "Your Neighbor Jake", message: "Let's play!", emoji: "👦", shouldDecline: false },
-    { id: 11, from: "FastWin", message: "Easy money! Join!", emoji: "💸", shouldDecline: true },
-    { id: 12, from: "Your Friend Lily", message: "New game?", emoji: "👧", shouldDecline: false },
-    { id: 13, from: "Mystery Player", message: "Secret level!", emoji: "🔮", shouldDecline: true },
-    { id: 14, from: "Your Sibling", message: "Co-op game?", emoji: "👶", shouldDecline: false },
-    { id: 15, from: "LuckyWinner", message: "Claim your reward!", emoji: "🎁", shouldDecline: true }
+  const questions = [
+    {
+      id: 1,
+      text: "From: Unknown User - 'Play Super Game!'",
+      emoji: "🎮",
+      shouldDecline: true,
+      correctAction: "decline"
+    },
+    {
+      id: 2,
+      text: "From: Your Friend Tom - 'Join my game!'",
+      emoji: "👦",
+      shouldDecline: false,
+      correctAction: "accept"
+    },
+    {
+      id: 3,
+      text: "From: Stranger123 - 'Free coins! Click here!'",
+      emoji: "💰",
+      shouldDecline: true,
+      correctAction: "decline"
+    },
+    {
+      id: 4,
+      text: "From: Your Classmate Sara - 'Want to play?'",
+      emoji: "👧",
+      shouldDecline: false,
+      correctAction: "accept"
+    },
+    {
+      id: 5,
+      text: "From: Winner999 - 'You won a prize! Play now!'",
+      emoji: "🏆",
+      shouldDecline: true,
+      correctAction: "decline"
+    }
   ];
 
-  const currentInviteData = invites[currentInvite];
-
-  const handleChoice = (shouldDecline) => {
-    const isCorrect = currentInviteData.shouldDecline === shouldDecline;
+  const handleAction = (action) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedAction(action);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const isCorrect = action === currentQuestionData.correctAction;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
-    if (currentInvite < invites.length - 1) {
-      setTimeout(() => {
-        setCurrentInvite(prev => prev + 1);
-      }, 300);
-    } else {
-      const finalScore = score + (isCorrect ? 1 : 0);
-      const accuracy = (finalScore / invites.length) * 100;
-      if (accuracy >= 70) {
-        setCoins(3);
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedAction(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
       }
-      setScore(finalScore);
-      setShowResult(true);
-    }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setGameStarted(false);
-    setCurrentInvite(0);
-    setScore(0);
-    setCoins(0);
-    resetFeedback();
-  };
-
-  const handleNext = () => {
-    navigate("/student/dcos/kids/safety-poster");
-  };
-
-  const accuracy = Math.round((score / invites.length) * 100);
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Game Invite Reflex"
-      score={coins}
-      subtitle={gameStarted ? `Invite ${currentInvite + 1} of ${invites.length}` : "Safety Reflex Game"}
-      onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      subtitle={levelCompleted ? "Reflex Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
-      
-      gameId="dcos-kids-5"
-      gameType="educational"
-      totalLevels={20}
-      currentLevel={5}
-      showConfetti={showResult && accuracy >= 70}
+      gameId={gameId}
+      gameType="dcos"
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/digital-citizenship/kids"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!gameStarted ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Game Invite Safety!</h2>
-            <p className="text-white/80 mb-6">Accept invites from people you know, decline from strangers!</p>
-            <button
-              onClick={() => setGameStarted(true)}
-              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-full font-bold text-xl hover:opacity-90 transition transform hover:scale-105"
-            >
-              Start Game! 🚀
-            </button>
-          </div>
-        ) : !showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <div className="flex justify-between items-center mb-6">
-                <span className="text-white/80">Invite {currentInvite + 1}/{invites.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}</span>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <div className="text-7xl mb-4 text-center">{currentInviteData.emoji}</div>
+              <div className="text-7xl mb-4 text-center">{currentQuestionData.emoji}</div>
               
               <div className="bg-white/10 rounded-lg p-4 mb-6">
-                <p className="text-white/70 text-sm mb-1">From:</p>
-                <p className="text-white text-xl font-bold mb-3">{currentInviteData.from}</p>
-                <p className="text-white/90">"{currentInviteData.message}"</p>
+                <p className="text-white text-lg font-bold mb-2 text-center">{currentQuestionData.text}</p>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <p className="text-white/90 mb-4 text-center font-semibold text-lg">Accept or Decline?</p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <button
-                  onClick={() => handleChoice(false)}
-                  className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-6 transition-all transform hover:scale-105"
+                  onClick={() => handleAction("accept")}
+                  disabled={answered}
+                  className={`py-6 px-8 rounded-2xl font-bold text-white text-lg transition-all transform ${
+                    answered && selectedAction === "accept"
+                      ? currentQuestionData.correctAction === "accept"
+                        ? "bg-green-500 border-4 border-green-300 ring-4 ring-green-400 scale-105"
+                        : "bg-red-500/50 border-2 border-red-400 opacity-75"
+                      : "bg-green-500 hover:bg-green-600 hover:scale-105 border-2 border-green-300"
+                  } ${answered ? "cursor-not-allowed" : ""}`}
                 >
-                  <div className="text-white font-bold text-xl">Accept</div>
+                  ✅ Accept
                 </button>
                 <button
-                  onClick={() => handleChoice(true)}
-                  className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-6 transition-all transform hover:scale-105"
+                  onClick={() => handleAction("decline")}
+                  disabled={answered}
+                  className={`py-6 px-8 rounded-2xl font-bold text-white text-lg transition-all transform ${
+                    answered && selectedAction === "decline"
+                      ? currentQuestionData.correctAction === "decline"
+                        ? "bg-green-500 border-4 border-green-300 ring-4 ring-green-400 scale-105"
+                        : "bg-red-500/50 border-2 border-red-400 opacity-75"
+                      : "bg-red-500 hover:bg-red-600 hover:scale-105 border-2 border-red-300"
+                  } ${answered ? "cursor-not-allowed" : ""}`}
                 >
-                  <div className="text-white font-bold text-xl">Decline</div>
+                  🚫 Decline
                 </button>
               </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {accuracy >= 70 ? "🎉 Safe Player Badge!" : "💪 Keep Learning!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You got {score} out of {invites.length} correct ({accuracy}%)
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Only accept game invites from people you know in real life!
-              </p>
-            </div>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {accuracy >= 70 ? "You earned the Safe Player Badge! 🏆" : "Get 70% or higher to earn the badge!"}
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default GameInviteReflex;
-

@@ -1,166 +1,168 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const JournalSmartUse = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentPrompt, setCurrentPrompt] = useState(0);
-  const [journalEntries, setJournalEntries] = useState([]);
-  const [entry, setEntry] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
+  const gameId = "dcos-kids-98";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentTask, setCurrentTask] = useState(0);
+  const [journalEntry, setJournalEntry] = useState("");
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const prompts = [
-    "Today I used tech to learn about...",
-    "I discovered something new online about...",
-    "I watched an educational video about...",
-    "I used a learning app or website to study...",
-    "Technology helped me understand ___ better today."
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+
+  const tasks = [
+    {
+      id: 1,
+      prompt: "Today I used tech to learn about...",
+      emoji: "💻"
+    },
+    {
+      id: 2,
+      prompt: "I discovered something new online about...",
+      emoji: "🔍"
+    },
+    {
+      id: 3,
+      prompt: "I watched an educational video about...",
+      emoji: "📺"
+    },
+    {
+      id: 4,
+      prompt: "I used a learning app or website to study...",
+      emoji: "📱"
+    },
+    {
+      id: 5,
+      prompt: "Technology helped me understand ___ better today.",
+      emoji: "🧠"
+    }
   ];
 
   const handleSubmit = () => {
-    if (entry.trim().length >= 10) {
+    if (journalEntry.trim().length >= 10) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setCoins((prev) => prev + 1);
-      setJournalEntries((prev) => [...prev, entry]);
-      setShowFeedback(true);
-    }
-  };
-
-  const handleNextPrompt = () => {
-    if (currentPrompt < prompts.length - 1) {
-      setCurrentPrompt((prev) => prev + 1);
-      setEntry("");
-      setShowFeedback(false);
       resetFeedback();
-    } else {
-      setShowResult(true);
+      
+      setTimeout(() => {
+        if (currentTask < tasks.length - 1) {
+          setCurrentTask(prev => prev + 1);
+          setJournalEntry("");
+        } else {
+          setShowResult(true);
+        }
+      }, 500);
     }
   };
 
-  const handleNext = () => {
-    navigate("/student/dcos/kids/reflex-reading");
-  };
+  const currentTaskData = tasks[currentTask];
 
   return (
     <GameShell
       title="Journal of Smart Use"
-      subtitle="Reflect on How You Used Tech Wisely"
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={coins}
-      gameId="dcos-kids-98"
-      gameType="educational"
-      totalLevels={100}
-      currentLevel={98}
-      showConfetti={showResult}
-      backPath="/games/digital-citizenship/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Task ${currentTask + 1} of ${tasks.length}` : "Game Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={tasks.length}
+      currentLevel={currentTask + 1}
+      maxScore={tasks.length}
+      showConfetti={showResult && score === tasks.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+    >
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
         {!showResult ? (
-          !showFeedback ? (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <div className="text-6xl mb-4 text-center">💻</div>
-              <h2 className="text-2xl font-bold text-white mb-6 text-center">
-                Prompt {currentPrompt + 1} of {prompts.length}
-              </h2>
-
-              <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white/70 text-sm mb-2">Your Prompt:</p>
-                <p className="text-white text-xl font-semibold">
-                  {prompts[currentPrompt]}
-                </p>
-              </div>
-
-              <textarea
-                value={entry}
-                onChange={(e) => setEntry(e.target.value)}
-                placeholder="Write your journal entry here... (at least 10 characters)"
-                className="w-full h-40 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 resize-none"
-                maxLength={200}
-              />
-
-              <div className="text-white/50 text-sm mt-2 text-right">
-                {entry.length}/200 characters
-              </div>
-
-              <button
-                onClick={handleSubmit}
-                disabled={entry.trim().length < 10}
-                className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                  entry.trim().length >= 10
-                    ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Submit Journal Entry
-              </button>
-            </div>
-          ) : (
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-              <div className="text-6xl mb-4">🌟</div>
-              <h2 className="text-3xl font-bold text-white mb-4">
-                Great Reflection!
-              </h2>
-
-              <div className="bg-purple-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white/70 text-sm mb-2">Your Entry:</p>
-                <p className="text-white text-lg font-semibold italic">
-                  "{entry}"
-                </p>
-              </div>
-
-              <p className="text-yellow-400 text-2xl font-bold mb-4">
-                +1 Coin Earned 🪙
-              </p>
-
-              <button
-                onClick={handleNextPrompt}
-                className="mt-4 w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                {currentPrompt < prompts.length - 1
-                  ? "Next Prompt →"
-                  : "Finish Journal ✨"}
-              </button>
-            </div>
-          )
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <div className="text-7xl mb-4">🏆</div>
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Your Smart Tech Journal
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <div className="text-6xl md:text-8xl mb-4 text-center">{currentTaskData.emoji}</div>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
+              Prompt {currentTask + 1} of {tasks.length}
             </h2>
-            <div className="space-y-3 mb-6 text-left">
-              {journalEntries.map((j, i) => (
-                <div
-                  key={i}
-                  className="bg-blue-500/20 rounded-lg p-3 text-white text-sm"
-                >
-                  <span className="font-bold">Prompt {i + 1}:</span> {prompts[i]}
-                  <br />
-                  <span className="italic text-white/80">"{j}"</span>
-                </div>
-              ))}
+
+            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
+              <p className="text-white/70 text-sm mb-2">Your Prompt:</p>
+              <p className="text-white text-lg md:text-xl font-semibold">
+                {currentTaskData.prompt}
+              </p>
             </div>
-            <p className="text-yellow-400 text-2xl font-bold">
-              You earned {coins} Coins! 🪙
+
+            <textarea
+              value={journalEntry}
+              onChange={(e) => setJournalEntry(e.target.value)}
+              placeholder="Write your journal entry here... (at least 10 characters)"
+              className="w-full h-32 md:h-40 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 resize-none"
+              maxLength={200}
+            />
+
+            <div className="text-white/50 text-sm mt-2 text-right">
+              {journalEntry.length}/200 characters
+            </div>
+
+            <button
+              onClick={handleSubmit}
+              disabled={journalEntry.trim().length < 10}
+              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
+                journalEntry.trim().length >= 10
+                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
+                  : "bg-gray-500/50 cursor-not-allowed"
+              }`}
+            >
+              {currentTask < tasks.length - 1 ? "Submit & Next" : "Submit Final Entry"}
+            </button>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="text-7xl mb-4">🏆</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === tasks.length ? "Perfect Your Smart Tech Journal! 🎉" : `You completed ${score} out of ${tasks.length} tasks!`}
+            </h2>
+            <p className="text-white/90 text-lg mb-6">
+              {score === tasks.length 
+                ? "Excellent! You reflected on 5 ways you used technology wisely. 🌈"
+                : "Great job! Keep learning to use technology wisely!"}
             </p>
-            <p className="text-white/70 mt-4">
-              Excellent! You reflected on 5 ways you used technology wisely. 🌈
-            </p>
+            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
+              <p className="text-white text-center text-sm">
+                💡 Excellent! You reflected on 5 ways you used technology wisely. 🌈
+              </p>
+            </div>
           </div>
         )}
       </div>

@@ -1,208 +1,234 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const PosterTask3 = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const gameId = "dcos-kids-86";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentStage, setCurrentStage] = useState(0);
+  const [selectedMessage, setSelectedMessage] = useState(null);
+  const [selectedDesign, setSelectedDesign] = useState(null);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+
+  const stages = [
     {
       id: 1,
-      title: "Words Can Hurt or Heal 💬",
-      subtitle: "Create a poster promoting kind words!",
+      title: "Words Can Hurt or Heal",
+      messages: [
+        { id: 1, text: "Words Can Hurt or Heal 💬", emoji: "❤️", color: "from-pink-400 to-red-400", isCorrect: true },
+        { id: 2, text: "Words Don't Matter", emoji: "😐", color: "from-gray-400 to-gray-500", isCorrect: false },
+        { id: 3, text: "Only Actions Count", emoji: "🤷", color: "from-blue-400 to-blue-500", isCorrect: false }
+      ],
+      correctMessage: 1
     },
     {
       id: 2,
-      title: "Respect Everyone 🌍",
-      subtitle: "Make a poster encouraging respect for all cultures.",
+      title: "Respect Everyone",
+      messages: [
+        { id: 1, text: "Respect Everyone 🌍", emoji: "🤝", color: "from-green-400 to-teal-400", isCorrect: true },
+        { id: 2, text: "Respect Only Friends", emoji: "👥", color: "from-purple-400 to-purple-500", isCorrect: false },
+        { id: 3, text: "Respect Doesn't Matter", emoji: "😒", color: "from-red-400 to-red-500", isCorrect: false }
+      ],
+      correctMessage: 1
     },
     {
       id: 3,
-      title: "Online Kindness 💻",
-      subtitle: "Design a poster about being kind online.",
+      title: "Online Kindness",
+      messages: [
+        { id: 1, text: "Online Kindness 💻", emoji: "😊", color: "from-blue-400 to-purple-400", isCorrect: true },
+        { id: 2, text: "Online Anonymity", emoji: "😈", color: "from-gray-400 to-gray-500", isCorrect: false },
+        { id: 3, text: "Online Doesn't Count", emoji: "🤷", color: "from-orange-400 to-orange-500", isCorrect: false }
+      ],
+      correctMessage: 1
     },
     {
       id: 4,
-      title: "Think Before You Post 💭",
-      subtitle: "Create a poster reminding others to post wisely.",
+      title: "Think Before You Post",
+      messages: [
+        { id: 1, text: "Think Before You Post 💭", emoji: "🧠", color: "from-yellow-400 to-orange-400", isCorrect: true },
+        { id: 2, text: "Post Everything", emoji: "📤", color: "from-red-400 to-red-500", isCorrect: false },
+        { id: 3, text: "Post Without Thinking", emoji: "⚡", color: "from-gray-400 to-gray-500", isCorrect: false }
+      ],
+      correctMessage: 1
     },
     {
       id: 5,
-      title: "Help Others Shine ✨",
-      subtitle: "Design a poster encouraging teamwork and positivity.",
-    },
-  ];
-
-  const messages = [
-    { id: 1, text: "Words Can Hurt or Heal 💬", emoji: "❤️", color: "from-pink-400 to-red-400" },
-    { id: 2, text: "Kind Words Build Bridges 🌉", emoji: "🤝", color: "from-green-400 to-teal-400" },
-    { id: 3, text: "Speak Respect, Not Regret 🗣️", emoji: "🌟", color: "from-blue-400 to-purple-400" },
-    { id: 4, text: "Encourage, Don’t Mock 🌻", emoji: "😊", color: "from-yellow-400 to-orange-400" },
-    { id: 5, text: "Your Words Matter 💌", emoji: "💫", color: "from-purple-400 to-pink-400" },
+      title: "Help Others Shine",
+      messages: [
+        { id: 1, text: "Help Others Shine ✨", emoji: "🌟", color: "from-purple-400 to-pink-400", isCorrect: true },
+        { id: 2, text: "Only Help Yourself", emoji: "😎", color: "from-gray-400 to-gray-500", isCorrect: false },
+        { id: 3, text: "Don't Help Anyone", emoji: "😤", color: "from-red-400 to-red-500", isCorrect: false }
+      ],
+      correctMessage: 1
+    }
   ];
 
   const designs = [
     { id: 1, name: "Speech Bubble", emoji: "💭" },
     { id: 2, name: "Heart Frame", emoji: "💖" },
-    { id: 3, name: "Rainbow Text", emoji: "🌈" },
-    { id: 4, name: "Quote Box", emoji: "🗯️" },
-    { id: 5, name: "Peace Banner", emoji: "🕊️" },
+    { id: 3, name: "Rainbow Text", emoji: "🌈" }
   ];
 
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedMessage, setSelectedMessage] = useState(null);
-  const [selectedDesign, setSelectedDesign] = useState(null);
-  const [completed, setCompleted] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [earnedBadge, setEarnedBadge] = useState(false);
-
-  const handleMessageSelect = (msgId) => {
-    setSelectedMessage(msgId);
-  };
-
-  const handleDesignSelect = (designId) => {
-    setSelectedDesign(designId);
-  };
+  const currentStageData = stages[currentStage];
 
   const handleCreatePoster = () => {
-    if (selectedMessage && selectedDesign) {
+    if (!selectedMessage || !selectedDesign) return;
+    
+    resetFeedback();
+    const isCorrect = selectedMessage === currentStageData.correctMessage;
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-
-      const next = currentQuestion + 1;
-      const updated = [...completed, currentQuestion];
-
-      if (next < questions.length) {
-        setTimeout(() => {
-          setCompleted(updated);
-          setCurrentQuestion(next);
-          setSelectedMessage(null);
-          setSelectedDesign(null);
-        }, 800);
-      } else {
-        setTimeout(() => {
-          setEarnedBadge(true);
-          setShowResult(true);
-        }, 800);
-      }
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentStage < stages.length - 1) {
+        setCurrentStage(prev => prev + 1);
+        setSelectedMessage(null);
+        setSelectedDesign(null);
+      } else {
+        setShowResult(true);
+      }
+    }, 500);
   };
 
-  const handleNext = () => {
-    navigate("/student/dcos/kids/story-of-difference");
-  };
-
-  const selectedMsg = messages.find((m) => m.id === selectedMessage);
-  const selectedDsgn = designs.find((d) => d.id === selectedDesign);
-  const q = questions[currentQuestion];
+  const selectedMsg = currentStageData.messages.find(m => m.id === selectedMessage);
+  const selectedDsgn = designs.find(d => d.id === selectedDesign);
 
   return (
     <GameShell
-      title="Poster Task"
-      subtitle="Words Can Hurt or Heal"
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={earnedBadge ? 1 : 0}
-      gameId="dcos-kids-86"
-      gameType="creative"
-      totalLevels={100}
-      currentLevel={86}
-      showConfetti={showResult}
-      backPath="/games/digital-citizenship/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      title="Poster Task3"
+      score={score}
+      subtitle={!showResult ? `Poster ${currentStage + 1} of ${stages.length}` : "Game Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={stages.length}
+      currentLevel={currentStage + 1}
+      maxScore={stages.length}
+      showConfetti={showResult && score === stages.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+    >
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
         {!showResult ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <h3 className="text-white text-2xl font-bold mb-2 text-center">
-                Poster {currentQuestion + 1} of {questions.length}
-              </h3>
-              <p className="text-white/80 text-center mb-6">{q.subtitle}</p>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <h3 className="text-white text-lg md:text-xl font-bold mb-2">
+              Task {currentStageData.id} of {stages.length}: {currentStageData.title}
+            </h3>
+            <p className="text-white/70 mb-4 text-sm">Create a poster about respect and kindness!</p>
 
-              <h3 className="text-white text-xl font-bold mb-4">1. Choose Poster Message</h3>
-              <div className="grid grid-cols-2 gap-3 mb-6">
-                {messages.map((msg) => (
-                  <button
-                    key={msg.id}
-                    onClick={() => handleMessageSelect(msg.id)}
-                    className={`border-3 rounded-xl p-4 transition-all bg-gradient-to-br ${msg.color} ${
-                      selectedMessage === msg.id ? "ring-4 ring-white" : ""
-                    }`}
-                  >
-                    <div className="text-4xl mb-2">{msg.emoji}</div>
-                    <div className="text-white font-bold text-sm">{msg.text}</div>
-                  </button>
-                ))}
-              </div>
-
-              <h3 className="text-white text-xl font-bold mb-4">2. Choose Poster Design</h3>
-              <div className="grid grid-cols-5 gap-3 mb-6">
-                {designs.map((design) => (
-                  <button
-                    key={design.id}
-                    onClick={() => handleDesignSelect(design.id)}
-                    className={`border-2 rounded-xl p-3 transition-all ${
-                      selectedDesign === design.id
-                        ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
-                    }`}
-                  >
-                    <div className="text-3xl mb-1">{design.emoji}</div>
-                    <div className="text-white text-xs">{design.name}</div>
-                  </button>
-                ))}
-              </div>
-
-              {selectedMessage && selectedDesign && (
-                <div className="mb-6">
-                  <h3 className="text-white text-xl font-bold mb-4">3. Preview Poster</h3>
-                  <div
-                    className={`rounded-xl p-8 bg-gradient-to-br ${selectedMsg.color} min-h-[200px] flex flex-col items-center justify-center border-4 border-white`}
-                  >
-                    <div className="text-6xl mb-4">{selectedDsgn.emoji}</div>
-                    <div className="text-white text-2xl font-bold text-center mb-2">
-                      {selectedMsg.text}
-                    </div>
-                    <div className="text-5xl">{selectedMsg.emoji}</div>
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={handleCreatePoster}
-                disabled={!selectedMessage || !selectedDesign}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedMessage && selectedDesign
-                    ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Create Poster! 🎨
-              </button>
+            <h4 className="text-white text-base font-bold mb-3">1. Choose Message</h4>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6">
+              {currentStageData.messages.map((msg) => (
+                <button
+                  key={msg.id}
+                  onClick={() => setSelectedMessage(msg.id)}
+                  className={`border-3 rounded-xl p-4 transition-all bg-gradient-to-br ${msg.color} ${
+                    selectedMessage === msg.id ? "ring-4 ring-white" : ""
+                  }`}
+                >
+                  <div className="text-3xl md:text-4xl mb-2">{msg.emoji}</div>
+                  <div className="text-white font-bold text-xs md:text-sm text-center">{msg.text}</div>
+                </button>
+              ))}
             </div>
+
+            <h4 className="text-white text-base font-bold mb-3">2. Choose Design</h4>
+            <div className="grid grid-cols-3 gap-3 mb-6">
+              {designs.map((design) => (
+                <button
+                  key={design.id}
+                  onClick={() => setSelectedDesign(design.id)}
+                  className={`border-2 rounded-xl p-3 transition-all ${
+                    selectedDesign === design.id
+                      ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
+                      : "bg-white/20 border-white/40 hover:bg-white/30"
+                  }`}
+                >
+                  <div className="text-3xl mb-1">{design.emoji}</div>
+                  <div className="text-white text-xs text-center">{design.name}</div>
+                </button>
+              ))}
+            </div>
+
+            {selectedMessage && selectedDesign && (
+              <div className="mb-6">
+                <h4 className="text-white text-base font-bold mb-3">3. Preview Poster</h4>
+                <div
+                  className={`rounded-xl p-6 md:p-8 bg-gradient-to-br ${selectedMsg.color} min-h-[150px] md:min-h-[200px] flex flex-col items-center justify-center border-4 border-white`}
+                >
+                  <div className="text-5xl md:text-6xl mb-4">{selectedDsgn.emoji}</div>
+                  <div className="text-white text-xl md:text-2xl font-bold text-center mb-2">
+                    {selectedMsg.text}
+                  </div>
+                  <div className="text-4xl md:text-5xl">{selectedMsg.emoji}</div>
+                </div>
+              </div>
+            )}
+
+            <button
+              onClick={handleCreatePoster}
+              disabled={!selectedMessage || !selectedDesign}
+              className={`w-full py-3 rounded-xl font-bold text-white transition ${
+                selectedMessage && selectedDesign
+                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
+                  : "bg-gray-500/50 cursor-not-allowed"
+              }`}
+            >
+              {currentStage < stages.length - 1 ? "Create Poster! 🎨" : "Finish Posters! 🏁"}
+            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-3xl font-bold text-white mb-4">🌟 Wonderful Posters!</h2>
-
-            <div className="bg-gradient-to-r from-yellow-400 to-orange-400 rounded-xl p-6 text-center">
-              <div className="text-5xl mb-2">🏅</div>
-              <p className="text-white text-2xl font-bold">Kindness Poster Badge!</p>
-            </div>
-
-            <p className="text-white/70 text-sm mt-4">
-              You completed all 5 kindness posters spreading positivity and empathy. Well done!
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="text-7xl mb-4">🌟</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === stages.length ? "Perfect Wonderful Posters! 🎉" : `You created ${score} great posters!`}
+            </h2>
+            <p className="text-white/90 text-lg mb-6">
+              {score === stages.length 
+                ? "Amazing creativity! Your posters inspire respect and kindness! You completed all 5 kindness posters spreading positivity and empathy. Well done!"
+                : "Great job creating respect awareness posters! Keep learning about using kind words!"}
             </p>
           </div>
         )}

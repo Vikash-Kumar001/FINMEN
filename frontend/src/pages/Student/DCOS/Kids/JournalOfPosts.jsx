@@ -1,80 +1,125 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const JournalOfPosts = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const gameId = "dcos-kids-68";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentTask, setCurrentTask] = useState(0);
   const [journalEntry, setJournalEntry] = useState("");
-  const [currentPrompt, setCurrentPrompt] = useState(0);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [entries, setEntries] = useState([]);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const prompts = [
-    "One good thing I can share online is my art 🎨",
-    "One good thing I can share online is kindness 😊",
-    "One good thing I can share online is helpful advice 💡",
-    "One good thing I can share online is my learning journey 📚",
-    "One good thing I can share online is positive news 🌈"
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+
+  const tasks = [
+    {
+      id: 1,
+      prompt: "One good thing I can share online is my art 🎨",
+      emoji: "🎨"
+    },
+    {
+      id: 2,
+      prompt: "One good thing I can share online is kindness 😊",
+      emoji: "😊"
+    },
+    {
+      id: 3,
+      prompt: "One good thing I can share online is helpful advice 💡",
+      emoji: "💡"
+    },
+    {
+      id: 4,
+      prompt: "One good thing I can share online is my learning journey 📚",
+      emoji: "📚"
+    },
+    {
+      id: 5,
+      prompt: "One good thing I can share online is positive news 🌈",
+      emoji: "🌈"
+    }
   ];
 
   const handleSubmit = () => {
     if (journalEntry.trim().length >= 10) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      const updatedEntries = [...entries, { prompt: prompts[currentPrompt], text: journalEntry }];
-      setEntries(updatedEntries);
-      setJournalEntry("");
-      if (currentPrompt < prompts.length - 1) {
-        setCurrentPrompt(currentPrompt + 1);
-      } else {
-        setCoins(5);
-        setShowResult(true);
-      }
+      resetFeedback();
+      
+      setTimeout(() => {
+        if (currentTask < tasks.length - 1) {
+          setCurrentTask(prev => prev + 1);
+          setJournalEntry("");
+        } else {
+          setShowResult(true);
+        }
+      }, 500);
     }
   };
 
-  const handleNext = () => {
-    navigate("/student/dcos/kids/reflex-share-safe");
-  };
+  const currentTaskData = tasks[currentTask];
 
   return (
     <GameShell
       title="Journal of Posts"
-      subtitle="Reflect on Positive Online Sharing"
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={coins}
-      gameId="dcos-kids-68"
-      gameType="educational"
-      totalLevels={100}
-      currentLevel={68}
-      showConfetti={showResult}
-      backPath="/games/digital-citizenship/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Task ${currentTask + 1} of ${tasks.length}` : "Game Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={tasks.length}
+      currentLevel={currentTask + 1}
+      maxScore={tasks.length}
+      showConfetti={showResult && score === tasks.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+    >
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-4 text-center">💬</div>
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">
-              Write About What’s Good to Share Online
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <div className="text-6xl md:text-8xl mb-4 text-center">{currentTaskData.emoji}</div>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
+              Write About What's Good to Share Online
             </h2>
 
             <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white/70 text-sm mb-2">Prompt {currentPrompt + 1} of 5:</p>
-              <p className="text-white text-xl font-semibold">
-                {prompts[currentPrompt]}
+              <p className="text-white/70 text-sm mb-2">Prompt {currentTask + 1} of {tasks.length}</p>
+              <p className="text-white text-lg md:text-xl font-semibold">
+                {currentTaskData.prompt}
               </p>
             </div>
 
@@ -82,7 +127,7 @@ const JournalOfPosts = () => {
               value={journalEntry}
               onChange={(e) => setJournalEntry(e.target.value)}
               placeholder="Write your thoughts here... (at least 10 characters)"
-              className="w-full h-40 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 resize-none"
+              className="w-full h-32 md:h-40 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 focus:ring-2 focus:ring-purple-400/50 resize-none"
               maxLength={200}
             />
 
@@ -99,40 +144,25 @@ const JournalOfPosts = () => {
                   : "bg-gray-500/50 cursor-not-allowed"
               }`}
             >
-              {currentPrompt < prompts.length - 1
-                ? "Next Prompt ➡️"
-                : "Finish Journal ✍️"}
+              {currentTask < tasks.length - 1 ? "Next Prompt ➡️" : "Finish Journal ✍️"}
             </button>
           </div>
         ) : (
-          // 🌈 Result screen after all 5 prompts
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">🌟</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              Amazing Reflections!
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="text-7xl mb-4">🌟</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === tasks.length ? "Perfect Reflections! 🎉" : `You completed ${score} out of ${tasks.length} tasks!`}
             </h2>
-
-            <div className="space-y-4 mb-6">
-              {entries.map((entry, idx) => (
-                <div key={idx} className="bg-purple-500/20 rounded-lg p-4">
-                  <p className="text-white/70 text-sm mb-1">Prompt {idx + 1}:</p>
-                  <p className="text-white font-semibold">{entry.prompt}</p>
-                  <p className="text-white/90 italic mt-1">
-                    “{entry.text}”
-                  </p>
-                </div>
-              ))}
-            </div>
-
+            <p className="text-white/90 text-lg mb-6">
+              {score === tasks.length 
+                ? "Excellent! Your reflections show kindness and responsibility online!"
+                : "Great job! Keep learning about positive online sharing!"}
+            </p>
             <div className="bg-green-500/20 rounded-lg p-4 mb-4">
               <p className="text-white text-center text-sm">
                 💡 Your reflections show kindness and responsibility online!
               </p>
             </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned 5 Coins! 🪙
-            </p>
           </div>
         )}
       </div>

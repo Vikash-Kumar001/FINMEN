@@ -1,143 +1,151 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const SmartUserBadge = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const gameId = "dcos-kids-100";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [completedTasks, setCompletedTasks] = useState([]);
+  const [currentTask, setCurrentTask] = useState(0);
   const [showBadge, setShowBadge] = useState(false);
-  const [currentPoster, setCurrentPoster] = useState(0);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
 
   const tasks = [
     { id: 1, text: "Used an app to learn something new", emoji: "📱" },
     { id: 2, text: "Watched an educational video", emoji: "🎓" },
     { id: 3, text: "Created something using tech (drawing, coding, etc.)", emoji: "💻" },
     { id: 4, text: "Helped someone using technology", emoji: "🤝" },
-    { id: 5, text: "Used screen time wisely and took breaks", emoji: "🕒" },
+    { id: 5, text: "Used screen time wisely and took breaks", emoji: "🕒" }
   ];
 
-  const posters = [
-    {
-      title: "Digital Learner 📱",
-      message: "You used technology to learn something new! Keep exploring!",
-      gradient: "from-blue-400 via-purple-400 to-pink-400",
-    },
-    {
-      title: "Edu Explorer 🎓",
-      message: "You gained knowledge using videos — smart move!",
-      gradient: "from-green-400 via-teal-400 to-blue-400",
-    },
-    {
-      title: "Creative Coder 💻",
-      message: "You created something amazing with tech!",
-      gradient: "from-orange-400 via-red-400 to-pink-400",
-    },
-    {
-      title: "Digital Helper 🤝",
-      message: "You used tech to help someone — that’s real digital kindness!",
-      gradient: "from-purple-400 via-pink-400 to-yellow-400",
-    },
-    {
-      title: "Mindful User 🕒",
-      message: "You used screen time wisely and balanced your day!",
-      gradient: "from-yellow-400 via-orange-400 to-red-400",
-    },
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentPoster((prev) => {
-        if (prev < posters.length - 1) return prev + 1;
-        else {
-          clearInterval(interval);
+  const handleCompleteTask = () => {
+    if (!completedTasks.includes(tasks[currentTask].id)) {
+      const newCompleted = [...completedTasks, tasks[currentTask].id];
+      setCompletedTasks(newCompleted);
+      showCorrectAnswerFeedback(1, true);
+      
+      if (newCompleted.length === tasks.length) {
+        setTimeout(() => {
           setShowBadge(true);
-          showCorrectAnswerFeedback(1, true);
-          return prev;
-        }
-      });
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleNext = () => {
-    navigate("/student/dcos/kids/strong-password-reflex");
+        }, 500);
+      } else {
+        setTimeout(() => {
+          setCurrentTask(prev => (prev + 1) % tasks.length);
+        }, 500);
+      }
+    }
   };
+
+  const currentAct = tasks[currentTask];
+  const isCompleted = completedTasks.includes(currentAct.id);
 
   return (
     <GameShell
       title="Smart User Badge"
-      subtitle="Complete Productive Tech Acts"
-      onNext={handleNext}
-      nextEnabled={showBadge}
-      showGameOver={showBadge}
-      score={1}
-      gameId="dcos-kids-100"
-      gameType="educational"
-      totalLevels={100}
-      currentLevel={100}
-      showConfetti={showBadge}
-      backPath="/games/digital-citizenship/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      score={completedTasks.length}
+      subtitle={!showBadge ? `Task ${completedTasks.length + 1} of ${tasks.length}` : "Badge Earned!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-6">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-          <h2 className="text-2xl font-bold text-white mb-6 text-center">
-            {showBadge ? "🏆 All Posters Unlocked!" : "Smart Tech Habits Progress"}
-          </h2>
+      totalXp={totalXp}
+      showGameOver={showBadge}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={tasks.length}
+      currentLevel={completedTasks.length + 1}
+      maxScore={tasks.length}
+      showConfetti={showBadge}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+    >
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+        {!showBadge ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
+              Smart Tech Habits Challenge
+            </h2>
 
-          <div className="space-y-3 mb-6">
-            {tasks.map((task, index) => (
-              <div
-                key={task.id}
-                className={`border-2 rounded-xl p-4 transition-all ${
-                  index <= currentPoster
-                    ? "bg-green-500/30 border-green-400"
-                    : "bg-white/10 border-white/30"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <div className="text-3xl">{task.emoji}</div>
-                  <div className="flex-1 text-white font-semibold">{task.text}</div>
-                  {index <= currentPoster && <div className="text-2xl">✅</div>}
+            <p className="text-white/80 mb-6 text-center">
+              Complete these productive tech acts to earn your badge!
+            </p>
+
+            <div className="space-y-3 mb-6">
+              {tasks.map((task) => (
+                <div
+                  key={task.id}
+                  className={`border-2 rounded-xl p-4 transition-all ${
+                    completedTasks.includes(task.id)
+                      ? 'bg-green-500/30 border-green-400'
+                      : task.id === currentAct.id
+                      ? 'bg-purple-500/30 border-purple-400 ring-2 ring-white'
+                      : 'bg-white/10 border-white/30'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="text-3xl">{task.emoji}</div>
+                    <div className="flex-1 text-white font-medium text-sm md:text-base">{task.text}</div>
+                    {completedTasks.includes(task.id) && (
+                      <div className="text-2xl">✅</div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Posters show one by one */}
-          {currentPoster < posters.length && (
-            <div
-              className={`bg-gradient-to-r ${posters[currentPoster].gradient} rounded-2xl p-8 text-center animate-pulse`}
-            >
-              <div className="text-7xl mb-4">{tasks[currentPoster].emoji}</div>
-              <h3 className="text-white text-3xl font-bold mb-2">
-                {posters[currentPoster].title}
-              </h3>
-              <p className="text-white/90">{posters[currentPoster].message}</p>
+              ))}
             </div>
-          )}
 
-          {/* Final badge */}
-          {showBadge && (
-            <div className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 rounded-2xl p-8 text-center animate-pulse mt-6">
-              <div className="text-8xl mb-4">🎖️</div>
-              <h3 className="text-white text-3xl font-bold mb-2">Smart User Badge!</h3>
-              <p className="text-white/90">
-                You unlocked all 5 tech posters! You're officially a Smart Digital User.
+            {!isCompleted && (
+              <button
+                onClick={handleCompleteTask}
+                className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
+              >
+                Mark "{currentAct.text}" as Complete
+              </button>
+            )}
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-white rounded-2xl p-8 text-center animate-pulse">
+              <div className="text-9xl mb-4">🎖️</div>
+              <h3 className="text-3xl md:text-4xl font-bold mb-3">Congratulations!</h3>
+              <p className="text-lg md:text-xl mb-4">
+                You've earned the <strong>Smart User Badge!</strong> 🌟
+              </p>
+              <p className="text-white/90 text-sm">
+                Great job! You unlocked all 5 tech posters! You're officially a Smart Digital User.
               </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

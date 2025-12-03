@@ -1,89 +1,125 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const AIHelperJournal = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const { showCorrectAnswerFeedback } = useGameFeedback();
-
-  const prompts = [
-    "One safe way I use AI is when I ask it to explain homework.",
-    "One safe way I use AI is when I ask it to help me learn something new.",
-    "One safe way I use AI is when I use it to check my grammar or spelling.",
-    "One safe way I use AI is when I use it to create art or stories responsibly.",
-    "One safe way I use AI is when I ask it to give me study tips."
-  ];
-
-  const [currentPrompt, setCurrentPrompt] = useState(0);
+  const gameId = "dcos-kids-78";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [currentTask, setCurrentTask] = useState(0);
   const [journalEntry, setJournalEntry] = useState("");
-  const [answers, setAnswers] = useState([]);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+
+  const tasks = [
+    {
+      id: 1,
+      prompt: "One safe way I use AI is when I ask it to explain homework.",
+      emoji: "📚"
+    },
+    {
+      id: 2,
+      prompt: "One safe way I use AI is when I ask it to help me learn something new.",
+      emoji: "🎓"
+    },
+    {
+      id: 3,
+      prompt: "One safe way I use AI is when I use it to check my grammar or spelling.",
+      emoji: "✍️"
+    },
+    {
+      id: 4,
+      prompt: "One safe way I use AI is when I use it to create art or stories responsibly.",
+      emoji: "🎨"
+    },
+    {
+      id: 5,
+      prompt: "One safe way I use AI is when I ask it to give me study tips.",
+      emoji: "💡"
+    }
+  ];
 
   const handleSubmit = () => {
     if (journalEntry.trim().length >= 10) {
-      // Save answer
-      const newAnswers = [...answers, journalEntry.trim()];
-      setAnswers(newAnswers);
-
-      // Reset input
-      setJournalEntry("");
-
-      // If not the last prompt → go to next
-      if (currentPrompt < prompts.length - 1) {
-        showCorrectAnswerFeedback(1, true); // 1 coin per question
-        setCoins((prev) => prev + 1);
-        setCurrentPrompt((prev) => prev + 1);
-      } else {
-        // Last prompt → finish
-        showCorrectAnswerFeedback(5, true);
-        setCoins(5);
-        setShowResult(true);
-      }
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+      resetFeedback();
+      
+      setTimeout(() => {
+        if (currentTask < tasks.length - 1) {
+          setCurrentTask(prev => prev + 1);
+          setJournalEntry("");
+        } else {
+          setShowResult(true);
+        }
+      }, 500);
     }
   };
 
-  const handleNext = () => {
-    navigate("/student/dcos/kids/classroom-story3");
-  };
+  const currentTaskData = tasks[currentTask];
 
   return (
     <GameShell
       title="AI Helper Journal"
-      subtitle="Write About Safe AI Use"
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={coins}
-      gameId="dcos-kids-78"
-      gameType="educational"
-      totalLevels={100}
-      currentLevel={78}
-      showConfetti={showResult}
-      backPath="/games/digital-citizenship/kids"
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      score={score}
+      subtitle={!showResult ? `Task ${currentTask + 1} of ${tasks.length}` : "Game Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
+      totalXp={totalXp}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={tasks.length}
+      currentLevel={currentTask + 1}
+      maxScore={tasks.length}
+      showConfetti={showResult && score === tasks.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+    >
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-6xl mb-4 text-center">🤖</div>
-            <h2 className="text-2xl font-bold text-white mb-6 text-center">
-              Share Your Safe AI Story ({currentPrompt + 1}/5)
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <div className="text-6xl md:text-8xl mb-4 text-center">{currentTaskData.emoji}</div>
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
+              Share Your Safe AI Story ({currentTask + 1}/5)
             </h2>
 
             <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
               <p className="text-white/70 text-sm mb-2">Your Prompt:</p>
-              <p className="text-white text-xl font-semibold">
-                {prompts[currentPrompt]}
+              <p className="text-white text-lg md:text-xl font-semibold">
+                {currentTaskData.prompt}
               </p>
             </div>
 
@@ -91,7 +127,7 @@ const AIHelperJournal = () => {
               value={journalEntry}
               onChange={(e) => setJournalEntry(e.target.value)}
               placeholder="Write your answer here... (at least 10 characters)"
-              className="w-full h-40 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/50 resize-none"
+              className="w-full h-32 md:h-40 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-green-400 focus:ring-2 focus:ring-green-400/50 resize-none"
               maxLength={200}
             />
 
@@ -108,39 +144,25 @@ const AIHelperJournal = () => {
                   : "bg-gray-500/50 cursor-not-allowed"
               }`}
             >
-              {currentPrompt === prompts.length - 1
-                ? "Submit Final Entry"
-                : "Submit & Next"}
+              {currentTask === tasks.length - 1 ? "Submit Final Entry" : "Submit & Next"}
             </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <div className="text-7xl mb-4 text-center">🎉</div>
-            <h2 className="text-3xl font-bold text-white mb-4 text-center">
-              Great Reflection!
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="text-7xl mb-4">🎉</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === tasks.length ? "Perfect Great Reflection! 🎉" : `You completed ${score} out of ${tasks.length} tasks!`}
             </h2>
-
-            <div className="bg-purple-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white/70 text-sm mb-2">Your Entries:</p>
-              <ul className="list-decimal list-inside space-y-2 text-white text-lg font-medium">
-                {answers.map((ans, i) => (
-                  <li key={i} className="italic">
-                    “{ans}”
-                  </li>
-                ))}
-              </ul>
-            </div>
-
+            <p className="text-white/90 text-lg mb-6">
+              {score === tasks.length 
+                ? "Excellent! Your reflections show safe and responsible AI use!"
+                : "Great job! Keep learning about using AI safely and responsibly!"}
+            </p>
             <div className="bg-green-500/20 rounded-lg p-4 mb-4">
               <p className="text-white text-center text-sm">
-                💡 Using AI safely means thinking before you share, checking facts,
-                and asking AI for help in ways that make you smarter and kinder!
+                💡 Using AI safely means thinking before you share, checking facts, and asking AI for help in ways that make you smarter and kinder!
               </p>
             </div>
-
-            <p className="text-yellow-400 text-2xl font-bold text-center">
-              You earned 5 Coins! 🪙
-            </p>
           </div>
         )}
       </div>

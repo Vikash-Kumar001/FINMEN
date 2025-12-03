@@ -1,21 +1,46 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const PicturePuzzle = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const gameId = "dcos-kids-34";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [currentMatch, setCurrentMatch] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState(null);
-  const [matches, setMatches] = useState([]);
+  const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
+  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
 
   const items = [
     { id: 1, item: "Edited Picture with Unreal Shadows", emoji: "🖼️", correctCategory: "Fake News" },
@@ -27,149 +52,118 @@ const PicturePuzzle = () => {
 
   const categories = ["Real News", "Fake News"];
 
-  const handleCategorySelect = (category) => {
-    setSelectedCategory(category);
-  };
-
   const handleConfirm = () => {
-    if (!selectedCategory) return;
-
+    if (!selectedCategory || answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
     const item = items[currentMatch];
     const isCorrect = selectedCategory === item.correctCategory;
-
-    const newMatches = [
-      ...matches,
-      { itemId: item.id, selected: selectedCategory, isCorrect },
-    ];
-
-    setMatches(newMatches);
-
+    
     if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-
-    setSelectedCategory(null);
-
-    if (currentMatch < items.length - 1) {
-      setTimeout(() => {
-        setCurrentMatch((prev) => prev + 1);
-      }, isCorrect ? 800 : 600);
     } else {
-      const correctCount = newMatches.filter((m) => m.isCorrect).length;
-      if (correctCount >= 4) {
-        setCoins(5);
-      }
-      setShowResult(true);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentMatch < items.length - 1) {
+        setCurrentMatch(prev => prev + 1);
+        setSelectedCategory(null);
+        setAnswered(false);
+      } else {
+        setShowResult(true);
+      }
+    }, 500);
   };
 
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setCurrentMatch(0);
-    setSelectedCategory(null);
-    setMatches([]);
-    setCoins(0);
-    resetFeedback();
-  };
-
-  const handleNext = () => {
-    navigate("/student/dcos/kids/gossip-reflex");
-  };
-
-  const correctCount = matches.filter((m) => m.isCorrect).length;
+  const currentItem = items[currentMatch];
 
   return (
     <GameShell
       title="Picture Puzzle"
-      score={coins}
-      subtitle={`Item ${currentMatch + 1} of ${items.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && correctCount >= 4}
+      score={score}
+      subtitle={!showResult ? `Item ${currentMatch + 1} of ${items.length}` : "Game Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && correctCount >= 4}
-      
-      gameId="dcos-kids-34"
-      gameType="educational"
-      totalLevels={100}
-      currentLevel={34}
-      showConfetti={showResult && correctCount >= 4}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={items.length}
+      currentLevel={currentMatch + 1}
+      maxScore={items.length}
+      showConfetti={showResult && score === items.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/digital-citizenship/kids"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <div className="space-y-8">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
         {!showResult ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-xl p-6 mb-6">
-                <div className="text-6xl mb-3 text-center">{items[currentMatch].emoji}</div>
-                <p className="text-white text-2xl font-bold text-center">
-                  {items[currentMatch].item}
-                </p>
-              </div>
-
-              <p className="text-white/90 mb-4 text-center">
-                Is this Real News or Fake News?
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <div className="bg-gradient-to-r from-blue-500/30 to-purple-500/30 rounded-xl p-6 mb-6">
+              <div className="text-6xl md:text-8xl mb-3 text-center">{currentItem.emoji}</div>
+              <p className="text-white text-xl md:text-2xl font-bold text-center">
+                {currentItem.item}
               </p>
-
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                {categories.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => handleCategorySelect(category)}
-                    className={`border-2 rounded-xl p-4 transition-all ${
-                      selectedCategory === category
-                        ? "bg-purple-500/50 border-purple-400 ring-2 ring-white"
-                        : "bg-white/20 border-white/40 hover:bg-white/30"
-                    }`}
-                  >
-                    <div className="text-white font-bold">{category}</div>
-                  </button>
-                ))}
-              </div>
-
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedCategory}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedCategory
-                    ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                    : "bg-gray-500/50 cursor-not-allowed"
-                }`}
-              >
-                Confirm Choice
-              </button>
             </div>
+
+            <p className="text-white/90 mb-4 text-center text-lg">
+              Is this Real News or Fake News?
+            </p>
+
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              {categories.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => !answered && setSelectedCategory(category)}
+                  disabled={answered}
+                  className={`border-2 rounded-xl p-5 md:p-6 transition-all ${
+                    answered && category === currentItem.correctCategory
+                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
+                      : answered && selectedCategory === category && category !== currentItem.correctCategory
+                      ? 'bg-red-500/30 border-red-400 opacity-60'
+                      : selectedCategory === category
+                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
+                      : 'bg-white/20 border-white/40 hover:bg-white/30'
+                  }`}
+                >
+                  <div className="text-white font-bold text-lg md:text-xl">{category}</div>
+                </button>
+              ))}
+            </div>
+
+            <button
+              onClick={handleConfirm}
+              disabled={!selectedCategory || answered}
+              className={`w-full py-3 rounded-xl font-bold text-white transition ${
+                selectedCategory && !answered
+                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
+                  : "bg-gray-500/50 cursor-not-allowed"
+              }`}
+            >
+              Confirm Choice
+            </button>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {correctCount >= 4 ? "🎯 Truth Seeker!" : "🧩 Try Again!"}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <div className="text-7xl mb-4">🎯</div>
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === items.length ? "Perfect Truth Seeker! 🎉" : `You got ${score} out of ${items.length}!`}
             </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You matched {correctCount} out of {items.length} correctly!
+            <p className="text-white/90 text-lg mb-6">
+              {score === items.length 
+                ? "Excellent! You can identify real and fake news from pictures!"
+                : `You matched ${score} out of ${items.length} correctly!`}
             </p>
             <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
               <p className="text-white/90 text-sm">
-                💡 Always check if an image is edited or from a trusted source.
-                Real news comes from official or verified sources, not random forwards!
+                💡 Always check if an image is edited or from a trusted source. Real news comes from official or verified sources!
               </p>
             </div>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {correctCount >= 4
-                ? "You earned 5 Coins! 🪙"
-                : "Get 4 or more correct to earn coins!"}
-            </p>
-            {correctCount < 4 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
           </div>
         )}
       </div>

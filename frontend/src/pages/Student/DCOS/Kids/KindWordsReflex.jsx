@@ -1,202 +1,143 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useMemo } from "react";
+import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
+import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const KindWordsReflex = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+  const gameId = "dcos-kids-12";
+  const gameData = getGameDataById(gameId);
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
   const [gameStarted, setGameStarted] = useState(false);
-  const [currentWord, setCurrentWord] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
   const [score, setScore] = useState(0);
-  const [coins, setCoins] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const [timeLeft, setTimeLeft] = useState(2);
-  const [autoAdvance, setAutoAdvance] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    try {
+      const games = getDcosKidsGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
 
   const words = [
     { id: 1, text: "Friend", emoji: "🤝", isKind: true },
     { id: 2, text: "Stupid", emoji: "😠", isKind: false },
     { id: 3, text: "Respect", emoji: "🙏", isKind: true },
     { id: 4, text: "Loser", emoji: "👎", isKind: false },
-    { id: 5, text: "Helpful", emoji: "🤗", isKind: true },
-    { id: 6, text: "Mean", emoji: "😡", isKind: false },
-    { id: 7, text: "Caring", emoji: "💖", isKind: true },
-    { id: 8, text: "Ugly", emoji: "😢", isKind: false },
-    { id: 9, text: "Kindness", emoji: "✨", isKind: true },
-    { id: 10, text: "Bully", emoji: "😈", isKind: false },
-    { id: 11, text: "Share", emoji: "🎁", isKind: true },
-    { id: 12, text: "Hate", emoji: "💔", isKind: false },
-    { id: 13, text: "Love", emoji: "❤️", isKind: true },
-    { id: 14, text: "Dumb", emoji: "🙄", isKind: false },
-    { id: 15, text: "Support", emoji: "🤲", isKind: true }
+    { id: 5, text: "Helpful", emoji: "🤗", isKind: true }
   ];
 
-  useEffect(() => {
-    if (gameStarted && !showResult && !autoAdvance) {
-      if (timeLeft > 0) {
-        const timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-        return () => clearTimeout(timer);
-      } else {
-        // Time's up, move to next word
-        setAutoAdvance(true);
-        setTimeout(() => {
-          if (currentWord < words.length - 1) {
-            setCurrentWord(prev => prev + 1);
-            setTimeLeft(2);
-            setAutoAdvance(false);
-          } else {
-            const accuracy = (score / words.length) * 100;
-            if (accuracy >= 70) {
-              setCoins(3);
-            }
-            setShowResult(true);
-          }
-        }, 500);
-      }
-    }
-  }, [timeLeft, gameStarted, showResult, currentWord, autoAdvance]);
-
-  const currentWordData = words[currentWord];
+  const currentWord = words[currentRound];
 
   const handleChoice = (isKind) => {
-    const isCorrect = currentWordData.isKind === isKind;
+    const isCorrect = currentWord.isKind === isKind;
+    resetFeedback();
     
     if (isCorrect) {
       setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
     
-    setAutoAdvance(true);
     setTimeout(() => {
-      if (currentWord < words.length - 1) {
-        setCurrentWord(prev => prev + 1);
-        setTimeLeft(2);
-        setAutoAdvance(false);
+      if (currentRound < words.length - 1) {
+        setCurrentRound(prev => prev + 1);
       } else {
-        const finalScore = score + (isCorrect ? 1 : 0);
-        const accuracy = (finalScore / words.length) * 100;
-        if (accuracy >= 70) {
-          setCoins(3);
-        }
-        setScore(finalScore);
         setShowResult(true);
       }
-    }, 300);
+    }, 500);
   };
-
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setGameStarted(false);
-    setCurrentWord(0);
-    setScore(0);
-    setCoins(0);
-    setTimeLeft(2);
-    setAutoAdvance(false);
-    resetFeedback();
-  };
-
-  const handleNext = () => {
-    navigate("/student/dcos/kids/smile-story");
-  };
-
-  const accuracy = Math.round((score / words.length) * 100);
 
   return (
     <GameShell
       title="Kind Words Reflex"
-      score={coins}
-      subtitle={gameStarted ? `Word ${currentWord + 1} of ${words.length}` : "Quick Tapping Game"}
-      onNext={handleNext}
-      nextEnabled={showResult && accuracy >= 70}
+      score={score}
+      subtitle={!showResult ? `Word ${currentRound + 1} of ${words.length}` : "Game Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult && accuracy >= 70}
-      
-      gameId="dcos-kids-12"
-      gameType="educational"
-      totalLevels={20}
-      currentLevel={12}
-      showConfetti={showResult && accuracy >= 70}
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={words.length}
+      currentLevel={currentRound + 1}
+      maxScore={words.length}
+      showConfetti={showResult && score === words.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      backPath="/games/digital-citizenship/kids"
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
     >
-      <div className="space-y-8">
+      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
         {!gameStarted ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
-            <h2 className="text-2xl font-bold text-white mb-4">Quick! Tap Kind Words!</h2>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 text-center w-full max-w-2xl">
+            <h2 className="text-xl md:text-2xl font-bold text-white mb-4">Quick! Tap Kind Words!</h2>
             <p className="text-white/80 mb-6">Tap "Kind" for positive words, "Rude" for negative words!</p>
             <button
               onClick={() => setGameStarted(true)}
-              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-full font-bold text-xl hover:opacity-90 transition transform hover:scale-105"
+              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-full font-bold text-lg md:text-xl hover:opacity-90 transition transform hover:scale-105"
             >
               Start Game! 🚀
             </button>
           </div>
         ) : !showResult ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-              <div className="flex justify-between items-center mb-6">
-                <span className="text-white/80">Word {currentWord + 1}/{words.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {score}</span>
-              </div>
-              
-              <div className="bg-purple-500/20 rounded-lg p-3 mb-6 text-center">
-                <div className="text-white text-lg font-bold">Time: {timeLeft}s</div>
-              </div>
-              
-              <div className="text-8xl mb-4 text-center animate-pulse">{currentWordData.emoji}</div>
-              <h2 className="text-white text-4xl font-bold text-center mb-8">{currentWordData.text}</h2>
-              
-              <div className="grid grid-cols-2 gap-4">
-                <button
-                  onClick={() => handleChoice(true)}
-                  disabled={autoAdvance}
-                  className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-8 transition-all transform hover:scale-105 disabled:opacity-50"
-                >
-                  <div className="text-white font-bold text-2xl">Kind 💚</div>
-                </button>
-                <button
-                  onClick={() => handleChoice(false)}
-                  disabled={autoAdvance}
-                  className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-8 transition-all transform hover:scale-105 disabled:opacity-50"
-                >
-                  <div className="text-white font-bold text-2xl">Rude 💔</div>
-                </button>
-              </div>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
+            <div className="text-6xl md:text-8xl mb-4 md:mb-6 text-center animate-pulse">{currentWord.emoji}</div>
+            <h2 className="text-white text-3xl md:text-4xl font-bold text-center mb-6 md:mb-8">{currentWord.text}</h2>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => handleChoice(true)}
+                className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-6 md:p-8 transition-all transform hover:scale-105"
+              >
+                <div className="text-white font-bold text-xl md:text-2xl">Kind 💚</div>
+              </button>
+              <button
+                onClick={() => handleChoice(false)}
+                className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-6 md:p-8 transition-all transform hover:scale-105"
+              >
+                <div className="text-white font-bold text-xl md:text-2xl">Rude 💔</div>
+              </button>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {accuracy >= 70 ? "🎉 Kindness Expert!" : "💪 Keep Practicing!"}
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
+            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
+              {score === words.length ? "🎉 Perfect Score!" : `You got ${score} out of ${words.length}!`}
             </h2>
-            <p className="text-white/90 text-xl mb-4">
-              You got {score} out of {words.length} correct ({accuracy}%)
+            <p className="text-white/90 text-lg mb-4">
+              {score === words.length 
+                ? "You're a kindness expert! You know the difference between kind and rude words."
+                : "Great job! Keep practicing to recognize kind words."}
             </p>
             <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
               <p className="text-white/90 text-sm">
                 💡 Always use kind words online and in person. Words can hurt or heal!
               </p>
             </div>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {accuracy >= 70 ? "You earned 3 Coins! 🪙" : "Get 70% or higher to earn coins!"}
-            </p>
-            {accuracy < 70 && (
-              <button
-                onClick={handleTryAgain}
-                className="mt-4 bg-gradient-to-r from-purple-500 to-pink-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Try Again
-              </button>
-            )}
           </div>
         )}
       </div>

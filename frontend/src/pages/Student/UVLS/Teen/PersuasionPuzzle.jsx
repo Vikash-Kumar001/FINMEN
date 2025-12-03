@@ -136,13 +136,17 @@ const PersuasionPuzzle = () => {
         setAnswered(false);
         resetFeedback();
       } else {
-        setShowResult(true);
+        // Small delay to ensure score state is updated before showing result
+        setTimeout(() => {
+          setShowResult(true);
+        }, 100);
       }
     }, isCorrect ? 1000 : 800);
   };
 
   const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
+  // Calculate final score from responses to ensure accuracy
+  const finalScore = showResult ? responses.filter(r => r.isCorrect).length : score;
 
   return (
     <GameShell

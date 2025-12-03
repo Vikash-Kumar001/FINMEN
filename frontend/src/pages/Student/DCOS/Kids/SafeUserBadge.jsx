@@ -1,306 +1,263 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
-import { Shield, Lock, UserX, Home, MessageSquare } from 'lucide-react';
 
 const SafeUserBadge = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-kids-10";
   const gameData = getGameDataById(gameId);
   
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
-  const [challenge, setChallenge] = useState(0);
-  const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const challenges = [
+  const questions = [
     {
       id: 1,
-      title: "Password Safety",
-      description: "Complete the password safety challenge!",
-      icon: <Lock className="w-8 h-8" />,
-      color: "bg-blue-500",
-      question: "What should you do with your password?",
+      text: "What should you do with your password to stay safe online?",
       options: [
         { 
-          text: "Never share passwords", 
+          id: "a", 
+          text: "Never Share Passwords", 
           emoji: "🔒", 
+          description: "Keep passwords private and never share",
           isCorrect: true
         },
         { 
-          text: "Share with friends", 
+          id: "b", 
+          text: "Share with Friends", 
           emoji: "👥", 
+          description: "It's okay to share with close friends",
           isCorrect: false
         },
         { 
-          text: "Write it on paper", 
+          id: "c", 
+          text: "Write It on Paper", 
           emoji: "📝", 
-          isCorrect: false
-        },
-        { 
-          text: "Tell strangers", 
-          emoji: "👤", 
+          description: "Write password on paper and keep it visible",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      title: "Stranger Safety",
-      description: "Complete the stranger safety challenge!",
-      icon: <UserX className="w-8 h-8" />,
-      color: "bg-red-500",
-      question: "What should you do if a stranger talks to you online?",
+      text: "What should you do if a stranger talks to you online?",
       options: [
         { 
-          text: "Talk back to them", 
+          id: "a", 
+          text: "Talk Back to Them", 
           emoji: "💬", 
+          description: "Respond and have a conversation",
           isCorrect: false
         },
         { 
-          text: "Don't talk to strangers online", 
+          id: "b", 
+          text: "Don't Talk to Strangers", 
           emoji: "🚫", 
+          description: "Ignore and don't respond to strangers",
           isCorrect: true
         },
         { 
-          text: "Share personal info", 
+          id: "c", 
+          text: "Share Personal Info", 
           emoji: "📱", 
-          isCorrect: false
-        },
-        { 
-          text: "Meet them in person", 
-          emoji: "👋", 
+          description: "Tell them about yourself",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      title: "Privacy Protection",
-      description: "Complete the privacy challenge!",
-      icon: <Shield className="w-8 h-8" />,
-      color: "bg-purple-500",
-      question: "What should you keep private online?",
+      text: "What should you keep private online to stay safe?",
       options: [
         { 
-          text: "Share everything", 
+          id: "a", 
+          text: "Share Everything", 
           emoji: "📢", 
+          description: "Share all information publicly",
           isCorrect: false
         },
         { 
-          text: "Keep personal info private", 
+          id: "b", 
+          text: "Keep Personal Info Private", 
           emoji: "🛡️", 
+          description: "Protect your personal information",
           isCorrect: true
         },
         { 
-          text: "Post your address", 
+          id: "c", 
+          text: "Post Your Address", 
           emoji: "🏠", 
-          isCorrect: false
-        },
-        { 
-          text: "Share phone number", 
-          emoji: "📞", 
+          description: "Share your home address online",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      title: "Family Rules",
-      description: "Complete the family rules challenge!",
-      icon: <Home className="w-8 h-8" />,
-      color: "bg-green-500",
-      question: "What should you do with family device rules?",
+      text: "What should you do with family device rules?",
       options: [
         { 
-          text: "Ignore them", 
+          id: "a", 
+          text: "Ignore Them", 
           emoji: "😠", 
+          description: "Don't follow the rules",
           isCorrect: false
         },
         { 
-          text: "Break them secretly", 
+          id: "b", 
+          text: "Break Them Secretly", 
           emoji: "😈", 
+          description: "Break rules when parents aren't looking",
           isCorrect: false
         },
         { 
-          text: "Follow family device rules", 
+          id: "c", 
+          text: "Follow Family Rules", 
           emoji: "👨‍👩‍👧", 
+          description: "Always follow family device rules",
           isCorrect: true
-        },
-        { 
-          text: "Argue about them", 
-          emoji: "😤", 
-          isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      title: "Reporting Safety",
-      description: "Complete the reporting challenge!",
-      icon: <MessageSquare className="w-8 h-8" />,
-      color: "bg-orange-500",
-      question: "What should you do if a stranger sends you a message?",
+      text: "What should you do if a stranger sends you a message?",
       options: [
         { 
-          text: "Reply to them", 
+          id: "a", 
+          text: "Reply to Them", 
           emoji: "💬", 
+          description: "Respond to the stranger's message",
           isCorrect: false
         },
         { 
-          text: "Ignore it", 
+          id: "b", 
+          text: "Ignore It", 
           emoji: "🙈", 
+          description: "Just ignore and don't tell anyone",
           isCorrect: false
         },
         { 
-          text: "Tell parents about stranger messages", 
+          id: "c", 
+          text: "Tell Parents", 
           emoji: "📢", 
+          description: "Tell parents about stranger messages",
           isCorrect: true
-        },
-        { 
-          text: "Meet them", 
-          emoji: "👋", 
-          isCorrect: false
         }
       ]
     }
   ];
 
-  const handleAnswer = (optionText) => {
-    if (answered || showResult) return;
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setAnswered(true);
-    setSelectedAnswer(optionText);
-    resetFeedback();
+    setChoices(newChoices);
     
-    const currentChallenge = challenges[challenge];
-    const selectedOption = currentChallenge.options.find(opt => opt.text === optionText);
-    const isCorrect = selectedOption?.isCorrect || false;
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    const isLastChallenge = challenge === challenges.length - 1;
-    
-    setTimeout(() => {
-      if (isLastChallenge) {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
         setShowResult(true);
-      } else {
-        setChallenge(prev => prev + 1);
-        setAnswered(false);
-        setSelectedAnswer(null);
-        resetFeedback();
-      }
-    }, isCorrect ? 1000 : 800);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const currentChallenge = challenges[challenge];
-  const finalScore = score;
+  const handleNext = () => {
+    navigate("/games/digital-citizenship/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Safe User Badge"
-      subtitle={showResult ? "Badge Earned!" : `Challenge ${challenge + 1} of ${challenges.length}`}
-      score={finalScore}
-      currentLevel={challenge + 1}
-      totalLevels={challenges.length}
+      subtitle={showResult ? "Badge Earned!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      gameId={gameId}
-      gameType="dcos"
+      onNext={handleNext}
+      nextEnabled={false}
       showGameOver={showResult}
-      maxScore={challenges.length}
+      score={coins}
+      gameId="dcos-kids-10"
+      gameType="dcos"
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-      showConfetti={showResult && finalScore >= 3}
-    >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!showResult && currentChallenge ? (
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{challenges.length}</span>
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
               </div>
               
-              <div className={`${currentChallenge.color} rounded-xl p-6 mb-6 text-center`}>
-                <div className="text-white mb-2">{currentChallenge.icon}</div>
-                <h3 className="text-white text-xl font-bold mb-2">{currentChallenge.title}</h3>
-                <p className="text-white/90 text-sm">{currentChallenge.description}</p>
-              </div>
-              
-              <p className="text-white text-lg md:text-xl mb-6 font-semibold text-center">
-                {currentChallenge.question}
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
               </p>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {currentChallenge.options.map((option, idx) => {
-                  const isSelected = selectedAnswer === option.text;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={idx}
-                      onClick={() => handleAnswer(option.text)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-3xl mb-2">{option.emoji}</div>
-                      <h4 className="font-bold text-base">{option.text}</h4>
-                    </button>
-                  );
-                })}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
               </div>
             </div>
           </div>

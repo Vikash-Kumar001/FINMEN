@@ -1,149 +1,270 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const KindWordsReflex = () => {
+  const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-kids-12";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [gameStarted, setGameStarted] = useState(false);
-  const [currentRound, setCurrentRound] = useState(0);
-  const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
+  const questions = [
+    {
+      id: 1,
+      text: "Is the word 'Friend' a kind word or a rude word?",
+      options: [
+        { 
+          id: "a", 
+          text: "Kind Word", 
+          emoji: "🤝", 
+          description: "Friend is a positive, kind word",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Rude Word", 
+          emoji: "😠", 
+          description: "Friend is a mean word",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Not Sure", 
+          emoji: "🤔", 
+          description: "I don't know",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "Is the word 'Stupid' a kind word or a rude word?",
+      options: [
+        { 
+          id: "a", 
+          text: "Kind Word", 
+          emoji: "😊", 
+          description: "Stupid is a nice word",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Rude Word", 
+          emoji: "😠", 
+          description: "Stupid is a mean, hurtful word",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Not Sure", 
+          emoji: "🤔", 
+          description: "I'm not sure",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "Is the word 'Respect' a kind word or a rude word?",
+      options: [
+        { 
+          id: "a", 
+          text: "Kind Word", 
+          emoji: "🙏", 
+          description: "Respect is a positive, kind word",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Rude Word", 
+          emoji: "😠", 
+          description: "Respect is a mean word",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Not Sure", 
+          emoji: "🤔", 
+          description: "I don't know",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "Is the word 'Loser' a kind word or a rude word?",
+      options: [
+        { 
+          id: "a", 
+          text: "Kind Word", 
+          emoji: "😊", 
+          description: "Loser is a nice word",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Rude Word", 
+          emoji: "👎", 
+          description: "Loser is a mean, hurtful word",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Not Sure", 
+          emoji: "🤔", 
+          description: "I'm not sure",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Is the word 'Helpful' a kind word or a rude word?",
+      options: [
+        { 
+          id: "a", 
+          text: "Kind Word", 
+          emoji: "🤗", 
+          description: "Helpful is a positive, kind word",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Rude Word", 
+          emoji: "😠", 
+          description: "Helpful is a mean word",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Not Sure", 
+          emoji: "🤔", 
+          description: "I don't know",
+          isCorrect: false
+        }
+      ]
     }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const words = [
-    { id: 1, text: "Friend", emoji: "🤝", isKind: true },
-    { id: 2, text: "Stupid", emoji: "😠", isKind: false },
-    { id: 3, text: "Respect", emoji: "🙏", isKind: true },
-    { id: 4, text: "Loser", emoji: "👎", isKind: false },
-    { id: 5, text: "Helpful", emoji: "🤗", isKind: true }
   ];
 
-  const currentWord = words[currentRound];
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
 
-  const handleChoice = (isKind) => {
-    const isCorrect = currentWord.isKind === isKind;
-    resetFeedback();
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
+    setChoices(newChoices);
+    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentRound < words.length - 1) {
-        setCurrentRound(prev => prev + 1);
-      } else {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
         setShowResult(true);
-      }
-    }, 500);
+      }, isCorrect ? 1000 : 800);
+    }
   };
+
+  const handleNext = () => {
+    navigate("/games/digital-citizenship/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Kind Words Reflex"
-      score={score}
-      subtitle={!showResult ? `Word ${currentRound + 1} of ${words.length}` : "Game Complete!"}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      onNext={handleNext}
+      nextEnabled={false}
       showGameOver={showResult}
-      gameId={gameId}
+      score={coins}
+      gameId="dcos-kids-12"
       gameType="dcos"
-      totalLevels={words.length}
-      currentLevel={currentRound + 1}
-      maxScore={words.length}
-      showConfetti={showResult && score === words.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-    >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!gameStarted ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 text-center w-full max-w-2xl">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4">Quick! Tap Kind Words!</h2>
-            <p className="text-white/80 mb-6">Tap "Kind" for positive words, "Rude" for negative words!</p>
-            <button
-              onClick={() => setGameStarted(true)}
-              className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-8 py-4 rounded-full font-bold text-lg md:text-xl hover:opacity-90 transition transform hover:scale-105"
-            >
-              Start Game! 🚀
-            </button>
-          </div>
-        ) : !showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 md:mb-6 text-center animate-pulse">{currentWord.emoji}</div>
-            <h2 className="text-white text-3xl md:text-4xl font-bold text-center mb-6 md:mb-8">{currentWord.text}</h2>
-            
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => handleChoice(true)}
-                className="bg-green-500/30 hover:bg-green-500/50 border-3 border-green-400 rounded-xl p-6 md:p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-white font-bold text-xl md:text-2xl">Kind 💚</div>
-              </button>
-              <button
-                onClick={() => handleChoice(false)}
-                className="bg-red-500/30 hover:bg-red-500/50 border-3 border-red-400 rounded-xl p-6 md:p-8 transition-all transform hover:scale-105"
-              >
-                <div className="text-white font-bold text-xl md:text-2xl">Rude 💔</div>
-              </button>
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === words.length ? "🎉 Perfect Score!" : `You got ${score} out of ${words.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-4">
-              {score === words.length 
-                ? "You're a kindness expert! You know the difference between kind and rude words."
-                : "Great job! Keep practicing to recognize kind words."}
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Always use kind words online and in person. Words can hurt or heal!
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default KindWordsReflex;
-

@@ -1,197 +1,270 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const SpotBullyQuiz = () => {
+  const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-kids-11";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [score, setScore] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Which of these is bullying?",
-      emoji: "🤔",
+      text: "Which of these is bullying behavior?",
       options: [
-        { id: 1, text: "Helping a friend with homework", emoji: "📚", isCorrect: false },
-        { id: 2, text: "Teasing someone about their clothes", emoji: "😢", isCorrect: true },
-        { id: 3, text: "Sharing lunch with a classmate", emoji: "🍎", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Helping a Friend", 
+          emoji: "📚", 
+          description: "Helping a friend with homework",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Teasing About Clothes", 
+          emoji: "😢", 
+          description: "Teasing someone about their clothes",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Sharing Lunch", 
+          emoji: "🍎", 
+          description: "Sharing lunch with a classmate",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
       text: "What should you do if you see someone being bullied?",
-      emoji: "👀",
       options: [
-        { id: 1, text: "Join in with the bully", emoji: "😈", isCorrect: false },
-        { id: 2, text: "Walk away and ignore it", emoji: "🚶", isCorrect: false },
-        { id: 3, text: "Tell a teacher or trusted adult", emoji: "🙋", isCorrect: true }
+        { 
+          id: "a", 
+          text: "Join In", 
+          emoji: "😈", 
+          description: "Join in with the bully",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Walk Away", 
+          emoji: "🚶", 
+          description: "Walk away and ignore it",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Tell a Teacher", 
+          emoji: "🙋", 
+          description: "Tell a teacher or trusted adult",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 3,
       text: "Is calling someone mean names bullying?",
-      emoji: "💬",
       options: [
-        { id: 1, text: "Yes, it hurts feelings", emoji: "✅", isCorrect: true },
-        { id: 2, text: "No, it's just joking", emoji: "❌", isCorrect: false },
-        { id: 3, text: "Only if they get upset", emoji: "🤷", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Yes, It Hurts Feelings", 
+          emoji: "✅", 
+          description: "Yes, it hurts people's feelings",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "No, It's Just Joking", 
+          emoji: "❌", 
+          description: "No, it's just a joke",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Only If They Get Upset", 
+          emoji: "🤷", 
+          description: "Only if the person gets upset",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
       text: "What is cyberbullying?",
-      emoji: "💻",
       options: [
-        { id: 1, text: "Playing games online", emoji: "🎮", isCorrect: false },
-        { id: 2, text: "Being mean to someone online", emoji: "😠", isCorrect: true },
-        { id: 3, text: "Sharing photos with friends", emoji: "📸", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Playing Games Online", 
+          emoji: "🎮", 
+          description: "Playing games on the internet",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Being Mean Online", 
+          emoji: "😠", 
+          description: "Being mean to someone online",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Sharing Photos", 
+          emoji: "📸", 
+          description: "Sharing photos with friends",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
       text: "How can you help stop bullying?",
-      emoji: "🛡️",
       options: [
-        { id: 1, text: "Stand up for others and be kind", emoji: "💪", isCorrect: true },
-        { id: 2, text: "Laugh at mean jokes", emoji: "😄", isCorrect: false },
-        { id: 3, text: "Spread rumors about bullies", emoji: "🗣️", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Stand Up and Be Kind", 
+          emoji: "💪", 
+          description: "Stand up for others and be kind",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Laugh at Mean Jokes", 
+          emoji: "😄", 
+          description: "Laugh at mean jokes",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Spread Rumors", 
+          emoji: "🗣️", 
+          description: "Spread rumors about bullies",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered) return;
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setAnswered(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOption = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect || false;
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-        setAnswered(false);
-      } else {
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
         setShowResult(true);
-      }
-    }, 500);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const currentQuestionData = questions[currentQuestion];
+  const handleNext = () => {
+    navigate("/games/digital-citizenship/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Spot the Bully Quiz"
-      score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      onNext={handleNext}
+      nextEnabled={false}
       showGameOver={showResult}
-      gameId={gameId}
+      score={coins}
+      gameId="dcos-kids-11"
       gameType="dcos"
-      totalLevels={questions.length}
-      currentLevel={currentQuestion + 1}
-      maxScore={questions.length}
-      showConfetti={showResult && score === questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-    >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 md:mb-6 text-center">{currentQuestionData.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-lg md:text-xl leading-relaxed text-center font-semibold">
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
                 {currentQuestionData.text}
               </p>
-            </div>
-
-            <div className="space-y-3 mb-6">
-              {currentQuestionData.options.map(option => (
-                <button
-                  key={option.id}
-                  onClick={() => handleAnswer(option.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-semibold text-base md:text-lg">{option.text}</div>
-                  </div>
-                </button>
-              ))}
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🏆</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === questions.length ? "Perfect Score! 🎉" : `You got ${score} out of ${questions.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === questions.length 
-                ? "You're a bullying expert! You know how to spot and stop bullying."
-                : "Great job! Keep learning about how to recognize and stop bullying."}
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );
 };
 
 export default SpotBullyQuiz;
-

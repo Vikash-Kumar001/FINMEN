@@ -1,74 +1,52 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const DeviceSharingQuiz = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-kids-8";
   const gameData = getGameDataById(gameId);
   
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-  
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [score, setScore] = useState(0);
-  const [levelCompleted, setLevelCompleted] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
       text: "Is it safe to share your phone or tablet with a stranger?",
-      emoji: "📱",
       options: [
         { 
           id: "a", 
-          text: "No, never share with strangers", 
-          emoji: "🛡️",
+          text: "No, Never Share", 
+          emoji: "🛡️", 
+          description: "Never share devices with strangers",
           isCorrect: true
         },
         { 
           id: "b", 
-          text: "Yes, it's okay to share", 
-          emoji: "👍",
+          text: "Yes, It's Okay", 
+          emoji: "👍", 
+          description: "It's safe to share with strangers",
           isCorrect: false
         },
         { 
           id: "c", 
-          text: "Only if they ask nicely", 
-          emoji: "😊",
+          text: "Only If They Ask Nicely", 
+          emoji: "😊", 
+          description: "Share if they ask politely",
           isCorrect: false
         }
       ]
@@ -76,24 +54,26 @@ const DeviceSharingQuiz = () => {
     {
       id: 2,
       text: "Should you let a classmate use your device without asking?",
-      emoji: "👥",
       options: [
         { 
           id: "a", 
-          text: "Yes, classmates are safe", 
-          emoji: "👍",
+          text: "Yes, Classmates Are Safe", 
+          emoji: "👍", 
+          description: "Classmates can use it anytime",
           isCorrect: false
         },
         { 
           id: "b", 
-          text: "No, ask parent first", 
-          emoji: "🛡️",
+          text: "Ask Parent First", 
+          emoji: "🛡️", 
+          description: "Always ask parents before sharing",
           isCorrect: true
         },
         { 
           id: "c", 
-          text: "Only for a minute", 
-          emoji: "⏰",
+          text: "Only for a Minute", 
+          emoji: "⏰", 
+          description: "Share for just a short time",
           isCorrect: false
         }
       ]
@@ -101,24 +81,26 @@ const DeviceSharingQuiz = () => {
     {
       id: 3,
       text: "Can you share your device password with friends?",
-      emoji: "🔒",
       options: [
         { 
           id: "a", 
-          text: "No, passwords are private", 
-          emoji: "🛡️",
+          text: "No, Passwords Are Private", 
+          emoji: "🔒", 
+          description: "Never share passwords with anyone",
           isCorrect: true
         },
         { 
           id: "b", 
-          text: "Yes, friends are safe", 
-          emoji: "👍",
+          text: "Yes, Friends Are Safe", 
+          emoji: "👍", 
+          description: "Friends can know your password",
           isCorrect: false
         },
         { 
           id: "c", 
-          text: "Only best friends", 
-          emoji: "👫",
+          text: "Only Best Friends", 
+          emoji: "👫", 
+          description: "Share only with close friends",
           isCorrect: false
         }
       ]
@@ -126,24 +108,26 @@ const DeviceSharingQuiz = () => {
     {
       id: 4,
       text: "Should you let someone you just met use your device?",
-      emoji: "👤",
       options: [
         { 
           id: "a", 
-          text: "Yes, if they seem nice", 
-          emoji: "😊",
+          text: "Yes, If They Seem Nice", 
+          emoji: "😊", 
+          description: "Share if they look friendly",
           isCorrect: false
         },
         { 
           id: "b", 
-          text: "No, never share with people you don't know well", 
-          emoji: "🛡️",
+          text: "No, Never Share", 
+          emoji: "🛡️", 
+          description: "Don't share with people you don't know well",
           isCorrect: true
         },
         { 
           id: "c", 
-          text: "Only for games", 
-          emoji: "🎮",
+          text: "Only for Games", 
+          emoji: "🎮", 
+          description: "Share only to play games together",
           isCorrect: false
         }
       ]
@@ -151,124 +135,129 @@ const DeviceSharingQuiz = () => {
     {
       id: 5,
       text: "Is it safe to leave your device unlocked around strangers?",
-      emoji: "🔓",
       options: [
         { 
           id: "a", 
-          text: "No, always lock your device", 
-          emoji: "🛡️",
+          text: "Always Lock Device", 
+          emoji: "🔒", 
+          description: "Always lock your device for safety",
           isCorrect: true
         },
         { 
           id: "b", 
-          text: "Yes, it's fine", 
-          emoji: "👍",
+          text: "Yes, It's Fine", 
+          emoji: "👍", 
+          description: "Leaving it unlocked is okay",
           isCorrect: false
         },
         { 
           id: "c", 
-          text: "Only at home", 
-          emoji: "🏠",
+          text: "Only at Home", 
+          emoji: "🏠", 
+          description: "Unlocked is fine at home only",
           isCorrect: false
         }
       ]
     }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered || levelCompleted) return;
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setAnswered(true);
-    setSelectedOption(optionId);
-    resetFeedback();
+    setChoices(newChoices);
     
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-        resetFeedback();
-      } else {
-        setLevelCompleted(true);
-      }
-    }, isCorrect ? 1000 : 800);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
+        setShowResult(true);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const currentQuestionData = questions[currentQuestion];
-  const finalScore = score;
+  const handleNext = () => {
+    navigate("/games/digital-citizenship/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Device Sharing Quiz"
-      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      score={finalScore}
-      currentLevel={currentQuestion + 1}
-      totalLevels={questions.length}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      gameId={gameId}
+      onNext={handleNext}
+      nextEnabled={false}
+      showGameOver={showResult}
+      score={coins}
+      gameId="dcos-kids-8"
       gameType="dcos"
-      showGameOver={levelCompleted}
-      maxScore={questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-      showConfetti={levelCompleted && finalScore >= 3}
-    >
-      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
-        {!levelCompleted && currentQuestionData ? (
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
                 <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
               </div>
               
-              <div className="text-6xl mb-4 text-center">{currentQuestionData.emoji}</div>
-              
-              <p className="text-white text-lg md:text-xl mb-6 font-semibold text-center">
+              <p className="text-white text-lg mb-6 text-center">
                 {currentQuestionData.text}
               </p>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options.map(option => {
-                  const isSelected = selectedOption === option.id;
-                  const showCorrect = answered && option.isCorrect;
-                  const showIncorrect = answered && isSelected && !option.isCorrect;
-                  
-                  return (
-                    <button
-                      key={option.id}
-                      onClick={() => handleAnswer(option.id)}
-                      disabled={answered}
-                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
-                        showCorrect
-                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
-                          : showIncorrect
-                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
-                          : isSelected
-                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
-                          : "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
-                      } ${answered ? "cursor-not-allowed" : ""}`}
-                    >
-                      <div className="text-3xl mb-2">{option.emoji}</div>
-                      <h3 className="font-bold text-base">{option.text}</h3>
-                    </button>
-                  );
-                })}
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
               </div>
             </div>
           </div>

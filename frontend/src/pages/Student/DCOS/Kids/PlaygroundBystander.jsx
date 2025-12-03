@@ -1,202 +1,267 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const PlaygroundBystander = () => {
+  const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-kids-15";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      title: "Playground Situation",
-      emoji: "🏃",
-      description: "You see a bully pushing another child on the playground...",
+      text: "You see a bully pushing another child on the playground. What should you do?",
       options: [
-        { id: 1, text: "Walk away and ignore it", emoji: "🚶", isCorrect: false },
-        { id: 2, text: "Help the child and tell a teacher", emoji: "🙋", isCorrect: true },
-        { id: 3, text: "Watch but don't do anything", emoji: "👀", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Walk Away", 
+          emoji: "🚶", 
+          description: "Walk away and ignore it",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Help and Tell Teacher", 
+          emoji: "🙋", 
+          description: "Help the child and tell a teacher",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Just Watch", 
+          emoji: "👀", 
+          description: "Watch but don't do anything",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      title: "Lunchroom Bullying",
-      emoji: "🍽️",
-      description: "You see someone taking another child's lunch and making fun of them...",
+      text: "You see someone taking another child's lunch and making fun of them. What should you do?",
       options: [
-        { id: 1, text: "Help get the lunch back and tell an adult", emoji: "🛡️", isCorrect: true },
-        { id: 2, text: "Laugh along with the bully", emoji: "😄", isCorrect: false },
-        { id: 3, text: "Pretend you didn't see anything", emoji: "🙈", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Help and Tell Adult", 
+          emoji: "🛡️", 
+          description: "Help get the lunch back and tell an adult",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Laugh Along", 
+          emoji: "😄", 
+          description: "Laugh along with the bully",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Pretend You Didn't See", 
+          emoji: "🙈", 
+          description: "Pretend you didn't see anything",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      title: "Online Bullying",
-      emoji: "💻",
-      description: "You see mean comments being posted about a classmate online...",
+      text: "You see mean comments being posted about a classmate online. What should you do?",
       options: [
-        { id: 1, text: "Report it and stand up for them", emoji: "📢", isCorrect: true },
-        { id: 2, text: "Share the mean comments", emoji: "📤", isCorrect: false },
-        { id: 3, text: "Ignore it completely", emoji: "😐", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Report and Stand Up", 
+          emoji: "📢", 
+          description: "Report it and stand up for them",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Share the Comments", 
+          emoji: "📤", 
+          description: "Share the mean comments",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore Completely", 
+          emoji: "😐", 
+          description: "Ignore it completely",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      title: "Name Calling",
-      emoji: "💬",
-      description: "You hear kids calling someone mean names in the hallway...",
+      text: "You hear kids calling someone mean names in the hallway. What should you do?",
       options: [
-        { id: 1, text: "Tell them to stop and get help", emoji: "🛑", isCorrect: true },
-        { id: 2, text: "Join in with the name calling", emoji: "😈", isCorrect: false },
-        { id: 3, text: "Walk by without saying anything", emoji: "🚶", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Tell Them to Stop", 
+          emoji: "🛑", 
+          description: "Tell them to stop and get help",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Join In", 
+          emoji: "😈", 
+          description: "Join in with the name calling",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Walk By Silently", 
+          emoji: "🚶", 
+          description: "Walk by without saying anything",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      title: "Exclusion",
-      emoji: "👥",
-      description: "You see a child being left out of a game on purpose...",
+      text: "You see a child being left out of a game on purpose. What should you do?",
       options: [
-        { id: 1, text: "Invite them to join and include them", emoji: "🤝", isCorrect: true },
-        { id: 2, text: "Ignore them like everyone else", emoji: "😐", isCorrect: false },
-        { id: 3, text: "Make fun of them for being left out", emoji: "😄", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Invite Them to Join", 
+          emoji: "🤝", 
+          description: "Invite them to join and include them",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Ignore Like Others", 
+          emoji: "😐", 
+          description: "Ignore them like everyone else",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Make Fun of Them", 
+          emoji: "😄", 
+          description: "Make fun of them for being left out",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (answered) return;
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setAnswered(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    const currentScenarioData = scenarios[currentScenario];
-    const selectedOption = currentScenarioData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect || false;
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentScenario < scenarios.length - 1) {
-        setCurrentScenario(prev => prev + 1);
-        setAnswered(false);
-      } else {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
         setShowResult(true);
-      }
-    }, 500);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const currentScenarioData = scenarios[currentScenario];
+  const handleNext = () => {
+    navigate("/games/digital-citizenship/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Playground Bystander"
-      score={score}
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      onNext={handleNext}
+      nextEnabled={false}
       showGameOver={showResult}
-      gameId={gameId}
+      score={coins}
+      gameId="dcos-kids-15"
       gameType="dcos"
-      totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      maxScore={scenarios.length}
-      showConfetti={showResult && score === scenarios.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-    >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 text-center text-red-400">{currentScenarioData.title}</h2>
-            
-            <div className="bg-red-500/20 border-2 border-red-400 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg leading-relaxed text-center">
-                {currentScenarioData.description}
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
               </p>
-            </div>
-
-            <h3 className="text-white font-bold mb-4">What should you do?</h3>
-            
-            <div className="space-y-3 mb-6">
-              {currentScenarioData.options.map(option => (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-semibold text-base md:text-lg">{option.text}</div>
-                  </div>
-                </button>
-              ))}
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🏆</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === scenarios.length ? "Perfect Score! 🎉" : `You got ${score} out of ${scenarios.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === scenarios.length 
-                ? "You're a hero! You always stand up for others and help stop bullying."
-                : "Great job! Remember to always help others and stand up against bullying."}
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

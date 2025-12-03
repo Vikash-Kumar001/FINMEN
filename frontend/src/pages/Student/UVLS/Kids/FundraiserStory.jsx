@@ -56,18 +56,18 @@ const FundraiserStory = () => {
       text: "You want to fund a park toy. What's the best approach?",
       options: [
         { 
-          id: "a", 
-          text: "Lemonade Stand", 
-          emoji: "🍋", 
-          description: "Set up a lemonade stand",
-          isCorrect: true
-        },
-        { 
           id: "b", 
           text: "Wait for Magic", 
           emoji: "🪄", 
           description: "Hope money appears magically",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Lemonade Stand", 
+          emoji: "🍋", 
+          description: "Set up a lemonade stand",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -110,18 +110,18 @@ const FundraiserStory = () => {
       text: "You need to fund a school trip. What would you do?",
       options: [
         { 
-          id: "a", 
-          text: "Craft Sale", 
-          emoji: "🎨", 
-          description: "Sell handmade crafts",
-          isCorrect: true
-        },
-        { 
           id: "b", 
           text: "Ignore Goal", 
           emoji: "🤷", 
           description: "Give up on the goal",
           isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Craft Sale", 
+          emoji: "🎨", 
+          description: "Sell handmade crafts",
+          isCorrect: true
         },
         { 
           id: "c", 

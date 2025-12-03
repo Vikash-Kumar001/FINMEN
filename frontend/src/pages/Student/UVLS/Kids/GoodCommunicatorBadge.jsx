@@ -61,18 +61,18 @@ const GoodCommunicatorBadge = () => {
       description: "Your friend looks upset. How do you communicate?",
       choices: [
         { 
-          id: "listen", 
-          text: "Listen and ask what's wrong", 
-          emoji: "👂", 
-          description: "Show you care and want to help",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore their feelings", 
           emoji: "🙈", 
           description: "Don't ask about it",
           isCorrect: false
+        },
+        { 
+          id: "listen", 
+          text: "Listen and ask what's wrong", 
+          emoji: "👂", 
+          description: "Show you care and want to help",
+          isCorrect: true
         },
         { 
           id: "joke", 
@@ -89,13 +89,6 @@ const GoodCommunicatorBadge = () => {
       description: "You need help with homework. How do you ask?",
       choices: [
         { 
-          id: "ask", 
-          text: "Ask clearly and politely", 
-          emoji: "🙋", 
-          description: "Explain what you need help with",
-          isCorrect: true
-        },
-        { 
           id: "demand", 
           text: "Demand help", 
           emoji: "😤", 
@@ -108,6 +101,13 @@ const GoodCommunicatorBadge = () => {
           emoji: "🙈", 
           description: "Try to figure it out alone",
           isCorrect: false
+        },
+        { 
+          id: "ask", 
+          text: "Ask clearly and politely", 
+          emoji: "🙋", 
+          description: "Explain what you need help with",
+          isCorrect: true
         }
       ]
     },
@@ -117,18 +117,18 @@ const GoodCommunicatorBadge = () => {
       description: "You disagree with a friend. How do you communicate?",
       choices: [
         { 
-          id: "respectful", 
-          text: "Share your view respectfully", 
-          emoji: "💬", 
-          description: "Explain your opinion without being mean",
-          isCorrect: true
-        },
-        { 
           id: "yell", 
           text: "Yell at them", 
           emoji: "😠", 
           description: "Shout to make your point",
           isCorrect: false
+        },
+        { 
+          id: "respectful", 
+          text: "Share your view respectfully", 
+          emoji: "💬", 
+          description: "Explain your opinion without being mean",
+          isCorrect: true
         },
         { 
           id: "ignore", 
@@ -145,13 +145,6 @@ const GoodCommunicatorBadge = () => {
       description: "A friend asks for your opinion. How do you respond?",
       choices: [
         { 
-          id: "kind", 
-          text: "Give kind, helpful feedback", 
-          emoji: "💝", 
-          description: "Be honest but gentle",
-          isCorrect: true
-        },
-        { 
           id: "mean", 
           text: "Be mean and critical", 
           emoji: "😠", 
@@ -164,6 +157,13 @@ const GoodCommunicatorBadge = () => {
           emoji: "😊", 
           description: "Say everything is perfect",
           isCorrect: false
+        },
+        { 
+          id: "kind", 
+          text: "Give kind, helpful feedback", 
+          emoji: "💝", 
+          description: "Be honest but gentle",
+          isCorrect: true
         }
       ]
     }

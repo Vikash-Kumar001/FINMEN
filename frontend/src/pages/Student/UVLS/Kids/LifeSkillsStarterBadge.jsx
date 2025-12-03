@@ -61,18 +61,18 @@ const LifeSkillsStarterBadge = () => {
       description: "You want to achieve something. What should you do?",
       choices: [
         { 
-          id: "set", 
-          text: "Set clear, achievable goals", 
-          emoji: "🎯", 
-          description: "Make specific goals you can reach",
-          isCorrect: true
-        },
-        { 
           id: "vague", 
           text: "Have vague dreams", 
           emoji: "☁️", 
           description: "Just wish for things",
           isCorrect: false
+        },
+        { 
+          id: "set", 
+          text: "Set clear, achievable goals", 
+          emoji: "🎯", 
+          description: "Make specific goals you can reach",
+          isCorrect: true
         },
         { 
           id: "none", 
@@ -89,13 +89,6 @@ const LifeSkillsStarterBadge = () => {
       description: "You have limited time for homework and play. What should you do?",
       choices: [
         { 
-          id: "balance", 
-          text: "Balance both activities", 
-          emoji: "⚖️", 
-          description: "Plan time for work and fun",
-          isCorrect: true
-        },
-        { 
           id: "onlyplay", 
           text: "Only play", 
           emoji: "🎮", 
@@ -108,6 +101,13 @@ const LifeSkillsStarterBadge = () => {
           emoji: "📚", 
           description: "Work all the time",
           isCorrect: false
+        },
+        { 
+          id: "balance", 
+          text: "Balance both activities", 
+          emoji: "⚖️", 
+          description: "Plan time for work and fun",
+          isCorrect: true
         }
       ]
     },
@@ -145,13 +145,6 @@ const LifeSkillsStarterBadge = () => {
       description: "You want to learn important life skills. What should you do?",
       choices: [
         { 
-          id: "practice", 
-          text: "Practice and learn regularly", 
-          emoji: "📚", 
-          description: "Keep learning new skills",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore learning", 
           emoji: "🙈", 
@@ -164,6 +157,13 @@ const LifeSkillsStarterBadge = () => {
           emoji: "😞", 
           description: "Stop trying when it's hard",
           isCorrect: false
+        },
+        { 
+          id: "practice", 
+          text: "Practice and learn regularly", 
+          emoji: "📚", 
+          description: "Keep learning new skills",
+          isCorrect: true
         }
       ]
     }

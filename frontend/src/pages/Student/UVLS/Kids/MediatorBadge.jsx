@@ -61,18 +61,18 @@ const MediatorBadge = () => {
       description: "Friends are arguing about game rules. What do you do?",
       choices: [
         { 
-          id: "mediate", 
-          text: "Help them agree on rules", 
-          emoji: "🤝", 
-          description: "Find a compromise that works for everyone",
-          isCorrect: true
-        },
-        { 
           id: "side", 
           text: "Take one side", 
           emoji: "👆", 
           description: "Support one friend over the other",
           isCorrect: false
+        },
+        { 
+          id: "mediate", 
+          text: "Help them agree on rules", 
+          emoji: "🤝", 
+          description: "Find a compromise that works for everyone",
+          isCorrect: true
         },
         { 
           id: "ignore", 
@@ -89,13 +89,6 @@ const MediatorBadge = () => {
       description: "Two friends both want the same snack. How do you help?",
       choices: [
         { 
-          id: "mediate", 
-          text: "Suggest sharing equally", 
-          emoji: "🍎", 
-          description: "Help them split it fairly",
-          isCorrect: true
-        },
-        { 
           id: "give", 
           text: "Give it to one person", 
           emoji: "👆", 
@@ -108,6 +101,13 @@ const MediatorBadge = () => {
           emoji: "🙈", 
           description: "Let them argue about it",
           isCorrect: false
+        },
+        { 
+          id: "mediate", 
+          text: "Suggest sharing equally", 
+          emoji: "🍎", 
+          description: "Help them split it fairly",
+          isCorrect: true
         }
       ]
     },
@@ -117,18 +117,18 @@ const MediatorBadge = () => {
       description: "Your team can't agree on a project idea. What do you do?",
       choices: [
         { 
-          id: "mediate", 
-          text: "Help combine ideas", 
-          emoji: "💡", 
-          description: "Find a way to use everyone's ideas",
-          isCorrect: true
-        },
-        { 
           id: "force", 
           text: "Force your idea", 
           emoji: "😤", 
           description: "Make everyone use your idea",
           isCorrect: false
+        },
+        { 
+          id: "mediate", 
+          text: "Help combine ideas", 
+          emoji: "💡", 
+          description: "Find a way to use everyone's ideas",
+          isCorrect: true
         },
         { 
           id: "ignore", 
@@ -145,13 +145,6 @@ const MediatorBadge = () => {
       description: "Kids are fighting over who goes first. How do you help?",
       choices: [
         { 
-          id: "mediate", 
-          text: "Suggest fair rotation", 
-          emoji: "🔄", 
-          description: "Help them take turns fairly",
-          isCorrect: true
-        },
-        { 
           id: "pick", 
           text: "Pick someone", 
           emoji: "👆", 
@@ -164,6 +157,13 @@ const MediatorBadge = () => {
           emoji: "🙈", 
           description: "Continue playing without them",
           isCorrect: false
+        },
+        { 
+          id: "mediate", 
+          text: "Suggest fair rotation", 
+          emoji: "🔄", 
+          description: "Help them take turns fairly",
+          isCorrect: true
         }
       ]
     }

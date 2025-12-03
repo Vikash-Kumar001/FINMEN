@@ -61,18 +61,18 @@ const CriticalThinkerBadge = () => {
       description: "Someone tells you something that sounds too good to be true. What do you do?",
       choices: [
         { 
-          id: "question", 
-          text: "Question and verify", 
-          emoji: "❓", 
-          description: "Ask questions and check if it's true",
-          isCorrect: true
-        },
-        { 
           id: "believe", 
           text: "Believe immediately", 
           emoji: "👍", 
           description: "Trust everything you hear",
           isCorrect: false
+        },
+        { 
+          id: "question", 
+          text: "Question and verify", 
+          emoji: "❓", 
+          description: "Ask questions and check if it's true",
+          isCorrect: true
         },
         { 
           id: "ignore", 
@@ -89,13 +89,6 @@ const CriticalThinkerBadge = () => {
       description: "You face a difficult problem. What's the best approach?",
       choices: [
         { 
-          id: "analyze", 
-          text: "Break it into steps", 
-          emoji: "🔍", 
-          description: "Think step by step to solve it",
-          isCorrect: true
-        },
-        { 
           id: "giveup", 
           text: "Give up immediately", 
           emoji: "😞", 
@@ -108,6 +101,13 @@ const CriticalThinkerBadge = () => {
           emoji: "🎲", 
           description: "Try anything without thinking",
           isCorrect: false
+        },
+        { 
+          id: "analyze", 
+          text: "Break it into steps", 
+          emoji: "🔍", 
+          description: "Think step by step to solve it",
+          isCorrect: true
         }
       ]
     },
@@ -117,18 +117,18 @@ const CriticalThinkerBadge = () => {
       description: "You need to decide what's right or wrong. What do you do?",
       choices: [
         { 
-          id: "consider", 
-          text: "Consider consequences", 
-          emoji: "⚖️", 
-          description: "Think about what will happen",
-          isCorrect: true
-        },
-        { 
           id: "impulse", 
           text: "Act on impulse", 
           emoji: "⚡", 
           description: "Do the first thing that comes to mind",
           isCorrect: false
+        },
+        { 
+          id: "consider", 
+          text: "Consider consequences", 
+          emoji: "⚖️", 
+          description: "Think about what will happen",
+          isCorrect: true
         },
         { 
           id: "copy", 
@@ -145,13 +145,6 @@ const CriticalThinkerBadge = () => {
       description: "You made a mistake. What should you do?",
       choices: [
         { 
-          id: "learn", 
-          text: "Learn from it", 
-          emoji: "📚", 
-          description: "Think about what went wrong and improve",
-          isCorrect: true
-        },
-        { 
           id: "blame", 
           text: "Blame others", 
           emoji: "👆", 
@@ -164,6 +157,13 @@ const CriticalThinkerBadge = () => {
           emoji: "🙈", 
           description: "Pretend it didn't happen",
           isCorrect: false
+        },
+        { 
+          id: "learn", 
+          text: "Learn from it", 
+          emoji: "📚", 
+          description: "Think about what went wrong and improve",
+          isCorrect: true
         }
       ]
     }

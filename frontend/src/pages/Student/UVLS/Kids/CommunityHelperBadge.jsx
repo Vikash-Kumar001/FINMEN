@@ -61,18 +61,18 @@ const CommunityHelperBadge = () => {
       description: "An elderly neighbor needs help carrying groceries. What do you do?",
       choices: [
         { 
-          id: "help", 
-          text: "Offer to help", 
-          emoji: "🤝", 
-          description: "Carry the groceries for them",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore them", 
           emoji: "🙈", 
           description: "Continue on your way",
           isCorrect: false
+        },
+        { 
+          id: "help", 
+          text: "Offer to help", 
+          emoji: "🤝", 
+          description: "Carry the groceries for them",
+          isCorrect: true
         },
         { 
           id: "laugh", 
@@ -89,13 +89,6 @@ const CommunityHelperBadge = () => {
       description: "There's a community cleanup event. What do you do?",
       choices: [
         { 
-          id: "volunteer", 
-          text: "Volunteer to help", 
-          emoji: "🙋", 
-          description: "Join in and help the community",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Stay home", 
           emoji: "🏠", 
@@ -108,6 +101,13 @@ const CommunityHelperBadge = () => {
           emoji: "😄", 
           description: "Tease those who participate",
           isCorrect: false
+        },
+        { 
+          id: "volunteer", 
+          text: "Volunteer to help", 
+          emoji: "🙋", 
+          description: "Join in and help the community",
+          isCorrect: true
         }
       ]
     },
@@ -117,18 +117,18 @@ const CommunityHelperBadge = () => {
       description: "You have extra school supplies. What do you do?",
       choices: [
         { 
-          id: "share", 
-          text: "Share with others", 
-          emoji: "✏️", 
-          description: "Give to those who need them",
-          isCorrect: true
-        },
-        { 
           id: "keep", 
           text: "Keep everything", 
           emoji: "📦", 
           description: "Keep all for yourself",
           isCorrect: false
+        },
+        { 
+          id: "share", 
+          text: "Share with others", 
+          emoji: "✏️", 
+          description: "Give to those who need them",
+          isCorrect: true
         },
         { 
           id: "throw", 
@@ -145,13 +145,6 @@ const CommunityHelperBadge = () => {
       description: "You notice a problem in your community that needs fixing. What do you do?",
       choices: [
         { 
-          id: "report", 
-          text: "Report and help fix it", 
-          emoji: "🛠️", 
-          description: "Tell adults and help solve it",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore it", 
           emoji: "🙈", 
@@ -164,6 +157,13 @@ const CommunityHelperBadge = () => {
           emoji: "😠", 
           description: "Add to the problem",
           isCorrect: false
+        },
+        { 
+          id: "report", 
+          text: "Report and help fix it", 
+          emoji: "🛠️", 
+          description: "Tell adults and help solve it",
+          isCorrect: true
         }
       ]
     }

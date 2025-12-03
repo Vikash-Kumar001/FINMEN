@@ -26,31 +26,31 @@ const TriggerMapPuzzle = () => {
     {
       id: 1,
       triggers: ["Angry", "Sad", "Scared"],
-      calms: ["Breathe", "Talk", "Hug"],
+      calms: ["Talk", "Hug", "Breathe"],
       correct: { "Angry": "Breathe", "Sad": "Talk", "Scared": "Hug" }
     },
     {
       id: 2,
       triggers: ["Frustrated", "Anxious", "Tired"],
-      calms: ["Count", "Walk", "Rest"],
+      calms: ["Rest", "Count", "Walk"],
       correct: { "Frustrated": "Count", "Anxious": "Walk", "Tired": "Rest" }
     },
     {
       id: 3,
       triggers: ["Excited too much", "Lonely", "Overwhelmed"],
-      calms: ["Calm down", "Call friend", "Break tasks"],
+      calms: ["Break tasks", "Calm down", "Call friend"],
       correct: { "Excited too much": "Calm down", "Lonely": "Call friend", "Overwhelmed": "Break tasks" }
     },
     {
       id: 4,
       triggers: ["Jealous", "Bored", "Nervous"],
-      calms: ["Positive think", "Play", "Prepare"],
+      calms: ["Prepare", "Play", "Positive think"],
       correct: { "Jealous": "Positive think", "Bored": "Play", "Nervous": "Prepare" }
     },
     {
       id: 5,
       triggers: ["Hurt", "Confused", "Happy overload"],
-      calms: ["Seek help", "Ask question", "Share joy"],
+      calms: ["Share joy", "Seek help", "Ask question"],
       correct: { "Hurt": "Seek help", "Confused": "Ask question", "Happy overload": "Share joy" }
     }
   ];

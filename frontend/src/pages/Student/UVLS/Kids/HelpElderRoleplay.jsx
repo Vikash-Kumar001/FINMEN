@@ -54,18 +54,18 @@ const HelpElderRoleplay = () => {
       text: "A grandma needs to cross the road. What should you say?",
       options: [
         { 
-          id: "a", 
-          text: "Can I help you cross?", 
-          emoji: "🛣️", 
-          description: "Polite and helpful",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Go alone!", 
           emoji: "😠", 
           description: "Rude and unhelpful",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Can I help you cross?", 
+          emoji: "🛣️", 
+          description: "Polite and helpful",
+          isCorrect: true 
         },
         { 
           id: "c", 
@@ -81,13 +81,6 @@ const HelpElderRoleplay = () => {
       text: "An elder is carrying a heavy load. What should you say?",
       options: [
         { 
-          id: "a", 
-          text: "Let me carry that for you", 
-          emoji: "💪", 
-          description: "Polite and helpful",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Too bad for you", 
           emoji: "🤷", 
@@ -100,6 +93,13 @@ const HelpElderRoleplay = () => {
           emoji: "😂", 
           description: "Very rude",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Let me carry that for you", 
+          emoji: "💪", 
+          description: "Polite and helpful",
+          isCorrect: true 
         }
       ]
     },
@@ -135,13 +135,6 @@ const HelpElderRoleplay = () => {
       text: "An elder is sitting alone. What should you do?",
       options: [
         { 
-          id: "a", 
-          text: "Chat with them kindly", 
-          emoji: "🗣️", 
-          description: "Polite and friendly",
-          isCorrect: true 
-        },
-        { 
           id: "b", 
           text: "Ignore them", 
           emoji: "🫥", 
@@ -154,6 +147,13 @@ const HelpElderRoleplay = () => {
           emoji: "😏", 
           description: "Very rude",
           isCorrect: false 
+        },
+        { 
+          id: "a", 
+          text: "Chat with them kindly", 
+          emoji: "🗣️", 
+          description: "Polite and friendly",
+          isCorrect: true 
         }
       ]
     }

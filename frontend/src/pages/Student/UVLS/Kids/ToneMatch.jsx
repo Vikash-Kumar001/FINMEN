@@ -26,31 +26,31 @@ const ToneMatch = () => {
     {
       id: 1,
       tones: ["Happy", "Angry", "Soft"],
-      intents: ["Excited news", "Mad at mistake", "Calm story"],
+      intents: ["Mad at mistake", "Calm story", "Excited news"],
       correct: { "Happy": "Excited news", "Angry": "Mad at mistake", "Soft": "Calm story" }
     },
     {
       id: 2,
       tones: ["Sad", "Loud", "Quiet"],
-      intents: ["Bad day", "Yelling game", "Whisper secret"],
+      intents: ["Whisper secret", "Bad day", "Yelling game"],
       correct: { "Sad": "Bad day", "Loud": "Yelling game", "Quiet": "Whisper secret" }
     },
     {
       id: 3,
       tones: ["Scared", "Joyful", "Serious"],
-      intents: ["Scary story", "Birthday surprise", "Important talk"],
+      intents: ["Important talk", "Scary story", "Birthday surprise"],
       correct: { "Scared": "Scary story", "Joyful": "Birthday surprise", "Serious": "Important talk" }
     },
     {
       id: 4,
       tones: ["Playful", "Tired", "Energetic"],
-      intents: ["Joke time", "Sleepy bedtime", "Run play"],
+      intents: ["Run play", "Joke time", "Sleepy bedtime"],
       correct: { "Playful": "Joke time", "Tired": "Sleepy bedtime", "Energetic": "Run play" }
     },
     {
       id: 5,
       tones: ["Kind", "Mean", "Neutral"],
-      intents: ["Help offer", "Tease", "Fact state"],
+      intents: ["Fact state", "Tease", "Help offer"],
       correct: { "Kind": "Help offer", "Mean": "Tease", "Neutral": "Fact state" }
     }
   ];

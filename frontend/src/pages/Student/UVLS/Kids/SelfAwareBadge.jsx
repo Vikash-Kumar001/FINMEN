@@ -61,18 +61,18 @@ const SelfAwareBadge = () => {
       description: "You're feeling sad and don't know why. What should you do?",
       choices: [
         { 
-          id: "understand", 
-          text: "Think about what's making you sad", 
-          emoji: "💭", 
-          description: "Try to understand your feelings",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore the sadness", 
           emoji: "🙈", 
           description: "Pretend you're not sad",
           isCorrect: false
+        },
+        { 
+          id: "understand", 
+          text: "Think about what's making you sad", 
+          emoji: "💭", 
+          description: "Try to understand your feelings",
+          isCorrect: true
         },
         { 
           id: "cry", 
@@ -89,13 +89,6 @@ const SelfAwareBadge = () => {
       description: "You're nervous about something. What should you do?",
       choices: [
         { 
-          id: "prepare", 
-          text: "Prepare and practice", 
-          emoji: "📚", 
-          description: "Get ready to feel more confident",
-          isCorrect: true
-        },
-        { 
           id: "worry", 
           text: "Worry constantly", 
           emoji: "😰", 
@@ -108,6 +101,13 @@ const SelfAwareBadge = () => {
           emoji: "🚫", 
           description: "Run away from what makes you nervous",
           isCorrect: false
+        },
+        { 
+          id: "prepare", 
+          text: "Prepare and practice", 
+          emoji: "📚", 
+          description: "Get ready to feel more confident",
+          isCorrect: true
         }
       ]
     },
@@ -117,18 +117,18 @@ const SelfAwareBadge = () => {
       description: "You accomplished something great. What should you do?",
       choices: [
         { 
-          id: "celebrate", 
-          text: "Celebrate and feel good", 
-          emoji: "🎉", 
-          description: "Recognize your achievement",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore the achievement", 
           emoji: "🙈", 
           description: "Don't acknowledge your success",
           isCorrect: false
+        },
+        { 
+          id: "celebrate", 
+          text: "Celebrate and feel good", 
+          emoji: "🎉", 
+          description: "Recognize your achievement",
+          isCorrect: true
         },
         { 
           id: "brag", 
@@ -145,13 +145,6 @@ const SelfAwareBadge = () => {
       description: "You want to understand yourself better. What should you do?",
       choices: [
         { 
-          id: "reflect", 
-          text: "Reflect on your feelings and actions", 
-          emoji: "💭", 
-          description: "Think about who you are",
-          isCorrect: true
-        },
-        { 
           id: "ignore", 
           text: "Ignore your feelings", 
           emoji: "🙈", 
@@ -164,6 +157,13 @@ const SelfAwareBadge = () => {
           emoji: "👥", 
           description: "Try to be exactly like someone else",
           isCorrect: false
+        },
+        { 
+          id: "reflect", 
+          text: "Reflect on your feelings and actions", 
+          emoji: "💭", 
+          description: "Think about who you are",
+          isCorrect: true
         }
       ]
     }

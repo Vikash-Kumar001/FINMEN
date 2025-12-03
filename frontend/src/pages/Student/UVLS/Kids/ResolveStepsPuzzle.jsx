@@ -23,28 +23,28 @@ const ResolveStepsPuzzle = () => {
   const questions = [
     {
       id: 1,
-      steps: ["Listen", "Understand", "Propose"],
-      correctOrder: ["Listen", "Understand", "Propose"]
+      steps: ["Listen", "Understand", "Propose", "Agree"],
+      correctOrder: ["Listen", "Understand", "Propose", "Agree"]
     },
     {
       id: 2,
-      steps: ["Talk", "Compromise", "Agree"],
-      correctOrder: ["Talk", "Compromise", "Agree"]
+      steps: ["Talk", "Compromise", "Agree", "Check"],
+      correctOrder: ["Talk", "Compromise", "Agree", "Check"]
     },
     {
       id: 3,
-      steps: ["Calm", "Share", "Solve"],
-      correctOrder: ["Calm", "Share", "Solve"]
+      steps: ["Calm", "Share", "Solve", "Confirm"],
+      correctOrder: ["Calm", "Share", "Solve", "Confirm"]
     },
     {
       id: 4,
-      steps: ["Hear both", "Find fair", "Check happy"],
-      correctOrder: ["Hear both", "Find fair", "Check happy"]
+      steps: ["Hear both", "Find fair", "Check happy", "Finalize"],
+      correctOrder: ["Hear both", "Find fair", "Check happy", "Finalize"]
     },
     {
       id: 5,
-      steps: ["Stop argue", "Think win-win", "Try plan"],
-      correctOrder: ["Stop argue", "Think win-win", "Try plan"]
+      steps: ["Stop argue", "Think win-win", "Try plan", "Review"],
+      correctOrder: ["Stop argue", "Think win-win", "Try plan", "Review"]
     }
   ];
 

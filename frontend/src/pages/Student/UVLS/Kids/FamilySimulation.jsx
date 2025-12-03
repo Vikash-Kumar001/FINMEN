@@ -25,31 +25,31 @@ const FamilySimulation = () => {
     {
       id: 1,
       chores: ["Wash dishes", "Clean room", "Walk dog"],
-      members: ["Mom", "Dad", "Kid"],
+      members: ["Kid", "Mom", "Dad"],
       text: "Assign family chores fairly."
     },
     {
       id: 2,
       chores: ["Cook dinner", "Laundry", "Garden"],
-      members: ["Sister", "Brother", "Parent"],
+      members: ["Parent", "Sister", "Brother"],
       text: "Balance home tasks."
     },
     {
       id: 3,
       chores: ["Shop groceries", "Fix light", "Dust"],
-      members: ["Grandma", "Grandpa", "Child"],
+      members: ["Child", "Grandma", "Grandpa"],
       text: "Fair family duties."
     },
     {
       id: 4,
       chores: ["Mop floor", "Vacuum", "Trash out"],
-      members: ["Aunt", "Uncle", "Cousin"],
+      members: ["Cousin", "Aunt", "Uncle"],
       text: "Share housework."
     },
     {
       id: 5,
       chores: ["Set table", "Water plants", "Fold clothes"],
-      members: ["Family1", "Family2", "Family3"],
+      members: ["Family3", "Family1", "Family2"],
       text: "Equitable allocation."
     }
   ];

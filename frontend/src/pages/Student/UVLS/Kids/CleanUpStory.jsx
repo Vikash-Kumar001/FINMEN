@@ -33,8 +33,8 @@ const CleanUpStory = () => {
       id: 2,
       scene: "Yard mess.",
       tasks: [
-        { id: "a", text: "Rake leaves", emoji: "🍂", isCorrect: true },
         { id: "b", text: "Ignore", emoji: "🤷", isCorrect: false },
+        { id: "a", text: "Rake leaves", emoji: "🍂", isCorrect: true },
         { id: "c", text: "Scatter more", emoji: "🌬️", isCorrect: false }
       ]
     },
@@ -42,9 +42,9 @@ const CleanUpStory = () => {
       id: 3,
       scene: "Beach clean.",
       tasks: [
-        { id: "a", text: "Collect plastic", emoji: "🏖️", isCorrect: true },
         { id: "b", text: "Bury it", emoji: "🕳️", isCorrect: false },
-        { id: "c", text: "Throw in sea", emoji: "🌊", isCorrect: false }
+        { id: "c", text: "Throw in sea", emoji: "🌊", isCorrect: false },
+        { id: "a", text: "Collect plastic", emoji: "🏖️", isCorrect: true }
       ]
     },
     {
@@ -60,9 +60,9 @@ const CleanUpStory = () => {
       id: 5,
       scene: "Street clean.",
       tasks: [
-        { id: "a", text: "Sweep sidewalk", emoji: "🧹", isCorrect: true },
         { id: "b", text: "Litter paper", emoji: "📄", isCorrect: false },
-        { id: "c", text: "Walk past", emoji: "🚶", isCorrect: false }
+        { id: "c", text: "Walk past", emoji: "🚶", isCorrect: false },
+        { id: "a", text: "Sweep sidewalk", emoji: "🧹", isCorrect: true }
       ]
     }
   ];

@@ -113,11 +113,23 @@ const LogicPuzzle = () => {
         {!showResult ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-lg mb-4">Complete the pattern: {getCurrentLevel().puzzle}</p>
-              {/* Drag and drop simulation */}
-              <div className="flex flex-wrap gap-4">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentLevel + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              <p className="text-white text-xl md:text-2xl mb-6 text-center font-semibold">
+                Complete the pattern: <span className="text-yellow-300">{getCurrentLevel().puzzle}</span>
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {getCurrentLevel().options.map(opt => (
-                  <div key={opt} className="bg-blue-500 p-2 rounded" onClick={() => handleSolve(opt)}>{opt} 🧩</div>
+                  <button
+                    key={opt}
+                    onClick={() => handleSolve(opt)}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-xl font-bold flex items-center justify-center gap-3"
+                  >
+                    <span className="text-3xl">🧩</span>
+                    <span>{opt}</span>
+                  </button>
                 ))}
               </div>
             </div>

@@ -23,28 +23,28 @@ const MorningRoutine = () => {
   const questions = [
     {
       id: 1,
-      tasks: ["Brush teeth", "Pack bag", "Eat breakfast"],
-      correctOrder: ["Brush teeth", "Eat breakfast", "Pack bag"]
+      tasks: ["Brush teeth", "Pack bag", "Eat breakfast", "Wash face"],
+      correctOrder: ["Wash face", "Brush teeth", "Eat breakfast", "Pack bag"]
     },
     {
       id: 2,
-      tasks: ["Wake up", "Dress", "Comb hair"],
-      correctOrder: ["Wake up", "Dress", "Comb hair"]
+      tasks: ["Wake up", "Dress", "Comb hair", "Eat breakfast"],
+      correctOrder: ["Wake up", "Dress", "Comb hair", "Eat breakfast"]
     },
     {
       id: 3,
-      tasks: ["Wash face", "Put shoes", "Say bye"],
-      correctOrder: ["Wash face", "Put shoes", "Say bye"]
+      tasks: ["Wash face", "Put shoes", "Say bye", "Pack bag"],
+      correctOrder: ["Wash face", "Put shoes", "Pack bag", "Say bye"]
     },
     {
       id: 4,
-      tasks: ["Make bed", "Check time", "Go school"],
-      correctOrder: ["Make bed", "Check time", "Go school"]
+      tasks: ["Make bed", "Check time", "Go school", "Brush teeth"],
+      correctOrder: ["Make bed", "Brush teeth", "Check time", "Go school"]
     },
     {
       id: 5,
-      tasks: ["Exercise", "Drink water", "Plan day"],
-      correctOrder: ["Exercise", "Drink water", "Plan day"]
+      tasks: ["Exercise", "Drink water", "Plan day", "Shower"],
+      correctOrder: ["Shower", "Exercise", "Drink water", "Plan day"]
     }
   ];
 

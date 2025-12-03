@@ -25,31 +25,31 @@ const CommunityRolesPuzzle = () => {
     {
       id: 1,
       helpers: ["Doctor", "Teacher", "Police"],
-      jobs: ["Heal sick", "Teach kids", "Keep safe"],
+      jobs: ["Teach kids", "Keep safe", "Heal sick"],
       correct: { "Doctor": "Heal sick", "Teacher": "Teach kids", "Police": "Keep safe" }
     },
     {
       id: 2,
       helpers: ["Firefighter", "Farmer", "Postman"],
-      jobs: ["Fight fire", "Grow food", "Deliver mail"],
+      jobs: ["Deliver mail", "Fight fire", "Grow food"],
       correct: { "Firefighter": "Fight fire", "Farmer": "Grow food", "Postman": "Deliver mail" }
     },
     {
       id: 3,
       helpers: ["Librarian", "Vet", "Baker"],
-      jobs: ["Lend books", "Care animals", "Bake bread"],
+      jobs: ["Bake bread", "Lend books", "Care animals"],
       correct: { "Librarian": "Lend books", "Vet": "Care animals", "Baker": "Bake bread" }
     },
     {
       id: 4,
       helpers: ["Mechanic", "Nurse", "Pilot"],
-      jobs: ["Fix cars", "Help patients", "Fly planes"],
+      jobs: ["Fly planes", "Fix cars", "Help patients"],
       correct: { "Mechanic": "Fix cars", "Nurse": "Help patients", "Pilot": "Fly planes" }
     },
     {
       id: 5,
       helpers: ["Chef", "Builder", "Artist"],
-      jobs: ["Cook meals", "Build houses", "Make art"],
+      jobs: ["Make art", "Build houses", "Cook meals"],
       correct: { "Chef": "Cook meals", "Builder": "Build houses", "Artist": "Make art" }
     }
   ];

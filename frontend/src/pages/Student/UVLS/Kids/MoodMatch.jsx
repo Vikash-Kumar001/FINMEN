@@ -26,31 +26,31 @@ const MoodMatch = () => {
     {
       id: 1,
       behaviors: ["Crying", "Smiling", "Yelling"],
-      moods: ["Sad", "Happy", "Angry"],
+      moods: ["Happy", "Sad", "Angry"],
       correct: { "Crying": "Sad", "Smiling": "Happy", "Yelling": "Angry" }
     },
     {
       id: 2,
       behaviors: ["Hiding", "Jumping", "Frowning"],
-      moods: ["Scared", "Excited", "Sad"],
+      moods: ["Excited", "Scared", "Sad"],
       correct: { "Hiding": "Scared", "Jumping": "Excited", "Frowning": "Sad" }
     },
     {
       id: 3,
       behaviors: ["Quiet", "Laughing", "Pouting"],
-      moods: ["Calm", "Happy", "Angry"],
+      moods: ["Angry", "Calm", "Happy"],
       correct: { "Quiet": "Calm", "Laughing": "Happy", "Pouting": "Angry" }
     },
     {
       id: 4,
       behaviors: ["Running away", "Hugging", "Stomping"],
-      moods: ["Scared", "Happy", "Angry"],
+      moods: ["Angry", "Scared", "Happy"],
       correct: { "Running away": "Scared", "Hugging": "Happy", "Stomping": "Angry" }
     },
     {
       id: 5,
       behaviors: ["Sighing", "Clapping", "Shivering"],
-      moods: ["Sad", "Excited", "Scared"],
+      moods: ["Scared", "Excited", "Sad"],
       correct: { "Sighing": "Sad", "Clapping": "Excited", "Shivering": "Scared" }
     }
   ];

@@ -8,7 +8,7 @@ import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/te
 const PublicSpeakingPrep = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-89";
+  const gameId = "uvls-teen-68";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
@@ -114,7 +114,7 @@ const PublicSpeakingPrep = () => {
   return (
     <GameShell
       title="Public Speaking Prep"
-      subtitle={levelCompleted ? "Prep Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={levelCompleted ? "Prep Complete!" : `Step ${currentQuestion + 1} of ${questions.length}: Draft your speech`}
       score={finalScore}
       currentLevel={currentQuestion + 1}
       totalLevels={questions.length}
@@ -136,16 +136,16 @@ const PublicSpeakingPrep = () => {
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-white/80">Step {currentQuestion + 1}/{questions.length}</span>
                 <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white text-lg md:text-xl mb-4 text-center">
+              <h3 className="text-white text-xl md:text-2xl font-bold mb-4 text-center">
                 {currentQuestionData.text}
-              </p>
+              </h3>
               
               <p className="text-white/70 text-sm mb-4 text-center">
-                Tip: {currentQuestionData.ideal}
+                💡 Tip: {currentQuestionData.ideal}
               </p>
               
               <textarea

@@ -8,7 +8,7 @@ import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/te
 const OnlineHarassScenario = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-51";
+  const gameId = "uvls-teen-31";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;

@@ -11,7 +11,7 @@ const ROUND_TIME = 10;
 const CyberSafetyReflex = () => {
   const location = useLocation();
   
-  const gameId = "uvls-teen-72";
+  const gameId = "uvls-teen-38";
   const gameData = getGameDataById(gameId);
   
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;

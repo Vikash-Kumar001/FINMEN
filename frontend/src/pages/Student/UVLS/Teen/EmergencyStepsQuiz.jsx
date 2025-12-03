@@ -1,169 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const EmergencyStepsQuiz = () => {
-  const navigate = useNavigate();
+  const location = useLocation();
+  
   const gameId = "uvls-teen-69";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      emergency: "Fire.",
+      text: "Emergency: Fire. What's the correct first step?",
       options: [
-        { id: 1, text: "Evacuate and call 911", correct: true },
-        { id: 2, text: "Ignore", correct: false }
+        { 
+          id: "a", 
+          text: "Evacuate immediately and call 911", 
+          emoji: "🔥",
+          description: "Safety first, then alert authorities",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Ignore it and continue what you're doing", 
+          emoji: "🙈",
+          description: "Dangerous - fire spreads quickly",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Try to put it out yourself first", 
+          emoji: "💧",
+          description: "Only if small and safe, otherwise evacuate",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      emergency: "Bleeding.",
+      text: "Emergency: Severe bleeding. What's the correct first step?",
       options: [
-        { id: 1, text: "Apply pressure", correct: true },
-        { id: 2, text: "Wait", correct: false }
+        { 
+          id: "b", 
+          text: "Wait and see if it stops", 
+          emoji: "⏳",
+          description: "Severe bleeding needs immediate action",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Apply direct pressure to the wound", 
+          emoji: "🩹",
+          description: "Correct first aid for bleeding",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Elevate the wound and wait", 
+          emoji: "⬆️",
+          description: "Pressure is more important first",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      emergency: "Choking.",
+      text: "Emergency: Someone is choking. What's the correct first step?",
       options: [
-        { id: 1, text: "Heimlich maneuver", correct: true },
-        { id: 2, text: "Give water", correct: false }
+        { 
+          id: "a", 
+          text: "Perform Heimlich maneuver if trained", 
+          emoji: "🤲",
+          description: "Correct technique for choking",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Give them water to drink", 
+          emoji: "💧",
+          description: "Can make choking worse",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Pat them on the back gently", 
+          emoji: "👋",
+          description: "Not effective for severe choking",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      emergency: "Heart attack.",
+      text: "Emergency: Heart attack symptoms. What's the correct first step?",
       options: [
-        { id: 1, text: "Call emergency", correct: true },
-        { id: 2, text: "Walk it off", correct: false }
+        { 
+          id: "b", 
+          text: "Tell them to walk it off", 
+          emoji: "🚶",
+          description: "Dangerous - heart attack needs immediate care",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Wait to see if symptoms improve", 
+          emoji: "⏰",
+          description: "Time is critical in heart attacks",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Call emergency services immediately", 
+          emoji: "📞",
+          description: "Immediate medical attention needed",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      emergency: "Earthquake.",
+      text: "Emergency: Earthquake. What's the correct first step?",
       options: [
-        { id: 1, text: "Drop cover hold", correct: true },
-        { id: 2, text: "Run outside", correct: false }
+        { 
+          id: "a", 
+          text: "Drop, cover, and hold on", 
+          emoji: "🛡️",
+          description: "Standard earthquake safety protocol",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Run outside immediately", 
+          emoji: "🏃",
+          description: "Dangerous - falling debris outside",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Stand in a doorway", 
+          emoji: "🚪",
+          description: "Old advice, drop/cover/hold is better",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleAnswerSelect = (answerId) => {
-    setSelectedAnswer(answerId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedAnswer) return;
-
-    const question = questions[currentQuestion];
-    const answer = question.options.find(a => a.id === selectedAnswer);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    if (answer.correct) {
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
+    if (isCorrect) {
       setScore(prev => prev + 1);
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedAnswer(null);
-    
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, 1500);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Emergency Steps Quiz"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && (score / questions.length * 100 >= 80)}
-      showGameOver={showResult && (score / questions.length * 100 >= 80)}
-      score={coins}
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-69"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={69}
-      showConfetti={showResult && (score / questions.length * 100 >= 80)}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-xl mb-6">Emergency: {questions[currentQuestion].emergency}</p>
-              
-              <div className="space-y-3 mb-6">
-                {questions[currentQuestion].options.map(option => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleAnswerSelect(option.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedAnswer === option.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{option.text}</span>
-                  </button>
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedAnswer}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedAnswer
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Submit
-              </button>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Quiz Complete!
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Score: {score} / {questions.length} ({(score / questions.length * 100).toFixed(0)}%)
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {(score / questions.length * 100 >= 80) ? "Earned 3 Coins!" : "Try again for coins."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Include local emergency numbers.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

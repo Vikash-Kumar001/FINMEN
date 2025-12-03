@@ -1,200 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const ListeningVsSpeakingDebate = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-57";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentArgument, setCurrentArgument] = useState(0);
-  const [selectedPosition, setSelectedPosition] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-81";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const debateArguments = [
+  const questions = [
     {
       id: 1,
-      topic: "Listening builds trust.",
-      emoji: "👂",
-      positions: [
-        { id: 1, text: "Agree with evidence", nuanced: true },
-        { id: 2, text: "Speaking is better", nuanced: false },
-        { id: 3, text: "Both important", nuanced: true },
-        { id: 4, text: "No opinion", nuanced: false }
+      text: "Argument: 'Listening builds trust.' What's the most nuanced position?",
+      options: [
+        { 
+          id: "a", 
+          text: "Agree with evidence, but both listening and speaking are important", 
+          emoji: "👂",
+          description: "Balanced and evidence-based",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Speaking is always better than listening", 
+          emoji: "🗣️",
+          description: "Too extreme",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "No opinion on the matter", 
+          emoji: "🤷",
+          description: "Not engaging",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      topic: "Speaking leads change.",
-      emoji: "🗣️",
-      positions: [
-        { id: 1, text: "Balanced view", nuanced: true },
-        { id: 2, text: "Listening only", nuanced: false },
-        { id: 3, text: "Evidence for both", nuanced: true },
-        { id: 4, text: "Ignore", nuanced: false }
+      text: "Argument: 'Speaking leads change.' What's the most nuanced view?",
+      options: [
+        { 
+          id: "b", 
+          text: "Only listening matters", 
+          emoji: "👂",
+          description: "Too one-sided",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Balanced view with evidence for both listening and speaking", 
+          emoji: "⚖️",
+          description: "Nuanced and comprehensive",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Ignore the argument", 
+          emoji: "🙈",
+          description: "Not engaging",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      topic: "Leaders listen more.",
-      emoji: "👑",
-      positions: [
-        { id: 1, text: "Examples of listeners", nuanced: true },
-        { id: 2, text: "Speakers only", nuanced: false },
-        { id: 3, text: "Nuanced argument", nuanced: true },
-        { id: 4, text: "Personal bias", nuanced: false }
+      text: "Argument: 'Leaders listen more.' What's the most nuanced position?",
+      options: [
+        { 
+          id: "a", 
+          text: "Examples of effective listeners, but speaking is also crucial for leadership", 
+          emoji: "👑",
+          description: "Nuanced with examples",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Only speakers can be leaders", 
+          emoji: "📢",
+          description: "Too absolute",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Personal bias only", 
+          emoji: "😤",
+          description: "Not evidence-based",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      topic: "Speaking motivates.",
-      emoji: "🔥",
-      positions: [
-        { id: 1, text: "But listening understands", nuanced: true },
-        { id: 2, text: "Listening passive", nuanced: false },
-        { id: 3, text: "Integrated approach", nuanced: true },
-        { id: 4, text: "No need", nuanced: false }
+      text: "Argument: 'Speaking motivates.' What's the most nuanced response?",
+      options: [
+        { 
+          id: "b", 
+          text: "Listening is always passive", 
+          emoji: "😴",
+          description: "Misunderstanding of listening",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "No need for either", 
+          emoji: "🚫",
+          description: "Not helpful",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Speaking motivates, but listening understands needs - integrated approach works best", 
+          emoji: "🔥",
+          description: "Balanced and integrated",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      topic: "Balance is key.",
-      emoji: "⚖️",
-      positions: [
-        { id: 1, text: "Agree with reasons", nuanced: true },
-        { id: 2, text: "One over other", nuanced: false },
-        { id: 3, text: "Evidence-backed", nuanced: true },
-        { id: 4, text: "Dismiss", nuanced: false }
+      text: "Argument: 'Balance is key.' What's the most nuanced conclusion?",
+      options: [
+        { 
+          id: "a", 
+          text: "Agree with reasons and evidence-backed support for balance", 
+          emoji: "⚖️",
+          description: "Well-reasoned and evidence-based",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "One is always better than the other", 
+          emoji: "⚔️",
+          description: "Too absolute",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Dismiss the idea completely", 
+          emoji: "🙅",
+          description: "Not constructive",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handlePositionSelect = (positionId) => {
-    setSelectedPosition(positionId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedPosition) return;
-
-    const argument = debateArguments[currentArgument];
-    const position = argument.positions.find(p => p.id === selectedPosition);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isNuanced = position.nuanced;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      argumentId: argument.id,
-      positionId: selectedPosition,
-      isNuanced,
-      position: position.text
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isNuanced) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedPosition(null);
-    
-    if (currentArgument < debateArguments.length - 1) {
-      setTimeout(() => {
-        setCurrentArgument(prev => prev + 1);
-      }, 1500);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const nuancedCount = responses.filter(r => r.isNuanced).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Listening vs Speaking Debate"
-      subtitle={`Argument ${currentArgument + 1} of ${debateArguments.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && nuancedCount >= 4}
-      showGameOver={showResult && nuancedCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Debate Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-57"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={57}
-      showConfetti={showResult && nuancedCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-5xl mb-4 text-center">{debateArguments[currentArgument].emoji}</div>
-              
-              <p className="text-white text-xl mb-6">{debateArguments[currentArgument].topic}</p>
-              
-              <p className="text-white/90 mb-4 text-center">Choose position:</p>
-              
-              <div className="space-y-3 mb-6">
-                {debateArguments[currentArgument].positions.map(position => (
-                  <button
-                    key={position.id}
-                    onClick={() => handlePositionSelect(position.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedPosition === position.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{position.text}</span>
-                  </button>
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedPosition}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedPosition
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Argue
-              </button>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {nuancedCount >= 4 ? "🎉 Nuanced Debater!" : "💪 More Nuance!"}
-            </h2>
-              <p className="text-white/90 text-xl mb-4">
-              Nuanced arguments: {nuancedCount} out of {debateArguments.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {nuancedCount >= 4 ? "Earned 10 Coins!" : "Need 4+ nuanced."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Emphasize both skills.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

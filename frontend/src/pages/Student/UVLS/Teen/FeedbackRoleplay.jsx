@@ -1,209 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const FeedbackRoleplay = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-87";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [selectedFeedback, setSelectedFeedback] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [badge, setBadge] = useState(false);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-78";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      issue: "Friend late to meetings.",
-      emoji: "⏰",
-      feedbacks: [
-        { id: 1, text: "I appreciate you, but lateness affects plans.", effective: true },
-        { id: 2, text: "You're always late!", effective: false },
-        { id: 3, text: "Let's set reminders.", effective: true },
-        { id: 4, text: "Stop being late.", effective: false }
+      text: "Issue: Friend is late to meetings. What's the most effective feedback?",
+      options: [
+        { 
+          id: "a", 
+          text: "I appreciate you, but lateness affects our plans. Let's set reminders together", 
+          emoji: "⏰",
+          description: "Constructive and solution-focused",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "You're always late!", 
+          emoji: "😠",
+          description: "Accusatory and not helpful",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Stop being late", 
+          emoji: "🚫",
+          description: "Demanding without support",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      issue: "Group member not contributing.",
-      emoji: "👥",
-      feedbacks: [
-        { id: 1, text: "Your ideas are valuable, how can we include more?", effective: true },
-        { id: 2, text: "You do nothing!", effective: false },
-        { id: 3, text: "Let's assign specific tasks.", effective: true },
-        { id: 4, text: "Kick them out.", effective: false }
+      text: "Issue: Group member not contributing. What's the most effective feedback?",
+      options: [
+        { 
+          id: "b", 
+          text: "You do nothing!", 
+          emoji: "😠",
+          description: "Attacking and unhelpful",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Your ideas are valuable. How can we include more? Let's assign specific tasks", 
+          emoji: "👥",
+          description: "Encouraging and actionable",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Kick them out", 
+          emoji: "🚪",
+          description: "Extreme and not constructive",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      issue: "Teacher feedback on essay.",
-      emoji: "📝",
-      feedbacks: [
-        { id: 1, text: "Good structure, improve arguments with evidence.", effective: true },
-        { id: 2, text: "This is bad.", effective: false },
-        { id: 3, text: "Suggestions for improvement.", effective: true },
-        { id: 4, text: "Perfect score.", effective: false }
+      text: "Issue: Teacher feedback on essay. What's the most effective approach?",
+      options: [
+        { 
+          id: "a", 
+          text: "Good structure, improve arguments with evidence. Here are specific suggestions", 
+          emoji: "📝",
+          description: "Balanced and constructive",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "This is bad", 
+          emoji: "❌",
+          description: "Not helpful or specific",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Perfect score", 
+          emoji: "✅",
+          description: "Not honest feedback",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      issue: "Peer review on project.",
-      emoji: "🛠️",
-      feedbacks: [
-        { id: 1, text: "Strong design, add more features.", effective: true },
-        { id: 2, text: "It sucks.", effective: false },
-        { id: 3, text: "Positive + constructive.", effective: true },
-        { id: 4, text: "No feedback.", effective: false }
+      text: "Issue: Peer review on project. What's the most effective feedback?",
+      options: [
+        { 
+          id: "b", 
+          text: "It sucks", 
+          emoji: "😞",
+          description: "Not constructive",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "No feedback", 
+          emoji: "🤷",
+          description: "Not helpful",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Strong design, add more features. Here's positive and constructive feedback", 
+          emoji: "🛠️",
+          description: "Balanced feedback method",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      issue: "Coach on performance.",
-      emoji: "🏀",
-      feedbacks: [
-        { id: 1, text: "Great effort, work on speed.", effective: true },
-        { id: 2, text: "You're slow.", effective: false },
-        { id: 3, text: "Training plan.", effective: true },
-        { id: 4, text: "Bench you.", effective: false }
+      text: "Issue: Coach on performance. What's the most effective feedback?",
+      options: [
+        { 
+          id: "a", 
+          text: "Great effort, work on speed. Here's a training plan", 
+          emoji: "🏀",
+          description: "Encouraging with actionable plan",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "You're slow", 
+          emoji: "🐌",
+          description: "Not constructive",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Bench you", 
+          emoji: "🪑",
+          description: "Extreme and demotivating",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleFeedbackSelect = (feedbackId) => {
-    setSelectedFeedback(feedbackId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedFeedback) return;
-
-    const scenario = scenarios[currentScenario];
-    const feedback = scenario.feedbacks.find(f => f.id === selectedFeedback);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isEffective = feedback.effective;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      scenarioId: scenario.id,
-      feedbackId: selectedFeedback,
-      isEffective,
-      feedback: feedback.text
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isEffective) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedFeedback(null);
-    
-    if (currentScenario < scenarios.length - 1) {
-      setTimeout(() => {
-        setCurrentScenario(prev => prev + 1);
-      }, 1500);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      const effectiveCount = newResponses.filter(r => r.isEffective).length;
-      if (effectiveCount >= 4) {
-        setBadge(true);
-      }
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const effectiveCount = responses.filter(r => r.isEffective).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Feedback Roleplay"
-      subtitle={`Scenario ${currentScenario + 1} of ${scenarios.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && effectiveCount >= 4}
-      showGameOver={showResult && effectiveCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Roleplay Complete!" : `Scenario ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-87"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={87}
-      showConfetti={showResult && effectiveCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-5xl mb-4 text-center">{scenarios[currentScenario].emoji}</div>
-              
-              <div className="bg-red-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white italic">
-                  Issue: {scenarios[currentScenario].issue}
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Scenario {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white/90 mb-4 text-center">Give feedback:</p>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <div className="space-y-3 mb-6">
-                {scenarios[currentScenario].feedbacks.map(feedback => (
-                  <button
-                    key={feedback.id}
-                    onClick={() => handleFeedbackSelect(feedback.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedFeedback === feedback.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{feedback.text}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedFeedback}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedFeedback
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Give Feedback
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {effectiveCount >= 4 ? "🎉 Feedback Giver!" : "💪 More Effective!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Effective feedbacks: {effectiveCount} out of {scenarios.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {effectiveCount >= 4 ? "Earned Badge!" : "Need 4+ effective."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Teach sandwich method.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

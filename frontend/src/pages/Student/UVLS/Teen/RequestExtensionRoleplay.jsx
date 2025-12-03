@@ -1,186 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const RequestExtensionRoleplay = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-85";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentPart, setCurrentPart] = useState(0);
-  const [selectedPhrase, setSelectedPhrase] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [badge, setBadge] = useState(false);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-70";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const parts = [
+  const questions = [
     {
       id: 1,
-      prompt: "Greeting.",
-      phrases: [
-        { id: 1, text: "Dear Teacher,", polite: true },
-        { id: 2, text: "Hey,", polite: false }
+      text: "Part 1: Greeting. How should you start your extension request?",
+      options: [
+        { 
+          id: "a", 
+          text: "Dear Teacher,", 
+          emoji: "👋",
+          description: "Polite and respectful greeting",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Hey,", 
+          emoji: "😎",
+          description: "Too casual for formal request",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Yo,", 
+          emoji: "🤙",
+          description: "Inappropriate for academic context",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      prompt: "Reason.",
-      phrases: [
-        { id: 1, text: "Due to illness.", polite: true },
-        { id: 2, text: "I was lazy.", polite: false }
+      text: "Part 2: Reason. How should you explain why you need an extension?",
+      options: [
+        { 
+          id: "b", 
+          text: "I was lazy and didn't do it", 
+          emoji: "😴",
+          description: "Not honest or professional",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Due to unexpected illness, I need additional time", 
+          emoji: "🤒",
+          description: "Honest and valid reason",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "I forgot about it", 
+          emoji: "🤷",
+          description: "Not a valid reason",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      prompt: "New date.",
-      phrases: [
-        { id: 1, text: "Can I submit by Friday?", polite: true },
-        { id: 2, text: "Give me more time.", polite: false }
+      text: "Part 3: New date. How should you propose a new deadline?",
+      options: [
+        { 
+          id: "a", 
+          text: "Would it be possible to submit by Friday?", 
+          emoji: "📅",
+          description: "Polite and specific request",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Give me more time", 
+          emoji: "⏰",
+          description: "Too demanding and vague",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "I'll turn it in whenever", 
+          emoji: "🤷",
+          description: "Not respectful of deadlines",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      prompt: "Make-up plan.",
-      phrases: [
-        { id: 1, text: "I'll complete it soon.", polite: true },
-        { id: 2, text: "No plan.", polite: false }
+      text: "Part 4: Make-up plan. How should you show you'll complete the work?",
+      options: [
+        { 
+          id: "b", 
+          text: "No plan, I'll figure it out", 
+          emoji: "🤷",
+          description: "Shows lack of responsibility",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Maybe I'll finish it", 
+          emoji: "❓",
+          description: "Uncertain and unprofessional",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "I have a plan to complete it by the new deadline", 
+          emoji: "✅",
+          description: "Shows responsibility and planning",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      prompt: "Close.",
-      phrases: [
-        { id: 1, text: "Thank you.", polite: true },
-        { id: 2, text: "Bye.", polite: false }
+      text: "Part 5: Closing. How should you end your request?",
+      options: [
+        { 
+          id: "a", 
+          text: "Thank you for your consideration", 
+          emoji: "🙏",
+          description: "Polite and appreciative closing",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Bye", 
+          emoji: "👋",
+          description: "Too casual",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "That's it", 
+          emoji: "✌️",
+          description: "Not professional",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handlePhraseSelect = (phraseId) => {
-    setSelectedPhrase(phraseId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedPhrase) return;
-
-    const part = parts[currentPart];
-    const phrase = part.phrases.find(p => p.id === selectedPhrase);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isPolite = phrase.polite;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      partId: part.id,
-      phraseId: selectedPhrase,
-      isPolite,
-      phrase: phrase.text
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isPolite) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedPhrase(null);
-    
-    if (currentPart < parts.length - 1) {
-      setTimeout(() => {
-        setCurrentPart(prev => prev + 1);
-      }, 1500);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      const politeCount = newResponses.filter(r => r.isPolite).length;
-      if (politeCount >= 4) {
-        setBadge(true);
-      }
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const politeCount = responses.filter(r => r.isPolite).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Request Extension Roleplay"
-      subtitle={`Part ${currentPart + 1} of ${parts.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && politeCount >= 4}
-      showGameOver={showResult && politeCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Roleplay Complete!" : `Part ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-85"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={85}
-      showConfetti={showResult && politeCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-xl mb-6">{parts[currentPart].prompt}</p>
-              
-              <div className="space-y-3 mb-6">
-                {parts[currentPart].phrases.map(phrase => (
-                  <button
-                    key={phrase.id}
-                    onClick={() => handlePhraseSelect(phrase.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedPhrase === phrase.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{phrase.text}</span>
-                  </button>
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Part {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedPhrase}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedPhrase
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Request
-              </button>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {politeCount >= 4 ? "🎉 Polite Requester!" : "💪 More Polite!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Polite parts: {politeCount} out of {parts.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {politeCount >= 4 ? "Earned Badge!" : "Need 4+ polite."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Provide private routes for sensitive reasons.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

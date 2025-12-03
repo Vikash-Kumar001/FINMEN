@@ -1,169 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const NegotiationTacticsQuiz = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-55";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-84";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
   const questions = [
     {
       id: 1,
-      question: "What is anchoring?",
+      text: "What is anchoring in negotiation?",
       options: [
-        { id: 1, text: "First offer sets range", correct: true },
-        { id: 2, text: "Final agreement", correct: false }
+        { 
+          id: "a", 
+          text: "First offer sets the range for negotiation", 
+          emoji: "⚓",
+          description: "Correct - anchoring establishes reference point",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Final agreement reached", 
+          emoji: "🤝",
+          description: "That's the outcome, not the tactic",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Walking away from negotiation", 
+          emoji: "🚶",
+          description: "That's BATNA, not anchoring",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      question: "Trade-off means?",
+      text: "What does trade-off mean in negotiation?",
       options: [
-        { id: 1, text: "Give and take", correct: true },
-        { id: 2, text: "Win all", correct: false }
+        { 
+          id: "b", 
+          text: "Win everything you want", 
+          emoji: "🏆",
+          description: "Not realistic in negotiation",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Give and take - exchanging concessions", 
+          emoji: "⚖️",
+          description: "Correct - negotiation involves mutual concessions",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Refuse to compromise", 
+          emoji: "🚫",
+          description: "That's not negotiation",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      question: "BATNA is?",
+      text: "What is BATNA?",
       options: [
-        { id: 1, text: "Best alternative", correct: true },
-        { id: 2, text: "Worst case", correct: false }
+        { 
+          id: "a", 
+          text: "Best Alternative To Negotiated Agreement", 
+          emoji: "🎯",
+          description: "Correct - your backup plan",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Worst case scenario", 
+          emoji: "😰",
+          description: "BATNA is your best alternative, not worst",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "First offer in negotiation", 
+          emoji: "💰",
+          description: "That's anchoring, not BATNA",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      question: "Win-win tactic?",
+      text: "What's a win-win negotiation tactic?",
       options: [
-        { id: 1, text: "Collaborate", correct: true },
-        { id: 2, text: "Compete", correct: false }
+        { 
+          id: "b", 
+          text: "Compete to win everything", 
+          emoji: "⚔️",
+          description: "That's win-lose, not win-win",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Give up everything", 
+          emoji: "😔",
+          description: "That's lose-win, not win-win",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Collaborate to find mutual benefits", 
+          emoji: "🤝",
+          description: "Correct - win-win seeks mutual gain",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      question: "Concession is?",
+      text: "What is a concession in negotiation?",
       options: [
-        { id: 1, text: "Giving in a bit", correct: true },
-        { id: 2, text: "Full surrender", correct: false }
+        { 
+          id: "a", 
+          text: "Giving in a bit to reach agreement", 
+          emoji: "📉",
+          description: "Correct - strategic compromise",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Full surrender of all demands", 
+          emoji: "🏳️",
+          description: "That's not a concession, that's surrender",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Refusing to negotiate", 
+          emoji: "🚫",
+          description: "That's not a concession",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleAnswerSelect = (answerId) => {
-    setSelectedAnswer(answerId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedAnswer) return;
-
-    const question = questions[currentQuestion];
-    const answer = question.options.find(a => a.id === selectedAnswer);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    if (answer.correct) {
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
+    
+    if (isCorrect) {
       setScore(prev => prev + 1);
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedAnswer(null);
-    
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, 1500);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Negotiation Tactics Quiz"
-      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && (score / questions.length * 100 >= 70)}
-      showGameOver={showResult && (score / questions.length * 100 >= 70)}
-      score={coins}
+      subtitle={levelCompleted ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-55"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={55}
-      showConfetti={showResult && (score / questions.length * 100 >= 70)}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-xl mb-6">{questions[currentQuestion].question}</p>
-              
-              <div className="space-y-3 mb-6">
-                {questions[currentQuestion].options.map(option => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleAnswerSelect(option.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedAnswer === option.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{option.text}</span>
-                  </button>
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedAnswer}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedAnswer
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Submit
-              </button>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Quiz Complete!
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Score: {score} / {questions.length} ({(score / questions.length * 100).toFixed(0)}%)
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {(score / questions.length * 100 >= 70) ? "Earned 3 Coins!" : "Try again for coins."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Provide negotiation cheat-sheet.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

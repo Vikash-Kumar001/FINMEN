@@ -1,145 +1,181 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const SafetyOfferReflex = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-32";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentOffer, setCurrentOffer] = useState(0);
-  const [refused, setRefused] = useState(false);
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-97";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedAction, setSelectedAction] = useState(null);
   const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const offers = [
+  const questions = [
     {
       id: 1,
-      offer: "Stranger offers ride.",
-      suspicious: true
+      text: "Offer: 'Stranger offers ride.'",
+      suspicious: true,
+      correctAction: "refuse"
     },
     {
       id: 2,
-      offer: "Friend offers help.",
-      suspicious: false
+      text: "Offer: 'Friend offers help.'",
+      suspicious: false,
+      correctAction: "accept"
     },
     {
       id: 3,
-      offer: "Unknown online friend asks info.",
-      suspicious: true
+      text: "Offer: 'Unknown online friend asks for personal info.'",
+      suspicious: true,
+      correctAction: "refuse"
     },
     {
       id: 4,
-      offer: "Teacher asks for meeting.",
-      suspicious: false
+      text: "Offer: 'Teacher asks for meeting.'",
+      suspicious: false,
+      correctAction: "accept"
     },
     {
       id: 5,
-      offer: "Free gift from unknown.",
-      suspicious: true
+      text: "Offer: 'Free gift from unknown person.'",
+      suspicious: true,
+      correctAction: "refuse"
     }
   ];
 
-  const handleRefuse = () => {
-    const offer = offers[currentOffer];
-    if (offer.suspicious) {
+  const handleAction = (action) => {
+    if (answered || levelCompleted) return;
+    
+    setAnswered(true);
+    setSelectedAction(action);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const isCorrect = action === currentQuestionData.correctAction;
+    
+    if (isCorrect) {
       setScore(prev => prev + 1);
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-    setRefused(true);
-    proceedToNext();
-  };
-
-  const handleAccept = () => {
-    const offer = offers[currentOffer];
-    if (!offer.suspicious) {
-      setScore(prev => prev + 1);
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    setRefused(true);
-    proceedToNext();
-  };
-
-  const proceedToNext = () => {
+    
     setTimeout(() => {
-      setRefused(false);
-      if (currentOffer < offers.length - 1) {
-        setCurrentOffer(prev => prev + 1);
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedAction(null);
+        setAnswered(false);
+        resetFeedback();
       } else {
-        setShowResult(true);
+        setLevelCompleted(true);
       }
-    }, 1500);
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Safety Offer Reflex"
-      subtitle={`Offer ${currentOffer + 1} of ${offers.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && (score / offers.length * 100 >= 70)}
-      showGameOver={showResult && (score / offers.length * 100 >= 70)}
-      score={coins}
+      subtitle={levelCompleted ? "Reflex Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-32"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={32}
-      showConfetti={showResult && (score / offers.length * 100 >= 70)}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-xl mb-6 text-center">"{offers[currentOffer].offer}"</p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
+              </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              <p className="text-white text-xl md:text-2xl mb-8 text-center font-semibold">
+                "{currentQuestionData.text}"
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <button
-                  onClick={handleRefuse}
-                  className="py-3 rounded-xl font-bold text-white bg-red-500 hover:opacity-90"
+                  onClick={() => handleAction("refuse")}
+                  disabled={answered}
+                  className={`py-6 px-8 rounded-2xl font-bold text-white text-lg transition-all transform ${
+                    answered && selectedAction === "refuse"
+                      ? currentQuestionData.correctAction === "refuse"
+                        ? "bg-green-500 border-4 border-green-300 ring-4 ring-green-400 scale-105"
+                        : "bg-red-500/50 border-2 border-red-400 opacity-75"
+                      : "bg-red-500 hover:bg-red-600 hover:scale-105 border-2 border-red-300"
+                  } ${answered ? "cursor-not-allowed" : ""}`}
                 >
-                  Refuse!
+                  🚫 Refuse!
                 </button>
                 <button
-                  onClick={handleAccept}
-                  className="py-3 rounded-xl font-bold text-white bg-green-500 hover:opacity-90"
+                  onClick={() => handleAction("accept")}
+                  disabled={answered}
+                  className={`py-6 px-8 rounded-2xl font-bold text-white text-lg transition-all transform ${
+                    answered && selectedAction === "accept"
+                      ? currentQuestionData.correctAction === "accept"
+                        ? "bg-green-500 border-4 border-green-300 ring-4 ring-green-400 scale-105"
+                        : "bg-red-500/50 border-2 border-red-400 opacity-75"
+                      : "bg-green-500 hover:bg-green-600 hover:scale-105 border-2 border-green-300"
+                  } ${answered ? "cursor-not-allowed" : ""}`}
                 >
-                  Accept
+                  ✅ Accept
                 </button>
               </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Reflex Complete!
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Score: {score} / {offers.length} ({(score / offers.length * 100).toFixed(0)}%)
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {(score / offers.length * 100 >= 70) ? "Earned 3 Coins!" : "Aim for 70%."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Practice refusal lines.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

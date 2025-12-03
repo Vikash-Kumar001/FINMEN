@@ -1,200 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const ShortVsLongGoalsDebate = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-99";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentArgument, setCurrentArgument] = useState(0);
-  const [selectedView, setSelectedView] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-77";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const debateArguments = [
+  const questions = [
     {
       id: 1,
-      topic: "Short-term wins motivate.",
-      emoji: "🏆",
-      views: [
-        { id: 1, text: "But long-term sustains", balanced: true },
-        { id: 2, text: "Short only", balanced: false },
-        { id: 3, text: "Balance both", balanced: true },
-        { id: 4, text: "Long only", balanced: false }
+      text: "Argument: 'Short-term wins motivate.' What's the most balanced response?",
+      options: [
+        { 
+          id: "a", 
+          text: "Short-term wins motivate, but long-term goals sustain progress", 
+          emoji: "🏆",
+          description: "Balanced perspective",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Only short-term goals matter", 
+          emoji: "⚡",
+          description: "Too extreme",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Only long-term goals matter", 
+          emoji: "🔮",
+          description: "Too extreme",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      topic: "Long-term builds future.",
-      emoji: "🔮",
-      views: [
-        { id: 1, text: "With short milestones", balanced: true },
-        { id: 2, text: "Ignore short", balanced: false },
-        { id: 3, text: "Integrated plan", balanced: true },
-        { id: 4, text: "Short wins rule", balanced: false }
+      text: "Argument: 'Long-term builds future.' What's the most balanced view?",
+      options: [
+        { 
+          id: "b", 
+          text: "Ignore short-term milestones completely", 
+          emoji: "🚫",
+          description: "Not balanced",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Long-term vision with short-term milestones creates success", 
+          emoji: "📈",
+          description: "Integrated approach",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Short-term wins are everything", 
+          emoji: "⚡",
+          description: "Too focused on immediate",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      topic: "Priorities conflict.",
-      emoji: "⚖️",
-      views: [
-        { id: 1, text: "Align them", balanced: true },
-        { id: 2, text: "Choose one", balanced: false },
-        { id: 3, text: "Trade-off reasoning", balanced: true },
-        { id: 4, text: "No priority", balanced: false }
+      text: "Argument: 'Priorities conflict.' What's the most balanced approach?",
+      options: [
+        { 
+          id: "a", 
+          text: "Align short and long-term priorities with trade-off reasoning", 
+          emoji: "⚖️",
+          description: "Strategic balance",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Choose one priority and ignore the other", 
+          emoji: "🎯",
+          description: "Too rigid",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Have no priorities at all", 
+          emoji: "🤷",
+          description: "Lacks direction",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      topic: "Examples from life.",
-      emoji: "📖",
-      views: [
-        { id: 1, text: "Student examples balanced", balanced: true },
-        { id: 2, text: "Extreme short", balanced: false },
-        { id: 3, text: "Mixed approach", balanced: true },
-        { id: 4, text: "Extreme long", balanced: false }
+      text: "Argument: 'Examples from life.' What's the most balanced example?",
+      options: [
+        { 
+          id: "b", 
+          text: "Extreme focus on only short-term", 
+          emoji: "⚡",
+          description: "Not balanced",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Extreme focus on only long-term", 
+          emoji: "🔮",
+          description: "Not balanced",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Student examples showing balanced mixed approach", 
+          emoji: "📖",
+          description: "Realistic and balanced",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      topic: "Conclusion.",
-      emoji: "🏁",
-      views: [
-        { id: 1, text: "Balance for success", balanced: true },
-        { id: 2, text: "One over other", balanced: false },
-        { id: 3, text: "Evidence-backed balance", balanced: true },
-        { id: 4, text: "No conclusion", balanced: false }
+      text: "Argument: 'Conclusion.' What's the most balanced conclusion?",
+      options: [
+        { 
+          id: "a", 
+          text: "Balance short and long-term goals with evidence-backed strategies", 
+          emoji: "🏁",
+          description: "Comprehensive and balanced",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "One type of goal is always better than the other", 
+          emoji: "⚔️",
+          description: "Too absolute",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "No conclusion, goals don't matter", 
+          emoji: "🤷",
+          description: "Not helpful",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleViewSelect = (viewId) => {
-    setSelectedView(viewId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedView) return;
-
-    const argument = debateArguments[currentArgument];
-    const view = argument.views.find(v => v.id === selectedView);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isBalanced = view.balanced;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      argumentId: argument.id,
-      viewId: selectedView,
-      isBalanced,
-      view: view.text
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isBalanced) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedView(null);
-    
-    if (currentArgument < debateArguments.length - 1) {
-      setTimeout(() => {
-        setCurrentArgument(prev => prev + 1);
-      }, 1500);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const balancedCount = responses.filter(r => r.isBalanced).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Short vs Long Goals Debate"
-      subtitle={`Argument ${currentArgument + 1} of ${debateArguments.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && balancedCount >= 4}
-      showGameOver={showResult && balancedCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Debate Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-99"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={99}
-      showConfetti={showResult && balancedCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-5xl mb-4 text-center">{debateArguments[currentArgument].emoji}</div>
-              
-              <p className="text-white text-xl mb-6">{debateArguments[currentArgument].topic}</p>
-              
-              <p className="text-white/90 mb-4 text-center">Choose view:</p>
-              
-              <div className="space-y-3 mb-6">
-                {debateArguments[currentArgument].views.map(view => (
-                  <button
-                    key={view.id}
-                    onClick={() => handleViewSelect(view.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedView === view.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{view.text}</span>
-                  </button>
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedView}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedView
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Debate
-              </button>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {balancedCount >= 4 ? "🎉 Balanced Debater!" : "💪 More Balanced!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Balanced positions: {balancedCount} out of {debateArguments.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {balancedCount >= 4 ? "Earned 10 Coins!" : "Need 4+ balanced."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Use examples from students' lives.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

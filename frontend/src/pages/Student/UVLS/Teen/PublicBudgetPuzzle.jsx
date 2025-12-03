@@ -1,122 +1,161 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const PublicBudgetPuzzle = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-46";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-90";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
   const [allocations, setAllocations] = useState([0, 0, 0, 0, 0]);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
 
   const needs = [
-    "Books",
-    "Sports equipment",
-    "Computers",
-    "Field trips",
-    "Cafeteria food"
+    { name: "Books", emoji: "📚" },
+    { name: "Sports equipment", emoji: "⚽" },
+    { name: "Computers", emoji: "💻" },
+    { name: "Field trips", emoji: "🚌" },
+    { name: "Cafeteria food", emoji: "🍽️" }
   ];
 
   const handleAllocate = (index, amount) => {
+    if (answered || showResult) return;
     const newAllocations = [...allocations];
-    newAllocations[index] = amount;
+    newAllocations[index] = Math.max(0, Math.min(100, amount));
     setAllocations(newAllocations);
   };
 
   const handleConfirm = () => {
+    if (answered || showResult) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
     const total = allocations.reduce((sum, a) => sum + a, 0);
-    if (total === 100) {
-      // Assume balanced if no zero
-      const isBalanced = allocations.every(a => a > 0);
-      if (isBalanced) {
-        setCoins(prev => prev + 1);
-      }
-      showCorrectAnswerFeedback(1, false);
-      setShowResult(true);
+    const isBalanced = allocations.every(a => a > 0) && total === 100;
+    
+    if (isBalanced) {
+      setScore(5);
+      showCorrectAnswerFeedback(5, true);
+    } else if (total === 100) {
+      setScore(3);
+      showCorrectAnswerFeedback(3, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      setShowResult(true);
+    }, 1000);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
+  const total = allocations.reduce((sum, a) => sum + a, 0);
+  const finalScore = score;
 
   return (
     <GameShell
       title="Public Budget Puzzle"
-      subtitle="Allocate 100 units"
-      onNext={handleNext}
-      nextEnabled={showResult}
-      showGameOver={showResult}
-      score={coins}
+      subtitle={showResult ? "Budget Allocated!" : "Allocate 100 units to needs"}
+      score={finalScore}
+      currentLevel={1}
+      totalLevels={1}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-46"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={46}
-      showConfetti={showResult}
+      showGameOver={showResult}
+      maxScore={5}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={showResult && finalScore >= 3}
     >
-      <div className="space-y-8">
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
         {!showResult ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-xl mb-6">Allocate budget to needs:</p>
+              <p className="text-white text-xl mb-6 text-center">Allocate budget to needs (total must equal 100):</p>
               
-              <div className="space-y-3 mb-6">
+              <div className="space-y-4 mb-6">
                 {needs.map((need, index) => (
-                  <div key={index} className="flex items-center">
-                    <span className="text-white mr-4">{need}</span>
+                  <div key={index} className="flex items-center justify-between bg-white/10 p-4 rounded-xl">
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{need.emoji}</span>
+                      <span className="text-white font-medium">{need.name}</span>
+                    </div>
                     <input
                       type="number"
                       value={allocations[index]}
                       onChange={(e) => handleAllocate(index, parseInt(e.target.value) || 0)}
-                      className="p-2 bg-white/20 border-2 border-white/40 rounded-xl text-white w-20"
+                      className="p-2 bg-white/20 border-2 border-white/40 rounded-xl text-white w-24 text-center"
+                      min="0"
+                      max="100"
+                      disabled={answered}
                     />
                   </div>
                 ))}
               </div>
               
-              <p className="text-white mb-4">Total: {allocations.reduce((sum, a) => sum + a, 0)}</p>
+              <div className={`mb-4 p-4 rounded-xl text-center ${
+                total === 100 ? 'bg-green-500/20 border-2 border-green-400' : 'bg-red-500/20 border-2 border-red-400'
+              }`}>
+                <p className="text-white text-xl font-bold">
+                  Total: {total} / 100
+                </p>
+              </div>
               
               <button
                 onClick={handleConfirm}
-                disabled={allocations.reduce((sum, a) => sum + a, 0) !== 100}
+                disabled={total !== 100 || answered}
                 className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  allocations.reduce((sum, a) => sum + a, 0) === 100
+                  total === 100 && !answered
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
                     : 'bg-gray-500/50 cursor-not-allowed'
                 }`}
               >
-                Allocate
+                Confirm Allocation
               </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              Budget Allocated!
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Your allocation is set.
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {coins > 0 ? "Earned 5 Coins!" : "Make equitable."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Teach basic cost-benefit reasoning.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

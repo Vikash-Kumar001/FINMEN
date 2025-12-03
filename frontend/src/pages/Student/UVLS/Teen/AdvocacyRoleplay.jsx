@@ -1,205 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const AdvocacyRoleplay = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-97";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentPart, setCurrentPart] = useState(0);
-  const [selectedElement, setSelectedElement] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const [badge, setBadge] = useState(false);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-76";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const parts = [
+  const questions = [
     {
       id: 1,
-      prompt: "Build case for safer crossing.",
-      emoji: "🚸",
-      elements: [
-        { id: 1, text: "Evidence of accidents", persuasive: true },
-        { id: 2, text: "Emotional story", persuasive: false },
-        { id: 3, text: "Data and solutions", persuasive: true },
-        { id: 4, text: "Complaints only", persuasive: false }
+      text: "Part 1: Build case for safer crossing. What's the most persuasive element?",
+      options: [
+        { 
+          id: "a", 
+          text: "Evidence of accidents and data with solutions", 
+          emoji: "🚸",
+          description: "Fact-based and solution-oriented",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Emotional story only", 
+          emoji: "😢",
+          description: "Needs evidence to be persuasive",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Complaints without solutions", 
+          emoji: "😠",
+          description: "Not constructive",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      prompt: "Prepare pitch.",
-      emoji: "🗣️",
-      elements: [
-        { id: 1, text: "Clear structure", persuasive: true },
-        { id: 2, text: "Rambling", persuasive: false },
-        { id: 3, text: "Visual aids", persuasive: true },
-        { id: 4, text: "No prep", persuasive: false }
+      text: "Part 2: Prepare pitch. What's the most effective approach?",
+      options: [
+        { 
+          id: "b", 
+          text: "Rambling without structure", 
+          emoji: "🗣️",
+          description: "Not organized",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Clear structure with visual aids", 
+          emoji: "📊",
+          description: "Organized and engaging",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "No preparation at all", 
+          emoji: "😓",
+          description: "Unprofessional",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      prompt: "Deliver to council.",
-      emoji: "🏛️",
-      elements: [
-        { id: 1, text: "Confident delivery", persuasive: true },
-        { id: 2, text: "Nervous mumbling", persuasive: false },
-        { id: 3, text: "Engage audience", persuasive: true },
-        { id: 4, text: "Read script", persuasive: false }
+      text: "Part 3: Deliver to council. What's the best delivery style?",
+      options: [
+        { 
+          id: "a", 
+          text: "Confident delivery that engages the audience", 
+          emoji: "🏛️",
+          description: "Professional and engaging",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Nervous mumbling", 
+          emoji: "😰",
+          description: "Not effective",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Reading script without looking up", 
+          emoji: "📄",
+          description: "Poor engagement",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      prompt: "Handle Q&A.",
-      emoji: "❓",
-      elements: [
-        { id: 1, text: "Answer factually", persuasive: true },
-        { id: 2, text: "Avoid questions", persuasive: false },
-        { id: 3, text: "Provide more data", persuasive: true },
-        { id: 4, text: "Argue back", persuasive: false }
+      text: "Part 4: Handle Q&A. What's the best response strategy?",
+      options: [
+        { 
+          id: "b", 
+          text: "Avoid questions", 
+          emoji: "🙈",
+          description: "Shows lack of preparation",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Argue back defensively", 
+          emoji: "😠",
+          description: "Not professional",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Answer factually and provide additional data", 
+          emoji: "📊",
+          description: "Shows expertise and preparation",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      prompt: "Follow up.",
-      emoji: "📧",
-      elements: [
-        { id: 1, text: "Thank and remind", persuasive: true },
-        { id: 2, text: "No follow up", persuasive: false },
-        { id: 3, text: "Petition support", persuasive: true },
-        { id: 4, text: "Demand action", persuasive: false }
+      text: "Part 5: Follow up. What's the most effective follow-up?",
+      options: [
+        { 
+          id: "a", 
+          text: "Thank them and provide petition support", 
+          emoji: "📧",
+          description: "Maintains relationship and momentum",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "No follow up", 
+          emoji: "🚫",
+          description: "Misses opportunity",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Demand immediate action", 
+          emoji: "😤",
+          description: "Too aggressive",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleElementSelect = (elementId) => {
-    setSelectedElement(elementId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedElement) return;
-
-    const part = parts[currentPart];
-    const element = part.elements.find(e => e.id === selectedElement);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isPersuasive = element.persuasive;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      partId: part.id,
-      elementId: selectedElement,
-      isPersuasive,
-      element: element.text
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isPersuasive) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedElement(null);
-    
-    if (currentPart < parts.length - 1) {
-      setTimeout(() => {
-        setCurrentPart(prev => prev + 1);
-      }, 1500);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      const persuasiveCount = newResponses.filter(r => r.isPersuasive).length;
-      if (persuasiveCount >= 4) {
-        setBadge(true);
-      }
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const persuasiveCount = responses.filter(r => r.isPersuasive).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Advocacy Roleplay"
-      subtitle={`Part ${currentPart + 1} of ${parts.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && persuasiveCount >= 4}
-      showGameOver={showResult && persuasiveCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Roleplay Complete!" : `Part ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-97"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={97}
-      showConfetti={showResult && persuasiveCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-5xl mb-4 text-center">{parts[currentPart].emoji}</div>
-              
-              <p className="text-white text-xl mb-6">{parts[currentPart].prompt}</p>
-              
-              <p className="text-white/90 mb-4 text-center">Choose element:</p>
-              
-              <div className="space-y-3 mb-6">
-                {parts[currentPart].elements.map(element => (
-                  <button
-                    key={element.id}
-                    onClick={() => handleElementSelect(element.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedElement === element.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{element.text}</span>
-                  </button>
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Part {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedElement}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedElement
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Advocate
-              </button>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {persuasiveCount >= 4 ? "🎉 Advocate!" : "💪 More Persuasive!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Persuasive elements: {persuasiveCount} out of {parts.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {persuasiveCount >= 4 ? "Earned Badge!" : "Need 4+ persuasive."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Invite local council rep for debrief.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

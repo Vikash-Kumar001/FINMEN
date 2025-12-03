@@ -1,204 +1,287 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const WorkplaceConflictSim = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-37";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentAssignment, setCurrentAssignment] = useState(0);
-  const [selectedRole, setSelectedRole] = useState(null);
-  const [responses, setResponses] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-96";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [score, setScore] = useState(0);
+  const [levelCompleted, setLevelCompleted] = useState(false);
+  const [answered, setAnswered] = useState(false);
 
-  const assignments = [
+  const questions = [
     {
       id: 1,
-      conflict: "Intern vs senior task overlap.",
-      emoji: "👔",
-      roles: [
-        { id: 1, text: "Balance tasks", balanced: true },
-        { id: 2, text: "Intern does all", balanced: false },
-        { id: 3, text: "Rotate duties", balanced: true },
-        { id: 4, text: "Senior avoids work", balanced: false }
+      text: "Conflict: Intern vs senior task overlap. What's the most balanced solution?",
+      options: [
+        { 
+          id: "a", 
+          text: "Balance tasks or rotate duties", 
+          emoji: "👔",
+          description: "Balanced - fair distribution",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Intern does all work", 
+          emoji: "😰",
+          description: "Not balanced",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Senior avoids work", 
+          emoji: "😔",
+          description: "Unfair",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      conflict: "Deadline pressure.",
-      emoji: "⏰",
-      roles: [
-        { id: 1, text: "Prioritize and delegate", balanced: true },
-        { id: 2, text: "Overwork one person", balanced: false },
-        { id: 3, text: "Team overtime", balanced: true },
-        { id: 4, text: "Miss deadline", balanced: false }
+      text: "Conflict: Deadline pressure. What's the most balanced solution?",
+      options: [
+        { 
+          id: "b", 
+          text: "Overwork one person", 
+          emoji: "😰",
+          description: "Not balanced",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Prioritize and delegate or team overtime", 
+          emoji: "⏰",
+          description: "Balanced - shared responsibility",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Miss deadline", 
+          emoji: "🚫",
+          description: "Not a solution",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      conflict: "Idea credit dispute.",
-      emoji: "💡",
-      roles: [
-        { id: 1, text: "Acknowledge contributions", balanced: true },
-        { id: 2, text: "Claim all credit", balanced: false },
-        { id: 3, text: "Team recognition", balanced: true },
-        { id: 4, text: "Ignore issue", balanced: false }
+      text: "Conflict: Idea credit dispute. What's the most balanced solution?",
+      options: [
+        { 
+          id: "a", 
+          text: "Acknowledge contributions or team recognition", 
+          emoji: "💡",
+          description: "Balanced - fair credit",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Claim all credit", 
+          emoji: "😤",
+          description: "Not balanced",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore the issue", 
+          emoji: "🙈",
+          description: "Doesn't resolve conflict",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      conflict: "Resource sharing.",
-      emoji: "🛠️",
-      roles: [
-        { id: 1, text: "Schedule usage", balanced: true },
-        { id: 2, text: "First come", balanced: false },
-        { id: 3, text: "Equitable allocation", balanced: true },
-        { id: 4, text: "Hoard resources", balanced: false }
+      text: "Conflict: Resource sharing. What's the most balanced solution?",
+      options: [
+        { 
+          id: "b", 
+          text: "First come first served", 
+          emoji: "🏃",
+          description: "Not fair",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Hoard resources", 
+          emoji: "😤",
+          description: "Selfish",
+          isCorrect: false
+        },
+        { 
+          id: "a", 
+          text: "Schedule usage or equitable allocation", 
+          emoji: "🛠️",
+          description: "Balanced - fair access",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      conflict: "Feedback conflict.",
-      emoji: "🗣️",
-      roles: [
-        { id: 1, text: "Constructive discussion", balanced: true },
-        { id: 2, text: "Ignore feedback", balanced: false },
-        { id: 3, text: "Mediate meeting", balanced: true },
-        { id: 4, text: "Escalate to boss", balanced: false }
+      text: "Conflict: Feedback conflict. What's the most balanced solution?",
+      options: [
+        { 
+          id: "a", 
+          text: "Constructive discussion or mediate meeting", 
+          emoji: "🗣️",
+          description: "Balanced - addresses issue properly",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Ignore feedback", 
+          emoji: "🙈",
+          description: "Not constructive",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Escalate to boss immediately", 
+          emoji: "📢",
+          description: "Too extreme without trying",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleRoleSelect = (roleId) => {
-    setSelectedRole(roleId);
-  };
-
-  const handleConfirm = () => {
-    if (!selectedRole) return;
-
-    const assignment = assignments[currentAssignment];
-    const role = assignment.roles.find(r => r.id === selectedRole);
+  const handleAnswer = (optionId) => {
+    if (answered || levelCompleted) return;
     
-    const isBalanced = role.balanced;
+    setAnswered(true);
+    setSelectedOption(optionId);
+    resetFeedback();
     
-    const newResponses = [...responses, {
-      assignmentId: assignment.id,
-      roleId: selectedRole,
-      isBalanced,
-      role: role.text
-    }];
+    const currentQuestionData = questions[currentQuestion];
+    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOptionData?.isCorrect || false;
     
-    setResponses(newResponses);
-    
-    if (isBalanced) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedRole(null);
-    
-    if (currentAssignment < assignments.length - 1) {
-      setTimeout(() => {
-        setCurrentAssignment(prev => prev + 1);
-      }, 1500);
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedOption(null);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setLevelCompleted(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const balancedCount = responses.filter(r => r.isBalanced).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Workplace Conflict Sim"
-      subtitle={`Assignment ${currentAssignment + 1} of ${assignments.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && balancedCount >= 4}
-      showGameOver={showResult && balancedCount >= 4}
-      score={coins}
+      subtitle={levelCompleted ? "Simulation Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-37"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={37}
-      showConfetti={showResult && balancedCount >= 4}
+      showGameOver={levelCompleted}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={levelCompleted && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!levelCompleted && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="text-5xl mb-4 text-center">{assignments[currentAssignment].emoji}</div>
-              
-              <div className="bg-red-500/20 rounded-lg p-4 mb-6">
-                <p className="text-white italic">
-                  Conflict: {assignments[currentAssignment].conflict}
-                </p>
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white/90 mb-4 text-center">Assign role:</p>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
               
-              <div className="space-y-3 mb-6">
-                {assignments[currentAssignment].roles.map(role => (
-                  <button
-                    key={role.id}
-                    onClick={() => handleRoleSelect(role.id)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedRole === role.id
-                        ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{role.text}</span>
-                  </button>
-                ))}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map(option => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = answered && option.isCorrect;
+                  const showIncorrect = answered && isSelected && !option.isCorrect;
+                  
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleAnswer(option.id)}
+                      disabled={answered}
+                      className={`p-6 rounded-2xl shadow-lg transition-all transform text-center ${
+                        showCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : showIncorrect
+                          ? "bg-red-500/20 border-2 border-red-400 opacity-75"
+                          : isSelected
+                          ? "bg-blue-600 border-2 border-blue-300 scale-105"
+                          : "bg-gradient-to-r from-purple-500 to-indigo-600 hover:from-purple-600 hover:to-indigo-700 text-white border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                    >
+                      <div className="text-2xl mb-2">{option.emoji}</div>
+                      <h4 className="font-bold text-base mb-2">{option.text}</h4>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </button>
+                  );
+                })}
               </div>
-              
-              <button
-                onClick={handleConfirm}
-                disabled={!selectedRole}
-                className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedRole
-                    ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
-                    : 'bg-gray-500/50 cursor-not-allowed'
-                }`}
-              >
-                Assign
-              </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {balancedCount >= 4 ? "🎉 Conflict Solver!" : "💪 More Balanced!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Balanced assignments: {balancedCount} out of {assignments.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {balancedCount >= 4 ? "Earned 5 Coins!" : "Need 4+ balanced."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Useful for internship prep.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

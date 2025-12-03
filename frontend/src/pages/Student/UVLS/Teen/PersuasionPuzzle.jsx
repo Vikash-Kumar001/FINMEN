@@ -1,173 +1,232 @@
 import React, { useState, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
+import { getUvlsTeenGames } from "../../../../pages/Games/GameCategories/UVLS/teenGamesData";
 
 const PersuasionPuzzle = () => {
-  const navigate = useNavigate();
-  const gameId = "uvls-teen-50";
-  const gameData = useMemo(() => getGameDataById(gameId), [gameId]);
-  const coinsPerLevel = gameData?.coins || 1;
-  const totalCoins = gameData?.coins || 1;
-  const totalXp = gameData?.xp || 1;
-  const [currentPuzzle, setCurrentPuzzle] = useState(0);
+  const location = useLocation();
+  
+  const gameId = "uvls-teen-87";
+  const gameData = getGameDataById(gameId);
+  
+  const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
+  const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
+  const totalXp = gameData?.xp || location.state?.totalXp || 10;
+  
+  const { nextGamePath, nextGameId } = useMemo(() => {
+    if (location.state?.nextGamePath) {
+      return {
+        nextGamePath: location.state.nextGamePath,
+        nextGameId: location.state.nextGameId || null
+      };
+    }
+    
+    try {
+      const games = getUvlsTeenGames({});
+      const currentGame = games.find(g => g.id === gameId);
+      if (currentGame && currentGame.index !== undefined) {
+        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        return {
+          nextGamePath: nextGame ? nextGame.path : null,
+          nextGameId: nextGame ? nextGame.id : null
+        };
+      }
+    } catch (error) {
+      console.warn("Error finding next game:", error);
+    }
+    
+    return { nextGamePath: null, nextGameId: null };
+  }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [selectedSequence, setSelectedSequence] = useState([]);
+  const [responses, setResponses] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [coins, setCoins] = useState(0);
-  const { flashPoints, showCorrectAnswerFeedback } = useGameFeedback();
+  const [score, setScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
 
-  const puzzles = [
+  const questions = [
     {
       id: 1,
-      topic: "Convince parents for later curfew.",
-      tiles: ["Claim: Need more time with friends", "Evidence: Good grades", "CTA: Extend to 10pm"],
+      text: "Topic: Convince parents for later curfew. Arrange the persuasion sequence:",
+      tiles: [
+        { id: 0, text: "Claim: Need more time with friends", emoji: "💬" },
+        { id: 1, text: "Evidence: Good grades", emoji: "📊" },
+        { id: 2, text: "CTA: Extend to 10pm", emoji: "⏰" }
+      ],
       correctOrder: [0, 1, 2]
     },
     {
       id: 2,
-      topic: "Persuade teacher for extension.",
-      tiles: ["Claim: Need more time", "Evidence: Busy schedule", "CTA: One day extra"],
+      text: "Topic: Persuade teacher for extension. Arrange the persuasion sequence:",
+      tiles: [
+        { id: 0, text: "Claim: Need more time", emoji: "⏳" },
+        { id: 1, text: "Evidence: Busy schedule", emoji: "📅" },
+        { id: 2, text: "CTA: One day extra", emoji: "📝" }
+      ],
       correctOrder: [0, 1, 2]
     },
     {
       id: 3,
-      topic: "Sell idea to group.",
-      tiles: ["Claim: This plan is best", "Evidence: Pros list", "CTA: Vote yes"],
+      text: "Topic: Sell idea to group. Arrange the persuasion sequence:",
+      tiles: [
+        { id: 0, text: "Claim: This plan is best", emoji: "💡" },
+        { id: 1, text: "Evidence: Pros list", emoji: "✅" },
+        { id: 2, text: "CTA: Vote yes", emoji: "🗳️" }
+      ],
       correctOrder: [0, 1, 2]
     },
     {
       id: 4,
-      topic: "Advocate for school event.",
-      tiles: ["Claim: Fun day needed", "Evidence: Student survey", "CTA: Approve budget"],
+      text: "Topic: Advocate for school event. Arrange the persuasion sequence:",
+      tiles: [
+        { id: 0, text: "Claim: Fun day needed", emoji: "🎉" },
+        { id: 1, text: "Evidence: Student survey", emoji: "📋" },
+        { id: 2, text: "CTA: Approve budget", emoji: "💰" }
+      ],
       correctOrder: [0, 1, 2]
     },
     {
       id: 5,
-      topic: "Negotiate chore reduction.",
-      tiles: ["Claim: Too many chores", "Evidence: Study time impacted", "CTA: Reduce to 3/week"],
+      text: "Topic: Negotiate chore reduction. Arrange the persuasion sequence:",
+      tiles: [
+        { id: 0, text: "Claim: Too many chores", emoji: "🧹" },
+        { id: 1, text: "Evidence: Study time impacted", emoji: "📚" },
+        { id: 2, text: "CTA: Reduce to 3/week", emoji: "📉" }
+      ],
       correctOrder: [0, 1, 2]
     }
   ];
 
-  const handleTileSelect = (index) => {
-    if (!selectedSequence.includes(index)) {
-      setSelectedSequence([...selectedSequence, index]);
+  const handleTileSelect = (tileId) => {
+    if (answered) return;
+    if (!selectedSequence.includes(tileId)) {
+      setSelectedSequence([...selectedSequence, tileId]);
     }
   };
 
   const handleConfirm = () => {
-    if (selectedSequence.length !== 3) return;
-
-    const puzzle = puzzles[currentPuzzle];
-    const isCorrect = selectedSequence.every((val, idx) => val === puzzle.correctOrder[idx]);
+    if (answered || selectedSequence.length !== 3) return;
     
-    const newResponses = [...responses, {
-      puzzleId: puzzle.id,
+    setAnswered(true);
+    resetFeedback();
+    
+    const currentQuestionData = questions[currentQuestion];
+    const isCorrect = selectedSequence.every((val, idx) => val === currentQuestionData.correctOrder[idx]);
+    
+    setResponses([...responses, {
+      questionId: currentQuestionData.id,
       isCorrect
-    }];
-    
-    setResponses(newResponses);
+    }]);
     
     if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, false);
-    }
-    
-    setSelectedSequence([]);
-    
-    if (currentPuzzle < puzzles.length - 1) {
-      setTimeout(() => {
-        setCurrentPuzzle(prev => prev + 1);
-      }, 1500);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     } else {
-      setTimeout(() => {
-        setShowResult(true);
-      }, 1500);
+      showCorrectAnswerFeedback(0, false);
     }
+    
+    setTimeout(() => {
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+        setSelectedSequence([]);
+        setAnswered(false);
+        resetFeedback();
+      } else {
+        setShowResult(true);
+      }
+    }, isCorrect ? 1000 : 800);
   };
 
-  const handleNext = () => {
-    navigate("/games/uvls/teens");
-  };
-
-  const correctCount = responses.filter(r => r.isCorrect).length;
+  const currentQuestionData = questions[currentQuestion];
+  const finalScore = score;
 
   return (
     <GameShell
       title="Persuasion Puzzle"
-      subtitle={`Puzzle ${currentPuzzle + 1} of ${puzzles.length}`}
-      onNext={handleNext}
-      nextEnabled={showResult && correctCount >= 4}
-      showGameOver={showResult && correctCount >= 4}
-      score={coins}
+      subtitle={showResult ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      score={finalScore}
+      currentLevel={currentQuestion + 1}
+      totalLevels={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      gameId="uvls-teen-50"
+      gameId={gameId}
       gameType="uvls"
-      totalLevels={20}
-      currentLevel={50}
-      showConfetti={showResult && correctCount >= 4}
+      showGameOver={showResult}
+      maxScore={questions.length}
       flashPoints={flashPoints}
-      backPath="/games/uvls/teens"
+      showAnswerConfetti={showAnswerConfetti}
+      nextGamePath={nextGamePath}
+      nextGameId={nextGameId}
+      showConfetti={showResult && finalScore >= 3}
     >
-      <div className="space-y-8">
-        {!showResult ? (
+      <div className="space-y-8 max-w-4xl mx-auto px-4 min-h-[calc(100vh-200px)] flex flex-col justify-center">
+        {!showResult && currentQuestionData ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <p className="text-white text-xl mb-6">Topic: {puzzles[currentPuzzle].topic}</p>
-              
-              <p className="text-white/90 mb-4 text-center">Arrange sequence:</p>
-              
-              <div className="space-y-3 mb-6">
-                {puzzles[currentPuzzle].tiles.map((tile, index) => (
-                  <button
-                    key={index}
-                    onClick={() => handleTileSelect(index)}
-                    disabled={selectedSequence.includes(index)}
-                    className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
-                      selectedSequence.includes(index)
-                        ? 'bg-gray-500/50'
-                        : 'bg-white/20 border-white/40 hover:bg-white/30'
-                    }`}
-                  >
-                    <span className="text-white font-medium">{tile}</span>
-                  </button>
-                ))}
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {finalScore}/{questions.length}</span>
               </div>
               
-              <p className="text-white mb-4">Current sequence: {selectedSequence.map(i => puzzles[currentPuzzle].tiles[i]).join(" -> ")}</p>
+              <p className="text-white text-lg md:text-xl mb-6 text-center">
+                {currentQuestionData.text}
+              </p>
+              
+              <p className="text-white/90 mb-4 text-center">Click tiles in the correct order:</p>
+              
+              <div className="space-y-3 mb-6">
+                {currentQuestionData.tiles.map((tile) => {
+                  const isSelected = selectedSequence.includes(tile.id);
+                  const position = selectedSequence.indexOf(tile.id);
+                  
+                  return (
+                    <button
+                      key={tile.id}
+                      onClick={() => handleTileSelect(tile.id)}
+                      disabled={answered || isSelected}
+                      className={`w-full text-left border-2 rounded-xl p-4 transition-all ${
+                        isSelected
+                          ? 'bg-blue-500/50 border-blue-400 ring-2 ring-white'
+                          : answered
+                          ? 'bg-gray-500/30 border-gray-400 opacity-50 cursor-not-allowed'
+                          : 'bg-white/20 border-white/40 hover:bg-white/30'
+                      }`}
+                    >
+                      <span className="text-white font-medium">
+                        {isSelected && `#${position + 1} - `}
+                        <span className="text-2xl mr-2">{tile.emoji}</span>
+                        {tile.text}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+              
+              {selectedSequence.length > 0 && (
+                <p className="text-white mb-4 text-center">
+                  Sequence: {selectedSequence.map(i => currentQuestionData.tiles[i].text).join(" → ")}
+                </p>
+              )}
               
               <button
                 onClick={handleConfirm}
-                disabled={selectedSequence.length !== 3}
+                disabled={selectedSequence.length !== 3 || answered}
                 className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                  selectedSequence.length === 3
+                  selectedSequence.length === 3 && !answered
                     ? 'bg-gradient-to-r from-purple-500 to-pink-500 hover:opacity-90'
                     : 'bg-gray-500/50 cursor-not-allowed'
                 }`}
               >
-                Arrange
+                Confirm Sequence
               </button>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
-            <h2 className="text-3xl font-bold text-white mb-4">
-              {correctCount >= 4 ? "🎉 Persuasion Builder!" : "💪 More Coherent!"}
-            </h2>
-            <p className="text-white/90 text-xl mb-4">
-              Correct sequences: {correctCount} out of {puzzles.length}
-            </p>
-            <p className="text-yellow-400 text-2xl font-bold mb-6">
-              {correctCount >= 4 ? "Earned 5 Coins!" : "Need 4+ correct."}
-            </p>
-            <p className="text-white/70 text-sm">
-              Teacher Note: Encourage ethical persuasion.
-            </p>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

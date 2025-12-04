@@ -4,7 +4,7 @@ import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
-const AiGoodBadPuzzle = () => {
+const PuzzleAIGoodBad = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -107,15 +107,6 @@ const AiGoodBadPuzzle = () => {
     // Reset selections
     setSelectedLeft(null);
     setSelectedRight(null);
-  };
-
-  const handleTryAgain = () => {
-    setShowResult(false);
-    setMatches([]);
-    setSelectedLeft(null);
-    setSelectedRight(null);
-    setScore(0);
-    resetFeedback();
   };
 
   // Check if a left item is already matched
@@ -268,4 +259,4 @@ const AiGoodBadPuzzle = () => {
   );
 };
 
-export default AiGoodBadPuzzle;
+export default PuzzleAIGoodBad;

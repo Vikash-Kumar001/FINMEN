@@ -27,7 +27,7 @@ import buildIds from "../buildGameIds";
 
 export const healthMaleGameIdsKids = buildIds("health-male", "kids")
 
-export const getHealthMaleKidsGames = (gameCompletionStatus)=> {
+export const getHealthMaleKidsGames = (gameCompletionStatus) => {
     const healthMaleGamesKids = [
         {
             id: 'health-male-kids-1',
@@ -670,7 +670,7 @@ export const getHealthMaleKidsGames = (gameCompletionStatus)=> {
             xp: 10,
             completed: gameCompletionStatus['health-male-kids-46'] || false,
             isSpecial: true,
-            path: '/student/health-male/kids/stay-fresh-poster',
+            path: '/student/health-male/kids/stay-fresh-poster-advanced',
             index: 45
         },
         {

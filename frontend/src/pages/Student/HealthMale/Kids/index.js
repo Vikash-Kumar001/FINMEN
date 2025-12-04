@@ -43,6 +43,7 @@ import QuizHygieneAdvanced from "./QuizHygieneAdvanced";
 import ReflexHygieneCheck from "./ReflexHygieneCheck";
 import HygieneMatchPuzzle from "./HygieneMatchPuzzle";
 import ShavingStory from "./ShavingStory";
+import StayFreshPosterAdvanced from "./StayFreshPosterAdvanced";
 import HygieneHabitsJournal from "./HygieneHabitsJournal";
 import AcneStory from "./AcneStory";
 import ReflexFreshness from "./ReflexFreshness";
@@ -98,7 +99,8 @@ import ReadingStory from "./ReadingStory";
 import ReflexHabitAlert from "./ReflexHabitAlert";
 import HealthyRoutineKidBadge from "./HealthyRoutineKidBadge";
 
-const kidHealthMaleGames = {  'handwash-hero': HandwashHero,
+const kidHealthMaleGames = {
+  'handwash-hero': HandwashHero,
   'quiz-cleanliness': QuizCleanliness,
   'reflex-hygiene': ReflexHygiene,
   'hygiene-items-puzzle': HygieneItemsPuzzle,
@@ -143,6 +145,7 @@ const kidHealthMaleGames = {  'handwash-hero': HandwashHero,
   'reflex-hygiene-check': ReflexHygieneCheck,
   'hygiene-match-puzzle': HygieneMatchPuzzle,
   'shaving-story': ShavingStory,
+  'stay-fresh-poster-advanced': StayFreshPosterAdvanced,
   'hygiene-habits-journal': HygieneHabitsJournal,
   'acne-story': AcneStory,
   'reflex-freshness': ReflexFreshness,
@@ -197,6 +200,6 @@ const kidHealthMaleGames = {  'handwash-hero': HandwashHero,
   'reading-story': ReadingStory,
   'reflex-habit-alert': ReflexHabitAlert,
   'healthy-routine-kid-badge': HealthyRoutineKidBadge,
-}
+};
 
 export default kidHealthMaleGames;

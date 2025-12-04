@@ -2,152 +2,161 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const AlcoholStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-85";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "An older teen at a party offers you alcohol and says 'It's just one sip.' What should you do?",
+      text: "You see adults drinking at a party. What should you drink?",
       options: [
         {
           id: "b",
-          text: "Take a sip to be cool",
-          emoji: "😎",
-          description: "Alcohol is dangerous for kids - even small amounts harm growing bodies",
+          text: "Try their drink",
+          emoji: "🍷",
+          description: "Alcohol is for adults only",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Pretend to drink",
+          emoji: "🎭",
+          description: "Just be yourself and drink what you like",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Say no and explain you're too young",
-          emoji: "🙅",
-          description: "Saying no shows maturity and protects your health",
+          text: "Juice or Water",
+          emoji: "🧃",
+          description: "Stick to healthy drinks for kids",
           isCorrect: true
         },
-        {
-          id: "c",
-          text: "Pretend to drink but don't swallow",
-          emoji: "🤏",
-          description: "It's better to clearly refuse than trick anyone",
-          isCorrect: false
-        }
       ]
     },
     {
       id: 2,
-      text: "Your friend says 'Alcohol makes parties more fun.' How do you respond?",
+      text: "Why is alcohol bad for kids?",
       options: [
         {
-          id: "c",
-          text: "Agree and ask for some",
-          emoji: "🍺",
-          description: "Real fun comes from being yourself, not from alcohol",
-          isCorrect: false
-        },
-        {
           id: "a",
-          text: "Say 'Fun doesn't need alcohol'",
-          emoji: "🎉",
-          description: "You can have great times without harmful substances",
+          text: "Juice or Water",
+          emoji: "🧃",
+          description: "Stick to healthy drinks for kids",
           isCorrect: true
         },
         {
+          id: "c",
+          text: "It's too expensive",
+          emoji: "💰",
+          description: "Cost isn't the main problem",
+          isCorrect: false
+        },
+       
+        {
           id: "b",
-          text: "Say you're not interested",
-          emoji: "😑",
-          description: "Being clear about your choices is important",
+          text: "It makes you too tall",
+          emoji: "📏",
+          description: "It doesn't make you tall",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Someone says 'Everyone drinks alcohol sometimes.' What do you think?",
+      text: "What happens if you drink alcohol?",
       options: [
         {
           id: "b",
-          text: "Then I should try it too",
-          emoji: "👥",
-          description: "Everyone makes their own choices - choose what's healthy for you",
+          text: "You become a superhero",
+          emoji: "🦸",
+          description: "Alcohol makes you weaker, not stronger",
           isCorrect: false
         },
         {
           id: "a",
-          text: "I choose what's healthy for me",
-          emoji: "💪",
-          description: "Making independent healthy choices shows real strength",
+          text: "You might get sick and dizzy",
+          emoji: "🤢",
+          description: "It makes your body feel bad",
           isCorrect: true
         },
         {
           id: "c",
-          text: "Maybe when I'm older",
-          emoji: "⏰",
-          description: "Alcohol is never safe or healthy, no matter your age",
+          text: "You run faster",
+          emoji: "🏃",
+          description: "It makes you slow and clumsy",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "At a family gathering, someone offers you a drink that tastes funny. What do you do?",
+      text: "If a friend dares you to drink, what do you do?",
       options: [
         {
           id: "c",
-          text: "Drink it anyway",
-          emoji: "🥤",
-          description: "Trust your instincts - if something seems wrong, don't drink it",
+          text: "Do it to be cool",
+          emoji: "😎",
+          description: "Being safe is cooler than doing dangerous dares",
+          isCorrect: false
+        },
+        
+        {
+          id: "b",
+          text: "Drink a little bit",
+          emoji: "🤏",
+          description: "Even a little bit is bad for kids",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Ask what it is before drinking",
-          emoji: "❓",
-          description: "Always know what you're drinking and say no to alcohol",
+          text: "Say No and leave",
+          emoji: "🚶",
+          description: "Walk away from dangerous situations",
           isCorrect: true
         },
-        {
-          id: "b",
-          text: "Pretend to drink it",
-          emoji: "🤐",
-          description: "It's better to be honest about not wanting alcohol",
-          isCorrect: false
-        }
       ]
     },
     {
       id: 5,
-      text: "How can you help a friend who is pressured to drink alcohol?",
+      text: "Who can you talk to if you are worried?",
       options: [
         {
           id: "b",
-          text: "Encourage them to try it",
-          emoji: "👍",
-          description: "Help friends make healthy choices instead of harmful ones",
+          text: "No one",
+          emoji: "🤐",
+          description: "Always share your worries",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Ignore the situation",
-          emoji: "🙈",
-          description: "Good friends look out for each other's safety",
+          text: "Your pet",
+          emoji: "🐶",
+          description: "Pets listen, but adults can help",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Suggest fun activities without alcohol",
-          emoji: "🎮",
-          description: "Offer healthy alternatives and support your friend's good choices",
+          text: "Parents or Teachers",
+          emoji: "👨‍👩‍👧",
+          description: "Trusted adults are there to help you",
           isCorrect: true
         }
       ]
@@ -155,15 +164,13 @@ const AlcoholStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -178,8 +185,6 @@ const AlcoholStory = () => {
     navigate("/student/health-male/kids/say-no-poster");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   return (
     <GameShell
       title="Alcohol Story"
@@ -188,19 +193,15 @@ const AlcoholStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-85"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={90}
-      currentLevel={85}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
@@ -209,15 +210,15 @@ const AlcoholStory = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

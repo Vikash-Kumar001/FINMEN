@@ -2,162 +2,233 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const GoodHabitsPoster = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedElements, setSelectedElements] = useState([]);
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-96";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
+  const [currentStage, setCurrentStage] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const posterElements = [
-    { id: "title", text: "GOOD HABITS BUILD GREAT KIDS", emoji: "🌟", category: "title" },
-    { id: "good", text: "Good", emoji: "✅", category: "word" },
-    { id: "habits", text: "Habits", emoji: "🔄", category: "word" },
-    { id: "great", text: "Great", emoji: "🏆", category: "word" },
-    { id: "kids", text: "Kids", emoji: "👦", category: "word" },
-    { id: "message", text: "Daily habits shape your future", emoji: "📈", category: "message" },
-    { id: "brush", text: "Brush Daily", emoji: "🪥", category: "habit" },
-    { id: "read", text: "Read Books", emoji: "📚", category: "habit" },
-    { id: "sleep", text: "Sleep Well", emoji: "😴", category: "habit" },
-    { id: "rainbow", text: "🌈", emoji: "🌈", category: "decoration" }
+  const stages = [
+    {
+      id: 1,
+      title: "Morning Star",
+      question: "Which poster shows a great morning?",
+      options: [
+        {
+          id: "a",
+          text: "Wake Up Happy",
+          emoji: "☀️",
+          description: "Start the day with a smile!",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Sleep In Late",
+          emoji: "🛌",
+          description: "Sleeping too late wastes the morning.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Skip Breakfast",
+          emoji: "🍽️",
+          description: "Breakfast gives you fuel.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Clean & Fresh",
+      question: "Which poster shows good hygiene?",
+      options: [
+        {
+          id: "b",
+          text: "Messy Hair",
+          emoji: "🦁",
+          description: "Combing hair looks neat.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Brush & Wash",
+          emoji: "🚿",
+          description: "Clean body feels great!",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Dirty Clothes",
+          emoji: "👕",
+          description: "Wear clean clothes every day.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Active Kid",
+      question: "Which poster shows a healthy activity?",
+      options: [
+        {
+          id: "c",
+          text: "Sit on Couch",
+          emoji: "🛋️",
+          description: "Sitting too long isn't healthy.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Play Video Games",
+          emoji: "🎮",
+          description: "Limit screen time.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Ride Bike",
+          emoji: "🚲",
+          description: "Biking is great exercise!",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Smart Eater",
+      question: "Which poster shows smart eating?",
+      options: [
+        {
+          id: "b",
+          text: "Only Dessert",
+          emoji: "🍰",
+          description: "Too much sugar is bad.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Balanced Meal",
+          emoji: "🥗",
+          description: "Protein, veggies, and grains!",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Skip Lunch",
+          emoji: "🚫",
+          description: "Your body needs food energy.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Sleep Tight",
+      question: "Which poster shows good sleep?",
+      options: [
+        {
+          id: "c",
+          text: "Stay Up All Night",
+          emoji: "🦉",
+          description: "You need rest to grow.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Sleep on Floor",
+          emoji: "🧱",
+          description: "A bed is more comfortable.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Early Bedtime",
+          emoji: "🛌",
+          description: "Early to bed, early to rise!",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const handleElementToggle = (elementId) => {
-    if (selectedElements.includes(elementId)) {
-      setSelectedElements(prev => prev.filter(id => id !== elementId));
+  const handleOptionSelect = (option) => {
+    if (option.isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+
+      setTimeout(() => {
+        if (currentStage < stages.length - 1) {
+          setCurrentStage(prev => prev + 1);
+        } else {
+          setGameFinished(true);
+        }
+      }, 1500);
     } else {
-      setSelectedElements(prev => [...prev, elementId]);
+      showCorrectAnswerFeedback(0, false);
     }
   };
-
-  React.useEffect(() => {
-    // Check if user has selected enough elements to complete the poster
-    const requiredElements = ["title", "message"];
-    const hasRequired = requiredElements.every(req => selectedElements.includes(req));
-    const hasHabits = posterElements.filter(el => el.category === "habit").some(el => selectedElements.includes(el.id));
-
-    if (hasRequired && hasHabits && selectedElements.length >= 5 && !gameFinished) {
-      setGameFinished(true);
-      showCorrectAnswerFeedback(0, true); // Badge reward
-    }
-  }, [selectedElements, gameFinished]);
 
   const handleNext = () => {
     navigate("/student/health-male/kids/habits-journal");
   };
 
-  const selectedCount = selectedElements.length;
-  const isComplete = gameFinished;
+  const currentS = stages[currentStage];
 
   return (
     <GameShell
-      title="Good Habits Win Poster"
-      subtitle={`Design your poster - ${selectedCount} elements chosen`}
+      title="Good Habits Poster"
+      subtitle={`Poster ${currentStage + 1} of ${stages.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={0}
-      gameId="health-male-kids-96"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={96}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      maxScore={stages.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">🎨</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Create Your Good Habits Win Poster</h3>
-            <p className="text-white/90 mb-4">
-              Design a poster that shows "Good Habits Build Great Kids"
-            </p>
-            <div className="bg-white/20 rounded-full p-3 inline-block mb-4">
-              <span className="text-white font-bold">Choose at least 5 elements including title and daily habits!</span>
-            </div>
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-white mb-2">{currentS.title}</h3>
+            <p className="text-white/90 text-lg">{currentS.question}</p>
           </div>
 
-          {/* Poster Preview */}
-          <div className="bg-gradient-to-br from-green-100/20 to-yellow-100/20 rounded-2xl p-8 mb-6 min-h-[300px] border-2 border-white/30">
-            <div className="text-center space-y-4">
-              {selectedElements.length === 0 ? (
-                <div className="text-white/60">
-                  <div className="text-6xl mb-4">📄</div>
-                  <p>Your poster will appear here as you add elements!</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {currentS.options.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => handleOptionSelect(option)}
+                className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
+              >
+                <div className="text-6xl group-hover:scale-110 transition-transform">
+                  {option.emoji}
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 justify-items-center">
-                  {selectedElements.map(elementId => {
-                    const element = posterElements.find(el => el.id === elementId);
-                    return (
-                      <div
-                        key={elementId}
-                        className="bg-white/20 rounded-xl p-3 text-center transform hover:scale-105 transition-all"
-                      >
-                        <div className="text-3xl mb-1">{element.emoji}</div>
-                        <div className="text-white font-medium text-sm">{element.text}</div>
-                      </div>
-                    );
-                  })}
+                <div className="text-white font-bold text-xl text-center">
+                  {option.text}
                 </div>
-              )}
-            </div>
+                <p className="text-white/70 text-sm text-center">{option.description}</p>
+              </button>
+            ))}
           </div>
-
-          {/* Element Selection */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {posterElements.map(element => {
-              const isSelected = selectedElements.includes(element.id);
-
-              return (
-                <button
-                  key={element.id}
-                  onClick={() => handleElementToggle(element.id)}
-                  className={`p-4 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-400 text-white'
-                      : 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-400 text-white hover:from-blue-600 hover:to-indigo-700'
-                  }`}
-                >
-                  <div className="text-center">
-                    <div className="text-3xl mb-2">{element.emoji}</div>
-                    <div className="font-bold text-sm mb-1">{element.text}</div>
-                    <div className="text-xs opacity-80 capitalize">{element.category}</div>
-                    {isSelected && <div className="text-lg mt-1">✅</div>}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">🎨</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Poster Complete!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  Your "Good Habits Build Great Kids" poster is inspiring! You created a powerful message about the importance of daily habits!
-                </p>
-                <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-4 inline-block mb-4">
-                  <div className="text-white font-bold text-xl">HABIT ARTIST</div>
-                </div>
-                <p className="text-white/80">
-                  Excellent work showing how good habits create great kids! 🌟
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </GameShell>

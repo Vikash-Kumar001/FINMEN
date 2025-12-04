@@ -2,97 +2,88 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SafetyMatchPuzzle = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-74";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedSafety, setSelectedSafety] = useState(null);
-  const [matchedPairs, setMatchedPairs] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const puzzles = [
     {
       id: 1,
-      safetyItem: "Seatbelt",
-      emoji: "🦺",
-      description: "What do you use a seatbelt for?",
-      matches: [
-        { id: "car", text: "Car rides", emoji: "🚗", isCorrect: true },
-        { id: "bike", text: "Bike rides", emoji: "🚲", isCorrect: false },
-        { id: "walk", text: "Walking", emoji: "🚶", isCorrect: false }
+      scenario: "You are riding a bike. What do you need?",
+      options: [
+        { id: "a", text: "A Helmet", emoji: "⛑️", isCorrect: true, explanation: "Helmets protect your head!" },
+        { id: "b", text: "A Cape", emoji: "🦸", isCorrect: false, explanation: "Capes don't protect you from falls." },
+        { id: "c", text: "Slippers", emoji: "🩴", isCorrect: false, explanation: "You need sturdy shoes for biking." }
       ]
     },
     {
       id: 2,
-      safetyItem: "Helmet",
-      emoji: "⛑️",
-      description: "When do you wear a helmet?",
-      matches: [
-        { id: "bike2", text: "Bike rides", emoji: "🚲", isCorrect: true },
-        { id: "car2", text: "Car rides", emoji: "🚗", isCorrect: false },
-        { id: "swim", text: "Swimming", emoji: "🏊", isCorrect: false }
+      scenario: "You are in a car. What keeps you safe?",
+      options: [
+        { id: "b", text: "Loud Music", emoji: "🎵", isCorrect: false, explanation: "Music is fun but doesn't keep you safe." },
+        { id: "a", text: "Seatbelt", emoji: "🚗", isCorrect: true, explanation: "Seatbelts hold you safe in your seat!" },
+        { id: "c", text: "Toys", emoji: "🧸", isCorrect: false, explanation: "Toys are for playing, not safety." }
       ]
     },
     {
       id: 3,
-      safetyItem: "Soap",
-      emoji: "🧼",
-      description: "What do you use soap for?",
-      matches: [
-        { id: "hands", text: "Washing hands", emoji: "👐", isCorrect: true },
-        { id: "dishes", text: "Washing dishes", emoji: "🍽️", isCorrect: false },
-        { id: "carwash", text: "Washing car", emoji: "🚗", isCorrect: false }
+      scenario: "You want to cross the street. What helps you?",
+      options: [
+        { id: "c", text: "Running Shoes", emoji: "👟", isCorrect: false, explanation: "Running across is dangerous!" },
+        { id: "b", text: "Headphones", emoji: "🎧", isCorrect: false, explanation: "You need to hear traffic." },
+        { id: "a", text: "Crosswalk", emoji: "🦓", isCorrect: true, explanation: "Crosswalks are the safe place to cross!" }
       ]
     },
     {
       id: 4,
-      safetyItem: "Bandage",
-      emoji: "🩹",
-      description: "When do you use a bandage?",
-      matches: [
-        { id: "cut", text: "Covering cuts", emoji: "🤕", isCorrect: true },
-        { id: "burn", text: "Covering burns", emoji: "🔥", isCorrect: false },
-        { id: "clean", text: "Cleaning", emoji: "🧽", isCorrect: false }
+      scenario: "It is very sunny outside. What protects your skin?",
+      options: [
+        { id: "b", text: "Winter Coat", emoji: "🧥", isCorrect: false, explanation: "You'll get too hot!" },
+        { id: "a", text: "Sunscreen", emoji: "🧴", isCorrect: true, explanation: "Sunscreen protects you from sunburn!" },
+        { id: "c", text: "Rain Boots", emoji: "👢", isCorrect: false, explanation: "Boots are for rain, not sun." }
       ]
     },
     {
       id: 5,
-      safetyItem: "Crosswalk",
-      emoji: "🚶‍♂️",
-      description: "Where do you use a crosswalk?",
-      matches: [
-        { id: "street", text: "Crossing street", emoji: "🛣️", isCorrect: true },
-        { id: "park", text: "In the park", emoji: "🌳", isCorrect: false },
-        { id: "home", text: "At home", emoji: "🏠", isCorrect: false }
+      scenario: "You are swimming in a pool. What helps you float?",
+      options: [
+        { id: "c", text: "Heavy Rocks", emoji: "🪨", isCorrect: false, explanation: "Rocks will make you sink!" },
+        { id: "b", text: "Umbrella", emoji: "☂️", isCorrect: false, explanation: "Umbrellas are for rain." },
+        { id: "a", text: "Life Jacket", emoji: "🦺", isCorrect: true, explanation: "Life jackets help you stay afloat!" }
       ]
     }
   ];
 
-  const handleSafetySelect = (matchId) => {
-    const currentP = puzzles[currentPuzzle];
-    const selectedMatch = currentP.matches.find(m => m.id === matchId);
-    const isCorrect = selectedMatch.isCorrect;
-
-    if (isCorrect && !matchedPairs.includes(currentPuzzle)) {
+  const handleOptionSelect = (option) => {
+    if (option.isCorrect) {
       setCoins(prev => prev + 1);
-      setMatchedPairs(prev => [...prev, currentPuzzle]);
       showCorrectAnswerFeedback(1, true);
 
       setTimeout(() => {
         if (currentPuzzle < puzzles.length - 1) {
           setCurrentPuzzle(prev => prev + 1);
-          setSelectedSafety(null);
         } else {
           setGameFinished(true);
         }
       }, 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
   };
 
@@ -100,7 +91,7 @@ const SafetyMatchPuzzle = () => {
     navigate("/student/health-male/kids/sickness-story");
   };
 
-  const getCurrentPuzzle = () => puzzles[currentPuzzle];
+  const currentP = puzzles[currentPuzzle];
 
   return (
     <GameShell
@@ -110,88 +101,38 @@ const SafetyMatchPuzzle = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-74"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={80}
-      currentLevel={74}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={80} // Max score is total number of questions (all correct)
+      maxScore={puzzles.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/{puzzles.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-white mb-4">{currentP.scenario}</h3>
+            <p className="text-white/80">Find the matching safety item!</p>
           </div>
 
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">{getCurrentPuzzle().emoji}</div>
-            <h3 className="text-2xl font-bold text-white mb-2">{getCurrentPuzzle().safetyItem}</h3>
-            <p className="text-white/90 mb-6">{getCurrentPuzzle().description}</p>
-            <p className="text-white text-lg">Match this safety item to the right activity!</p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentPuzzle().matches.map(match => {
-              const isCorrect = match.isCorrect;
-              const isMatched = matchedPairs.includes(currentPuzzle);
-
-              return (
-                <button
-                  key={match.id}
-                  onClick={() => handleSafetySelect(match.id)}
-                  disabled={isMatched}
-                  className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                    isMatched
-                      ? isCorrect
-                        ? 'bg-green-100/20 border-green-500 text-white'
-                        : 'bg-red-100/20 border-red-500 text-white'
-                      : 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`text-3xl mr-4 ${isMatched && isCorrect ? 'opacity-100' : 'opacity-60'}`}>
-                        {match.emoji}
-                      </div>
-                      <div className="text-left">
-                        <h3 className={`font-bold text-lg ${isMatched && isCorrect ? 'text-green-300' : 'text-white'}`}>
-                          {isMatched && isCorrect ? '✅ ' : isMatched && !isCorrect ? '❌ ' : '☐ '}{match.text}
-                        </h3>
-                      </div>
-                    </div>
-                    {isMatched && isCorrect && (
-                      <div className="text-2xl">🎉</div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">🧩</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Puzzle Master!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  You matched all safety items perfectly! You understand how to stay safe in different situations!
-                </p>
-                <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-4 inline-block mb-4">
-                  <div className="text-white font-bold text-xl">SAFETY PUZZLER</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {currentP.options.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => handleOptionSelect(option)}
+                className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
+              >
+                <div className="text-6xl group-hover:scale-110 transition-transform">
+                  {option.emoji}
                 </div>
-                <p className="text-white/80">
-                  Great job connecting safety tools to their proper uses! 🌟
-                </p>
-              </div>
-            </div>
-          )}
+                <div className="text-white font-bold text-xl text-center">
+                  {option.text}
+                </div>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </GameShell>

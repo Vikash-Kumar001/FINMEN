@@ -1,70 +1,136 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Shield, AlertTriangle, Heart, UserCheck, CheckCircle } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const HealthyRoutineKidBadge = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [completedChallenges, setCompletedChallenges] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const challenges = [
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-100";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti, resetFeedback } = useGameFeedback();
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [score, setScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+
+  const levels = [
     {
       id: 1,
-      text: "Wake up and start day with good hygiene",
-      emoji: "🌅",
-      description: "Morning routines set a positive tone for your whole day",
-      completed: false
+      title: "Morning Star",
+      question: "What starts your day right?",
+      icon: CheckCircle,
+      options: [
+        { text: "Sleeping in", correct: false },
+        { text: "Healthy Breakfast", correct: true },
+        { text: "TV time", correct: false }
+      ],
+      feedback: {
+        correct: "Yes! Breakfast gives you energy for the whole day.",
+        wrong: "A healthy breakfast is the best way to start."
+      }
     },
     {
       id: 2,
-      text: "Eat healthy meals and stay hydrated",
-      emoji: "🥗",
-      description: "Good nutrition gives you energy and helps you grow strong",
-      completed: false
+      title: "Clean Machine",
+      question: "How do you keep germs away?",
+      icon: Shield,
+      options: [
+        { text: "Wash Hands Often", correct: true },
+        { text: "Wipe on clothes", correct: false },
+        { text: "Ignore them", correct: false }
+      ],
+      feedback: {
+        correct: "Perfect! Washing hands stops germs from spreading.",
+        wrong: "Washing hands with soap and water is the only way."
+      }
     },
     {
       id: 3,
-      text: "Exercise and play every day",
-      emoji: "🏃",
-      description: "Physical activity keeps your body healthy and mind happy",
-      completed: false
+      title: "Active Kid",
+      question: "What keeps your heart strong?",
+      icon: Heart,
+      options: [
+        { text: "Sitting still", correct: false },
+        { text: "Playing Video Games", correct: false },
+        { text: "Exercise & Play", correct: true }
+      ],
+      feedback: {
+        correct: "Great! Moving your body makes your heart happy!",
+        wrong: "Exercise and active play are key to a strong heart."
+      }
     },
     {
       id: 4,
-      text: "Read books and learn new things",
-      emoji: "📚",
-      description: "Reading builds knowledge and imagination for life",
-      completed: false
+      title: "Brain Power",
+      question: "What helps your brain grow?",
+      icon: UserCheck,
+      options: [
+        { text: "Reading & Learning", correct: true },
+        { text: "Eating candy", correct: false },
+        { text: "Watching TV", correct: false }
+      ],
+      feedback: {
+        correct: "Exactly! Reading and learning new things exercises your brain.",
+        wrong: "Your brain needs books and learning to grow strong."
+      }
     },
     {
       id: 5,
-      text: "Get enough sleep every night",
-      emoji: "😴",
-      description: "Quality sleep helps your body rest and brain learn",
-      completed: false
+      title: "Sleep Tight",
+      question: "Why do you need sleep?",
+      icon: CheckCircle,
+      options: [
+        { text: "To dream", correct: false },
+        { text: "To rest & grow", correct: true },
+        { text: "To be bored", correct: false }
+      ],
+      feedback: {
+        correct: "You got it! Sleep helps your body repair and grow.",
+        wrong: "Sleep is when your body does its most important growing work."
+      }
     }
   ];
 
-  const handleChallengeComplete = (challengeId) => {
-    if (!completedChallenges.includes(challengeId)) {
-      setCompletedChallenges(prev => [...prev, challengeId]);
-      showCorrectAnswerFeedback(2, true); // 2 coins per challenge
-    }
-  };
+  const currentLevelData = levels[currentLevel - 1];
+  const Icon = currentLevelData?.icon;
 
-  React.useEffect(() => {
-    if (completedChallenges.length === challenges.length && !gameFinished) {
-      setGameFinished(true);
+  const handleAnswer = (option) => {
+    if (answered) return;
+
+    setSelectedAnswer(option);
+    setAnswered(true);
+    resetFeedback();
+
+    const isCorrect = option.correct;
+    const isLastQuestion = currentLevel === 5;
+
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  }, [completedChallenges, gameFinished]);
+
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentLevel(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
+  };
 
   const handleNext = () => {
     navigate("/games/health-male/kids");
@@ -73,88 +139,81 @@ const HealthyRoutineKidBadge = () => {
   return (
     <GameShell
       title="Healthy Routine Kid Badge"
-      subtitle={`Complete ${completedChallenges.length} of ${challenges.length} routine tasks`}
+      subtitle={!showResult ? `Challenge ${currentLevel} of 5` : "Badge Earned!"}
       onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={completedChallenges.length * 2}
-      gameId="health-male-kids-100"
+      nextEnabled={showResult}
+      showGameOver={showResult}
+      score={score}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={100}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      maxScore={levels.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🏆</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Earn Your Healthy Routine Kid Badge</h3>
-            <p className="text-white/90">
-              Complete 5 routine tasks to prove you're a master of healthy daily habits!
+      totalXp={totalXp}
+    >
+      <div className="text-center text-white space-y-6">
+        {!showResult && currentLevelData && (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 border border-white/20">
+            <div className="flex justify-center mb-4">
+              <Icon className="w-16 h-16 text-blue-400" />
+            </div>
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Challenge {currentLevel} of 5</span>
+              <span className="text-yellow-400 font-bold">Coins: {score}</span>
+            </div>
+
+            <h3 className="text-2xl font-bold mb-2">{currentLevelData.title}</h3>
+            <p className="text-white text-lg mb-6 text-center">
+              {currentLevelData.question}
             </p>
-          </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            {challenges.map((challenge) => {
-              const isCompleted = completedChallenges.includes(challenge.id);
-
-              return (
+            <div className="grid sm:grid-cols-3 gap-3">
+              {currentLevelData.options.map((option, index) => (
                 <button
-                  key={challenge.id}
-                  onClick={() => handleChallengeComplete(challenge.id)}
-                  disabled={isCompleted}
-                  className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                    isCompleted
-                      ? 'bg-green-100/20 border-green-500 text-white'
-                      : 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                  }`}
+                  key={index}
+                  onClick={() => handleAnswer(option)}
+                  disabled={answered}
+                  className="w-full min-h-[60px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-8 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`text-3xl mr-4 ${isCompleted ? 'opacity-100' : 'opacity-60'}`}>
-                        {challenge.emoji}
-                      </div>
-                      <div className="text-left">
-                        <h3 className={`font-bold text-lg ${isCompleted ? 'text-green-300' : 'text-white'}`}>
-                          {isCompleted ? '✅ ' : '☐ '}{challenge.text}
-                        </h3>
-                        <p className="text-white/80 text-sm">{challenge.description}</p>
-                      </div>
-                    </div>
-                    {isCompleted && (
-                      <div className="text-2xl">🎉</div>
-                    )}
-                  </div>
+                  {option.text}
                 </button>
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">🏆</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Healthy Routine Kid Badge Earned!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  🎉 CONGRATULATIONS! 🎉 You've completed all 100 Health-Male Kids games and earned the ultimate Healthy Routine Kid Badge!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full p-4 inline-block mb-4">
-                  <div className="text-white font-bold text-xl">HEALTHY ROUTINE KID</div>
-                </div>
-                <p className="text-white/80">
-                  You've mastered the complete health curriculum! You're a true health champion! 🌟🏆✨
+            {answered && selectedAnswer && (
+              <div className={`mt-4 p-4 rounded-xl ${selectedAnswer.correct
+                  ? 'bg-green-500/20 border-2 border-green-400'
+                  : 'bg-red-500/20 border-2 border-red-400'
+                }`}>
+                <p className="text-white font-semibold">
+                  {selectedAnswer.correct
+                    ? currentLevelData.feedback.correct
+                    : currentLevelData.feedback.wrong}
                 </p>
               </div>
+            )}
+          </div>
+        )}
+
+        {showResult && (
+          <div className="text-center space-y-4 mt-8">
+            <div className="text-green-400">
+              <div className="text-8xl mb-4">🏆</div>
+              <h3 className="text-3xl font-bold text-white mb-2">Healthy Routine Kid Badge Earned!</h3>
+              <p className="text-white/90 mb-4 text-lg">
+                Congratulations! You are a master of healthy habits!
+              </p>
+              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full p-4 inline-block mb-4">
+                <div className="text-white font-bold text-xl">ROUTINE MASTER</div>
+              </div>
+              <p className="text-white/80">
+                Keep up the great work every single day! 🌟
+              </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

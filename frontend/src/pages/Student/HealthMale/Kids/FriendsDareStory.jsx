@@ -2,17 +2,23 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const FriendsDareStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-61";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
@@ -49,18 +55,18 @@ const FriendsDareStory = () => {
       text: "Friends dare you to eat a whole cake before dinner. What's the smart choice?",
       options: [
         {
-          id: "c",
-          text: "Eat it all and feel sick",
-          emoji: "🤢",
-          description: "Too much sugar isn't healthy for your body",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Say no and wait for proper dessert",
           emoji: "⏰",
           description: "Waiting shows self-control and healthy choices",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Eat it all and feel sick",
+          emoji: "🤢",
+          description: "Too much sugar isn't healthy for your body",
+          isCorrect: false
         },
         {
           id: "b",
@@ -83,19 +89,19 @@ const FriendsDareStory = () => {
           isCorrect: false
         },
         {
+          id: "c",
+          text: "Ask an adult to help",
+          emoji: "👨‍👩‍👧",
+          description: "Asking for help with dangerous dares is smart",
+          isCorrect: false
+        },
+        {
           id: "a",
           text: "Say no and find a safe way to cross",
           emoji: "🚦",
           description: "Safety is more important than any dare",
           isCorrect: true
         },
-        {
-          id: "c",
-          text: "Ask an adult to help",
-          emoji: "👨‍👩‍👧",
-          description: "Asking for help with dangerous dares is smart",
-          isCorrect: false
-        }
       ]
     },
     {
@@ -155,15 +161,13 @@ const FriendsDareStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -175,10 +179,8 @@ const FriendsDareStory = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/health-male/kids/quiz-peer-pressure");
+    navigate("/games/health-male/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -188,19 +190,15 @@ const FriendsDareStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-61"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={70}
-      currentLevel={61}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
@@ -209,15 +207,15 @@ const FriendsDareStory = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

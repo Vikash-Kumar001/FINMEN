@@ -2,14 +2,20 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const HygieneItemsPuzzle = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-4";
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
@@ -23,8 +29,8 @@ const HygieneItemsPuzzle = () => {
       item: "Toothbrush",
       emoji: "🪥",
       matches: [
-        { id: "teeth", text: "Teeth", emoji: "🦷", correct: true },
         { id: "hair", text: "Hair", emoji: "💇", correct: false },
+        { id: "teeth", text: "Teeth", emoji: "🦷", correct: true },
         { id: "nails", text: "Nails", emoji: "💅", correct: false }
       ]
     },
@@ -33,9 +39,9 @@ const HygieneItemsPuzzle = () => {
       item: "Soap",
       emoji: "🧼",
       matches: [
-        { id: "bath", text: "Bath", emoji: "🛁", correct: true },
         { id: "dishes", text: "Dishes", emoji: "🍽️", correct: false },
-        { id: "clothes", text: "Clothes", emoji: "👕", correct: false }
+        { id: "clothes", text: "Clothes", emoji: "👕", correct: false },
+        { id: "bath", text: "Bath", emoji: "🛁", correct: true }
       ]
     },
     {
@@ -53,8 +59,8 @@ const HygieneItemsPuzzle = () => {
       item: "Towel",
       emoji: "🧺",
       matches: [
-        { id: "dry", text: "Dry Body", emoji: "💨", correct: true },
         { id: "eat", text: "Eat", emoji: "🍽️", correct: false },
+        { id: "dry", text: "Dry Body", emoji: "💨", correct: true },
         { id: "sleep", text: "Sleep", emoji: "😴", correct: false }
       ]
     },
@@ -63,14 +69,16 @@ const HygieneItemsPuzzle = () => {
       item: "Comb",
       emoji: "💇",
       matches: [
-        { id: "hair", text: "Hair", emoji: "💇", correct: true },
         { id: "teeth", text: "Teeth", emoji: "🦷", correct: false },
-        { id: "nails", text: "Nails", emoji: "💅", correct: false }
+        { id: "nails", text: "Nails", emoji: "💅", correct: false },
+        { id: "hair", text: "Hair", emoji: "💇", correct: true }
       ]
     }
   ];
 
   const handleMatch = (matchId) => {
+    if (currentPuzzle >= puzzles.length) return;
+
     const currentPuzzleData = puzzles[currentPuzzle];
     const match = currentPuzzleData.matches.find(m => m.id === matchId);
     setSelectedMatch(matchId);
@@ -94,13 +102,15 @@ const HygieneItemsPuzzle = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/health-male/kids/bath-time-story");
+    navigate("/games/health-male/kids");
   };
+
+  const currentPuzzleData = puzzles[currentPuzzle];
 
   return (
     <GameShell
       title="Hygiene Items Puzzle"
-      subtitle={`Puzzle ${currentPuzzle + 1}/5: ${puzzles[currentPuzzle].item}`}
+      subtitle={gameFinished ? "Puzzle Complete!" : `Puzzle ${currentPuzzle + 1}/5: ${currentPuzzleData?.item}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
@@ -113,15 +123,14 @@ const HygieneItemsPuzzle = () => {
       flashPoints={flashPoints}
       backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={10} // Max score is total number of questions (all correct)
+
+      maxScore={puzzles.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/5: {puzzles[currentPuzzle].item}</span>
+          <div className="flex justify-end items-center mb-4">
             <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
@@ -129,54 +138,55 @@ const HygieneItemsPuzzle = () => {
             Match the hygiene item to what it cleans!
           </p>
 
-          <div className="grid grid-cols-1 gap-6">
-            <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
-              {showCoinFeedback === puzzles[currentPuzzle].id && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-                  <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                    +1
+          {currentPuzzleData && (
+            <div className="grid grid-cols-1 gap-6">
+              <div className="bg-white/5 rounded-xl p-4 border border-white/10 relative">
+                {showCoinFeedback === currentPuzzleData.id && (
+                  <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+                    <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
+                      +1
+                    </div>
                   </div>
+                )}
+                <div className="flex items-center justify-center mb-4">
+                  <div className="text-4xl mr-3">{currentPuzzleData.emoji}</div>
+                  <div className="text-white text-xl font-bold">{currentPuzzleData.item}</div>
                 </div>
-              )}
-              <div className="flex items-center justify-center mb-4">
-                <div className="text-4xl mr-3">{puzzles[currentPuzzle].emoji}</div>
-                <div className="text-white text-xl font-bold">{puzzles[currentPuzzle].item}</div>
-              </div>
 
-              <div className="grid grid-cols-3 gap-3">
-                {puzzles[currentPuzzle].matches.map((match) => {
-                  const isCorrect = selectedMatch === match.id && match.correct;
-                  const isWrong = selectedMatch === match.id && !match.correct;
+                <div className="grid grid-cols-3 gap-3">
+                  {currentPuzzleData.matches.map((match) => {
+                    const isCorrect = selectedMatch === match.id && match.correct;
+                    const isWrong = selectedMatch === match.id && !match.correct;
 
-                  return (
-                    <button
-                      key={match.id}
-                      onClick={() => handleMatch(match.id)}
-                      disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${
-                        !selectedMatch
-                          ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                          : isCorrect
-                          ? 'bg-green-100/20 border-green-500 text-white'
-                          : isWrong
-                          ? 'bg-red-100/20 border-red-500 text-white'
-                          : 'bg-gray-100/20 border-gray-500 text-white'
-                      }`}
-                    >
-                      {isCorrect && (
-                        <div className="absolute -top-2 -right-2 text-2xl">✅</div>
-                      )}
-                      {isWrong && (
-                        <div className="absolute -top-2 -right-2 text-2xl">❌</div>
-                      )}
-                      <div className="text-2xl mb-1">{match.emoji}</div>
-                      <div className="font-medium text-sm">{match.text}</div>
-                    </button>
-                  );
-                })}
+                    return (
+                      <button
+                        key={match.id}
+                        onClick={() => handleMatch(match.id)}
+                        disabled={selectedMatch !== null}
+                        className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${!selectedMatch
+                            ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
+                            : isCorrect
+                              ? 'bg-green-100/20 border-green-500 text-white'
+                              : isWrong
+                                ? 'bg-red-100/20 border-red-500 text-white'
+                                : 'bg-gray-100/20 border-gray-500 text-white'
+                          }`}
+                      >
+                        {isCorrect && (
+                          <div className="absolute -top-2 -right-2 text-2xl">✅</div>
+                        )}
+                        {isWrong && (
+                          <div className="absolute -top-2 -right-2 text-2xl">❌</div>
+                        )}
+                        <div className="text-2xl mb-1">{match.emoji}</div>
+                        <div className="font-medium text-sm">{match.text}</div>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
           {gameFinished && (
             <div className="text-center space-y-4 mt-6">

@@ -1,129 +1,303 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const StayFreshPoster = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [currentTask, setCurrentTask] = useState(0);
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const tasks = [
-    { id: 1, text: "Draw a boy taking a shower", emoji: "🚿", completed: false },
-    { id: 2, text: "Add clean clothes and fresh smell", emoji: "👕", completed: false },
-    { id: 3, text: "Write 'Stay Fresh Everyday'", emoji: "✍️", completed: false },
-    { id: 4, text: "Show confident smile with clean teeth", emoji: "😊", completed: false },
-    { id: 5, text: "Add hygiene items around the boy", emoji: "🧼", completed: false }
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-6";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [currentStage, setCurrentStage] = useState(0);
+  const [selectedPoster, setSelectedPoster] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [coins, setCoins] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const stages = [
+    {
+      question: "Which poster shows good daily hygiene?",
+      posters: [
+        {
+          id: 1,
+          title: "Daily Bath",
+          description: "A poster showing a daily shower routine",
+          emoji: "🚿",
+          isCorrect: true
+        },
+        {
+          id: 2,
+          title: "Once a Week",
+          description: "A poster showing bathing only on Sundays",
+          emoji: "📅",
+          isCorrect: false
+        },
+        {
+          id: 3,
+          title: "Perfume Only",
+          description: "A poster showing using perfume instead of bath",
+          emoji: "🌸",
+          isCorrect: false
+        }
+      ],
+      correctFeedback: "Daily Bath is the best choice!",
+      explanation: "Bathing every day keeps your body clean and fresh!"
+    },
+    {
+      question: "Which poster shows clean clothes?",
+      posters: [
+        {
+          id: 1,
+          title: "Dirty Shirt",
+          description: "A poster showing wearing the same shirt for a week",
+          emoji: "👕",
+          isCorrect: false
+        },
+        {
+          id: 2,
+          title: "Fresh Clothes",
+          description: "A poster showing wearing clean clothes daily",
+          emoji: "🧺",
+          isCorrect: true
+        },
+        {
+          id: 3,
+          title: "Wet Clothes",
+          description: "A poster showing wearing wet clothes",
+          emoji: "💦",
+          isCorrect: false
+        }
+      ],
+      correctFeedback: "Fresh Clothes keep you healthy!",
+      explanation: "Changing into clean clothes prevents bad smells and germs!"
+    },
+    {
+      question: "Which poster shows dental care?",
+      posters: [
+        {
+          id: 1,
+          title: "Candy All Day",
+          description: "A poster showing eating sweets constantly",
+          emoji: "🍬",
+          isCorrect: false
+        },
+        {
+          id: 2,
+          title: "Brush Twice",
+          description: "A poster showing brushing teeth morning and night",
+          emoji: "🪥",
+          isCorrect: true
+        },
+        {
+          id: 3,
+          title: "No Brush",
+          description: "A poster showing skipping brushing",
+          emoji: "🚫",
+          isCorrect: false
+        }
+      ],
+      correctFeedback: "Brush Twice is perfect!",
+      explanation: "Brushing twice a day keeps your teeth strong and breath fresh!"
+    },
+    {
+      question: "Which poster shows hand hygiene?",
+      posters: [
+        {
+          id: 1,
+          title: "Wipe on Pants",
+          description: "A poster showing wiping hands on clothes",
+          emoji: "👖",
+          isCorrect: false
+        },
+        {
+          id: 2,
+          title: "Lick Fingers",
+          description: "A poster showing licking dirty fingers",
+          emoji: "😋",
+          isCorrect: false
+        },
+        {
+          id: 3,
+          title: "Wash with Soap",
+          description: "A poster showing washing hands with soap and water",
+          emoji: "🧼",
+          isCorrect: true
+        }
+      ],
+      correctFeedback: "Wash with Soap is the safe way!",
+      explanation: "Soap and water kill germs and keep you healthy!"
+    },
+    {
+      question: "Which poster shows overall freshness?",
+      posters: [
+        {
+          id: 1,
+          title: "Messy Hair",
+          description: "A poster showing uncombed hair",
+          emoji: "🦁",
+          isCorrect: false
+        },
+        {
+          id: 2,
+          title: "Clean & Groomed",
+          description: "A poster showing a neat and clean appearance",
+          emoji: "✨",
+          isCorrect: true
+        },
+        {
+          id: 3,
+          title: "Muddy Shoes",
+          description: "A poster showing wearing muddy shoes inside",
+          emoji: "👞",
+          isCorrect: false
+        }
+      ],
+      correctFeedback: "Clean & Groomed is the goal!",
+      explanation: "Looking and feeling clean boosts your confidence!"
+    }
   ];
 
-  const handleTaskComplete = (taskId) => {
-    if (!completedTasks.includes(taskId)) {
-      setCompletedTasks(prev => [...prev, taskId]);
-      showCorrectAnswerFeedback(3, true); // Give 3 coins per creative task
+  const currentStageData = stages[currentStage];
+  const posters = currentStageData?.posters || [];
+
+  const handlePosterSelect = (poster) => {
+    setSelectedPoster(poster.id);
+
+    if (poster.isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+
+      // Check if this is the last stage
+      const isLastStage = currentStage === stages.length - 1;
+
+      if (isLastStage) {
+        // Last stage - show result and game over modal
+        setShowResult(true);
+      } else {
+        // Automatically move to next question after showing feedback
+        setTimeout(() => {
+          setCurrentStage(currentStage + 1);
+          setSelectedPoster(null);
+          setShowResult(false);
+          resetFeedback();
+        }, 1500);
+      }
+    } else {
+      // Show result immediately for incorrect
+      setShowResult(true);
     }
   };
-
-  React.useEffect(() => {
-    if (completedTasks.length === tasks.length && !gameFinished) {
-      setGameFinished(true);
-    }
-  }, [completedTasks, gameFinished]);
 
   const handleNext = () => {
-    navigate("/student/health-male/kids/hygiene-habits-journal");
+    navigate("/games/health-male/kids");
   };
+
+  const handleTryAgain = () => {
+    setSelectedPoster(null);
+    setShowResult(false);
+    resetFeedback();
+  };
+
+  const isLastStage = currentStage === stages.length - 1;
+  const selectedPosterData = selectedPoster ? posters.find(p => p.id === selectedPoster) : null;
+  const isCorrect = selectedPosterData?.isCorrect || false;
 
   return (
     <GameShell
-      title="Stay Fresh Poster"
-      subtitle={`Complete ${completedTasks.length} of ${tasks.length} poster tasks`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={completedTasks.length * 3}
-      gameId="health-male-kids-46"
-      gameType="health-male"
-      totalLevels={50}
-      currentLevel={46}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
-      showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={50} // Max score is total number of questions (all correct)
+      title="Poster: Stay Fresh"
+      subtitle={`Question ${currentStage + 1} of ${stages.length}`}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
+      onNext={handleNext}
+      nextEnabled={showResult && selectedPoster && isCorrect && !isLastStage}
+      showGameOver={showResult && isLastStage && isCorrect}
+      score={coins}
+      gameId={gameId}
+      gameType="health-male"
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={stages.length}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🎨</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Design Your Stay Fresh Poster</h3>
-            <p className="text-white/90">
-              Create a poster showing kids how staying clean builds confidence! Complete all 5 design tasks.
-            </p>
-          </div>
+        {!showResult ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <p className="text-white text-xl font-bold mb-6 text-center">
+                Question {currentStage + 1}: {currentStageData?.question}
+              </p>
 
-          <div className="grid grid-cols-1 gap-4">
-            {tasks.map((task) => {
-              const isCompleted = completedTasks.includes(task.id);
-
-              return (
-                <button
-                  key={task.id}
-                  onClick={() => handleTaskComplete(task.id)}
-                  disabled={isCompleted}
-                  className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                    isCompleted
-                      ? 'bg-green-100/20 border-green-500 text-white'
-                      : 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`text-3xl mr-4 ${isCompleted ? 'opacity-100' : 'opacity-60'}`}>
-                        {task.emoji}
-                      </div>
-                      <div className="text-left">
-                        <h3 className={`font-bold text-lg ${isCompleted ? 'text-green-300' : 'text-white'}`}>
-                          {isCompleted ? '✅ ' : '☐ '}{task.text}
-                        </h3>
-                      </div>
-                    </div>
-                    {isCompleted && (
-                      <div className="text-2xl">🎉</div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">🎨</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Poster Complete!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  Excellent work! Your stay fresh poster will help other kids understand that good hygiene builds confidence!
-                </p>
-                <div className="bg-gradient-to-r from-green-500 to-blue-500 rounded-full p-4 inline-block mb-4">
-                  <div className="text-white font-bold text-xl">HYGIENE ARTIST</div>
-                </div>
-                <p className="text-white/80">
-                  You completed all 5 poster design tasks perfectly! Your artwork promotes daily hygiene and confidence! 🌟
-                </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {posters.map(poster => (
+                  <button
+                    key={poster.id}
+                    onClick={() => handlePosterSelect(poster)}
+                    disabled={showResult}
+                    className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 ${selectedPoster === poster.id
+                      ? "ring-4 ring-yellow-400 bg-gradient-to-r from-blue-500 to-indigo-600"
+                      : "bg-gradient-to-r from-green-500 to-emerald-600"
+                      } ${showResult ? "opacity-75 cursor-not-allowed" : "hover:scale-105"}`}
+                  >
+                    <div className="text-4xl mb-4 text-center">{poster.emoji}</div>
+                    <h3 className="font-bold text-xl text-white mb-2 text-center">{poster.title}</h3>
+                    <p className="text-white/90 text-center">{poster.description}</p>
+                  </button>
+                ))}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {isCorrect ? (
+              <div>
+                <div className="text-5xl mb-4">🎨</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Fresh Choice!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  {currentStageData?.correctFeedback}
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+1 Coin</span>
+                </div>
+                <p className="text-white/80 mb-4">
+                  {currentStageData?.explanation}
+                </p>
+                {!isLastStage && (
+                  <p className="text-white/70 text-sm mt-4">
+                    Question {currentStage + 1} of {stages.length} completed!
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">🤔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Think About It!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  {currentStageData?.correctFeedback || "That's not quite right. Try again!"}
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  {currentStageData?.explanation || "Look for the poster that shows good hygiene."}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

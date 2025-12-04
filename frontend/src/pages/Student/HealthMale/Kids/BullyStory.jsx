@@ -48,19 +48,19 @@ const BullyStory = () => {
       id: 2,
       text: "Someone threatens to tell your secrets unless you do what they want. What's the right choice?",
       options: [
+         {
+          id: "a",
+          text: "Tell them you won't be bullied",
+          emoji: "🛡️",
+          description: "Standing up to bullying shows courage and strength",
+          isCorrect: true
+        },
         {
           id: "c",
           text: "Do what they want to stay safe",
           emoji: "😨",
           description: "Blackmail is wrong - tell a trusted adult instead",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Tell them you won't be bullied",
-          emoji: "🛡️",
-          description: "Standing up to bullying shows courage and strength",
-          isCorrect: true
         },
         {
           id: "b",
@@ -109,20 +109,21 @@ const BullyStory = () => {
           description: "Fighting rumors with rumors makes everything worse",
           isCorrect: false
         },
-        {
-          id: "a",
-          text: "Ignore it and stay confident",
-          emoji: "💪",
-          description: "Bullies want reactions - confidence shows strength",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Get very upset and cry",
           emoji: "😢",
           description: "It's okay to feel hurt, but respond with strength",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Ignore it and stay confident",
+          emoji: "💪",
+          description: "Bullies want reactions - confidence shows strength",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -196,7 +197,7 @@ const BullyStory = () => {
       flashPoints={flashPoints}
       backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
+
       maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}

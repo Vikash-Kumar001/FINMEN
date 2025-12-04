@@ -2,97 +2,93 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const DailyMatchPuzzle = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-94";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [selectedBenefit, setSelectedBenefit] = useState(null);
-  const [matchedPairs, setMatchedPairs] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const puzzles = [
     {
       id: 1,
-      activity: "Sleep",
-      emoji: "😴",
-      description: "What does sleep give you?",
-      benefits: [
-        { id: "energy", text: "Energy", emoji: "⚡", isCorrect: true },
-        { id: "strength", text: "Strength", emoji: "💪", isCorrect: false },
-        { id: "growth", text: "Growth", emoji: "📏", isCorrect: false }
+      category: "Sleep",
+      question: "What does SLEEP give you?",
+      options: [
+        { id: "a", text: "Energy", emoji: "⚡", isCorrect: true, explanation: "Sleep recharges your battery!" },
+        { id: "b", text: "Hunger", emoji: "🍔", isCorrect: false, explanation: "Sleep doesn't make you hungry." },
+        { id: "c", text: "Dirt", emoji: "💩", isCorrect: false, explanation: "Sleep is clean!" }
       ]
     },
     {
       id: 2,
-      activity: "Food",
-      emoji: "🍎",
-      description: "What does eating healthy food give you?",
-      benefits: [
-        { id: "strength2", text: "Strength", emoji: "💪", isCorrect: true },
-        { id: "energy2", text: "Energy", emoji: "⚡", isCorrect: false },
-        { id: "knowledge", text: "Knowledge", emoji: "🧠", isCorrect: false }
+      category: "Food",
+      question: "What does HEALTHY FOOD give you?",
+      options: [
+        { id: "b", text: "Sleepiness", emoji: "😴", isCorrect: false, explanation: "Food gives fuel, not sleep." },
+        { id: "a", text: "Strength", emoji: "💪", isCorrect: true, explanation: "Nutrients build strong muscles." },
+        { id: "c", text: "Cavities", emoji: "🦷", isCorrect: false, explanation: "Only sugary food causes cavities." }
       ]
     },
     {
       id: 3,
-      activity: "Study",
-      emoji: "📚",
-      description: "What does studying help you with?",
-      benefits: [
-        { id: "growth3", text: "Growth", emoji: "📏", isCorrect: true },
-        { id: "strength3", text: "Strength", emoji: "💪", isCorrect: false },
-        { id: "energy3", text: "Energy", emoji: "⚡", isCorrect: false }
+      category: "Exercise",
+      question: "What does EXERCISE do?",
+      options: [
+        { id: "c", text: "Makes you weak", emoji: "🥀", isCorrect: false, explanation: "Exercise builds you up!" },
+        { id: "b", text: "Makes you sick", emoji: "🤢", isCorrect: false, explanation: "Exercise fights sickness." },
+        { id: "a", text: "Keeps heart healthy", emoji: "❤️", isCorrect: true, explanation: "Your heart loves to move!" }
       ]
     },
     {
       id: 4,
-      activity: "Exercise",
-      emoji: "🏃",
-      description: "What does exercise build?",
-      benefits: [
-        { id: "strength4", text: "Strength", emoji: "💪", isCorrect: true },
-        { id: "knowledge4", text: "Knowledge", emoji: "🧠", isCorrect: false },
-        { id: "energy4", text: "Energy", emoji: "⚡", isCorrect: false }
+      category: "Reading",
+      question: "What does READING give you?",
+      options: [
+        { id: "b", text: "Muscles", emoji: "💪", isCorrect: false, explanation: "Reading exercises your brain." },
+        { id: "a", text: "Knowledge", emoji: "🧠", isCorrect: true, explanation: "Books make you smarter!" },
+        { id: "c", text: "Dirty hands", emoji: "👐", isCorrect: false, explanation: "Books are clean fun." }
       ]
     },
     {
       id: 5,
-      activity: "Reading",
-      emoji: "📖",
-      description: "What does reading improve?",
-      benefits: [
-        { id: "knowledge5", text: "Knowledge", emoji: "🧠", isCorrect: true },
-        { id: "strength5", text: "Strength", emoji: "💪", isCorrect: false },
-        { id: "growth5", text: "Growth", emoji: "📏", isCorrect: false }
+      category: "Hygiene",
+      question: "What does BATHING do?",
+      options: [
+        { id: "c", text: "Makes you tired", emoji: "🥱", isCorrect: false, explanation: "Bathing wakes you up!" },
+        { id: "b", text: "Makes you hungry", emoji: "🍽️", isCorrect: false, explanation: "Bathing is for cleaning." },
+        { id: "a", text: "Removes germs", emoji: "🧼", isCorrect: true, explanation: "Soap and water wash germs away." }
       ]
     }
   ];
 
-  const handleBenefitSelect = (benefitId) => {
-    const currentP = puzzles[currentPuzzle];
-    const selectedBen = currentP.benefits.find(b => b.id === benefitId);
-    const isCorrect = selectedBen.isCorrect;
-
-    if (isCorrect && !matchedPairs.includes(currentPuzzle)) {
+  const handleOptionSelect = (option) => {
+    if (option.isCorrect) {
       setCoins(prev => prev + 1);
-      setMatchedPairs(prev => [...prev, currentPuzzle]);
       showCorrectAnswerFeedback(1, true);
 
       setTimeout(() => {
         if (currentPuzzle < puzzles.length - 1) {
           setCurrentPuzzle(prev => prev + 1);
-          setSelectedBenefit(null);
         } else {
           setGameFinished(true);
         }
       }, 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
   };
 
@@ -100,7 +96,7 @@ const DailyMatchPuzzle = () => {
     navigate("/student/health-male/kids/sleep-story");
   };
 
-  const getCurrentPuzzle = () => puzzles[currentPuzzle];
+  const currentP = puzzles[currentPuzzle];
 
   return (
     <GameShell
@@ -110,88 +106,39 @@ const DailyMatchPuzzle = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-94"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={94}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      maxScore={puzzles.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Puzzle {currentPuzzle + 1}/{puzzles.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-white mb-4">{currentP.question}</h3>
+            <p className="text-white/80">Match the activity to the benefit!</p>
           </div>
 
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">{getCurrentPuzzle().emoji}</div>
-            <h3 className="text-2xl font-bold text-white mb-2">{getCurrentPuzzle().activity}</h3>
-            <p className="text-white/90 mb-6">{getCurrentPuzzle().description}</p>
-            <p className="text-white text-lg">Match this activity to what it gives you!</p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentPuzzle().benefits.map(benefit => {
-              const isCorrect = benefit.isCorrect;
-              const isMatched = matchedPairs.includes(currentPuzzle);
-
-              return (
-                <button
-                  key={benefit.id}
-                  onClick={() => handleBenefitSelect(benefit.id)}
-                  disabled={isMatched}
-                  className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                    isMatched
-                      ? isCorrect
-                        ? 'bg-green-100/20 border-green-500 text-white'
-                        : 'bg-red-100/20 border-red-500 text-white'
-                      : 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`text-3xl mr-4 ${isMatched && isCorrect ? 'opacity-100' : 'opacity-60'}`}>
-                        {benefit.emoji}
-                      </div>
-                      <div className="text-left">
-                        <h3 className={`font-bold text-lg ${isMatched && isCorrect ? 'text-green-300' : 'text-white'}`}>
-                          {isMatched && isCorrect ? '✅ ' : isMatched && !isCorrect ? '❌ ' : '☐ '}{benefit.text}
-                        </h3>
-                      </div>
-                    </div>
-                    {isMatched && isCorrect && (
-                      <div className="text-2xl">🎉</div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">🧩</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Puzzle Master!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  You matched all daily activities to their benefits perfectly! You understand how habits help you grow!
-                </p>
-                <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-4 inline-block mb-4">
-                  <div className="text-white font-bold text-xl">HABIT PUZZLER</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {currentP.options.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => handleOptionSelect(option)}
+                className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
+              >
+                <div className="text-6xl group-hover:scale-110 transition-transform">
+                  {option.emoji}
                 </div>
-                <p className="text-white/80">
-                  Great job understanding how daily habits build a healthy life! 🌟
-                </p>
-              </div>
-            </div>
-          )}
+                <div className="text-white font-bold text-xl text-center">
+                  {option.text}
+                </div>
+                <p className="text-white/70 text-sm text-center">{option.explanation}</p>
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </GameShell>

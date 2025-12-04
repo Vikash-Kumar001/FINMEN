@@ -2,18 +2,26 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const BodyChangesJournal = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-27";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [answer, setAnswer] = useState("");
   const [currentPrompt, setCurrentPrompt] = useState(0);
   const [responses, setResponses] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const prompts = [
@@ -49,18 +57,19 @@ const BodyChangesJournal = () => {
     if (answer.trim()) {
       setResponses([...responses, { prompt: currentPrompt, answer }]);
       setAnswer("");
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
 
       if (currentPrompt < prompts.length - 1) {
         setCurrentPrompt(prev => prev + 1);
       } else {
         setGameFinished(true);
-        showCorrectAnswerFeedback(5, true);
       }
     }
   };
 
   const handleNext = () => {
-    navigate("/student/health-male/kids/hair-growth-story");
+    navigate("/games/health-male/kids");
   };
 
   return (
@@ -70,20 +79,20 @@ const BodyChangesJournal = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={responses.length * 5}
-      gameId="health-male-kids-27"
+      score={coins}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={30}
+      totalLevels={5}
       currentLevel={27}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={30} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
+      maxScore={5}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="text-center mb-6">
@@ -96,9 +105,8 @@ const BodyChangesJournal = () => {
               {prompts.map((_, index) => (
                 <div
                   key={index}
-                  className={`w-3 h-3 rounded-full ${
-                    index <= currentPrompt ? 'bg-green-500' : 'bg-white/30'
-                  }`}
+                  className={`w-3 h-3 rounded-full ${index <= currentPrompt ? 'bg-green-500' : 'bg-white/30'
+                    }`}
                 />
               ))}
             </div>
@@ -125,11 +133,10 @@ const BodyChangesJournal = () => {
             <button
               type="submit"
               disabled={!answer.trim()}
-              className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${
-                answer.trim()
+              className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${answer.trim()
                   ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
                   : 'bg-gray-500 text-gray-300 cursor-not-allowed'
-              }`}
+                }`}
             >
               {currentPrompt < prompts.length - 1 ? 'Next Prompt' : 'Complete Journal'}
             </button>
@@ -141,7 +148,7 @@ const BodyChangesJournal = () => {
                 <div className="text-6xl mb-2">📝</div>
                 <h3 className="text-2xl font-bold text-white mb-2">Journal Complete!</h3>
                 <p className="text-white/90 mb-4">
-                  Excellent reflection! You've shared 5 thoughts about your body changes and growth.
+                  Excellent reflection! You've shared 5 thoughts about your body changes.
                 </p>
 
                 <div className="space-y-3 mb-4">
@@ -154,7 +161,7 @@ const BodyChangesJournal = () => {
                 </div>
 
                 <div className="flex justify-center gap-2">
-                  <span className="text-yellow-500 text-2xl">+{responses.length * 5}</span>
+                  <span className="text-yellow-500 text-2xl">+{coins}</span>
                 </div>
               </div>
             </div>

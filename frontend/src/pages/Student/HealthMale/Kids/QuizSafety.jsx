@@ -2,168 +2,174 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const QuizSafety = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-72";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Why should you wash your hands before eating?",
+      text: "What should you wear when riding a bike?",
       options: [
         {
           id: "a",
-          text: "To remove germs from your hands",
-          emoji: "🧼",
-          description: "Washing removes germs that could make you sick",
+          text: "A helmet",
+          emoji: "⛑️",
+          description: "Helmets protect your brain if you fall",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Just because it's tradition",
-          emoji: "📜",
-          description: "Handwashing prevents illness by removing harmful germs",
+          text: "A cool hat",
+          emoji: "🧢",
+          description: "Hats don't protect your head from falls",
           isCorrect: false
         },
+        
         {
           id: "c",
-          text: "To make hands smell good",
-          emoji: "🌸",
-          description: "Clean hands prevent sickness, even if they don't smell",
+          text: "Sunglasses",
+          emoji: "🕶️",
+          description: "Sunglasses protect eyes, but not your head",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "What should you do when you cross the street?",
+      text: "What do you do before crossing the street?",
       options: [
         {
           id: "c",
-          text: "Run quickly to the other side",
+          text: "Run fast",
           emoji: "🏃",
-          description: "Always look both ways and use crosswalks safely",
+          description: "Running into the street is dangerous",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Look both ways and wait for green light",
-          emoji: "🚦",
-          description: "Safety first - always check traffic before crossing",
+          text: "Look left, right, then left again",
+          emoji: "👀",
+          description: "Always check for cars before crossing",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Follow whoever is closest",
-          emoji: "👥",
-          description: "Make your own safe choices when crossing streets",
+          text: "Close your eyes",
+          emoji: "🙈",
+          description: "You need to see where you are going",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Why is it important to wear a helmet when riding a bike?",
+      text: "What should you do if you find matches?",
       options: [
         {
           id: "b",
-          text: "It makes you look cool",
-          emoji: "😎",
-          description: "Helmets protect your head from serious injury",
+          text: "Play with them",
+          emoji: "🔥",
+          description: "Matches are dangerous and can start fires",
           isCorrect: false
         },
-        {
-          id: "a",
-          text: "It protects your head if you fall",
-          emoji: "⛑️",
-          description: "Helmets prevent brain injuries during accidents",
-          isCorrect: true
-        },
+       
         {
           id: "c",
-          text: "It's just a rule to follow",
-          emoji: "📋",
-          description: "Safety rules protect you from real dangers",
+          text: "Hide them",
+          emoji: "📦",
+          description: "Don't hide them, tell a grown-up",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Tell an adult immediately",
+          emoji: "👨‍👩‍👧",
+          description: "Adults know how to handle dangerous items",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 4,
-      text: "What should you do if you feel sick?",
+      text: "Is it safe to talk to strangers?",
       options: [
         {
           id: "c",
-          text: "Hide it and pretend to feel fine",
-          emoji: "😊",
-          description: "Tell a trusted adult so you can get help",
+          text: "Yes, if they have candy",
+          emoji: "🍬",
+          description: "Never take candy from strangers",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Tell your parents or teacher",
-          emoji: "🗣️",
-          description: "Adults can help you feel better and stay healthy",
+          text: "No, stay with your parents",
+          emoji: "🚫",
+          description: "Strangers can be dangerous - stay close to family",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Ignore it and keep playing",
-          emoji: "🎮",
-          description: "Rest helps your body fight illness",
+          text: "Yes, if they look nice",
+          emoji: "😊",
+          description: "You can't tell if someone is safe just by looking",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "Why should you brush your teeth twice a day?",
+      text: "What do you do in a car?",
       options: [
         {
           id: "b",
-          text: "It makes your smile look pretty",
-          emoji: "😁",
-          description: "Brushing prevents cavities and keeps teeth healthy",
+          text: "Jump around",
+          emoji: "🤾",
+          description: "Moving around in a car is unsafe",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Stick head out window",
+          emoji: "🌬️",
+          description: "Keep all body parts inside the car",
           isCorrect: false
         },
         {
           id: "a",
-          text: "It removes germs and prevents cavities",
-          emoji: "🦷",
-          description: "Good dental care prevents tooth decay and pain",
+          text: "Wear your seatbelt",
+          emoji: "🚗",
+          description: "Seatbelts keep you safe in case of a stop",
           isCorrect: true
-        },
-        {
-          id: "c",
-          text: "It's just what everyone does",
-          emoji: "👥",
-          description: "Daily brushing maintains oral health",
-          isCorrect: false
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -178,29 +184,23 @@ const QuizSafety = () => {
     navigate("/student/health-male/kids/reflex-safety");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   return (
     <GameShell
-      title="Quiz on Safety"
+      title="Safety Quiz"
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-72"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={80}
-      currentLevel={72}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
@@ -209,15 +209,15 @@ const QuizSafety = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

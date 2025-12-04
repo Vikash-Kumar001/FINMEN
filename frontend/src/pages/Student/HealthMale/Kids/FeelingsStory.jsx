@@ -2,18 +2,25 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const FeelingsStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-51";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [coins, setCoins] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
@@ -49,18 +56,18 @@ const FeelingsStory = () => {
       text: "When you feel sad, what can you do?",
       options: [
         {
-          id: "c",
-          text: "Hide it and pretend to be happy",
-          emoji: "😶",
-          description: "It's better to express feelings than hide them",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Tell someone you trust",
           emoji: "💬",
           description: "Sharing feelings helps you feel better",
           isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Hide it and pretend to be happy",
+          emoji: "😶",
+          description: "It's better to express feelings than hide them",
+          isCorrect: false
         },
         {
           id: "b",
@@ -110,25 +117,32 @@ const FeelingsStory = () => {
           isCorrect: false
         },
         {
+          id: "b",
+          text: "You feel sleepy",
+          emoji: "😴",
+          description: "Anger gives you energy, not sleepiness",
+          isCorrect: false
+        },
+        {
           id: "a",
           text: "Your heart beats faster",
           emoji: "💓",
           description: "Anger is a strong feeling that affects your body",
           isCorrect: true
         },
-        {
-          id: "b",
-          text: "You feel sleepy",
-          emoji: "😴",
-          description: "Anger gives you energy, not sleepiness",
-          isCorrect: false
-        }
       ]
     },
     {
       id: 5,
       text: "What's the best way to handle big feelings?",
       options: [
+        {
+          id: "a",
+          text: "Talk about them or find healthy ways to express",
+          emoji: "🗣️",
+          description: "Healthy expression helps you feel better",
+          isCorrect: true
+        },
         {
           id: "b",
           text: "Bottle them up inside",
@@ -143,13 +157,6 @@ const FeelingsStory = () => {
           description: "Feelings need to be acknowledged and expressed",
           isCorrect: false
         },
-        {
-          id: "a",
-          text: "Talk about them or find healthy ways to express",
-          emoji: "🗣️",
-          description: "Healthy expression helps you feel better",
-          isCorrect: true
-        }
       ]
     }
   ];
@@ -175,7 +182,7 @@ const FeelingsStory = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/health-male/kids/quiz-emotions");
+    navigate("/games/health-male/kids");
   };
 
   const getCurrentQuestion = () => questions[currentQuestion];
@@ -188,24 +195,29 @@ const FeelingsStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-51"
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={60}
-      currentLevel={51}
+      totalLevels={5}
+      currentLevel={50}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
+      maxScore={5}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
             <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+          </div>
+
+          <div className="text-center mb-6">
+            <div className="text-5xl mb-4">🎭</div>
+            <h3 className="text-2xl font-bold text-white mb-2">Understanding Feelings</h3>
           </div>
 
           <p className="text-white text-lg mb-6">
@@ -217,7 +229,9 @@ const FeelingsStory = () => {
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                disabled={choices.some(c => c.question === currentQuestion)}
+                className={`bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${choices.some(c => c.question === currentQuestion) ? 'opacity-75 cursor-not-allowed' : ''
+                  }`}
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

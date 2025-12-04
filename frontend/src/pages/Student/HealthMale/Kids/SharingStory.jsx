@@ -2,17 +2,23 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SharingStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-55";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
@@ -22,18 +28,18 @@ const SharingStory = () => {
       text: "You feel scared during a thunderstorm. What should you do?",
       options: [
         {
-          id: "b",
-          text: "Hide under the bed and stay quiet",
-          emoji: "🛏️",
-          description: "It's better to talk about fears than hide them",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Tell your parents you're scared",
           emoji: "💬",
           description: "Sharing feelings helps you feel better and safer",
           isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Hide under the bed and stay quiet",
+          emoji: "🛏️",
+          description: "It's better to talk about fears than hide them",
+          isCorrect: false
         },
         {
           id: "c",
@@ -49,13 +55,6 @@ const SharingStory = () => {
       text: "Your friend says something that hurts your feelings. What do you do?",
       options: [
         {
-          id: "c",
-          text: "Say nothing and stay mad",
-          emoji: "😠",
-          description: "Talking about hurt feelings helps solve problems",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Tell them how you feel",
           emoji: "🗣️",
@@ -67,6 +66,13 @@ const SharingStory = () => {
           text: "Never talk to them again",
           emoji: "🚫",
           description: "Friends can work through hurt feelings together",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Say nothing and stay mad",
+          emoji: "😠",
+          description: "Talking about hurt feelings helps solve problems",
           isCorrect: false
         }
       ]
@@ -103,13 +109,6 @@ const SharingStory = () => {
       text: "You feel excited about your birthday party. What should you do?",
       options: [
         {
-          id: "c",
-          text: "Keep excitement to yourself",
-          emoji: "🤐",
-          description: "Sharing excitement makes celebrations more fun",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "Share your excitement with family",
           emoji: "🎉",
@@ -122,6 +121,13 @@ const SharingStory = () => {
           emoji: "😑",
           description: "It's fun to share excitement with others",
           isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Keep excitement to yourself",
+          emoji: "🤐",
+          description: "Sharing excitement makes celebrations more fun",
+          isCorrect: false
         }
       ]
     },
@@ -129,6 +135,13 @@ const SharingStory = () => {
       id: 5,
       text: "You feel angry at your sibling. What's the healthy choice?",
       options: [
+        {
+          id: "a",
+          text: "Tell them calmly how you feel",
+          emoji: "💭",
+          description: "Calm talking helps solve problems and feel better",
+          isCorrect: true
+        },
         {
           id: "b",
           text: "Yell and say mean things",
@@ -142,28 +155,19 @@ const SharingStory = () => {
           emoji: "🤐",
           description: "Expressing feelings with words is healthier",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Tell them calmly how you feel",
-          emoji: "💭",
-          description: "Calm talking helps solve problems and feel better",
-          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -175,10 +179,8 @@ const SharingStory = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/health-male/kids/feelings-normal-poster");
+    navigate("/games/health-male/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -188,19 +190,16 @@ const SharingStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-55"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={60}
-      currentLevel={55}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      backPath="/games/health-male/kids"
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
@@ -209,15 +208,15 @@ const SharingStory = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

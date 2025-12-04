@@ -1,165 +1,202 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from "react-router-dom";
+import { Heart, Smile, Frown, Zap, Users } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const EmotionExplorerBadge = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [completedChallenges, setCompletedChallenges] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const challenges = [
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-60";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti, resetFeedback } = useGameFeedback();
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [score, setScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+
+  const levels = [
     {
       id: 1,
-      text: "Name 3 happy feelings",
-      emoji: "😊",
-      description: "Happy feelings make you smile and feel good inside",
-      completed: false,
-      correctAnswers: ["joy", "excited", "proud", "content", "grateful"]
+      title: "Happy Feelings",
+      question: "Which feeling makes you smile?",
+      icon: Smile,
+      options: [
+        { text: "Sad", correct: false },
+        { text: "Happy", correct: true },
+        { text: "Angry", correct: false }
+      ],
+      feedback: {
+        correct: "Yes! Happiness makes us smile and feel good!",
+        wrong: "Happiness is the feeling that makes us smile!"
+      }
     },
     {
       id: 2,
-      text: "Name 3 sad feelings",
-      emoji: "😢",
-      description: "Sad feelings make you want to cry or feel down",
-      completed: false,
-      correctAnswers: ["sad", "disappointed", "lonely", "hurt", "grief"]
+      title: "Sadness Helpers",
+      question: "What helps when you are sad?",
+      icon: Frown,
+      options: [
+        { text: "Talk to a friend", correct: true },
+        { text: "Stay alone forever", correct: false },
+        { text: "Yell at people", correct: false }
+      ],
+      feedback: {
+        correct: "Great! Sharing your feelings with a friend helps you feel better!",
+        wrong: "Talking to a friend is a great way to feel better when sad!"
+      }
     },
     {
       id: 3,
-      text: "Name 3 angry feelings",
-      emoji: "😠",
-      description: "Angry feelings make you feel mad and frustrated",
-      completed: false,
-      correctAnswers: ["angry", "frustrated", "irritated", "furious", "annoyed"]
+      title: "Calming Anger",
+      question: "How can you calm down when angry?",
+      icon: Zap,
+      options: [
+        { text: "Throw things", correct: false },
+        { text: "Hit someone", correct: false },
+        { text: "Take deep breaths", correct: true }
+      ],
+      feedback: {
+        correct: "Perfect! Deep breaths help your body and mind relax!",
+        wrong: "Taking deep breaths is the best way to calm down!"
+      }
     },
     {
       id: 4,
-      text: "Name 3 scared feelings",
-      emoji: "😨",
-      description: "Scared feelings happen when you feel afraid",
-      completed: false,
-      correctAnswers: ["scared", "fearful", "worried", "anxious", "nervous"]
+      title: "Showing Excitement",
+      question: "What is a good way to show excitement?",
+      icon: Heart,
+      options: [
+        { text: "Jump and cheer", correct: true },
+        { text: "Push people", correct: false },
+        { text: "Break something", correct: false }
+      ],
+      feedback: {
+        correct: "Yay! Jumping and cheering is a fun way to show excitement!",
+        wrong: "Jumping and cheering is a safe and fun way to show you're excited!"
+      }
     },
     {
       id: 5,
-      text: "What should you do with feelings?",
-      emoji: "💭",
-      description: "Healthy ways to handle emotions",
-      completed: false,
-      correctAnswers: ["talk", "share", "express", "understand", "manage"]
+      title: "Sharing Feelings",
+      question: "Who can you talk to about feelings?",
+      icon: Users,
+      options: [
+        { text: "No one", correct: false },
+        { text: "Parents or Teachers", correct: true },
+        { text: "A wall", correct: false }
+      ],
+      feedback: {
+        correct: "Exactly! Parents and teachers are there to listen and help!",
+        wrong: "Parents and teachers are great people to talk to about feelings!"
+      }
     }
   ];
 
-  const handleChallengeComplete = (challengeId) => {
-    if (!completedChallenges.includes(challengeId)) {
-      setCompletedChallenges(prev => [...prev, challengeId]);
-      showCorrectAnswerFeedback(2, true); // 2 coins per challenge
+  const currentLevelData = levels[currentLevel - 1];
+  const Icon = currentLevelData.icon;
+
+  const handleAnswer = (option) => {
+    if (answered) return; // Prevent multiple clicks
+
+    setSelectedAnswer(option);
+    setAnswered(true);
+    resetFeedback();
+
+    const isCorrect = option.correct;
+    const isLastQuestion = currentLevel === 5;
+
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
+
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentLevel(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  React.useEffect(() => {
-    if (completedChallenges.length === challenges.length && !gameFinished) {
-      setGameFinished(true);
-    }
-  }, [completedChallenges, gameFinished]);
-
   const handleNext = () => {
-    navigate("/student/health-male/kids/friends-dare-story");
+    navigate("/games/health-male/kids");
   };
 
   return (
     <GameShell
-      title="Emotion Explorer Badge"
-      subtitle={`Complete ${completedChallenges.length} of ${challenges.length} emotion challenges`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={completedChallenges.length * 2}
-      gameId="health-male-kids-60"
-      gameType="health-male"
-      totalLevels={60}
-      currentLevel={60}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
-      showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={60} // Max score is total number of questions (all correct)
+      title="Badge: Emotion Explorer"
+      subtitle={!showResult ? `Question ${currentLevel} of 5: Earn your badge!` : "Badge Earned!"}
+      currentLevel={currentLevel}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={score}
+      gameId={gameId}
+      gameType="health-male"
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🏆</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Earn Your Emotion Explorer Badge</h3>
-            <p className="text-white/90">
-              Complete 5 emotion challenges to prove you're an emotion expert!
+      totalXp={totalXp}
+      showConfetti={showResult && score === 5}
+      onNext={handleNext}
+    >
+      <div className="text-center text-white space-y-6">
+        {!showResult && currentLevelData && (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 border border-white/20">
+            <div className="flex justify-center mb-4">
+              <Icon className="w-16 h-16 text-yellow-400" />
+            </div>
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Question {currentLevel} of 5</span>
+              <span className="text-yellow-400 font-bold">Score: {score}/5</span>
+            </div>
+
+            <p className="text-white text-lg mb-6 text-center">
+              {currentLevelData.question}
             </p>
-          </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            {challenges.map((challenge) => {
-              const isCompleted = completedChallenges.includes(challenge.id);
-
-              return (
+            <div className="grid sm:grid-cols-3 gap-3">
+              {currentLevelData.options.map((option, index) => (
                 <button
-                  key={challenge.id}
-                  onClick={() => handleChallengeComplete(challenge.id)}
-                  disabled={isCompleted}
-                  className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                    isCompleted
-                      ? 'bg-green-100/20 border-green-500 text-white'
-                      : 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                  }`}
+                  key={index}
+                  onClick={() => handleAnswer(option)}
+                  disabled={answered}
+                  className="w-full min-h-[60px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-8 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`text-3xl mr-4 ${isCompleted ? 'opacity-100' : 'opacity-60'}`}>
-                        {challenge.emoji}
-                      </div>
-                      <div className="text-left">
-                        <h3 className={`font-bold text-lg ${isCompleted ? 'text-green-300' : 'text-white'}`}>
-                          {isCompleted ? '✅ ' : '☐ '}{challenge.text}
-                        </h3>
-                        <p className="text-white/80 text-sm">{challenge.description}</p>
-                      </div>
-                    </div>
-                    {isCompleted && (
-                      <div className="text-2xl">🎉</div>
-                    )}
-                  </div>
+                  {option.text}
                 </button>
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">🏆</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Emotion Explorer Badge Earned!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  Congratulations! You've mastered emotions and earned the Emotion Explorer Badge!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full p-4 inline-block mb-4">
-                  <div className="text-white font-bold text-xl">EMOTION EXPLORER</div>
-                </div>
-                <p className="text-white/80">
-                  You're an expert at understanding and expressing feelings! 🌟
+            {answered && selectedAnswer && (
+              <div className={`mt-4 p-4 rounded-xl ${selectedAnswer.correct
+                ? 'bg-green-500/20 border-2 border-green-400'
+                : 'bg-red-500/20 border-2 border-red-400'
+                }`}>
+                <p className="text-white font-semibold">
+                  {selectedAnswer.correct
+                    ? currentLevelData.feedback.correct
+                    : currentLevelData.feedback.wrong}
                 </p>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

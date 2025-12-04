@@ -164,6 +164,7 @@ const kidDcosGames = {
   'profile-quiz': ProfileQuiz,
   'photo-consent-reflex': PhotoConsentReflex,
   'public-vs-private-puzzle': PublicVsPrivatePuzzle,
+  'puzzle-public-private': PublicVsPrivatePuzzle, // Alias for URL compatibility
   'stranger-request-story': StrangerRequestStory,
   'device-privacy-reflex': DevicePrivacyReflex,
   'rights-poster-task': RightsPosterTask,

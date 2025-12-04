@@ -35,8 +35,8 @@ const OTPReflex = () => {
       correctAnswer: "Never share it",
       options: [
         { text: "Share OTP immediately", isCorrect: false, emoji: "📤" },
-        { text: "Never share it", isCorrect: true, emoji: "🛡️" },
         { text: "Ask a friend what to do", isCorrect: false, emoji: "🤔" },
+        { text: "Never share it", isCorrect: true, emoji: "🛡️" },
         { text: "Reply asking why", isCorrect: false, emoji: "💬" }
       ]
     },
@@ -46,8 +46,8 @@ const OTPReflex = () => {
       correctAnswer: "Say no and report the call",
       options: [
         { text: "Tell the OTP", isCorrect: false, emoji: "☎️" },
-        { text: "Say no and report the call", isCorrect: true, emoji: "🚫" },
         { text: "Ignore it and hang up", isCorrect: false, emoji: "😶" },
+        { text: "Say no and report the call", isCorrect: true, emoji: "🚫" },
         { text: "Ask them to call later", isCorrect: false, emoji: "⏰" }
       ]
     },
@@ -56,8 +56,8 @@ const OTPReflex = () => {
       question: "You receive an email offering a gift card. It asks for your OTP. What should you do?",
       correctAnswer: "Ignore and delete the email",
       options: [
-        { text: "Enter the OTP", isCorrect: false, emoji: "🎁" },
         { text: "Ignore and delete the email", isCorrect: true, emoji: "🗑️" },
+        { text: "Enter the OTP", isCorrect: false, emoji: "🎁" },
         { text: "Reply with your phone number", isCorrect: false, emoji: "📞" },
         { text: "Forward to friends", isCorrect: false, emoji: "📤" }
       ]
@@ -68,8 +68,8 @@ const OTPReflex = () => {
       correctAnswer: "Close it and check the official site",
       options: [
         { text: "Enter OTP on pop-up", isCorrect: false, emoji: "⚠️" },
-        { text: "Close it and check the official site", isCorrect: true, emoji: "🔒" },
         { text: "Take a screenshot and share", isCorrect: false, emoji: "📸" },
+        { text: "Close it and check the official site", isCorrect: true, emoji: "🔒" },
         { text: "Ask for help online", isCorrect: false, emoji: "💬" }
       ]
     },
@@ -79,9 +79,9 @@ const OTPReflex = () => {
       correctAnswer: "Refuse and block the number",
       options: [
         { text: "Give them the OTP", isCorrect: false, emoji: "😅" },
-        { text: "Refuse and block the number", isCorrect: true, emoji: "🚫" },
         { text: "Ask your friends about it", isCorrect: false, emoji: "💬" },
-        { text: "Tell them to wait", isCorrect: false, emoji: "⏰" }
+        { text: "Tell them to wait", isCorrect: false, emoji: "⏰" },
+        { text: "Refuse and block the number", isCorrect: true, emoji: "🚫" }
       ]
     }
   ];

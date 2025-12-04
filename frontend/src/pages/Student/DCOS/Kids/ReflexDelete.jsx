@@ -34,8 +34,8 @@ const ReflexDelete = () => {
       question: "You see a silly selfie with toothpaste on face 😜 - Should you delete it before posting?",
       correctAnswer: "Yes, Delete",
       options: [
-        { text: "Yes, Delete", isCorrect: true, emoji: "🗑️" },
         { text: "No, Post it", isCorrect: false, emoji: "📤" },
+        { text: "Yes, Delete", isCorrect: true, emoji: "🗑️" },
         { text: "Ask friends first", isCorrect: false, emoji: "💬" },
         { text: "Save for later", isCorrect: false, emoji: "💾" }
       ]
@@ -45,10 +45,10 @@ const ReflexDelete = () => {
       question: "You see a weird dance pose caught on camera 🥴 - Should you delete it before posting?",
       correctAnswer: "Yes, Delete",
       options: [
-        { text: "Yes, Delete", isCorrect: true, emoji: "🗑️" },
         { text: "No, Post it", isCorrect: false, emoji: "📤" },
         { text: "Edit it first", isCorrect: false, emoji: "✂️" },
-        { text: "Share privately", isCorrect: false, emoji: "🔒" }
+        { text: "Share privately", isCorrect: false, emoji: "🔒" },
+        { text: "Yes, Delete", isCorrect: true, emoji: "🗑️" }
       ]
     },
     {
@@ -67,9 +67,9 @@ const ReflexDelete = () => {
       question: "You see a messy hair Monday picture 😅 - Should you delete it before posting?",
       correctAnswer: "Yes, Delete",
       options: [
-        { text: "Yes, Delete", isCorrect: true, emoji: "🗑️" },
         { text: "No, Post it", isCorrect: false, emoji: "📤" },
         { text: "Post as joke", isCorrect: false, emoji: "😆" },
+        { text: "Yes, Delete", isCorrect: true, emoji: "🗑️" },
         { text: "Tag friends", isCorrect: false, emoji: "🏷️" }
       ]
     },
@@ -78,10 +78,10 @@ const ReflexDelete = () => {
       question: "You see a goofy group photo with friends 🙈 - Should you delete it before posting?",
       correctAnswer: "Yes, Delete",
       options: [
-        { text: "Yes, Delete", isCorrect: true, emoji: "🗑️" },
         { text: "No, Post it", isCorrect: false, emoji: "📤" },
         { text: "Post with caption", isCorrect: false, emoji: "✍️" },
-        { text: "Ask everyone first", isCorrect: false, emoji: "👥" }
+        { text: "Ask everyone first", isCorrect: false, emoji: "👥" },
+        { text: "Yes, Delete", isCorrect: true, emoji: "🗑️" }
       ]
     }
   ];

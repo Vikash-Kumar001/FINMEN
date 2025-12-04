@@ -30,17 +30,17 @@ const SharingGoodContentStory = () => {
       options: [
         { 
           id: "a", 
-          text: "It's Great!", 
-          emoji: "🤩", 
-          description: "It's great! Learning is cool!",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "That's Boring", 
           emoji: "🙄", 
           description: "That's boring, memes are better",
           isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "It's Great!", 
+          emoji: "🤩", 
+          description: "It's great! Learning is cool!",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -57,24 +57,24 @@ const SharingGoodContentStory = () => {
       options: [
         { 
           id: "a", 
-          text: "Say Nice Experiment", 
-          emoji: "👏", 
-          description: "Say 'Nice experiment! I learned something!'",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Join Laughter", 
           emoji: "😂", 
           description: "Join the laughter",
           isCorrect: false
         },
         { 
-          id: "c", 
+          id: "b", 
           text: "Say Nothing", 
           emoji: "😶", 
           description: "Say nothing and scroll away",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Say Nice Experiment", 
+          emoji: "👏", 
+          description: "Say 'Nice experiment! I learned something!'",
+          isCorrect: true
         }
       ]
     },
@@ -111,17 +111,17 @@ const SharingGoodContentStory = () => {
       options: [
         { 
           id: "a", 
-          text: "Happy You Inspired", 
-          emoji: "😄", 
-          description: "Happy you inspired learning!",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Worried They Copied", 
           emoji: "😕", 
           description: "Worried they copied you",
           isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Happy You Inspired", 
+          emoji: "😄", 
+          description: "Happy you inspired learning!",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -138,24 +138,24 @@ const SharingGoodContentStory = () => {
       options: [
         { 
           id: "a", 
-          text: "Good Content Helps", 
-          emoji: "💖", 
-          description: "Good content makes internet better!",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Only Jokes Get Likes", 
           emoji: "🙃", 
           description: "Only jokes get likes",
           isCorrect: false
         },
         { 
-          id: "c", 
+          id: "b", 
           text: "Never Post Again", 
           emoji: "🚫", 
           description: "Never post again",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Good Content Helps", 
+          emoji: "💖", 
+          description: "Good content makes internet better!",
+          isCorrect: true
         }
       ]
     }

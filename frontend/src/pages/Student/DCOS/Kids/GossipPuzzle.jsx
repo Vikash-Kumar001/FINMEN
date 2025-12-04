@@ -45,22 +45,13 @@ const GossipPuzzle = () => {
     { id: 5, name: "Broken Trust", emoji: "💔", description: "Destroys trust between friends" }
   ];
 
-  // Correct matches
+  // Correct matches (mapped to different positions like PuzzleOfSavingGoals)
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Spreading rumors → Hurt Feelings
-    { leftId: 2, rightId: 2 }, // Telling someone's secrets → Broken Trust
-    { leftId: 3, rightId: 3 }, // Gossiping about a friend → Damaged Friendships
-    { leftId: 4, rightId: 4 }, // Making fun behind their back → Hurt Feelings
-    { leftId: 5, rightId: 5 }  // Sharing private info without permission → Broken Trust
-  ];
-
-  // Shuffled right items for display (to split matches across positions)
-  const shuffledRightItems = [
-    rightItems[1], // Broken Trust (id: 2) - position 1
-    rightItems[0], // Hurt Feelings (id: 1) - position 2
-    rightItems[4], // Broken Trust (id: 5) - position 3
-    rightItems[3], // Hurt Feelings (id: 4) - position 4
-    rightItems[2]  // Damaged Friendships (id: 3) - position 5
+    { leftId: 1, rightId: 2 }, // Spreading rumors → Hurt Feelings (id: 2)
+    { leftId: 2, rightId: 1 }, // Telling someone's secrets → Broken Trust (id: 1)
+    { leftId: 3, rightId: 3 }, // Gossiping about a friend → Damaged Friendships (id: 3)
+    { leftId: 4, rightId: 5 }, // Making fun behind their back → Hurt Feelings (id: 5)
+    { leftId: 5, rightId: 4 }  // Sharing private info without permission → Broken Trust (id: 4)
   ];
 
   const handleLeftSelect = (item) => {
@@ -212,7 +203,7 @@ const GossipPuzzle = () => {
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-white text-center">Consequences</h4>
                   <div className="space-y-3">
-                    {shuffledRightItems.map((item) => {
+                    {rightItems.map((item) => {
                       const isMatched = isRightItemMatched(item.id);
                       const isSelected = selectedRight?.id === item.id;
                       

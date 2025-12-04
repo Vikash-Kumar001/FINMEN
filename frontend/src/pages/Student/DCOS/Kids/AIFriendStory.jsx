@@ -64,17 +64,17 @@ const AIFriendStory = () => {
         },
         { 
           id: "b", 
-          text: "Say No", 
-          emoji: "🙅‍♀️", 
-          description: "Say 'No, I don't share photos online'",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Ignore", 
           emoji: "🤔", 
           description: "Ignore the message",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Say No", 
+          emoji: "🙅‍♀️", 
+          description: "Say 'No, I don't share photos online'",
+          isCorrect: true
         }
       ]
     },
@@ -84,17 +84,17 @@ const AIFriendStory = () => {
       options: [
         { 
           id: "a", 
-          text: "Keep Secret", 
-          emoji: "🤫", 
-          description: "Keep it secret",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "Tell Parent or Teacher", 
           emoji: "👩‍🏫", 
           description: "Tell a parent or teacher",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Keep Secret", 
+          emoji: "🤫", 
+          description: "Keep it secret",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -118,17 +118,17 @@ const AIFriendStory = () => {
         },
         { 
           id: "b", 
-          text: "Ask Adult First", 
-          emoji: "🧑‍🏫", 
-          description: "Ask an adult before clicking",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Trust AI Friend", 
           emoji: "🤝", 
           description: "Trust the AI friend",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ask Adult First", 
+          emoji: "🧑‍🏫", 
+          description: "Ask an adult before clicking",
+          isCorrect: true
         }
       ]
     },
@@ -145,17 +145,17 @@ const AIFriendStory = () => {
         },
         { 
           id: "b", 
-          text: "Refuse and End Chat", 
-          emoji: "🚫", 
-          description: "Refuse and end chat",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Share School Only", 
           emoji: "🏫", 
           description: "Share school name only",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Refuse and End Chat", 
+          emoji: "🚫", 
+          description: "Refuse and end chat",
+          isCorrect: true
         }
       ]
     }

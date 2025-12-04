@@ -34,14 +34,14 @@ const KindFriendBadge = () => {
       question: "What is a good way to be kind online?",
       options: [
         { 
-          text: "Say Nice Things", 
-          emoji: "💬", 
-          isCorrect: true
-        },
-        { 
           text: "Make Mean Comments", 
           emoji: "😠", 
           isCorrect: false
+        },
+        { 
+          text: "Say Nice Things", 
+          emoji: "💬", 
+          isCorrect: true
         },
         { 
           text: "Ignore Everyone", 
@@ -61,11 +61,6 @@ const KindFriendBadge = () => {
       question: "What should you do when you see mean comments online?",
       options: [
         { 
-          text: "Report It", 
-          emoji: "📢", 
-          isCorrect: true
-        },
-        { 
           text: "Share It", 
           emoji: "📤", 
           isCorrect: false
@@ -74,6 +69,11 @@ const KindFriendBadge = () => {
           text: "Join In", 
           emoji: "😄", 
           isCorrect: false
+        },
+        { 
+          text: "Report It", 
+          emoji: "📢", 
+          isCorrect: true
         },
         { 
           text: "Ignore It Completely", 
@@ -115,14 +115,14 @@ const KindFriendBadge = () => {
       question: "What should you do when someone is left out?",
       options: [
         { 
-          text: "Include Them", 
-          emoji: "🤝", 
-          isCorrect: true
-        },
-        { 
           text: "Leave Them Out Too", 
           emoji: "😈", 
           isCorrect: false
+        },
+        { 
+          text: "Include Them", 
+          emoji: "🤝", 
+          isCorrect: true
         },
         { 
           text: "Ignore Them", 
@@ -142,11 +142,6 @@ const KindFriendBadge = () => {
       question: "What is a way to help someone?",
       options: [
         { 
-          text: "Write About Helping", 
-          emoji: "📝", 
-          isCorrect: true
-        },
-        { 
           text: "Make Fun of Them", 
           emoji: "😄", 
           isCorrect: false
@@ -160,6 +155,11 @@ const KindFriendBadge = () => {
           text: "Spread Rumors", 
           emoji: "📢", 
           isCorrect: false
+        },
+        { 
+          text: "Write About Helping", 
+          emoji: "📝", 
+          isCorrect: true
         }
       ]
     }

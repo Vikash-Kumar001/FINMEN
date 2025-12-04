@@ -67,17 +67,17 @@ const SafeFriendQuiz = () => {
         },
         { 
           id: "b", 
-          text: "Explain how to solve it", 
-          emoji: "💡", 
-          description: "Teach them how to solve it",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Ignore their question", 
           emoji: "🙈", 
           description: "Don't help at all",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Explain how to solve it", 
+          emoji: "💡", 
+          description: "Teach them how to solve it",
+          isCorrect: true
         }
       ]
     },
@@ -87,17 +87,17 @@ const SafeFriendQuiz = () => {
       options: [
         { 
           id: "a", 
-          text: "Share it to be nice", 
-          emoji: "😊", 
-          description: "Share to be helpful",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "Ask a teacher or parent first", 
           emoji: "👨‍👩‍👧", 
           description: "Ask adults before sharing",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Share it to be nice", 
+          emoji: "😊", 
+          description: "Share to be helpful",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -121,17 +121,17 @@ const SafeFriendQuiz = () => {
         },
         { 
           id: "b", 
-          text: "No, that's dishonest", 
-          emoji: "❌", 
-          description: "Sharing test answers is cheating",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Sometimes, for learning", 
           emoji: "🤷", 
           description: "It's okay sometimes",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "No, that's dishonest", 
+          emoji: "❌", 
+          description: "Sharing test answers is cheating",
+          isCorrect: true
         }
       ]
     },
@@ -148,17 +148,17 @@ const SafeFriendQuiz = () => {
         },
         { 
           id: "b", 
-          text: "Encourage honesty and learning", 
-          emoji: "✨", 
-          description: "Help friends learn honestly",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Don't care what others do", 
           emoji: "😐", 
           description: "Ignore what friends do",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Encourage honesty and learning", 
+          emoji: "✨", 
+          description: "Help friends learn honestly",
+          isCorrect: true
         }
       ]
     }

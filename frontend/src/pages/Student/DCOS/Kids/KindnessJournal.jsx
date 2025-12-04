@@ -33,17 +33,17 @@ const KindnessJournal = () => {
       options: [
         { 
           id: "a", 
-          text: "Say Nice Things", 
-          emoji: "💬", 
-          description: "Say nice things about someone's post",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Make Mean Comments", 
           emoji: "😠", 
           description: "Make mean comments on posts",
           isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Say Nice Things", 
+          emoji: "💬", 
+          description: "Say nice things about someone's post",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -60,24 +60,24 @@ const KindnessJournal = () => {
       options: [
         { 
           id: "a", 
-          text: "Offer to Help", 
-          emoji: "🤝", 
-          description: "Offer to help when someone needs it",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Laugh at Them", 
           emoji: "😄", 
           description: "Laugh at their problems",
           isCorrect: false
         },
         { 
-          id: "c", 
+          id: "b", 
           text: "Ignore Them", 
           emoji: "🙈", 
           description: "Ignore them completely",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Offer to Help", 
+          emoji: "🤝", 
+          description: "Offer to help when someone needs it",
+          isCorrect: true
         }
       ]
     },
@@ -114,17 +114,17 @@ const KindnessJournal = () => {
       options: [
         { 
           id: "a", 
-          text: "Stand Up for Them", 
-          emoji: "🛡️", 
-          description: "Stand up for them and get help",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Join the Bully", 
           emoji: "😈", 
           description: "Join in with the bully",
           isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Stand Up for Them", 
+          emoji: "🛡️", 
+          description: "Stand up for them and get help",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -141,24 +141,24 @@ const KindnessJournal = () => {
       options: [
         { 
           id: "a", 
-          text: "Be Helpful and Caring", 
-          emoji: "💖", 
-          description: "Be helpful and caring to others",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Be Mean", 
           emoji: "😠", 
           description: "Be mean to others",
           isCorrect: false
         },
         { 
-          id: "c", 
+          id: "b", 
           text: "Ignore Everyone", 
           emoji: "🙈", 
           description: "Ignore everyone",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Be Helpful and Caring", 
+          emoji: "💖", 
+          description: "Be helpful and caring to others",
+          isCorrect: true
         }
       ]
     }

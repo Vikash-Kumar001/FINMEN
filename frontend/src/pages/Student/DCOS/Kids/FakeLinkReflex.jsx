@@ -35,8 +35,8 @@ const FakeLinkReflex = () => {
       correctAnswer: "Don't Click - Ignore",
       options: [
         { text: "Click to get free iPhone", isCorrect: false, emoji: "📱" },
-        { text: "Don't Click - Ignore", isCorrect: true, emoji: "🚫" },
         { text: "Ask a friend first", isCorrect: false, emoji: "🤔" },
+        { text: "Don't Click - Ignore", isCorrect: true, emoji: "🚫" },
         { text: "Share with others", isCorrect: false, emoji: "📤" }
       ]
     },
@@ -46,9 +46,9 @@ const FakeLinkReflex = () => {
       correctAnswer: "Don't Click - Ignore",
       options: [
         { text: "Click to fix account", isCorrect: false, emoji: "🔒" },
-        { text: "Don't Click - Ignore", isCorrect: true, emoji: "🚫" },
         { text: "Reply to the message", isCorrect: false, emoji: "💬" },
-        { text: "Forward to friends", isCorrect: false, emoji: "📤" }
+        { text: "Forward to friends", isCorrect: false, emoji: "📤" },
+        { text: "Don't Click - Ignore", isCorrect: true, emoji: "🚫" }
       ]
     },
     {
@@ -56,8 +56,8 @@ const FakeLinkReflex = () => {
       question: "You get a link promising free game coins! What should you do?",
       correctAnswer: "Don't Click - Ignore",
       options: [
-        { text: "Click for free coins", isCorrect: false, emoji: "💰" },
         { text: "Don't Click - Ignore", isCorrect: true, emoji: "🚫" },
+        { text: "Click for free coins", isCorrect: false, emoji: "💰" },
         { text: "Check the link first", isCorrect: false, emoji: "🔍" },
         { text: "Share with friends", isCorrect: false, emoji: "📤" }
       ]
@@ -79,9 +79,9 @@ const FakeLinkReflex = () => {
       correctAnswer: "Don't Click - Ignore",
       options: [
         { text: "Click it looks safe", isCorrect: false, emoji: "🌐" },
-        { text: "Don't Click - Ignore", isCorrect: true, emoji: "🚫" },
         { text: "Check spelling first", isCorrect: false, emoji: "🔍" },
-        { text: "Ask someone to click", isCorrect: false, emoji: "👥" }
+        { text: "Ask someone to click", isCorrect: false, emoji: "👥" },
+        { text: "Don't Click - Ignore", isCorrect: true, emoji: "🚫" }
       ]
     }
   ];

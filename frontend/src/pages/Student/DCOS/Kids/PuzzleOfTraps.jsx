@@ -45,22 +45,13 @@ const PuzzleOfTraps = () => {
     { id: 5, name: "Scam", emoji: "⚠️", description: "Dangerous or fraudulent" }
   ];
 
-  // Correct matches
+  // Correct matches (mapped to different positions like PuzzleOfSavingGoals)
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Phishing Email → Scam
-    { leftId: 2, rightId: 2 }, // Official Bank Website → Safe
-    { leftId: 3, rightId: 3 }, // Free Gift Link → Scam
-    { leftId: 4, rightId: 4 }, // Verified Payment App → Safe
-    { leftId: 5, rightId: 5 }  // Stranger's Message with Link → Scam
-  ];
-
-  // Shuffled right items for display (to split matches across positions)
-  const shuffledRightItems = [
-    rightItems[1], // Safe (id: 2) - position 1
-    rightItems[0], // Scam (id: 1) - position 2
-    rightItems[4], // Scam (id: 5) - position 3
-    rightItems[3], // Safe (id: 4) - position 4
-    rightItems[2]  // Scam (id: 3) - position 5
+    { leftId: 1, rightId: 3 }, // Phishing Email → Scam (id: 3)
+    { leftId: 2, rightId: 2 }, // Official Bank Website → Safe (id: 2)
+    { leftId: 3, rightId: 1 }, // Free Gift Link → Scam (id: 1)
+    { leftId: 4, rightId: 4 }, // Verified Payment App → Safe (id: 4)
+    { leftId: 5, rightId: 5 }  // Stranger's Message with Link → Scam (id: 5)
   ];
 
   const handleLeftSelect = (item) => {
@@ -212,7 +203,7 @@ const PuzzleOfTraps = () => {
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-white text-center">Safety Status</h4>
                   <div className="space-y-3">
-                    {shuffledRightItems.map((item) => {
+                    {rightItems.map((item) => {
                       const isMatched = isRightItemMatched(item.id);
                       const isSelected = selectedRight?.id === item.id;
                       

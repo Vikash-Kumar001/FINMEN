@@ -33,17 +33,17 @@ const RoleSwap = () => {
       options: [
         { 
           id: "a", 
-          text: "Sad and Hurt", 
-          emoji: "😢", 
-          description: "Feeling sad and hurt by the comment",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Happy", 
           emoji: "😊", 
           description: "Feeling happy about it",
           isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Sad and Hurt", 
+          emoji: "😢", 
+          description: "Feeling sad and hurt by the comment",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -60,24 +60,24 @@ const RoleSwap = () => {
       options: [
         { 
           id: "a", 
-          text: "Embarrassed and Upset", 
-          emoji: "😳", 
-          description: "Feeling embarrassed and upset",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Proud", 
           emoji: "😌", 
           description: "Feeling proud",
           isCorrect: false
         },
         { 
-          id: "c", 
+          id: "b", 
           text: "Happy", 
           emoji: "😊", 
           description: "Feeling happy",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Embarrassed and Upset", 
+          emoji: "😳", 
+          description: "Feeling embarrassed and upset",
+          isCorrect: true
         }
       ]
     },
@@ -114,17 +114,17 @@ const RoleSwap = () => {
       options: [
         { 
           id: "a", 
-          text: "Lonely and Sad", 
-          emoji: "😔", 
-          description: "Feeling lonely and sad",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Excited", 
           emoji: "🎉", 
           description: "Feeling excited",
           isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Lonely and Sad", 
+          emoji: "😔", 
+          description: "Feeling lonely and sad",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -141,24 +141,24 @@ const RoleSwap = () => {
       options: [
         { 
           id: "a", 
-          text: "Angry and Hurt", 
-          emoji: "😠", 
-          description: "Feeling angry and hurt",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Happy", 
           emoji: "😊", 
           description: "Feeling happy",
           isCorrect: false
         },
         { 
-          id: "c", 
+          id: "b", 
           text: "Grateful", 
           emoji: "🙏", 
           description: "Feeling grateful",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Angry and Hurt", 
+          emoji: "😠", 
+          description: "Feeling angry and hurt",
+          isCorrect: true
         }
       ]
     }

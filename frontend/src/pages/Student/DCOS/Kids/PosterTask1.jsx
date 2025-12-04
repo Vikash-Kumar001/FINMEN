@@ -30,17 +30,17 @@ const PosterTask1 = () => {
     {
       question: 'Which poster would best show "Think Before You Post"?',
       choices: [
-        { text: "Poster showing thinking carefully before posting online 💭", correct: true },
         { text: "Poster showing posting everything immediately 📤", correct: false },
+        { text: "Poster showing thinking carefully before posting online 💭", correct: true },
         { text: "Poster showing not thinking at all ⚡", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Kind Words Cost Nothing"?',
       choices: [
-        { text: "Poster showing being kind and positive online 💖", correct: true },
         { text: "Poster showing being mean online 😠", correct: false },
         { text: "Poster showing ignoring others 🙄", correct: false },
+        { text: "Poster showing being kind and positive online 💖", correct: true },
       ],
     },
     {
@@ -54,17 +54,17 @@ const PosterTask1 = () => {
     {
       question: 'Which poster would best show "Stay Smart. Stay Safe Online"?',
       choices: [
-        { text: "Poster showing being smart and safe online 🛡️", correct: true },
         { text: "Poster showing sharing passwords 🔓", correct: false },
         { text: "Poster showing clicking everything 🖱️", correct: false },
+        { text: "Poster showing being smart and safe online 🛡️", correct: true },
       ],
     },
     {
       question: 'Which poster would best show "Be a Responsible Digital Citizen"?',
       choices: [
-        { text: "Poster showing responsible online behavior 🌍", correct: true },
         { text: "Poster showing being rude online 😠", correct: false },
         { text: "Poster showing ignoring rules ❌", correct: false },
+        { text: "Poster showing responsible online behavior 🌍", correct: true },
       ],
     },
   ];

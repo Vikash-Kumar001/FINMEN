@@ -45,22 +45,13 @@ const PublicVsPrivatePuzzle = () => {
     { id: 5, name: "Private", emoji: "🔒", description: "Keep secret" }
   ];
 
-  // Correct matches
+  // Correct matches (mapped to different positions like PuzzleOfSavingGoals)
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Home Address → Private
-    { leftId: 2, rightId: 2 }, // Favorite Food → Public
-    { leftId: 3, rightId: 3 }, // Phone Number → Private
-    { leftId: 4, rightId: 4 }, // Pet's Name → Public
-    { leftId: 5, rightId: 5 }  // School Name → Private
-  ];
-
-  // Shuffled right items for display (to split matches across positions)
-  const shuffledRightItems = [
-    rightItems[1], // Public (id: 2) - position 1
-    rightItems[0], // Private (id: 1) - position 2
-    rightItems[4], // Private (id: 5) - position 3
-    rightItems[3], // Public (id: 4) - position 4
-    rightItems[2]  // Private (id: 3) - position 5
+    { leftId: 1, rightId: 3 }, // Home Address → Private (id: 3)
+    { leftId: 2, rightId: 2 }, // Favorite Food → Public (id: 2)
+    { leftId: 3, rightId: 1 }, // Phone Number → Private (id: 1)
+    { leftId: 4, rightId: 4 }, // Pet's Name → Public (id: 4)
+    { leftId: 5, rightId: 5 }  // School Name → Private (id: 5)
   ];
 
   const handleLeftSelect = (item) => {
@@ -212,7 +203,7 @@ const PublicVsPrivatePuzzle = () => {
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-white text-center">Privacy Type</h4>
                   <div className="space-y-3">
-                    {shuffledRightItems.map((item) => {
+                    {rightItems.map((item) => {
                       const isMatched = isRightItemMatched(item.id);
                       const isSelected = selectedRight?.id === item.id;
                       

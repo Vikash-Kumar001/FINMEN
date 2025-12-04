@@ -30,17 +30,17 @@ const RightsPosterTask = () => {
     {
       question: 'Which poster would best show "Respect Privacy – Always Ask First"?',
       choices: [
-        { text: "Poster showing asking permission before sharing 🔐", correct: true },
         { text: "Poster showing sharing everything 📤", correct: false },
+        { text: "Poster showing asking permission before sharing 🔐", correct: true },
         { text: "Poster showing ignoring privacy 🙈", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Spread Positivity, Not Hate"?',
       choices: [
-        { text: "Poster showing being kind and positive online 💖", correct: true },
         { text: "Poster showing being mean online 😠", correct: false },
         { text: "Poster showing ignoring others 🙄", correct: false },
+        { text: "Poster showing being kind and positive online 💖", correct: true },
       ],
     },
     {
@@ -54,17 +54,17 @@ const RightsPosterTask = () => {
     {
       question: 'Which poster would best show "My Data, My Choice"?',
       choices: [
-        { text: "Poster showing controlling your own data 🧠", correct: true },
         { text: "Poster showing sharing all data 📊", correct: false },
+        { text: "Poster showing controlling your own data 🧠", correct: true },
         { text: "Poster showing ignoring rights ❌", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Report Scams Immediately"?',
       choices: [
-        { text: "Poster showing reporting scams to adults 🚨", correct: true },
         { text: "Poster showing ignoring scams 🙈", correct: false },
         { text: "Poster showing sharing scams 📤", correct: false },
+        { text: "Poster showing reporting scams to adults 🚨", correct: true },
       ],
     },
   ];

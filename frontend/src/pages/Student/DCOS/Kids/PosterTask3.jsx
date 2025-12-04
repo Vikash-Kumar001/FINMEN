@@ -30,17 +30,17 @@ const PosterTask3 = () => {
     {
       question: 'Which poster would best show "Words Can Hurt or Heal"?',
       choices: [
-        { text: "Poster showing the power of words to help or harm 💬", correct: true },
         { text: "Poster showing words don't matter 😐", correct: false },
+        { text: "Poster showing the power of words to help or harm 💬", correct: true },
         { text: "Poster showing only actions count 🤷", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Respect Everyone"?',
       choices: [
-        { text: "Poster showing respecting all people equally 🌍", correct: true },
         { text: "Poster showing respecting only friends 👥", correct: false },
         { text: "Poster showing respect doesn't matter 😒", correct: false },
+        { text: "Poster showing respecting all people equally 🌍", correct: true },
       ],
     },
     {
@@ -54,17 +54,17 @@ const PosterTask3 = () => {
     {
       question: 'Which poster would best show "Think Before You Post"?',
       choices: [
-        { text: "Poster showing thinking carefully before posting 💭", correct: true },
         { text: "Poster showing posting everything 📤", correct: false },
         { text: "Poster showing posting without thinking ⚡", correct: false },
+        { text: "Poster showing thinking carefully before posting 💭", correct: true },
       ],
     },
     {
       question: 'Which poster would best show "Help Others Shine"?',
       choices: [
-        { text: "Poster showing helping and supporting others ✨", correct: true },
         { text: "Poster showing only helping yourself 😎", correct: false },
         { text: "Poster showing not helping anyone 😤", correct: false },
+        { text: "Poster showing helping and supporting others ✨", correct: true },
       ],
     },
   ];

@@ -45,22 +45,13 @@ const PuzzleOnlineForever = () => {
     { id: 5, name: "Stays Forever", emoji: "🌐", description: "Remains online permanently" }
   ];
 
-  // Correct matches
+  // Correct matches (mapped to different positions like PuzzleOfSavingGoals)
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // A photo you post online → Stays Forever
-    { leftId: 2, rightId: 2 }, // Your homework notebook → Can Be Erased
-    { leftId: 3, rightId: 3 }, // A story shared on social media → Stays Forever
-    { leftId: 4, rightId: 4 }, // A paper drawing at home → Can Be Erased
-    { leftId: 5, rightId: 5 }  // A comment on someone's post → Stays Forever
-  ];
-
-  // Shuffled right items for display (to split matches across positions)
-  const shuffledRightItems = [
-    rightItems[1], // Can Be Erased (id: 2) - position 1
-    rightItems[0], // Stays Forever (id: 1) - position 2
-    rightItems[4], // Stays Forever (id: 5) - position 3
-    rightItems[3], // Can Be Erased (id: 4) - position 4
-    rightItems[2]  // Stays Forever (id: 3) - position 5
+    { leftId: 1, rightId: 3 }, // A photo you post online → Stays Forever (id: 3)
+    { leftId: 2, rightId: 2 }, // Your homework notebook → Can Be Erased (id: 2)
+    { leftId: 3, rightId: 1 }, // A story shared on social media → Stays Forever (id: 1)
+    { leftId: 4, rightId: 4 }, // A paper drawing at home → Can Be Erased (id: 4)
+    { leftId: 5, rightId: 5 }  // A comment on someone's post → Stays Forever (id: 5)
   ];
 
   const handleLeftSelect = (item) => {
@@ -212,7 +203,7 @@ const PuzzleOnlineForever = () => {
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-white text-center">Permanence</h4>
                   <div className="space-y-3">
-                    {shuffledRightItems.map((item) => {
+                    {rightItems.map((item) => {
                       const isMatched = isRightItemMatched(item.id);
                       const isSelected = selectedRight?.id === item.id;
                       

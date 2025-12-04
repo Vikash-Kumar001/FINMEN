@@ -30,17 +30,17 @@ const BalancePosterTask = () => {
     {
       question: 'Which poster would best show "Balance Study, Play & Rest"?',
       choices: [
-        { text: "Poster showing balanced activities: study, play, and rest ⚖️", correct: true },
         { text: "Poster showing playing all day without breaks 🎮", correct: false },
+        { text: "Poster showing balanced activities: study, play, and rest ⚖️", correct: true },
         { text: "Poster showing only studying, no play or rest 📚", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Play Outside, Stay Bright"?',
       choices: [
-        { text: "Poster showing outdoor activities and fresh air 🌳", correct: true },
         { text: "Poster showing staying inside all the time 🏠", correct: false },
         { text: "Poster showing never going outside 🚫", correct: false },
+        { text: "Poster showing outdoor activities and fresh air 🌳", correct: true },
       ],
     },
     {
@@ -54,17 +54,17 @@ const BalancePosterTask = () => {
     {
       question: 'Which poster would best show "Sleep Early, Rise Fresh"?',
       choices: [
-        { text: "Poster showing good sleep schedule and rest 🛌", correct: true },
         { text: "Poster showing staying up all night 🌙", correct: false },
+        { text: "Poster showing good sleep schedule and rest 🛌", correct: true },
         { text: "Poster showing never sleeping 😴", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Study + Play + Sleep = Success"?',
       choices: [
-        { text: "Poster showing balanced lifestyle with study, play, and sleep 🏆", correct: true },
         { text: "Poster showing only playing games 🎮", correct: false },
         { text: "Poster showing only studying 📖", correct: false },
+        { text: "Poster showing balanced lifestyle with study, play, and sleep 🏆", correct: true },
       ],
     },
   ];

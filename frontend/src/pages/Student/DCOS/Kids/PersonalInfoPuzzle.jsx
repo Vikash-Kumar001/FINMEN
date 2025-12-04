@@ -212,7 +212,7 @@ const PersonalInfoPuzzle = () => {
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-white text-center">Privacy Status</h4>
                   <div className="space-y-3">
-                    {shuffledRightItems.map((item) => {
+                    {rightItems.map((item) => {
                       const isMatched = isRightItemMatched(item.id);
                       const isSelected = selectedRight?.id === item.id;
                       

@@ -27,13 +27,6 @@ const GossipChainSimulation = () => {
       text: "A rumor spreads: 'Alex failed the exam!' What should you do?",
       options: [
         { 
-          id: "forward", 
-          text: "Forward to another group", 
-          emoji: "📤", 
-          description: "Share the rumor with others",
-          isCorrect: false
-        },
-        { 
           id: "stop", 
           text: "Stop and don't share", 
           emoji: "🛑", 
@@ -41,11 +34,18 @@ const GossipChainSimulation = () => {
           isCorrect: true
         },
         { 
+          id: "forward", 
+          text: "Forward to another group", 
+          emoji: "📤", 
+          description: "Share the rumor with others",
+          isCorrect: false
+        },
+        { 
           id: "verify", 
           text: "Ask if it's true first", 
           emoji: "❓", 
           description: "Verify before sharing",
-          isCorrect: true
+          isCorrect: false
         }
       ]
     },
@@ -88,18 +88,18 @@ const GossipChainSimulation = () => {
           isCorrect: false
         },
         { 
-          id: "defend", 
-          text: "Defend Alex and stop rumor", 
-          emoji: "🛡️", 
-          description: "Stand up and stop the rumor",
-          isCorrect: true
-        },
-        { 
           id: "silent", 
           text: "Stay silent", 
           emoji: "😐", 
           description: "Don't say anything",
           isCorrect: false
+        },
+        { 
+          id: "defend", 
+          text: "Defend Alex and stop rumor", 
+          emoji: "🛡️", 
+          description: "Stand up and stop the rumor",
+          isCorrect: true
         }
       ]
     },
@@ -108,18 +108,18 @@ const GossipChainSimulation = () => {
       text: "You hear 'Alex got caught cheating!' What's the right action?",
       options: [
         { 
-          id: "forward-msg", 
-          text: "Forward the message", 
-          emoji: "📤", 
-          description: "Share the message",
-          isCorrect: false
-        },
-        { 
           id: "verify-first", 
           text: "Stop and verify first", 
           emoji: "✅", 
           description: "Check if it's true before sharing",
           isCorrect: true
+        },
+        { 
+          id: "forward-msg", 
+          text: "Forward the message", 
+          emoji: "📤", 
+          description: "Share the message",
+          isCorrect: false
         },
         { 
           id: "add-more", 

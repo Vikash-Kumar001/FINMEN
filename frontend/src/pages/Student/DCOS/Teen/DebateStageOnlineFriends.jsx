@@ -28,18 +28,18 @@ const DebateStageOnlineFriends = () => {
       text: "Is it safe to meet online friends in real life?",
       options: [
         { 
-          id: "yes-safe", 
-          text: "Yes - it's safe if you're careful", 
-          emoji: "✅", 
-          description: "Meeting can be safe with precautions",
-          isCorrect: false
-        },
-        { 
           id: "no-dangerous", 
           text: "No - it's dangerous and should be avoided", 
           emoji: "🛡️", 
           description: "Meeting online friends in person is risky and should be avoided",
           isCorrect: true
+        },
+        { 
+          id: "yes-safe", 
+          text: "Yes - it's safe if you're careful", 
+          emoji: "✅", 
+          description: "Meeting can be safe with precautions",
+          isCorrect: false
         },
         { 
           id: "maybe", 
@@ -89,18 +89,18 @@ const DebateStageOnlineFriends = () => {
           isCorrect: false
         },
         { 
-          id: "only-verified", 
-          text: "Only with verified identity", 
-          emoji: "🛡️", 
-          description: "Only video call if you can verify their identity",
-          isCorrect: true
-        },
-        { 
           id: "always", 
           text: "Always - it's fun", 
           emoji: "📹", 
           description: "Video calls are always fun and safe",
           isCorrect: false
+        },
+        { 
+          id: "only-verified", 
+          text: "Only with verified identity", 
+          emoji: "🛡️", 
+          description: "Only video call if you can verify their identity",
+          isCorrect: true
         }
       ]
     },
@@ -109,18 +109,18 @@ const DebateStageOnlineFriends = () => {
       text: "Should you accept friend requests from strangers?",
       options: [
         { 
-          id: "yes-nice", 
-          text: "Yes - if they seem nice", 
-          emoji: "😊", 
-          description: "Accept if they seem friendly",
-          isCorrect: false
-        },
-        { 
           id: "no-only-known", 
           text: "No - only accept known people", 
           emoji: "🛡️", 
           description: "Only accept friend requests from people you know in real life",
           isCorrect: true
+        },
+        { 
+          id: "yes-nice", 
+          text: "Yes - if they seem nice", 
+          emoji: "😊", 
+          description: "Accept if they seem friendly",
+          isCorrect: false
         },
         { 
           id: "maybe", 

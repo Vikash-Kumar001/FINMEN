@@ -58,18 +58,18 @@ const DataConsentQuiz = () => {
       text: "A new app requests access to: Contacts, Camera, Microphone, Location. Is this safe to allow?",
       options: [
         { 
-          id: "a", 
-          text: "Yes - all apps need these permissions", 
-          emoji: "✓", 
-          description: "Not all apps need all permissions - only grant what's necessary",
-          isCorrect: false
-        },
-        { 
           id: "b", 
           text: "No - only grant necessary permissions", 
           emoji: "🛡️", 
           description: "Only grant permissions that are necessary for the app's core function",
           isCorrect: true
+        },
+        { 
+          id: "a", 
+          text: "Yes - all apps need these permissions", 
+          emoji: "✓", 
+          description: "Not all apps need all permissions - only grant what's necessary",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -119,18 +119,18 @@ const DataConsentQuiz = () => {
           isCorrect: false
         },
         { 
-          id: "b", 
-          text: "No - flashlight doesn't need location", 
-          emoji: "🛡️", 
-          description: "Flashlight apps don't need location access - deny this permission",
-          isCorrect: true
-        },
-        { 
           id: "c", 
           text: "Yes - for better functionality", 
           emoji: "⚡", 
           description: "Location doesn't improve flashlight functionality",
           isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "No - flashlight doesn't need location", 
+          emoji: "🛡️", 
+          description: "Flashlight apps don't need location access - deny this permission",
+          isCorrect: true
         }
       ]
     },
@@ -139,18 +139,18 @@ const DataConsentQuiz = () => {
       text: "A game app requests access to your microphone. Is this necessary?",
       options: [
         { 
-          id: "a", 
-          text: "Yes - games need microphone", 
-          emoji: "🎤", 
-          description: "Not all games need microphone - only voice chat games do",
-          isCorrect: false
-        },
-        { 
           id: "b", 
           text: "Only if it's a voice chat game", 
           emoji: "🛡️", 
           description: "Only grant microphone access if the game requires voice chat",
           isCorrect: true
+        },
+        { 
+          id: "a", 
+          text: "Yes - games need microphone", 
+          emoji: "🎤", 
+          description: "Not all games need microphone - only voice chat games do",
+          isCorrect: false
         },
         { 
           id: "c", 

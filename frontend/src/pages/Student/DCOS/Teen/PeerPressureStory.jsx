@@ -29,18 +29,18 @@ const PeerPressureStory = () => {
       text: "Your friends create a group to troll and make fun of a classmate online. They say: \"Come on, join us! Everyone's doing it. It's just for fun!\"",
       options: [
         { 
-          id: "join", 
-          text: "Join them to fit in", 
-          emoji: "😞", 
-          description: "Participate in trolling to be part of the group",
-          isCorrect: false
-        },
-        { 
           id: "refuse", 
           text: "Refuse and stand up against trolling", 
           emoji: "🛡️", 
           description: "Say no and speak out against cyberbullying",
           isCorrect: true
+        },
+        { 
+          id: "join", 
+          text: "Join them to fit in", 
+          emoji: "😞", 
+          description: "Participate in trolling to be part of the group",
+          isCorrect: false
         },
         { 
           id: "watch", 
@@ -90,18 +90,18 @@ const PeerPressureStory = () => {
           isCorrect: false
         },
         { 
-          id: "defend", 
-          text: "Refuse and defend the person", 
-          emoji: "🛡️", 
-          description: "Stand up for the person being targeted",
-          isCorrect: true
-        },
-        { 
           id: "silent", 
           text: "Stay silent", 
           emoji: "🤐", 
           description: "Don't participate but don't speak up either",
           isCorrect: false
+        },
+        { 
+          id: "defend", 
+          text: "Refuse and defend the person", 
+          emoji: "🛡️", 
+          description: "Stand up for the person being targeted",
+          isCorrect: true
         }
       ]
     },
@@ -110,18 +110,18 @@ const PeerPressureStory = () => {
       text: "Your friends want to exclude someone from a group chat. They say: \"They're annoying, just block them!\"",
       options: [
         { 
-          id: "block", 
-          text: "Block them to fit in", 
-          emoji: "😞", 
-          description: "Block the person to go along with friends",
-          isCorrect: false
-        },
-        { 
           id: "include", 
           text: "Refuse and include everyone", 
           emoji: "🛡️", 
           description: "Stand up for inclusion and fairness",
           isCorrect: true
+        },
+        { 
+          id: "block", 
+          text: "Block them to fit in", 
+          emoji: "😞", 
+          description: "Block the person to go along with friends",
+          isCorrect: false
         },
         { 
           id: "neutral", 

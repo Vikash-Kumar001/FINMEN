@@ -61,18 +61,18 @@ const PasswordSharingStory = () => {
       text: "Your best friend asks: 'Can I borrow your password to check something on your account? I promise I'll just look quickly and won't change anything.'",
       options: [
         { 
-          id: "share", 
-          text: "Share it - they're my best friend", 
-          emoji: "🤝", 
-          description: "Give them your password since you trust them",
-          isCorrect: false
-        },
-        { 
           id: "never", 
           text: "Never share passwords with anyone", 
           emoji: "🛡️", 
           description: "Keep your password private, even from close friends",
           isCorrect: true
+        },
+        { 
+          id: "share", 
+          text: "Share it - they're my best friend", 
+          emoji: "🤝", 
+          description: "Give them your password since you trust them",
+          isCorrect: false
         },
         { 
           id: "share-later", 
@@ -122,18 +122,18 @@ const PasswordSharingStory = () => {
           isCorrect: false
         },
         { 
-          id: "never-classmate", 
-          text: "Never share passwords with anyone", 
-          emoji: "🛡️", 
-          description: "Keep your password private from everyone",
-          isCorrect: true
-        },
-        { 
           id: "monitor", 
           text: "Share it but monitor the account", 
           emoji: "👀", 
           description: "Share but keep an eye on account activity",
           isCorrect: false
+        },
+        { 
+          id: "never-classmate", 
+          text: "Never share passwords with anyone", 
+          emoji: "🛡️", 
+          description: "Keep your password private from everyone",
+          isCorrect: true
         }
       ]
     },
@@ -142,18 +142,18 @@ const PasswordSharingStory = () => {
       text: "Someone you've chatted with online asks: 'Can I access your account to help you with something?'",
       options: [
         { 
-          id: "trust", 
-          text: "Share it - they seem trustworthy", 
-          emoji: "😊", 
-          description: "Share your password with someone online you trust",
-          isCorrect: false
-        },
-        { 
           id: "never-online", 
           text: "Never share passwords with anyone", 
           emoji: "🛡️", 
           description: "Never share passwords, especially with online contacts",
           isCorrect: true
+        },
+        { 
+          id: "trust", 
+          text: "Share it - they seem trustworthy", 
+          emoji: "😊", 
+          description: "Share your password with someone online you trust",
+          isCorrect: false
         },
         { 
           id: "change-after", 
@@ -204,10 +204,10 @@ const PasswordSharingStory = () => {
     
     // If the choice is correct, add score and show flash/confetti
     const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
-    const newScore = isCorrect ? score + 1 : score;
     
     if (isCorrect) {
-      setScore(newScore);
+      // Use functional state update to avoid stale closure issues
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
@@ -218,13 +218,16 @@ const PasswordSharingStory = () => {
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
-        console.log('🎮 Game completed!', { gameId, finalScore: newScore, nextGamePath, nextGameId });
+        // Calculate final score from choices array to ensure accuracy
+        const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+        console.log('🎮 Game completed!', { gameId, finalScore: correctAnswers, nextGamePath, nextGameId });
         setShowResult(true);
       }
     }, isCorrect ? 1000 : 800);
   };
 
-  const finalScore = score;
+  // Calculate finalScore from choices array to ensure accuracy
+  const finalScore = choices.filter(choice => choice.isCorrect).length;
   const getCurrentQuestion = () => questions[currentQuestion];
 
   return (

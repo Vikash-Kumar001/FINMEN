@@ -56,14 +56,14 @@ const OnlineSafetyBadge = () => {
       question: "How should you set up your social media profile?",
       options: [
         { 
-          text: "Keep social media profiles private", 
-          emoji: "🔒", 
-          isCorrect: true
-        },
-        { 
           text: "Make everything public", 
           emoji: "🌐", 
           isCorrect: false
+        },
+        { 
+          text: "Keep social media profiles private", 
+          emoji: "🔒", 
+          isCorrect: true
         },
         { 
           text: "Share personal information publicly", 
@@ -83,11 +83,6 @@ const OnlineSafetyBadge = () => {
       question: "What should you do with OTP codes?",
       options: [
         { 
-          text: "Never share OTP codes with anyone", 
-          emoji: "🚫", 
-          isCorrect: true
-        },
-        { 
           text: "Share OTP with friends if they ask", 
           emoji: "👥", 
           isCorrect: false
@@ -96,6 +91,11 @@ const OnlineSafetyBadge = () => {
           text: "Post OTP on social media", 
           emoji: "📱", 
           isCorrect: false
+        },
+        { 
+          text: "Never share OTP codes with anyone", 
+          emoji: "🚫", 
+          isCorrect: true
         },
         { 
           text: "Share OTP if someone claims to be from bank", 
@@ -137,14 +137,14 @@ const OnlineSafetyBadge = () => {
       question: "What should you do with app permissions?",
       options: [
         { 
-          text: "Only grant necessary app permissions", 
-          emoji: "📱", 
-          isCorrect: true
-        },
-        { 
           text: "Grant all permissions to all apps", 
           emoji: "✅", 
           isCorrect: false
+        },
+        { 
+          text: "Only grant necessary app permissions", 
+          emoji: "📱", 
+          isCorrect: true
         },
         { 
           text: "Don't check permissions at all", 

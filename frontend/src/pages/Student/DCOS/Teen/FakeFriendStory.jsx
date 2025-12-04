@@ -29,18 +29,18 @@ const FakeFriendStory = () => {
       text: 'A stranger online messages you: "Hey! I know your friend Sarah. She told me to add you. Can we chat?"',
       options: [
         { 
-          id: "trust", 
-          text: "Trust them since they know my friend's name", 
-          emoji: "🤝", 
-          description: "Accept their friend request because they mentioned your friend",
-          isCorrect: false
-        },
-        { 
           id: "verify", 
           text: "Don't trust - verify with Sarah first", 
           emoji: "🛡️", 
           description: "Contact Sarah directly to verify before accepting",
           isCorrect: true
+        },
+        { 
+          id: "trust", 
+          text: "Trust them since they know my friend's name", 
+          emoji: "🤝", 
+          description: "Accept their friend request because they mentioned your friend",
+          isCorrect: false
         },
         { 
           id: "cautious", 
@@ -90,18 +90,18 @@ const FakeFriendStory = () => {
           isCorrect: false
         },
         { 
-          id: "contact-direct", 
-          text: "Contact Mike directly to verify", 
-          emoji: "🛡️", 
-          description: "Reach out to Mike first to check if he's really in trouble",
-          isCorrect: true
-        },
-        { 
           id: "ask-questions", 
           text: "Add them but ask questions", 
           emoji: "❓", 
           description: "Accept but ask for more details",
           isCorrect: false
+        },
+        { 
+          id: "contact-direct", 
+          text: "Contact Mike directly to verify", 
+          emoji: "🛡️", 
+          description: "Reach out to Mike first to check if he's really in trouble",
+          isCorrect: true
         }
       ]
     },
@@ -110,18 +110,18 @@ const FakeFriendStory = () => {
       text: 'Someone claims: "I go to your school! Let\'s be friends on social media!"',
       options: [
         { 
-          id: "accept-school", 
-          text: "Accept - they go to my school", 
-          emoji: "✅", 
-          description: "Accept because they claim to go to your school",
-          isCorrect: false
-        },
-        { 
           id: "verify-school", 
           text: "Verify they actually go to your school", 
           emoji: "🛡️", 
           description: "Confirm they really attend your school before accepting",
           isCorrect: true
+        },
+        { 
+          id: "accept-school", 
+          text: "Accept - they go to my school", 
+          emoji: "✅", 
+          description: "Accept because they claim to go to your school",
+          isCorrect: false
         },
         { 
           id: "no-details", 

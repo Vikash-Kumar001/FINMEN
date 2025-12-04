@@ -28,18 +28,18 @@ const DebateStageTrolling = () => {
       text: "Is trolling funny?",
       options: [
         { 
-          id: "yes-harmless", 
-          text: "Yes - it's just harmless fun", 
-          emoji: "😂", 
-          description: "Trolling is just a joke and harmless",
-          isCorrect: false
-        },
-        { 
           id: "no-hurts", 
           text: "No - it hurts people and causes harm", 
           emoji: "💔", 
           description: "Trolling causes real psychological harm to victims",
           isCorrect: true
+        },
+        { 
+          id: "yes-harmless", 
+          text: "Yes - it's just harmless fun", 
+          emoji: "😂", 
+          description: "Trolling is just a joke and harmless",
+          isCorrect: false
         },
         { 
           id: "sometimes", 
@@ -89,18 +89,18 @@ const DebateStageTrolling = () => {
           isCorrect: false
         },
         { 
-          id: "no-destroys", 
-          text: "No - it destroys reputations", 
-          emoji: "🚫", 
-          description: "Spreading rumors can destroy people's reputations and lives",
-          isCorrect: true
-        },
-        { 
           id: "sometimes", 
           text: "Sometimes - if it's true", 
           emoji: "🤔", 
           description: "It's okay if the rumor is true",
           isCorrect: false
+        },
+        { 
+          id: "no-destroys", 
+          text: "No - it destroys reputations", 
+          emoji: "🚫", 
+          description: "Spreading rumors can destroy people's reputations and lives",
+          isCorrect: true
         }
       ]
     },

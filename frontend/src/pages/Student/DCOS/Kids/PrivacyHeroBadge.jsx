@@ -1,151 +1,257 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const PrivacyHeroBadge = () => {
   const location = useLocation();
-  const gameId = "dcos-kids-60";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-kids-60");
+  const gameId = gameData?.id || "dcos-kids-60";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for PrivacyHeroBadge, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [currentTask, setCurrentTask] = useState(0);
-  const [showBadge, setShowBadge] = useState(false);
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
+  const challenges = [
+    {
+      id: 1,
+      title: "Privacy Hero Challenge 1",
+      question: "What should you do with your home address online?",
+      options: [
+        { 
+          text: "Never share your home address online", 
+          emoji: "🏠", 
+          isCorrect: true
+        },
+        { 
+          text: "Post it publicly", 
+          emoji: "📢", 
+          isCorrect: false
+        },
+        { 
+          text: "Share it with strangers", 
+          emoji: "👥", 
+          isCorrect: false
+        },
+        { 
+          text: "Put it in your profile", 
+          emoji: "📱", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Privacy Hero Challenge 2",
+      question: "What should you do with your passwords?",
+      options: [
+        { 
+          text: "Share them with friends", 
+          emoji: "👥", 
+          isCorrect: false
+        },
+        { 
+          text: "Keep your passwords secret", 
+          emoji: "🔒", 
+          isCorrect: true
+        },
+        { 
+          text: "Post them online", 
+          emoji: "📢", 
+          isCorrect: false
+        },
+        { 
+          text: "Write them on paper and leave it visible", 
+          emoji: "📝", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Privacy Hero Challenge 3",
+      question: "What should you do before sharing photos?",
+      options: [
+        { 
+          text: "Share photos without asking", 
+          emoji: "📸", 
+          isCorrect: false
+        },
+        { 
+          text: "Ask parents before sharing photos", 
+          emoji: "📸", 
+          isCorrect: true
+        },
+        { 
+          text: "Share all photos immediately", 
+          emoji: "📤", 
+          isCorrect: false
+        },
+        { 
+          text: "Post photos of others without permission", 
+          emoji: "📱", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Privacy Hero Challenge 4",
+      question: "What should you do with location sharing?",
+      options: [
+        { 
+          text: "Share location with everyone", 
+          emoji: "📍", 
+          isCorrect: false
+        },
+        { 
+          text: "Turn off location sharing", 
+          emoji: "📍", 
+          isCorrect: true
+        },
+        { 
+          text: "Always keep it on", 
+          emoji: "✅", 
+          isCorrect: false
+        },
+        { 
+          text: "Share location with strangers", 
+          emoji: "👥", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Privacy Hero Challenge 5",
+      question: "What should you avoid posting in chats?",
+      options: [
+        { 
+          text: "Post personal details in chats", 
+          emoji: "💬", 
+          isCorrect: false
+        },
+        { 
+          text: "Don't post personal details in chats", 
+          emoji: "💬", 
+          isCorrect: true
+        },
+        { 
+          text: "Share everything in public chats", 
+          emoji: "📢", 
+          isCorrect: false
+        },
+        { 
+          text: "Post your full name and address", 
+          emoji: "📱", 
+          isCorrect: false
+        }
+      ]
     }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const privacyActs = [
-    { id: 1, text: "Never share your home address online", emoji: "🏠" },
-    { id: 2, text: "Keep your passwords secret", emoji: "🔒" },
-    { id: 3, text: "Ask parents before sharing photos", emoji: "📸" },
-    { id: 4, text: "Turn off location sharing", emoji: "📍" },
-    { id: 5, text: "Don't post personal details in chats", emoji: "💬" }
   ];
 
-  const handleCompleteTask = () => {
-    if (!completedTasks.includes(privacyActs[currentTask].id)) {
-      const newCompleted = [...completedTasks, privacyActs[currentTask].id];
-      setCompletedTasks(newCompleted);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      
-      if (newCompleted.length === privacyActs.length) {
-        setTimeout(() => {
-          setShowBadge(true);
-        }, 500);
-      } else {
-        setTimeout(() => {
-          setCurrentTask(prev => (prev + 1) % privacyActs.length);
-        }, 500);
-      }
     }
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
-  const currentAct = privacyActs[currentTask];
-  const isCompleted = completedTasks.includes(currentAct.id);
+  const currentChallengeData = challenges[challenge];
 
   return (
     <GameShell
-      title="Privacy Hero Badge"
-      score={completedTasks.length}
-      subtitle={!showBadge ? `Task ${completedTasks.length + 1} of ${privacyActs.length}` : "Badge Earned!"}
+      title="Badge: Privacy Hero"
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showBadge}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={privacyActs.length}
-      currentLevel={completedTasks.length + 1}
-      maxScore={privacyActs.length}
-      showConfetti={showBadge}
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showBadge ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
-              Privacy Hero Challenge: Online Safety Acts
-            </h2>
-
-            <p className="text-white/80 mb-6 text-center">
-              Complete these privacy protection acts to earn your badge!
-            </p>
-
-            <div className="space-y-3 mb-6">
-              {privacyActs.map((act) => (
-                <div
-                  key={act.id}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    completedTasks.includes(act.id)
-                      ? 'bg-green-500/30 border-green-400'
-                      : act.id === currentAct.id
-                      ? 'bg-purple-500/30 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/10 border-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{act.emoji}</div>
-                    <div className="flex-1 text-white font-medium text-sm md:text-base">{act.text}</div>
-                    {completedTasks.includes(act.id) && (
-                      <div className="text-2xl">✅</div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {!isCompleted && (
-              <button
-                onClick={handleCompleteTask}
-                className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Mark "{currentAct.text}" as Complete
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 text-white rounded-2xl p-8 text-center animate-pulse">
-              <div className="text-9xl mb-4">🛡️</div>
-              <h3 className="text-3xl md:text-4xl font-bold mb-3">Congratulations!</h3>
-              <p className="text-lg md:text-xl mb-4">
-                You've earned the <strong>Privacy Hero Kid Badge!</strong> 🌟
+      <div className="space-y-8">
+        {!showResult && currentChallengeData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallengeData.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallengeData.question}
               </p>
-              <p className="text-white/90 text-sm">
-                Great job! You can spot and avoid privacy risks online. Always stay alert and protect yourself!
-              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallengeData.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

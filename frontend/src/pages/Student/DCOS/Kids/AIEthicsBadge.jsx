@@ -1,151 +1,257 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const AIEthicsBadge = () => {
   const location = useLocation();
-  const gameId = "dcos-kids-80";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-kids-80");
+  const gameId = gameData?.id || "dcos-kids-80";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for AIEthicsBadge, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [currentTask, setCurrentTask] = useState(0);
-  const [showBadge, setShowBadge] = useState(false);
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
+  const challenges = [
+    {
+      id: 1,
+      title: "AI Ethics Challenge 1",
+      question: "How should you use AI tools?",
+      options: [
+        { 
+          text: "Used AI tools responsibly", 
+          emoji: "🤖", 
+          isCorrect: true
+        },
+        { 
+          text: "Use AI to cheat", 
+          emoji: "📚", 
+          isCorrect: false
+        },
+        { 
+          text: "Use AI for everything", 
+          emoji: "🔄", 
+          isCorrect: false
+        },
+        { 
+          text: "Never use AI", 
+          emoji: "🚫", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "AI Ethics Challenge 2",
+      question: "What should you do before sharing AI-generated content?",
+      options: [
+        { 
+          text: "Share immediately", 
+          emoji: "📤", 
+          isCorrect: false
+        },
+        { 
+          text: "Checked AI facts before sharing", 
+          emoji: "🔍", 
+          isCorrect: true
+        },
+        { 
+          text: "Believe everything AI says", 
+          emoji: "🤖", 
+          isCorrect: false
+        },
+        { 
+          text: "Don't verify anything", 
+          emoji: "❓", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "AI Ethics Challenge 3",
+      question: "What should you do with personal data when using AI?",
+      options: [
+        { 
+          text: "Share all personal data with AI", 
+          emoji: "📱", 
+          isCorrect: false
+        },
+        { 
+          text: "Did not share personal data with AI", 
+          emoji: "🔒", 
+          isCorrect: true
+        },
+        { 
+          text: "Give AI your passwords", 
+          emoji: "🔑", 
+          isCorrect: false
+        },
+        { 
+          text: "Share your address with AI", 
+          emoji: "🏠", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "AI Ethics Challenge 4",
+      question: "What should you do when using AI help?",
+      options: [
+        { 
+          text: "Claim AI work as your own", 
+          emoji: "📝", 
+          isCorrect: false
+        },
+        { 
+          text: "Gave credit when using AI help", 
+          emoji: "✍️", 
+          isCorrect: true
+        },
+        { 
+          text: "Never mention AI", 
+          emoji: "🤫", 
+          isCorrect: false
+        },
+        { 
+          text: "Hide that you used AI", 
+          emoji: "🙈", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "AI Ethics Challenge 5",
+      question: "How can you help others use AI safely?",
+      options: [
+        { 
+          text: "Tell them to use AI for everything", 
+          emoji: "🤖", 
+          isCorrect: false
+        },
+        { 
+          text: "Encouraged friends to use AI safely", 
+          emoji: "💬", 
+          isCorrect: true
+        },
+        { 
+          text: "Don't help anyone", 
+          emoji: "🙈", 
+          isCorrect: false
+        },
+        { 
+          text: "Share unsafe AI practices", 
+          emoji: "📢", 
+          isCorrect: false
+        }
+      ]
     }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const aiActs = [
-    { id: 1, text: "Used AI tools responsibly", emoji: "🤖" },
-    { id: 2, text: "Checked AI facts before sharing", emoji: "🔍" },
-    { id: 3, text: "Did not share personal data with AI", emoji: "🔒" },
-    { id: 4, text: "Gave credit when using AI help", emoji: "✍️" },
-    { id: 5, text: "Encouraged friends to use AI safely", emoji: "💬" }
   ];
 
-  const handleCompleteTask = () => {
-    if (!completedTasks.includes(aiActs[currentTask].id)) {
-      const newCompleted = [...completedTasks, aiActs[currentTask].id];
-      setCompletedTasks(newCompleted);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      
-      if (newCompleted.length === aiActs.length) {
-        setTimeout(() => {
-          setShowBadge(true);
-        }, 500);
-      } else {
-        setTimeout(() => {
-          setCurrentTask(prev => (prev + 1) % aiActs.length);
-        }, 500);
-      }
     }
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
-  const currentAct = aiActs[currentTask];
-  const isCompleted = completedTasks.includes(currentAct.id);
+  const currentChallengeData = challenges[challenge];
 
   return (
     <GameShell
-      title="AI Ethics Badge"
-      score={completedTasks.length}
-      subtitle={!showBadge ? `Task ${completedTasks.length + 1} of ${aiActs.length}` : "Badge Earned!"}
+      title="Badge: AI Ethics"
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showBadge}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={aiActs.length}
-      currentLevel={completedTasks.length + 1}
-      maxScore={aiActs.length}
-      showConfetti={showBadge}
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showBadge ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
-              AI Ethics Challenge: Smart AI Habits
-            </h2>
-
-            <p className="text-white/80 mb-6 text-center">
-              Complete these safe AI acts to earn your badge!
-            </p>
-
-            <div className="space-y-3 mb-6">
-              {aiActs.map((act) => (
-                <div
-                  key={act.id}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    completedTasks.includes(act.id)
-                      ? 'bg-green-500/30 border-green-400'
-                      : act.id === currentAct.id
-                      ? 'bg-purple-500/30 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/10 border-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{act.emoji}</div>
-                    <div className="flex-1 text-white font-medium text-sm md:text-base">{act.text}</div>
-                    {completedTasks.includes(act.id) && (
-                      <div className="text-2xl">✅</div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {!isCompleted && (
-              <button
-                onClick={handleCompleteTask}
-                className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Mark "{currentAct.text}" as Complete
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 text-white rounded-2xl p-8 text-center animate-pulse">
-              <div className="text-9xl mb-4">🏆</div>
-              <h3 className="text-3xl md:text-4xl font-bold mb-3">Congratulations!</h3>
-              <p className="text-lg md:text-xl mb-4">
-                You've earned the <strong>AI Ethics Kid Badge!</strong> 🤖✨
+      <div className="space-y-8">
+        {!showResult && currentChallengeData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallengeData.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallengeData.question}
               </p>
-              <p className="text-white/90 text-sm">
-                Great job! You're practicing safe and responsible AI habits. Keep it up!
-              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallengeData.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

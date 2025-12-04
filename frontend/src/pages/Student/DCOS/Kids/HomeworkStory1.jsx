@@ -1,209 +1,267 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const HomeworkStory1 = () => {
+  const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-kids-94";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [finalScore, setFinalScore] = useState(0);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      emoji: "🧮",
-      situation: "I found a YouTube channel explaining fractions — should I watch it?",
+      text: "I found a YouTube channel explaining fractions — should I watch it?",
       options: [
-        { id: 1, text: "Yes! It can help you learn.", emoji: "✅", isUseful: true },
-        { id: 2, text: "No, YouTube is only for fun.", emoji: "❌", isUseful: false },
-        { id: 3, text: "Ignore homework and play games instead.", emoji: "🎮", isUseful: false }
+        { 
+          id: "a", 
+          text: "Yes! It Can Help", 
+          emoji: "✅", 
+          description: "Yes! It can help you learn",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "No, Only for Fun", 
+          emoji: "❌", 
+          description: "No, YouTube is only for fun",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore and Play Games", 
+          emoji: "🎮", 
+          description: "Ignore homework and play games instead",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      emoji: "📺",
-      situation: "The video has too many ads — what should I do?",
+      text: "The video has too many ads — what should I do?",
       options: [
-        { id: 1, text: "Click all ads for prizes!", emoji: "🎁", isUseful: false },
-        { id: 2, text: "Ignore ads and focus on learning part.", emoji: "📚", isUseful: true },
-        { id: 3, text: "Close YouTube and stop learning.", emoji: "🚫", isUseful: false }
+        { 
+          id: "a", 
+          text: "Click All Ads", 
+          emoji: "🎁", 
+          description: "Click all ads for prizes!",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Focus on Learning", 
+          emoji: "📚", 
+          description: "Ignore ads and focus on learning part",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Close YouTube", 
+          emoji: "🚫", 
+          description: "Close YouTube and stop learning",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      emoji: "💡",
-      situation: "I found another video teaching with examples — should I save it?",
+      text: "I found another video teaching with examples — should I save it?",
       options: [
-        { id: 1, text: "Yes, save useful learning videos.", emoji: "💾", isUseful: true },
-        { id: 2, text: "Comment randomly for fun.", emoji: "💬", isUseful: false },
-        { id: 3, text: "Share it to random people.", emoji: "📤", isUseful: false }
+        { 
+          id: "a", 
+          text: "Save Useful Videos", 
+          emoji: "💾", 
+          description: "Yes, save useful learning videos",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Comment Randomly", 
+          emoji: "💬", 
+          description: "Comment randomly for fun",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Share to Random", 
+          emoji: "📤", 
+          description: "Share it to random people",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      emoji: "💬",
-      situation: "Someone in comments said wrong facts — what should I do?",
+      text: "Someone in comments said wrong facts — what should I do?",
       options: [
-        { id: 1, text: "Argue and fight in comments.", emoji: "😠", isUseful: false },
-        { id: 2, text: "Ignore or report wrong info calmly.", emoji: "🚨", isUseful: true },
-        { id: 3, text: "Believe everything you read.", emoji: "🤔", isUseful: false }
+        { 
+          id: "a", 
+          text: "Argue and Fight", 
+          emoji: "😠", 
+          description: "Argue and fight in comments",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Ignore or Report", 
+          emoji: "🚨", 
+          description: "Ignore or report wrong info calmly",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Believe Everything", 
+          emoji: "🤔", 
+          description: "Believe everything you read",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      emoji: "🎓",
-      situation: "I learned a trick from YouTube — should I tell my teacher?",
+      text: "I learned a trick from YouTube — should I tell my teacher?",
       options: [
-        { id: 1, text: "Yes! Sharing learning is great.", emoji: "🤝", isUseful: true },
-        { id: 2, text: "No, keep it secret.", emoji: "🤫", isUseful: false },
-        { id: 3, text: "Forget it and watch cartoons.", emoji: "📺", isUseful: false }
+        { 
+          id: "a", 
+          text: "Yes! Share Learning", 
+          emoji: "🤝", 
+          description: "Yes! Sharing learning is great",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Keep Secret", 
+          emoji: "🤫", 
+          description: "No, keep it secret",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Forget and Watch Cartoons", 
+          emoji: "📺", 
+          description: "Forget it and watch cartoons",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (answered) return;
+  const handleChoice = (selectedChoice) => {
+    if (currentQuestion < 0 || currentQuestion >= questions.length) {
+      return;
+    }
+
+    const currentQ = questions[currentQuestion];
+    if (!currentQ || !currentQ.options) {
+      return;
+    }
+
+    const newChoices = [...choices, { 
+      questionId: currentQ.id, 
+      choice: selectedChoice,
+      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setAnswered(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    const currentScenarioData = scenarios[currentScenario];
-    const selectedOption = currentScenarioData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isUseful || false;
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentScenario < scenarios.length - 1) {
-        setCurrentScenario(prev => prev + 1);
-        setAnswered(false);
-      } else {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
         setShowResult(true);
-      }
-    }, 500);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const currentScenarioData = scenarios[currentScenario];
+  const handleNext = () => {
+    navigate("/games/digital-citizenship/kids");
+  };
+
+  const getCurrentQuestion = () => {
+    if (currentQuestion >= 0 && currentQuestion < questions.length) {
+      return questions[currentQuestion];
+    }
+    return null;
+  };
+
+  const currentQuestionData = getCurrentQuestion();
 
   return (
     <GameShell
       title="Homework Story"
-      score={score}
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
+      currentLevel={5}
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
+      onNext={handleNext}
+      nextEnabled={false}
       showGameOver={showResult}
-      gameId={gameId}
+      score={coins}
+      gameId="dcos-kids-94"
       gameType="dcos"
-      totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      maxScore={scenarios.length}
-      showConfetti={showResult && score === scenarios.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-    >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="bg-green-500/20 border-2 border-green-400/50 rounded-lg p-3 mb-4">
-              <p className="text-green-200 text-xs font-semibold">
-                💡 Use the internet wisely to LEARN, not waste time!
+      maxScore={5}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6 text-center">
+                {currentQuestionData.text}
               </p>
-            </div>
-
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
-
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white italic text-base md:text-lg">
-                Friend says: "{currentScenarioData.situation}"
-              </p>
-            </div>
-
-            <p className="text-white/90 mb-4 text-center font-semibold text-lg">
-              What should your friend do?
-            </p>
-
-            <div className="space-y-3">
-              {currentScenarioData.options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all text-left ${
-                    answered && option.isUseful
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isUseful
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-medium text-base md:text-lg">{option.text}</div>
-                  </div>
-                </button>
-              ))}
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options && currentQuestionData.options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🏆</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === scenarios.length ? "Perfect Smart Learner Badge! 🎉" : `You made ${score} out of ${scenarios.length} smart choices!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === scenarios.length 
-                ? "Excellent! You made smart choices about using YouTube for learning!"
-                : "Great job! Keep learning to use YouTube wisely for your studies!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Remember: YouTube can be a powerful learning tool — use it wisely for your studies!
-              </p>
-            </div>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

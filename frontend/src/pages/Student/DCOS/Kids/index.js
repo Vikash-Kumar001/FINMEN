@@ -71,7 +71,7 @@ import ReflexShareSafe from './ReflexShareSafe';
 import FootprintBadge from './FootprintBadge';
 import SmartRobotStory from './SmartRobotStory';
 import ReflexAISafety1 from './ReflexAISafety1';
-import AiGoodBadPuzzle from './AiGoodBadPuzzle';
+import AIGoodBadPuzzle from './AiGoodBadPuzzle';
 import FairnessQuiz1 from './FairnessQuiz1';
 import AIFriendStory from './AIFriendStory';
 import ReflexDeepfakeSpotter from './ReflexDeepfakeSpotter';
@@ -164,6 +164,7 @@ const kidDcosGames = {
   'profile-quiz': ProfileQuiz,
   'photo-consent-reflex': PhotoConsentReflex,
   'public-vs-private-puzzle': PublicVsPrivatePuzzle,
+  'puzzle-public-private': PublicVsPrivatePuzzle, // Alias for URL compatibility
   'stranger-request-story': StrangerRequestStory,
   'device-privacy-reflex': DevicePrivacyReflex,
   'rights-poster-task': RightsPosterTask,
@@ -184,7 +185,7 @@ const kidDcosGames = {
   // AI Awareness Games (71-80)
   'smart-robot-story': SmartRobotStory,
   'reflex-ai-safety1': ReflexAISafety1,
-  'ai-good-bad-puzzle': AiGoodBadPuzzle,
+  'puzzle-ai-good-bad': AIGoodBadPuzzle,
   'fairness-quiz1': FairnessQuiz1,
   'ai-friend-story': AIFriendStory,
   'reflex-deepfake-spotter': ReflexDeepfakeSpotter,

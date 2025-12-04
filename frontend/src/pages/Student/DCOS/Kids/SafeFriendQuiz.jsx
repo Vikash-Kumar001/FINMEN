@@ -1,122 +1,188 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const SafeFriendQuiz = () => {
   const location = useLocation();
-  const gameId = "dcos-kids-59";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-kids-59");
+  const gameId = gameData?.id || "dcos-kids-59";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for SafeFriendQuiz, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
 
   const questions = [
     {
       id: 1,
       text: "Should you share your homework answers online for others to copy?",
-      emoji: "📚",
       options: [
-        { id: 1, text: "Yes, to help friends", emoji: "👥", isCorrect: false },
-        { id: 2, text: "No, that's cheating", emoji: "🚫", isCorrect: true },
-        { id: 3, text: "Only if they ask nicely", emoji: "🤔", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Yes, to help friends", 
+          emoji: "👥", 
+          description: "Helping friends is good",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "No, that's cheating", 
+          emoji: "🚫", 
+          description: "Sharing answers is cheating",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Only if they ask nicely", 
+          emoji: "🤔", 
+          description: "Share if asked politely",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
       text: "What's a safe way to help your friend with homework?",
-      emoji: "🤝",
       options: [
-        { id: 1, text: "Send your full answers", emoji: "📤", isCorrect: false },
-        { id: 2, text: "Explain how to solve it", emoji: "💡", isCorrect: true },
-        { id: 3, text: "Ignore their question", emoji: "🙈", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Send your full answers", 
+          emoji: "📤", 
+          description: "Share complete answers",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Explain how to solve it", 
+          emoji: "💡", 
+          description: "Teach them how to solve it",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Ignore their question", 
+          emoji: "🙈", 
+          description: "Don't help at all",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
       text: "If someone online asks for your project file, what should you do?",
-      emoji: "📁",
       options: [
-        { id: 1, text: "Share it to be nice", emoji: "😊", isCorrect: false },
-        { id: 2, text: "Ask a teacher or parent first", emoji: "👨‍👩‍👧", isCorrect: true },
-        { id: 3, text: "Trust them if they seem friendly", emoji: "🤝", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Share it to be nice", 
+          emoji: "😊", 
+          description: "Share to be helpful",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Ask a teacher or parent first", 
+          emoji: "👨‍👩‍👧", 
+          description: "Ask adults before sharing",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Trust them if they seem friendly", 
+          emoji: "🤝", 
+          description: "Share if they're nice",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
       text: "Is it okay to join a group chat that shares school test answers?",
-      emoji: "💬",
       options: [
-        { id: 1, text: "Yes, it helps me prepare", emoji: "📖", isCorrect: false },
-        { id: 2, text: "No, that's dishonest", emoji: "❌", isCorrect: true },
-        { id: 3, text: "Sometimes, for learning", emoji: "🤷", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Yes, it helps me prepare", 
+          emoji: "📖", 
+          description: "It helps with studying",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "No, that's dishonest", 
+          emoji: "❌", 
+          description: "Sharing test answers is cheating",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Sometimes, for learning", 
+          emoji: "🤷", 
+          description: "It's okay sometimes",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
       text: "What's the best way to be a 'Safe Friend' online?",
-      emoji: "🌟",
       options: [
-        { id: 1, text: "Share answers secretly", emoji: "🤫", isCorrect: false },
-        { id: 2, text: "Encourage honesty and learning", emoji: "✨", isCorrect: true },
-        { id: 3, text: "Don't care what others do", emoji: "😐", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Share answers secretly", 
+          emoji: "🤫", 
+          description: "Share answers privately",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Encourage honesty and learning", 
+          emoji: "✨", 
+          description: "Help friends learn honestly",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Don't care what others do", 
+          emoji: "😐", 
+          description: "Ignore what friends do",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleAnswer = (optionId) => {
+  const handleChoice = (isCorrect) => {
     if (answered) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOption = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect || false;
-    
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
-      } else {
-        setShowResult(true);
       }
     }, 500);
   };
@@ -125,9 +191,9 @@ const SafeFriendQuiz = () => {
 
   return (
     <GameShell
-      title="Safe Friend Quiz"
+      title="Quiz on Safe Friendship"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -137,60 +203,40 @@ const SafeFriendQuiz = () => {
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}
       maxScore={questions.length}
-      showConfetti={showResult && score === questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentQuestionData.emoji}</div>
-            <p className="text-white text-lg md:text-xl mb-6 font-semibold text-center">
-              {currentQuestionData.text}
-            </p>
-
-            <div className="space-y-3">
-              {currentQuestionData.options.map(option => (
-                <button
-                  key={option.id}
-                  onClick={() => handleAnswer(option.id)}
-                  disabled={answered}
-                  className={`w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 border-white/40 rounded-xl p-4 md:p-5 transition-all transform hover:scale-102 ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : ''
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-medium text-base md:text-lg">{option.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🎉</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === questions.length ? "Perfect Safe Friend Champion! 🎉" : `You got ${score} out of ${questions.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === questions.length 
-                ? "Excellent! A real friend helps others learn, not cheat. Always share knowledge, not answers!"
-                : "Great job! Keep learning to be a safe and helpful friend online."}
-            </p>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 A real friend helps others learn, not cheat. Always share knowledge, not answers!
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

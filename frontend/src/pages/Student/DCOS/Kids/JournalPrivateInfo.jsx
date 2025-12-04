@@ -1,170 +1,174 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
+import { PenSquare } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const JournalPrivateInfo = () => {
   const location = useLocation();
-  const gameId = "dcos-kids-58";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-kids-58");
+  const gameId = gameData?.id || "dcos-kids-58";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for JournalPrivateInfo, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentTask, setCurrentTask] = useState(0);
-  const [journalEntry, setJournalEntry] = useState("");
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
   const [score, setScore] = useState(0);
   const [showResult, setShowResult] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [entry, setEntry] = useState("");
+  const [answered, setAnswered] = useState(false);
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const tasks = [
-    {
-      id: 1,
-      prompt: "3 things I should never share online are...",
-      emoji: "🔒"
+  const stages = [
+    { 
+      id: 1, 
+      prompt: "Write: \"3 things I should never share online are ___.\"", 
+      minLength: 10,
+      guidance: "Think about personal information like your address, phone number, passwords, or private photos."
     },
-    {
-      id: 2,
-      prompt: "What personal details should always be kept private?",
-      emoji: "🛡️"
+    { 
+      id: 2, 
+      prompt: "Describe: \"What personal details should always be kept private?\"", 
+      minLength: 10,
+      guidance: "Consider information that could be used to identify or locate you, like your full name, school, or home address."
     },
-    {
-      id: 3,
-      prompt: "Why should I avoid sharing my passwords or address online?",
-      emoji: "🤔"
+    { 
+      id: 3, 
+      prompt: "Write about: \"Why should I avoid sharing my passwords or address online?\"", 
+      minLength: 10,
+      guidance: "Think about safety risks like identity theft, strangers finding you, or someone accessing your accounts."
     },
-    {
-      id: 4,
-      prompt: "What might happen if I share private info publicly?",
-      emoji: "⚠️"
+    { 
+      id: 4, 
+      prompt: "Describe: \"What might happen if I share private info publicly?\"", 
+      minLength: 10,
+      guidance: "Consider consequences like strangers contacting you, people knowing where you live, or your accounts being hacked."
     },
-    {
-      id: 5,
-      prompt: "What are safe ways to keep my information secure?",
-      emoji: "💡"
+    { 
+      id: 5, 
+      prompt: "Write: \"What are safe ways to keep my information secure?\"", 
+      minLength: 10,
+      guidance: "Think about using strong passwords, not sharing personal details, and only talking to people you know online."
     }
   ];
 
   const handleSubmit = () => {
-    if (journalEntry.trim().length >= 10) {
-      setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-      resetFeedback();
-      
-      setTimeout(() => {
-        if (currentTask < tasks.length - 1) {
-          setCurrentTask(prev => prev + 1);
-          setJournalEntry("");
-        } else {
-          setShowResult(true);
-        }
-      }, 500);
+    if (answered) return;
+    
+    const currentPrompt = stages[currentStage];
+    if (entry.trim().length < currentPrompt.minLength) {
+      showCorrectAnswerFeedback(0, false);
+      return;
     }
+    
+    setAnswered(true);
+    resetFeedback();
+    setScore(prev => prev + 1);
+    showCorrectAnswerFeedback(1, true);
+
+    const isLastStage = currentStage === stages.length - 1;
+    
+    setTimeout(() => {
+      if (isLastStage) {
+        setShowResult(true);
+        setScore(stages.length); // Ensure score matches total for GameOverModal
+      } else {
+        setCurrentStage(prev => prev + 1);
+        setEntry("");
+        setAnswered(false);
+      }
+    }, 1500);
   };
 
-  const currentTaskData = tasks[currentTask];
+  const handleInputChange = (e) => {
+    setEntry(e.target.value);
+  };
+
+  const characterCount = entry.length;
+  const minLength = stages[currentStage]?.minLength || 10;
 
   return (
     <GameShell
       title="Journal: My Private Info"
+      subtitle={!showResult ? `Entry ${currentStage + 1} of ${stages.length}` : "Journal Complete!"}
       score={score}
-      subtitle={!showResult ? `Task ${currentTask + 1} of ${tasks.length}` : "Game Complete!"}
+      currentLevel={currentStage + 1}
+      totalLevels={stages.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={stages.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="dcos"
-      totalLevels={tasks.length}
-      currentLevel={currentTask + 1}
-      maxScore={tasks.length}
-      showConfetti={showResult && score === tasks.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
+      gameId={gameId}
+      gameType="dcos"
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentTaskData.emoji}</div>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
-              Protect Your Privacy
-            </h2>
-
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white/70 text-sm mb-2">Prompt {currentTask + 1} of {tasks.length}</p>
-              <p className="text-white text-lg md:text-xl font-semibold">
-                {currentTaskData.prompt}
+      <div className="space-y-8">
+        {!showResult && stages[currentStage] ? (
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Entry {currentStage + 1}/{stages.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{stages.length}</span>
+              </div>
+              
+              <div className="flex items-center gap-3 mb-4">
+                <PenSquare className="w-8 h-8 text-blue-400" />
+                <h3 className="text-xl font-bold text-white">Journal Entry</h3>
+              </div>
+              
+              <p className="text-white text-lg mb-4">
+                {stages[currentStage].prompt}
               </p>
-            </div>
-
-            <textarea
-              value={journalEntry}
-              onChange={(e) => setJournalEntry(e.target.value)}
-              placeholder="Write your answer here... (at least 10 characters)"
-              className="w-full h-32 md:h-40 bg-white/10 border-2 border-white/30 rounded-xl p-4 text-white placeholder-white/50 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-400/50 resize-none"
-              maxLength={200}
-            />
-
-            <div className="text-white/50 text-sm mt-2 text-right">
-              {journalEntry.length}/200 characters
-            </div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={journalEntry.trim().length < 10}
-              className={`w-full mt-6 py-3 rounded-xl font-bold text-white transition ${
-                journalEntry.trim().length >= 10
-                  ? "bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90"
-                  : "bg-gray-500/50 cursor-not-allowed"
-              }`}
-            >
-              {currentTask < tasks.length - 1 ? "Next Prompt" : "Finish Journal"}
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🧠</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === tasks.length ? "Perfect Smart Thinking! 🎉" : `You completed ${score} out of ${tasks.length} tasks!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === tasks.length 
-                ? "Excellent! You understand the importance of keeping your private information safe online!"
-                : "Great job! Keep learning about protecting your privacy online."}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Remember: Your full name, address, passwords, and photos are private. Always think before sharing online!
-              </p>
+              
+              <div className="bg-blue-500/20 border border-blue-400/30 rounded-xl p-4 mb-4">
+                <p className="text-white/90 text-sm">
+                  <span className="font-semibold text-blue-300">💡 Tip:</span> {stages[currentStage].guidance}
+                </p>
+              </div>
+              
+              <textarea
+                value={entry}
+                onChange={handleInputChange}
+                placeholder="Write your journal entry here..."
+                disabled={answered}
+                className="w-full h-32 p-4 bg-white/10 border border-white/20 rounded-xl text-white placeholder-white/50 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed resize-none"
+              />
+              
+              <div className="flex justify-between items-center mt-2 mb-4">
+                <span className={`text-sm ${characterCount < minLength ? 'text-red-400' : 'text-green-400'}`}>
+                  {characterCount < minLength 
+                    ? `Minimum ${minLength} characters (${minLength - characterCount} more needed)`
+                    : '✓ Minimum length reached'}
+                </span>
+                <span className="text-white/60 text-sm">{characterCount} characters</span>
+              </div>
+              
+              <button
+                onClick={handleSubmit}
+                disabled={entry.trim().length < minLength || answered}
+                className={`w-full py-3 rounded-xl font-bold transition-all ${
+                  entry.trim().length >= minLength && !answered
+                    ? 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white'
+                    : 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {answered ? 'Submitted!' : 'Submit Entry'}
+              </button>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

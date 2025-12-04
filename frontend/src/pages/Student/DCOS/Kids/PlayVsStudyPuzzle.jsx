@@ -1,196 +1,268 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const PlayVsStudyPuzzle = () => {
   const location = useLocation();
-  const gameId = "dcos-kids-22";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-kids-22");
+  const gameId = gameData?.id || "dcos-kids-22";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for PlayVsStudyPuzzle, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const questions = [
-    {
-      id: 1,
-      text: "Match the correct pair: Study = ?",
-      emoji: "📚",
-      options: [
-        { id: "homework", text: "Homework", emoji: "📝", isCorrect: true },
-        { id: "ball", text: "Ball", emoji: "⚽", isCorrect: false },
-        { id: "bed", text: "Bed", emoji: "🛏️", isCorrect: false }
-      ]
-    },
-    {
-      id: 2,
-      text: "Match the correct pair: Play = ?",
-      emoji: "🎮",
-      options: [
-        { id: "books", text: "Books", emoji: "📚", isCorrect: false },
-        { id: "playground", text: "Playground", emoji: "🏞️", isCorrect: true },
-        { id: "table", text: "Study Table", emoji: "🪑", isCorrect: false }
-      ]
-    },
-    {
-      id: 3,
-      text: "Match the correct pair: Sleep = ?",
-      emoji: "😴",
-      options: [
-        { id: "bed", text: "Bed", emoji: "🛏️", isCorrect: true },
-        { id: "school", text: "School", emoji: "🏫", isCorrect: false },
-        { id: "garden", text: "Garden", emoji: "🌳", isCorrect: false }
-      ]
-    },
-    {
-      id: 4,
-      text: "Match the correct pair: Eat = ?",
-      emoji: "🍽️",
-      options: [
-        { id: "plate", text: "Plate", emoji: "🍽️", isCorrect: true },
-        { id: "pencil", text: "Pencil", emoji: "✏️", isCorrect: false },
-        { id: "toy", text: "Toy", emoji: "🧸", isCorrect: false }
-      ]
-    },
-    {
-      id: 5,
-      text: "Match the correct pair: Read = ?",
-      emoji: "📖",
-      options: [
-        { id: "book", text: "Book", emoji: "📚", isCorrect: true },
-        { id: "bat", text: "Bat", emoji: "🏏", isCorrect: false },
-        { id: "ball", text: "Ball", emoji: "⚽", isCorrect: false }
-      ]
-    }
+  // Activities (left side)
+  const leftItems = [
+    { id: 1, name: "Study", emoji: "📚", description: "Learning and homework" },
+    { id: 2, name: "Play", emoji: "🎮", description: "Fun activities" },
+    { id: 3, name: "Sleep", emoji: "😴", description: "Rest time" },
+    { id: 4, name: "Eat", emoji: "🍽️", description: "Meal time" },
+    { id: 5, name: "Read", emoji: "📖", description: "Reading books" }
   ];
 
-  const handleAnswer = (optionId) => {
-    if (answered) return;
-    
-    setAnswered(true);
+  // Places/Items (right side)
+  const rightItems = [
+    { id: 1, name: "Homework", emoji: "📝", description: "Study work" },
+    { id: 2, name: "Playground", emoji: "🏞️", description: "Play area" },
+    { id: 3, name: "Bed", emoji: "🛏️", description: "Sleeping place" },
+    { id: 4, name: "Plate", emoji: "🍽️", description: "Eating utensil" },
+    { id: 5, name: "Book", emoji: "📚", description: "Reading material" }
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { leftId: 1, rightId: 1 }, // Study → Homework
+    { leftId: 2, rightId: 2 }, // Play → Playground
+    { leftId: 3, rightId: 3 }, // Sleep → Bed
+    { leftId: 4, rightId: 4 }, // Eat → Plate
+    { leftId: 5, rightId: 5 }  // Read → Book
+  ];
+
+  // Shuffled right items for display (to split matches across positions)
+  const shuffledRightItems = [
+    rightItems[1], // Playground (id: 2) - position 1
+    rightItems[0], // Homework (id: 1) - position 2
+    rightItems[4], // Book (id: 5) - position 3
+    rightItems[3], // Plate (id: 4) - position 4
+    rightItems[2]  // Bed (id: 3) - position 5
+  ];
+
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    setSelectedLeft(item);
+  };
+
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOption = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect || false;
-    
-    if (isCorrect) {
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setAnswered(false);
-      } else {
+
+    // Check if all items are matched
+    if (newMatches.length === leftItems.length) {
+      setTimeout(() => {
         setShowResult(true);
-      }
-    }, 500);
+      }, 800);
+    }
+
+    // Reset selections
+    setSelectedLeft(null);
+    setSelectedRight(null);
   };
 
-  const currentQuestionData = questions[currentQuestion];
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setMatches([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setScore(0);
+    resetFeedback();
+  };
+
+  // Check if a left item is already matched
+  const isLeftItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
+  };
+
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
+  };
+
+  // Get match result for a left item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Play vs Study Puzzle"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      subtitle={showResult ? "Puzzle Complete!" : `Match activities with their places/items (${matches.length}/${leftItems.length} matched)`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={questions.length}
-      currentLevel={currentQuestion + 1}
-      maxScore={questions.length}
-      showConfetti={showResult && score === questions.length}
+      totalLevels={leftItems.length}
+      currentLevel={matches.length + 1}
+      maxScore={leftItems.length}
+      showConfetti={showResult && score === leftItems.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+      <div className="space-y-8 max-w-5xl mx-auto">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentQuestionData.emoji}</div>
-            <p className="text-white text-lg md:text-xl mb-6 font-semibold text-center">
-              {currentQuestionData.text}
-            </p>
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Matches: {matches.length}/{leftItems.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{leftItems.length}</span>
+              </div>
+              
+              <p className="text-white/90 text-center mb-6">
+                Select an activity from the left and its matching place/item from the right, then click "Match"
+              </p>
 
-            <div className="space-y-3">
-              {currentQuestionData.options.map((option) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Left column - Activities */}
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-white text-center">Activities</h4>
+                  <div className="space-y-3">
+                    {leftItems.map((item) => {
+                      const isMatched = isLeftItemMatched(item.id);
+                      const matchResult = getMatchResult(item.id);
+                      const isSelected = selectedLeft?.id === item.id;
+                      
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleLeftSelect(item)}
+                          disabled={isMatched || showResult}
+                          className={`w-full p-4 rounded-xl transition-all border-2 ${
+                            isSelected
+                              ? 'bg-blue-500/30 border-blue-400 ring-2 ring-blue-400'
+                              : isMatched
+                              ? matchResult
+                                ? 'bg-green-500/20 border-green-400 opacity-70'
+                                : 'bg-red-500/20 border-red-400 opacity-70'
+                              : 'bg-white/10 hover:bg-white/20 border-white/30'
+                          } ${isMatched ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="flex items-center">
+                            <span className="text-2xl mr-3">{item.emoji}</span>
+                            <div className="text-left flex-1">
+                              <div className="font-semibold text-white">{item.name}</div>
+                              <div className="text-sm text-white/70">{item.description}</div>
+                            </div>
+                            {isMatched && (
+                              <span className={`text-xl ${matchResult ? 'text-green-400' : 'text-red-400'}`}>
+                                {matchResult ? '✓' : '✗'}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right column - Places/Items */}
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-white text-center">Places/Items</h4>
+                  <div className="space-y-3">
+                    {shuffledRightItems.map((item) => {
+                      const isMatched = isRightItemMatched(item.id);
+                      const isSelected = selectedRight?.id === item.id;
+                      
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleRightSelect(item)}
+                          disabled={isMatched || showResult}
+                          className={`w-full p-4 rounded-xl transition-all border-2 text-left ${
+                            isSelected
+                              ? 'bg-blue-500/30 border-blue-400 ring-2 ring-blue-400'
+                              : isMatched
+                              ? 'bg-green-500/20 border-green-400 opacity-70'
+                              : 'bg-white/10 hover:bg-white/20 border-white/30'
+                          } ${isMatched ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="flex items-center">
+                            <span className="text-2xl mr-3">{item.emoji}</span>
+                            <div className="flex-1">
+                              <div className="font-semibold text-white">{item.name}</div>
+                              <div className="text-sm text-white/70">{item.description}</div>
+                            </div>
+                            {isMatched && (
+                              <span className="text-xl text-green-400">✓</span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Match button */}
+              <div className="text-center">
                 <button
-                  key={option.id}
-                  onClick={() => handleAnswer(option.id)}
-                  disabled={answered}
-                  className={`w-full bg-white/20 backdrop-blur-sm hover:bg-white/30 border-2 rounded-xl p-4 md:p-5 transition-all transform hover:scale-102 ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : 'border-white/40'
+                  onClick={handleMatch}
+                  disabled={!selectedLeft || !selectedRight || showResult}
+                  className={`px-8 py-3 rounded-full font-bold transition-all ${
+                    selectedLeft && selectedRight && !showResult
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white'
+                      : 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
                   }`}
                 >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-medium text-base md:text-lg">{option.text}</div>
-                  </div>
+                  Match Selected
                 </button>
-              ))}
+              </div>
             </div>
           </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🧩</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === questions.length ? "Perfect Matcher! 🎉" : `You got ${score} out of ${questions.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-4">
-              {score === questions.length 
-                ? "Excellent! You know where each activity belongs!"
-                : `You matched ${score} out of ${questions.length} correctly!`}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Each activity has its right place — Study = Homework, Play = Playground, Sleep = Bed. Balance both for a happy mind!
-              </p>
-            </div>
-          </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

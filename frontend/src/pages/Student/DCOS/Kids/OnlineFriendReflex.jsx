@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
+
 const OnlineFriendReflex = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -16,252 +18,230 @@ const OnlineFriendReflex = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
       id: 1,
-      text: "A stranger online says: 'Hi! I'm your age. Want to meet at the park?' What should you do?",
+      question: "A stranger online says: 'Hi! I'm your age. Want to meet at the park?' What should you do?",
+      correctAnswer: "Say No and Tell Parent",
       options: [
-        { 
-          id: "a", 
-          text: "Say No and Tell Parent", 
-          emoji: "🛡️", 
-          description: "Refuse and tell a trusted adult",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Say Yes and Meet", 
-          emoji: "😊", 
-          description: "Agree to meet them at the park",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Ask for More Info", 
-          emoji: "🤔", 
-          description: "Ask them more questions first",
-          isCorrect: false
-        }
+        { text: "Say No and Tell Parent", isCorrect: true, emoji: "🛡️" },
+        { text: "Say Yes and Meet", isCorrect: false, emoji: "😊" },
+        { text: "Ask for More Info", isCorrect: false, emoji: "🤔" },
+        { text: "Share Your Location", isCorrect: false, emoji: "📍" }
       ]
     },
     {
       id: 2,
-      text: "Someone online says: 'I know your friend. Let's meet after school.' What's the safe choice?",
+      question: "Someone online says: 'I know your friend. Let's meet after school.' What's the safe choice?",
+      correctAnswer: "Refuse and Tell Adult",
       options: [
-        { 
-          id: "a", 
-          text: "Agree to Meet", 
-          emoji: "😊", 
-          description: "Say yes and arrange to meet",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Refuse and Tell Adult", 
-          emoji: "🛡️", 
-          description: "Say no and tell a trusted adult",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Ask Where to Meet", 
-          emoji: "🤔", 
-          description: "Ask them for the meeting location",
-          isCorrect: false
-        }
+        { text: "Agree to Meet", isCorrect: false, emoji: "😊" },
+        { text: "Refuse and Tell Adult", isCorrect: true, emoji: "🛡️" },
+        { text: "Ask Where to Meet", isCorrect: false, emoji: "🤔" },
+        { text: "Go Alone", isCorrect: false, emoji: "🚶" }
       ]
     },
     {
       id: 3,
-      text: "Online person says: 'I'm a kid too. Want to play at my house?' What should you do?",
+      question: "Online person says: 'I'm a kid too. Want to play at my house?' What should you do?",
+      correctAnswer: "Say No and Block",
       options: [
-        { 
-          id: "a", 
-          text: "Say No and Block", 
-          emoji: "🛡️", 
-          description: "Refuse and block them",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Say Yes", 
-          emoji: "😊", 
-          description: "Agree to go to their house",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Ask for Address", 
-          emoji: "📍", 
-          description: "Ask them for their home address",
-          isCorrect: false
-        }
+        { text: "Say No and Block", isCorrect: true, emoji: "🛡️" },
+        { text: "Say Yes", isCorrect: false, emoji: "😊" },
+        { text: "Ask for Address", isCorrect: false, emoji: "📍" },
+        { text: "Share Your Address", isCorrect: false, emoji: "🏠" }
       ]
     },
     {
       id: 4,
-      text: "Stranger says: 'I have candy. Come meet me at the park.' What's the right response?",
+      question: "Stranger says: 'I have candy. Come meet me at the park.' What's the right response?",
+      correctAnswer: "Refuse and Tell Parent",
       options: [
-        { 
-          id: "a", 
-          text: "Go Meet Them", 
-          emoji: "😊", 
-          description: "Go to the park to get candy",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Refuse and Tell Parent", 
-          emoji: "🛡️", 
-          description: "Say no and tell parent immediately",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Ask What Kind of Candy", 
-          emoji: "🤔", 
-          description: "Ask them what candy they have",
-          isCorrect: false
-        }
+        { text: "Go Meet Them", isCorrect: false, emoji: "😊" },
+        { text: "Refuse and Tell Parent", isCorrect: true, emoji: "🛡️" },
+        { text: "Ask What Kind of Candy", isCorrect: false, emoji: "🤔" },
+        { text: "Bring Friends", isCorrect: false, emoji: "👥" }
       ]
     },
     {
       id: 5,
-      text: "Online friend says: 'Let's meet in person. I'll bring my parents.' What should you do?",
+      question: "Online friend says: 'Let's meet in person. I'll bring my parents.' What should you do?",
+      correctAnswer: "Tell Parent First",
       options: [
-        { 
-          id: "a", 
-          text: "Tell Parent First", 
-          emoji: "🛡️", 
-          description: "Tell your parent and only meet with parent present",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Go Alone", 
-          emoji: "😊", 
-          description: "Go meet them by yourself",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Go with Friends Only", 
-          emoji: "👥", 
-          description: "Go with your friends but no parents",
-          isCorrect: false
-        }
+        { text: "Tell Parent First", isCorrect: true, emoji: "🛡️" },
+        { text: "Go Alone", isCorrect: false, emoji: "😊" },
+        { text: "Go with Friends Only", isCorrect: false, emoji: "👥" },
+        { text: "Don't Tell Anyone", isCorrect: false, emoji: "🤫" }
       ]
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
-    if (currentQuestion < 0 || currentQuestion >= questions.length) {
-      return;
-    }
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-    const currentQ = questions[currentQuestion];
-    if (!currentQ || !currentQ.options) {
-      return;
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
+  }, [currentRound, gameState]);
 
-    const newChoices = [...choices, { 
-      questionId: currentQ.id, 
-      choice: selectedChoice,
-      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
-    
-    setChoices(newChoices);
-    
-    // If the choice is correct, add coins and show flash/confetti
-    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-    
-    // Move to next question or show results
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 1000 : 800);
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
     } else {
-      // Calculate final score
-      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setTimeout(() => {
-        setShowResult(true);
-      }, isCorrect ? 1000 : 800);
+      setGameState("finished");
     }
-  };
+  }, []);
 
-  const handleNext = () => {
-    navigate("/games/digital-citizenship/kids");
-  };
-
-  const getCurrentQuestion = () => {
-    if (currentQuestion >= 0 && currentQuestion < questions.length) {
-      return questions[currentQuestion];
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     }
-    return null;
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
   };
 
-  const currentQuestionData = getCurrentQuestion();
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const isCorrect = option.isCorrect;
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    setTimeout(() => {
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
+      } else {
+        setGameState("finished");
+      }
+    }, 500);
+  };
+
+  const finalScore = score;
+
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Online Friend Reflex"
-      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      currentLevel={5}
-      totalLevels={5}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your online friend safety reflexes!` : "Test your online friend safety reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={false}
-      showGameOver={showResult}
-      score={coins}
-      gameId="dcos-kids-9"
-      gameType="dcos"
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      maxScore={5}
+      score={finalScore}
+      gameId={gameId}
+      gameType="dcos"
+      maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
-      totalXp={totalXp}
-      showConfetti={showResult && finalScore === 5}>
-      <div className="space-y-8">
-        {!showResult && currentQuestionData ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">👥</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about online friend safety!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
               
-              <p className="text-white text-lg mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options && currentQuestionData.options.map(option => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.id)}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
                 ))}
               </div>
             </div>
           </div>
-        ) : null}
+        )}
       </div>
     </GameShell>
   );

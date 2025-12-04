@@ -71,7 +71,7 @@ import ReflexShareSafe from './ReflexShareSafe';
 import FootprintBadge from './FootprintBadge';
 import SmartRobotStory from './SmartRobotStory';
 import ReflexAISafety1 from './ReflexAISafety1';
-import AIGoodBadPuzzle from './AIGoodBadPuzzle';
+import AIGoodBadPuzzle from './AiGoodBadPuzzle';
 import FairnessQuiz1 from './FairnessQuiz1';
 import AIFriendStory from './AIFriendStory';
 import ReflexDeepfakeSpotter from './ReflexDeepfakeSpotter';

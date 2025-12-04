@@ -1,11 +1,13 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
+
 const FriendshipReflex = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -16,252 +18,230 @@ const FriendshipReflex = () => {
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
-  const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
   const questions = [
     {
       id: 1,
-      text: "A classmate is being teased online. What should you do?",
+      question: "A classmate is being teased online. What should you do?",
+      correctAnswer: "Stand with Friend",
       options: [
-        { 
-          id: "a", 
-          text: "Stand with Friend", 
-          emoji: "🛡️", 
-          description: "Stand up for them and get help",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Celebrate", 
-          emoji: "🎉", 
-          description: "Celebrate the teasing",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Ignore It", 
-          emoji: "😐", 
-          description: "Ignore it completely",
-          isCorrect: false
-        }
+        { text: "Stand with Friend", isCorrect: true, emoji: "🛡️" },
+        { text: "Celebrate", isCorrect: false, emoji: "🎉" },
+        { text: "Ignore It", isCorrect: false, emoji: "😐" },
+        { text: "Join the Teasing", isCorrect: false, emoji: "😈" }
       ]
     },
     {
       id: 2,
-      text: "Your friend got a new haircut. What should you do?",
+      question: "Your friend got a new haircut. What should you do?",
+      correctAnswer: "Celebrate",
       options: [
-        { 
-          id: "a", 
-          text: "Stand with Friend", 
-          emoji: "🛡️", 
-          description: "Stand up for them",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Celebrate", 
-          emoji: "🎉", 
-          description: "Celebrate their new haircut",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Make Fun of It", 
-          emoji: "😄", 
-          description: "Make fun of their haircut",
-          isCorrect: false
-        }
+        { text: "Stand with Friend", isCorrect: false, emoji: "🛡️" },
+        { text: "Celebrate", isCorrect: true, emoji: "🎉" },
+        { text: "Make Fun of It", isCorrect: false, emoji: "😄" },
+        { text: "Ignore Them", isCorrect: false, emoji: "😐" }
       ]
     },
     {
       id: 3,
-      text: "Someone is spreading rumors about a friend. What should you do?",
+      question: "Someone is spreading rumors about a friend. What should you do?",
+      correctAnswer: "Stand with Friend",
       options: [
-        { 
-          id: "a", 
-          text: "Stand with Friend", 
-          emoji: "🛡️", 
-          description: "Stand up for your friend and stop the rumors",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Celebrate", 
-          emoji: "🎉", 
-          description: "Celebrate the rumors",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Spread More Rumors", 
-          emoji: "🗣️", 
-          description: "Spread more rumors",
-          isCorrect: false
-        }
+        { text: "Stand with Friend", isCorrect: true, emoji: "🛡️" },
+        { text: "Celebrate", isCorrect: false, emoji: "🎉" },
+        { text: "Spread More Rumors", isCorrect: false, emoji: "🗣️" },
+        { text: "Ignore It", isCorrect: false, emoji: "😐" }
       ]
     },
     {
       id: 4,
-      text: "A friend shares good news with you. What should you do?",
+      question: "A friend shares good news with you. What should you do?",
+      correctAnswer: "Celebrate",
       options: [
-        { 
-          id: "a", 
-          text: "Stand with Friend", 
-          emoji: "🛡️", 
-          description: "Stand up for them",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Celebrate", 
-          emoji: "🎉", 
-          description: "Celebrate their good news",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Ignore Them", 
-          emoji: "😐", 
-          description: "Ignore their news",
-          isCorrect: false
-        }
+        { text: "Stand with Friend", isCorrect: false, emoji: "🛡️" },
+        { text: "Celebrate", isCorrect: true, emoji: "🎉" },
+        { text: "Ignore Them", isCorrect: false, emoji: "😐" },
+        { text: "Make Fun", isCorrect: false, emoji: "😄" }
       ]
     },
     {
       id: 5,
-      text: "Someone is left out of a game. What should you do?",
+      question: "Someone is left out of a game. What should you do?",
+      correctAnswer: "Stand with Friend",
       options: [
-        { 
-          id: "a", 
-          text: "Stand with Friend", 
-          emoji: "🛡️", 
-          description: "Stand up for them and include them",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Celebrate", 
-          emoji: "🎉", 
-          description: "Celebrate them being left out",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Ignore Them", 
-          emoji: "😐", 
-          description: "Ignore them",
-          isCorrect: false
-        }
+        { text: "Stand with Friend", isCorrect: true, emoji: "🛡️" },
+        { text: "Celebrate", isCorrect: false, emoji: "🎉" },
+        { text: "Ignore Them", isCorrect: false, emoji: "😐" },
+        { text: "Leave Them Out", isCorrect: false, emoji: "🚶" }
       ]
     }
   ];
 
-  const handleChoice = (selectedChoice) => {
-    if (currentQuestion < 0 || currentQuestion >= questions.length) {
-      return;
-    }
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
 
-    const currentQ = questions[currentQuestion];
-    if (!currentQ || !currentQ.options) {
-      return;
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
     }
+  }, [currentRound, gameState]);
 
-    const newChoices = [...choices, { 
-      questionId: currentQ.id, 
-      choice: selectedChoice,
-      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
-    
-    setChoices(newChoices);
-    
-    // If the choice is correct, add coins and show flash/confetti
-    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    }
-    
-    // Move to next question or show results
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 1000 : 800);
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
     } else {
-      // Calculate final score
-      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
-      setFinalScore(correctAnswers);
-      setTimeout(() => {
-        setShowResult(true);
-      }, isCorrect ? 1000 : 800);
+      setGameState("finished");
     }
-  };
+  }, []);
 
-  const handleNext = () => {
-    navigate("/games/digital-citizenship/kids");
-  };
-
-  const getCurrentQuestion = () => {
-    if (currentQuestion >= 0 && currentQuestion < questions.length) {
-      return questions[currentQuestion];
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
     }
-    return null;
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
   };
 
-  const currentQuestionData = getCurrentQuestion();
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    const isCorrect = option.isCorrect;
+    
+    if (isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    setTimeout(() => {
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
+      } else {
+        setGameState("finished");
+      }
+    }, 500);
+  };
+
+  const finalScore = score;
+
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Friendship Reflex"
-      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      currentLevel={5}
-      totalLevels={5}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your friendship reflexes!` : "Test your friendship reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={false}
-      showGameOver={showResult}
-      score={coins}
-      gameId="dcos-kids-19"
-      gameType="dcos"
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      maxScore={5}
+      score={finalScore}
+      gameId={gameId}
+      gameType="dcos"
+      maxScore={TOTAL_ROUNDS}
       totalCoins={totalCoins}
-      totalXp={totalXp}
-      showConfetti={showResult && finalScore === 5}>
-      <div className="space-y-8">
-        {!showResult && currentQuestionData ? (
-          <div className="space-y-6">
-            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-              <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🤝</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              Answer questions about being a good friend!<br />
+              You have {ROUND_TIME} seconds for each question.
+            </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
               
-              <p className="text-white text-lg mb-6 text-center">
-                {currentQuestionData.text}
-              </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options && currentQuestionData.options.map(option => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
                   <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.id)}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
                   </button>
                 ))}
               </div>
             </div>
           </div>
-        ) : null}
+        )}
       </div>
     </GameShell>
   );

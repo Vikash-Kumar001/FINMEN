@@ -1,263 +1,264 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const GossipPuzzle = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "dcos-kids-14";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("dcos-kids-14");
+  const gameId = gameData?.id || "dcos-kids-14";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for GossipPuzzle, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
-    {
-      id: 1,
-      text: "Spreading rumors about someone - what does this lead to?",
-      options: [
-        { 
-          id: "a", 
-          text: "Hurt Feelings", 
-          emoji: "😢", 
-          description: "Spreading rumors hurts people's feelings",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Broken Trust", 
-          emoji: "💔", 
-          description: "Rumors break trust between friends",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Damaged Friendships", 
-          emoji: "👥", 
-          description: "Rumors damage friendships",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 2,
-      text: "Telling someone's secrets to others - what does this cause?",
-      options: [
-        { 
-          id: "a", 
-          text: "Hurt Feelings", 
-          emoji: "😢", 
-          description: "Telling secrets hurts feelings",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Broken Trust", 
-          emoji: "💔", 
-          description: "Telling secrets breaks trust",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Damaged Friendships", 
-          emoji: "👥", 
-          description: "Secrets damage friendships",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 3,
-      text: "Gossiping about a friend - what does this result in?",
-      options: [
-        { 
-          id: "a", 
-          text: "Hurt Feelings", 
-          emoji: "😢", 
-          description: "Gossip hurts feelings",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Broken Trust", 
-          emoji: "💔", 
-          description: "Gossip breaks trust",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Damaged Friendships", 
-          emoji: "👥", 
-          description: "Gossip damages friendships",
-          isCorrect: true
-        }
-      ]
-    },
-    {
-      id: 4,
-      text: "Making fun of someone behind their back - what does this cause?",
-      options: [
-        { 
-          id: "a", 
-          text: "Hurt Feelings", 
-          emoji: "😢", 
-          description: "Making fun hurts people's feelings",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Broken Trust", 
-          emoji: "💔", 
-          description: "Making fun breaks trust",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Damaged Friendships", 
-          emoji: "👥", 
-          description: "Making fun damages friendships",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 5,
-      text: "Sharing someone's private information without permission - what does this lead to?",
-      options: [
-        { 
-          id: "a", 
-          text: "Hurt Feelings", 
-          emoji: "😢", 
-          description: "Sharing private info hurts feelings",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Broken Trust", 
-          emoji: "💔", 
-          description: "Sharing private info breaks trust",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Damaged Friendships", 
-          emoji: "👥", 
-          description: "Sharing private info damages friendships",
-          isCorrect: false
-        }
-      ]
-    }
+  // Actions (left side)
+  const leftItems = [
+    { id: 1, name: "Spreading rumors", emoji: "💬", description: "Telling untrue stories" },
+    { id: 2, name: "Telling someone's secrets", emoji: "🤫", description: "Sharing private information" },
+    { id: 3, name: "Gossiping about a friend", emoji: "👥", description: "Talking behind their back" },
+    { id: 4, name: "Making fun behind their back", emoji: "😈", description: "Teasing secretly" },
+    { id: 5, name: "Sharing private info without permission", emoji: "🔓", description: "Breaking trust" }
   ];
 
-  const handleChoice = (selectedChoice) => {
-    if (currentQuestion < 0 || currentQuestion >= questions.length) {
-      return;
-    }
+  // Consequences (right side)
+  const rightItems = [
+    { id: 1, name: "Hurt Feelings", emoji: "😢", description: "Causes emotional pain" },
+    { id: 2, name: "Broken Trust", emoji: "💔", description: "Destroys trust between friends" },
+    { id: 3, name: "Damaged Friendships", emoji: "👥", description: "Hurts relationships" },
+    { id: 4, name: "Hurt Feelings", emoji: "😢", description: "Causes emotional pain" },
+    { id: 5, name: "Broken Trust", emoji: "💔", description: "Destroys trust between friends" }
+  ];
 
-    const currentQ = questions[currentQuestion];
-    if (!currentQ || !currentQ.options) {
-      return;
-    }
+  // Correct matches
+  const correctMatches = [
+    { leftId: 1, rightId: 1 }, // Spreading rumors → Hurt Feelings
+    { leftId: 2, rightId: 2 }, // Telling someone's secrets → Broken Trust
+    { leftId: 3, rightId: 3 }, // Gossiping about a friend → Damaged Friendships
+    { leftId: 4, rightId: 4 }, // Making fun behind their back → Hurt Feelings
+    { leftId: 5, rightId: 5 }  // Sharing private info without permission → Broken Trust
+  ];
 
-    const newChoices = [...choices, { 
-      questionId: currentQ.id, 
-      choice: selectedChoice,
-      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
-    
-    setChoices(newChoices);
-    
-    // If the choice is correct, add coins and show flash/confetti
-    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
+  // Shuffled right items for display (to split matches across positions)
+  const shuffledRightItems = [
+    rightItems[1], // Broken Trust (id: 2) - position 1
+    rightItems[0], // Hurt Feelings (id: 1) - position 2
+    rightItems[4], // Broken Trust (id: 5) - position 3
+    rightItems[3], // Hurt Feelings (id: 4) - position 4
+    rightItems[2]  // Damaged Friendships (id: 3) - position 5
+  ];
+
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    setSelectedLeft(item);
+  };
+
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    // Move to next question or show results
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 1000 : 800);
     } else {
-      // Calculate final score
-      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
-      setFinalScore(correctAnswers);
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    // Check if all items are matched
+    if (newMatches.length === leftItems.length) {
       setTimeout(() => {
         setShowResult(true);
-      }, isCorrect ? 1000 : 800);
+      }, 800);
     }
+
+    // Reset selections
+    setSelectedLeft(null);
+    setSelectedRight(null);
   };
 
-  const handleNext = () => {
-    navigate("/games/digital-citizenship/kids");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setMatches([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setScore(0);
+    resetFeedback();
   };
 
-  const getCurrentQuestion = () => {
-    if (currentQuestion >= 0 && currentQuestion < questions.length) {
-      return questions[currentQuestion];
-    }
-    return null;
+  // Check if a left item is already matched
+  const isLeftItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
   };
 
-  const currentQuestionData = getCurrentQuestion();
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
+  };
+
+  // Get match result for a left item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Gossip Puzzle"
-      subtitle={showResult ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      currentLevel={5}
-      totalLevels={5}
+      score={score}
+      subtitle={showResult ? "Puzzle Complete!" : `Match actions with their consequences (${matches.length}/${leftItems.length} matched)`}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={false}
-      showGameOver={showResult}
-      score={coins}
-      gameId="dcos-kids-14"
-      gameType="dcos"
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={5}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && finalScore === 5}>
-      <div className="space-y-8">
-        {!showResult && currentQuestionData ? (
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={leftItems.length}
+      currentLevel={matches.length + 1}
+      maxScore={leftItems.length}
+      showConfetti={showResult && score === leftItems.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8 max-w-5xl mx-auto">
+        {!showResult ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+                <span className="text-white/80">Matches: {matches.length}/{leftItems.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{leftItems.length}</span>
               </div>
               
-              <p className="text-white text-lg mb-6 text-center">
-                {currentQuestionData.text}
+              <p className="text-white/90 text-center mb-6">
+                Select an action from the left and its consequence from the right, then click "Match"
               </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options && currentQuestionData.options.map(option => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.id)}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
-                  >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
-                  </button>
-                ))}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Left column - Actions */}
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-white text-center">Actions</h4>
+                  <div className="space-y-3">
+                    {leftItems.map((item) => {
+                      const isMatched = isLeftItemMatched(item.id);
+                      const matchResult = getMatchResult(item.id);
+                      const isSelected = selectedLeft?.id === item.id;
+                      
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleLeftSelect(item)}
+                          disabled={isMatched || showResult}
+                          className={`w-full p-4 rounded-xl transition-all border-2 ${
+                            isSelected
+                              ? 'bg-blue-500/30 border-blue-400 ring-2 ring-blue-400'
+                              : isMatched
+                              ? matchResult
+                                ? 'bg-green-500/20 border-green-400 opacity-70'
+                                : 'bg-red-500/20 border-red-400 opacity-70'
+                              : 'bg-white/10 hover:bg-white/20 border-white/30'
+                          } ${isMatched ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="flex items-center">
+                            <span className="text-2xl mr-3">{item.emoji}</span>
+                            <div className="text-left flex-1">
+                              <div className="font-semibold text-white">{item.name}</div>
+                              <div className="text-sm text-white/70">{item.description}</div>
+                            </div>
+                            {isMatched && (
+                              <span className={`text-xl ${matchResult ? 'text-green-400' : 'text-red-400'}`}>
+                                {matchResult ? '✓' : '✗'}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right column - Consequences */}
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-white text-center">Consequences</h4>
+                  <div className="space-y-3">
+                    {shuffledRightItems.map((item) => {
+                      const isMatched = isRightItemMatched(item.id);
+                      const isSelected = selectedRight?.id === item.id;
+                      
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleRightSelect(item)}
+                          disabled={isMatched || showResult}
+                          className={`w-full p-4 rounded-xl transition-all border-2 text-left ${
+                            isSelected
+                              ? 'bg-blue-500/30 border-blue-400 ring-2 ring-blue-400'
+                              : isMatched
+                              ? 'bg-green-500/20 border-green-400 opacity-70'
+                              : 'bg-white/10 hover:bg-white/20 border-white/30'
+                          } ${isMatched ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="flex items-center">
+                            <span className="text-2xl mr-3">{item.emoji}</span>
+                            <div className="flex-1">
+                              <div className="font-semibold text-white">{item.name}</div>
+                              <div className="text-sm text-white/70">{item.description}</div>
+                            </div>
+                            {isMatched && (
+                              <span className="text-xl text-green-400">✓</span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Match button */}
+              <div className="text-center">
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedLeft || !selectedRight || showResult}
+                  className={`px-8 py-3 rounded-full font-bold transition-all ${
+                    selectedLeft && selectedRight && !showResult
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white'
+                      : 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  Match Selected
+                </button>
               </div>
             </div>
           </div>

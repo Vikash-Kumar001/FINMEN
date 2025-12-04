@@ -1,195 +1,244 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const SchoolTeamReflex = () => {
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-kids-85";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      situation: "Your school football team just lost the match.",
-      emoji: "⚽😢",
+      question: "Your school football team just lost the match. What should you say?",
+      correctAnswer: "Say 'Good effort, we'll win next time!'",
       options: [
-        { id: 1, text: "Say 'You all are losers!'", emoji: "😠", isCorrect: false },
-        { id: 2, text: "Say 'Good effort, we'll win next time!'", emoji: "👏", isCorrect: true },
-        { id: 3, text: "Walk away without saying anything", emoji: "🚶‍♂️", isCorrect: false }
+        { text: "Say 'You all are losers!'", isCorrect: false, emoji: "😠" },
+        { text: "Say 'Good effort, we'll win next time!'", isCorrect: true, emoji: "👏" },
+        { text: "Walk away without saying anything", isCorrect: false, emoji: "🚶‍♂️" },
+        { text: "Complain about the referee", isCorrect: false, emoji: "😤" }
       ]
     },
     {
       id: 2,
-      situation: "A classmate drops the relay baton during a race.",
-      emoji: "🏃‍♀️💨",
+      question: "A classmate drops the relay baton during a race. What should you do?",
+      correctAnswer: "Say 'It's okay, keep trying!'",
       options: [
-        { id: 1, text: "Laugh and call them clumsy", emoji: "😂", isCorrect: false },
-        { id: 2, text: "Say 'It's okay, keep trying!'", emoji: "🤗", isCorrect: true },
-        { id: 3, text: "Complain to teacher about losing", emoji: "📢", isCorrect: false }
+        { text: "Laugh and call them clumsy", isCorrect: false, emoji: "😂" },
+        { text: "Say 'It's okay, keep trying!'", isCorrect: true, emoji: "🤗" },
+        { text: "Complain to teacher about losing", isCorrect: false, emoji: "📢" },
+        { text: "Ignore and walk away", isCorrect: false, emoji: "😶" }
       ]
     },
     {
       id: 3,
-      situation: "Your debate team forgets a line on stage.",
-      emoji: "🎤😬",
+      question: "Your debate team forgets a line on stage. What should you do?",
+      correctAnswer: "Encourage from the audience",
       options: [
-        { id: 1, text: "Encourage from the audience", emoji: "👍", isCorrect: true },
-        { id: 2, text: "Whisper jokes to your friend", emoji: "🤭", isCorrect: false },
-        { id: 3, text: "Record it and share online", emoji: "📱", isCorrect: false }
+        { text: "Encourage from the audience", isCorrect: true, emoji: "👍" },
+        { text: "Whisper jokes to your friend", isCorrect: false, emoji: "🤭" },
+        { text: "Record it and share online", isCorrect: false, emoji: "📱" },
+        { text: "Laugh out loud", isCorrect: false, emoji: "😆" }
       ]
     },
     {
       id: 4,
-      situation: "During basketball, your friend misses an easy shot.",
-      emoji: "🏀😔",
+      question: "During basketball, your friend misses an easy shot. What should you do?",
+      correctAnswer: "Clap and say 'You'll get it next time!'",
       options: [
-        { id: 1, text: "Say 'You're terrible at this!'", emoji: "😡", isCorrect: false },
-        { id: 2, text: "Clap and say 'You'll get it next time!'", emoji: "🙌", isCorrect: true },
-        { id: 3, text: "Ignore and leave", emoji: "🚶‍♀️", isCorrect: false }
+        { text: "Say 'You're terrible at this!'", isCorrect: false, emoji: "😡" },
+        { text: "Clap and say 'You'll get it next time!'", isCorrect: true, emoji: "🙌" },
+        { text: "Ignore and leave", isCorrect: false, emoji: "🚶‍♀️" },
+        { text: "Make fun of them", isCorrect: false, emoji: "😏" }
       ]
     },
     {
       id: 5,
-      situation: "Your house team comes last in sports day.",
-      emoji: "🏅😢",
+      question: "Your house team comes last in sports day. What should you do?",
+      correctAnswer: "Cheer them and say 'We'll come back stronger!'",
       options: [
-        { id: 1, text: "Cheer them and say 'We'll come back stronger!'", emoji: "💪", isCorrect: true },
-        { id: 2, text: "Say 'You embarrassed us!'", emoji: "😤", isCorrect: false },
-        { id: 3, text: "Complain about unfair rules", emoji: "🤷‍♂️", isCorrect: false }
+        { text: "Cheer them and say 'We'll come back stronger!'", isCorrect: true, emoji: "💪" },
+        { text: "Say 'You embarrassed us!'", isCorrect: false, emoji: "😤" },
+        { text: "Complain about unfair rules", isCorrect: false, emoji: "🤷‍♂️" },
+        { text: "Blame the team captain", isCorrect: false, emoji: "👎" }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (answered) return;
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
+  }, []);
+
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentScenarioData = scenarios[currentScenario];
-    const selectedOption = currentScenarioData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect || false;
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
+
     setTimeout(() => {
-      if (currentScenario < scenarios.length - 1) {
-        setCurrentScenario(prev => prev + 1);
-        setAnswered(false);
+      if (currentRound < TOTAL_ROUNDS) {
+        setCurrentRound(prev => prev + 1);
       } else {
-        setShowResult(true);
+        setGameState("finished");
       }
     }, 500);
   };
 
-  const currentScenarioData = scenarios[currentScenario];
+  const finalScore = score;
+
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="School Team Reflex"
-      score={score}
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your team support reflexes!` : "Test your team support reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="dcos"
-      totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      maxScore={scenarios.length}
-      showConfetti={showResult && score === scenarios.length}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-    >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 text-center">
-              {currentScenarioData.situation}
-            </h2>
-
-            <h3 className="text-white font-bold mb-4 text-center">Tap your reflex choice 👇</h3>
-
-            <div className="space-y-3">
-              {currentScenarioData.options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4 justify-center">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-semibold text-base md:text-lg">{option.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🌟</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === scenarios.length ? "Perfect Encouraging Spirit! 🎉" : `You got ${score} out of ${scenarios.length}!`}
-            </h2>
+      score={finalScore}
+      gameId={gameId}
+      gameType="dcos"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">⚽</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              {score === scenarios.length 
-                ? "Excellent! That's the right reflex! Encouragement builds teamwork and confidence."
-                : "Great job! Keep learning to encourage your teammates!"}
+              Answer questions about supporting your team!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 That's the right reflex! Encouragement builds teamwork and confidence.
-              </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

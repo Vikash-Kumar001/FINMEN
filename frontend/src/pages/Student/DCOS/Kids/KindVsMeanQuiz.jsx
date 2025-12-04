@@ -1,122 +1,188 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const KindVsMeanQuiz = () => {
   const location = useLocation();
-  const gameId = "dcos-kids-81";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-kids-81");
+  const gameId = gameData?.id || "dcos-kids-81";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for KindVsMeanQuiz, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
 
   const questions = [
     {
       id: 1,
       text: "Which word is kind?",
-      emoji: "💬",
       options: [
-        { id: 1, text: "Stupid", emoji: "😠", isCorrect: false },
-        { id: 2, text: "Friend", emoji: "👫", isCorrect: true },
-        { id: 3, text: "Ugly", emoji: "😞", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Stupid", 
+          emoji: "😠", 
+          description: "Mean and hurtful word",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Friend", 
+          emoji: "👫", 
+          description: "Kind and friendly word",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Ugly", 
+          emoji: "😞", 
+          description: "Mean and hurtful word",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
       text: "Choose the kind word:",
-      emoji: "🌸",
       options: [
-        { id: 1, text: "Nice", emoji: "😊", isCorrect: true },
-        { id: 2, text: "Loser", emoji: "😡", isCorrect: false },
-        { id: 3, text: "Hate", emoji: "😠", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Nice", 
+          emoji: "😊", 
+          description: "Kind and positive word",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Loser", 
+          emoji: "😡", 
+          description: "Mean and hurtful word",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Hate", 
+          emoji: "😠", 
+          description: "Mean and negative word",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
       text: "What's the kind word to call someone?",
-      emoji: "🤝",
       options: [
-        { id: 1, text: "Buddy", emoji: "👋", isCorrect: true },
-        { id: 2, text: "Idiot", emoji: "😤", isCorrect: false },
-        { id: 3, text: "Dumb", emoji: "😒", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Buddy", 
+          emoji: "👋", 
+          description: "Friendly and kind word",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Idiot", 
+          emoji: "😤", 
+          description: "Mean and hurtful word",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Dumb", 
+          emoji: "😒", 
+          description: "Mean and insulting word",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
       text: "Pick the kind expression:",
-      emoji: "🌟",
       options: [
-        { id: 1, text: "You can do it!", emoji: "💪", isCorrect: true },
-        { id: 2, text: "You're useless", emoji: "😠", isCorrect: false },
-        { id: 3, text: "Go away", emoji: "🚫", isCorrect: false }
+        { 
+          id: "a", 
+          text: "You can do it!", 
+          emoji: "💪", 
+          description: "Encouraging and supportive",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "You're useless", 
+          emoji: "😠", 
+          description: "Mean and hurtful",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Go away", 
+          emoji: "🚫", 
+          description: "Rude and unkind",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
       text: "Which word spreads kindness?",
-      emoji: "❤️",
       options: [
-        { id: 1, text: "Kind", emoji: "😊", isCorrect: true },
-        { id: 2, text: "Mean", emoji: "😠", isCorrect: false },
-        { id: 3, text: "Rude", emoji: "😤", isCorrect: false }
+        { 
+          id: "a", 
+          text: "Kind", 
+          emoji: "😊", 
+          description: "Kind words spread positivity",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Mean", 
+          emoji: "😠", 
+          description: "Mean words spread negativity",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Rude", 
+          emoji: "😤", 
+          description: "Rude words are hurtful",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleAnswer = (optionId) => {
+  const handleChoice = (isCorrect) => {
     if (answered) return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOption = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect || false;
-    
     if (isCorrect) {
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
         setCurrentQuestion(prev => prev + 1);
         setAnswered(false);
-      } else {
-        setShowResult(true);
       }
     }, 500);
   };
@@ -125,9 +191,9 @@ const KindVsMeanQuiz = () => {
 
   return (
     <GameShell
-      title="Kind vs Mean Words Quiz"
+      title="Quiz on Kind vs Mean Words"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Quiz Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -137,60 +203,40 @@ const KindVsMeanQuiz = () => {
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}
       maxScore={questions.length}
-      showConfetti={showResult && score === questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentQuestionData.emoji}</div>
-            <p className="text-white text-lg md:text-xl mb-6 font-semibold text-center">
-              {currentQuestionData.text}
-            </p>
-
-            <div className="space-y-3">
-              {currentQuestionData.options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleAnswer(option.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-medium text-base md:text-lg">{option.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🌈</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === questions.length ? "Perfect Kindness Champion! 🎉" : `You got ${score} out of ${questions.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === questions.length 
-                ? "Excellent! You can identify kind words perfectly! Kind words make everyone feel happier."
-                : "Great job! Keep learning to choose positive, friendly words!"}
-            </p>
-            <div className="bg-pink-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white/90 text-sm">
-                💡 Kind words make everyone feel happier. Always choose positive, friendly words!
+      <div className="space-y-8">
+        {!showResult && currentQuestionData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {currentQuestionData.text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {currentQuestionData.options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="text-3xl mb-3">{option.emoji}</div>
+                    <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

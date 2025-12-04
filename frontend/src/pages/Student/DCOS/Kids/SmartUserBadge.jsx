@@ -1,151 +1,257 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
 
 const SmartUserBadge = () => {
   const location = useLocation();
-  const gameId = "dcos-kids-100";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-kids-100");
+  const gameId = gameData?.id || "dcos-kids-100";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for SmartUserBadge, using fallback ID");
+  }
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [currentTask, setCurrentTask] = useState(0);
-  const [showBadge, setShowBadge] = useState(false);
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
+  const challenges = [
+    {
+      id: 1,
+      title: "Smart User Challenge 1",
+      question: "How can you use apps productively?",
+      options: [
+        { 
+          text: "Used an app to learn something new", 
+          emoji: "📱", 
+          isCorrect: true
+        },
+        { 
+          text: "Only play games on apps", 
+          emoji: "🎮", 
+          isCorrect: false
+        },
+        { 
+          text: "Use apps to waste time", 
+          emoji: "⏰", 
+          isCorrect: false
+        },
+        { 
+          text: "Never use educational apps", 
+          emoji: "🚫", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Smart User Challenge 2",
+      question: "What kind of videos should you watch?",
+      options: [
+        { 
+          text: "Only watch entertainment videos", 
+          emoji: "📺", 
+          isCorrect: false
+        },
+        { 
+          text: "Watched an educational video", 
+          emoji: "🎓", 
+          isCorrect: true
+        },
+        { 
+          text: "Watch videos all day", 
+          emoji: "⏰", 
+          isCorrect: false
+        },
+        { 
+          text: "Never learn from videos", 
+          emoji: "🚫", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Smart User Challenge 3",
+      question: "How can you use technology creatively?",
+      options: [
+        { 
+          text: "Only consume content", 
+          emoji: "📺", 
+          isCorrect: false
+        },
+        { 
+          text: "Created something using tech (drawing, coding, etc.)", 
+          emoji: "💻", 
+          isCorrect: true
+        },
+        { 
+          text: "Never create anything", 
+          emoji: "🚫", 
+          isCorrect: false
+        },
+        { 
+          text: "Only watch others create", 
+          emoji: "👀", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Smart User Challenge 4",
+      question: "How can technology help others?",
+      options: [
+        { 
+          text: "Use tech only for yourself", 
+          emoji: "👤", 
+          isCorrect: false
+        },
+        { 
+          text: "Helped someone using technology", 
+          emoji: "🤝", 
+          isCorrect: true
+        },
+        { 
+          text: "Never help others", 
+          emoji: "🙈", 
+          isCorrect: false
+        },
+        { 
+          text: "Ignore others' needs", 
+          emoji: "😐", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Smart User Challenge 5",
+      question: "How should you manage your screen time?",
+      options: [
+        { 
+          text: "Use screens all day without breaks", 
+          emoji: "📱", 
+          isCorrect: false
+        },
+        { 
+          text: "Used screen time wisely and took breaks", 
+          emoji: "🕒", 
+          isCorrect: true
+        },
+        { 
+          text: "Never take breaks", 
+          emoji: "⏰", 
+          isCorrect: false
+        },
+        { 
+          text: "Use screens until very late", 
+          emoji: "🌙", 
+          isCorrect: false
+        }
+      ]
     }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const tasks = [
-    { id: 1, text: "Used an app to learn something new", emoji: "📱" },
-    { id: 2, text: "Watched an educational video", emoji: "🎓" },
-    { id: 3, text: "Created something using tech (drawing, coding, etc.)", emoji: "💻" },
-    { id: 4, text: "Helped someone using technology", emoji: "🤝" },
-    { id: 5, text: "Used screen time wisely and took breaks", emoji: "🕒" }
   ];
 
-  const handleCompleteTask = () => {
-    if (!completedTasks.includes(tasks[currentTask].id)) {
-      const newCompleted = [...completedTasks, tasks[currentTask].id];
-      setCompletedTasks(newCompleted);
+  const handleChoice = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      
-      if (newCompleted.length === tasks.length) {
-        setTimeout(() => {
-          setShowBadge(true);
-        }, 500);
-      } else {
-        setTimeout(() => {
-          setCurrentTask(prev => (prev + 1) % tasks.length);
-        }, 500);
-      }
     }
+    
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 500);
   };
 
-  const currentAct = tasks[currentTask];
-  const isCompleted = completedTasks.includes(currentAct.id);
+  const currentChallengeData = challenges[challenge];
 
   return (
     <GameShell
-      title="Smart User Badge"
-      score={completedTasks.length}
-      subtitle={!showBadge ? `Task ${completedTasks.length + 1} of ${tasks.length}` : "Badge Earned!"}
+      title="Badge: Smart User"
+      score={score}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showBadge}
+      showGameOver={showResult}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={tasks.length}
-      currentLevel={completedTasks.length + 1}
-      maxScore={tasks.length}
-      showConfetti={showBadge}
+      totalLevels={challenges.length}
+      currentLevel={challenge + 1}
+      maxScore={challenges.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showBadge ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
-              Smart Tech Habits Challenge
-            </h2>
-
-            <p className="text-white/80 mb-6 text-center">
-              Complete these productive tech acts to earn your badge!
-            </p>
-
-            <div className="space-y-3 mb-6">
-              {tasks.map((task) => (
-                <div
-                  key={task.id}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    completedTasks.includes(task.id)
-                      ? 'bg-green-500/30 border-green-400'
-                      : task.id === currentAct.id
-                      ? 'bg-purple-500/30 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/10 border-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{task.emoji}</div>
-                    <div className="flex-1 text-white font-medium text-sm md:text-base">{task.text}</div>
-                    {completedTasks.includes(task.id) && (
-                      <div className="text-2xl">✅</div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {!isCompleted && (
-              <button
-                onClick={handleCompleteTask}
-                className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Mark "{currentAct.text}" as Complete
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-white rounded-2xl p-8 text-center animate-pulse">
-              <div className="text-9xl mb-4">🎖️</div>
-              <h3 className="text-3xl md:text-4xl font-bold mb-3">Congratulations!</h3>
-              <p className="text-lg md:text-xl mb-4">
-                You've earned the <strong>Smart User Badge!</strong> 🌟
+      <div className="space-y-8">
+        {!showResult && currentChallengeData ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{currentChallengeData.title}</h3>
+              <p className="text-white text-lg mb-6">
+                {currentChallengeData.question}
               </p>
-              <p className="text-white/90 text-sm">
-                Great job! You unlocked all 5 tech posters! You're officially a Smart Digital User.
-              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentChallengeData.options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleChoice(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

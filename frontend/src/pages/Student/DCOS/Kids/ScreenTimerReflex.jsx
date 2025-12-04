@@ -1,202 +1,244 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosKidsGames } from "../../../../pages/Games/GameCategories/DCOS/kidGamesData";
+
+const TOTAL_ROUNDS = 5;
+const ROUND_TIME = 10;
 
 const ScreenTimerReflex = () => {
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-kids-21";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentRound, setCurrentRound] = useState(0);
-  const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+  const timerRef = useRef(null);
+  const currentRoundRef = useRef(0);
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosKidsGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      title: "⏰ Time's Up!",
-      emoji: "⏰",
-      message: "Your screen timer just hit 1 hour while playing a game.",
+      question: "Your screen timer just hit 1 hour while playing a game. What should you do?",
+      correctAnswer: "Tap 'Switch Off' immediately",
       options: [
-        { id: 1, text: "Ignore and keep playing", emoji: "🎮", isCorrect: false },
-        { id: 2, text: "Tap 'Switch Off' immediately", emoji: "🖐️", isCorrect: true },
-        { id: 3, text: "Ask for 5 more minutes", emoji: "🕔", isCorrect: false }
+        { text: "Ignore and keep playing", isCorrect: false, emoji: "🎮" },
+        { text: "Tap 'Switch Off' immediately", isCorrect: true, emoji: "🖐️" },
+        { text: "Ask for 5 more minutes", isCorrect: false, emoji: "🕔" },
+        { text: "Turn off timer notifications", isCorrect: false, emoji: "🚫" }
       ]
     },
     {
       id: 2,
-      title: "📱 Movie Marathon",
-      emoji: "📱",
-      message: "You've been watching videos for 2 hours. The timer says 'Time to rest!'",
+      question: "You've been watching videos for 2 hours. The timer says 'Time to rest!' What should you do?",
+      correctAnswer: "Close the app and stretch",
       options: [
-        { id: 1, text: "Close the app and stretch", emoji: "🤸‍♀️", isCorrect: true },
-        { id: 2, text: "Skip the alert and continue", emoji: "⏭️", isCorrect: false },
-        { id: 3, text: "Turn off timer notifications", emoji: "🚫", isCorrect: false }
+        { text: "Close the app and stretch", isCorrect: true, emoji: "🤸‍♀️" },
+        { text: "Skip the alert and continue", isCorrect: false, emoji: "⏭️" },
+        { text: "Turn off timer notifications", isCorrect: false, emoji: "🚫" },
+        { text: "Lower brightness and continue", isCorrect: false, emoji: "💡" }
       ]
     },
     {
       id: 3,
-      title: "🎧 Music Mood",
-      emoji: "🎧",
-      message: "The timer buzzes while you're listening to songs.",
+      question: "The timer buzzes while you're listening to songs. What should you do?",
+      correctAnswer: "Take a short break",
       options: [
-        { id: 1, text: "Take a short break", emoji: "☕", isCorrect: true },
-        { id: 2, text: "Increase timer limit", emoji: "⏫", isCorrect: false },
-        { id: 3, text: "Ignore the reminder", emoji: "🙉", isCorrect: false }
+        { text: "Take a short break", isCorrect: true, emoji: "☕" },
+        { text: "Increase timer limit", isCorrect: false, emoji: "⏫" },
+        { text: "Ignore the reminder", isCorrect: false, emoji: "🙉" },
+        { text: "Turn off the timer", isCorrect: false, emoji: "🔧" }
       ]
     },
     {
       id: 4,
-      title: "🕹️ Weekend Gaming",
-      emoji: "🕹️",
-      message: "Your reflex test app shows 'Screen limit crossed'.",
+      question: "Your reflex test app shows 'Screen limit crossed'. What should you do?",
+      correctAnswer: "Pause and do something offline",
       options: [
-        { id: 1, text: "Pause and do something offline", emoji: "🌳", isCorrect: true },
-        { id: 2, text: "Continue gaming anyway", emoji: "💥", isCorrect: false },
-        { id: 3, text: "Disable screen limit", emoji: "🔧", isCorrect: false }
+        { text: "Pause and do something offline", isCorrect: true, emoji: "🌳" },
+        { text: "Continue gaming anyway", isCorrect: false, emoji: "💥" },
+        { text: "Disable screen limit", isCorrect: false, emoji: "🔧" },
+        { text: "Ignore the warning", isCorrect: false, emoji: "😴" }
       ]
     },
     {
       id: 5,
-      title: "🌙 Night Scroll",
-      emoji: "🌙",
-      message: "It's bedtime but your screen timer says you've been scrolling too long.",
+      question: "It's bedtime but your screen timer says you've been scrolling too long. What should you do?",
+      correctAnswer: "Switch off device and sleep",
       options: [
-        { id: 1, text: "Switch off device and sleep", emoji: "😴", isCorrect: true },
-        { id: 2, text: "Lower brightness and continue", emoji: "💡", isCorrect: false },
-        { id: 3, text: "Open one last app", emoji: "📲", isCorrect: false }
+        { text: "Switch off device and sleep", isCorrect: true, emoji: "😴" },
+        { text: "Lower brightness and continue", isCorrect: false, emoji: "💡" },
+        { text: "Open one last app", isCorrect: false, emoji: "📲" },
+        { text: "Set timer for later", isCorrect: false, emoji: "⏰" }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (answered) return;
+  useEffect(() => {
+    currentRoundRef.current = currentRound;
+  }, [currentRound]);
+
+  // Reset timeLeft and answered when round changes
+  useEffect(() => {
+    if (gameState === "playing" && currentRound > 0 && currentRound <= TOTAL_ROUNDS) {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+  const handleTimeUp = useCallback(() => {
+    if (currentRoundRef.current < TOTAL_ROUNDS) {
+      setCurrentRound(prev => prev + 1);
+    } else {
+      setGameState("finished");
+    }
+  }, []);
+
+  // Timer effect
+  useEffect(() => {
+    if (gameState === "playing" && !answered && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft(prev => {
+          if (prev <= 1) {
+            handleTimeUp();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    } else {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    }
+
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+    };
+  }, [gameState, answered, timeLeft, handleTimeUp]);
+
+  const startGame = () => {
+    setGameState("playing");
+    setTimeLeft(ROUND_TIME);
+    setScore(0);
+    setCurrentRound(1);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const handleAnswer = (option) => {
+    if (answered || gameState !== "playing") return;
     
     setAnswered(true);
     resetFeedback();
     
-    const currentScenarioData = scenarios[currentRound];
-    const selectedOption = currentScenarioData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect || false;
+    const isCorrect = option.isCorrect;
     
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setScore((prev) => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
-    
+
     setTimeout(() => {
-      if (currentRound < scenarios.length - 1) {
+      if (currentRound < TOTAL_ROUNDS) {
         setCurrentRound(prev => prev + 1);
-        setAnswered(false);
       } else {
-        setShowResult(true);
+        setGameState("finished");
       }
     }, 500);
   };
 
-  const currentScenario = scenarios[currentRound];
+  const finalScore = score;
+
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Screen Timer Reflex"
-      score={score}
-      subtitle={!showResult ? `Scenario ${currentRound + 1} of ${scenarios.length}` : "Game Complete!"}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}: Test your screen timer reflexes!` : "Test your screen timer reflexes!"}
+      currentLevel={currentRound}
+      totalLevels={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}
-      showGameOver={showResult}
-      gameId={gameId}
-      gameType="dcos"
-      totalLevels={scenarios.length}
-      currentLevel={currentRound + 1}
-      maxScore={scenarios.length}
-      showConfetti={showResult && score === scenarios.length}
+      showGameOver={gameState === "finished"}
+      showConfetti={gameState === "finished" && finalScore === TOTAL_ROUNDS}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
-    >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-2 text-center">{currentScenario.title}</h2>
-            <div className="bg-blue-500/20 border-2 border-blue-400 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg leading-relaxed text-center font-semibold">
-                {currentScenario.message}
-              </p>
-            </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">What will you do?</h3>
-
-            <div className="space-y-3 mb-6">
-              {currentScenario.options.map((option) => (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-semibold text-base md:text-lg">{option.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">⚡</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === scenarios.length ? "Perfect Reflex! 🎉" : `You got ${score} out of ${scenarios.length}!`}
-            </h2>
+      score={finalScore}
+      gameId={gameId}
+      gameType="dcos"
+      maxScore={TOTAL_ROUNDS}
+      totalCoins={totalCoins}
+      totalXp={totalXp}>
+      <div className="text-center text-white space-y-8">
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">⏰</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready!</h3>
             <p className="text-white/90 text-lg mb-6">
-              {score === scenarios.length 
-                ? "Excellent! You always respond quickly to screen timers and make healthy digital decisions!"
-                : "Great job! Remember to respect screen time limits for your health."}
+              Answer questions about screen timer safety!<br />
+              You have {ROUND_TIME} seconds for each question.
             </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Limiting screen time helps your eyes and mind stay active!
-              </p>
+            <p className="text-white/80 mb-6">
+              You have {TOTAL_ROUNDS} questions with {ROUND_TIME} seconds each!
+            </p>
+            <button
+              onClick={startGame}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-8 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+            >
+              Start Game
+            </button>
+          </div>
+        )}
+
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-8">
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
+              </div>
+              <div className={`font-bold ${timeLeft <= 2 ? 'text-red-500' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                <span className="text-white">Time:</span> {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold">Score:</span> {score}
+              </div>
+            </div>
+
+            <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20 text-center">
+              <h3 className="text-2xl md:text-3xl font-bold mb-6 text-white">
+                {currentQuestion.question}
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className="w-full min-h-[80px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-6 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    <span className="text-3xl mr-2">{option.emoji}</span> {option.text}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         )}

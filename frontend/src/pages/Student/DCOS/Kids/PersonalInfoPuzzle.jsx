@@ -1,263 +1,264 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
 const PersonalInfoPuzzle = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
-  const gameId = "dcos-kids-4";
-  const gameData = getGameDataById(gameId);
+  const gameData = getGameDataById("dcos-kids-4");
+  const gameId = gameData?.id || "dcos-kids-4";
+  
+  // Ensure gameId is always set correctly
+  if (!gameData || !gameData.id) {
+    console.warn("Game data not found for PersonalInfoPuzzle, using fallback ID");
+  }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [score, setScore] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
   const [showResult, setShowResult] = useState(false);
-  const [finalScore, setFinalScore] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const questions = [
-    {
-      id: 1,
-      text: "Your full name - is this private information or okay to share online?",
-      options: [
-        { 
-          id: "a", 
-          text: "Private Info", 
-          emoji: "🔒", 
-          description: "Never share your full name online",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Okay to Share", 
-          emoji: "✅", 
-          description: "It's fine to share your name",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Only with Friends", 
-          emoji: "👥", 
-          description: "Share only with close friends",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 2,
-      text: "Your home address - should this be kept private or can you share it?",
-      options: [
-        { 
-          id: "a", 
-          text: "Private Info", 
-          emoji: "🏠", 
-          description: "Never share your address online",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Okay to Share", 
-          emoji: "📍", 
-          description: "It's safe to share addresses",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Share City Only", 
-          emoji: "🌆", 
-          description: "Share only the city name",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 3,
-      text: "Your password - is this private or okay to share?",
-      options: [
-        { 
-          id: "a", 
-          text: "Private Info", 
-          emoji: "🔐", 
-          description: "Never share passwords with anyone",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Share with Friends", 
-          emoji: "👫", 
-          description: "It's okay to share with friends",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Share if Asked", 
-          emoji: "❓", 
-          description: "Share if someone asks nicely",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 4,
-      text: "Your favorite color - is this private or okay to share?",
-      options: [
-        { 
-          id: "a", 
-          text: "Private Info", 
-          emoji: "🔒", 
-          description: "Keep favorite color private",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
-          text: "Okay to Share", 
-          emoji: "🎨", 
-          description: "It's safe to share your favorite color",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Only with Family", 
-          emoji: "👨‍👩‍👧", 
-          description: "Share only with family members",
-          isCorrect: false
-        }
-      ]
-    },
-    {
-      id: 5,
-      text: "Your phone number - should this be kept private?",
-      options: [
-        { 
-          id: "a", 
-          text: "Private Info", 
-          emoji: "📱", 
-          description: "Never share your phone number online",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
-          text: "Okay to Share", 
-          emoji: "✅", 
-          description: "It's fine to share phone numbers",
-          isCorrect: false
-        },
-        { 
-          id: "c", 
-          text: "Share Last 4 Digits", 
-          emoji: "🔢", 
-          description: "Share only the last 4 digits",
-          isCorrect: false
-        }
-      ]
-    }
+  // Personal information items (left side)
+  const leftItems = [
+    { id: 1, name: "Your full name", emoji: "👤", description: "Complete name" },
+    { id: 2, name: "Your home address", emoji: "🏠", description: "Where you live" },
+    { id: 3, name: "Your password", emoji: "🔐", description: "Account password" },
+    { id: 4, name: "Your favorite color", emoji: "🎨", description: "Color preference" },
+    { id: 5, name: "Your phone number", emoji: "📱", description: "Contact number" }
   ];
 
-  const handleChoice = (selectedChoice) => {
-    if (currentQuestion < 0 || currentQuestion >= questions.length) {
-      return;
-    }
+  // Categories (right side)
+  const rightItems = [
+    { id: 1, name: "Private Info", emoji: "🔒", description: "Never share online" },
+    { id: 2, name: "Private Info", emoji: "🔒", description: "Never share online" },
+    { id: 3, name: "Private Info", emoji: "🔒", description: "Never share online" },
+    { id: 4, name: "Okay to Share", emoji: "✅", description: "Safe to share" },
+    { id: 5, name: "Private Info", emoji: "🔒", description: "Never share online" }
+  ];
 
-    const currentQ = questions[currentQuestion];
-    if (!currentQ || !currentQ.options) {
-      return;
-    }
+  // Correct matches
+  const correctMatches = [
+    { leftId: 1, rightId: 1 }, // Your full name → Private Info
+    { leftId: 2, rightId: 2 }, // Your home address → Private Info
+    { leftId: 3, rightId: 3 }, // Your password → Private Info
+    { leftId: 4, rightId: 4 }, // Your favorite color → Okay to Share
+    { leftId: 5, rightId: 5 }  // Your phone number → Private Info
+  ];
 
-    const newChoices = [...choices, { 
-      questionId: currentQ.id, 
-      choice: selectedChoice,
-      isCorrect: currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect
-    }];
-    
-    setChoices(newChoices);
-    
-    // If the choice is correct, add coins and show flash/confetti
-    const isCorrect = currentQ.options.find(opt => opt.id === selectedChoice)?.isCorrect;
-    if (isCorrect) {
-      setCoins(prev => prev + 1);
+  // Shuffled right items for display (to split matches across positions)
+  const shuffledRightItems = [
+    rightItems[1], // Private Info (id: 2) - position 1
+    rightItems[0], // Private Info (id: 1) - position 2
+    rightItems[4], // Private Info (id: 5) - position 3
+    rightItems[3], // Okay to Share (id: 4) - position 4
+    rightItems[2]  // Private Info (id: 3) - position 5
+  ];
+
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    setSelectedLeft(item);
+  };
+
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    resetFeedback();
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add score and show flash/confetti
+    if (newMatch.isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    }
-    
-    // Move to next question or show results
-    if (currentQuestion < questions.length - 1) {
-      setTimeout(() => {
-        setCurrentQuestion(prev => prev + 1);
-      }, isCorrect ? 1000 : 800);
     } else {
-      // Calculate final score
-      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
-      setFinalScore(correctAnswers);
+      showCorrectAnswerFeedback(0, false);
+    }
+
+    // Check if all items are matched
+    if (newMatches.length === leftItems.length) {
       setTimeout(() => {
         setShowResult(true);
-      }, isCorrect ? 1000 : 800);
+      }, 800);
     }
+
+    // Reset selections
+    setSelectedLeft(null);
+    setSelectedRight(null);
   };
 
-  const handleNext = () => {
-    navigate("/games/digital-citizenship/kids");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setMatches([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setScore(0);
+    resetFeedback();
   };
 
-  const getCurrentQuestion = () => {
-    if (currentQuestion >= 0 && currentQuestion < questions.length) {
-      return questions[currentQuestion];
-    }
-    return null;
+  // Check if a left item is already matched
+  const isLeftItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
   };
 
-  const currentQuestionData = getCurrentQuestion();
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
+  };
+
+  // Get match result for a left item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
+  };
 
   return (
     <GameShell
       title="Personal Info Puzzle"
-      subtitle={showResult ? "Puzzle Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
-      currentLevel={5}
-      totalLevels={5}
+      score={score}
+      subtitle={showResult ? "Puzzle Complete!" : `Match personal info with privacy status (${matches.length}/${leftItems.length} matched)`}
       coinsPerLevel={coinsPerLevel}
-      onNext={handleNext}
-      nextEnabled={false}
-      showGameOver={showResult}
-      score={coins}
-      gameId="dcos-kids-4"
-      gameType="dcos"
-      flashPoints={flashPoints}
-      showAnswerConfetti={showAnswerConfetti}
-      maxScore={5}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showConfetti={showResult && finalScore === 5}>
-      <div className="space-y-8">
-        {!showResult && currentQuestionData ? (
+      showGameOver={showResult}
+      gameId={gameId}
+      gameType="dcos"
+      totalLevels={leftItems.length}
+      currentLevel={matches.length + 1}
+      maxScore={leftItems.length}
+      showConfetti={showResult && score === leftItems.length}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+    >
+      <div className="space-y-8 max-w-5xl mx-auto">
+        {!showResult ? (
           <div className="space-y-6">
             <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
               <div className="flex justify-between items-center mb-4">
-                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+                <span className="text-white/80">Matches: {matches.length}/{leftItems.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{leftItems.length}</span>
               </div>
               
-              <p className="text-white text-lg mb-6 text-center">
-                {currentQuestionData.text}
+              <p className="text-white/90 text-center mb-6">
+                Select a personal info item from the left and its privacy status from the right, then click "Match"
               </p>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {currentQuestionData.options && currentQuestionData.options.map(option => (
-                  <button
-                    key={option.id}
-                    onClick={() => handleChoice(option.id)}
-                    className="bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
-                  >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
-                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
-                    <p className="text-white/90 text-sm">{option.description}</p>
-                  </button>
-                ))}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {/* Left column - Personal Info */}
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-white text-center">Personal Information</h4>
+                  <div className="space-y-3">
+                    {leftItems.map((item) => {
+                      const isMatched = isLeftItemMatched(item.id);
+                      const matchResult = getMatchResult(item.id);
+                      const isSelected = selectedLeft?.id === item.id;
+                      
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleLeftSelect(item)}
+                          disabled={isMatched || showResult}
+                          className={`w-full p-4 rounded-xl transition-all border-2 ${
+                            isSelected
+                              ? 'bg-blue-500/30 border-blue-400 ring-2 ring-blue-400'
+                              : isMatched
+                              ? matchResult
+                                ? 'bg-green-500/20 border-green-400 opacity-70'
+                                : 'bg-red-500/20 border-red-400 opacity-70'
+                              : 'bg-white/10 hover:bg-white/20 border-white/30'
+                          } ${isMatched ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="flex items-center">
+                            <span className="text-2xl mr-3">{item.emoji}</span>
+                            <div className="text-left flex-1">
+                              <div className="font-semibold text-white">{item.name}</div>
+                              <div className="text-sm text-white/70">{item.description}</div>
+                            </div>
+                            {isMatched && (
+                              <span className={`text-xl ${matchResult ? 'text-green-400' : 'text-red-400'}`}>
+                                {matchResult ? '✓' : '✗'}
+                              </span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Right column - Privacy Status */}
+                <div>
+                  <h4 className="text-lg font-semibold mb-4 text-white text-center">Privacy Status</h4>
+                  <div className="space-y-3">
+                    {shuffledRightItems.map((item) => {
+                      const isMatched = isRightItemMatched(item.id);
+                      const isSelected = selectedRight?.id === item.id;
+                      
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => handleRightSelect(item)}
+                          disabled={isMatched || showResult}
+                          className={`w-full p-4 rounded-xl transition-all border-2 text-left ${
+                            isSelected
+                              ? 'bg-blue-500/30 border-blue-400 ring-2 ring-blue-400'
+                              : isMatched
+                              ? 'bg-green-500/20 border-green-400 opacity-70'
+                              : 'bg-white/10 hover:bg-white/20 border-white/30'
+                          } ${isMatched ? 'cursor-not-allowed' : 'cursor-pointer'}`}
+                        >
+                          <div className="flex items-center">
+                            <span className="text-2xl mr-3">{item.emoji}</span>
+                            <div className="flex-1">
+                              <div className="font-semibold text-white">{item.name}</div>
+                              <div className="text-sm text-white/70">{item.description}</div>
+                            </div>
+                            {isMatched && (
+                              <span className="text-xl text-green-400">✓</span>
+                            )}
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Match button */}
+              <div className="text-center">
+                <button
+                  onClick={handleMatch}
+                  disabled={!selectedLeft || !selectedRight || showResult}
+                  className={`px-8 py-3 rounded-full font-bold transition-all ${
+                    selectedLeft && selectedRight && !showResult
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white'
+                      : 'bg-gray-500/30 text-gray-400 cursor-not-allowed'
+                  }`}
+                >
+                  Match Selected
+                </button>
               </div>
             </div>
           </div>

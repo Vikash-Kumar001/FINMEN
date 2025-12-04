@@ -96,7 +96,7 @@ import HomeworkStory1 from './HomeworkStory1';
 import ReflexOfflineFun from './ReflexOfflineFun';
 import PosterTask4 from './PosterTask4';
 import SharingGoodContentStory from './SharingGoodContentStory';
-import JournalSmartUse from './JournalSmartUse';
+import JournalOfSmartUse from './JournalSmartUse';
 import ReflexReading from './ReflexReading';
 import SmartUserBadge from './SmartUserBadge';
 
@@ -212,7 +212,7 @@ const kidDcosGames = {
   'reflex-offline-fun': ReflexOfflineFun,
   'poster-task4': PosterTask4,
   'sharing-good-content-story': SharingGoodContentStory,
-  'journal-smart-use': JournalSmartUse,
+  'journal-of-smart-use': JournalOfSmartUse,
   'reflex-reading': ReflexReading,
   'smart-user-badge': SmartUserBadge,
 };

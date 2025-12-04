@@ -1,220 +1,245 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const DebateStage = () => {
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-teen-56";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentDebate, setCurrentDebate] = useState(0);
-  const [selectedPosition, setSelectedPosition] = useState(null);
-  const [argument, setArgument] = useState("");
-  const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const debates = [
+  const questions = [
     {
       id: 1,
-      topic: "Should schools teach privacy rights?",
-      emoji: "🏫",
-      positions: [
-        { id: 1, position: "Yes - it's important to learn", emoji: "✅", isCorrect: true },
-        { id: 2, position: "No - not necessary", emoji: "❌", isCorrect: false }
+      text: "Should schools teach privacy rights?",
+      options: [
+        { 
+          id: "yes-important", 
+          text: "Yes - it's important to learn", 
+          emoji: "✅", 
+          description: "Teaching privacy rights is essential for students",
+          isCorrect: true
+        },
+        { 
+          id: "no-necessary", 
+          text: "No - not necessary", 
+          emoji: "❌", 
+          description: "Privacy rights don't need to be taught in schools",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe - only for older students", 
+          emoji: "🤔", 
+          description: "Only teach privacy to older students",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      topic: "Should privacy be taught in schools?",
-      emoji: "📚",
-      positions: [
-        { id: 1, position: "Yes - students need to know", emoji: "✅", isCorrect: true },
-        { id: 2, position: "No - it's not important", emoji: "❌", isCorrect: false }
+      text: "Should privacy be taught in schools?",
+      options: [
+        { 
+          id: "yes-need", 
+          text: "Yes - students need to know", 
+          emoji: "✅", 
+          description: "Students need to learn about privacy protection",
+          isCorrect: true
+        },
+        { 
+          id: "no-important", 
+          text: "No - it's not important", 
+          emoji: "❌", 
+          description: "Privacy education is not important",
+          isCorrect: false
+        },
+        { 
+          id: "sometimes", 
+          text: "Sometimes - as an optional topic", 
+          emoji: "📚", 
+          description: "Teach privacy only as an optional subject",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      topic: "Is teaching privacy rights important?",
-      emoji: "🎓",
-      positions: [
-        { id: 1, position: "Yes - protects students", emoji: "✅", isCorrect: true },
-        { id: 2, position: "No - not needed", emoji: "❌", isCorrect: false }
+      text: "Is teaching privacy rights important?",
+      options: [
+        { 
+          id: "yes-protects", 
+          text: "Yes - protects students", 
+          emoji: "✅", 
+          description: "Teaching privacy rights protects students online",
+          isCorrect: true
+        },
+        { 
+          id: "no-needed", 
+          text: "No - not needed", 
+          emoji: "❌", 
+          description: "Privacy education is not needed",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe - only if students ask", 
+          emoji: "🤷", 
+          description: "Only teach if students specifically ask",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      topic: "Should students learn about data privacy?",
-      emoji: "💻",
-      positions: [
-        { id: 1, position: "Yes - essential knowledge", emoji: "✅", isCorrect: true },
-        { id: 2, position: "No - not relevant", emoji: "❌", isCorrect: false }
+      text: "Should students learn about data privacy?",
+      options: [
+        { 
+          id: "yes-essential", 
+          text: "Yes - essential knowledge", 
+          emoji: "✅", 
+          description: "Data privacy is essential knowledge for students",
+          isCorrect: true
+        },
+        { 
+          id: "no-relevant", 
+          text: "No - not relevant", 
+          emoji: "❌", 
+          description: "Data privacy is not relevant for students",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe - only for tech students", 
+          emoji: "💻", 
+          description: "Only teach to students studying technology",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      topic: "Is privacy education necessary in schools?",
-      emoji: "🛡️",
-      positions: [
-        { id: 1, position: "Yes - helps protect students", emoji: "✅", isCorrect: true },
-        { id: 2, position: "No - unnecessary", emoji: "❌", isCorrect: false }
+      text: "Is privacy education necessary in schools?",
+      options: [
+        { 
+          id: "yes-helps", 
+          text: "Yes - helps protect students", 
+          emoji: "✅", 
+          description: "Privacy education helps protect students online",
+          isCorrect: true
+        },
+        { 
+          id: "no-unnecessary", 
+          text: "No - unnecessary", 
+          emoji: "❌", 
+          description: "Privacy education is unnecessary",
+          isCorrect: false
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe - only in high school", 
+          emoji: "🎓", 
+          description: "Only teach privacy in high school",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleSubmit = () => {
-    if (answered) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    if (!selectedPosition || argument.trim().length < 20) return;
+    setChoices(newChoices);
     
-    setAnswered(true);
-    resetFeedback();
-    
-    const currentDebateData = debates[currentDebate];
-    const selectedPos = currentDebateData.positions.find(p => p.id === selectedPosition);
-    const isCorrect = selectedPos?.isCorrect || false;
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentDebate < debates.length - 1) {
-        setCurrentDebate(prev => prev + 1);
-        setSelectedPosition(null);
-        setArgument("");
-        setAnswered(false);
-      } else {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
         setShowResult(true);
-      }
-    }, 500);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const currentDebateData = debates[currentDebate];
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
-      title="Debate Stage"
-      score={score}
-      subtitle={!showResult ? `Debate ${currentDebate + 1} of ${debates.length}` : "Game Complete!"}
+      title="Debate: Privacy Rights"
+      score={coins}
+      subtitle={showResult ? "Debate Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={debates.length}
-      currentLevel={currentDebate + 1}
-      maxScore={debates.length}
-      showConfetti={showResult && score === debates.length}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
+      maxScore={5}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+      <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl mb-4 text-center">{currentDebateData.emoji}</div>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 text-center">Debate Topic</h2>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-lg md:text-xl font-semibold text-center">{currentDebateData.topic}</p>
-            </div>
-
-            <h3 className="text-white font-bold mb-4">1. Choose Your Position</h3>
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {currentDebateData.positions.map(pos => (
-                <button
-                  key={pos.id}
-                  onClick={() => !answered && setSelectedPosition(pos.id)}
-                  disabled={answered}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    selectedPosition === pos.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : answered && pos.isCorrect
-                      ? 'bg-green-500/50 border-green-400'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">{pos.emoji}</div>
-                  <div className="text-white font-semibold text-xs md:text-sm">{pos.position}</div>
-                </button>
-              ))}
-            </div>
-
-            <h3 className="text-white font-bold mb-2">2. Build Your Argument (min 20 chars)</h3>
-            <textarea
-              value={argument}
-              onChange={(e) => !answered && setArgument(e.target.value)}
-              disabled={answered}
-              placeholder="Provide evidence and reasoning for your position..."
-              className="w-full h-24 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={200}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{argument.length}/200</div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedPosition || argument.trim().length < 20 || answered}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedPosition && argument.trim().length >= 20 && !answered
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Submit Debate
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🏫</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === debates.length ? "Perfect Privacy Advocate! 🎉" : `You got ${score} out of ${debates.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === debates.length 
-                ? "Excellent! Yes, schools should definitely teach privacy rights! It's essential knowledge that helps protect students online. Learning about privacy helps students understand their rights, protect their personal information, and make informed decisions about sharing data. Privacy education is crucial in the digital age!"
-                : "Great job! Keep learning about privacy rights!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Yes! Schools should teach privacy rights - it's essential for student protection!
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

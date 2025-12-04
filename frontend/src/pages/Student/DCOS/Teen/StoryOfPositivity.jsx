@@ -1,207 +1,293 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const StoryOfPositivity = () => {
+  const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-teen-68";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      title: "Encouraging Message Posted",
-      emoji: "💪",
-      situation: "A teen posts an encouraging message online. What's the result?",
+      text: "A teen posts an encouraging message online. What's the result?",
       options: [
-        { id: 1, text: "No impact - just a post", emoji: "😐", isCorrect: false },
-        { id: 2, text: "Respect - positive posts build good reputation", emoji: "🌟", isCorrect: true },
-        { id: 3, text: "Mixed reactions", emoji: "🤷", isCorrect: false }
+        { 
+          id: "no-impact", 
+          text: "No impact - just a post", 
+          emoji: "😐", 
+          description: "Posts don't really make a difference",
+          isCorrect: false
+        },
+        { 
+          id: "respect-positive", 
+          text: "Respect - positive posts build good reputation", 
+          emoji: "🌟", 
+          description: "Positive posts help build a good online reputation",
+          isCorrect: true
+        },
+        { 
+          id: "mixed-reactions", 
+          text: "Mixed reactions", 
+          emoji: "🤷", 
+          description: "People react differently to positive posts",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      title: "Supportive Comment Shared",
-      emoji: "🤝",
-      situation: "Someone shares a supportive comment helping others. What happens?",
+      text: "Someone shares a supportive comment helping others. What happens?",
       options: [
-        { id: 1, text: "Nothing special", emoji: "😐", isCorrect: false },
-        { id: 2, text: "Gains respect and positive reputation", emoji: "🌟", isCorrect: true },
-        { id: 3, text: "Some people notice", emoji: "👀", isCorrect: false }
+        { 
+          id: "nothing-special", 
+          text: "Nothing special", 
+          emoji: "😐", 
+          description: "Supportive comments don't have much impact",
+          isCorrect: false
+        },
+        { 
+          id: "gains-respect", 
+          text: "Gains respect and positive reputation", 
+          emoji: "🌟", 
+          description: "Supportive behavior builds positive reputation",
+          isCorrect: true
+        },
+        { 
+          id: "some-notice", 
+          text: "Some people notice", 
+          emoji: "👀", 
+          description: "A few people might see it",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      title: "Achievement Celebrated",
-      emoji: "🎉",
-      situation: "A teen celebrates their achievement in a positive way. Result?",
+      text: "A teen celebrates their achievement in a positive way. Result?",
       options: [
-        { id: 1, text: "Just another post", emoji: "📱", isCorrect: false },
-        { id: 2, text: "Builds positive identity and respect", emoji: "🌟", isCorrect: true },
-        { id: 3, text: "Gets some likes", emoji: "👍", isCorrect: false }
+        { 
+          id: "just-post", 
+          text: "Just another post", 
+          emoji: "📱", 
+          description: "It's just a regular social media post",
+          isCorrect: false
+        },
+        { 
+          id: "builds-identity", 
+          text: "Builds positive identity and respect", 
+          emoji: "🌟", 
+          description: "Positive celebration builds good reputation",
+          isCorrect: true
+        },
+        { 
+          id: "gets-likes", 
+          text: "Gets some likes", 
+          emoji: "👍", 
+          description: "People might like the post",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      title: "Kindness Shared Online",
-      emoji: "❤️",
-      situation: "Someone shares a story about helping others. What's the impact?",
+      text: "Someone shares a story about helping others. What's the impact?",
       options: [
-        { id: 1, text: "Minimal impact", emoji: "😐", isCorrect: false },
-        { id: 2, text: "Earns respect and builds positive reputation", emoji: "🌟", isCorrect: true },
-        { id: 3, text: "People might see it", emoji: "👁️", isCorrect: false }
+        { 
+          id: "minimal-impact", 
+          text: "Minimal impact", 
+          emoji: "😐", 
+          description: "Sharing stories doesn't have much effect",
+          isCorrect: false
+        },
+        { 
+          id: "earns-respect", 
+          text: "Earns respect and builds positive reputation", 
+          emoji: "🌟", 
+          description: "Sharing positive stories builds good reputation",
+          isCorrect: true
+        },
+        { 
+          id: "people-see", 
+          text: "People might see it", 
+          emoji: "👁️", 
+          description: "Some people might view the story",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      title: "Positive Influence Created",
-      emoji: "✨",
-      situation: "A teen consistently posts positive and encouraging content. What happens?",
+      text: "A teen consistently posts positive and encouraging content. What happens?",
       options: [
-        { id: 1, text: "No real impact", emoji: "😐", isCorrect: false },
-        { id: 2, text: "Builds strong positive reputation and respect", emoji: "🌟", isCorrect: true },
-        { id: 3, text: "Some people appreciate it", emoji: "🙏", isCorrect: false }
+        { 
+          id: "no-real-impact", 
+          text: "No real impact", 
+          emoji: "😐", 
+          description: "Consistent positive posts don't matter much",
+          isCorrect: false
+        },
+        { 
+          id: "strong-reputation", 
+          text: "Builds strong positive reputation and respect", 
+          emoji: "🌟", 
+          description: "Consistent positivity builds a strong positive reputation",
+          isCorrect: true
+        },
+        { 
+          id: "some-appreciate", 
+          text: "Some people appreciate it", 
+          emoji: "🙏", 
+          description: "A few people might appreciate the positivity",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (answered) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setSelectedChoice(optionId);
-    setAnswered(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    const currentScenarioData = scenarios[currentScenario];
-    const selectedOption = currentScenarioData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect || false;
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentScenario < scenarios.length - 1) {
-        setCurrentScenario(prev => prev + 1);
-        setSelectedChoice(null);
-        setAnswered(false);
-      } else {
-        setShowResult(true);
-      }
-    }, 500);
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0); // Delay if correct to show animation
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
+    }
   };
 
-  const currentScenarioData = scenarios[currentScenario];
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const handleNext = () => {
+    navigate("/student/dcos/teen/identity-badge");
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Story of Positivity"
-      score={score}
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
+      score={coins}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
+      showGameOver={showResult && finalScore >= 3}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      maxScore={scenarios.length}
-      showConfetti={showResult && score === scenarios.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+      <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 text-center">{currentScenarioData.title}</h2>
-            <div className="bg-green-500/20 border-2 border-green-400 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg leading-relaxed">{currentScenarioData.situation}</p>
-            </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">What's the result?</h3>
-
-            <div className="space-y-3">
-              {currentScenarioData.options.map(option => (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all text-left ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect && selectedChoice === option.id
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : selectedChoice === option.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-semibold text-base md:text-lg">{option.text}</div>
-                  </div>
-                </button>
-              ))}
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🌟</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === scenarios.length ? "Perfect Positivity Expert! 🎉" : `You got ${score} out of ${scenarios.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === scenarios.length 
-                ? "Excellent! Positive posts, encouraging messages, supportive comments, and sharing achievements build RESPECT and a positive reputation. When you consistently post positive content, you create a strong positive identity that others admire and respect!"
-                : "Great job! Keep learning about the power of positivity!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Positive posts build respect and a strong positive reputation!
-              </p>
-            </div>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand the power of positive online presence!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Remember: Positive posts build a good reputation and earn respect!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, positive posts help build a good online reputation!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that recognizes how positive posts build reputation.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

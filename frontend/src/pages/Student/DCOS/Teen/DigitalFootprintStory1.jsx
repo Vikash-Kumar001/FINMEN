@@ -1,207 +1,293 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const DigitalFootprintStory1 = () => {
+  const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-teen-57";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      title: "Old Photo Resurfaces",
-      emoji: "📸",
-      situation: "An old photo you posted years ago gets shared again. What's the impact?",
+      text: "An old photo you posted years ago gets shared again. What's the impact?",
       options: [
-        { id: 1, text: "It disappears after a while", emoji: "⏰", isCorrect: false },
-        { id: 2, text: "It stays forever online", emoji: "♾️", isCorrect: true },
-        { id: 3, text: "It only affects you briefly", emoji: "⏳", isCorrect: false }
+        { 
+          id: "disappears", 
+          text: "It disappears after a while", 
+          emoji: "⏰", 
+          description: "Old posts automatically get removed over time",
+          isCorrect: false
+        },
+        { 
+          id: "stays-forever", 
+          text: "It stays forever online", 
+          emoji: "♾️", 
+          description: "Digital content remains online permanently",
+          isCorrect: true
+        },
+        { 
+          id: "brief-impact", 
+          text: "It only affects you briefly", 
+          emoji: "⏳", 
+          description: "The impact is temporary and short-lived",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      title: "Deleted Post Still Visible",
-      emoji: "🗑️",
-      situation: "You delete a post, but someone already saved it. What happens?",
+      text: "You delete a post, but someone already saved it. What happens?",
       options: [
-        { id: 1, text: "It's completely gone", emoji: "✅", isCorrect: false },
-        { id: 2, text: "It can still be shared and seen", emoji: "♾️", isCorrect: true },
-        { id: 3, text: "Only you can't see it", emoji: "👁️", isCorrect: false }
+        { 
+          id: "completely-gone", 
+          text: "It's completely gone", 
+          emoji: "✅", 
+          description: "Once deleted, it's permanently removed",
+          isCorrect: false
+        },
+        { 
+          id: "still-shared", 
+          text: "It can still be shared and seen", 
+          emoji: "♾️", 
+          description: "Saved content can be shared even after deletion",
+          isCorrect: true
+        },
+        { 
+          id: "only-you", 
+          text: "Only you can't see it", 
+          emoji: "👁️", 
+          description: "You can't see it but others can",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      title: "Old Comment Found",
-      emoji: "💬",
-      situation: "A comment you made years ago is found by someone. What's the reality?",
+      text: "A comment you made years ago is found by someone. What's the reality?",
       options: [
-        { id: 1, text: "Old comments disappear", emoji: "⏰", isCorrect: false },
-        { id: 2, text: "Digital content stays forever", emoji: "♾️", isCorrect: true },
-        { id: 3, text: "Only recent posts matter", emoji: "📅", isCorrect: false }
+        { 
+          id: "old-disappear", 
+          text: "Old comments disappear", 
+          emoji: "⏰", 
+          description: "Old comments are automatically removed",
+          isCorrect: false
+        },
+        { 
+          id: "stays-forever-digital", 
+          text: "Digital content stays forever", 
+          emoji: "♾️", 
+          description: "Everything you post online remains accessible",
+          isCorrect: true
+        },
+        { 
+          id: "recent-matter", 
+          text: "Only recent posts matter", 
+          emoji: "📅", 
+          description: "Only recent content is relevant",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      title: "Shared Content Spreads",
-      emoji: "📤",
-      situation: "Something you shared gets reposted by many people. What's the impact?",
+      text: "Something you shared gets reposted by many people. What's the impact?",
       options: [
-        { id: 1, text: "You can control it completely", emoji: "🎮", isCorrect: false },
-        { id: 2, text: "Once shared, it's hard to control", emoji: "♾️", isCorrect: true },
-        { id: 3, text: "It only affects you", emoji: "👤", isCorrect: false }
+        { 
+          id: "control-complete", 
+          text: "You can control it completely", 
+          emoji: "🎮", 
+          description: "You have full control over shared content",
+          isCorrect: false
+        },
+        { 
+          id: "hard-control", 
+          text: "Once shared, it's hard to control", 
+          emoji: "♾️", 
+          description: "Once content is shared, you lose control over it",
+          isCorrect: true
+        },
+        { 
+          id: "only-you-affected", 
+          text: "It only affects you", 
+          emoji: "👤", 
+          description: "The impact is limited to you only",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      title: "Digital Footprint Lasts",
-      emoji: "👣",
-      situation: "Everything you post online creates a digital footprint. How long does it last?",
+      text: "Everything you post online creates a digital footprint. How long does it last?",
       options: [
-        { id: 1, text: "Only for a few days", emoji: "📅", isCorrect: false },
-        { id: 2, text: "Forever - it stays online", emoji: "♾️", isCorrect: true },
-        { id: 3, text: "Until you delete it", emoji: "🗑️", isCorrect: false }
+        { 
+          id: "few-days", 
+          text: "Only for a few days", 
+          emoji: "📅", 
+          description: "Digital footprints disappear after a few days",
+          isCorrect: false
+        },
+        { 
+          id: "forever-online", 
+          text: "Forever - it stays online", 
+          emoji: "♾️", 
+          description: "Your digital footprint is permanent",
+          isCorrect: true
+        },
+        { 
+          id: "until-delete", 
+          text: "Until you delete it", 
+          emoji: "🗑️", 
+          description: "It only lasts until you delete it",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (answered) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setSelectedChoice(optionId);
-    setAnswered(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    const currentScenarioData = scenarios[currentScenario];
-    const selectedOption = currentScenarioData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect || false;
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentScenario < scenarios.length - 1) {
-        setCurrentScenario(prev => prev + 1);
-        setSelectedChoice(null);
-        setAnswered(false);
-      } else {
-        setShowResult(true);
-      }
-    }, 500);
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0); // Delay if correct to show animation
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
+    }
   };
 
-  const currentScenarioData = scenarios[currentScenario];
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const handleNext = () => {
+    navigate("/student/dcos/teen/journal-of-privacy");
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Digital Footprint Story"
-      score={score}
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
+      score={coins}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
+      showGameOver={showResult && finalScore >= 3}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      maxScore={scenarios.length}
-      showConfetti={showResult && score === scenarios.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+      <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 text-center">{currentScenarioData.title}</h2>
-            <div className="bg-red-500/20 border-2 border-red-400 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg leading-relaxed">{currentScenarioData.situation}</p>
-            </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">What's the impact?</h3>
-
-            <div className="space-y-3">
-              {currentScenarioData.options.map(option => (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all text-left ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect && selectedChoice === option.id
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : selectedChoice === option.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-semibold text-base md:text-lg">{option.text}</div>
-                  </div>
-                </button>
-              ))}
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">👣</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === scenarios.length ? "Perfect Digital Footprint Expert! 🎉" : `You got ${score} out of ${scenarios.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === scenarios.length 
-                ? "Excellent! Your digital footprint stays forever online. Once you post something, even if you delete it, it can be saved, shared, and resurface years later. Old photos, comments, and posts can be found and shared again. Always think carefully before posting - what you share online creates a permanent record!"
-                : "Great job! Keep learning about digital footprints!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Your digital footprint stays forever - think before you post!
-              </p>
-            </div>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand how digital footprints work!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Remember: Everything you post online creates a permanent digital footprint!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, your digital footprint is permanent!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that recognizes the permanent nature of digital content.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

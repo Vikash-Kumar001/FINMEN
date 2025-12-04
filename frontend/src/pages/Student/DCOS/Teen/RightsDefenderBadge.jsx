@@ -1,150 +1,296 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const RightsDefenderBadge = () => {
   const location = useLocation();
-  const gameId = "dcos-teen-60";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-teen-60");
+  const gameId = gameData?.id || "dcos-teen-60";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [currentTask, setCurrentTask] = useState(0);
-  const [showBadge, setShowBadge] = useState(false);
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
+  const challenges = [
+    {
+      id: 1,
+      title: "Consent",
+      question: "What should you do before sharing someone's content?",
+      options: [
+        { 
+          text: "Asked for consent before sharing", 
+          emoji: "💬", 
+          isCorrect: true
+        },
+        { 
+          text: "Share without asking", 
+          emoji: "📤", 
+          isCorrect: false
+        },
+        { 
+          text: "Share if it's interesting", 
+          emoji: "👀", 
+          isCorrect: false
+        },
+        { 
+          text: "Share if they're a friend", 
+          emoji: "👥", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Personal Information",
+      question: "What should you do with personal information?",
+      options: [
+        { 
+          text: "Protected personal information", 
+          emoji: "🔒", 
+          isCorrect: true
+        },
+        { 
+          text: "Share personal information publicly", 
+          emoji: "🌐", 
+          isCorrect: false
+        },
+        { 
+          text: "Share with everyone", 
+          emoji: "📤", 
+          isCorrect: false
+        },
+        { 
+          text: "Ignore privacy concerns", 
+          emoji: "🙈", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Content Ownership",
+      question: "What should you do with others' content?",
+      options: [
+        { 
+          text: "Respected content ownership", 
+          emoji: "©️", 
+          isCorrect: true
+        },
+        { 
+          text: "Use others' content without permission", 
+          emoji: "📤", 
+          isCorrect: false
+        },
+        { 
+          text: "Claim others' work as your own", 
+          emoji: "❌", 
+          isCorrect: false
+        },
+        { 
+          text: "Ignore copyright", 
+          emoji: "🙈", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Privacy Settings",
+      question: "What should you do with privacy settings?",
+      options: [
+        { 
+          text: "Used privacy settings", 
+          emoji: "⚙️", 
+          isCorrect: true
+        },
+        { 
+          text: "Leave everything public", 
+          emoji: "🌐", 
+          isCorrect: false
+        },
+        { 
+          text: "Ignore privacy settings", 
+          emoji: "🙈", 
+          isCorrect: false
+        },
+        { 
+          text: "Share settings with others", 
+          emoji: "👥", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Helping Others",
+      question: "How can you help others with privacy?",
+      options: [
+        { 
+          text: "Helped others learn about privacy", 
+          emoji: "🤝", 
+          isCorrect: true
+        },
+        { 
+          text: "Ignore others' privacy concerns", 
+          emoji: "😐", 
+          isCorrect: false
+        },
+        { 
+          text: "Share others' private information", 
+          emoji: "📤", 
+          isCorrect: false
+        },
+        { 
+          text: "Don't help with privacy", 
+          emoji: "❌", 
+          isCorrect: false
+        }
+      ]
     }
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const privacyRightsActs = [
-    { id: 1, text: "Asked for consent before sharing", emoji: "💬" },
-    { id: 2, text: "Protected personal information", emoji: "🔒" },
-    { id: 3, text: "Respected content ownership", emoji: "©️" },
-    { id: 4, text: "Used privacy settings", emoji: "⚙️" },
-    { id: 5, text: "Helped others learn about privacy", emoji: "🤝" }
   ];
 
-  const handleCompleteTask = () => {
-    if (!completedTasks.includes(privacyRightsActs[currentTask].id)) {
-      const newCompleted = [...completedTasks, privacyRightsActs[currentTask].id];
-      setCompletedTasks(newCompleted);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      
-      if (newCompleted.length === privacyRightsActs.length) {
-        setTimeout(() => {
-          setShowBadge(true);
-        }, 500);
-      } else {
-        setTimeout(() => {
-          setCurrentTask(prev => (prev + 1) % privacyRightsActs.length);
-        }, 500);
-      }
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  const currentAct = privacyRightsActs[currentTask];
-  const isCompleted = completedTasks.includes(currentAct.id);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
+  };
 
   return (
     <GameShell
-      title="Rights Defender Badge"
-      score={completedTasks.length}
-      subtitle={!showBadge ? `Task ${completedTasks.length + 1} of ${privacyRightsActs.length}` : "Badge Earned!"}
+      title="Badge: Rights Defender"
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
+      score={score}
+      currentLevel={challenge + 1}
+      totalLevels={challenges.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={challenges.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showBadge}
-      gameId={gameId}
-      gameType="dcos"
-      totalLevels={privacyRightsActs.length}
-      currentLevel={completedTasks.length + 1}
-      maxScore={privacyRightsActs.length}
-      showConfetti={showBadge}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
+      gameId={gameId}
+      gameType="dcos"
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showBadge ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
-              Privacy Rights Acts Progress
-            </h2>
-            
-            <p className="text-white/80 mb-6 text-center">
-              Complete these privacy rights acts to earn your badge!
-            </p>
-
-            <div className="space-y-3 mb-6">
-              {privacyRightsActs.map(act => (
-                <div
-                  key={act.id}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    completedTasks.includes(act.id)
-                      ? 'bg-green-500/30 border-green-400'
-                      : act.id === currentAct.id
-                      ? 'bg-purple-500/30 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/10 border-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{act.emoji}</div>
-                    <div className="flex-1 text-white font-medium text-sm md:text-base">{act.text}</div>
-                    {completedTasks.includes(act.id) && (
-                      <div className="text-2xl">✅</div>
-                    )}
-                  </div>
-                </div>
-              ))}
+      <div className="space-y-8">
+        {!showResult && challenges[challenge] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{challenges[challenge].title}</h3>
+              <p className="text-white text-lg mb-6">
+                {challenges[challenge].question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {challenges[challenge].options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleAnswer(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            {!isCompleted && (
-              <button
-                onClick={handleCompleteTask}
-                className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Mark "{currentAct.text}" as Complete
-              </button>
-            )}
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-white rounded-2xl p-6 md:p-8 text-center animate-pulse">
-              <div className="text-7xl md:text-9xl mb-4">🛡️</div>
-              <h3 className="text-2xl md:text-4xl font-bold mb-3">Rights Defender Hero!</h3>
-              <p className="text-lg md:text-xl mb-2">You've completed all 5 privacy rights acts!</p>
-              <p className="text-white/90 text-sm md:text-base mt-4">
-                You're protecting privacy rights and helping others! 🌟
-              </p>
-              <p className="text-white/80 text-xs md:text-sm mt-3">
-                Keep defending privacy rights and respecting others' content!
-              </p>
-            </div>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🏆</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Rights Defender Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} challenges correct!
+                  You're a true Rights Defender!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Always ask for consent, protect personal information, respect content ownership, use privacy settings, and help others learn about privacy!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} challenges correct.
+                  Practice makes perfect with privacy rights!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Always ask for consent, protect personal information, respect content ownership, use privacy settings, and help others!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

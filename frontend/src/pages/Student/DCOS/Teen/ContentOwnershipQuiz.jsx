@@ -1,31 +1,33 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
+import { getDcosTeenGames } from '../../../../pages/Games/GameCategories/DCOS/teenGamesData';
 
 const ContentOwnershipQuiz = () => {
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-teen-59";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
+  
+  // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
     if (location.state?.nextGamePath) {
       return {
         nextGamePath: location.state.nextGamePath,
         nextGameId: location.state.nextGameId || null
       };
     }
+    
+    // Fallback: find next game from game data
     try {
       const games = getDcosTeenGames({});
       const currentGame = games.find(g => g.id === gameId);
@@ -39,163 +41,302 @@ const ContentOwnershipQuiz = () => {
     } catch (error) {
       console.warn("Error finding next game:", error);
     }
+    
     return { nextGamePath: null, nextGameId: null };
   }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const questions = [
     {
       id: 1,
       text: "Can you copy someone else's video and post it as yours?",
-      emoji: "🎥",
-      choices: [
-        { id: 1, text: "Yes - it's fine", emoji: "✅", isCorrect: false },
-        { id: 2, text: "No - that's copyright violation", emoji: "❌", isCorrect: true },
-        { id: 3, text: "Maybe - if you credit them", emoji: "🤔", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Yes - it's fine", 
+          emoji: "✅", 
+          description: "Copying and claiming others' videos as your own is copyright violation",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "No - that's copyright violation", 
+          emoji: "❌", 
+          description: "Copying someone else's video and claiming it as yours violates copyright law",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Maybe - if you credit them", 
+          emoji: "🤔", 
+          description: "Even with credit, you cannot claim others' work as your own",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
       text: "Is it okay to use someone's photo without permission?",
-      emoji: "📸",
-      choices: [
-        { id: 1, text: "Yes - photos are free to use", emoji: "✅", isCorrect: false },
-        { id: 2, text: "No - you need permission", emoji: "❌", isCorrect: true },
-        { id: 3, text: "Only if you like it", emoji: "👍", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Yes - photos are free to use", 
+          emoji: "✅", 
+          description: "Photos are protected by copyright - you need permission to use them",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "No - you need permission", 
+          emoji: "❌", 
+          description: "You need permission from the creator to use someone's photo",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Only if you like it", 
+          emoji: "👍", 
+          description: "Liking content doesn't give you permission to use it",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
       text: "Can you repost someone's artwork as your own?",
-      emoji: "🎨",
-      choices: [
-        { id: 1, text: "Yes - if it's good", emoji: "✅", isCorrect: false },
-        { id: 2, text: "No - that's stealing their work", emoji: "❌", isCorrect: true },
-        { id: 3, text: "Maybe - if no one sees", emoji: "👀", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Yes - if it's good", 
+          emoji: "✅", 
+          description: "Quality doesn't matter - reposting others' artwork as your own is stealing",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "No - that's stealing their work", 
+          emoji: "❌", 
+          description: "Reposting someone's artwork as your own is stealing their creative work",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Maybe - if no one sees", 
+          emoji: "👀", 
+          description: "Stealing content is wrong regardless of who sees it",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
       text: "Is it okay to copy someone's music and claim it's yours?",
-      emoji: "🎵",
-      choices: [
-        { id: 1, text: "Yes - music is free", emoji: "✅", isCorrect: false },
-        { id: 2, text: "No - that's copyright infringement", emoji: "❌", isCorrect: true },
-        { id: 3, text: "Only if it's old", emoji: "⏰", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Yes - music is free", 
+          emoji: "✅", 
+          description: "Music is protected by copyright - copying and claiming it is illegal",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "No - that's copyright infringement", 
+          emoji: "❌", 
+          description: "Copying someone's music and claiming it as yours is copyright infringement",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Only if it's old", 
+          emoji: "⏰", 
+          description: "Age doesn't matter - copyright still applies to old music",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
       text: "Can you use someone's written content without credit?",
-      emoji: "📝",
-      choices: [
-        { id: 1, text: "Yes - words are free", emoji: "✅", isCorrect: false },
-        { id: 2, text: "No - always credit the creator", emoji: "❌", isCorrect: true },
-        { id: 3, text: "Only if you change it", emoji: "✏️", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Yes - words are free", 
+          emoji: "✅", 
+          description: "Written content is protected by copyright - you must credit the creator",
+          isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "No - always credit the creator", 
+          emoji: "❌", 
+          description: "You must always credit the creator when using their written content",
+          isCorrect: true
+        },
+        { 
+          id: "c", 
+          text: "Only if you change it", 
+          emoji: "✏️", 
+          description: "Even if you change it, you should credit the original creator",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleChoice = (choiceId) => {
-    if (answered) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setSelectedChoice(choiceId);
-    setAnswered(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    const currentQuestionData = questions[currentQuestion];
-    const choice = currentQuestionData.choices.find(c => c.id === choiceId);
-    const isCorrect = choice?.isCorrect || false;
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-        setSelectedChoice(null);
-        setAnswered(false);
-      } else {
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
         setShowResult(true);
-      }
-    }, 500);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const currentQuestionData = questions[currentQuestion];
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
+
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Content Ownership Quiz game completed! Score: ${finalScore}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell
       title="Content Ownership Quiz"
-      score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      score={coins}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
+      showGameOver={showResult && finalScore >= 3}
       gameId={gameId}
       gameType="dcos"
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}
-      maxScore={questions.length}
-      showConfetti={showResult && score === questions.length}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-6 text-center">{currentQuestionData.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg md:text-xl leading-relaxed text-center font-semibold">
-                {currentQuestionData.text}
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
               </p>
-            </div>
-
-            <div className="space-y-3">
-              {currentQuestionData.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all ${
-                    answered && choice.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !choice.isCorrect && selectedChoice === choice.id
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-base md:text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
+              
+              <div className="grid grid-cols-1 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl md:text-3xl mr-3 md:mr-4">{option.emoji}</div>
+                      <div>
+                        <h3 className="font-bold text-base md:text-xl mb-1">{option.text}</h3>
+                        <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">©️</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === questions.length ? "Perfect Content Owner! 🎉" : `You got ${score} out of ${questions.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === questions.length 
-                ? "Excellent! You cannot copy someone else's content (videos, photos, artwork, music, writing) and claim it as your own. That's copyright violation and stealing. Always ask for permission, give credit to the creator, or create your own original content. Respect content ownership!"
-                : "Great job! Keep learning about content ownership!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Never copy others' content without permission - always credit creators or create your own!
-              </p>
-            </div>
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Excellent!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You know about content ownership!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  You understand that you cannot copy others' content (videos, photos, artwork, music, writing) and claim it as your own. Always ask for permission, give credit to creators, or create your own original content!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, never copy others' content without permission - always credit creators or create your own!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to identify what constitutes copyright violation and how to respect content ownership.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

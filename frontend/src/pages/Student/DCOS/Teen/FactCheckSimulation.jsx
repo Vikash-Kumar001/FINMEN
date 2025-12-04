@@ -1,110 +1,169 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const FactCheckSimulation = () => {
   const location = useLocation();
-  const gameId = "dcos-teen-34";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-teen-34");
+  const gameId = gameData?.id || "dcos-teen-34";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
   const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
 
   const questions = [
     {
       id: 1,
       text: "3 websites shown. Pick the trusted one:",
-      emoji: "🌐",
-      websites: [
-        { id: 1, name: "random-blog.com", isTrusted: false },
-        { id: 2, name: "official-news.gov", isTrusted: true },
-        { id: 3, name: "unknown-site.net", isTrusted: false }
+      options: [
+        { 
+          id: "random-blog", 
+          text: "random-blog.com", 
+          emoji: "❌", 
+          description: "Unverified blog site",
+          isCorrect: false
+        },
+        { 
+          id: "official-news", 
+          text: "official-news.gov", 
+          emoji: "✅", 
+          description: "Official government news source",
+          isCorrect: true
+        },
+        { 
+          id: "unknown-site", 
+          text: "unknown-site.net", 
+          emoji: "❌", 
+          description: "Unknown website",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
       text: "Which source is most reliable?",
-      emoji: "📰",
-      websites: [
-        { id: 1, name: "social-media-post", isTrusted: false },
-        { id: 2, name: "verified-news.org", isTrusted: true },
-        { id: 3, name: "personal-blog.com", isTrusted: false }
+      options: [
+        { 
+          id: "social-media", 
+          text: "Social media post", 
+          emoji: "❌", 
+          description: "Unverified social media",
+          isCorrect: false
+        },
+        { 
+          id: "verified-news", 
+          text: "verified-news.org", 
+          emoji: "✅", 
+          description: "Verified news organization",
+          isCorrect: true
+        },
+        { 
+          id: "personal-blog", 
+          text: "personal-blog.com", 
+          emoji: "❌", 
+          description: "Personal blog site",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
       text: "Pick the official source:",
-      emoji: "🏛️",
-      websites: [
-        { id: 1, name: "unofficial-site.com", isTrusted: false },
-        { id: 2, name: "government-official.gov", isTrusted: true },
-        { id: 3, name: "random-forum.net", isTrusted: false }
+      options: [
+        { 
+          id: "unofficial", 
+          text: "unofficial-site.com", 
+          emoji: "❌", 
+          description: "Unofficial website",
+          isCorrect: false
+        },
+        { 
+          id: "government", 
+          text: "government-official.gov", 
+          emoji: "✅", 
+          description: "Official government source",
+          isCorrect: true
+        },
+        { 
+          id: "random-forum", 
+          text: "random-forum.net", 
+          emoji: "❌", 
+          description: "Random forum site",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
       text: "Which website is trustworthy?",
-      emoji: "✅",
-      websites: [
-        { id: 1, name: "fake-news-site.com", isTrusted: false },
-        { id: 2, name: "established-news.org", isTrusted: true },
-        { id: 3, name: "unknown-blog.net", isTrusted: false }
+      options: [
+        { 
+          id: "fake-news", 
+          text: "fake-news-site.com", 
+          emoji: "❌", 
+          description: "Fake news website",
+          isCorrect: false
+        },
+        { 
+          id: "established", 
+          text: "established-news.org", 
+          emoji: "✅", 
+          description: "Established news organization",
+          isCorrect: true
+        },
+        { 
+          id: "unknown-blog", 
+          text: "unknown-blog.net", 
+          emoji: "❌", 
+          description: "Unknown blog",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
       text: "Choose the verified source:",
-      emoji: "🔍",
-      websites: [
-        { id: 1, name: "unverified-site.com", isTrusted: false },
-        { id: 2, name: "official-source.gov", isTrusted: true },
-        { id: 3, name: "random-page.net", isTrusted: false }
+      options: [
+        { 
+          id: "unverified", 
+          text: "unverified-site.com", 
+          emoji: "❌", 
+          description: "Unverified website",
+          isCorrect: false
+        },
+        { 
+          id: "official", 
+          text: "official-source.gov", 
+          emoji: "✅", 
+          description: "Official verified source",
+          isCorrect: true
+        },
+        { 
+          id: "random-page", 
+          text: "random-page.net", 
+          emoji: "❌", 
+          description: "Random webpage",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
+  const handleChoice = (isCorrect) => {
     if (answered) return;
     
-    setSelectedOption(optionId);
     setAnswered(true);
     resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedWebsite = currentQuestionData.websites.find(w => w.id === optionId);
-    const isCorrect = selectedWebsite?.isTrusted || false;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -113,24 +172,31 @@ const FactCheckSimulation = () => {
       showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-      } else {
+      if (isLastQuestion) {
         setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
     }, 500);
   };
 
-  const currentQuestionData = questions[currentQuestion];
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
+  };
 
   return (
     <GameShell
       title="Fact-Check Simulation"
       score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
@@ -140,59 +206,77 @@ const FactCheckSimulation = () => {
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}
       maxScore={questions.length}
-      showConfetti={showResult && score === questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-6 text-center">{currentQuestionData.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg md:text-xl leading-relaxed text-center font-semibold">
-                {currentQuestionData.text}
+      <div className="space-y-8">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {questions[currentQuestion].text}
               </p>
-            </div>
-
-            <div className="space-y-3">
-              {currentQuestionData.websites.map(website => (
-                <button
-                  key={website.id}
-                  onClick={() => handleChoice(website.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all ${
-                    answered && website.isTrusted
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !website.isTrusted && selectedOption === website.id
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : selectedOption === website.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="text-white font-semibold text-base md:text-lg text-center">{website.name}</div>
-                </button>
-              ))}
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="text-3xl mb-3">{option.emoji}</div>
+                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">✅</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === questions.length ? "Perfect Source Selector! 🎉" : `You got ${score} out of ${questions.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === questions.length 
-                ? "Excellent! Official sources (.gov, .org from trusted organizations, established news sites) are reliable. Random blogs, unknown sites, and social media posts are not trustworthy. Always check the source!"
-                : "Great job! Keep learning to identify trusted sources!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Trust official sources (.gov, verified news sites) - not random blogs or unknown sites!
-              </p>
-            </div>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct!
+                  You understand how to identify trusted sources!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Always verify information from official sources (.gov, verified news organizations) rather than random blogs or social media posts!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct.
+                  Remember to check official and verified sources!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Look for official sources (.gov), verified news organizations, and established websites!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

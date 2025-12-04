@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
@@ -7,25 +7,27 @@ import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/te
 
 const PrivacyLawsPuzzle = () => {
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-teen-55";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
+  
+  // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
     if (location.state?.nextGamePath) {
       return {
         nextGamePath: location.state.nextGamePath,
         nextGameId: location.state.nextGameId || null
       };
     }
+    
+    // Fallback: find next game from game data
     try {
       const games = getDcosTeenGames({});
       const currentGame = games.find(g => g.id === gameId);
@@ -39,163 +41,278 @@ const PrivacyLawsPuzzle = () => {
     } catch (error) {
       console.warn("Error finding next game:", error);
     }
+    
     return { nextGamePath: null, nextGameId: null };
   }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [matches, setMatches] = useState([]);
+  const [selectedLeft, setSelectedLeft] = useState(null);
+  const [selectedRight, setSelectedRight] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
-  const questions = [
-    {
-      id: 1,
-      text: "Match: GDPR = ?",
-      emoji: "🌍",
-      options: [
-        { id: 1, text: "Europe", emoji: "🇪🇺", isCorrect: true },
-        { id: 2, text: "India", emoji: "🇮🇳", isCorrect: false },
-        { id: 3, text: "Kids", emoji: "👶", isCorrect: false }
-      ]
-    },
-    {
-      id: 2,
-      text: "Match: IT Act = ?",
-      emoji: "📜",
-      options: [
-        { id: 1, text: "Europe", emoji: "🇪🇺", isCorrect: false },
-        { id: 2, text: "India", emoji: "🇮🇳", isCorrect: true },
-        { id: 3, text: "Kids", emoji: "👶", isCorrect: false }
-      ]
-    },
-    {
-      id: 3,
-      text: "Match: COPPA = ?",
-      emoji: "🛡️",
-      options: [
-        { id: 1, text: "Europe", emoji: "🇪🇺", isCorrect: false },
-        { id: 2, text: "India", emoji: "🇮🇳", isCorrect: false },
-        { id: 3, text: "Kids", emoji: "👶", isCorrect: true }
-      ]
-    },
-    {
-      id: 4,
-      text: "Which law protects data in Europe?",
-      emoji: "🇪🇺",
-      options: [
-        { id: 1, text: "GDPR", emoji: "📋", isCorrect: true },
-        { id: 2, text: "IT Act", emoji: "📜", isCorrect: false },
-        { id: 3, text: "COPPA", emoji: "🛡️", isCorrect: false }
-      ]
-    },
-    {
-      id: 5,
-      text: "Which law protects children's privacy?",
-      emoji: "👶",
-      options: [
-        { id: 1, text: "GDPR", emoji: "📋", isCorrect: false },
-        { id: 2, text: "IT Act", emoji: "📜", isCorrect: false },
-        { id: 3, text: "COPPA", emoji: "🛡️", isCorrect: true }
-      ]
-    }
+  // Privacy laws
+  const leftItems = [
+    { id: 1, name: "GDPR", emoji: "🌍", description: "General Data Protection Regulation" },
+    { id: 2, name: "IT Act", emoji: "📜", description: "Information Technology Act" },
+    { id: 3, name: "COPPA", emoji: "🛡️", description: "Children's Online Privacy Protection Act" }
   ];
 
-  const handleChoice = (optionId) => {
-    if (answered) return;
-    
-    setSelectedOption(optionId);
-    setAnswered(true);
-    resetFeedback();
-    
-    const currentQuestionData = questions[currentQuestion];
-    const selectedOptionData = currentQuestionData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOptionData?.isCorrect || false;
-    
-    if (isCorrect) {
-      setScore(prev => prev + 1);
-      showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
-    }
-    
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setAnswered(false);
-      } else {
-        setShowResult(true);
-      }
-    }, 500);
+  // Regions/Protection - shuffled order to make it harder
+  const rightItems = [
+    { id: 1, name: "India", emoji: "🇮🇳", description: "Protects data in India" },
+    { id: 2, name: "Europe", emoji: "🇪🇺", description: "Protects data in Europe" },
+    { id: 3, name: "Kids", emoji: "👶", description: "Protects children's privacy" }
+  ];
+
+  // Correct matches
+  const correctMatches = [
+    { leftId: 1, rightId: 2 }, // GDPR → Europe
+    { leftId: 2, rightId: 1 }, // IT Act → India
+    { leftId: 3, rightId: 3 }  // COPPA → Kids
+  ];
+
+  // Check if a right item is already matched
+  const isRightItemMatched = (itemId) => {
+    return matches.some(match => match.rightId === itemId);
   };
 
-  const currentQuestionData = questions[currentQuestion];
+  const handleLeftSelect = (item) => {
+    if (showResult) return;
+    setSelectedLeft(item);
+  };
+
+  const handleRightSelect = (item) => {
+    if (showResult) return;
+    // Don't allow selecting already matched right items
+    if (isRightItemMatched(item.id)) return;
+    setSelectedRight(item);
+  };
+
+  const handleMatch = () => {
+    if (!selectedLeft || !selectedRight || showResult) return;
+
+    const newMatch = {
+      leftId: selectedLeft.id,
+      rightId: selectedRight.id,
+      isCorrect: correctMatches.some(
+        match => match.leftId === selectedLeft.id && match.rightId === selectedRight.id
+      )
+    };
+
+    const newMatches = [...matches, newMatch];
+    setMatches(newMatches);
+
+    // If the match is correct, add coins and show flash/confetti
+    if (newMatch.isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    // Check if all items are matched
+    if (newMatches.length === leftItems.length) {
+      // Calculate final score
+      const correctCount = newMatches.filter(match => match.isCorrect).length;
+      setFinalScore(correctCount);
+      setShowResult(true);
+    }
+
+    // Reset selections
+    setSelectedLeft(null);
+    setSelectedRight(null);
+  };
+
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setMatches([]);
+    setSelectedLeft(null);
+    setSelectedRight(null);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  // Check if a left item is already matched
+  const isItemMatched = (itemId) => {
+    return matches.some(match => match.leftId === itemId);
+  };
+
+  // Get match result for a left item
+  const getMatchResult = (itemId) => {
+    const match = matches.find(m => m.leftId === itemId);
+    return match ? match.isCorrect : null;
+  };
+
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Privacy Laws Puzzle game completed! Score: ${finalScore}/${leftItems.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, leftItems.length]);
 
   return (
     <GameShell
       title="Privacy Laws Puzzle"
-      score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      score={coins}
+      subtitle={showResult ? "Game Complete!" : "Match privacy laws to their regions"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
+      showGameOver={showResult && finalScore >= 2}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={questions.length}
-      currentLevel={currentQuestion + 1}
-      maxScore={questions.length}
-      showConfetti={showResult && score === questions.length}
+      totalLevels={leftItems.length}
+      currentLevel={matches.length + 1}
+      showConfetti={showResult && finalScore >= 2}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+      <div className="space-y-8 max-w-4xl mx-auto">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-6 text-center">{currentQuestionData.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg md:text-xl leading-relaxed text-center font-semibold">
-                {currentQuestionData.text}
-              </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Left column - Privacy laws */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Privacy Law</h3>
+              <div className="space-y-4">
+                {leftItems.map(item => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleLeftSelect(item)}
+                    disabled={isItemMatched(item.id)}
+                    className={`w-full p-4 rounded-xl text-left transition-all ${
+                      isItemMatched(item.id)
+                        ? getMatchResult(item.id)
+                          ? "bg-green-500/30 border-2 border-green-500"
+                          : "bg-red-500/30 border-2 border-red-500"
+                        : selectedLeft?.id === item.id
+                        ? "bg-blue-500/50 border-2 border-blue-400"
+                        : "bg-white/10 hover:bg-white/20 border border-white/20"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl mr-3">{item.emoji}</div>
+                      <div>
+                        <h4 className="font-bold text-white">{item.name}</h4>
+                        <p className="text-white/80 text-sm">{item.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
 
-            <div className="space-y-3">
-              {currentQuestionData.options.map(option => (
+            {/* Middle column - Match button */}
+            <div className="flex flex-col items-center justify-center">
+              <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+                <p className="text-white/80 mb-4">
+                  {selectedLeft 
+                    ? `Selected: ${selectedLeft.name}` 
+                    : "Select privacy law"}
+                </p>
                 <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect && selectedOption === option.id
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : selectedOption === option.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
+                  onClick={handleMatch}
+                  disabled={!selectedLeft || !selectedRight}
+                  className={`py-3 px-6 rounded-full font-bold transition-all ${
+                    selectedLeft && selectedRight
+                      ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white transform hover:scale-105"
+                      : "bg-gray-500/30 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  <div className="flex items-center gap-3 md:gap-4 justify-center">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-semibold text-base md:text-lg">{option.text}</div>
-                  </div>
+                  Match
                 </button>
-              ))}
+                <div className="mt-4 text-white/80">
+                  <p>Coins: {coins}</p>
+                  <p>Matched: {matches.length}/{leftItems.length}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Right column - Regions */}
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <h3 className="text-xl font-bold text-white mb-4 text-center">Region/Protection</h3>
+              <div className="space-y-4">
+                {rightItems.map(item => {
+                  const isMatched = isRightItemMatched(item.id);
+                  const matchedLeft = matches.find(m => m.rightId === item.id);
+                  const isCorrectMatch = matchedLeft?.isCorrect;
+                  
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleRightSelect(item)}
+                      disabled={isMatched}
+                      className={`w-full p-4 rounded-xl text-left transition-all ${
+                        isMatched
+                          ? isCorrectMatch
+                            ? "bg-green-500/30 border-2 border-green-500"
+                            : "bg-red-500/30 border-2 border-red-500"
+                          : selectedRight?.id === item.id
+                          ? "bg-purple-500/50 border-2 border-purple-400"
+                          : "bg-white/10 hover:bg-white/20 border border-white/20"
+                      }`}
+                    >
+                      <div className="flex items-center">
+                        <div className="text-2xl mr-3">{item.emoji}</div>
+                        <div>
+                          <h4 className="font-bold text-white">{item.name}</h4>
+                          <p className="text-white/80 text-sm">{item.description}</p>
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">📜</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === questions.length ? "Perfect Privacy Law Expert! 🎉" : `You got ${score} out of ${questions.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === questions.length 
-                ? "Excellent! GDPR (General Data Protection Regulation) protects data in Europe. IT Act protects data in India. COPPA (Children's Online Privacy Protection Act) protects children's privacy. These laws help protect your personal information online!"
-                : "Great job! Keep learning about privacy laws!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 GDPR (Europe), IT Act (India), and COPPA (Kids) protect your privacy!
-              </p>
-            </div>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {finalScore >= 2 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Matching!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You correctly matched {finalScore} out of {leftItems.length} privacy laws!
+                  You know about privacy protection laws!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  GDPR (General Data Protection Regulation) protects data in Europe. IT Act protects data in India. COPPA (Children's Online Privacy Protection Act) protects children's privacy. These laws help protect your personal information online!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You matched {finalScore} out of {leftItems.length} privacy laws correctly.
+                  Remember, GDPR protects Europe, IT Act protects India, and COPPA protects kids!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to match each privacy law with its appropriate region or protection.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

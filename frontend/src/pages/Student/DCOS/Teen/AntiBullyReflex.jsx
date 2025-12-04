@@ -61,9 +61,9 @@ const AntiBullyReflex = () => {
       question: "A message says 'Everyone thinks you're ugly'. What should you do?",
       correctAnswer: "Stand Up and Report",
       options: [
-        { text: "Stand Up and Report", isCorrect: true, emoji: "🛡️" },
         { text: "Reply with Insults", isCorrect: false, emoji: "😡" },
         { text: "Share It", isCorrect: false, emoji: "📤" },
+        { text: "Stand Up and Report", isCorrect: true, emoji: "🛡️" },
         { text: "Ignore It", isCorrect: false, emoji: "🙈" }
       ]
     },
@@ -72,8 +72,8 @@ const AntiBullyReflex = () => {
       question: "A message says 'Thanks for your help today'. What should you do?",
       correctAnswer: "Respond Positively",
       options: [
-        { text: "Block User", isCorrect: false, emoji: "🚫" },
         { text: "Respond Positively", isCorrect: true, emoji: "😊" },
+        { text: "Block User", isCorrect: false, emoji: "🚫" },
         { text: "Report Message", isCorrect: false, emoji: "📢" },
         { text: "Delete It", isCorrect: false, emoji: "🗑️" }
       ]
@@ -83,8 +83,8 @@ const AntiBullyReflex = () => {
       question: "A message says 'You should just quit trying'. What should you do?",
       correctAnswer: "Stand Up and Report",
       options: [
-        { text: "Stand Up and Report", isCorrect: true, emoji: "💪" },
         { text: "Give Up", isCorrect: false, emoji: "😞" },
+        { text: "Stand Up and Report", isCorrect: true, emoji: "💪" },
         { text: "Share Online", isCorrect: false, emoji: "🌐" },
         { text: "Laugh It Off", isCorrect: false, emoji: "😄" }
       ]

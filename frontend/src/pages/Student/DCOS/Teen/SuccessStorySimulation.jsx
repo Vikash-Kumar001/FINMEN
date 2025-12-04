@@ -27,18 +27,18 @@ const SuccessStorySimulation = () => {
       text: "You need to balance sports practice, studies, and tech. What's your morning plan?",
       options: [
         { 
-          id: "phone", 
-          text: "Spend all morning on phone", 
-          emoji: "📱", 
-          description: "Use phone all morning",
-          isCorrect: false
-        },
-        { 
           id: "balance", 
           text: "Exercise, study, then limited tech", 
           emoji: "✅", 
           description: "Balance activities wisely",
           isCorrect: true
+        },
+        { 
+          id: "phone", 
+          text: "Spend all morning on phone", 
+          emoji: "📱", 
+          description: "Use phone all morning",
+          isCorrect: false
         },
         { 
           id: "relax", 
@@ -85,6 +85,13 @@ const SuccessStorySimulation = () => {
           text: "Skip practice, use tech", 
           emoji: "📱", 
           description: "Choose tech over practice",
+          isCorrect: false
+        },
+        { 
+          id: "both-same", 
+          text: "Do both at the same time", 
+          emoji: "😐", 
+          description: "Try to do both simultaneously",
           isCorrect: false
         },
         { 

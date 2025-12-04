@@ -27,6 +27,13 @@ const UpstanderSimulation = () => {
       text: "You see a group of classmates ganging up to troll and bully someone online. What do you do?",
       options: [
         { 
+          id: "defend", 
+          text: "Defend the victim and report the bullying", 
+          emoji: "🛡️", 
+          description: "Stand up and report it",
+          isCorrect: true
+        },
+        { 
           id: "join", 
           text: "Join them to fit in", 
           emoji: "😞", 
@@ -39,13 +46,6 @@ const UpstanderSimulation = () => {
           emoji: "🚶", 
           description: "Don't get involved",
           isCorrect: false
-        },
-        { 
-          id: "defend", 
-          text: "Defend the victim and report the bullying", 
-          emoji: "🛡️", 
-          description: "Stand up and report it",
-          isCorrect: true
         }
       ]
     },
@@ -61,18 +61,18 @@ const UpstanderSimulation = () => {
           isCorrect: false
         },
         { 
-          id: "watch", 
-          text: "Watch from the sidelines", 
-          emoji: "👀", 
-          description: "Just observe",
-          isCorrect: false
-        },
-        { 
           id: "stand-up", 
           text: "Stand up and report the bullying", 
           emoji: "🛡️", 
           description: "Defend them and report",
           isCorrect: true
+        },
+        { 
+          id: "watch", 
+          text: "Watch from the sidelines", 
+          emoji: "👀", 
+          description: "Just observe",
+          isCorrect: false
         }
       ]
     },
@@ -108,6 +108,13 @@ const UpstanderSimulation = () => {
       text: "You see someone being excluded and bullied in an online group. What do you do?",
       options: [
         { 
+          id: "include", 
+          text: "Include them and report the bullying", 
+          emoji: "🛡️", 
+          description: "Help them and report",
+          isCorrect: true
+        },
+        { 
           id: "not-involved", 
           text: "Don't get involved", 
           emoji: "😶", 
@@ -120,13 +127,6 @@ const UpstanderSimulation = () => {
           emoji: "😐", 
           description: "Don't participate",
           isCorrect: false
-        },
-        { 
-          id: "include", 
-          text: "Include them and report the bullying", 
-          emoji: "🛡️", 
-          description: "Help them and report",
-          isCorrect: true
         }
       ]
     },
@@ -142,18 +142,18 @@ const UpstanderSimulation = () => {
           isCorrect: false
         },
         { 
-          id: "neutral", 
-          text: "Stay neutral", 
-          emoji: "😶", 
-          description: "Don't take sides",
-          isCorrect: false
-        },
-        { 
           id: "defend-rumor", 
           text: "Defend them and stop the rumor", 
           emoji: "🛡️", 
           description: "Stand up and stop it",
           isCorrect: true
+        },
+        { 
+          id: "neutral", 
+          text: "Stay neutral", 
+          emoji: "😶", 
+          description: "Don't take sides",
+          isCorrect: false
         }
       ]
     }

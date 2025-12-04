@@ -39,8 +39,8 @@ const ForwardReflex = () => {
       question: "A message says 'Forward to 10 people or bad luck!'. What should you do?",
       correctAnswer: "Ignore Chain Message",
       options: [
-        { text: "Forward Immediately", isCorrect: false, emoji: "➡️" },
         { text: "Ignore Chain Message", isCorrect: true, emoji: "🚫" },
+        { text: "Forward Immediately", isCorrect: false, emoji: "➡️" },
         { text: "Share with Friends", isCorrect: false, emoji: "👥" },
         { text: "Check If True", isCorrect: false, emoji: "❓" }
       ]
@@ -62,8 +62,8 @@ const ForwardReflex = () => {
       correctAnswer: "Ignore Chain Message",
       options: [
         { text: "Share Immediately", isCorrect: false, emoji: "⚠️" },
-        { text: "Ignore Chain Message", isCorrect: true, emoji: "🚫" },
         { text: "Forward to Friends", isCorrect: false, emoji: "👥" },
+        { text: "Ignore Chain Message", isCorrect: true, emoji: "🚫" },
         { text: "Check If True", isCorrect: false, emoji: "❓" }
       ]
     },
@@ -72,8 +72,8 @@ const ForwardReflex = () => {
       question: "A message says 'Meeting reminder from teacher'. What should you do?",
       correctAnswer: "Check Important Reminder",
       options: [
-        { text: "Ignore It", isCorrect: false, emoji: "🙈" },
         { text: "Check Important Reminder", isCorrect: true, emoji: "📚" },
+        { text: "Ignore It", isCorrect: false, emoji: "🙈" },
         { text: "Delete It", isCorrect: false, emoji: "🗑️" },
         { text: "Report as Spam", isCorrect: false, emoji: "📢" }
       ]

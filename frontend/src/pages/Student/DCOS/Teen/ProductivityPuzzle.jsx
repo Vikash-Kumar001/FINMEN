@@ -62,7 +62,7 @@ const ProductivityPuzzle = () => {
     { id: 5, name: "Educational Video", emoji: "📹", description: "Learning-focused content" }
   ];
 
-  // Categories - shuffled order to make it harder
+  // Categories - varied options (no shuffling logic)
   const rightItems = [
     { id: 1, name: "Waste", emoji: "❌", description: "Time-consuming without benefit" },
     { id: 2, name: "Productive", emoji: "✅", description: "Helps you learn and grow" },
@@ -71,13 +71,13 @@ const ProductivityPuzzle = () => {
     { id: 5, name: "Productive", emoji: "✅", description: "Helps you learn and grow" }
   ];
 
-  // Correct matches
+  // Correct matches - varied positions for correct answers (no shuffling logic)
   const correctMatches = [
-    { leftId: 1, rightId: 2 }, // Study App → Productive
-    { leftId: 2, rightId: 1 }, // Endless Scroll → Waste
-    { leftId: 3, rightId: 3 }, // Online Course → Productive
-    { leftId: 4, rightId: 4 }, // Mindless Gaming → Waste
-    { leftId: 5, rightId: 5 }  // Educational Video → Productive
+    { leftId: 1, rightId: 2 }, // Study App → Productive (position 2)
+    { leftId: 2, rightId: 4 }, // Endless Scroll → Waste (position 4)
+    { leftId: 3, rightId: 3 }, // Online Course → Productive (position 3)
+    { leftId: 4, rightId: 1 }, // Mindless Gaming → Waste (position 1)
+    { leftId: 5, rightId: 5 }  // Educational Video → Productive (position 5)
   ];
 
   // Check if a right item is already matched

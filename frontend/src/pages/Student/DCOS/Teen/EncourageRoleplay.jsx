@@ -49,8 +49,8 @@ const EncourageRoleplay = () => {
       situation: "Your classmate Maya is being cyberbullied. She's posting about feeling sad and alone.",
       emoji: "😢",
       approaches: [
-        { id: 1, text: "Ignore it - not my business", isCorrect: false },
-        { id: 2, text: "Encourage her and report the bullying", isCorrect: true },
+        { id: 1, text: "Encourage her and report the bullying", isCorrect: true },
+        { id: 2, text: "Ignore it - not my business", isCorrect: false },
         { id: 3, text: "Tell her to just delete social media", isCorrect: false }
       ]
     },
@@ -70,8 +70,8 @@ const EncourageRoleplay = () => {
       emoji: "😞",
       approaches: [
         { id: 1, text: "Don't get involved", isCorrect: false },
-        { id: 2, text: "Include them and report the bullying", isCorrect: true },
-        { id: 3, text: "Just watch", isCorrect: false }
+        { id: 2, text: "Just watch", isCorrect: false },
+        { id: 3, text: "Include them and report the bullying", isCorrect: true }
       ]
     },
     {
@@ -79,8 +79,8 @@ const EncourageRoleplay = () => {
       situation: "Someone you know is being harassed online and feels scared.",
       emoji: "😰",
       approaches: [
-        { id: 1, text: "It's not my problem", isCorrect: false },
-        { id: 2, text: "Encourage them and report harassment", isCorrect: true },
+        { id: 1, text: "Encourage them and report harassment", isCorrect: true },
+        { id: 2, text: "It's not my problem", isCorrect: false },
         { id: 3, text: "Tell them to block everyone", isCorrect: false }
       ]
     },
@@ -128,7 +128,6 @@ const EncourageRoleplay = () => {
   };
 
   const currentScenarioData = scenarios[currentScenario];
-  const selectedApp = currentScenarioData.approaches.find(a => a.id === selectedApproach);
 
   // Log when game completes and update location state with nextGameId
   useEffect(() => {

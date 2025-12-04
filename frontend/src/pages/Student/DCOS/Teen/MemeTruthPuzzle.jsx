@@ -62,7 +62,7 @@ const MemeTruthPuzzle = () => {
     { id: 5, name: "Viral Message", emoji: "📢", description: "Widely shared content" }
   ];
 
-  // Categories - shuffled order to make it harder
+  // Categories - varied options (no shuffling logic)
   const rightItems = [
     { id: 1, name: "Verify Before Sharing", emoji: "🔍", description: "Check facts first" },
     { id: 2, name: "Joke", emoji: "😄", description: "Entertainment, not fact" },
@@ -71,13 +71,13 @@ const MemeTruthPuzzle = () => {
     { id: 5, name: "Verify Before Sharing", emoji: "🔍", description: "Check facts first" }
   ];
 
-  // Correct matches
+  // Correct matches - varied positions for correct answers (no shuffling logic)
   const correctMatches = [
-    { leftId: 1, rightId: 2 }, // Meme → Joke
-    { leftId: 2, rightId: 3 }, // News → Fact
-    { leftId: 3, rightId: 1 }, // Social Media Post → Verify Before Sharing
-    { leftId: 4, rightId: 4 }, // Official News Site → Trustworthy
-    { leftId: 5, rightId: 5 }  // Viral Message → Verify Before Sharing
+    { leftId: 1, rightId: 2 }, // Meme → Joke (position 2)
+    { leftId: 2, rightId: 3 }, // News → Fact (position 3)
+    { leftId: 3, rightId: 1 }, // Social Media Post → Verify Before Sharing (position 1)
+    { leftId: 4, rightId: 4 }, // Official News Site → Trustworthy (position 4)
+    { leftId: 5, rightId: 5 }  // Viral Message → Verify Before Sharing (position 5)
   ];
 
   // Check if a right item is already matched

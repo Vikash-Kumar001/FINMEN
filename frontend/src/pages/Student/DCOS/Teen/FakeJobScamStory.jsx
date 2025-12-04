@@ -29,18 +29,18 @@ const FakeJobScamStory = () => {
       text: "A post says 'Pay ₹5000 for a guaranteed job.' What should you do?",
       options: [
         { 
-          id: "pay", 
-          text: "Pay the money - it's a good deal", 
-          emoji: "💰", 
-          description: "Pay the money to get the guaranteed job",
-          isCorrect: false
-        },
-        { 
           id: "scam", 
           text: "It's a scam - real jobs don't ask for payment", 
           emoji: "🚫", 
           description: "Recognize this is a scam and don't pay",
           isCorrect: true
+        },
+        { 
+          id: "pay", 
+          text: "Pay the money - it's a good deal", 
+          emoji: "💰", 
+          description: "Pay the money to get the guaranteed job",
+          isCorrect: false
         },
         { 
           id: "ask-details", 
@@ -90,6 +90,13 @@ const FakeJobScamStory = () => {
           isCorrect: false
         },
         { 
+          id: "check-legit", 
+          text: "Check if it's legitimate first", 
+          emoji: "❓", 
+          description: "Verify if the job is legitimate",
+          isCorrect: false
+        },
+        { 
           id: "scam-fee", 
           text: "It's a scam - real jobs don't charge fees", 
           emoji: "🚫", 
@@ -110,18 +117,18 @@ const FakeJobScamStory = () => {
       text: "An ad promises 'Guaranteed job if you pay ₹5000.' What should you do?",
       options: [
         { 
-          id: "pay-guaranteed", 
-          text: "Pay for guaranteed job", 
-          emoji: "💰", 
-          description: "Pay to secure the guaranteed position",
-          isCorrect: false
-        },
-        { 
           id: "scam-guaranteed", 
           text: "It's a scam - no job is guaranteed", 
           emoji: "🚫", 
           description: "Understand that no legitimate job can be guaranteed",
           isCorrect: true
+        },
+        { 
+          id: "pay-guaranteed", 
+          text: "Pay for guaranteed job", 
+          emoji: "💰", 
+          description: "Pay to secure the guaranteed position",
+          isCorrect: false
         },
         { 
           id: "ask-company", 

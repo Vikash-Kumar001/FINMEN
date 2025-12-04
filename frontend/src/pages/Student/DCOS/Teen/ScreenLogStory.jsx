@@ -29,18 +29,18 @@ const ScreenLogStory = () => {
       text: "You've been gaming for 6 hours straight. Your eyes are tired and you have homework. What should you do?",
       options: [
         { 
-          id: "keep-playing", 
-          text: "Keep playing - just one more game", 
-          emoji: "😴", 
-          description: "Continue gaming despite being tired",
-          isCorrect: false
-        },
-        { 
           id: "take-break", 
           text: "Take a break and limit screen time", 
           emoji: "⏰", 
           description: "Stop gaming and rest your eyes, then do homework",
           isCorrect: true
+        },
+        { 
+          id: "keep-playing", 
+          text: "Keep playing - just one more game", 
+          emoji: "😴", 
+          description: "Continue gaming despite being tired",
+          isCorrect: false
         },
         { 
           id: "play-more", 
@@ -90,18 +90,18 @@ const ScreenLogStory = () => {
           isCorrect: false
         },
         { 
-          id: "stop-rest", 
-          text: "Stop and get proper rest", 
-          emoji: "⏰", 
-          description: "Stop watching and go to sleep",
-          isCorrect: true
-        },
-        { 
           id: "watch-30", 
           text: "Watch for 30 more minutes", 
           emoji: "😐", 
           description: "Watch a bit longer before stopping",
           isCorrect: false
+        },
+        { 
+          id: "stop-rest", 
+          text: "Stop and get proper rest", 
+          emoji: "⏰", 
+          description: "Stop watching and go to sleep",
+          isCorrect: true
         }
       ]
     },
@@ -110,18 +110,18 @@ const ScreenLogStory = () => {
       text: "You've been on your phone for 3 hours instead of studying. Exams are tomorrow. What's the right action?",
       options: [
         { 
-          id: "keep-phone", 
-          text: "Keep using phone - study later", 
-          emoji: "😑", 
-          description: "Continue using phone and postpone studying",
-          isCorrect: false
-        },
-        { 
           id: "put-away", 
           text: "Put phone away and focus on studying", 
           emoji: "⏰", 
           description: "Stop using phone and start studying",
           isCorrect: true
+        },
+        { 
+          id: "keep-phone", 
+          text: "Keep using phone - study later", 
+          emoji: "😑", 
+          description: "Continue using phone and postpone studying",
+          isCorrect: false
         },
         { 
           id: "multitask", 

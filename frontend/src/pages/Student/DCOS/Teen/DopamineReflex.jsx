@@ -39,8 +39,8 @@ const DopamineReflex = () => {
       question: "A notification says 'You got 10 likes! Tap to see!'. What should you do?",
       correctAnswer: "Ignore Dopamine Trap",
       options: [
-        { text: "Tap Immediately", isCorrect: false, emoji: "⚡" },
         { text: "Ignore Dopamine Trap", isCorrect: true, emoji: "🚫" },
+        { text: "Tap Immediately", isCorrect: false, emoji: "⚡" },
         { text: "Share with Friends", isCorrect: false, emoji: "👥" },
         { text: "Check Later", isCorrect: false, emoji: "⏰" }
       ]
@@ -62,8 +62,8 @@ const DopamineReflex = () => {
       correctAnswer: "Ignore Dopamine Trap",
       options: [
         { text: "View Immediately", isCorrect: false, emoji: "👀" },
-        { text: "Ignore Dopamine Trap", isCorrect: true, emoji: "🧠" },
         { text: "Share Achievement", isCorrect: false, emoji: "📤" },
+        { text: "Ignore Dopamine Trap", isCorrect: true, emoji: "🧠" },
         { text: "Check Later", isCorrect: false, emoji: "⏰" }
       ]
     },
@@ -72,8 +72,8 @@ const DopamineReflex = () => {
       question: "A notification says 'Important: Homework reminder'. What should you do?",
       correctAnswer: "Check Important Reminder",
       options: [
-        { text: "Ignore It", isCorrect: false, emoji: "🙈" },
         { text: "Check Important Reminder", isCorrect: true, emoji: "📚" },
+        { text: "Ignore It", isCorrect: false, emoji: "🙈" },
         { text: "Delete Notification", isCorrect: false, emoji: "🗑️" },
         { text: "Report as Spam", isCorrect: false, emoji: "🚫" }
       ]

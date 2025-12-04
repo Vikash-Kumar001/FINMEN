@@ -59,17 +59,17 @@ const DeepfakeVideoQuiz = () => {
       options: [
         { 
           id: "a", 
-          text: "Real - it looks authentic", 
-          emoji: "✅", 
-          description: "Deepfakes can look very authentic - always verify with official sources",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "Deepfake - verify with official sources", 
           emoji: "⚠️", 
           description: "Always verify suspicious videos with official sources before believing or sharing",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Real - it looks authentic", 
+          emoji: "✅", 
+          description: "Deepfakes can look very authentic - always verify with official sources",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -120,17 +120,17 @@ const DeepfakeVideoQuiz = () => {
         },
         { 
           id: "b", 
-          text: "Deepfake - verify before believing", 
-          emoji: "⚠️", 
-          description: "Videos showing impossible things are likely deepfakes - always verify",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Forward it - it's cool", 
           emoji: "➡️", 
           description: "Never forward unverified videos, especially if they seem impossible",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Deepfake - verify before believing", 
+          emoji: "⚠️", 
+          description: "Videos showing impossible things are likely deepfakes - always verify",
+          isCorrect: true
         }
       ]
     },
@@ -140,17 +140,17 @@ const DeepfakeVideoQuiz = () => {
       options: [
         { 
           id: "a", 
-          text: "Real - news is news", 
-          emoji: "📰", 
-          description: "News videos can be deepfaked - verify with official news sources",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "Deepfake - check official news sources", 
           emoji: "⚠️", 
           description: "Always verify news videos with official news sources before believing",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Real - news is news", 
+          emoji: "📰", 
+          description: "News videos can be deepfaked - verify with official news sources",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -174,6 +174,13 @@ const DeepfakeVideoQuiz = () => {
         },
         { 
           id: "b", 
+          text: "Share it - looks funny", 
+          emoji: "📤", 
+          description: "Never share videos with suspicious movements without verifying",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
           text: "Deepfake - verify the source", 
           emoji: "⚠️", 
           description: "Unnatural face movements indicate deepfake - always verify the source",

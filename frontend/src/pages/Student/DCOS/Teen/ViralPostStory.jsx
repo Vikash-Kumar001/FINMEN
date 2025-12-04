@@ -29,18 +29,18 @@ const ViralPostStory = () => {
       text: "A viral message says 'Celebrity died!' Everyone is sharing it. What should you do?",
       options: [
         { 
-          id: "share", 
-          text: "Share it immediately", 
-          emoji: "📤", 
-          description: "Share the news right away with everyone",
-          isCorrect: false
-        },
-        { 
           id: "verify", 
           text: "Verify before sharing", 
           emoji: "✅", 
           description: "Check official sources before sharing the news",
           isCorrect: true
+        },
+        { 
+          id: "share", 
+          text: "Share it immediately", 
+          emoji: "📤", 
+          description: "Share the news right away with everyone",
+          isCorrect: false
         },
         { 
           id: "forward", 
@@ -90,6 +90,13 @@ const ViralPostStory = () => {
           isCorrect: false
         },
         { 
+          id: "forward-immediate", 
+          text: "Forward immediately", 
+          emoji: "➡️", 
+          description: "Forward the warning right away",
+          isCorrect: false
+        },
+        { 
           id: "verify-health", 
           text: "Verify with health authorities first", 
           emoji: "✅", 
@@ -110,18 +117,18 @@ const ViralPostStory = () => {
       text: "A viral post claims a 'miracle cure' and asks you to share. What should you do?",
       options: [
         { 
-          id: "share-help", 
-          text: "Share to help people", 
-          emoji: "📤", 
-          description: "Share to help others find the cure",
-          isCorrect: false
-        },
-        { 
           id: "verify-medical", 
           text: "Verify with medical experts first", 
           emoji: "✅", 
           description: "Check with medical professionals before sharing",
           isCorrect: true
+        },
+        { 
+          id: "share-help", 
+          text: "Share to help people", 
+          emoji: "📤", 
+          description: "Share to help others find the cure",
+          isCorrect: false
         },
         { 
           id: "forward-family", 
@@ -141,6 +148,13 @@ const ViralPostStory = () => {
           text: "Share to avoid bad luck", 
           emoji: "📤", 
           description: "Share to prevent something bad from happening",
+          isCorrect: false
+        },
+        { 
+          id: "forward-ten", 
+          text: "Forward to 10 people", 
+          emoji: "➡️", 
+          description: "Forward to 10 people as requested",
           isCorrect: false
         },
         { 

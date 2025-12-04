@@ -27,18 +27,18 @@ const DigitalDetoxSimulation = () => {
       text: "It's the weekend! What will you do?",
       options: [
         { 
-          id: "screen-binge", 
-          text: "Screen binge - watch shows all day", 
-          emoji: "📺", 
-          description: "Spend all day watching screens",
-          isCorrect: false
-        },
-        { 
           id: "park", 
           text: "Go to the park and play sports", 
           emoji: "🏞️", 
           description: "Spend time outdoors and active",
           isCorrect: true
+        },
+        { 
+          id: "screen-binge", 
+          text: "Screen binge - watch shows all day", 
+          emoji: "📺", 
+          description: "Spend all day watching screens",
+          isCorrect: false
         },
         { 
           id: "book", 
@@ -86,13 +86,6 @@ const DigitalDetoxSimulation = () => {
           emoji: "🎮", 
           description: "Spend hours gaming",
           isCorrect: false
-        },
-        { 
-          id: "family", 
-          text: "Spend time with family", 
-          emoji: "👨‍👩‍👧", 
-          description: "Connect with family offline",
-          isCorrect: true
         },
         { 
           id: "crafts", 

@@ -59,17 +59,17 @@ const DiversityQuiz = () => {
       options: [
         { 
           id: "a", 
-          text: "Ignore it - it's their problem", 
-          emoji: "😐", 
-          description: "Ignoring discrimination allows it to continue and hurts your friend",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "Defend them publicly and report the harassment", 
           emoji: "🛡️", 
           description: "Publicly defending your friend and reporting harassment shows support and helps stop discrimination",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Ignore it - it's their problem", 
+          emoji: "😐", 
+          description: "Ignoring discrimination allows it to continue and hurts your friend",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -120,17 +120,17 @@ const DiversityQuiz = () => {
         },
         { 
           id: "b", 
-          text: "Defend them and report the bullying", 
-          emoji: "🛡️", 
-          description: "Defending your classmate and reporting bullying helps stop the harm and protects them",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Tell them to change", 
           emoji: "😞", 
           description: "No one should have to change their cultural background - the bullying should stop",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Defend them and report the bullying", 
+          emoji: "🛡️", 
+          description: "Defending your classmate and reporting bullying helps stop the harm and protects them",
+          isCorrect: true
         }
       ]
     },
@@ -140,17 +140,17 @@ const DiversityQuiz = () => {
       options: [
         { 
           id: "a", 
-          text: "Let it happen", 
-          emoji: "😐", 
-          description: "Allowing exclusion creates a harmful environment",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "Include them and stand against exclusion", 
           emoji: "🛡️", 
           description: "Including them and standing against exclusion promotes diversity and creates an inclusive environment",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Let it happen", 
+          emoji: "😐", 
+          description: "Allowing exclusion creates a harmful environment",
+          isCorrect: false
         },
         { 
           id: "c", 

@@ -59,17 +59,17 @@ const SleepHealthQuiz = () => {
       options: [
         { 
           id: "a", 
-          text: "Yes - it helps me relax", 
-          emoji: "😴", 
-          description: "Screens before bed actually disrupt sleep, not help you relax",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "No - screens before bed disrupt sleep", 
           emoji: "❌", 
           description: "Blue light from screens disrupts your sleep cycle and makes it harder to fall asleep",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Yes - it helps me relax", 
+          emoji: "😴", 
+          description: "Screens before bed actually disrupt sleep, not help you relax",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -120,17 +120,17 @@ const SleepHealthQuiz = () => {
         },
         { 
           id: "b", 
-          text: "Yes - it disrupts your sleep cycle", 
-          emoji: "✅", 
-          description: "Screen time before bed disrupts your circadian rhythm and sleep cycle",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Only if you use it for hours", 
           emoji: "🤔", 
           description: "Even short screen time before bed can disrupt your sleep cycle",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Yes - it disrupts your sleep cycle", 
+          emoji: "✅", 
+          description: "Screen time before bed disrupts your circadian rhythm and sleep cycle",
+          isCorrect: true
         }
       ]
     },
@@ -140,17 +140,17 @@ const SleepHealthQuiz = () => {
       options: [
         { 
           id: "a", 
-          text: "Yes - to stay updated", 
-          emoji: "📱", 
-          description: "Checking notifications before bed can keep you awake and disrupt sleep",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "No - it can keep you awake", 
           emoji: "❌", 
           description: "Notifications can trigger alertness and make it harder to fall asleep",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Yes - to stay updated", 
+          emoji: "📱", 
+          description: "Checking notifications before bed can keep you awake and disrupt sleep",
+          isCorrect: false
         },
         { 
           id: "c", 

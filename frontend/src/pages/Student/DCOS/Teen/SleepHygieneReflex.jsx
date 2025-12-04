@@ -39,8 +39,8 @@ const SleepHygieneReflex = () => {
       question: "It's 10:00 PM. Time to sleep! What should you do?",
       correctAnswer: "Turn Off Phone",
       options: [
-        { text: "Keep Using Phone", isCorrect: false, emoji: "📱" },
         { text: "Turn Off Phone", isCorrect: true, emoji: "🌙" },
+        { text: "Keep Using Phone", isCorrect: false, emoji: "📱" },
         { text: "Check Social Media", isCorrect: false, emoji: "📱" },
         { text: "Play Games", isCorrect: false, emoji: "🎮" }
       ]
@@ -62,8 +62,8 @@ const SleepHygieneReflex = () => {
       correctAnswer: "Turn Off Device",
       options: [
         { text: "Continue Using", isCorrect: false, emoji: "📱" },
-        { text: "Turn Off Device", isCorrect: true, emoji: "🌙" },
         { text: "Check Messages", isCorrect: false, emoji: "💬" },
+        { text: "Turn Off Device", isCorrect: true, emoji: "🌙" },
         { text: "Play Games", isCorrect: false, emoji: "🎮" }
       ]
     },

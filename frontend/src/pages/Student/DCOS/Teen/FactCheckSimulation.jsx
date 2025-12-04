@@ -27,18 +27,18 @@ const FactCheckSimulation = () => {
       text: "3 websites shown. Pick the trusted one:",
       options: [
         { 
-          id: "random-blog", 
-          text: "random-blog.com", 
-          emoji: "❌", 
-          description: "Unverified blog site",
-          isCorrect: false
-        },
-        { 
           id: "official-news", 
           text: "official-news.gov", 
           emoji: "✅", 
           description: "Official government news source",
           isCorrect: true
+        },
+        { 
+          id: "random-blog", 
+          text: "random-blog.com", 
+          emoji: "❌", 
+          description: "Unverified blog site",
+          isCorrect: false
         },
         { 
           id: "unknown-site", 
@@ -88,6 +88,13 @@ const FactCheckSimulation = () => {
           isCorrect: false
         },
         { 
+          id: "random-forum", 
+          text: "random-forum.net", 
+          emoji: "❌", 
+          description: "Random forum site",
+          isCorrect: false
+        },
+        { 
           id: "government", 
           text: "government-official.gov", 
           emoji: "✅", 
@@ -115,18 +122,18 @@ const FactCheckSimulation = () => {
           isCorrect: false
         },
         { 
-          id: "established", 
-          text: "established-news.org", 
-          emoji: "✅", 
-          description: "Established news organization",
-          isCorrect: true
-        },
-        { 
           id: "unknown-blog", 
           text: "unknown-blog.net", 
           emoji: "❌", 
           description: "Unknown blog",
           isCorrect: false
+        },
+        { 
+          id: "established", 
+          text: "established-news.org", 
+          emoji: "✅", 
+          description: "Established news organization",
+          isCorrect: true
         }
       ]
     },
@@ -134,6 +141,13 @@ const FactCheckSimulation = () => {
       id: 5,
       text: "Choose the verified source:",
       options: [
+        { 
+          id: "verified-official", 
+          text: "verified-official.gov", 
+          emoji: "✅", 
+          description: "Verified official source",
+          isCorrect: true
+        },
         { 
           id: "unverified", 
           text: "unverified-site.com", 

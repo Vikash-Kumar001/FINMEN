@@ -122,7 +122,11 @@ class GameCompletionService {
       console.log(`📥 Received game completion result from backend:`, {
         gameId,
         coinsEarned: result.coinsEarned,
-        xpEarned: result.xpEarned
+        xpEarned: result.xpEarned,
+        fullyCompleted: result.fullyCompleted,
+        allAnswersCorrect: result.allAnswersCorrect,
+        isReplay: result.isReplay,
+        replayUnlocked: result.replayUnlocked
       });
 
       // Update local cache
@@ -229,7 +233,7 @@ class GameCompletionService {
     try {
       const progress = await this.getGameProgress(gameId);
       return progress?.fullyCompleted || false;
-    } catch (error) {
+    } catch {
       return false;
     }
   }

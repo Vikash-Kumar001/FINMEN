@@ -263,6 +263,12 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
           });
           
           // Dispatch event with replay status - always dispatch even if coinsEarned is 0
+          console.log('📢 Dispatching gameCompleted event:', { 
+            gameId, 
+            fullyCompleted,
+            isReplay: result.isReplay === true,
+            replayUnlocked: result.replayUnlocked === true
+          });
           window.dispatchEvent(new CustomEvent('gameCompleted', { 
             detail: { 
               gameId, 
@@ -271,6 +277,7 @@ export const GameOverModal = ({ score, gameId, gameType = 'ai', totalLevels = 1,
               replayUnlocked: result.replayUnlocked === true
             } 
           }));
+          console.log('✅ gameCompleted event dispatched successfully');
           
           // If it was a replay, also dispatch a specific replay event
           if (result.isReplay === true) {

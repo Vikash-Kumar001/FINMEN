@@ -353,6 +353,18 @@ const GameCategoryPage = () => {
         setGameProgressData(progressData);
         
         console.log(`✅ Game completion status updated for ${Object.keys(status).length} games`);
+        // Log specific game status for debugging
+        if (status['dcos-teen-1'] !== undefined) {
+          console.log(`🔍 dcos-teen-1 completion status:`, {
+            completed: status['dcos-teen-1'],
+            progressData: progressData['dcos-teen-1'],
+            allDcosTeen1Keys: Object.keys(status).filter(k => k.includes('dcos-teen-1')),
+            statusValue: status['dcos-teen-1'],
+            statusType: typeof status['dcos-teen-1']
+          });
+        } else {
+          console.log(`⚠️ dcos-teen-1 NOT FOUND in status object. Available keys:`, Object.keys(status).filter(k => k.includes('dcos-teen')).slice(0, 10));
+        }
       } else {
         // For categories that don't use batch API, clear status
         setGameCompletionStatus({});
@@ -375,7 +387,7 @@ const GameCategoryPage = () => {
     // Listen for game completion events from GameShell (custom window event)
     const handleGameCompleted = (event) => {
       const { gameId, fullyCompleted } = event?.detail || {};
-      console.log('🎮 Game completed window event received:', { gameId, fullyCompleted, detail: event?.detail });
+      console.log('🎮 Game completed window event received:', { gameId, fullyCompleted, detail: event?.detail, category, ageGroup });
       
       if (
         (category === "financial-literacy" ||
@@ -397,19 +409,27 @@ const GameCategoryPage = () => {
           ageGroup === "carbon-and-climate" ||
           ageGroup === "water-and-energy")
       ) {
+        console.log('✅ Category and ageGroup match, processing completion');
         // Immediately update the game completion status for instant UI feedback
         if (gameId && fullyCompleted !== false) {
           console.log(`✅ Immediately marking game ${gameId} as completed`);
-          setGameCompletionStatus(prev => ({
-            ...prev,
-            [gameId]: true
-          }));
+          setGameCompletionStatus(prev => {
+            const updated = {
+              ...prev,
+              [gameId]: true
+            };
+            console.log('📝 Updated gameCompletionStatus:', updated);
+            return updated;
+          });
+        } else {
+          console.warn('⚠️ Game completion event received but gameId missing or fullyCompleted is false:', { gameId, fullyCompleted });
         }
         
         // Reload game completion status and progress when a game is completed
         // This will update stats automatically since stats depend on gameProgressData
         // Add a small delay to ensure backend has saved the changes
         setTimeout(() => {
+          console.log('🔄 Reloading game completion status after delay');
           loadGameCompletionStatus();
         }, 500);
         
@@ -417,6 +437,8 @@ const GameCategoryPage = () => {
         if (refreshWallet) {
           refreshWallet();
         }
+      } else {
+        console.log('⚠️ Game completion event received but category/ageGroup mismatch:', { category, ageGroup, gameId });
       }
     };
 
@@ -1179,6 +1201,19 @@ const GameCategoryPage = () => {
           unlocked = prevGame && prevGameId && prevGameCompleted;
           
           // Debug logging for unlocking issues
+          if (idx === 1) {
+            console.log('🔍 Checking unlock for game at index 1:', {
+              gameId: g.id,
+              gameTitle: g.title,
+              prevGameId,
+              prevGameTitle: prevGame?.title,
+              prevGameCompleted,
+              prevGameStatus: gameCompletionStatus[prevGameId],
+              unlocked,
+              gameCompletionStatusKeys: Object.keys(gameCompletionStatus).filter(k => k.includes('dcos-teen')),
+              allDcosTeenStatuses: Object.keys(gameCompletionStatus).filter(k => k.includes('dcos-teen')).map(k => ({ key: k, value: gameCompletionStatus[k] }))
+            });
+          }
           if (idx === 44 && !unlocked) {
             console.log('🔒 Game not unlocked:', {
               gameId: g.id,

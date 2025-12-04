@@ -39,7 +39,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-1"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/password-sharing-story",
+          path: "/student/dcos/teens/password-sharing-story",
           index: 0,
         },
         {
@@ -53,7 +53,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-2"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/privacy-settings-quiz",
+          path: "/student/dcos/teens/privacy-settings-quiz",
           index: 1,
         },
         {
@@ -67,7 +67,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-3"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/otp-fraud-reflex",
+          path: "/student/dcos/teens/otp-fraud-reflex",
           index: 2,
         },
         {
@@ -81,7 +81,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-4"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/profile-picture-simulation",
+          path: "/student/dcos/teens/profile-picture-simulation",
           index: 3,
         },
         {
@@ -95,7 +95,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-5"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/social-media-journal",
+          path: "/student/dcos/teens/social-media-journal",
           index: 4,
         },
         {
@@ -109,7 +109,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-6"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/data-consent-quiz",
+          path: "/student/dcos/teens/data-consent-quiz",
           index: 5,
         },
         {
@@ -123,7 +123,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-7"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/fake-friend-story",
+          path: "/student/dcos/teens/fake-friend-story",
           index: 6,
         },
         {
@@ -137,7 +137,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-8"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/safety-reflex",
+          path: "/student/dcos/teens/safety-reflex",
           index: 7,
         },
         {
@@ -151,7 +151,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-9"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/debate-stage-online-friends",
+          path: "/student/dcos/teens/debate-stage-online-friends",
           index: 8,
         },
         {
@@ -165,7 +165,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-10"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/online-safety-badge",
+          path: "/student/dcos/teens/online-safety-badge",
           index: 9,
         },
         {
@@ -179,7 +179,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-11"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/cyberbully-reflex",
+          path: "/student/dcos/teens/cyberbully-reflex",
           index: 10,
         },
         {
@@ -193,7 +193,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-12"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/peer-pressure-story",
+          path: "/student/dcos/teens/peer-pressure-story",
           index: 11,
         },
         {
@@ -207,7 +207,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-13"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/gossip-chain-simulation",
+          path: "/student/dcos/teens/gossip-chain-simulation",
           index: 12,
         },
         {
@@ -221,7 +221,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-14"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/debate-stage-trolling",
+          path: "/student/dcos/teens/debate-stage-trolling",
           index: 13,
         },
         {
@@ -235,7 +235,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-15"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/diversity-quiz",
+          path: "/student/dcos/teens/diversity-quiz",
           index: 14,
         },
         {
@@ -249,7 +249,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-16"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/encourage-roleplay",
+          path: "/student/dcos/teens/encourage-roleplay",
           index: 15,
         },
         {
@@ -263,7 +263,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-17"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/empathy-journal",
+          path: "/student/dcos/teens/empathy-journal",
           index: 16,
         },
         {
@@ -277,7 +277,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-18"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/anti-bully-reflex",
+          path: "/student/dcos/teens/anti-bully-reflex",
           index: 17,
         },
         {
@@ -291,7 +291,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-19"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/upstander-simulation",
+          path: "/student/dcos/teens/upstander-simulation",
           index: 18,
         },
         {
@@ -305,7 +305,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
           completed: gameCompletionStatus["dcos-teen-20"] || false,
           isSpecial: true,
-          path: "/student/dcos/teen/courage-badge",
+          path: "/student/dcos/teens/courage-badge",
           index: 19,
         },
         {
@@ -319,7 +319,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-21"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/screen-log-story",
+  path: "/student/dcos/teens/screen-log-story",
   index: 20,
 },
 {
@@ -333,7 +333,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-22"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/sleep-health-quiz",
+  path: "/student/dcos/teens/sleep-health-quiz",
   index: 21,
 },
 {
@@ -347,7 +347,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-23"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/dopamine-reflex",
+  path: "/student/dcos/teens/dopamine-reflex",
   index: 22,
 },
 {
@@ -361,7 +361,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-24"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/digital-detox-simulation",
+  path: "/student/dcos/teens/digital-detox-simulation",
   index: 23,
 },
 {
@@ -375,7 +375,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-25"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/balance-journal",
+  path: "/student/dcos/teens/balance-journal",
   index: 24,
 },
 {
@@ -389,7 +389,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-26"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/productivity-puzzle",
+  path: "/student/dcos/teens/productivity-puzzle",
   index: 25,
 },
 {
@@ -403,7 +403,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-27"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/family-rule-debate",
+  path: "/student/dcos/teens/family-rule-debate",
   index: 26,
 },
 {
@@ -417,7 +417,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-28"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/sleep-hygiene-reflex",
+  path: "/student/dcos/teens/sleep-hygiene-reflex",
   index: 27,
 },
 {
@@ -431,7 +431,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-29"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/success-story-simulation",
+  path: "/student/dcos/teens/success-story-simulation",
   index: 28,
 },
 {
@@ -445,7 +445,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-30"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/wellbeing-badge",
+  path: "/student/dcos/teens/wellbeing-badge",
   index: 29,
 },
 {
@@ -459,7 +459,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-31"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/viral-post-story",
+  path: "/student/dcos/teens/viral-post-story",
   index: 30,
 },
 {
@@ -473,7 +473,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-32"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/deepfake-video-quiz",
+  path: "/student/dcos/teens/deepfake-video-quiz",
   index: 31,
 },
 {
@@ -487,7 +487,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-33"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/forward-reflex",
+  path: "/student/dcos/teens/forward-reflex",
   index: 32,
 },
 {
@@ -501,7 +501,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-34"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/fact-check-simulation",
+  path: "/student/dcos/teens/fact-check-simulation",
   index: 33,
 },
 {
@@ -515,7 +515,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-35"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/meme-truth-puzzle",
+  path: "/student/dcos/teens/meme-truth-puzzle",
   index: 34,
 },
 {
@@ -529,7 +529,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-36"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/whatsapp-debate",
+  path: "/student/dcos/teens/whatsapp-debate",
   index: 35,
 },
 {
@@ -543,7 +543,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-37"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/fake-job-scam-story",
+  path: "/student/dcos/teens/fake-job-scam-story",
   index: 36,
 },
 {
@@ -557,7 +557,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-38"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/truth-journal2",
+  path: "/student/dcos/teens/truth-journal2",
   index: 37,
 },
 {
@@ -571,7 +571,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-39"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/news-reflex",
+  path: "/student/dcos/teens/news-reflex",
   index: 38,
 },
 {
@@ -585,7 +585,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-40"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/fact-check-badge",
+  path: "/student/dcos/teens/fact-check-badge",
   index: 39,
 },
 {
@@ -599,7 +599,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-41"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/fake-job-ad-story",
+  path: "/student/dcos/teens/fake-job-ad-story",
   index: 40,
 },
 {
@@ -613,7 +613,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-42"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/phishing-email-quiz",
+  path: "/student/dcos/teens/phishing-email-quiz",
   index: 41,
 },
 {
@@ -627,7 +627,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-43"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/otp-scam-reflex",
+  path: "/student/dcos/teens/otp-scam-reflex",
   index: 42,
 },
 {
@@ -641,7 +641,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-44"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/shopping-simulation",
+  path: "/student/dcos/teens/shopping-simulation",
   index: 43,
 },
 {
@@ -655,7 +655,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-45"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/loan-trap-story",
+  path: "/student/dcos/teens/loan-trap-story",
   index: 44,
 },
 {
@@ -669,7 +669,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-46"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/scam-debate",
+  path: "/student/dcos/teens/scam-debate",
   index: 45,
 },
 {
@@ -683,7 +683,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-47"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/banking-safety-puzzle",
+  path: "/student/dcos/teens/banking-safety-puzzle",
   index: 46,
 },
 {
@@ -697,7 +697,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-48"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/fraud-journal",
+  path: "/student/dcos/teens/fraud-journal",
   index: 47,
 },
 {
@@ -711,7 +711,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-49"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/reflex-ad-trap",
+  path: "/student/dcos/teens/reflex-ad-trap",
   index: 48,
 },
 {
@@ -725,7 +725,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-50"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/fraud-fighter-badge",
+  path: "/student/dcos/teens/fraud-fighter-badge",
   index: 49,
 },
 {
@@ -739,7 +739,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-51"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/consent-story",
+  path: "/student/dcos/teens/consent-story",
   index: 50,
 },
 {
@@ -753,7 +753,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-52"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/data-quiz",
+  path: "/student/dcos/teens/data-quiz",
   index: 51,
 },
 {
@@ -767,7 +767,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-53"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/fake-app-reflex",
+  path: "/student/dcos/teens/fake-app-reflex",
   index: 52,
 },
 {
@@ -781,7 +781,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-54"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/sharing-rights-simulation",
+  path: "/student/dcos/teens/sharing-rights-simulation",
   index: 53,
 },
 {
@@ -795,7 +795,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-55"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/privacy-laws-puzzle",
+  path: "/student/dcos/teens/privacy-laws-puzzle",
   index: 54,
 },
 {
@@ -809,7 +809,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-56"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/debate-stage",
+  path: "/student/dcos/teens/debate-stage",
   index: 55,
 },
 {
@@ -823,7 +823,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-57"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/digital-footprint-story1",
+  path: "/student/dcos/teens/digital-footprint-story1",
   index: 56,
 },
 {
@@ -837,7 +837,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-58"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/journal-of-privacy",
+  path: "/student/dcos/teens/journal-of-privacy",
   index: 57,
 },
 {
@@ -851,7 +851,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-59"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/content-ownership-quiz",
+  path: "/student/dcos/teens/content-ownership-quiz",
   index: 58,
 },
 {
@@ -865,7 +865,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-60"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/rights-defender-badge",
+  path: "/student/dcos/teens/rights-defender-badge",
   index: 59,
 },
 {
@@ -879,7 +879,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-61"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/future-job-story",
+  path: "/student/dcos/teens/future-job-story",
   index: 60,
 },
 {
@@ -893,7 +893,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-62"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/cancel-culture-quiz",
+  path: "/student/dcos/teens/cancel-culture-quiz",
   index: 61,
 },
 {
@@ -907,7 +907,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-63"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/reflex-positive-identity",
+  path: "/student/dcos/teens/reflex-positive-identity",
   index: 62,
 },
 {
@@ -921,7 +921,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-64"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/college-application-simulation",
+  path: "/student/dcos/teens/college-application-simulation",
   index: 63,
 },
 {
@@ -935,7 +935,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-65"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/debate-stage1",
+  path: "/student/dcos/teens/debate-stage1",
   index: 64,
 },
 {
@@ -949,7 +949,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-66"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/digital-reputation-puzzle",
+  path: "/student/dcos/teens/digital-reputation-puzzle",
   index: 65,
 },
 {
@@ -963,7 +963,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-67"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/journal-my-identity",
+  path: "/student/dcos/teens/journal-my-identity",
   index: 66,
 },
 {
@@ -977,7 +977,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-68"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/story-of-positivity",
+  path: "/student/dcos/teens/story-of-positivity",
   index: 67,
 },
 {
@@ -991,7 +991,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-69"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/reflex-recruiter",
+  path: "/student/dcos/teens/reflex-recruiter",
   index: 68,
 },
 {
@@ -1005,7 +1005,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-70"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/identity-badge",
+  path: "/student/dcos/teens/identity-badge",
   index: 69,
 },
 {
@@ -1019,7 +1019,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-71"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/bias-story",
+  path: "/student/dcos/teens/bias-story",
   index: 70,
 },
 {
@@ -1033,7 +1033,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-72"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/deepfake-quiz",
+  path: "/student/dcos/teens/deepfake-quiz",
   index: 71,
 },
 {
@@ -1047,7 +1047,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-73"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/reflex-fair-ai",
+  path: "/student/dcos/teens/reflex-fair-ai",
   index: 72,
 },
 {
@@ -1061,7 +1061,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-74"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/ai-in-exams",
+  path: "/student/dcos/teens/ai-in-exams",
   index: 73,
 },
 {
@@ -1075,7 +1075,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-75"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/ai-jobs-debate1",
+  path: "/student/dcos/teens/ai-jobs-debate1",
   index: 74,
 },
 {
@@ -1089,7 +1089,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-76"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/puzzle-ai-uses",
+  path: "/student/dcos/teens/puzzle-ai-uses",
   index: 75,
 },
 {
@@ -1103,7 +1103,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-77"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/journal-ai-rule",
+  path: "/student/dcos/teens/journal-ai-rule",
   index: 76,
 },
 {
@@ -1117,7 +1117,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-78"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/copyright-story",
+  path: "/student/dcos/teens/copyright-story",
   index: 77,
 },
 {
@@ -1131,7 +1131,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-79"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/reflex-ai-responsibility",
+  path: "/student/dcos/teens/reflex-ai-responsibility",
   index: 78,
 },
 {
@@ -1145,7 +1145,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-80"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/ai-leader-badge",
+  path: "/student/dcos/teens/ai-leader-badge",
   index: 79,
 },
 {
@@ -1159,7 +1159,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-81"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/hate-comment-story",
+  path: "/student/dcos/teens/hate-comment-story",
   index: 80,
 },
 {
@@ -1173,7 +1173,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-82"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/freedom-vs-abuse-quiz",
+  path: "/student/dcos/teens/freedom-vs-abuse-quiz",
   index: 81,
 },
 {
@@ -1187,7 +1187,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-83"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/reflex-support",
+  path: "/student/dcos/teens/reflex-support",
   index: 82,
 },
 {
@@ -1201,7 +1201,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-84"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/group-chat-simulation",
+  path: "/student/dcos/teens/group-chat-simulation",
   index: 83,
 },
 {
@@ -1215,7 +1215,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-85"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/debate-stage2",
+  path: "/student/dcos/teens/debate-stage2",
   index: 84,
 },
 {
@@ -1229,7 +1229,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-86"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/puzzle-respect-vs-hate",
+  path: "/student/dcos/teens/puzzle-respect-vs-hate",
   index: 85,
 },
 {
@@ -1243,7 +1243,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-87"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/journal-online-respect",
+  path: "/student/dcos/teens/journal-online-respect",
   index: 86,
 },
 {
@@ -1257,7 +1257,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-88"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/roleplay-calm-reply",
+  path: "/student/dcos/teens/roleplay-calm-reply",
   index: 87,
 },
 {
@@ -1271,7 +1271,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-89"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/reflex-flag1",
+  path: "/student/dcos/teens/reflex-flag1",
   index: 88,
 },
 {
@@ -1285,7 +1285,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-90"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/respect-champion-badge",
+  path: "/student/dcos/teens/respect-champion-badge",
   index: 89,
 },
 {
@@ -1299,7 +1299,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-91"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/entrepreneur-story",
+  path: "/student/dcos/teens/entrepreneur-story",
   index: 90,
 },
 {
@@ -1313,7 +1313,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-92"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/reflex-productivity",
+  path: "/student/dcos/teens/reflex-productivity",
   index: 91,
 },
 {
@@ -1327,7 +1327,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-93"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/debate-stage3",
+  path: "/student/dcos/teens/debate-stage3",
   index: 92,
 },
 {
@@ -1341,7 +1341,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-94"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/online-course-simulation",
+  path: "/student/dcos/teens/online-course-simulation",
   index: 93,
 },
 {
@@ -1355,7 +1355,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-95"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/career-puzzle",
+  path: "/student/dcos/teens/career-puzzle",
   index: 94,
 },
 {
@@ -1369,7 +1369,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-96"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/journal-future-use",
+  path: "/student/dcos/teens/journal-future-use",
   index: 95,
 },
 {
@@ -1383,7 +1383,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-97"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/social-media-story1",
+  path: "/student/dcos/teens/social-media-story1",
   index: 96,
 },
 {
@@ -1397,7 +1397,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   xp: 10,
   completed: gameCompletionStatus["dcos-teen-98"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/reflex-smart-screen",
+  path: "/student/dcos/teens/reflex-smart-screen",
   index: 97,
 },
 {
@@ -1411,7 +1411,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-99"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/role-model-task",
+  path: "/student/dcos/teens/role-model-task",
   index: 98,
 },
 {
@@ -1425,7 +1425,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
           xp: 10,
   completed: gameCompletionStatus["dcos-teen-100"] || false,
   isSpecial: true,
-  path: "/student/dcos/teen/productivity-hero-badge",
+  path: "/student/dcos/teens/productivity-hero-badge",
   index: 99,
 },
       ];

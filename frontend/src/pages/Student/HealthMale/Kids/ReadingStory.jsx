@@ -2,168 +2,172 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ReadingStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-98";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Your teacher says 'Read for 20 minutes every day.' Why is daily reading important?",
+      text: "Why is reading good for you?",
       options: [
         {
           id: "b",
-          text: "It makes you tired",
+          text: "It makes you sleepy",
           emoji: "😴",
-          description: "Reading actually improves your brain and imagination",
+          description: "It can be relaxing, but it does more!",
           isCorrect: false
         },
         {
           id: "a",
-          text: "It improves knowledge and mind",
+          text: "It exercises your brain",
           emoji: "🧠",
-          description: "Daily reading builds vocabulary and helps you learn new things",
+          description: "Reading makes you smarter and creative.",
           isCorrect: true
         },
         {
           id: "c",
-          text: "It's just busy work",
-          emoji: "📋",
-          description: "Reading helps you understand the world better",
+          text: "It hurts your eyes",
+          emoji: "👓",
+          description: "Reading in good light is fine for eyes.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "You find a book that interests you. What should you do?",
+      text: "When is a good time to read?",
       options: [
         {
           id: "c",
-          text: "Put it down and watch TV",
-          emoji: "📺",
-          description: "Reading interesting books helps you learn and grow",
+          text: "While riding a bike",
+          emoji: "🚲",
+          description: "That's dangerous!",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Read it and learn something new",
-          emoji: "📖",
-          description: "Books open your mind to new ideas and knowledge",
+          text: "Before bed",
+          emoji: "🌙",
+          description: "It's a perfect way to relax.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Read just the pictures",
-          emoji: "🖼️",
-          description: "Reading the words helps you understand the full story",
+          text: "In the shower",
+          emoji: "🚿",
+          description: "Books get wet!",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Your friend says 'Reading is boring.' How do you respond?",
+      text: "What can you learn from books?",
       options: [
         {
           id: "b",
-          text: "Agree and stop reading",
-          emoji: "😞",
-          description: "Share what you love about reading instead",
+          text: "Nothing",
+          emoji: "🤷",
+          description: "Books are full of information.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "How to fly",
+          emoji: "🧚",
+          description: "Only in stories!",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Show them an exciting book",
-          emoji: "📚",
-          description: "Good books can be exciting adventures for your mind",
+          text: "New words and ideas",
+          emoji: "💡",
+          description: "You learn something new every day.",
           isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Say they're right",
-          emoji: "👍",
-          description: "Reading helps you in school and life",
-          isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "What happens when you read books regularly?",
+      text: "Where can you get books?",
       options: [
         {
           id: "c",
-          text: "You forget how to play",
-          emoji: "🎮",
-          description: "Reading and playing can both be part of a balanced life",
+          text: "The grocery store",
+          emoji: "🛒",
+          description: "Sometimes, but mostly food.",
           isCorrect: false
         },
         {
           id: "a",
-          text: "You learn new words and ideas",
-          emoji: "💡",
-          description: "Reading expands your vocabulary and understanding",
+          text: "The library",
+          emoji: "🏛️",
+          description: "Libraries have thousands of free books!",
           isCorrect: true
         },
         {
           id: "b",
-          text: "You become too serious",
-          emoji: "😐",
-          description: "Reading helps you become more knowledgeable and creative",
+          text: "The gym",
+          emoji: "🏋️",
+          description: "Gyms are for exercise.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "How does reading help you in school?",
+      text: "Reading is like...",
       options: [
         {
           id: "b",
-          text: "It makes school harder",
-          emoji: "😩",
-          description: "Reading helps you understand lessons better",
+          text: "A chore",
+          emoji: "🧹",
+          description: "It should be fun!",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "A punishment",
+          emoji: "☹️",
+          description: "Reading is a reward.",
           isCorrect: false
         },
         {
           id: "a",
-          text: "It helps you understand lessons",
-          emoji: "✅",
-          description: "Reading improves comprehension and learning skills",
+          text: "An adventure",
+          emoji: "🗺️",
+          description: "Books take you to new worlds!",
           isCorrect: true
-        },
-        {
-          id: "c",
-          text: "It doesn't help at all",
-          emoji: "❌",
-          description: "Reading is a key skill for all school subjects",
-          isCorrect: false
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -178,8 +182,6 @@ const ReadingStory = () => {
     navigate("/student/health-male/kids/reflex-habit-alert");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   return (
     <GameShell
       title="Reading Story"
@@ -188,19 +190,15 @@ const ReadingStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-98"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={98}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
@@ -209,15 +207,15 @@ const ReadingStory = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

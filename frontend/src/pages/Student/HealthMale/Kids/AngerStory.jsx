@@ -55,39 +55,40 @@ const AngerStory = () => {
           description: "Mean words hurt feelings and don't solve anything",
           isCorrect: false
         },
-        {
-          id: "a",
-          text: "Say 'I feel angry when you don't wait your turn'",
-          emoji: "💬",
-          description: "Using words to express feelings helps others understand",
-          isCorrect: true
-        },
+
         {
           id: "b",
           text: "Push them away from the game",
           emoji: "🤜",
           description: "Pushing can hurt and doesn't teach good manners",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Say 'I feel angry when you don't wait your turn'",
+          emoji: "💬",
+          description: "Using words to express feelings helps others understand",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 3,
       text: "You lose a game and feel angry at yourself. What should you do?",
       options: [
+       {
+          id: "a",
+          text: "Say 'It's okay, I'll try again next time'",
+          emoji: "🔄",
+          description: "Being kind to yourself helps you learn and grow",
+          isCorrect: true
+        },
         {
           id: "b",
           text: "Throw the game pieces",
           emoji: "🎲",
           description: "Throwing things can break them and hurt others",
           isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Say 'It's okay, I'll try again next time'",
-          emoji: "🔄",
-          description: "Being kind to yourself helps you learn and grow",
-          isCorrect: true
         },
         {
           id: "c",
@@ -196,7 +197,7 @@ const AngerStory = () => {
       flashPoints={flashPoints}
       backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
+
       maxScore={questions.length} // Max score is total number of questions (all correct)
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}

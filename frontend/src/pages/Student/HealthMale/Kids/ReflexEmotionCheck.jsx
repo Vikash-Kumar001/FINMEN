@@ -1,112 +1,121 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const ReflexEmotionCheck = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [showQuestion, setShowQuestion] = useState(true);
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [questionStartTime, setQuestionStartTime] = useState(0);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const questions = [
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-53";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const ROUND_TIME = 5;
+  const TOTAL_ROUNDS = 5;
+
+  const [coins, setCoins] = useState(0);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [isActive, setIsActive] = useState(false);
+  const [showResult, setShowResult] = useState(false);
+  const [lastResult, setLastResult] = useState(null); // 'correct', 'wrong', 'timeout'
+
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const timerRef = useRef(null);
+
+  const scenarios = [
     {
       id: 1,
-      instruction: "Tap the emoji that shows HAPPY!",
-      correctEmoji: "😊",
-      wrongEmoji: "😠",
-      correctAnswer: "😊",
-      timeout: 3000
+      question: "Tap the emoji that shows HAPPY!",
+      options: [
+        { text: "Happy", emoji: "😊", isCorrect: true },
+        { text: "Angry", emoji: "😠", isCorrect: false }
+      ]
     },
     {
       id: 2,
-      instruction: "Tap the emoji that shows SAD!",
-      correctEmoji: "😢",
-      wrongEmoji: "😄",
-      correctAnswer: "😢",
-      timeout: 3000
+      question: "Tap the emoji that shows SAD!",
+      options: [
+        { text: "Happy", emoji: "😄", isCorrect: false },
+        { text: "Sad", emoji: "😢", isCorrect: true }
+      ]
     },
     {
       id: 3,
-      instruction: "Tap the emoji that shows ANGRY!",
-      correctEmoji: "😠",
-      wrongEmoji: "😊",
-      correctAnswer: "😠",
-      timeout: 3000
+      question: "Tap the emoji that shows ANGRY!",
+      options: [
+        { text: "Angry", emoji: "😠", isCorrect: true },
+        { text: "Happy", emoji: "😊", isCorrect: false }
+      ]
     },
     {
       id: 4,
-      instruction: "Tap the emoji that shows SCARED!",
-      correctEmoji: "😨",
-      wrongEmoji: "😢",
-      correctAnswer: "😨",
-      timeout: 3000
+      question: "Tap the emoji that shows SCARED!",
+      options: [
+        { text: "Sad", emoji: "😢", isCorrect: false },
+        { text: "Scared", emoji: "😨", isCorrect: true }
+      ]
     },
     {
       id: 5,
-      instruction: "Tap the emoji that shows EXCITED!",
-      correctEmoji: "🤩",
-      wrongEmoji: "😐",
-      correctAnswer: "🤩",
-      timeout: 3000
+      question: "Tap the emoji that shows EXCITED!",
+      options: [
+        { text: "Excited", emoji: "🤩", isCorrect: true },
+        { text: "Bored", emoji: "😐", isCorrect: false }
+      ]
     }
   ];
 
+  const startGame = () => {
+    setIsActive(true);
+    setTimeLeft(ROUND_TIME);
+    setShowResult(false);
+    setLastResult(null);
+  };
+
   useEffect(() => {
-    if (showQuestion && timeLeft > 0) {
-      const timer = setTimeout(() => {
-        setTimeLeft(timeLeft - 100);
-      }, 100);
-      return () => clearTimeout(timer);
-    } else if (showQuestion && timeLeft <= 0) {
-      // Time's up - wrong answer
-      handleTimeout();
+    if (isActive && timeLeft > 0) {
+      timerRef.current = setInterval(() => {
+        setTimeLeft((prev) => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0 && isActive) {
+      handleAnswer(false, 'timeout');
     }
-  }, [showQuestion, timeLeft]);
 
-  const startQuestion = (timeout) => {
-    setQuestionStartTime(Date.now());
-    setTimeLeft(timeout);
-    setShowQuestion(true);
-  };
+    return () => clearInterval(timerRef.current);
+  }, [isActive, timeLeft]);
 
-  const handleTimeout = () => {
-    setShowQuestion(false);
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        startQuestion(questions[currentQuestion + 1].timeout);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
-  };
+  // Reset timer when round changes
+  useEffect(() => {
+    if (currentRound < TOTAL_ROUNDS && !gameFinished) {
+      startGame();
+    }
+  }, [currentRound]);
 
-  const handleEmojiClick = (selectedEmoji) => {
-    const currentQ = questions[currentQuestion];
-    const isCorrect = selectedEmoji === currentQ.correctAnswer;
-    const responseTime = Date.now() - questionStartTime;
-
-    setShowQuestion(false);
+  const handleAnswer = (isCorrect, type = 'answer') => {
+    clearInterval(timerRef.current);
+    setIsActive(false);
 
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
+      setLastResult('correct');
+    } else {
+      setLastResult(type === 'timeout' ? 'timeout' : 'wrong');
     }
 
+    setShowResult(true);
+
     setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-        startQuestion(questions[currentQuestion + 1].timeout);
+      if (currentRound < TOTAL_ROUNDS - 1) {
+        setCurrentRound(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
@@ -114,87 +123,75 @@ const ReflexEmotionCheck = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/health-male/kids/emotion-match-puzzle");
+    navigate("/games/health-male/kids");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-  const progress = ((currentQuestion + (showQuestion ? 0 : 1)) / questions.length) * 100;
+  const currentScenario = scenarios[currentRound];
 
   return (
     <GameShell
       title="Reflex Emotion Check"
-      subtitle={`Challenge ${currentQuestion + 1} of ${questions.length}`}
+      subtitle={`Round ${currentRound + 1} of ${TOTAL_ROUNDS}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-53"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={60}
-      currentLevel={53}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={TOTAL_ROUNDS}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Challenge {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
+      totalXp={totalXp}
+      backPath="/games/health-male/kids"
+    >
+      <div className="space-y-8 w-full max-w-2xl mx-auto">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
 
-          {showQuestion && (
+          {!showResult ? (
             <>
-              <div className="text-center mb-6">
-                <p className="text-white text-xl mb-2">{getCurrentQuestion().instruction}</p>
-                <div className="w-full bg-white/20 rounded-full h-2 mb-4">
-                  <div
-                    className="bg-gradient-to-r from-yellow-400 to-orange-500 h-2 rounded-full transition-all duration-100"
-                    style={{ width: `${(timeLeft / getCurrentQuestion().timeout) * 100}%` }}
-                  ></div>
+              <div className="mb-8">
+                <div className="text-6xl font-bold text-white mb-4 animate-pulse">
+                  {timeLeft}s
                 </div>
-                <p className="text-white/60 text-sm">React quickly!</p>
+                <div className="w-full bg-white/20 rounded-full h-4">
+                  <div
+                    className="bg-yellow-400 h-4 rounded-full transition-all duration-1000 ease-linear"
+                    style={{ width: `${(timeLeft / ROUND_TIME) * 100}%` }}
+                  />
+                </div>
               </div>
 
-              <div className="flex justify-center gap-8">
-                <button
-                  onClick={() => handleEmojiClick(getCurrentQuestion().correctEmoji)}
-                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-8 rounded-2xl shadow-lg transition-all transform hover:scale-110 text-6xl"
-                >
-                  {getCurrentQuestion().correctEmoji}
-                </button>
-                <button
-                  onClick={() => handleEmojiClick(getCurrentQuestion().wrongEmoji)}
-                  className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white p-8 rounded-2xl shadow-lg transition-all transform hover:scale-110 text-6xl"
-                >
-                  {getCurrentQuestion().wrongEmoji}
-                </button>
+              <h2 className="text-3xl font-bold text-white mb-8">
+                {currentScenario.question}
+              </h2>
+
+              <div className="grid grid-cols-2 gap-6">
+                {currentScenario.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option.isCorrect)}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-8 rounded-2xl shadow-xl transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-4 group"
+                  >
+                    <span className="text-6xl group-hover:scale-110 transition-transform">
+                      {option.emoji}
+                    </span>
+                    <span className="text-xl font-bold">{option.text}</span>
+                  </button>
+                ))}
               </div>
             </>
-          )}
-
-          {!showQuestion && !gameFinished && (
-            <div className="text-center">
-              <div className="text-6xl mb-4">
-                {timeLeft <= 0 ? "⏰" : "⚡"}
+          ) : (
+            <div className="py-12">
+              <div className="text-8xl mb-6">
+                {lastResult === 'correct' ? '🎉' : lastResult === 'timeout' ? '⏰' : '❌'}
               </div>
-              <p className="text-white text-lg">
-                {timeLeft <= 0 ? "Time's up!" : "Great job!"}
-              </p>
-            </div>
-          )}
-
-          {gameFinished && (
-            <div className="text-center space-y-4">
-              <div className="text-6xl mb-4">🎯</div>
-              <h3 className="text-2xl font-bold text-white">Reflex Challenge Complete!</h3>
-              <p className="text-white/90">
-                You tested your emotion recognition reflexes! Fast thinking helps you understand feelings quickly!
+              <h2 className="text-4xl font-bold text-white mb-4">
+                {lastResult === 'correct' ? 'Great Job!' : lastResult === 'timeout' ? 'Time\'s Up!' : 'Oops!'}
+              </h2>
+              <p className="text-xl text-white/80">
+                {lastResult === 'correct' ? '+1 Coin' : 'Keep trying!'}
               </p>
             </div>
           )}

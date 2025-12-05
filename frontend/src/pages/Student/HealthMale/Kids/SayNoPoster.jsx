@@ -2,162 +2,233 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SayNoPoster = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedElements, setSelectedElements] = useState([]);
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-86";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
+  const [currentStage, setCurrentStage] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const posterElements = [
-    { id: "title", text: "SAY NO TO SMOKING & DRINKING", emoji: "🚫", category: "title" },
-    { id: "no", text: "NO", emoji: "🙅", category: "word" },
-    { id: "smoking", text: "Smoking", emoji: "🚬", category: "substance" },
-    { id: "drinking", text: "Drinking", emoji: "🍺", category: "substance" },
-    { id: "strong", text: "Strong", emoji: "💪", category: "word" },
-    { id: "message", text: "Choose health over habits", emoji: "💚", category: "message" },
-    { id: "cross", text: "❌", emoji: "❌", category: "symbol" },
-    { id: "healthy", text: "Healthy Life", emoji: "🌟", category: "message" },
-    { id: "shield", text: "🛡️", emoji: "🛡️", category: "protection" },
-    { id: "rainbow", text: "🌈", emoji: "🌈", category: "decoration" }
+  const stages = [
+    {
+      id: 1,
+      title: "Be Clear",
+      question: "Which poster shows the best way to say NO?",
+      options: [
+        {
+          id: "a",
+          text: "Say NO Firmly",
+          emoji: "✋",
+          description: "Be clear and strong with your answer.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Whisper No",
+          emoji: "🤫",
+          description: "If you whisper, they might not hear you.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Smile and Nod",
+          emoji: "🙂",
+          description: "Smiling might make them think you mean yes.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Walk Away",
+      question: "Which poster shows what to do after saying no?",
+      options: [
+        {
+          id: "b",
+          text: "Stay and Watch",
+          emoji: "👀",
+          description: "Staying might tempt you to join in.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Walk Away Fast",
+          emoji: "🏃",
+          description: "Leave the situation immediately.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Argue with Them",
+          emoji: "🗣️",
+          description: "Arguing keeps you in the bad situation.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Healthy Choice",
+      question: "Which poster shows a healthy alternative?",
+      options: [
+        {
+          id: "c",
+          text: "Drink Soda",
+          emoji: "🥤",
+          description: "Soda isn't the healthiest choice either.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Eat Candy",
+          emoji: "🍭",
+          description: "Candy is okay sometimes, but not the best.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Play Sports",
+          emoji: "🏀",
+          description: "Sports are fun and keep you healthy!",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Real Friends",
+      question: "Which poster shows what real friends do?",
+      options: [
+        {
+          id: "b",
+          text: "Pressure You",
+          emoji: "😤",
+          description: "Friends shouldn't force you to do bad things.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Respect Your No",
+          emoji: "🤝",
+          description: "Real friends listen when you say no.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Make Fun of You",
+          emoji: "😝",
+          description: "Teasing isn't what friends do.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Stay Strong",
+      question: "Which poster shows a strong kid?",
+      options: [
+        {
+          id: "c",
+          text: "Follows the Crowd",
+          emoji: "🐑",
+          description: "Doing what everyone else does isn't strength.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Hides Away",
+          emoji: "🙈",
+          description: "Hiding doesn't solve the problem.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Makes Own Choices",
+          emoji: "🦁",
+          description: "Being a leader of your own life is strong!",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const handleElementToggle = (elementId) => {
-    if (selectedElements.includes(elementId)) {
-      setSelectedElements(prev => prev.filter(id => id !== elementId));
+  const handleOptionSelect = (option) => {
+    if (option.isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+
+      setTimeout(() => {
+        if (currentStage < stages.length - 1) {
+          setCurrentStage(prev => prev + 1);
+        } else {
+          setGameFinished(true);
+        }
+      }, 1500);
     } else {
-      setSelectedElements(prev => [...prev, elementId]);
+      showCorrectAnswerFeedback(0, false);
     }
   };
-
-  React.useEffect(() => {
-    // Check if user has selected enough elements to complete the poster
-    const requiredElements = ["title", "message"];
-    const hasRequired = requiredElements.every(req => selectedElements.includes(req));
-    const hasSubstances = posterElements.filter(el => el.category === "substance").some(el => selectedElements.includes(el.id));
-
-    if (hasRequired && hasSubstances && selectedElements.length >= 5 && !gameFinished) {
-      setGameFinished(true);
-      showCorrectAnswerFeedback(0, true); // Badge reward
-    }
-  }, [selectedElements, gameFinished]);
 
   const handleNext = () => {
     navigate("/student/health-male/kids/refusal-journal");
   };
 
-  const selectedCount = selectedElements.length;
-  const isComplete = gameFinished;
+  const currentS = stages[currentStage];
 
   return (
     <GameShell
       title="Say No Poster"
-      subtitle={`Design your poster - ${selectedCount} elements chosen`}
+      subtitle={`Poster ${currentStage + 1} of ${stages.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={0}
-      gameId="health-male-kids-86"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={90}
-      currentLevel={86}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={90} // Max score is total number of questions (all correct)
+      maxScore={stages.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">🎨</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Create Your Say No Poster</h3>
-            <p className="text-white/90 mb-4">
-              Design a poster that says "Say No to Smoking & Drinking"
-            </p>
-            <div className="bg-white/20 rounded-full p-3 inline-block mb-4">
-              <span className="text-white font-bold">Choose at least 5 elements including title and substances!</span>
-            </div>
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-white mb-2">{currentS.title}</h3>
+            <p className="text-white/90 text-lg">{currentS.question}</p>
           </div>
 
-          {/* Poster Preview */}
-          <div className="bg-gradient-to-br from-red-100/20 to-orange-100/20 rounded-2xl p-8 mb-6 min-h-[300px] border-2 border-white/30">
-            <div className="text-center space-y-4">
-              {selectedElements.length === 0 ? (
-                <div className="text-white/60">
-                  <div className="text-6xl mb-4">📄</div>
-                  <p>Your poster will appear here as you add elements!</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {currentS.options.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => handleOptionSelect(option)}
+                className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
+              >
+                <div className="text-6xl group-hover:scale-110 transition-transform">
+                  {option.emoji}
                 </div>
-              ) : (
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 justify-items-center">
-                  {selectedElements.map(elementId => {
-                    const element = posterElements.find(el => el.id === elementId);
-                    return (
-                      <div
-                        key={elementId}
-                        className="bg-white/20 rounded-xl p-3 text-center transform hover:scale-105 transition-all"
-                      >
-                        <div className="text-3xl mb-1">{element.emoji}</div>
-                        <div className="text-white font-medium text-sm">{element.text}</div>
-                      </div>
-                    );
-                  })}
+                <div className="text-white font-bold text-xl text-center">
+                  {option.text}
                 </div>
-              )}
-            </div>
+                <p className="text-white/70 text-sm text-center">{option.description}</p>
+              </button>
+            ))}
           </div>
-
-          {/* Element Selection */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {posterElements.map(element => {
-              const isSelected = selectedElements.includes(element.id);
-
-              return (
-                <button
-                  key={element.id}
-                  onClick={() => handleElementToggle(element.id)}
-                  className={`p-4 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                    isSelected
-                      ? 'bg-gradient-to-r from-green-500 to-emerald-600 border-green-400 text-white'
-                      : 'bg-gradient-to-r from-blue-500 to-indigo-600 border-blue-400 text-white hover:from-blue-600 hover:to-indigo-700'
-                  }`}
-                >
-                  <div className="text-center">
-                    <div className="text-3xl mb-2">{element.emoji}</div>
-                    <div className="font-bold text-sm mb-1">{element.text}</div>
-                    <div className="text-xs opacity-80 capitalize">{element.category}</div>
-                    {isSelected && <div className="text-lg mt-1">✅</div>}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
-
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">🎨</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Poster Complete!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  Your "Say No to Smoking & Drinking" poster is powerful! You created a strong message against harmful substances!
-                </p>
-                <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-full p-4 inline-block mb-4">
-                  <div className="text-white font-bold text-xl">REFUSAL ARTIST</div>
-                </div>
-                <p className="text-white/80">
-                  Excellent work promoting the importance of saying no to harmful substances! 🌟
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </GameShell>

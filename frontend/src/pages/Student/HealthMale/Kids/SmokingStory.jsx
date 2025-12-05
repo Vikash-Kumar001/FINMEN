@@ -2,152 +2,160 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SmokingStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-81";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Your friend finds cigarettes and offers you one. What should you do?",
+      text: "What does smoking do to your lungs?",
       options: [
         {
-          id: "b",
-          text: "Try it to fit in with friends",
-          emoji: "🚬",
-          description: "Smoking harms your lungs and health - it's never safe to try",
-          isCorrect: false
-        },
-        {
           id: "a",
-          text: "Say no and explain why it's bad",
-          emoji: "🙅",
-          description: "Saying no shows strength and protects your health",
+          text: "Makes them black and sick",
+          emoji: "🫁",
+          description: "Smoking fills lungs with tar and bad stuff",
           isCorrect: true
         },
         {
+          id: "b",
+          text: "Makes them stronger",
+          emoji: "💪",
+          description: "Smoking hurts your lungs and makes it hard to breathe",
+          isCorrect: false
+        },
+        
+        {
           id: "c",
-          text: "Take it but don't smoke it",
-          emoji: "🤏",
-          description: "Even holding cigarettes can be dangerous",
+          text: "Makes them smell like flowers",
+          emoji: "🌸",
+          description: "Smoking makes everything smell bad",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Your friend says 'Everyone tries smoking, it's no big deal.' How do you respond?",
+      text: "If someone offers you a cigarette, what do you say?",
       options: [
         {
           id: "c",
-          text: "Agree and try it",
-          emoji: "😅",
-          description: "Real friends respect when you say no to harmful things",
+          text: "Maybe later",
+          emoji: "🤔",
+          description: "You should always say no clearly",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Say 'I choose not to smoke'",
-          emoji: "💪",
-          description: "Making healthy choices shows maturity and self-respect",
+          text: "No thanks, I want to be healthy",
+          emoji: "✋",
+          description: "Saying no keeps your body safe",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Ask why they want to smoke",
-          emoji: "🤔",
-          description: "It's better to firmly say no than question others",
+          text: "Yes, I'll try it",
+          emoji: "🚬",
+          description: "Never try smoking, it's very dangerous",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Someone says smoking makes you look cool. What do you think?",
+      text: "Why is smoking bad for sports?",
       options: [
         {
           id: "b",
-          text: "I want to look cool too",
-          emoji: "😎",
-          description: "Real coolness comes from being healthy and confident",
+          text: "It makes you run too fast",
+          emoji: "🏃",
+          description: "Smoking makes you slower, not faster",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "It makes the ball slippery",
+          emoji: "⚽",
+          description: "Smoking hurts your body, not the ball",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Being healthy is cooler than smoking",
-          emoji: "🌟",
-          description: "Healthy choices show real strength and confidence",
+          text: "You run out of breath easily",
+          emoji: "😮‍💨",
+          description: "Your lungs need clean air to run and play",
           isCorrect: true
         },
-        {
-          id: "c",
-          text: "Maybe just try once",
-          emoji: "🤷",
-          description: "Even trying once can start a dangerous habit",
-          isCorrect: false
-        }
       ]
     },
     {
       id: 4,
-      text: "Your older cousin smokes and says it's okay for kids too. What do you do?",
+      text: "What is in a cigarette?",
       options: [
         {
           id: "c",
-          text: "Listen to your cousin",
-          emoji: "👂",
-          description: "Family should protect you, not encourage harmful habits",
+          text: "Vitamins",
+          emoji: "💊",
+          description: "Cigarettes have poisons, not vitamins",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Tell a trusted adult about it",
-          emoji: "🗣️",
-          description: "Adults can help protect you from dangerous influences",
+          text: "Dangerous poisons",
+          emoji: "☠️",
+          description: "There are many harmful chemicals in cigarettes",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Try it secretly",
-          emoji: "🤫",
-          description: "Secret habits are never safe or healthy",
+          text: "Candy",
+          emoji: "🍬",
+          description: "Cigarettes are not a treat",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "How can you help a friend who wants to try smoking?",
+      text: "How do you stay smoke-free?",
       options: [
         {
           id: "b",
-          text: "Try it together",
-          emoji: "👫",
-          description: "Help friends make healthy choices instead",
+          text: "Hang out with smokers",
+          emoji: "👥",
+          description: "Stay away from smoke to be healthy",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Say nothing and let them decide",
-          emoji: "🤐",
-          description: "Good friends help each other stay safe",
+          text: "Try it once",
+          emoji: "1️⃣",
+          description: "Don't even try it once!",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Explain why smoking is harmful",
-          emoji: "🛡️",
-          description: "Sharing health knowledge helps protect your friends",
+          text: "Choose healthy friends and habits",
+          emoji: "🌟",
+          description: "Good friends help you make good choices",
           isCorrect: true
         }
       ]
@@ -155,15 +163,13 @@ const SmokingStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -178,8 +184,6 @@ const SmokingStory = () => {
     navigate("/student/health-male/kids/quiz-substances");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   return (
     <GameShell
       title="Smoking Story"
@@ -188,19 +192,15 @@ const SmokingStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-81"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={90}
-      currentLevel={81}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
@@ -209,15 +209,15 @@ const SmokingStory = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

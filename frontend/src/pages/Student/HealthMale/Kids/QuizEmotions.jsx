@@ -2,17 +2,23 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const QuizEmotions = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-52";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
@@ -22,18 +28,18 @@ const QuizEmotions = () => {
       text: "Which of these is an emotion?",
       options: [
         {
-          id: "b",
-          text: "Happy",
-          emoji: "😊",
-          description: "Happy is a feeling you have inside",
-          isCorrect: true
-        },
-        {
           id: "a",
           text: "Chair",
           emoji: "🪑",
           description: "A chair is a thing, not a feeling",
           isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Happy",
+          emoji: "😊",
+          description: "Happy is a feeling you have inside",
+          isCorrect: true
         },
         {
           id: "c",
@@ -49,13 +55,6 @@ const QuizEmotions = () => {
       text: "What does 'sad' mean?",
       options: [
         {
-          id: "c",
-          text: "A type of food",
-          emoji: "🍎",
-          description: "Sad is when you feel unhappy or cry",
-          isCorrect: false
-        },
-        {
           id: "a",
           text: "When you feel unhappy",
           emoji: "😢",
@@ -68,6 +67,13 @@ const QuizEmotions = () => {
           emoji: "🎮",
           description: "Sad is an emotion, not a game",
           isCorrect: false
+        },
+        {
+          id: "c",
+          text: "A type of food",
+          emoji: "🍎",
+          description: "Sad is when you feel unhappy or cry",
+          isCorrect: false
         }
       ]
     },
@@ -75,6 +81,13 @@ const QuizEmotions = () => {
       id: 3,
       text: "Which shows someone is angry?",
       options: [
+        {
+          id: "a",
+          text: "Jumping with joy",
+          emoji: "🤾",
+          description: "This shows happiness, not anger",
+          isCorrect: false
+        },
         {
           id: "b",
           text: "Smiling and laughing",
@@ -88,13 +101,6 @@ const QuizEmotions = () => {
           emoji: "😠",
           description: "These are signs of anger",
           isCorrect: true
-        },
-        {
-          id: "a",
-          text: "Jumping with joy",
-          emoji: "🤾",
-          description: "This shows happiness, not anger",
-          isCorrect: false
         }
       ]
     },
@@ -110,17 +116,17 @@ const QuizEmotions = () => {
           isCorrect: true
         },
         {
-          id: "c",
-          text: "When you're very tired",
-          emoji: "😴",
-          description: "Excited is the opposite of tired",
-          isCorrect: false
-        },
-        {
           id: "b",
           text: "A type of vegetable",
           emoji: "🥕",
           description: "Excited is a feeling, not a food",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "When you're very tired",
+          emoji: "😴",
+          description: "Excited is the opposite of tired",
           isCorrect: false
         }
       ]
@@ -129,6 +135,13 @@ const QuizEmotions = () => {
       id: 5,
       text: "Which feeling helps you know something is wrong?",
       options: [
+        {
+          id: "a",
+          text: "Boredom",
+          emoji: "😐",
+          description: "Fear is more helpful than boredom for staying safe",
+          isCorrect: false
+        },
         {
           id: "b",
           text: "Happiness",
@@ -142,28 +155,19 @@ const QuizEmotions = () => {
           emoji: "😨",
           description: "Fear tells us when we need to be careful",
           isCorrect: true
-        },
-        {
-          id: "a",
-          text: "Boredom",
-          emoji: "😐",
-          description: "Fear is more helpful than boredom for staying safe",
-          isCorrect: false
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -175,10 +179,8 @@ const QuizEmotions = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/health-male/kids/reflex-emotion-check");
+    navigate("/games/health-male/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -188,19 +190,16 @@ const QuizEmotions = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-52"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={60}
-      currentLevel={52}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+      backPath="/games/health-male/kids"
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
@@ -209,15 +208,15 @@ const QuizEmotions = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

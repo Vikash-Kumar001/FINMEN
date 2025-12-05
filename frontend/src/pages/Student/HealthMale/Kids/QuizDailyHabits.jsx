@@ -2,168 +2,174 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const QuizDailyHabits = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-92";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Which is a good daily habit?",
+      text: "How much sleep do kids need?",
       options: [
         {
-          id: "a",
-          text: "Sleeping on time",
-          emoji: "😴",
-          description: "Good sleep helps your body and brain grow strong",
-          isCorrect: true
-        },
-        {
           id: "b",
-          text: "Playing all night",
-          emoji: "🎮",
-          description: "Playing all night makes you tired and grumpy",
+          text: "2 hours",
+          emoji: "⚡",
+          description: "That's not nearly enough!",
           isCorrect: false
         },
+       
         {
           id: "c",
-          text: "Skipping breakfast",
-          emoji: "🍽️",
-          description: "Breakfast gives you energy for the day",
+          text: "24 hours",
+          emoji: "🐻",
+          description: "You're not a hibernating bear!",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "9-11 hours",
+          emoji: "😴",
+          description: "Your body grows when you sleep.",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 2,
-      text: "Why is eating breakfast important?",
+      text: "Why is exercise good?",
       options: [
         {
           id: "c",
-          text: "It makes you gain weight",
-          emoji: "⚖️",
-          description: "Breakfast gives you energy and helps you focus",
+          text: "It makes you tired",
+          emoji: "😫",
+          description: "It actually gives you more energy!",
           isCorrect: false
         },
         {
           id: "a",
-          text: "It gives you energy for the morning",
-          emoji: "⚡",
-          description: "Breakfast helps you think clearly and stay focused",
+          text: "It makes muscles strong",
+          emoji: "💪",
+          description: "Exercise keeps your heart and body healthy.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "It doesn't matter if you skip it",
-          emoji: "🤷",
-          description: "Breakfast is the most important meal of the day",
+          text: "It's boring",
+          emoji: "🥱",
+          description: "Exercise can be fun games and sports!",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "What happens when you exercise daily?",
+      text: "When should you wash your hands?",
       options: [
         {
-          id: "b",
-          text: "You get more tired",
-          emoji: "😴",
-          description: "Exercise actually gives you more energy",
-          isCorrect: false
-        },
-        {
           id: "a",
-          text: "Your body gets stronger",
-          emoji: "💪",
-          description: "Daily exercise builds muscles and keeps you healthy",
+          text: "Before eating and after bathroom",
+          emoji: "🧼",
+          description: "This stops germs from making you sick.",
           isCorrect: true
         },
         {
+          id: "b",
+          text: "Only on Sundays",
+          emoji: "📅",
+          description: "Germs are there every day.",
+          isCorrect: false
+        },
+       
+        {
           id: "c",
-          text: "Nothing changes",
-          emoji: "😑",
-          description: "Exercise improves your health in many ways",
+          text: "Never",
+          emoji: "🦠",
+          description: "Yuck! You need to wash germs away.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Why should you read books regularly?",
+      text: "What is a healthy snack?",
       options: [
         {
           id: "c",
-          text: "It makes you sleepy",
-          emoji: "😴",
-          description: "Reading improves your knowledge and imagination",
+          text: "Potato chips",
+          emoji: "🥔",
+          description: "Chips have too much salt and fat.",
           isCorrect: false
         },
         {
           id: "a",
-          text: "It improves your knowledge and brain",
-          emoji: "🧠",
-          description: "Reading helps you learn new things and think better",
+          text: "Carrots and hummus",
+          emoji: "🥕",
+          description: "Veggies give you vitamins!",
           isCorrect: true
         },
         {
           id: "b",
-          text: "It's just something to do",
-          emoji: "📖",
-          description: "Reading builds vocabulary and understanding",
+          text: "Cookies",
+          emoji: "🍪",
+          description: "Cookies are a treat, not a snack.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "What's the best way to end your day?",
+      text: "Why do we drink water?",
       options: [
         {
           id: "b",
-          text: "Stay up late watching TV",
-          emoji: "📺",
-          description: "Going to bed on time helps you wake up refreshed",
+          text: "To float",
+          emoji: "🏊",
+          description: "We drink it to stay hydrated.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "To change color",
+          emoji: "🌈",
+          description: "Water doesn't change your color.",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Go to bed at a regular time",
-          emoji: "🌙",
-          description: "Regular bedtime helps your body rest and grow",
+          text: "To keep our body working",
+          emoji: "💧",
+          description: "Every part of your body needs water.",
           isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Play games until you fall asleep",
-          emoji: "🎮",
-          description: "Consistent bedtime creates healthy sleep habits",
-          isCorrect: false
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -178,8 +184,6 @@ const QuizDailyHabits = () => {
     navigate("/student/health-male/kids/reflex-habit-check");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   return (
     <GameShell
       title="Quiz on Daily Habits"
@@ -188,19 +192,15 @@ const QuizDailyHabits = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-92"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={92}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
@@ -209,15 +209,15 @@ const QuizDailyHabits = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

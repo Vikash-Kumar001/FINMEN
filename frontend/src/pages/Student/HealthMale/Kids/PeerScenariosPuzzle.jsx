@@ -2,14 +2,21 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PeerScenariosPuzzle = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-64";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
   const [selectedResponse, setSelectedResponse] = useState(null);
@@ -35,8 +42,8 @@ const PeerScenariosPuzzle = () => {
       emoji: "🚬",
       description: "How do you respond when offered something unhealthy?",
       responses: [
-        { id: "sayno2", text: "Say No", emoji: "🙅", isCorrect: true, explanation: "Saying no protects your health and shows strength" },
         { id: "trylittle", text: "Try a Little", emoji: "🤏", isCorrect: false, explanation: "Even trying a little can be harmful to your body" },
+        { id: "sayno2", text: "Say No", emoji: "🙅", isCorrect: true, explanation: "Saying no protects your health and shows strength" },
         { id: "maybe", text: "Maybe Later", emoji: "⏰", isCorrect: false, explanation: "Maybe later often becomes yes - better to say no firmly" }
       ]
     },
@@ -46,8 +53,8 @@ const PeerScenariosPuzzle = () => {
       emoji: "📝",
       description: "What do you do when asked to break school rules?",
       responses: [
-        { id: "sayno3", text: "Say No", emoji: "🙅", isCorrect: true, explanation: "Saying no to cheating shows honesty and integrity" },
         { id: "cheat", text: "Cheat", emoji: "🤫", isCorrect: false, explanation: "Cheating hurts your learning and can get you in trouble" },
+        { id: "sayno3", text: "Say No", emoji: "🙅", isCorrect: true, explanation: "Saying no to cheating shows honesty and integrity" },
         { id: "tellteacher", text: "Tell Teacher", emoji: "👨‍🏫", isCorrect: false, explanation: "Telling teacher is good, but better to just say no" }
       ]
     },
@@ -57,9 +64,9 @@ const PeerScenariosPuzzle = () => {
       emoji: "🏪",
       description: "How do you handle pressure to do something illegal?",
       responses: [
-        { id: "sayno4", text: "Say No", emoji: "🙅", isCorrect: true, explanation: "Saying no to stealing shows strong character" },
         { id: "steal", text: "Steal", emoji: "🛒", isCorrect: false, explanation: "Stealing is wrong and can lead to big trouble" },
-        { id: "runaway", text: "Run Away", emoji: "🏃", isCorrect: false, explanation: "Running away doesn't solve the problem" }
+        { id: "runaway", text: "Run Away", emoji: "🏃", isCorrect: false, explanation: "Running away doesn't solve the problem" },
+        { id: "sayno4", text: "Say No", emoji: "🙅", isCorrect: true, explanation: "Saying no to stealing shows strong character" }
       ]
     },
     {
@@ -68,8 +75,8 @@ const PeerScenariosPuzzle = () => {
       emoji: "😢",
       description: "What do you do when asked to be mean to others?",
       responses: [
-        { id: "sayno5", text: "Say No", emoji: "🙅", isCorrect: true, explanation: "Saying no to bullying shows kindness and courage" },
         { id: "bully", text: "Join In", emoji: "👊", isCorrect: false, explanation: "Joining bullying makes you part of the problem" },
+        { id: "sayno5", text: "Say No", emoji: "🙅", isCorrect: true, explanation: "Saying no to bullying shows kindness and courage" },
         { id: "defend", text: "Defend Victim", emoji: "🛡️", isCorrect: false, explanation: "Defending is great, but saying no first is important" }
       ]
     }
@@ -97,7 +104,7 @@ const PeerScenariosPuzzle = () => {
   };
 
   const handleNext = () => {
-    navigate("/student/health-male/kids/bully-story");
+    navigate("/games/health-male/kids");
   };
 
   const getCurrentPuzzle = () => puzzles[currentPuzzle];
@@ -110,19 +117,15 @@ const PeerScenariosPuzzle = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-64"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={70}
-      currentLevel={64}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={70} // Max score is total number of questions (all correct)
+      maxScore={puzzles.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
@@ -147,13 +150,12 @@ const PeerScenariosPuzzle = () => {
                   key={response.id}
                   onClick={() => handleResponseSelect(response.id)}
                   disabled={isMatched}
-                  className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                    isMatched
-                      ? isCorrect
-                        ? 'bg-green-100/20 border-green-500 text-white'
-                        : 'bg-red-100/20 border-red-500 text-white'
-                      : 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                  }`}
+                  className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${isMatched
+                    ? isCorrect
+                      ? 'bg-green-100/20 border-green-500 text-white'
+                      : 'bg-red-100/20 border-red-500 text-white'
+                    : 'bg-gradient-to-r from-blue-500 to-cyan-600 border-blue-400 text-white hover:from-blue-600 hover:to-cyan-700'
+                    }`}
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center">
@@ -162,7 +164,7 @@ const PeerScenariosPuzzle = () => {
                       </div>
                       <div className="text-left">
                         <h3 className={`font-bold text-lg ${isMatched && isCorrect ? 'text-green-300' : 'text-white'}`}>
-                          {isMatched && isCorrect ? '✅ ' : isMatched && !isCorrect ? '❌ ' : '☐ '}{response.text}
+                          {isMatched && isCorrect ? '✅ ' : isMatched && !isCorrect ? '❌ ' : ''}{response.text}
                         </h3>
                         <p className="text-white/80 text-sm">{response.explanation}</p>
                       </div>

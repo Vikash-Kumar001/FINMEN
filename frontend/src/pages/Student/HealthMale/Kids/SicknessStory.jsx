@@ -2,168 +2,175 @@ import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SicknessStory = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-75";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You wake up with a high fever and feel very sick. What should you do?",
+      text: "You wake up feeling hot and tired. What should you do?",
       options: [
         {
           id: "b",
-          text: "Hide it and pretend to feel fine",
-          emoji: "😊",
-          description: "Hiding sickness can make you feel worse and spread germs",
-          isCorrect: false
-        },
-        {
-          id: "a",
-          text: "Tell your parents right away",
-          emoji: "🗣️",
-          description: "Parents can help you get better and take care of you",
-          isCorrect: true
-        },
-        {
-          id: "c",
           text: "Go to school anyway",
           emoji: "🏫",
-          description: "Stay home when sick to rest and avoid spreading germs",
+          description: "You might make others sick",
           isCorrect: false
-        }
+        },
+       
+        {
+          id: "c",
+          text: "Eat lots of candy",
+          emoji: "🍬",
+          description: "Candy won't help you feel better",
+          isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Tell a parent you feel sick",
+          emoji: "🤒",
+          description: "Parents can help you get better",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 2,
-      text: "Your mom says you need to rest and drink lots of water. What's the best choice?",
+      text: "You have a runny nose. What do you need?",
       options: [
         {
           id: "c",
-          text: "Refuse and keep playing",
-          emoji: "🎮",
-          description: "Rest helps your body fight the sickness",
+          text: "Your sleeve",
+          emoji: "👕",
+          description: "Using your sleeve spreads germs",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Rest and drink water as told",
-          emoji: "💧",
-          description: "Following doctor's advice helps you get better faster",
+          text: "A tissue",
+          emoji: "🤧",
+          description: "Tissues catch germs so you can throw them away",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Take medicine secretly",
-          emoji: "💊",
-          description: "Never take medicine without adult supervision",
+          text: "A towel",
+          emoji: "🧖",
+          description: "Towels are for drying off after a bath",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "Your stomach hurts a lot and you feel like throwing up. What do you do?",
+      text: "The doctor gives you medicine. What do you do?",
       options: [
         {
-          id: "b",
-          text: "Eat more food to feel better",
-          emoji: "🍎",
-          description: "When sick, it's better to eat light foods or rest",
-          isCorrect: false
-        },
-        {
           id: "a",
-          text: "Tell parents about the pain",
-          emoji: "🤕",
-          description: "Adults can help you feel better and get medical care if needed",
+          text: "Take it exactly as told",
+          emoji: "💊",
+          description: "Medicine helps your body fight sickness",
           isCorrect: true
         },
         {
+          id: "b",
+          text: "Hide it",
+          emoji: "🙈",
+          description: "Medicine only works if you take it",
+          isCorrect: false
+        },
+        
+        {
           id: "c",
-          text: "Ignore it and keep playing",
-          emoji: "😅",
-          description: "Pain is your body's way of saying something needs attention",
+          text: "Give it to your pet",
+          emoji: "🐕",
+          description: "Medicine is only for the person who is sick",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "The doctor says you need to take medicine for a few days. How do you respond?",
+      text: "What helps you get better when you are sick?",
       options: [
         {
           id: "c",
-          text: "Stop taking it when you feel better",
-          emoji: "✋",
-          description: "Always finish medicine as prescribed by the doctor",
+          text: "Playing video games all night",
+          emoji: "🎮",
+          description: "You need sleep to heal",
           isCorrect: false
         },
-        {
-          id: "a",
-          text: "Take all the medicine as directed",
-          emoji: "💊",
-          description: "Following doctor's instructions completely helps you heal",
-          isCorrect: true
-        },
+       
         {
           id: "b",
-          text: "Share medicine with friends",
-          emoji: "🤝",
-          description: "Medicine should only be taken by the person it's prescribed for",
+          text: "Running around",
+          emoji: "🏃",
+          description: "Running uses up energy you need for healing",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Rest and sleep",
+          emoji: "😴",
+          description: "Sleep gives your body energy to heal",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 5,
-      text: "You have a bad cough that won't go away. What's the right action?",
+      text: "How do you stop germs from spreading?",
       options: [
         {
           id: "b",
-          text: "Hold in the cough",
-          emoji: "😶",
-          description: "Coughing helps clear your lungs - but see a doctor if it persists",
+          text: "Touch everything",
+          emoji: "👆",
+          description: "Touching things spreads germs",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Cough on friends",
+          emoji: "🗣️",
+          description: "Never cough on others!",
           isCorrect: false
         },
         {
           id: "a",
-          text: "Tell parents and see a doctor",
-          emoji: "👩‍⚕️",
-          description: "Persistent symptoms need medical attention",
+          text: "Wash your hands often",
+          emoji: "🧼",
+          description: "Washing hands kills germs",
           isCorrect: true
-        },
-        {
-          id: "c",
-          text: "Drink lots of soda",
-          emoji: "🥤",
-          description: "Water and rest are better than sugary drinks when sick",
-          isCorrect: false
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -178,8 +185,6 @@ const SicknessStory = () => {
     navigate("/student/health-male/kids/prevention-first-poster");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   return (
     <GameShell
       title="Sickness Story"
@@ -188,19 +193,15 @@ const SicknessStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-male-kids-75"
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={80}
-      currentLevel={75}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={questions.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
+      totalXp={totalXp}
+    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
@@ -209,15 +210,15 @@ const SicknessStory = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

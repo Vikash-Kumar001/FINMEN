@@ -1,160 +1,219 @@
 import React, { useState } from "react";
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Shield, AlertTriangle, Heart, UserCheck, CheckCircle } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const SafetySmartKidBadge = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [completedChallenges, setCompletedChallenges] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const challenges = [
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-kids-80";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti, resetFeedback } = useGameFeedback();
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [score, setScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+
+  const levels = [
     {
       id: 1,
-      text: "Get vaccinated to prevent diseases",
-      emoji: "💉",
-      description: "Vaccines protect you and others from serious illnesses",
-      completed: false
+      title: "Helmet Hero",
+      question: "Why do we wear helmets?",
+      icon: Shield,
+      options: [
+        { text: "To protect our brain", correct: true },
+        { text: "To look like an alien", correct: false },
+        { text: "To keep hair dry", correct: false }
+      ],
+      feedback: {
+        correct: "Exactly! Helmets protect your most important body part - your brain!",
+        wrong: "Helmets are safety gear designed to protect your head and brain from injury."
+      }
     },
     {
       id: 2,
-      text: "Tell adults when you're sick",
-      emoji: "🤒",
-      description: "Early treatment helps you get better faster",
-      completed: false
+      title: "Stranger Safety",
+      question: "What if a stranger offers you a ride?",
+      icon: AlertTriangle,
+      options: [
+        { text: "Get in the car", correct: false },
+        { text: "Say NO and run away", correct: true },
+        { text: "Ask for candy first", correct: false }
+      ],
+      feedback: {
+        correct: "Perfect! Never go with strangers. Run to a safe place and tell an adult.",
+        wrong: "Never get in a car with a stranger. It's very dangerous!"
+      }
     },
     {
       id: 3,
-      text: "Wear safety gear like helmets",
-      emoji: "⛑️",
-      description: "Protection prevents injuries during activities",
-      completed: false
+      title: "Healthy Body",
+      question: "What keeps your body strong?",
+      icon: Heart,
+      options: [
+        { text: "Watching TV all day", correct: false },
+        { text: "Eating only cookies", correct: false },
+        { text: "Healthy food and exercise", correct: true }
+      ],
+      feedback: {
+        correct: "Great! Good food and moving your body keeps you strong and healthy!",
+        wrong: "Your body needs nutritious food and exercise to grow strong."
+      }
     },
     {
       id: 4,
-      text: "Visit doctor and dentist regularly",
-      emoji: "👩‍⚕️",
-      description: "Check-ups catch problems before they get serious",
-      completed: false
+      title: "Clean Hands",
+      question: "When should you wash your hands?",
+      icon: UserCheck,
+      options: [
+        { text: "Before eating", correct: true },
+        { text: "Only once a week", correct: false },
+        { text: "Never", correct: false }
+      ],
+      feedback: {
+        correct: "Yes! Washing hands before eating stops germs from getting in your body.",
+        wrong: "You should wash hands often, especially before eating and after using the bathroom."
+      }
     },
     {
       id: 5,
-      text: "Follow safety rules every day",
-      emoji: "🛡️",
-      description: "Daily safe habits keep you healthy and strong",
-      completed: false
+      title: "Safety First",
+      question: "What is the most important rule?",
+      icon: CheckCircle,
+      options: [
+        { text: "Have fun no matter what", correct: false },
+        { text: "Safety comes first", correct: true },
+        { text: "Win every game", correct: false }
+      ],
+      feedback: {
+        correct: "You got it! Having fun is great, but staying safe is always the most important thing!",
+        wrong: "Safety is always number one. You can't have fun if you get hurt!"
+      }
     }
   ];
 
-  const handleChallengeComplete = (challengeId) => {
-    if (!completedChallenges.includes(challengeId)) {
-      setCompletedChallenges(prev => [...prev, challengeId]);
-      showCorrectAnswerFeedback(2, true); // 2 coins per challenge
+  const currentLevelData = levels[currentLevel - 1];
+  const Icon = currentLevelData?.icon;
+
+  const handleAnswer = (option) => {
+    if (answered) return;
+
+    setSelectedAnswer(option);
+    setAnswered(true);
+    resetFeedback();
+
+    const isCorrect = option.correct;
+    const isLastQuestion = currentLevel === 5;
+
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
+
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentLevel(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  React.useEffect(() => {
-    if (completedChallenges.length === challenges.length && !gameFinished) {
-      setGameFinished(true);
-    }
-  }, [completedChallenges, gameFinished]);
-
   const handleNext = () => {
-    navigate("/student/health-male/kids/smoking-story");
+    navigate("/games/health-male/kids");
   };
 
   return (
     <GameShell
       title="Safety Smart Kid Badge"
-      subtitle={`Complete ${completedChallenges.length} of ${challenges.length} safety activities`}
+      subtitle={!showResult ? `Challenge ${currentLevel} of 5` : "Badge Earned!"}
       onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={completedChallenges.length * 2}
-      gameId="health-male-kids-80"
+      nextEnabled={showResult}
+      showGameOver={showResult}
+      score={score}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={80}
-      currentLevel={80}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={80} // Max score is total number of questions (all correct)
+      maxScore={levels.length}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🏆</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Earn Your Safety Smart Kid Badge</h3>
-            <p className="text-white/90">
-              Complete 5 safety activities to prove you're a health and safety expert!
+      totalXp={totalXp}
+    >
+      <div className="text-center text-white space-y-6">
+        {!showResult && currentLevelData && (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 border border-white/20">
+            <div className="flex justify-center mb-4">
+              <Icon className="w-16 h-16 text-blue-400" />
+            </div>
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Challenge {currentLevel} of 5</span>
+              <span className="text-yellow-400 font-bold">Coins: {score}</span>
+            </div>
+
+            <h3 className="text-2xl font-bold mb-2">{currentLevelData.title}</h3>
+            <p className="text-white text-lg mb-6 text-center">
+              {currentLevelData.question}
             </p>
-          </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            {challenges.map((challenge) => {
-              const isCompleted = completedChallenges.includes(challenge.id);
-
-              return (
+            <div className="grid sm:grid-cols-3 gap-3">
+              {currentLevelData.options.map((option, index) => (
                 <button
-                  key={challenge.id}
-                  onClick={() => handleChallengeComplete(challenge.id)}
-                  disabled={isCompleted}
-                  className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                    isCompleted
-                      ? 'bg-green-100/20 border-green-500 text-white'
-                      : 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                  }`}
+                  key={index}
+                  onClick={() => handleAnswer(option)}
+                  disabled={answered}
+                  className="w-full min-h-[60px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-8 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`text-3xl mr-4 ${isCompleted ? 'opacity-100' : 'opacity-60'}`}>
-                        {challenge.emoji}
-                      </div>
-                      <div className="text-left">
-                        <h3 className={`font-bold text-lg ${isCompleted ? 'text-green-300' : 'text-white'}`}>
-                          {isCompleted ? '✅ ' : '☐ '}{challenge.text}
-                        </h3>
-                        <p className="text-white/80 text-sm">{challenge.description}</p>
-                      </div>
-                    </div>
-                    {isCompleted && (
-                      <div className="text-2xl">🎉</div>
-                    )}
-                  </div>
+                  {option.text}
                 </button>
-              );
-            })}
-          </div>
+              ))}
+            </div>
 
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">🏆</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Safety Smart Kid Badge Earned!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  Congratulations! You've completed all safety activities and earned the Safety Smart Kid Badge!
-                </p>
-                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full p-4 inline-block mb-4">
-                  <div className="text-white font-bold text-xl">SAFETY SMART KID</div>
-                </div>
-                <p className="text-white/80">
-                  You're a champion at staying safe and healthy! Amazing accomplishment! 🌟🎉
+            {answered && selectedAnswer && (
+              <div className={`mt-4 p-4 rounded-xl ${selectedAnswer.correct
+                  ? 'bg-green-500/20 border-2 border-green-400'
+                  : 'bg-red-500/20 border-2 border-red-400'
+                }`}>
+                <p className="text-white font-semibold">
+                  {selectedAnswer.correct
+                    ? currentLevelData.feedback.correct
+                    : currentLevelData.feedback.wrong}
                 </p>
               </div>
+            )}
+          </div>
+        )}
+
+        {showResult && (
+          <div className="text-center space-y-4 mt-8">
+            <div className="text-green-400">
+              <div className="text-8xl mb-4">🏆</div>
+              <h3 className="text-3xl font-bold text-white mb-2">Safety Smart Kid Badge Earned!</h3>
+              <p className="text-white/90 mb-4 text-lg">
+                Congratulations! You know how to stay safe and healthy!
+              </p>
+              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full p-4 inline-block mb-4">
+                <div className="text-white font-bold text-xl">SAFETY SMART KID</div>
+              </div>
+              <p className="text-white/80">
+                You're a safety expert! Keep making smart choices! 🌟
+              </p>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

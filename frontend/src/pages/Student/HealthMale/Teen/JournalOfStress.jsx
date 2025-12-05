@@ -11,6 +11,11 @@ const JournalOfStress = () => {
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const prompts = [
     {
       id: 1,
@@ -26,6 +31,16 @@ const JournalOfStress = () => {
       id: 3,
       title: "Emotional Support",
       text: "When stressed, I talk to ___ for support."
+    },
+    {
+      id: 4,
+      title: "Positive Self-Talk",
+      text: "One nice thing I can say to myself is ___."
+    },
+    {
+      id: 5,
+      title: "Future Goals",
+      text: "One thing I am looking forward to is ___."
     }
   ];
 
@@ -34,12 +49,12 @@ const JournalOfStress = () => {
     if (answer.trim()) {
       setResponses([...responses, { prompt: currentPrompt, answer }]);
       setAnswer("");
+      showCorrectAnswerFeedback(1, true);
 
       if (currentPrompt < prompts.length - 1) {
         setCurrentPrompt(prev => prev + 1);
       } else {
         setGameFinished(true);
-        showCorrectAnswerFeedback(5, true);
       }
     }
   };
@@ -55,68 +70,72 @@ const JournalOfStress = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={responses.length * 1}
+      score={responses.length}
       gameId="health-male-teen-57"
       gameType="health-male"
-      totalLevels={60}
-      currentLevel={57}
+      totalLevels={prompts.length}
+      currentLevel={currentPrompt + 1}
+      maxScore={prompts.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">📖</div>
-            <h3 className="text-2xl font-bold text-white mb-2">{prompts[currentPrompt].title}</h3>
-            <p className="text-white/90 mb-4">
-              {prompts[currentPrompt].text}
-            </p>
-            <div className="flex justify-center gap-2 mb-4">
-              {prompts.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-3 h-3 rounded-full ${
-                    index <= currentPrompt ? 'bg-green-500' : 'bg-white/30'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-white font-medium mb-2">
-                Your response:
-              </label>
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Write your thoughts here..."
-                className="w-full p-4 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:border-white/50 resize-none"
-                rows={4}
-                maxLength={200}
-              />
-              <div className="text-right text-white/60 text-sm mt-1">
-                {answer.length}/200 characters
+        {!gameFinished ? (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+            <div className="text-center mb-6">
+              <div className="text-5xl mb-4">📖</div>
+              <h3 className="text-2xl font-bold text-white mb-2">{prompts[currentPrompt].title}</h3>
+              <p className="text-white/90 mb-4">
+                {prompts[currentPrompt].text}
+              </p>
+              <div className="flex justify-center gap-2 mb-4">
+                {prompts.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-3 h-3 rounded-full ${index <= currentPrompt ? 'bg-green-500' : 'bg-white/30'
+                      }`}
+                  />
+                ))}
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={!answer.trim()}
-              className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${
-                answer.trim()
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
-                  : 'bg-gray-500 text-gray-300 cursor-not-allowed'
-              }`}
-            >
-              {currentPrompt < prompts.length - 1 ? 'Next Prompt' : 'Complete Journal'}
-            </button>
-          </form>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-white font-medium mb-2">
+                  Your response:
+                </label>
+                <textarea
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder="Write your thoughts here..."
+                  className="w-full p-4 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:border-white/50 resize-none"
+                  rows={4}
+                  maxLength={200}
+                />
+                <div className="text-right text-white/60 text-sm mt-1">
+                  {answer.length}/200 characters
+                </div>
+              </div>
 
-          {gameFinished && (
+              <button
+                type="submit"
+                disabled={!answer.trim()}
+                className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${answer.trim()
+                    ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
+                    : 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                  }`}
+              >
+                {currentPrompt < prompts.length - 1 ? 'Next Prompt' : 'Complete Journal'}
+              </button>
+            </form>
+          </div>
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
             <div className="text-center space-y-4 mt-8">
               <div className="text-green-400">
                 <div className="text-6xl mb-2">📝</div>
@@ -125,7 +144,7 @@ const JournalOfStress = () => {
                   Excellent reflection! You've completed all journal prompts about stress management.
                 </p>
 
-                <div className="space-y-3 mb-4">
+                <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
                   {responses.map((response, index) => (
                     <div key={index} className="bg-white/10 rounded-xl p-3 text-left">
                       <p className="text-white font-medium mb-1">{prompts[index].title}</p>
@@ -138,9 +157,15 @@ const JournalOfStress = () => {
                   <span className="text-yellow-500 text-2xl">+{responses.length}</span>
                 </div>
               </div>
+              <button
+                onClick={handleNext}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+              >
+                Next Challenge
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

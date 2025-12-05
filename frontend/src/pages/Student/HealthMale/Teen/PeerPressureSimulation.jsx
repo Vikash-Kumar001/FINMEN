@@ -6,9 +6,14 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const PeerPressureSimulation = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [score, setScore] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
 
   const scenarios = [
     {
@@ -74,14 +79,14 @@ const PeerPressureSimulation = () => {
           text: "Tell a teacher",
           emoji: "📞",
           description: "Sometimes adult help is needed",
-          isCorrect: false
+          isCorrect: true
         },
         {
           id: "b",
           text: "Change the subject",
           emoji: "💬",
           description: "Redirecting conversation avoids confrontation",
-          isCorrect: true
+          isCorrect: false
         },
         {
           id: "c",
@@ -96,19 +101,20 @@ const PeerPressureSimulation = () => {
       id: 4,
       text: "Online, friends challenge you to substance dares. How do you handle it?",
       options: [
-        {
-          id: "a",
-          text: "Block and report",
-          emoji: "🚫",
-          description: "Protecting yourself online is important",
-          isCorrect: true
-        },
+       
         {
           id: "b",
           text: "Ignore the messages",
           emoji: "🙈",
           description: "Addressing issues directly is better",
           isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Block and report",
+          emoji: "🚫",
+          description: "Protecting yourself online is important",
+          isCorrect: true
         },
         {
           id: "c",
@@ -123,13 +129,7 @@ const PeerPressureSimulation = () => {
       id: 5,
       text: "What strengthens you against substance peer pressure?",
       options: [
-        {
-          id: "b",
-          text: "Having clear personal values",
-          emoji: "💪",
-          description: "Strong values help resist negative influences",
-          isCorrect: true
-        },
+       
         {
           id: "c",
           text: "Wanting approval",
@@ -143,20 +143,29 @@ const PeerPressureSimulation = () => {
           emoji: "👥",
           description: "Making independent choices shows maturity",
           isCorrect: false
-        }
+        },
+         {
+          id: "b",
+          text: "Having clear personal values",
+          emoji: "💪",
+          description: "Strong values help resist negative influences",
+          isCorrect: true
+        },
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
+    if (gameFinished) return;
+
+    const currentQ = getCurrentScenario();
+    const selectedOption = currentQ.options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { step: currentStep, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentStep < scenarios.length - 1) {
@@ -164,7 +173,7 @@ const PeerPressureSimulation = () => {
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 1000);
   };
 
   const getCurrentScenario = () => scenarios[currentStep];
@@ -173,6 +182,8 @@ const PeerPressureSimulation = () => {
     navigate("/student/health-male/teens/reflex-safe-teen");
   };
 
+  const currentQ = getCurrentScenario();
+
   return (
     <GameShell
       title="Simulation: Peer Pressure"
@@ -180,11 +191,13 @@ const PeerPressureSimulation = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={score}
       gameId="health-male-teen-88"
       gameType="health-male"
-      totalLevels={90}
-      currentLevel={88}
+      maxScore={scenarios.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
@@ -194,7 +207,7 @@ const PeerPressureSimulation = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Step {currentStep + 1}/{scenarios.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+            <span className="text-yellow-400 font-bold">Score: {score}</span>
           </div>
 
           <div className="text-center mb-6">
@@ -203,11 +216,11 @@ const PeerPressureSimulation = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentScenario().text}
+            {currentQ.text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentScenario().options.map(option => (
+            {currentQ.options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}

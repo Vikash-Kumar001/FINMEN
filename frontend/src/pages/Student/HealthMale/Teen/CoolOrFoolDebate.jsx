@@ -6,9 +6,14 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const CoolOrFoolDebate = () => {
   const navigate = useNavigate();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [score, setScore] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
 
   const questions = [
     {
@@ -149,14 +154,16 @@ const CoolOrFoolDebate = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (gameFinished) return;
+
+    const currentQ = questions[currentQuestion];
+    const selectedOption = currentQ.options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
-      showCorrectAnswerFeedback(2, true);
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -164,14 +171,14 @@ const CoolOrFoolDebate = () => {
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 1000);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-male/teens/journal-of-awareness");
   };
+
+  const currentQ = questions[currentQuestion];
 
   return (
     <GameShell
@@ -180,11 +187,13 @@ const CoolOrFoolDebate = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 2}
+      score={score}
       gameId="health-male-teen-86"
       gameType="health-male"
-      totalLevels={90}
-      currentLevel={86}
+      maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
@@ -194,7 +203,7 @@ const CoolOrFoolDebate = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 2}</span>
+            <span className="text-yellow-400 font-bold">Score: {score}</span>
           </div>
 
           <div className="text-center mb-6">
@@ -203,11 +212,11 @@ const CoolOrFoolDebate = () => {
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {currentQ.text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {currentQ.options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}

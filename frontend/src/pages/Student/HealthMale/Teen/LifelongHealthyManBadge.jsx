@@ -1,119 +1,294 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const LifelongHealthyManBadge = () => {
-  const navigate = useNavigate();
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
 
-  const tasks = [
-    { id: 1, text: "Master personal hygiene routines", emoji: "🧼", completed: false },
-    { id: 2, text: "Build healthy eating and exercise habits", emoji: "🥗", completed: false },
-    { id: 3, text: "Develop emotional intelligence and resilience", emoji: "🧠", completed: false },
-    { id: 4, text: "Practice responsible decision making", emoji: "⚖️", completed: false },
-    { id: 5, text: "Commit to lifelong learning and growth", emoji: "📈", completed: false }
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const challenges = [
+    {
+      id: 1,
+      title: "Healthy Routine",
+      question: "What is a key part of a lifelong healthy routine?",
+      options: [
+        {
+          text: "Consistent personal hygiene",
+          emoji: "🚿",
+          isCorrect: true
+        },
+        {
+          text: "Ignoring grooming",
+          emoji: "🙅",
+          isCorrect: false
+        },
+        {
+          text: "Showering once a week",
+          emoji: "🗓️",
+          isCorrect: false
+        },
+        {
+          text: "Using only deodorant",
+          emoji: "💨",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Physical Health",
+      question: "How do you maintain a healthy body for life?",
+      options: [
+        {
+          text: "Eat junk food only",
+          emoji: "🍔",
+          isCorrect: false
+        },
+        {
+          text: "Balanced diet & regular exercise",
+          emoji: "🥗",
+          isCorrect: true
+        },
+        {
+          text: "Sit on the couch all day",
+          emoji: "📺",
+          isCorrect: false
+        },
+        {
+          text: "Skip all meals",
+          emoji: "❌",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Emotional Maturity",
+      question: "What shows emotional maturity in a man?",
+      options: [
+        {
+          text: "Hiding all emotions",
+          emoji: "🤐",
+          isCorrect: false
+        },
+        {
+          text: "Acting tough always",
+          emoji: "💪",
+          isCorrect: false
+        },
+        {
+          text: "Expressing feelings & seeking help",
+          emoji: "🧠",
+          isCorrect: true
+        },
+        {
+          text: "Ignoring stress",
+          emoji: "🙈",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "Making Decisions",
+      question: "What is responsible decision making?",
+      options: [
+        {
+          text: "Doing what friends say",
+          emoji: "👥",
+          isCorrect: false
+        },
+        {
+          text: "Weighing pros & cons before acting",
+          emoji: "⚖️",
+          isCorrect: true
+        },
+        {
+          text: "Impulsive choices",
+          emoji: "⚡",
+          isCorrect: false
+        },
+        {
+          text: "Ignoring consequences",
+          emoji: "🤷",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Personal Growth",
+      question: "What does a 'Lifelong Healthy Man' commit to?",
+      options: [
+        {
+          text: "Stopping learning after school",
+          emoji: "🛑",
+          isCorrect: false
+        },
+        {
+          text: "Staying exactly the same",
+          emoji: "🗿",
+          isCorrect: false
+        },
+        {
+          text: "Avoiding new ideas",
+          emoji: "🙉",
+          isCorrect: false
+        },
+        {
+          text: "Continuous learning & self-improvement",
+          emoji: "📈",
+          isCorrect: true
+        }
+      ]
+    }
   ];
 
-  const handleTaskComplete = (taskId) => {
-    if (!completedTasks.includes(taskId)) {
-      setCompletedTasks(prev => [...prev, taskId]);
-      showCorrectAnswerFeedback(2, true);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+
+    setAnswered(true);
+    resetFeedback();
+
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastChallenge = challenge === challenges.length - 1;
+
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  useEffect(() => {
-    if (completedTasks.length === tasks.length && !gameFinished) {
-      setGameFinished(true);
-    }
-  }, [completedTasks, gameFinished]);
-
-  const handleNext = () => {
-    navigate("/games/health-male/teens");
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
   };
 
   return (
     <GameShell
       title="Badge: Lifelong Healthy Man"
-      subtitle={`Complete ${completedTasks.length} of ${tasks.length} healthy habit challenges`}
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={completedTasks.length * 2}
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
+      score={score}
+      currentLevel={challenge + 1}
+      totalLevels={challenges.length}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={challenges.length}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && score >= 3}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
       gameId="health-male-teen-100"
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={100}
-      showConfetti={gameFinished}
-      flashPoints={flashPoints}
       backPath="/games/health-male/teens"
-      showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🏆</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Lifelong Healthy Challenge</h3>
-            <p className="text-white/90">
-              Complete all healthy habit challenges to earn your badge.
-            </p>
-          </div>
+        {!showResult && challenges[challenge] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
+              </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            {tasks.map((task) => {
-              const isCompleted = completedTasks.includes(task.id);
+              <h3 className="text-xl font-bold text-white mb-2">{challenges[challenge].title}</h3>
+              <p className="text-white text-lg mb-6">
+                {challenges[challenge].question}
+              </p>
 
-              return (
-                <button
-                  key={task.id}
-                  onClick={() => handleTaskComplete(task.id)}
-                  disabled={isCompleted}
-                  className={`p-6 rounded-2xl border-2 transition-all transform hover:scale-105 ${
-                    isCompleted
-                      ? 'bg-green-100/20 border-green-500 text-white'
-                      : 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <div className={`text-3xl mr-4 ${isCompleted ? 'opacity-100' : 'opacity-60'}`}>
-                        {task.emoji}
-                      </div>
-                      <div className="text-left">
-                        <h3 className={`font-bold text-lg ${isCompleted ? 'text-green-300' : 'text-white'}`}>
-                          {isCompleted ? '✅ ' : '☐ '}{task.text}
-                        </h3>
-                      </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {challenges[challenge].options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleAnswer(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${answered
+                      ? option.isCorrect
+                        ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                        : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                      : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                      } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
                     </div>
-                    {isCompleted && (
-                      <div className="text-2xl">🎉</div>
-                    )}
-                  </div>
-                </button>
-              );
-            })}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-
-          {gameFinished && (
-            <div className="text-center space-y-4 mt-8">
-              <div className="text-green-400">
-                <div className="text-8xl mb-4">🏆</div>
-                <h3 className="text-3xl font-bold text-white mb-2">Lifelong Healthy Man Badge Earned!</h3>
-                <p className="text-white/90 mb-4 text-lg">
-                  Congratulations! You've completed all healthy habit challenges and earned the Lifelong Healthy Man Badge!
+        ) : (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🏆</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Lifelong Healthy Man Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} challenges correct!
+                  You have mastered the habits of a healthy man!
                 </p>
                 <div className="bg-gradient-to-r from-purple-500 to-blue-500 rounded-full p-4 inline-block mb-4">
                   <div className="text-white font-bold text-xl">LIFELONG HEALTHY MAN</div>
                 </div>
                 <p className="text-white/80">
-                  You completed all 5 healthy habit challenges perfectly! You're committed to lifelong health and wellness! 🌟
+                  Lesson: Commitment to hygiene, health, emotional intelligence, and growth is for life!
                 </p>
               </div>
-            </div>
-          )}
-        </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Growing!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} challenges correct.
+                  Review your healthy habits and try again!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: A healthy lifestyle is about consistent good choices in body, mind, and spirit!
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </GameShell>
   );

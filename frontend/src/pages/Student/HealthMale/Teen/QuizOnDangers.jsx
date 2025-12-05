@@ -6,9 +6,14 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const QuizOnDangers = () => {
   const navigate = useNavigate();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [score, setScore] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
 
   const questions = [
     {
@@ -22,20 +27,21 @@ const QuizOnDangers = () => {
           description: "Smoking actually damages lungs severely",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Cancer",
-          emoji: "🦠",
-          description: "Smoking is a leading cause of various cancers",
-          isCorrect: true
-        },
+      
         {
           id: "c",
           text: "Healthy teeth",
           emoji: "🦷",
           description: "Smoking stains teeth and causes gum disease",
           isCorrect: false
-        }
+        },
+          {
+          id: "b",
+          text: "Cancer",
+          emoji: "🦠",
+          description: "Smoking is a leading cause of various cancers",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -96,6 +102,13 @@ const QuizOnDangers = () => {
       id: 4,
       text: "What does drug use do to the brain?",
       options: [
+         {
+          id: "a",
+          text: "Changes brain chemistry",
+          emoji: "⚗️",
+          description: "Drugs can cause permanent brain damage",
+          isCorrect: true
+        },
         {
           id: "b",
           text: "Improves brain function",
@@ -103,13 +116,7 @@ const QuizOnDangers = () => {
           description: "Drugs alter brain chemistry negatively",
           isCorrect: false
         },
-        {
-          id: "a",
-          text: "Changes brain chemistry",
-          emoji: "⚗️",
-          description: "Drugs can cause permanent brain damage",
-          isCorrect: true
-        },
+       
         {
           id: "c",
           text: "No brain effects",
@@ -130,6 +137,14 @@ const QuizOnDangers = () => {
           description: "Substances harm developing teen bodies more",
           isCorrect: false
         },
+        
+        {
+          id: "b",
+          text: "It's not cool",
+          emoji: "😎",
+          description: "Health risks are the main concern",
+          isCorrect: false
+        },
         {
           id: "a",
           text: "Affects brain development",
@@ -137,26 +152,21 @@ const QuizOnDangers = () => {
           description: "Teen brains are still developing and vulnerable",
           isCorrect: true
         },
-        {
-          id: "b",
-          text: "It's not cool",
-          emoji: "😎",
-          description: "Health risks are the main concern",
-          isCorrect: false
-        }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (gameFinished) return;
+
+    const currentQ = questions[currentQuestion];
+    const selectedOption = currentQ.options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -164,14 +174,14 @@ const QuizOnDangers = () => {
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 1000);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-male/teens/reflex-teen-choice");
   };
+
+  const currentQ = questions[currentQuestion];
 
   return (
     <GameShell
@@ -180,11 +190,13 @@ const QuizOnDangers = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={score}
       gameId="health-male-teen-82"
       gameType="health-male"
-      totalLevels={90}
-      currentLevel={82}
+      maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
@@ -194,15 +206,15 @@ const QuizOnDangers = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+            <span className="text-yellow-400 font-bold">Score: {score}</span>
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {currentQ.text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {currentQ.options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}

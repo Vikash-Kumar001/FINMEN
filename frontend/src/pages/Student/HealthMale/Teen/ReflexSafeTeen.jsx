@@ -1,183 +1,256 @@
-import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const ReflexSafeTeen = () => {
   const navigate = useNavigate();
-  const [coins, setCoins] = useState(0);
-  const [currentRound, setCurrentRound] = useState(1);
-  const [gameState, setGameState] = useState('waiting');
-  const [reactionTime, setReactionTime] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [showCoinFeedback, setShowCoinFeedback] = useState(false);
-  const startTimeRef = useRef(0);
-  const timerRef = useRef(null);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+  const location = useLocation();
 
-  const scenarios = [
-    { action: "Doctor Advice", emoji: "🩺", isCorrect: true },
-    { action: "Drug Use", emoji: "❌", isCorrect: false },
-    { action: "Healthy Choices", emoji: "✅", isCorrect: true },
-    { action: "Risky Behavior", emoji: "⚠️", isCorrect: false },
-    { action: "Safety First", emoji: "🛡️", isCorrect: true },
-    { action: "Peer Pressure", emoji: "👥", isCorrect: false },
-    { action: "Ask for Help", emoji: "📞", isCorrect: true },
-    { action: "Hide Problems", emoji: "🤐", isCorrect: false }
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const TOTAL_ROUNDS = 5;
+  const ROUND_TIME = 5; // 5 seconds per question
+
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+
+  const [gameState, setGameState] = useState("ready"); // ready, playing, finished
+  const [score, setScore] = useState(0);
+  const [currentRound, setCurrentRound] = useState(1);
+  const [timeLeft, setTimeLeft] = useState(ROUND_TIME);
+  const [answered, setAnswered] = useState(false);
+
+  const timerRef = useRef(null);
+
+  const questions = [
+    {
+      id: 1,
+      question: "You're at a party and someone offers you an unknown drink. What's the safest choice?",
+      correctAnswer: "Decline Politely",
+      options: [
+        { text: "Drink It", isCorrect: false, emoji: "🥤" },
+        { text: "Decline Politely", isCorrect: true, emoji: "✋" },
+        { text: "Take a Sip", isCorrect: false, emoji: "👅" },
+        { text: "Pass to Friend", isCorrect: false, emoji: "🤝" }
+      ]
+    },
+    {
+      id: 2,
+      question: "A friend is driving recklessly. What should you do?",
+      correctAnswer: "Speak Up",
+      options: [
+        { text: "Cheer Them On", isCorrect: false, emoji: "🗣️" },
+        { text: "Stay Silent", isCorrect: false, emoji: "🤐" },
+        { text: "Speak Up", isCorrect: true, emoji: "📢" },
+        { text: "Close Eyes", isCorrect: false, emoji: "🙈" }
+      ]
+    },
+    {
+      id: 3,
+      question: "You feel overwhelmed by peer pressure. Who can you talk to?",
+      correctAnswer: "Trusted Adult",
+      options: [
+        { text: "No One", isCorrect: false, emoji: "🙅" },
+        { text: "Trusted Adult", isCorrect: true, emoji: "👨‍👩‍👧" },
+        { text: "Strangers Online", isCorrect: false, emoji: "💻" },
+        { text: "Keep it Inside", isCorrect: false, emoji: "🔒" }
+      ]
+    },
+    {
+      id: 4,
+      question: "What is a sign of a healthy friendship?",
+      correctAnswer: "Respects Boundaries",
+      options: [
+        { text: "Constant Criticism", isCorrect: false, emoji: "👎" },
+        { text: "Respects Boundaries", isCorrect: true, emoji: "🤝" },
+        { text: "Peer Pressure", isCorrect: false, emoji: "😤" },
+        { text: "Jealousy", isCorrect: false, emoji: "😠" }
+      ]
+    },
+    {
+      id: 5,
+      question: "Why is saying 'No' to drugs important?",
+      correctAnswer: "Protects Future",
+      options: [
+        { text: "Protects Future", isCorrect: true, emoji: "🌟" },
+        { text: "Lose Friends", isCorrect: false, emoji: "😢" },
+        { text: "Seems Boring", isCorrect: false, emoji: "😴" },
+        { text: "No Reason", isCorrect: false, emoji: "🤷" }
+      ]
+    }
   ];
 
-  const [currentScenario, setCurrentScenario] = useState(null);
+  // Handle time up - move to next question or show results
+  const handleTimeUp = useCallback(() => {
+    setAnswered(true);
+    resetFeedback();
 
-  const handleChoice = (selectedOption) => {
-    const endTime = Date.now();
-    const time = endTime - startTimeRef.current;
-    setReactionTime(time);
+    setTimeout(() => {
+      if (currentRound >= TOTAL_ROUNDS) {
+        setGameState("finished");
+      } else {
+        setCurrentRound((prev) => prev + 1);
+        setTimeLeft(ROUND_TIME);
+        setAnswered(false);
+      }
+    }, 1000);
+  }, [currentRound, TOTAL_ROUNDS, resetFeedback]);
 
-    const isCorrect = selectedOption.isCorrect;
-    setGameState(isCorrect ? 'success' : 'fail');
+  // Timer effect
+  useEffect(() => {
+    if (gameState !== "playing" || answered) {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+      }
+      return;
+    }
 
-    if (isCorrect) {
-      setCoins(prev => prev + 3);
-      showCorrectAnswerFeedback(3, true);
-      setShowCoinFeedback(true);
-      setTimeout(() => setShowCoinFeedback(false), 1500);
+    // Start timer
+    timerRef.current = setInterval(() => {
+      setTimeLeft((prev) => {
+        const newTime = prev - 1;
+        if (newTime <= 0) {
+          if (timerRef.current) clearInterval(timerRef.current);
+          handleTimeUp();
+          return 0;
+        }
+        return newTime;
+      });
+    }, 1000);
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
+  }, [gameState, answered, handleTimeUp]);
+
+  // Reset timer when round changes manually (just in case)
+  useEffect(() => {
+    if (gameState === "playing") {
+      setTimeLeft(ROUND_TIME);
+      setAnswered(false);
+    }
+  }, [currentRound, gameState]);
+
+
+  const startGame = () => {
+    setGameState("playing");
+    setScore(0);
+    setCurrentRound(1);
+    setTimeLeft(ROUND_TIME);
+    setAnswered(false);
+    resetFeedback();
+  };
+
+  const handleAnswer = (option) => {
+    if (gameState !== "playing" || answered) return;
+
+    setAnswered(true);
+    resetFeedback();
+
+    if (option.isCorrect) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
 
     setTimeout(() => {
-      if (currentRound < 5) {
-        setCurrentRound(prev => prev + 1);
-        setGameState('waiting');
-        setTimeout(() => startRound(), 500);
+      if (currentRound >= TOTAL_ROUNDS) {
+        setGameState("finished");
       } else {
-        setGameFinished(true);
+        setCurrentRound((prev) => prev + 1);
       }
-    }, isCorrect ? 1500 : 1000);
-  };
-
-  const startRound = () => {
-    const randomIndex = Math.floor(Math.random() * 4);
-    const scenarioPair = [
-      scenarios[randomIndex * 2],
-      scenarios[randomIndex * 2 + 1]
-    ];
-    setCurrentScenario(scenarioPair);
-    setGameState('showing');
-
-    const randomDelay = Math.random() * 2000 + 1000;
-
-    timerRef.current = setTimeout(() => {
-      setGameState('ready');
-      startTimeRef.current = Date.now();
-    }, randomDelay);
+    }, 1000);
   };
 
   const handleNext = () => {
     navigate("/student/health-male/teens/drug-free-teen-badge");
   };
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (currentRound === 1 && gameState === 'waiting') {
-        startRound();
-      }
-    }, 100);
-
-    return () => {
-      clearTimeout(timer);
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
-  }, []);
+  const currentQuestion = questions[currentRound - 1];
 
   return (
     <GameShell
       title="Reflex Safe Teen"
-      subtitle={`Round ${currentRound}/5`}
+      subtitle={gameState === "playing" ? `Round ${currentRound}/${TOTAL_ROUNDS}` : "Test your Safety Smart!"}
       onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
+      nextEnabled={gameState === "finished"}
+      showGameOver={gameState === "finished"}
+      score={score}
       gameId="health-male-teen-89"
       gameType="health-male"
-      totalLevels={90}
-      currentLevel={89}
-      showConfetti={gameFinished}
+      totalLevels={TOTAL_ROUNDS}
+      maxScore={TOTAL_ROUNDS}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={gameState === "finished" && score > 3}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
     >
       <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 relative">
-          {showCoinFeedback && (
-            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
-              <div className="bg-yellow-500 text-white px-3 py-1 rounded-full font-bold text-lg animate-bounce">
-                +3
-              </div>
-            </div>
-          )}
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Round {currentRound}/5</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
-          </div>
-
-          <div className="text-center mb-6">
-            <div className="text-6xl mb-4">
-              {gameState === 'waiting' && '⏳'}
-              {gameState === 'showing' && '🧠'}
-              {gameState === 'ready' && '⚡'}
-              {gameState === 'success' && '🩺'}
-              {gameState === 'fail' && '❌'}
-            </div>
-            <p className="text-white/90 text-lg">
-              {gameState === 'waiting' && 'Teen safety scenario loading...'}
-              {gameState === 'showing' && 'Watch for the safety signal...'}
-              {gameState === 'ready' && 'QUICK! Choose the safe teen practice!'}
-              {gameState === 'success' && `Safe choice! (${reactionTime}ms)`}
-              {gameState === 'fail' && 'Too slow! Always choose safety!'}
+        {gameState === "ready" && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            <div className="text-5xl mb-6">🛡️</div>
+            <h3 className="text-2xl font-bold text-white mb-4">Get Ready for Safety Check!</h3>
+            <p className="text-white/90 text-lg mb-6">
+              You have {ROUND_TIME} seconds to choose the SAFE option for each situation.<br />
+              Stay alert and stay safe!
             </p>
+            <div className="flex justify-center">
+              <button
+                onClick={startGame}
+                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-4 px-10 rounded-full text-xl font-bold shadow-lg transition-all transform hover:scale-105"
+              >
+                Start Game
+              </button>
+            </div>
           </div>
+        )}
 
-          {gameState === 'ready' && currentScenario && (
-            <div className="grid grid-cols-2 gap-4">
-              {currentScenario.map((scenario, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleChoice(scenario)}
-                  className={`p-6 rounded-xl border-2 transition-all transform hover:scale-105 ${
-                    scenario.isCorrect
-                      ? 'bg-green-100/20 border-green-500 text-white hover:bg-green-200/20'
-                      : 'bg-red-100/20 border-red-500 text-white hover:bg-red-200/20'
-                  }`}
-                >
-                  <div className="text-4xl mb-2">{scenario.emoji}</div>
-                  <div className="font-bold text-lg">{scenario.action}</div>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {gameState === 'success' && currentScenario && (
-            <div className="text-center space-y-4">
-              <div className="text-green-400">
-                <div className="text-6xl">{currentScenario.find(s => s.isCorrect)?.emoji}</div>
-                <h3 className="text-xl font-bold text-white">Safe Teen Practice!</h3>
-                <p className="text-white/90">Reaction time: {reactionTime}ms</p>
+        {gameState === "playing" && currentQuestion && (
+          <div className="space-y-6">
+            {/* Status Bar */}
+            <div className="flex justify-between items-center bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20">
+              <div className="text-white">
+                <span className="font-bold">Round:</span> {currentRound}/{TOTAL_ROUNDS}
               </div>
-              <div className="flex justify-center gap-2">
-                <span className="text-yellow-500 text-2xl">+3</span>
+              <div className={`font-bold text-xl ${timeLeft <= 2 ? 'text-red-500 animate-pulse' : timeLeft <= 3 ? 'text-yellow-500' : 'text-green-400'}`}>
+                ⏱️ {timeLeft}s
+              </div>
+              <div className="text-white">
+                <span className="font-bold text-yellow-400">Coins:</span> {score}
               </div>
             </div>
-          )}
 
-          {gameState === 'fail' && currentScenario && (
-            <div className="text-center space-y-4">
-              <div className="text-red-400">
-                <div className="text-6xl">{currentScenario.find(s => !s.isCorrect)?.emoji}</div>
-                <h3 className="text-xl font-bold text-white">Too Slow!</h3>
-                <p className="text-white/90">Remember: Always choose safe teen practices!</p>
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 text-center">
+              <h3 className="text-xl md:text-2xl font-bold mb-8 text-white min-h-[60px] flex items-center justify-center">
+                {currentQuestion.question}
+              </h3>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {currentQuestion.options.map((option, index) => (
+                  <button
+                    key={index}
+                    onClick={() => handleAnswer(option)}
+                    disabled={answered}
+                    className={`p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105 disabled:opacity-70 disabled:cursor-not-allowed ${answered && option.isCorrect
+                        ? 'bg-green-500/80 border-2 border-green-400 text-white'
+                        : answered && !option.isCorrect
+                          ? 'bg-gray-500/50 border-2 border-transparent text-white/50'
+                          : 'bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white shadow-lg'
+                      }`}
+                  >
+                    <div className="text-4xl mb-2">{option.emoji}</div>
+                    <div>{option.text}</div>
+                  </button>
+                ))}
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </GameShell>
   );

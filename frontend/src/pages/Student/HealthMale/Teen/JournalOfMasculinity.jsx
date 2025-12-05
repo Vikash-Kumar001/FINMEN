@@ -11,6 +11,11 @@ const JournalOfMasculinity = () => {
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const prompts = [
     {
       id: 1,
@@ -26,6 +31,16 @@ const JournalOfMasculinity = () => {
       id: 3,
       title: "Respect and Relationships",
       text: "I show respect to others by ___."
+    },
+    {
+      id: 4,
+      title: "Strength in Vulnerability",
+      text: "A time I showed strength by asking for help was ___."
+    },
+    {
+      id: 5,
+      title: "Positive Role Models",
+      text: "A man I admire for his character is ___ because ___."
     }
   ];
 
@@ -34,12 +49,12 @@ const JournalOfMasculinity = () => {
     if (answer.trim()) {
       setResponses([...responses, { prompt: currentPrompt, answer }]);
       setAnswer("");
+      showCorrectAnswerFeedback(1, true);
 
       if (currentPrompt < prompts.length - 1) {
         setCurrentPrompt(prev => prev + 1);
       } else {
         setGameFinished(true);
-        showCorrectAnswerFeedback(5, true);
       }
     }
   };
@@ -51,15 +66,19 @@ const JournalOfMasculinity = () => {
   return (
     <GameShell
       title="Journal of Masculinity"
-      subtitle={`Prompt ${currentPrompt + 1} of ${prompts.length}`}
+      subtitle={!gameFinished ? `Prompt ${currentPrompt + 1} of ${prompts.length}` : "Journal Complete!"}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={responses.length * 1}
+      score={responses.length}
       gameId="health-male-teen-67"
       gameType="health-male"
-      totalLevels={70}
-      currentLevel={67}
+      totalLevels={prompts.length}
+      currentLevel={currentPrompt + 1}
+      maxScore={prompts.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
@@ -77,46 +96,44 @@ const JournalOfMasculinity = () => {
               {prompts.map((_, index) => (
                 <div
                   key={index}
-                  className={`w-3 h-3 rounded-full ${
-                    index <= currentPrompt ? 'bg-green-500' : 'bg-white/30'
-                  }`}
+                  className={`w-3 h-3 rounded-full ${index <= currentPrompt ? 'bg-green-500' : 'bg-white/30'
+                    }`}
                 />
               ))}
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-white font-medium mb-2">
-                Your response:
-              </label>
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                placeholder="Write your thoughts here..."
-                className="w-full p-4 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:border-white/50 resize-none"
-                rows={4}
-                maxLength={200}
-              />
-              <div className="text-right text-white/60 text-sm mt-1">
-                {answer.length}/200 characters
+          {!gameFinished ? (
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div>
+                <label className="block text-white font-medium mb-2">
+                  Your response:
+                </label>
+                <textarea
+                  value={answer}
+                  onChange={(e) => setAnswer(e.target.value)}
+                  placeholder="Write your thoughts here..."
+                  className="w-full p-4 rounded-xl bg-white/20 border border-white/30 text-white placeholder-white/60 focus:outline-none focus:border-white/50 resize-none"
+                  rows={4}
+                  maxLength={200}
+                />
+                <div className="text-right text-white/60 text-sm mt-1">
+                  {answer.length}/200 characters
+                </div>
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={!answer.trim()}
-              className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${
-                answer.trim()
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
-                  : 'bg-gray-500 text-gray-300 cursor-not-allowed'
-              }`}
-            >
-              {currentPrompt < prompts.length - 1 ? 'Next Prompt' : 'Complete Journal'}
-            </button>
-          </form>
-
-          {gameFinished && (
+              <button
+                type="submit"
+                disabled={!answer.trim()}
+                className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${answer.trim()
+                    ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
+                    : 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                  }`}
+              >
+                {currentPrompt < prompts.length - 1 ? 'Next Prompt' : 'Complete Journal'}
+              </button>
+            </form>
+          ) : (
             <div className="text-center space-y-4 mt-8">
               <div className="text-green-400">
                 <div className="text-6xl mb-2">📝</div>
@@ -134,9 +151,12 @@ const JournalOfMasculinity = () => {
                   ))}
                 </div>
 
-                <div className="flex justify-center gap-2">
-                  <span className="text-yellow-500 text-2xl">+{responses.length}</span>
-                </div>
+                <button
+                  onClick={handleNext}
+                  className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white py-3 px-8 rounded-full font-bold text-lg transition-all transform hover:scale-105"
+                >
+                  Next Challenge
+                </button>
               </div>
             </div>
           )}

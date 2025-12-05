@@ -6,9 +6,14 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const RoutineStory = () => {
   const navigate = useNavigate();
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [score, setScore] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
 
   const questions = [
     {
@@ -42,6 +47,13 @@ const RoutineStory = () => {
       id: 2,
       text: "What should be part of your morning routine?",
       options: [
+          {
+          id: "a",
+          text: "Healthy breakfast + exercise",
+          emoji: "🥣",
+          description: "Good nutrition and movement start the day right",
+          isCorrect: true
+        },
         {
           id: "b",
           text: "Skip breakfast",
@@ -49,13 +61,7 @@ const RoutineStory = () => {
           description: "Breakfast provides energy for the day",
           isCorrect: false
         },
-        {
-          id: "a",
-          text: "Healthy breakfast + exercise",
-          emoji: "🥣",
-          description: "Good nutrition and movement start the day right",
-          isCorrect: true
-        },
+      
         {
           id: "c",
           text: "Only check phone",
@@ -149,14 +155,16 @@ const RoutineStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (gameFinished) return;
+
+    const currentQ = questions[currentQuestion];
+    const selectedOption = currentQ.options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -164,14 +172,14 @@ const RoutineStory = () => {
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 1000);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-male/teens/quiz-teen-habits");
   };
+
+  const currentQ = questions[currentQuestion];
 
   return (
     <GameShell
@@ -180,11 +188,13 @@ const RoutineStory = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={score}
       gameId="health-male-teen-91"
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={91}
+      maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
@@ -194,15 +204,15 @@ const RoutineStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+            <span className="text-yellow-400 font-bold">Score: {score}</span>
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {currentQ.text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {currentQ.options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}

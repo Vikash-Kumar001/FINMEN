@@ -12,6 +12,11 @@ const MasculinityMythsPuzzle = () => {
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const puzzles = [
     {
       id: 1,
@@ -27,8 +32,8 @@ const MasculinityMythsPuzzle = () => {
       item: "Men Can't Cry",
       emoji: "😢",
       matches: [
-        { id: "false", text: "False", emoji: "❌", correct: true },
-        { id: "true", text: "True", emoji: "✅", correct: false }
+        { id: "true", text: "True", emoji: "✅", correct: false },
+        { id: "false", text: "False", emoji: "❌", correct: true }
       ]
     },
     {
@@ -36,8 +41,8 @@ const MasculinityMythsPuzzle = () => {
       item: "Men Respect Women",
       emoji: "🙏",
       matches: [
-        { id: "true", text: "True", emoji: "✅", correct: true },
-        { id: "false", text: "False", emoji: "❌", correct: false }
+        { id: "false", text: "False", emoji: "❌", correct: false },
+        { id: "true", text: "True", emoji: "✅", correct: true }
       ]
     },
     {
@@ -45,8 +50,8 @@ const MasculinityMythsPuzzle = () => {
       item: "Real Men Fight",
       emoji: "👊",
       matches: [
-        { id: "false", text: "False", emoji: "❌", correct: true },
-        { id: "true", text: "True", emoji: "✅", correct: false }
+        { id: "true", text: "True", emoji: "✅", correct: false },
+        { id: "false", text: "False", emoji: "❌", correct: true }
       ]
     },
     {
@@ -54,8 +59,8 @@ const MasculinityMythsPuzzle = () => {
       item: "Men Show Emotions",
       emoji: "💬",
       matches: [
-        { id: "true", text: "True", emoji: "✅", correct: true },
-        { id: "false", text: "False", emoji: "❌", correct: false }
+        { id: "false", text: "False", emoji: "❌", correct: false },
+        { id: "true", text: "True", emoji: "✅", correct: true }
       ]
     }
   ];
@@ -102,6 +107,10 @@ const MasculinityMythsPuzzle = () => {
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={puzzles.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
@@ -139,15 +148,14 @@ const MasculinityMythsPuzzle = () => {
                       key={match.id}
                       onClick={() => handleMatch(match.id)}
                       disabled={selectedMatch !== null}
-                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${
-                        !selectedMatch
+                      className={`p-4 rounded-xl border-2 transition-all transform hover:scale-105 relative ${!selectedMatch
                           ? 'bg-blue-100/20 border-blue-500 text-white hover:bg-blue-200/20'
                           : isCorrect
-                          ? 'bg-green-100/20 border-green-500 text-white'
-                          : isWrong
-                          ? 'bg-red-100/20 border-red-500 text-white'
-                          : 'bg-gray-100/20 border-gray-500 text-white'
-                      }`}
+                            ? 'bg-green-100/20 border-green-500 text-white'
+                            : isWrong
+                              ? 'bg-red-100/20 border-red-500 text-white'
+                              : 'bg-gray-100/20 border-gray-500 text-white'
+                        }`}
                     >
                       {isCorrect && (
                         <div className="absolute -top-2 -right-2 text-2xl">✅</div>

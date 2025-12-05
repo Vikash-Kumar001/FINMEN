@@ -6,14 +6,19 @@ import useGameFeedback from "../../../../hooks/useGameFeedback";
 const TimeManagementSimulation = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const [score, setScore] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
 
   const scenarios = [
     {
       id: 1,
-      text: "Teen has exams + sports practice. Options: Balance time / Waste time / Skip everything.",
+      text: "Teen has exams + sports practice. ",
       options: [
         {
           id: "b",
@@ -42,13 +47,7 @@ const TimeManagementSimulation = () => {
       id: 2,
       text: "How should you prioritize when overwhelmed with tasks?",
       options: [
-        {
-          id: "a",
-          text: "Make a schedule",
-          emoji: "📅",
-          description: "Planning helps manage multiple responsibilities",
-          isCorrect: true
-        },
+        
         {
           id: "b",
           text: "Do everything at once",
@@ -62,7 +61,14 @@ const TimeManagementSimulation = () => {
           emoji: "😴",
           description: "Planning ahead reduces stress",
           isCorrect: false
-        }
+        },
+        {
+          id: "a",
+          text: "Make a schedule",
+          emoji: "📅",
+          description: "Planning helps manage multiple responsibilities",
+          isCorrect: true
+        },
       ]
     },
     {
@@ -149,14 +155,15 @@ const TimeManagementSimulation = () => {
   ];
 
   const handleChoice = (optionId) => {
+    if (gameFinished) return;
+
     const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { step: currentStep, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentStep < scenarios.length - 1) {
@@ -180,11 +187,13 @@ const TimeManagementSimulation = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
+      score={score}
       gameId="health-male-teen-98"
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={98}
+      maxScore={scenarios.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
@@ -194,7 +203,7 @@ const TimeManagementSimulation = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Step {currentStep + 1}/{scenarios.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+            <span className="text-yellow-400 font-bold">Score: {score}</span>
           </div>
 
           <div className="text-center mb-6">

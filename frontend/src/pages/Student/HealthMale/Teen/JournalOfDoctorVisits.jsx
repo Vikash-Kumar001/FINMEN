@@ -11,6 +11,11 @@ const JournalOfDoctorVisits = () => {
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
+  // Hardcode rewards
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
   const prompts = [
     {
       id: 1,
@@ -44,12 +49,12 @@ const JournalOfDoctorVisits = () => {
     if (answer.trim()) {
       setResponses([...responses, { prompt: currentPrompt, answer }]);
       setAnswer("");
+      showCorrectAnswerFeedback(1, true);
 
       if (currentPrompt < prompts.length - 1) {
         setCurrentPrompt(prev => prev + 1);
       } else {
         setGameFinished(true);
-        showCorrectAnswerFeedback(5, true);
       }
     }
   };
@@ -65,11 +70,13 @@ const JournalOfDoctorVisits = () => {
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={responses.length * 1}
+      score={responses.length}
       gameId="health-male-teen-77"
       gameType="health-male"
-      totalLevels={80}
-      currentLevel={77}
+      maxScore={prompts.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-male/teens"
@@ -87,9 +94,8 @@ const JournalOfDoctorVisits = () => {
               {prompts.map((_, index) => (
                 <div
                   key={index}
-                  className={`w-3 h-3 rounded-full ${
-                    index <= currentPrompt ? 'bg-green-500' : 'bg-white/30'
-                  }`}
+                  className={`w-3 h-3 rounded-full ${index <= currentPrompt ? 'bg-green-500' : 'bg-white/30'
+                    }`}
                 />
               ))}
             </div>
@@ -116,11 +122,10 @@ const JournalOfDoctorVisits = () => {
             <button
               type="submit"
               disabled={!answer.trim()}
-              className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${
-                answer.trim()
+              className={`w-full py-3 px-6 rounded-xl font-bold transition-all ${answer.trim()
                   ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:from-green-600 hover:to-blue-600 text-white'
                   : 'bg-gray-500 text-gray-300 cursor-not-allowed'
-              }`}
+                }`}
             >
               {currentPrompt < prompts.length - 1 ? 'Next Prompt' : 'Complete Journal'}
             </button>

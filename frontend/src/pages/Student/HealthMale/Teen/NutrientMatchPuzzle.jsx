@@ -1,192 +1,143 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const NutrientMatchPuzzle = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-14";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
   const [currentPuzzle, setCurrentPuzzle] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
-  const [matchedPairs, setMatchedPairs] = useState([]);
-  const [selectedNutrient, setSelectedNutrient] = useState(null);
-  const [showSuccess, setShowSuccess] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const puzzles = [
     {
       id: 1,
-      nutrient: "Iron",
-      correctFood: "Spinach",
-      options: ["Spinach", "Bread", "Milk"],
-      description: "Iron helps carry oxygen in your blood"
+      category: "Protein",
+      question: "Which food is rich in PROTEIN?",
+      options: [
+        { id: "a", text: "Eggs", emoji: "🥚", isCorrect: true, explanation: "Eggs are a great protein source." },
+        { id: "b", text: "Candy", emoji: "🍬", isCorrect: false, explanation: "Candy is just sugar." },
+        { id: "c", text: "Butter", emoji: "🧈", isCorrect: false, explanation: "Butter is fat." }
+      ]
     },
     {
       id: 2,
-      nutrient: "Protein",
-      correctFood: "Eggs",
-      options: ["Eggs", "Sugar", "Water"],
-      description: "Protein builds and repairs muscles"
+      category: "Vitamin C",
+      question: "Which food has lots of VITAMIN C?",
+      options: [
+        { id: "b", text: "Bread", emoji: "🍞", isCorrect: false, explanation: "Bread is carbs." },
+        { id: "a", text: "Orange", emoji: "🍊", isCorrect: true, explanation: "Citrus fruits are full of Vitamin C." },
+        { id: "c", text: "Cheese", emoji: "🧀", isCorrect: false, explanation: "Cheese is calcium and fat." }
+      ]
     },
     {
       id: 3,
-      nutrient: "Vitamin C",
-      correctFood: "Orange",
-      options: ["Orange", "Rice", "Salt"],
-      description: "Vitamin C boosts your immune system"
+      category: "Iron",
+      question: "Which food gives you IRON?",
+      options: [
+        { id: "c", text: "Ice Cream", emoji: "🍦", isCorrect: false, explanation: "Not a source of iron." },
+        { id: "b", text: "Soda", emoji: "🥤", isCorrect: false, explanation: "No nutrients here." },
+        { id: "a", text: "Spinach", emoji: "🍃", isCorrect: true, explanation: "Leafy greens are iron-rich." }
+      ]
     },
     {
       id: 4,
-      nutrient: "Calcium",
-      correctFood: "Milk",
-      options: ["Milk", "Oil", "Soda"],
-      description: "Calcium makes bones and teeth strong"
+      category: "Calcium",
+      question: "Which food builds strong BONES?",
+      options: [
+        { id: "b", text: "Chips", emoji: "🍟", isCorrect: false, explanation: "Chips are unhealthy." },
+        { id: "a", text: "Milk", emoji: "🥛", isCorrect: true, explanation: "Milk is famous for calcium." },
+        { id: "c", text: "Chicken", emoji: "🍗", isCorrect: false, explanation: "Chicken is protein." }
+      ]
     },
     {
       id: 5,
-      nutrient: "Fiber",
-      correctFood: "Apples",
-      options: ["Apples", "Candy", "Chips"],
-      description: "Fiber helps digestion and keeps you full"
+      category: "Carbohydrates",
+      question: "Which food gives ENERGY?",
+      options: [
+        { id: "c", text: "Water", emoji: "💧", isCorrect: false, explanation: "Water hydrates, doesn't give calories." },
+        { id: "b", text: "Oil", emoji: "🛢️", isCorrect: false, explanation: "Oil is fat." },
+        { id: "a", text: "Rice", emoji: "🍚", isCorrect: true, explanation: "Rice is a staple carb for energy." }
+      ]
     }
   ];
 
-  const handleNutrientClick = (nutrient) => {
-    if (selectedNutrient === nutrient) {
-      setSelectedNutrient(null);
-    } else {
-      setSelectedNutrient(nutrient);
-    }
-  };
-
-  const handleFoodClick = (food) => {
-    if (!selectedNutrient) return;
-
-    const currentPuzzleData = puzzles[currentPuzzle];
-    const isCorrect = currentPuzzleData.correctFood === food;
-
-    if (isCorrect) {
+  const handleOptionSelect = (option) => {
+    if (option.isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setMatchedPairs([...matchedPairs, { puzzle: currentPuzzle, nutrient: selectedNutrient, food }]);
-      setShowSuccess(true);
 
       setTimeout(() => {
-        setShowSuccess(false);
-        setChoices([...choices, { puzzle: currentPuzzle, food, isCorrect: true }]);
-
         if (currentPuzzle < puzzles.length - 1) {
           setCurrentPuzzle(prev => prev + 1);
-          setSelectedNutrient(null);
         } else {
           setGameFinished(true);
         }
       }, 1500);
     } else {
-      setChoices([...choices, { puzzle: currentPuzzle, food, isCorrect: false }]);
-      setSelectedNutrient(null);
+      showCorrectAnswerFeedback(0, false);
     }
   };
-
-  const getCurrentPuzzle = () => puzzles[currentPuzzle];
-  const correctMatches = choices.filter(c => c.isCorrect).length;
 
   const handleNext = () => {
     navigate("/student/health-male/teens/sports-nutrition-story");
   };
 
+  const currentP = puzzles[currentPuzzle];
+
   return (
     <GameShell
-      title="Puzzle: Nutrient Match"
+      title="Nutrient Match Puzzle"
       subtitle={`Puzzle ${currentPuzzle + 1} of ${puzzles.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={correctMatches * 5}
-      gameId="health-male-teen-14"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={14}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={puzzles.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 14/100</span>
-            <span className="text-yellow-400 font-bold">Coins: {correctMatches * 5}</span>
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-white mb-4">{currentP.question}</h3>
+            <p className="text-white/80">Match the nutrient!</p>
           </div>
 
-          {showSuccess && (
-            <div className="text-center mb-4 p-4 bg-green-500/20 rounded-lg">
-              <p className="text-green-400 font-bold">Perfect Match! 🎉</p>
-            </div>
-          )}
-
-          <div className="text-center mb-6">
-            <h3 className="text-white text-xl font-bold mb-2">
-              Match: {getCurrentPuzzle().nutrient}
-            </h3>
-            <p className="text-white/80">{getCurrentPuzzle().description}</p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Nutrients Column */}
-            <div className="space-y-4">
-              <h4 className="text-white font-bold text-center">Nutrients</h4>
-              <div className="space-y-3">
-                <button
-                  onClick={() => handleNutrientClick(getCurrentPuzzle().nutrient)}
-                  className={`w-full p-4 rounded-xl text-center transition-all ${
-                    selectedNutrient === getCurrentPuzzle().nutrient
-                      ? 'bg-blue-500 text-white shadow-lg transform scale-105'
-                      : 'bg-gray-600 text-white hover:bg-gray-500'
-                  }`}
-                >
-                  <div className="text-2xl mb-1">🔬</div>
-                  <div className="font-bold">{getCurrentPuzzle().nutrient}</div>
-                </button>
-              </div>
-            </div>
-
-            {/* Foods Column */}
-            <div className="space-y-4">
-              <h4 className="text-white font-bold text-center">Foods</h4>
-              <div className="space-y-3">
-                {getCurrentPuzzle().options.map(food => (
-                  <button
-                    key={food}
-                    onClick={() => handleFoodClick(food)}
-                    className="w-full p-4 rounded-xl text-center transition-all bg-gray-600 text-white hover:bg-gray-500"
-                  >
-                    <div className="text-2xl mb-1">
-                      {food === "Spinach" ? "🥬" :
-                       food === "Eggs" ? "🥚" :
-                       food === "Orange" ? "🍊" :
-                       food === "Milk" ? "🥛" :
-                       food === "Apples" ? "🍎" :
-                       food === "Bread" ? "🍞" :
-                       food === "Sugar" ? "🍬" :
-                       food === "Water" ? "💧" :
-                       food === "Rice" ? "🍚" :
-                       food === "Salt" ? "🧂" :
-                       food === "Oil" ? "🫒" :
-                       food === "Soda" ? "🥤" :
-                       food === "Candy" ? "🍬" :
-                       food === "Chips" ? "🥔" : "🍎"}
-                    </div>
-                    <div className="font-bold">{food}</div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 text-center">
-            <p className="text-white/80">
-              Click a nutrient, then click the matching food!
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {currentP.options.map((option) => (
+              <button
+                key={option.id}
+                onClick={() => handleOptionSelect(option)}
+                className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
+              >
+                <div className="text-6xl group-hover:scale-110 transition-transform">
+                  {option.emoji}
+                </div>
+                <div className="text-white font-bold text-xl text-center">
+                  {option.text}
+                </div>
+                <p className="text-white/70 text-sm text-center">{option.explanation}</p>
+              </button>
+            ))}
           </div>
         </div>
       </div>

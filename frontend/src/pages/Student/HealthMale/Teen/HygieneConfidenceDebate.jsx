@@ -1,225 +1,231 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const HygieneConfidenceDebate = () => {
   const navigate = useNavigate();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+  const location = useLocation();
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-6";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
+  const [currentStage, setCurrentStage] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const questions = [
+  const stages = [
     {
       id: 1,
-      text: "Does good hygiene improve confidence in teens?",
+      title: "First Impression",
+      question: "Does looking clean help you make a good first impression?",
       options: [
         {
           id: "a",
           text: "Yes, definitely",
-          emoji: "💪",
-          description: "Good hygiene makes teens feel fresh and confident",
+          emoji: "👍",
+          description: "People see you take care of yourself.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "No, it doesn't matter",
-          emoji: "🤷",
-          description: "Hygiene affects how others see you and how you feel",
+          text: "No, looks don't matter",
+          emoji: "👎",
+          description: "Hygiene shows respect for yourself and others.",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Only for special occasions",
-          emoji: "🎭",
-          description: "Daily hygiene builds consistent confidence",
+          text: "Only if you wear expensive clothes",
+          emoji: "💰",
+          description: "Cleanliness matters more than brands.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "What happens when teens have poor hygiene?",
+      title: "Self-Esteem",
+      question: "How does smelling good make you feel?",
       options: [
         {
-          id: "a",
-          text: "Lower self-confidence",
-          emoji: "😔",
-          description: "Body odor and unclean appearance reduce confidence",
-          isCorrect: true
-        },
-        {
           id: "b",
-          text: "Nothing changes",
-          emoji: "😊",
-          description: "Poor hygiene affects social interactions",
+          text: "Nervous",
+          emoji: "😰",
+          description: "Usually, it reduces anxiety.",
           isCorrect: false
         },
         {
+          id: "a",
+          text: "Confident and ready",
+          emoji: "😎",
+          description: "Knowing you're fresh boosts confidence.",
+          isCorrect: true
+        },
+        {
           id: "c",
-          text: "More friends",
-          emoji: "👥",
-          description: "Poor hygiene usually pushes people away",
+          text: "Tired",
+          emoji: "😴",
+          description: "Smelling good doesn't make you tired.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "How does daily hygiene help teen confidence?",
+      title: "Social Life",
+      question: "Does bad hygiene affect friendships?",
       options: [
         {
-          id: "a",
-          text: "Feel fresh and ready for anything",
-          emoji: "✨",
-          description: "Clean teens feel prepared and self-assured",
-          isCorrect: true
+          id: "c",
+          text: "Friends don't care",
+          emoji: "🤷",
+          description: "Body odor can push people away.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Makes no difference",
-          emoji: "😐",
-          description: "Hygiene is key to feeling good about yourself",
+          text: "It makes you popular",
+          emoji: "🌟",
+          description: "Definitely not.",
           isCorrect: false
         },
         {
-          id: "c",
-          text: "Only helps appearance",
-          emoji: "💅",
-          description: "Hygiene affects both appearance and self-esteem",
-          isCorrect: false
+          id: "a",
+          text: "Yes, it can push people away",
+          emoji: "🚶",
+          description: "People prefer being around fresh scents.",
+          isCorrect: true
         }
       ]
     },
     {
       id: 4,
-      text: "How does good hygiene affect social interactions?",
+      title: "Professionalism",
+      question: "Is hygiene important for a job interview?",
       options: [
         {
-          id: "a",
-          text: "Makes others comfortable around you",
-          emoji: "🤝",
-          description: "Good hygiene shows respect for yourself and others",
-          isCorrect: true
-        },
-        {
           id: "b",
-          text: "Doesn't affect how people treat you",
-          emoji: "😕",
-          description: "Hygiene impacts social acceptance and comfort",
+          text: "No, only skills matter",
+          emoji: "🧠",
+          description: "Presentation is part of professionalism.",
           isCorrect: false
         },
         {
+          id: "a",
+          text: "Yes, it shows responsibility",
+          emoji: "👔",
+          description: "It shows you can take care of details.",
+          isCorrect: true
+        },
+        {
           id: "c",
-          text: "Only matters for dating",
-          emoji: "💕",
-          description: "Hygiene is important in all social situations",
+          text: "Only for models",
+          emoji: "📸",
+          description: "It matters for every job.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "What's the long-term benefit of teen hygiene habits?",
+      title: "Mental Health",
+      question: "Can a shower improve your mood?",
       options: [
         {
-          id: "a",
-          text: "Builds lifelong confidence and health",
-          emoji: "🌟",
-          description: "Good habits formed in teens last a lifetime",
-          isCorrect: true
+          id: "c",
+          text: "It makes you sad",
+          emoji: "😢",
+          description: "Showers are refreshing.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Only temporary benefit",
-          emoji: "⏰",
-          description: "Teen hygiene habits shape adult confidence",
+          text: "It does nothing",
+          emoji: "😐",
+          description: "It physically resets your state.",
           isCorrect: false
         },
         {
-          id: "c",
-          text: "No lasting impact",
-          emoji: "🤷",
-          description: "Hygiene habits affect mental and physical health long-term",
-          isCorrect: false
+          id: "a",
+          text: "Yes, it's refreshing",
+          emoji: "🚿",
+          description: "Self-care is a mood booster.",
+          isCorrect: true
         }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
+  const handleOptionSelect = (option) => {
+    if (option.isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
 
-    if (isCorrect) {
-      showCorrectAnswerFeedback(2, true);
+      setTimeout(() => {
+        if (currentStage < stages.length - 1) {
+          setCurrentStage(prev => prev + 1);
+        } else {
+          setGameFinished(true);
+        }
+      }, 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
-    navigate("/student/health-male/teen/self-care-journal");
+    navigate("/student/health-male/teens/self-care-journal");
   };
+
+  const currentS = stages[currentStage];
 
   return (
     <GameShell
-      title="Hygiene = Confidence?"
-      subtitle={`Debate ${currentQuestion + 1} of ${questions.length}`}
+      title="Hygiene Confidence Debate"
+      subtitle={`Topic ${currentStage + 1} of ${stages.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 2}
-      gameId="health-male-teen-6"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={10}
-      currentLevel={6}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={stages.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 2}</span>
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-white mb-2">{currentS.title}</h3>
+            <p className="text-white/90 text-lg">{currentS.question}</p>
           </div>
 
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🎭</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Hygiene Confidence Debate</h3>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {currentS.options.map((option) => (
               <button
                 key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                onClick={() => handleOptionSelect(option)}
+                className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
               >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+                <div className="text-6xl group-hover:scale-110 transition-transform">
+                  {option.emoji}
                 </div>
+                <div className="text-white font-bold text-xl text-center">
+                  {option.text}
+                </div>
+                <p className="text-white/70 text-sm text-center">{option.description}</p>
               </button>
             ))}
           </div>

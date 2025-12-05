@@ -175,7 +175,7 @@ const QuizMaleReproductiveBasicsTeen = () => {
 
   return (
     <GameShell
-      title="Quiz on Male Reproductive Basics (Teen)"
+      title="Quiz on Male Reproductive Basics"
       subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}

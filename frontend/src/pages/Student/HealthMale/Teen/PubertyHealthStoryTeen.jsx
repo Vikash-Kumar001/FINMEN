@@ -1,162 +1,172 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PubertyHealthStoryTeen = () => {
   const navigate = useNavigate();
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-31";
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Your health teacher starts talking about reproductive health in class. How do you react?",
+      text: "You notice you are gaining weight during puberty. Is this bad?",
       options: [
-        {
+         {
           id: "a",
-          text: "Listen calmly and take notes",
-          emoji: "📝",
-          description: "Learning about reproductive health helps you make informed decisions",
+          text: "No, it's normal growth",
+          emoji: "📈",
+          description: "Your body is building muscle and bone.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Make jokes with friends",
-          emoji: "😏",
-          description: "Reproductive health education is serious and important",
+          text: "Yes, stop eating",
+          emoji: "🚫",
+          description: "You need food to grow.",
           isCorrect: false
         },
+       
         {
           id: "c",
-          text: "Feel embarrassed and look away",
-          emoji: "😳",
-          description: "Reproductive health is a normal part of growing up",
+          text: "Only eat salad",
+          emoji: "🥗",
+          description: "You need a balanced diet.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "The teacher explains that reproductive health includes understanding your body. What's your response?",
+      text: "You feel tired all the time. Why?",
       options: [
         {
-          id: "a",
-          text: "Feel it's only for adults",
-          emoji: "👨",
-          description: "Teens need this information to make healthy choices",
+          id: "c",
+          text: "You are lazy",
+          emoji: "🛋️",
+          description: "Not true.",
           isCorrect: false
         },
+       
         {
           id: "b",
-          text: "Realize it's part of growing up",
-          emoji: "🌱",
-          description: "Reproductive health knowledge is essential for teens",
+          text: "Too much homework",
+          emoji: "📚",
+          description: "Maybe, but growth is the main reason.",
+          isCorrect: false
+        },
+         {
+          id: "a",
+          text: "Growing takes energy",
+          emoji: "🔋",
+          description: "Your body is working hard to grow.",
           isCorrect: true
         },
-        {
-          id: "c",
-          text: "Think it's not important",
-          emoji: "🤷",
-          description: "Understanding your body helps you stay healthy",
-          isCorrect: false
-        }
       ]
     },
     {
       id: 3,
-      text: "Teacher mentions seeing a doctor for reproductive health concerns. What do you think?",
+      text: "You have body odor even after showering. What helps?",
       options: [
         {
-          id: "a",
-          text: "Doctors don't need to know",
-          emoji: "😶",
-          description: "Healthcare providers help with reproductive health questions",
-          isCorrect: false
-        },
-        {
           id: "b",
-          text: "Only if something hurts",
-          emoji: "🤕",
-          description: "Preventive care is important for reproductive health",
+          text: "Shower 5 times a day",
+          emoji: "🚿",
+          description: "Too much washing dries skin.",
           isCorrect: false
         },
         {
           id: "c",
-          text: "It's normal and responsible",
-          emoji: "🏥",
-          description: "Regular check-ups help maintain reproductive health",
+          text: "Wear perfume only",
+          emoji: "🌸",
+          description: "Doesn't kill bacteria.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Deodorant/Antiperspirant",
+          emoji: "🧴",
+          description: "Controls sweat and smell.",
           isCorrect: true
         }
       ]
     },
     {
       id: 4,
-      text: "The class discusses how reproductive health affects emotional wellbeing. How do you respond?",
+      text: "You feel like no one understands you.",
       options: [
         {
-          id: "a",
-          text: "Laugh it off with friends",
-          emoji: "😄",
-          description: "Emotional health is connected to reproductive health",
+          id: "c",
+          text: "Run away",
+          emoji: "🏃",
+          description: "Not the answer.",
           isCorrect: false
         },
         {
-          id: "b",
-          text: "Understand the connection",
-          emoji: "💡",
-          description: "Reproductive health impacts both physical and emotional wellbeing",
+          id: "a",
+          text: "Talk to a friend/adult",
+          emoji: "🗣️",
+          description: "Sharing helps you feel better.",
           isCorrect: true
         },
         {
-          id: "c",
-          text: "Ignore the discussion",
-          emoji: "🙉",
-          description: "Understanding emotions is part of reproductive health",
+          id: "b",
+          text: "Scream at everyone",
+          emoji: "🤬",
+          description: "Makes things worse.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "The teacher says reproductive health includes hygiene. What's your reaction?",
+      text: "Is it okay to cry if you are a boy?",
       options: [
         {
-          id: "a",
-          text: "Think it's not necessary",
-          emoji: "❌",
-          description: "Good hygiene is crucial for reproductive health",
-          isCorrect: false
-        },
-        {
           id: "b",
-          text: "Practice good hygiene daily",
-          emoji: "🚿",
-          description: "Proper hygiene prevents infections and maintains health",
-          isCorrect: true
+          text: "No, boys don't cry",
+          emoji: "🤖",
+          description: "That's a myth.",
+          isCorrect: false
         },
         {
           id: "c",
-          text: "Only when someone reminds you",
-          emoji: "⏰",
-          description: "Regular hygiene should be a personal habit",
+          text: "Only when alone",
+          emoji: "🚪",
+          description: "You can show emotions.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Yes, emotions are human",
+          emoji: "❤️",
+          description: "Everyone has feelings.",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -167,46 +177,44 @@ const PubertyHealthStoryTeen = () => {
     }, 1500);
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   const handleNext = () => {
-    navigate("/student/health-male/teens/quiz-male-reproductive-basics-teen");
+    navigate("/student/health-male/teens/quiz-puberty-health-teen");
   };
 
   return (
     <GameShell
-      title="Puberty Health Story (Teen)"
-      subtitle={`Health Lesson ${currentQuestion + 1} of ${questions.length}`}
+      title="Puberty Health Story"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 5}
-      gameId="health-male-teen-31"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={31}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 31/100</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 5}</span>
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

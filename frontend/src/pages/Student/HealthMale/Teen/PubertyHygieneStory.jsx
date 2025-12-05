@@ -1,162 +1,173 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { getGameDataById } from "../../../../utils/getGameData";
 
 const PubertyHygieneStory = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-1";
+  const gameData = getGameDataById(gameId);
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You sweat more during puberty. What should you do?",
+      text: "You notice you are sweating more than usual. What's happening?",
       options: [
         {
-          id: "a",
-          text: "Ignore the sweat",
-          emoji: "😅",
-          description: "Ignoring sweat leads to bad smell and discomfort",
+          id: "b",
+          text: "I'm sick",
+          emoji: "🤒",
+          description: "It's likely not sickness, just growing up.",
           isCorrect: false
         },
         {
-          id: "b",
-          text: "Use deodorant daily",
-          emoji: "🧴",
-          description: "Deodorant helps control body odor during puberty changes",
+          id: "a",
+          text: "It's puberty",
+          emoji: "🧍",
+          description: "Puberty causes your sweat glands to become more active.",
           isCorrect: true
         },
         {
           id: "c",
-          text: "Only use it sometimes",
-          emoji: "📅",
-          description: "Daily use is important for puberty hygiene",
+          text: "It's too hot",
+          emoji: "☀️",
+          description: "Even when it's not hot, puberty causes sweating.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Your skin gets oily during puberty. What's the best routine?",
+      text: "Your sweat starts to smell. What should you use?",
       options: [
         {
+          id: "c",
+          text: "Perfume only",
+          emoji: "🌸",
+          description: "Perfume just covers the smell, it doesn't stop it.",
+          isCorrect: false
+        },
+        {
           id: "a",
-          text: "Wash face twice daily",
-          emoji: "🧼",
-          description: "Regular face washing prevents acne and keeps skin healthy",
+          text: "Deodorant or Antiperspirant",
+          emoji: "🧴",
+          description: "These help control sweat and odor.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Skip face washing",
-          emoji: "❌",
-          description: "Oily skin needs regular cleaning during puberty",
-          isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Use harsh soaps",
-          emoji: "🔥",
-          description: "Harsh products can damage sensitive puberty skin",
+          text: "Nothing",
+          emoji: "🤷",
+          description: "Ignoring it might lead to body odor.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "During puberty, you notice body hair growing. What do you do?",
+      text: "How often should you shower now?",
       options: [
         {
-          id: "a",
-          text: "Learn safe grooming habits",
-          emoji: "✂️",
-          description: "Safe grooming is important for teen hygiene",
-          isCorrect: true
-        },
-        {
           id: "b",
-          text: "Shave everything immediately",
-          emoji: "🪒",
-          description: "Need to learn proper techniques first",
+          text: "Once a week",
+          emoji: "🗓️",
+          description: "That's not enough during puberty.",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Ignore body hair completely",
-          emoji: "🤷",
-          description: "Proper grooming is part of puberty hygiene",
+          text: "Only when dirty",
+          emoji: "💩",
+          description: "Sweat happens even if you don't look dirty.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Every day",
+          emoji: "🚿",
+          description: "Daily showers keep you fresh and clean.",
+          isCorrect: true
         }
       ]
     },
     {
       id: 4,
-      text: "You notice changes in your body during puberty. How do you respond?",
+      text: "You notice hair growing in new places. What do you do?",
       options: [
         {
-          id: "a",
-          text: "Feel embarrassed about changes",
-          emoji: "😳",
-          description: "Puberty is normal and happens to everyone",
+          id: "c",
+          text: "Panic",
+          emoji: "😱",
+          description: "Don't panic! It's totally normal.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Keep it clean",
+          emoji: "🧼",
+          description: "Just wash it like the rest of your body.",
+          isCorrect: true
         },
         {
           id: "b",
-          text: "Hide changes from others",
-          emoji: "🙈",
-          description: "It's okay to talk about puberty with trusted adults",
+          text: "Cut it all off",
+          emoji: "✂️",
+          description: "You don't have to remove it unless you want to.",
           isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Learn about body changes positively",
-          emoji: "📚",
-          description: "Understanding puberty helps you feel confident",
-          isCorrect: true
         }
       ]
     },
     {
       id: 5,
-      text: "During puberty, your emotions change. What's the best approach?",
+      text: "Your face feels oily. What helps?",
       options: [
         {
-          id: "a",
-          text: "Learn emotional management skills",
-          emoji: "🧠",
-          description: "Understanding emotions helps during puberty changes",
-          isCorrect: true
-        },
-        {
           id: "b",
-          text: "Let emotions control you",
-          emoji: "🌪️",
-          description: "Learning to manage emotions is key during puberty",
+          text: "Scrubbing hard",
+          emoji: "🧽",
+          description: "Scrubbing can irritate your skin.",
           isCorrect: false
         },
         {
           id: "c",
-          text: "Suppress all emotions",
-          emoji: "😶",
-          description: "It's healthy to express and understand feelings",
+          text: "Touching it",
+          emoji: "👆",
+          description: "Touching adds more dirt and oil.",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Washing gently twice a day",
+          emoji: "💧",
+          description: "Gentle washing removes oil without hurting skin.",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
 
     setTimeout(() => {
       if (currentQuestion < questions.length - 1) {
@@ -167,8 +178,6 @@ const PubertyHygieneStory = () => {
     }, 1500);
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   const handleNext = () => {
     navigate("/student/health-male/teens/quiz-hygiene-changes");
   };
@@ -176,37 +185,37 @@ const PubertyHygieneStory = () => {
   return (
     <GameShell
       title="Puberty Hygiene Story"
-      subtitle={`Level 1 of 10`}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
-      gameId="health-male-teen-1"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={10}
-      currentLevel={1}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={questions.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 1/10</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
           <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
+            {questions[currentQuestion].text}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+            {questions[currentQuestion].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

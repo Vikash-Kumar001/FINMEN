@@ -1,111 +1,181 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const DailyRoutineSimulation48 = () => {
   const navigate = useNavigate();
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-48";
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const scenarios = [
+  const steps = [
     {
       id: 1,
-      text: "Morning routine: Options: (a) Shower + Brush, (b) Only Brush, (c) Skip Both. What do you choose?",
+      time: "7:00 AM",
+      activity: "Wake up. First thing?",
       options: [
         {
-          id: "a",
-          text: "Only Brush",
-          emoji: "🪥",
-          description: "Missing shower for complete hygiene",
+          id: "b",
+          text: "Check phone",
+          emoji: "📱",
+          description: "Start with hygiene.",
           isCorrect: false
         },
-        {
-          id: "b",
-          text: "Shower + Brush",
-          emoji: "🚿",
-          description: "Complete morning hygiene routine for fresh start",
-          isCorrect: true
-        },
+       
         {
           id: "c",
-          text: "Skip Both",
-          emoji: "😴",
-          description: "Poor hygiene affects health and confidence",
+          text: "Eat candy",
+          emoji: "🍬",
+          description: "Not a healthy breakfast.",
           isCorrect: false
-        }
+        },
+         {
+          id: "a",
+          text: "Brush teeth/Wash face",
+          emoji: "🪥",
+          description: "Fresh start.",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 2,
-      text: "After sports practice: (a) Shower + Change, (b) Change Only, (c) Continue as is.",
+      time: "7:15 AM",
+      activity: "Getting dressed.",
       options: [
         {
-          id: "a",
-          text: "Change Only",
-          emoji: "👕",
-          description: "Need to clean body too after sweating",
+          id: "c",
+          text: "Wear yesterday's socks",
+          emoji: "🧦",
+          description: "Stinky!",
           isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Put on deodorant & clean clothes",
+          emoji: "👕",
+          description: "Ready for the day.",
+          isCorrect: true
         },
         {
           id: "b",
-          text: "Continue as is",
-          emoji: "🏃",
-          description: "Sweat causes bad smell and skin issues",
+          text: "Skip underwear",
+          emoji: "👖",
+          description: "Wear clean underwear.",
           isCorrect: false
-        },
-        {
-          id: "c",
-          text: "Shower + Change",
-          emoji: "🧼",
-          description: "Clean body and clothes prevent odor and bacteria",
-          isCorrect: true
         }
       ]
     },
     {
       id: 3,
-      text: "Evening routine: (a) Wash Face + Brush, (b) Brush Only, (c) Skip Both.",
+      time: "12:00 PM",
+      activity: "Lunch time. Hands are dirty.",
       options: [
         {
-          id: "a",
-          text: "Brush Only",
-          emoji: "🪥",
-          description: "Face needs washing to remove oil and dirt",
+          id: "b",
+          text: "Eat immediately",
+          emoji: "🍔",
+          description: "Germs!",
           isCorrect: false
         },
         {
-          id: "b",
-          text: "Skip Both",
-          emoji: "😴",
-          description: "Nightly hygiene prevents skin and dental issues",
-          isCorrect: false
+          id: "a",
+          text: "Wash hands first",
+          emoji: "🧼",
+          description: "Safe eating.",
+          isCorrect: true
         },
         {
           id: "c",
-          text: "Wash Face + Brush",
-          emoji: "🧴",
-          description: "Complete evening hygiene for healthy skin and teeth",
-          isCorrect: true
+          text: "Lick fingers",
+          emoji: "👅",
+          description: "Gross.",
+          isCorrect: false
         }
+      ]
+    },
+    {
+      id: 4,
+      time: "4:00 PM",
+      activity: "Back from sports.",
+      options: [
+        {
+          id: "a",
+          text: "Shower",
+          emoji: "🚿",
+          description: "Clean off sweat.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Sit on couch",
+          emoji: "🛋️",
+          description: "You are sweaty.",
+          isCorrect: false
+        },
+        
+        {
+          id: "b",
+          text: "Spray perfume",
+          emoji: "🌸",
+          description: "Masks smell only.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      time: "9:00 PM",
+      activity: "Bedtime.",
+      options: [
+        {
+          id: "b",
+          text: "Sleep in jeans",
+          emoji: "👖",
+          description: "Uncomfortable.",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Eat sugar",
+          emoji: "🍭",
+          description: "Bad for teeth and sleep.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Brush teeth & wear PJs",
+          emoji: "🛌",
+          description: "Good night routine.",
+          isCorrect: true
+        },
       ]
     }
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentScenario().options.find(opt => opt.id === optionId);
+    const selectedOption = steps[currentStep].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { step: currentStep, optionId, isCorrect }]);
-
     setTimeout(() => {
-      if (currentStep < scenarios.length - 1) {
+      if (currentStep < steps.length - 1) {
         setCurrentStep(prev => prev + 1);
       } else {
         setGameFinished(true);
@@ -113,51 +183,45 @@ const DailyRoutineSimulation48 = () => {
     }, 1500);
   };
 
-  const getCurrentScenario = () => scenarios[currentStep];
-
   const handleNext = () => {
     navigate("/student/health-male/teens/reflex-hygiene-alert-49");
   };
 
   return (
     <GameShell
-      title="Simulation: Daily Routine"
-      subtitle={`Step ${currentStep + 1} of ${scenarios.length}`}
+      title="Daily Routine Simulation"
+      subtitle={`Time: ${steps[currentStep].time}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length}
-      gameId="health-male-teen-48"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={50}
-      currentLevel={48}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={steps.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Step {currentStep + 1}/{scenarios.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length}</span>
+            <span className="text-white/80">Step {currentStep + 1}/{steps.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
           </div>
 
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">📱</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Daily Routine Simulator</h3>
-          </div>
-
+          <h3 className="text-2xl font-bold text-white mb-2">{steps[currentStep].time}</h3>
           <p className="text-white text-lg mb-6">
-            {getCurrentScenario().text}
+            {steps[currentStep].activity}
           </p>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentScenario().options.map(option => (
+            {steps[currentStep].options.map(option => (
               <button
                 key={option.id}
                 onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-600 hover:to-blue-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
               >
                 <div className="flex items-center">
                   <div className="text-2xl mr-4">{option.emoji}</div>

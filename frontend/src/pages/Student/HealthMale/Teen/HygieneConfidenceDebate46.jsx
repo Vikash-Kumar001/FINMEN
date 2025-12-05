@@ -1,183 +1,228 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const HygieneConfidenceDebate46 = () => {
   const navigate = useNavigate();
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
+
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-46";
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const [coins, setCoins] = useState(0);
+  const [currentStage, setCurrentStage] = useState(0);
   const [gameFinished, setGameFinished] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const questions = [
+  const stages = [
     {
       id: 1,
-      text: "Does hygiene increase confidence in teens?",
-      options: (() => {
-        const opts = [
-          {
-            text: "Yes, definitely",
-            emoji: "💪",
-            description: "Good hygiene makes teens feel fresh and confident",
-            isCorrect: true
-          },
-          {
-            text: "No, it doesn't matter",
-            emoji: "🤷",
-            description: "Hygiene affects how others see you and how you feel",
-            isCorrect: false
-          },
-          {
-            text: "Only for special occasions",
-            emoji: "🎭",
-            description: "Daily hygiene builds consistent confidence",
-            isCorrect: false
-          }
-        ];
-        for (let i = opts.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [opts[i], opts[j]] = [opts[j], opts[i]];
+      title: "Smelling Good",
+      question: "Does smelling good make you confident?",
+      options: [
+        {
+          id: "a",
+          text: "Yes, definitely",
+          emoji: "😎",
+          description: "You don't worry about odor.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "No, looks matter more",
+          emoji: "🙄",
+          description: "Smell is very noticeable.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Only to dogs",
+          emoji: "🐶",
+          description: "People notice too.",
+          isCorrect: false
         }
-        return opts.map((opt, index) => ({ ...opt, id: String.fromCharCode(97 + index) }));
-      })()
+      ]
     },
     {
       id: 2,
-      text: "How does poor hygiene affect teen self-esteem?",
-      options: (() => {
-        const opts = [
-          {
-            text: "Lowers self-confidence",
-            emoji: "😔",
-            description: "Body odor and unclean appearance reduce confidence",
-            isCorrect: true
-          },
-          {
-            text: "Nothing changes",
-            emoji: "😊",
-            description: "Poor hygiene affects social interactions",
-            isCorrect: false
-          },
-          {
-            text: "Increases popularity",
-            emoji: "👥",
-            description: "Poor hygiene usually pushes people away",
-            isCorrect: false
-          }
-        ];
-        for (let i = opts.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [opts[i], opts[j]] = [opts[j], opts[i]];
+      title: "Bad Breath",
+      question: "Can bad breath ruin a conversation?",
+      options: [
+        {
+          id: "b",
+          text: "No, people ignore it",
+          emoji: "🤥",
+          description: "It's hard to ignore.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Yes, it's distracting",
+          emoji: "🤢",
+          description: "It pushes people away.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Only if you shout",
+          emoji: "🗣️",
+          description: "Even whispering spreads it.",
+          isCorrect: false
         }
-        return opts.map((opt, index) => ({ ...opt, id: String.fromCharCode(97 + index) }));
-      })()
+      ]
     },
     {
       id: 3,
-      text: "What's the link between hygiene and social success?",
-      options: (() => {
-        const opts = [
-          {
-            text: "Makes others comfortable around you",
-            emoji: "🤝",
-            description: "Good hygiene shows respect for yourself and others",
-            isCorrect: true
-          },
-          {
-            text: "Doesn't affect how people treat you",
-            emoji: "😕",
-            description: "Hygiene impacts social acceptance and comfort",
-            isCorrect: false
-          },
-          {
-            text: "Only matters for dating",
-            emoji: "💕",
-            description: "Hygiene is important in all social situations",
-            isCorrect: false
-          }
-        ];
-        for (let i = opts.length - 1; i > 0; i--) {
-          const j = Math.floor(Math.random() * (i + 1));
-          [opts[i], opts[j]] = [opts[j], opts[i]];
+      title: "Clean Clothes",
+      question: "Do clean clothes matter?",
+      options: [
+        {
+          id: "c",
+          text: "No, messy is cool",
+          emoji: "🗑️",
+          description: "Clean is respectful.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Only expensive ones",
+          emoji: "💲",
+          description: "Cleanliness > Brand.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Yes, shows self-respect",
+          emoji: "👔",
+          description: "You feel better in clean clothes.",
+          isCorrect: true
         }
-        return opts.map((opt, index) => ({ ...opt, id: String.fromCharCode(97 + index) }));
-      })()
+      ]
+    },
+    {
+      id: 4,
+      title: "Acne",
+      question: "Can you be confident with acne?",
+      options: [
+        {
+          id: "b",
+          text: "No, hide face",
+          emoji: "🙈",
+          description: "Don't hide.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "Yes, personality shines",
+          emoji: "✨",
+          description: "You are more than your skin.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Only in dark rooms",
+          emoji: "🌑",
+          description: "Be confident everywhere.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Self-Care",
+      question: "Is self-care selfish?",
+      options: [
+        {
+          id: "c",
+          text: "Yes, help others only",
+          emoji: "🤲",
+          description: "You must help yourself first.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "It's a waste of time",
+          emoji: "⌛",
+          description: "It's essential.",
+          isCorrect: false
+        },
+        {
+          id: "a",
+          text: "No, it's healthy",
+          emoji: "❤️",
+          description: "Taking care of you is good.",
+          isCorrect: true
+        }
+      ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
+  const handleOptionSelect = (option) => {
+    if (option.isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
 
-    if (isCorrect) {
-      showCorrectAnswerFeedback(2, true);
+      setTimeout(() => {
+        if (currentStage < stages.length - 1) {
+          setCurrentStage(prev => prev + 1);
+        } else {
+          setGameFinished(true);
+        }
+      }, 1500);
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
-
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
-        setCurrentQuestion(prev => prev + 1);
-      } else {
-        setGameFinished(true);
-      }
-    }, 1500);
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   const handleNext = () => {
     navigate("/student/health-male/teens/journal-of-care");
   };
 
+  const currentS = stages[currentStage];
+
   return (
     <GameShell
-      title="Debate: Hygiene = Confidence?"
-      subtitle={`Debate ${currentQuestion + 1} of ${questions.length}`}
+      title="Hygiene Confidence Debate"
+      subtitle={`Topic ${currentStage + 1} of ${stages.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
-      score={choices.filter(c => c.isCorrect).length * 2}
-      gameId="health-male-teen-46"
+      score={coins}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={50}
-      currentLevel={46}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={stages.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Debate {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {choices.filter(c => c.isCorrect).length * 2}</span>
+          <div className="text-center mb-8">
+            <h3 className="text-2xl font-bold text-white mb-2">{currentS.title}</h3>
+            <p className="text-white/90 text-lg">{currentS.question}</p>
           </div>
 
-          <div className="text-center mb-6">
-            <div className="text-5xl mb-4">🎭</div>
-            <h3 className="text-2xl font-bold text-white mb-2">Hygiene Confidence Debate</h3>
-          </div>
-
-          <p className="text-white text-lg mb-6">
-            {getCurrentQuestion().text}
-          </p>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {currentS.options.map((option) => (
               <button
                 key={option.id}
-                onClick={() => handleChoice(option.id)}
-                className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                onClick={() => handleOptionSelect(option)}
+                className="bg-white/10 hover:bg-white/20 p-6 rounded-xl border border-white/20 transition-all transform hover:scale-105 flex flex-col items-center gap-4 group"
               >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    <p className="text-white/90">{option.description}</p>
-                  </div>
+                <div className="text-6xl group-hover:scale-110 transition-transform">
+                  {option.emoji}
                 </div>
+                <div className="text-white font-bold text-xl text-center">
+                  {option.text}
+                </div>
+                <p className="text-white/70 text-sm text-center">{option.description}</p>
               </button>
             ))}
           </div>

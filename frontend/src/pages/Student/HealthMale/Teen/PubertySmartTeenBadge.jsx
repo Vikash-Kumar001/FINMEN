@@ -1,209 +1,216 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from 'react-router-dom';
+import { Shield, AlertTriangle, Heart, UserCheck, CheckCircle, Badge } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PubertySmartTeenBadge = () => {
   const navigate = useNavigate();
-  const [currentChallenge, setCurrentChallenge] = useState(0);
-  const [completedChallenges, setCompletedChallenges] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [challengeCompleted, setChallengeCompleted] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const challenges = [
+  // Get game data from game category folder (source of truth)
+  const gameId = "health-male-teen-30";
+
+  // Hardcode rewards to align with rule: 1 coin per question, 5 total coins, 10 total XP
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+
+  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti, resetFeedback } = useGameFeedback();
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [score, setScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+
+  const levels = [
     {
       id: 1,
-      title: "Understand Puberty Changes",
-      description: "Learn that puberty brings normal body changes",
-      question: "What should you do when you notice puberty changes?",
+      title: "Hormones",
+      question: "What drives puberty?",
+      icon: UserCheck,
       options: [
-        { id: "a", text: "Learn about them positively", emoji: "📚", isCorrect: true },
-        { id: "b", text: "Worry that something's wrong", emoji: "😰", isCorrect: false },
-        { id: "c", text: "Hide all changes", emoji: "🙈", isCorrect: false }
-      ]
+        { text: "Food", correct: false },
+        { text: "Hormones", correct: true },
+        { text: "Weather", correct: false }
+      ],
+      feedback: {
+        correct: "Correct! Hormones are the chemical messengers.",
+        wrong: "It's hormones that cause the changes."
+      }
     },
     {
       id: 2,
-      title: "Handle Voice Changes",
-      description: "Accept that voice cracking is normal during puberty",
-      question: "When your voice cracks in class, what do you do?",
+      title: "Hygiene",
+      question: "What helps with body odor?",
+      icon: Shield,
       options: [
-        { id: "a", text: "Continue talking normally", emoji: "🗣️", isCorrect: true },
-        { id: "b", text: "Stop talking completely", emoji: "🤐", isCorrect: false },
-        { id: "c", text: "Get embarrassed and run out", emoji: "🏃", isCorrect: false }
-      ]
+        { text: "Perfume only", correct: false },
+        { text: "Shower & Deodorant", correct: true },
+        { text: "Nothing", correct: false }
+      ],
+      feedback: {
+        correct: "Yes! Cleanliness is key.",
+        wrong: "You need to wash away the bacteria."
+      }
     },
     {
       id: 3,
-      title: "Manage Acne Properly",
-      description: "Use gentle methods to care for acne-prone skin",
-      question: "Best way to handle teen acne?",
+      title: "Acne",
+      question: "Best way to treat acne?",
+      icon: Heart,
       options: [
-        { id: "a", text: "Gentle face washing routine", emoji: "🧼", isCorrect: true },
-        { id: "b", text: "Squeeze every pimple", emoji: "🤏", isCorrect: false },
-        { id: "c", text: "Ignore it completely", emoji: "🤷", isCorrect: false }
-      ]
+        { text: "Gentle Wash", correct: true },
+        { text: "Pop it", correct: false },
+        { text: "Scrub hard", correct: false }
+      ],
+      feedback: {
+        correct: "Exactly! Be gentle with your skin.",
+        wrong: "Popping or scrubbing makes it worse."
+      }
     },
     {
       id: 4,
-      title: "Build Healthy Routines",
-      description: "Create daily habits that support teen health",
-      question: "What makes a healthy teen routine?",
+      title: "Emotions",
+      question: "Are mood swings normal?",
+      icon: CheckCircle,
       options: [
-        { id: "a", text: "Exercise + Good Food + Sleep", emoji: "🏃", isCorrect: true },
-        { id: "b", text: "Stay up late gaming", emoji: "🎮", isCorrect: false },
-        { id: "c", text: "Skip meals to save time", emoji: "⏰", isCorrect: false }
-      ]
+        { text: "Yes", correct: true },
+        { text: "No", correct: false },
+        { text: "Only for some", correct: false }
+      ],
+      feedback: {
+        correct: "Right! It's part of growing up.",
+        wrong: "Mood swings are very common during puberty."
+      }
     },
     {
       id: 5,
-      title: "Seek Support When Needed",
-      description: "Know when and how to ask for help during puberty",
-      question: "When should you talk to an adult about puberty?",
+      title: "Growth",
+      question: "What fuels your growth?",
+      icon: Badge,
       options: [
-        { id: "a", text: "When you have questions or concerns", emoji: "💬", isCorrect: true },
-        { id: "b", text: "Only if something hurts", emoji: "🤕", isCorrect: false },
-        { id: "c", text: "Never, handle it alone", emoji: "😶", isCorrect: false }
-      ]
+        { text: "Candy", correct: false },
+        { text: "Healthy Food & Sleep", correct: true },
+        { text: "Video Games", correct: false }
+      ],
+      feedback: {
+        correct: "Smart! Your body needs fuel and rest.",
+        wrong: "You need nutrients and rest to grow."
+      }
     }
   ];
 
-  const handleChallengeChoice = (optionId) => {
-    const currentChallengeData = challenges[currentChallenge];
-    const selectedOption = currentChallengeData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption.isCorrect;
+  const currentLevelData = levels[currentLevel - 1];
+  const Icon = currentLevelData?.icon;
+
+  const handleAnswer = (option) => {
+    if (answered) return;
+
+    setSelectedAnswer(option);
+    setAnswered(true);
+    resetFeedback();
+
+    const isCorrect = option.correct;
+    const isLastQuestion = currentLevel === 5;
 
     if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      setCompletedChallenges([...completedChallenges, currentChallenge]);
-      setChallengeCompleted(true);
-
-      setTimeout(() => {
-        if (currentChallenge < challenges.length - 1) {
-          setCurrentChallenge(prev => prev + 1);
-          setChallengeCompleted(false);
-        } else {
-          setGameFinished(true);
-        }
-      }, 1500);
-    } else {
-      // Show feedback but don't advance
-      setTimeout(() => {
-        // Stay on same challenge
-      }, 1500);
     }
-  };
 
-  const getCurrentChallenge = () => challenges[currentChallenge];
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentLevel(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
+  };
 
   const handleNext = () => {
-    navigate("/games/health-male/teens");
+    navigate("/student/health-male/teens/puberty-health-story-teen");
   };
-
-  const badgeEarned = completedChallenges.length >= 3;
 
   return (
     <GameShell
-      title="Badge: Puberty Smart Teen (Teen)"
-      subtitle={`Challenge ${currentChallenge + 1} of ${challenges.length}`}
+      title="Puberty Smart Teen Badge"
+      subtitle={!showResult ? `Challenge ${currentLevel} of 5` : "Badge Earned!"}
       onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={completedChallenges.length * 0}
-      gameId="health-male-teen-30"
+      nextEnabled={showResult}
+      showGameOver={showResult}
+      score={score}
+      gameId={gameId}
       gameType="health-male"
-      totalLevels={100}
-      currentLevel={30}
-      showConfetti={gameFinished}
       flashPoints={flashPoints}
-      backPath="/games/health-male/teens"
       showAnswerConfetti={showAnswerConfetti}
+      maxScore={levels.length}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="flex justify-between items-center mb-4">
-            <span className="text-white/80">Level 30/100</span>
-            <span className="text-yellow-400 font-bold">Coins: {completedChallenges.length * 0}</span>
-          </div>
+      <div className="text-center text-white space-y-6">
+        {!showResult && currentLevelData && (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 border border-white/20">
+            <div className="flex justify-center mb-4">
+              <Icon className="w-16 h-16 text-blue-400" />
+            </div>
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Challenge {currentLevel} of 5</span>
+              <span className="text-yellow-400 font-bold">Coins: {score}</span>
+            </div>
 
-          {badgeEarned && (
-            <div className="text-center mb-6 p-6 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-2xl">
-              <div className="text-6xl mb-4">🏆</div>
-              <h3 className="text-white text-2xl font-bold mb-2">
-                Puberty Smart Teen Badge Earned!
-              </h3>
-              <p className="text-white/90">
-                Complete puberty scenarios responsibly to master teen health!
+            <h3 className="text-2xl font-bold mb-2">{currentLevelData.title}</h3>
+            <p className="text-white text-lg mb-6 text-center">
+              {currentLevelData.question}
+            </p>
+
+            <div className="grid sm:grid-cols-3 gap-3">
+              {currentLevelData.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswer(option)}
+                  disabled={answered}
+                  className="w-full min-h-[60px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-8 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                >
+                  {option.text}
+                </button>
+              ))}
+            </div>
+
+            {answered && selectedAnswer && (
+              <div className={`mt-4 p-4 rounded-xl ${selectedAnswer.correct
+                  ? 'bg-green-500/20 border-2 border-green-400'
+                  : 'bg-red-500/20 border-2 border-red-400'
+                }`}>
+                <p className="text-white font-semibold">
+                  {selectedAnswer.correct
+                    ? currentLevelData.feedback.correct
+                    : currentLevelData.feedback.wrong}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+
+        {showResult && (
+          <div className="text-center space-y-4 mt-8">
+            <div className="text-green-400">
+              <div className="text-8xl mb-4">🏅</div>
+              <h3 className="text-3xl font-bold text-white mb-2">Puberty Smart Badge Earned!</h3>
+              <p className="text-white/90 mb-4 text-lg">
+                Congratulations! You understand your growing body!
+              </p>
+              <div className="bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full p-4 inline-block mb-4">
+                <div className="text-white font-bold text-xl">PUBERTY EXPERT</div>
+              </div>
+              <p className="text-white/80">
+                Grow with confidence! 🌟
               </p>
             </div>
-          )}
-
-          <div className="text-center mb-6">
-            <h3 className="text-white text-xl font-bold mb-2">
-              Challenge: {getCurrentChallenge().title}
-            </h3>
-            <p className="text-white/80 mb-4">
-              {getCurrentChallenge().description}
-            </p>
           </div>
-
-          <div className="bg-white/5 rounded-xl p-4 mb-6">
-            <p className="text-white text-lg text-center">
-              {getCurrentChallenge().question}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 gap-4">
-            {getCurrentChallenge().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChallengeChoice(option.id)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-
-          <div className="mt-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-white font-medium">Progress:</span>
-              <span className="text-white">{completedChallenges.length}/{challenges.length}</span>
-            </div>
-            <div className="w-full bg-white/20 rounded-full h-3">
-              <div
-                className="bg-gradient-to-r from-green-400 to-emerald-500 h-3 rounded-full transition-all duration-500"
-                style={{ width: `${(completedChallenges.length / challenges.length) * 100}%` }}
-              ></div>
-            </div>
-          </div>
-
-          {completedChallenges.length > 0 && (
-            <div className="mt-6">
-              <h4 className="text-white font-bold mb-3">Completed Challenges:</h4>
-              <div className="flex flex-wrap gap-2">
-                {challenges.map((challenge, index) => (
-                  <div
-                    key={challenge.id}
-                    className={`px-3 py-2 rounded-full text-sm font-medium ${
-                      completedChallenges.includes(index)
-                        ? 'bg-green-500 text-white'
-                        : 'bg-gray-600 text-gray-300'
-                    }`}
-                  >
-                    {challenge.title}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </GameShell>
   );

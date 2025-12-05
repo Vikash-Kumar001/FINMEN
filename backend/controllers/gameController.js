@@ -1304,8 +1304,8 @@ export const getBatchGameProgress = async (req, res) => {
   const { categoryPrefix } = req.params; // e.g., "finance-kids", "brain-health-teens"
   
   try {
-    // Normalize category prefix: handle "teens" -> "teen" for UVLS games
-    // The frontend sends "uvls-teens" but gameIds are "uvls-teen-1", "uvls-teen-2", etc.
+    // Normalize category prefix: handle "teens" -> "teen" for games
+    // The frontend sends "category-teens" but gameIds are "category-teen-1", "category-teen-2", etc.
     let normalizedPrefix = categoryPrefix;
     if (categoryPrefix.includes('uvls-teens')) {
       normalizedPrefix = categoryPrefix.replace('uvls-teens', 'uvls-teen');
@@ -1313,8 +1313,23 @@ export const getBatchGameProgress = async (req, res) => {
       normalizedPrefix = categoryPrefix.replace('brain-teens', 'brain-teen');
     } else if (categoryPrefix.includes('finance-teens')) {
       normalizedPrefix = categoryPrefix.replace('finance-teens', 'finance-teen');
+    } else if (categoryPrefix.includes('dcos-teens')) {
+      normalizedPrefix = categoryPrefix.replace('dcos-teens', 'dcos-teen');
+    } else if (categoryPrefix.includes('moral-teens')) {
+      normalizedPrefix = categoryPrefix.replace('moral-teens', 'moral-teen');
+    } else if (categoryPrefix.includes('ai-for-all-teens')) {
+      normalizedPrefix = categoryPrefix.replace('ai-for-all-teens', 'ai-for-all-teen');
+    } else if (categoryPrefix.includes('ehe-teens')) {
+      normalizedPrefix = categoryPrefix.replace('ehe-teens', 'ehe-teen');
+    } else if (categoryPrefix.includes('civic-responsibility-teens')) {
+      normalizedPrefix = categoryPrefix.replace('civic-responsibility-teens', 'civic-responsibility-teen');
+    } else if (categoryPrefix.includes('health-male-teens')) {
+      normalizedPrefix = categoryPrefix.replace('health-male-teens', 'health-male-teen');
+    } else if (categoryPrefix.includes('health-female-teens')) {
+      normalizedPrefix = categoryPrefix.replace('health-female-teens', 'health-female-teen');
+    } else if (categoryPrefix.includes('sustainability-teens')) {
+      normalizedPrefix = categoryPrefix.replace('sustainability-teens', 'sustainability-teen');
     }
-    // Add similar normalization for other categories if needed
     
     // Query all progress documents where gameId starts with the category prefix
     // Using regex to match gameIds like "finance-kids-1", "finance-kids-2", etc.

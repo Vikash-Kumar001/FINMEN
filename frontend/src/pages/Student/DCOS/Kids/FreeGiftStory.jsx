@@ -64,17 +64,17 @@ const FreeGiftStory = () => {
         },
         { 
           id: "b", 
-          text: "Tell Parent", 
-          emoji: "👨‍👩‍👧", 
-          description: "Ignore and tell a parent",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Try Once", 
           emoji: "😬", 
           description: "Try it just once",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Tell Parent", 
+          emoji: "👨‍👩‍👧", 
+          description: "Ignore and tell a parent",
+          isCorrect: true
         }
       ]
     },
@@ -84,17 +84,17 @@ const FreeGiftStory = () => {
       options: [
         { 
           id: "a", 
-          text: "Click and Track", 
-          emoji: "🔗", 
-          description: "Click and track",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "Ask Parents First", 
           emoji: "👨‍👩‍👧", 
           description: "Ask your parents before clicking",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Click and Track", 
+          emoji: "🔗", 
+          description: "Click and track",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -118,17 +118,17 @@ const FreeGiftStory = () => {
         },
         { 
           id: "b", 
-          text: "Ignore Link", 
-          emoji: "🚫", 
-          description: "Ignore suspicious links",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Ask Friend", 
           emoji: "🤔", 
           description: "Ask friend if it's real",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore Link", 
+          emoji: "🚫", 
+          description: "Ignore suspicious links",
+          isCorrect: true
         }
       ]
     },
@@ -145,17 +145,17 @@ const FreeGiftStory = () => {
         },
         { 
           id: "b", 
-          text: "Close and Report", 
-          emoji: "🚨", 
-          description: "Close and report it",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Reply to Ask", 
           emoji: "💬", 
           description: "Reply to ask more",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Close and Report", 
+          emoji: "🚨", 
+          description: "Close and report it",
+          isCorrect: true
         }
       ]
     }

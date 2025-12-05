@@ -1,115 +1,162 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const DigitalDetoxSimulation = () => {
   const location = useLocation();
-  const gameId = "dcos-teen-24";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-teen-24");
+  const gameId = gameData?.id || "dcos-teen-24";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
   const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
   const [showResult, setShowResult] = useState(false);
   const [answered, setAnswered] = useState(false);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      title: "Weekend Plan",
-      emoji: "📅",
-      situation: "It's the weekend! What will you do?",
+      text: "It's the weekend! What will you do?",
       options: [
-        { id: 1, text: "Screen binge - watch shows all day", emoji: "📺", isCorrect: false },
-        { id: 2, text: "Go to the park and play sports", emoji: "🏞️", isCorrect: true },
-        { id: 3, text: "Read a book offline", emoji: "📚", isCorrect: true }
+        { 
+          id: "park", 
+          text: "Go to the park and play sports", 
+          emoji: "🏞️", 
+          description: "Spend time outdoors and active",
+          isCorrect: true
+        },
+        { 
+          id: "screen-binge", 
+          text: "Screen binge - watch shows all day", 
+          emoji: "📺", 
+          description: "Spend all day watching screens",
+          isCorrect: false
+        },
+        { 
+          id: "book", 
+          text: "Read a book offline", 
+          emoji: "📚", 
+          description: "Read without screens",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 2,
-      title: "Free Time Choice",
-      emoji: "⏰",
-      situation: "You have 2 hours of free time. What's your choice?",
+      text: "You have 2 hours of free time. What's your choice?",
       options: [
-        { id: 1, text: "Scroll social media", emoji: "📱", isCorrect: false },
-        { id: 2, text: "Go for a walk outside", emoji: "🚶", isCorrect: true },
-        { id: 3, text: "Do a hobby offline", emoji: "🎨", isCorrect: true }
+        { 
+          id: "scroll", 
+          text: "Scroll social media", 
+          emoji: "📱", 
+          description: "Spend time on social media",
+          isCorrect: false
+        },
+        { 
+          id: "walk", 
+          text: "Go for a walk outside", 
+          emoji: "🚶", 
+          description: "Take a walk outdoors",
+          isCorrect: true
+        },
+        { 
+          id: "hobby", 
+          text: "Do a hobby offline", 
+          emoji: "🎨", 
+          description: "Engage in offline activities",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 3,
-      title: "Evening Activity",
-      emoji: "🌆",
-      situation: "It's evening. How will you spend your time?",
+      text: "It's evening. How will you spend your time?",
       options: [
-        { id: 1, text: "Play video games for hours", emoji: "🎮", isCorrect: false },
-        { id: 2, text: "Spend time with family", emoji: "👨‍👩‍👧", isCorrect: true },
-        { id: 3, text: "Read or do crafts", emoji: "✂️", isCorrect: true }
+        { 
+          id: "games", 
+          text: "Play video games for hours", 
+          emoji: "🎮", 
+          description: "Spend hours gaming",
+          isCorrect: false
+        },
+        { 
+          id: "crafts", 
+          text: "Read or do crafts", 
+          emoji: "✂️", 
+          description: "Creative offline activities",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 4,
-      title: "Break Time",
-      emoji: "☕",
-      situation: "You have a break from studying. What do you do?",
+      text: "You have a break from studying. What do you do?",
       options: [
-        { id: 1, text: "Check phone and scroll", emoji: "📱", isCorrect: false },
-        { id: 2, text: "Take a walk or stretch", emoji: "🧘", isCorrect: true },
-        { id: 3, text: "Have a snack and relax", emoji: "🍎", isCorrect: true }
+        { 
+          id: "check-phone", 
+          text: "Check phone and scroll", 
+          emoji: "📱", 
+          description: "Use your phone",
+          isCorrect: false
+        },
+        { 
+          id: "walk-stretch", 
+          text: "Take a walk or stretch", 
+          emoji: "🧘", 
+          description: "Physical activity break",
+          isCorrect: true
+        },
+        { 
+          id: "snack", 
+          text: "Have a snack and relax", 
+          emoji: "🍎", 
+          description: "Take a healthy break",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 5,
-      title: "Holiday Plan",
-      emoji: "🎉",
-      situation: "It's a holiday! What's your plan?",
+      text: "It's a holiday! What's your plan?",
       options: [
-        { id: 1, text: "Binge watch shows", emoji: "📺", isCorrect: false },
-        { id: 2, text: "Go on an outdoor adventure", emoji: "🏔️", isCorrect: true },
-        { id: 3, text: "Read books and relax", emoji: "📖", isCorrect: true }
+        { 
+          id: "binge-watch", 
+          text: "Binge watch shows", 
+          emoji: "📺", 
+          description: "Watch shows all day",
+          isCorrect: false
+        },
+        { 
+          id: "adventure", 
+          text: "Go on an outdoor adventure", 
+          emoji: "🏔️", 
+          description: "Explore outdoors",
+          isCorrect: true
+        },
+        { 
+          id: "read-relax", 
+          text: "Read books and relax", 
+          emoji: "📖", 
+          description: "Enjoy offline reading",
+          isCorrect: true
+        }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
+  const handleChoice = (isCorrect) => {
     if (answered) return;
     
-    setSelectedChoice(optionId);
     setAnswered(true);
     resetFeedback();
-    
-    const currentScenarioData = scenarios[currentScenario];
-    const selectedOption = currentScenarioData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect || false;
     
     if (isCorrect) {
       setScore(prev => prev + 1);
@@ -118,90 +165,111 @@ const DigitalDetoxSimulation = () => {
       showCorrectAnswerFeedback(0, false);
     }
     
+    const isLastQuestion = currentQuestion === questions.length - 1;
+    
     setTimeout(() => {
-      if (currentScenario < scenarios.length - 1) {
-        setCurrentScenario(prev => prev + 1);
-        setSelectedChoice(null);
-        setAnswered(false);
-      } else {
+      if (isLastQuestion) {
         setShowResult(true);
+      } else {
+        setCurrentQuestion(prev => prev + 1);
+        setAnswered(false);
       }
     }, 500);
   };
 
-  const currentScenarioData = scenarios[currentScenario];
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setScore(0);
+    setAnswered(false);
+    resetFeedback();
+  };
 
   return (
     <GameShell
       title="Digital Detox Simulation"
       score={score}
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
+      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Story Complete!"}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      maxScore={scenarios.length}
-      showConfetti={showResult && score === scenarios.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 text-center">{currentScenarioData.title}</h2>
-            <div className="bg-green-500/20 border-2 border-green-400 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg leading-relaxed text-center">{currentScenarioData.situation}</p>
-            </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">Choose your activity:</h3>
-
-            <div className="space-y-3">
-              {currentScenarioData.options.map(option => (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all text-left ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect && selectedChoice === option.id
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : selectedChoice === option.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-semibold text-base md:text-lg">{option.text}</div>
-                  </div>
-                </button>
-              ))}
+      <div className="space-y-8">
+        {!showResult && questions[currentQuestion] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {questions[currentQuestion].text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {questions[currentQuestion].options.map((option) => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.isCorrect)}
+                    disabled={answered}
+                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    <div className="flex flex-col items-center justify-center text-center">
+                      <div className="text-3xl mb-3">{option.emoji}</div>
+                      <h3 className="font-bold text-lg mb-2">{option.text}</h3>
+                      <p className="text-white/90 text-sm">{option.description}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🌳</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === scenarios.length ? "Perfect Digital Detox Master! 🎉" : `You got ${score} out of ${scenarios.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === scenarios.length 
-                ? "Excellent! Choosing offline activities like parks, books, and outdoor adventures over screen binges is healthy! Balance screen time with real-world activities for better wellbeing!"
-                : "Great job! Keep learning to balance screen time!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Choose offline activities over screen binges for better health and wellbeing!
-              </p>
-            </div>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct!
+                  You understand the importance of digital detox!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Balance screen time with offline activities like outdoor time, reading, hobbies, and spending time with family!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {questions.length} questions correct.
+                  Remember to balance screen time with offline activities!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Choose outdoor activities, reading, hobbies, or family time instead of excessive screen time!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

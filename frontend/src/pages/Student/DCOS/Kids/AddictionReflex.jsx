@@ -34,8 +34,8 @@ const AddictionReflex = () => {
       question: "Autoplay starts another cartoon episode! What should you do?",
       correctAnswer: "Stop and take a break",
       options: [
-        { text: "Stop and take a break", isCorrect: true, emoji: "🖐️" },
         { text: "Continue watching", isCorrect: false, emoji: "▶️" },
+        { text: "Stop and take a break", isCorrect: true, emoji: "🖐️" },
         { text: "Watch just one more", isCorrect: false, emoji: "📺" },
         { text: "Turn off autoplay later", isCorrect: false, emoji: "⏰" }
       ]
@@ -45,9 +45,9 @@ const AddictionReflex = () => {
       question: "You get a notification from your favorite game! What should you do?",
       correctAnswer: "Stop and take a break",
       options: [
-        { text: "Stop and take a break", isCorrect: true, emoji: "🖐️" },
         { text: "Continue playing", isCorrect: false, emoji: "▶️" },
         { text: "Play for 5 more minutes", isCorrect: false, emoji: "⏱️" },
+        { text: "Stop and take a break", isCorrect: true, emoji: "🖐️" },
         { text: "Ignore the notification", isCorrect: false, emoji: "😴" }
       ]
     },
@@ -67,10 +67,10 @@ const AddictionReflex = () => {
       question: "Next video countdown begins in 5 seconds... What should you do?",
       correctAnswer: "Stop and take a break",
       options: [
-        { text: "Stop and take a break", isCorrect: true, emoji: "🖐️" },
         { text: "Continue watching", isCorrect: false, emoji: "▶️" },
         { text: "Watch just this one", isCorrect: false, emoji: "📺" },
-        { text: "Let it autoplay", isCorrect: false, emoji: "⏭️" }
+        { text: "Let it autoplay", isCorrect: false, emoji: "⏭️" },
+        { text: "Stop and take a break", isCorrect: true, emoji: "🖐️" }
       ]
     },
     {
@@ -78,8 +78,8 @@ const AddictionReflex = () => {
       question: "Homework time reminder pops up! What should you do?",
       correctAnswer: "Do your homework",
       options: [
-        { text: "Do your homework", isCorrect: true, emoji: "📚" },
         { text: "Ignore the reminder", isCorrect: false, emoji: "😴" },
+        { text: "Do your homework", isCorrect: true, emoji: "📚" },
         { text: "Do it later", isCorrect: false, emoji: "⏰" },
         { text: "Keep playing games", isCorrect: false, emoji: "🎮" }
       ]

@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
@@ -7,29 +7,36 @@ import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/te
 
 const PasswordSharingStory = () => {
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-teen-1";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
+  
+  // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
     if (location.state?.nextGamePath) {
+      console.log('✅ Next game from location.state:', { nextGamePath: location.state.nextGamePath, nextGameId: location.state.nextGameId });
       return {
         nextGamePath: location.state.nextGamePath,
         nextGameId: location.state.nextGameId || null
       };
     }
+    
+    // Fallback: find next game from game data
     try {
       const games = getDcosTeenGames({});
       const currentGame = games.find(g => g.id === gameId);
+      console.log('🔍 Current game:', { gameId, currentGame: currentGame ? { id: currentGame.id, index: currentGame.index, title: currentGame.title } : null });
+      
       if (currentGame && currentGame.index !== undefined) {
         const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
+        console.log('🔍 Next game found:', nextGame ? { id: nextGame.id, index: nextGame.index, title: nextGame.title, path: nextGame.path } : null);
         return {
           nextGamePath: nextGame ? nextGame.path : null,
           nextGameId: nextGame ? nextGame.id : null
@@ -38,167 +45,240 @@ const PasswordSharingStory = () => {
     } catch (error) {
       console.warn("Error finding next game:", error);
     }
+    
+    console.warn('⚠️ No next game found for gameId:', gameId);
     return { nextGamePath: null, nextGameId: null };
   }, [location.state, gameId]);
+  const [score, setScore] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      title: "Password Request",
-      emoji: "🔐",
-      situation: "Your best friend asks: 'Can I borrow your password to check something on your account? I promise I'll just look quickly and won't change anything.'",
+      text: "Your best friend asks: 'Can I borrow your password to check something on your account? I promise I'll just look quickly and won't change anything.'",
       options: [
-        { id: 1, text: "Share it - they're my best friend", emoji: "🤝", isCorrect: false },
-        { id: 2, text: "Never share passwords with anyone", emoji: "🛡️", isCorrect: true },
-        { id: 3, text: "Share it but change it later", emoji: "🔄", isCorrect: false }
+        { 
+          id: "never", 
+          text: "Never share passwords with anyone", 
+          emoji: "🛡️", 
+          description: "Keep your password private, even from close friends",
+          isCorrect: true
+        },
+        { 
+          id: "share", 
+          text: "Share it - they're my best friend", 
+          emoji: "🤝", 
+          description: "Give them your password since you trust them",
+          isCorrect: false
+        },
+        { 
+          id: "share-later", 
+          text: "Share it but change it later", 
+          emoji: "🔄", 
+          description: "Share now but change the password afterward",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      title: "Sibling Request",
-      emoji: "👨‍👩‍👧",
-      situation: "Your sibling says: 'I need to use your account for a game. Just tell me your password, I won't mess with anything.'",
+      text: "Your sibling says: 'I need to use your account for a game. Just tell me your password, I won't mess with anything.'",
       options: [
-        { id: 1, text: "Share it - they're family", emoji: "👨‍👩‍👧", isCorrect: false },
-        { id: 2, text: "Never share passwords, even with family", emoji: "🛡️", isCorrect: true },
-        { id: 3, text: "Share it temporarily", emoji: "⏰", isCorrect: false }
+        { 
+          id: "share-family", 
+          text: "Share it - they're family", 
+          emoji: "👨‍👩‍👧", 
+          description: "Share your password with family members",
+          isCorrect: false
+        },
+        { 
+          id: "never-family", 
+          text: "Never share passwords, even with family", 
+          emoji: "🛡️", 
+          description: "Keep passwords private from everyone, including family",
+          isCorrect: true
+        },
+        { 
+          id: "temporary", 
+          text: "Share it temporarily", 
+          emoji: "⏰", 
+          description: "Share for a short time then change it",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      title: "Classmate Help",
-      emoji: "👥",
-      situation: "A classmate asks: 'Can I use your account to submit my assignment? I'll just log in once.'",
+      text: "A classmate asks: 'Can I use your account to submit my assignment? I'll just log in once.'",
       options: [
-        { id: 1, text: "Share it to help them", emoji: "🤝", isCorrect: false },
-        { id: 2, text: "Never share passwords with anyone", emoji: "🛡️", isCorrect: true },
-        { id: 3, text: "Share it but monitor the account", emoji: "👀", isCorrect: false }
+        { 
+          id: "help", 
+          text: "Share it to help them", 
+          emoji: "🤝", 
+          description: "Share your password to help a classmate",
+          isCorrect: false
+        },
+        { 
+          id: "monitor", 
+          text: "Share it but monitor the account", 
+          emoji: "👀", 
+          description: "Share but keep an eye on account activity",
+          isCorrect: false
+        },
+        { 
+          id: "never-classmate", 
+          text: "Never share passwords with anyone", 
+          emoji: "🛡️", 
+          description: "Keep your password private from everyone",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 4,
-      title: "Online Friend",
-      emoji: "💬",
-      situation: "Someone you've chatted with online asks: 'Can I access your account to help you with something?'",
+      text: "Someone you've chatted with online asks: 'Can I access your account to help you with something?'",
       options: [
-        { id: 1, text: "Share it - they seem trustworthy", emoji: "😊", isCorrect: false },
-        { id: 2, text: "Never share passwords with anyone", emoji: "🛡️", isCorrect: true },
-        { id: 3, text: "Share it but change it immediately after", emoji: "🔄", isCorrect: false }
+        { 
+          id: "never-online", 
+          text: "Never share passwords with anyone", 
+          emoji: "🛡️", 
+          description: "Never share passwords, especially with online contacts",
+          isCorrect: true
+        },
+        { 
+          id: "trust", 
+          text: "Share it - they seem trustworthy", 
+          emoji: "😊", 
+          description: "Share your password with someone online you trust",
+          isCorrect: false
+        },
+        { 
+          id: "change-after", 
+          text: "Share it but change it immediately after", 
+          emoji: "🔄", 
+          description: "Share now but change password right away",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      title: "Tech Support Scam",
-      emoji: "📞",
-      situation: "Someone claiming to be tech support calls: 'We need your password to fix your account. Can you share it?'",
+      text: "Someone claiming to be tech support calls: 'We need your password to fix your account. Can you share it?'",
       options: [
-        { id: 1, text: "Share it - they're tech support", emoji: "🔧", isCorrect: false },
-        { id: 2, text: "Never share passwords - this is a scam", emoji: "🛡️", isCorrect: true },
-        { id: 3, text: "Share it but verify first", emoji: "🤔", isCorrect: false }
+        { 
+          id: "tech-support", 
+          text: "Share it - they're tech support", 
+          emoji: "🔧", 
+          description: "Share your password with tech support",
+          isCorrect: false
+        },
+        { 
+          id: "scam", 
+          text: "Never share passwords - this is a scam", 
+          emoji: "🛡️", 
+          description: "This is a scam - never share passwords with anyone",
+          isCorrect: true
+        },
+        { 
+          id: "verify-first", 
+          text: "Share it but verify first", 
+          emoji: "🤔", 
+          description: "Verify their identity before sharing",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (answered) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setAnswered(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    const currentScenarioData = scenarios[currentScenario];
-    const selectedOption = currentScenarioData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect || false;
+    // If the choice is correct, add score and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     
     if (isCorrect) {
+      // Use functional state update to avoid stale closure issues
       setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
     
+    // Move to next question or show results
     setTimeout(() => {
-      if (currentScenario < scenarios.length - 1) {
-        setCurrentScenario(prev => prev + 1);
-        setAnswered(false);
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
       } else {
+        // Calculate final score from choices array to ensure accuracy
+        const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+        console.log('🎮 Game completed!', { gameId, finalScore: correctAnswers, nextGamePath, nextGameId });
         setShowResult(true);
       }
-    }, 500);
+    }, isCorrect ? 1000 : 800);
   };
 
-  const currentScenarioData = scenarios[currentScenario];
+  // Calculate finalScore from choices array to ensure accuracy
+  const finalScore = choices.filter(choice => choice.isCorrect).length;
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Password Sharing Story"
-      score={score}
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
+      score={finalScore}
+      subtitle={showResult ? "Story Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      maxScore={scenarios.length}
-      showConfetti={showResult && score === scenarios.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      maxScore={questions.length}
+      showConfetti={showResult && finalScore === questions.length}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+      <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 text-center">{currentScenarioData.title}</h2>
-            <div className="bg-blue-500/20 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg leading-relaxed">{currentScenarioData.situation}</p>
-            </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">What should you do?</h3>
-
-            <div className="space-y-3">
-              {currentScenarioData.options.map(option => (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all text-left ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-semibold text-base md:text-lg">{option.text}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🛡️</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === scenarios.length ? "Perfect Password Security! 🎉" : `You got ${score} out of ${scenarios.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === scenarios.length 
-                ? "Excellent! Never share your password with anyone - not even your best friend. Passwords are personal security keys. Even with good intentions, sharing them puts your account, data, and privacy at risk."
-                : "Great job! Keep learning to protect your passwords!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Use secure password managers if you need to share access to something.
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

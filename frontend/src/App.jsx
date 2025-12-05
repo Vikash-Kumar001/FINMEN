@@ -443,6 +443,7 @@ const App = () => {
     location.pathname.startsWith("/student/health-male/teen") ||
     location.pathname.startsWith("/student/dcos/kids/") ||
     location.pathname.startsWith("/student/dcos/teen/") ||
+    location.pathname.startsWith("/student/dcos/teens/") ||
     location.pathname.startsWith("/student/moral-values/kids/") ||
     location.pathname.startsWith("/student/moral-values/teen/") ||
     location.pathname.startsWith("/student/ai-for-all/kids/") ||

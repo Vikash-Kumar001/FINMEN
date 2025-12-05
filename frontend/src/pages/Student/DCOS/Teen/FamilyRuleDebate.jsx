@@ -1,220 +1,245 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const FamilyRuleDebate = () => {
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-teen-27";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentDebate, setCurrentDebate] = useState(0);
-  const [selectedPosition, setSelectedPosition] = useState(null);
-  const [argument, setArgument] = useState("");
-  const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const debates = [
+  const questions = [
     {
       id: 1,
-      topic: "Are parents right to set screen limits?",
-      emoji: "💭",
-      positions: [
-        { id: 1, position: "No - I should decide", emoji: "😤", isCorrect: false },
-        { id: 2, position: "Yes - limits are healthy", emoji: "✅", isCorrect: true }
+      text: "Are parents right to set screen limits?",
+      options: [
+        { 
+          id: "no-decide", 
+          text: "No - I should decide", 
+          emoji: "😤", 
+          description: "Teens should decide their own screen time",
+          isCorrect: false
+        },
+        { 
+          id: "yes-healthy", 
+          text: "Yes - limits are healthy", 
+          emoji: "✅", 
+          description: "Screen limits help maintain health and balance",
+          isCorrect: true
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe - depends on the rules", 
+          emoji: "🤔", 
+          description: "It depends on how strict the rules are",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      topic: "Should there be screen-free times?",
-      emoji: "⏰",
-      positions: [
-        { id: 1, position: "No - I need my phone always", emoji: "📱", isCorrect: false },
-        { id: 2, position: "Yes - like during meals and before bed", emoji: "✅", isCorrect: true }
+      text: "Should there be screen-free times?",
+      options: [
+        { 
+          id: "no-always", 
+          text: "No - I need my phone always", 
+          emoji: "📱", 
+          description: "I need access to my phone at all times",
+          isCorrect: false
+        },
+        { 
+          id: "yes-meals-bed", 
+          text: "Yes - like during meals and before bed", 
+          emoji: "✅", 
+          description: "Screen-free times during meals and before bed are healthy",
+          isCorrect: true
+        },
+        { 
+          id: "sometimes", 
+          text: "Sometimes - only when parents say", 
+          emoji: "🤷", 
+          description: "Only when parents specifically ask",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      topic: "Is it fair for parents to monitor screen time?",
-      emoji: "👨‍👩‍👧",
-      positions: [
-        { id: 1, position: "No - it's my privacy", emoji: "🔒", isCorrect: false },
-        { id: 2, position: "Yes - they care about my wellbeing", emoji: "✅", isCorrect: true }
+      text: "Is it fair for parents to monitor screen time?",
+      options: [
+        { 
+          id: "no-privacy", 
+          text: "No - it's my privacy", 
+          emoji: "🔒", 
+          description: "Monitoring screen time violates privacy",
+          isCorrect: false
+        },
+        { 
+          id: "yes-care", 
+          text: "Yes - they care about my wellbeing", 
+          emoji: "✅", 
+          description: "Parents monitor because they care about your health and safety",
+          isCorrect: true
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe - depends on the method", 
+          emoji: "🤔", 
+          description: "It depends on how they monitor",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
-      topic: "Should devices be off during homework?",
-      emoji: "📚",
-      positions: [
-        { id: 1, position: "No - I can multitask", emoji: "😐", isCorrect: false },
-        { id: 2, position: "Yes - it helps focus", emoji: "✅", isCorrect: true }
+      text: "Should devices be off during homework?",
+      options: [
+        { 
+          id: "no-multitask", 
+          text: "No - I can multitask", 
+          emoji: "😐", 
+          description: "I can do homework and use devices at the same time",
+          isCorrect: false
+        },
+        { 
+          id: "yes-focus", 
+          text: "Yes - it helps focus", 
+          emoji: "✅", 
+          description: "Turning off devices helps you focus and learn better",
+          isCorrect: true
+        },
+        { 
+          id: "sometimes", 
+          text: "Sometimes - for hard subjects", 
+          emoji: "📚", 
+          description: "Only for difficult subjects",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      topic: "Are family rules about screens helpful?",
-      emoji: "🏠",
-      positions: [
-        { id: 1, position: "No - they're too strict", emoji: "😑", isCorrect: false },
-        { id: 2, position: "Yes - they teach balance", emoji: "✅", isCorrect: true }
+      text: "Are family rules about screens helpful?",
+      options: [
+        { 
+          id: "no-strict", 
+          text: "No - they're too strict", 
+          emoji: "😑", 
+          description: "Family screen rules are too restrictive",
+          isCorrect: false
+        },
+        { 
+          id: "yes-balance", 
+          text: "Yes - they teach balance", 
+          emoji: "✅", 
+          description: "Family rules teach healthy balance and responsibility",
+          isCorrect: true
+        },
+        { 
+          id: "maybe", 
+          text: "Maybe - if they're reasonable", 
+          emoji: "🤷", 
+          description: "Only if the rules are reasonable",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleSubmit = () => {
-    if (answered) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    if (!selectedPosition || argument.trim().length < 20) return;
+    setChoices(newChoices);
     
-    setAnswered(true);
-    resetFeedback();
-    
-    const currentDebateData = debates[currentDebate];
-    const selectedPos = currentDebateData.positions.find(p => p.id === selectedPosition);
-    const isCorrect = selectedPos?.isCorrect || false;
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentDebate < debates.length - 1) {
-        setCurrentDebate(prev => prev + 1);
-        setSelectedPosition(null);
-        setArgument("");
-        setAnswered(false);
-      } else {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
         setShowResult(true);
-      }
-    }, 500);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const currentDebateData = debates[currentDebate];
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
-      title="Family Rule Debate"
-      score={score}
-      subtitle={!showResult ? `Debate ${currentDebate + 1} of ${debates.length}` : "Game Complete!"}
+      title="Debate: Family Rules"
+      score={coins}
+      subtitle={showResult ? "Debate Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
       showGameOver={showResult}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={debates.length}
-      currentLevel={currentDebate + 1}
-      maxScore={debates.length}
-      showConfetti={showResult && score === debates.length}
+      totalLevels={5}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore === 5}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
+      maxScore={5}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+      <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl mb-4 text-center">{currentDebateData.emoji}</div>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 text-center">Debate Topic</h2>
-            <div className="bg-blue-500/20 rounded-lg p-4 mb-6">
-              <p className="text-white text-lg md:text-xl font-semibold text-center">{currentDebateData.topic}</p>
-            </div>
-
-            <h3 className="text-white font-bold mb-4">1. Choose Your Position</h3>
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              {currentDebateData.positions.map(pos => (
-                <button
-                  key={pos.id}
-                  onClick={() => !answered && setSelectedPosition(pos.id)}
-                  disabled={answered}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    selectedPosition === pos.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : answered && pos.isCorrect
-                      ? 'bg-green-500/50 border-green-400'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">{pos.emoji}</div>
-                  <div className="text-white font-semibold text-xs md:text-sm">{pos.position}</div>
-                </button>
-              ))}
-            </div>
-
-            <h3 className="text-white font-bold mb-2">2. Build Your Argument (min 20 chars)</h3>
-            <textarea
-              value={argument}
-              onChange={(e) => !answered && setArgument(e.target.value)}
-              disabled={answered}
-              placeholder="Provide evidence and reasoning for your position..."
-              className="w-full h-24 bg-white/10 border-2 border-white/30 rounded-xl p-3 text-white placeholder-white/50 focus:outline-none focus:border-purple-400 resize-none mb-4"
-              maxLength={200}
-            />
-            <div className="text-white/50 text-sm mb-4 text-right">{argument.length}/200</div>
-
-            <button
-              onClick={handleSubmit}
-              disabled={!selectedPosition || argument.trim().length < 20 || answered}
-              className={`w-full py-3 rounded-xl font-bold text-white transition ${
-                selectedPosition && argument.trim().length >= 20 && !answered
-                  ? 'bg-gradient-to-r from-green-500 to-blue-500 hover:opacity-90'
-                  : 'bg-gray-500/50 cursor-not-allowed'
-              }`}
-            >
-              Submit Debate
-            </button>
-          </div>
-        ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🏠</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === debates.length ? "Perfect Understanding! 🎉" : `You got ${score} out of ${debates.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === debates.length 
-                ? "Excellent! Parents set screen limits because they care about your health, sleep, and wellbeing. Screen limits help you maintain balance, focus on important tasks, and develop healthy habits. Family rules teach responsibility!"
-                : "Great job! Keep learning about healthy screen time!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Family screen rules are set with love to help you stay healthy and balanced!
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {coins}/{questions.length}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
               </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90 text-sm">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     </GameShell>
   );

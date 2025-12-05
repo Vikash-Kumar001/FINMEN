@@ -1,150 +1,296 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const FactCheckBadge = () => {
   const location = useLocation();
-  const gameId = "dcos-teen-40";
-  const gameData = getGameDataById(gameId);
+  
+  // Get game data from game category folder (source of truth)
+  const gameData = getGameDataById("dcos-teen-40");
+  const gameId = gameData?.id || "dcos-teen-40";
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [currentTask, setCurrentTask] = useState(0);
-  const [showBadge, setShowBadge] = useState(false);
+  const [challenge, setChallenge] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showResult, setShowResult] = useState(false);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
+  const challenges = [
+    {
+      id: 1,
+      title: "Viral Posts",
+      question: "What should you do before sharing a viral post?",
+      options: [
+        { 
+          text: "Verified a viral post before sharing", 
+          emoji: "✅", 
+          isCorrect: true
+        },
+        { 
+          text: "Share immediately without checking", 
+          emoji: "📤", 
+          isCorrect: false
+        },
+        { 
+          text: "Share if it looks interesting", 
+          emoji: "👀", 
+          isCorrect: false
+        },
+        { 
+          text: "Share if many people shared it", 
+          emoji: "👥", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 2,
+      title: "Deepfake Detection",
+      question: "What should you do when you see a suspicious video?",
+      options: [
+        { 
+          text: "Identified a deepfake video", 
+          emoji: "🎥", 
+          isCorrect: true
+        },
+        { 
+          text: "Share it immediately", 
+          emoji: "📤", 
+          isCorrect: false
+        },
+        { 
+          text: "Believe it without checking", 
+          emoji: "😐", 
+          isCorrect: false
+        },
+        { 
+          text: "Ignore it completely", 
+          emoji: "🙈", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      title: "Chain Messages",
+      question: "What should you do with chain messages?",
+      options: [
+        { 
+          text: "Ignored a chain message", 
+          emoji: "🚫", 
+          isCorrect: true
+        },
+        { 
+          text: "Forward it to everyone", 
+          emoji: "📤", 
+          isCorrect: false
+        },
+        { 
+          text: "Share it if it seems urgent", 
+          emoji: "⚠️", 
+          isCorrect: false
+        },
+        { 
+          text: "Share it to be safe", 
+          emoji: "🔒", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      title: "News Sources",
+      question: "How should you verify news?",
+      options: [
+        { 
+          text: "Checked official sources for news", 
+          emoji: "📰", 
+          isCorrect: true
+        },
+        { 
+          text: "Believe social media posts", 
+          emoji: "📱", 
+          isCorrect: false
+        },
+        { 
+          text: "Trust random blogs", 
+          emoji: "🌐", 
+          isCorrect: false
+        },
+        { 
+          text: "Believe everything you read", 
+          emoji: "😐", 
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      title: "Fake News",
+      question: "What should you do when you spot fake news?",
+      options: [
+        { 
+          text: "Spotted and reported fake news", 
+          emoji: "🔍", 
+          isCorrect: true
+        },
+        { 
+          text: "Share it anyway", 
+          emoji: "📤", 
+          isCorrect: false
+        },
+        { 
+          text: "Ignore it", 
+          emoji: "😐", 
+          isCorrect: false
+        },
+        { 
+          text: "Share it to warn others", 
+          emoji: "⚠️", 
+          isCorrect: false
+        }
+      ]
     }
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const factCheckActs = [
-    { id: 1, text: "Verified a viral post before sharing", emoji: "✅" },
-    { id: 2, text: "Identified a deepfake video", emoji: "🎥" },
-    { id: 3, text: "Ignored a chain message", emoji: "🚫" },
-    { id: 4, text: "Checked official sources for news", emoji: "📰" },
-    { id: 5, text: "Spotted and reported fake news", emoji: "🔍" }
   ];
 
-  const handleCompleteTask = () => {
-    if (!completedTasks.includes(factCheckActs[currentTask].id)) {
-      const newCompleted = [...completedTasks, factCheckActs[currentTask].id];
-      setCompletedTasks(newCompleted);
+  const handleAnswer = (isCorrect) => {
+    if (answered) return;
+    
+    setAnswered(true);
+    resetFeedback();
+    
+    if (isCorrect) {
+      setScore(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-      
-      if (newCompleted.length === factCheckActs.length) {
-        setTimeout(() => {
-          setShowBadge(true);
-        }, 500);
-      } else {
-        setTimeout(() => {
-          setCurrentTask(prev => (prev + 1) % factCheckActs.length);
-        }, 500);
-      }
+    } else {
+      showCorrectAnswerFeedback(0, false);
     }
+
+    const isLastChallenge = challenge === challenges.length - 1;
+    
+    setTimeout(() => {
+      if (isLastChallenge) {
+        setShowResult(true);
+      } else {
+        setChallenge(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
+      }
+    }, 2000);
   };
 
-  const currentAct = factCheckActs[currentTask];
-  const isCompleted = completedTasks.includes(currentAct.id);
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setChallenge(0);
+    setScore(0);
+    setAnswered(false);
+    setSelectedAnswer(null);
+    resetFeedback();
+  };
 
   return (
     <GameShell
-      title="Fact-Check Badge"
-      score={completedTasks.length}
-      subtitle={!showBadge ? `Task ${completedTasks.length + 1} of ${factCheckActs.length}` : "Badge Earned!"}
+      title="Badge: Fact-Check Hero"
+      subtitle={!showResult ? `Challenge ${challenge + 1} of ${challenges.length}` : "Badge Complete!"}
+      score={score}
+      currentLevel={challenge + 1}
+      totalLevels={challenges.length}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      maxScore={challenges.length}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showBadge}
-      gameId={gameId}
-      gameType="dcos"
-      totalLevels={factCheckActs.length}
-      currentLevel={completedTasks.length + 1}
-      maxScore={factCheckActs.length}
-      showConfetti={showBadge}
+      showConfetti={showResult && score >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
+      gameId={gameId}
+      gameType="dcos"
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
-        {!showBadge ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-6 text-center">
-              Fact-Checking Acts Progress
-            </h2>
-            
-            <p className="text-white/80 mb-6 text-center">
-              Complete these fact-checking acts to earn your badge!
-            </p>
-
-            <div className="space-y-3 mb-6">
-              {factCheckActs.map(act => (
-                <div
-                  key={act.id}
-                  className={`border-2 rounded-xl p-4 transition-all ${
-                    completedTasks.includes(act.id)
-                      ? 'bg-green-500/30 border-green-400'
-                      : act.id === currentAct.id
-                      ? 'bg-purple-500/30 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/10 border-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="text-3xl">{act.emoji}</div>
-                    <div className="flex-1 text-white font-medium text-sm md:text-base">{act.text}</div>
-                    {completedTasks.includes(act.id) && (
-                      <div className="text-2xl">✅</div>
-                    )}
-                  </div>
-                </div>
-              ))}
+      <div className="space-y-8">
+        {!showResult && challenges[challenge] ? (
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Challenge {challenge + 1}/{challenges.length}</span>
+                <span className="text-yellow-400 font-bold">Score: {score}/{challenges.length}</span>
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-2">{challenges[challenge].title}</h3>
+              <p className="text-white text-lg mb-6">
+                {challenges[challenge].question}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {challenges[challenge].options.map((option, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => {
+                      setSelectedAnswer(idx);
+                      handleAnswer(option.isCorrect);
+                    }}
+                    disabled={answered}
+                    className={`p-6 rounded-2xl text-left transition-all transform ${
+                      answered
+                        ? option.isCorrect
+                          ? "bg-green-500/30 border-4 border-green-400 ring-4 ring-green-400"
+                          : selectedAnswer === idx
+                          ? "bg-red-500/20 border-4 border-red-400 ring-4 ring-red-400"
+                          : "bg-white/5 border-2 border-white/20 opacity-50"
+                        : "bg-white/10 hover:bg-white/20 border-2 border-white/20 hover:border-white/40 hover:scale-105"
+                    } ${answered ? "cursor-not-allowed" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="text-2xl">{option.emoji}</span>
+                      <span className="text-white font-semibold">{option.text}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
-
-            {!isCompleted && (
-              <button
-                onClick={handleCompleteTask}
-                className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white px-6 py-3 rounded-full font-semibold hover:opacity-90 transition"
-              >
-                Mark "{currentAct.text}" as Complete
-              </button>
-            )}
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 text-white rounded-2xl p-6 md:p-8 text-center animate-pulse">
-              <div className="text-7xl md:text-9xl mb-4">🔍</div>
-              <h3 className="text-2xl md:text-4xl font-bold mb-3">Fact-Check Hero!</h3>
-              <p className="text-lg md:text-xl mb-2">You've completed all 5 fact-checking acts!</p>
-              <p className="text-white/90 text-sm md:text-base mt-4">
-                You're helping stop the spread of fake news! 🌟
-              </p>
-              <p className="text-white/80 text-xs md:text-sm mt-3">
-                Keep verifying information and sharing the truth!
-              </p>
-            </div>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20 text-center">
+            {score >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🏆</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Fact-Check Hero Badge Earned!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} challenges correct!
+                  You're a true Fact-Check Hero!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{score} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  Lesson: Always verify information before sharing, check official sources, and report fake news to stop misinformation!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">💪</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {score} out of {challenges.length} challenges correct.
+                  Practice makes perfect with fact-checking!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Tip: Verify before sharing, check official sources, ignore chain messages, identify deepfakes, and report fake news!
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

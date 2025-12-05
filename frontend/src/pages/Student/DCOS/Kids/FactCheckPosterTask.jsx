@@ -30,17 +30,17 @@ const FactCheckPosterTask = () => {
     {
       question: 'Which poster would best show "Check Before You Share"?',
       choices: [
-        { text: "Poster showing fact-checking news before sharing 🔍", correct: true },
         { text: "Poster showing sharing everything without checking 📤", correct: false },
+        { text: "Poster showing fact-checking news before sharing 🔍", correct: true },
         { text: "Poster showing believing all news immediately 📰", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Spread Kindness, Not Hate"?',
       choices: [
-        { text: "Poster showing being kind and positive online ❤️", correct: true },
         { text: "Poster showing being mean online 😠", correct: false },
         { text: "Poster showing ignoring others 🙈", correct: false },
+        { text: "Poster showing being kind and positive online ❤️", correct: true },
       ],
     },
     {
@@ -54,17 +54,17 @@ const FactCheckPosterTask = () => {
     {
       question: 'Which poster would best show "Unplug to Recharge"?',
       choices: [
-        { text: "Poster showing taking breaks from screens 🔋", correct: true },
         { text: "Poster showing using screens all day 📱", correct: false },
+        { text: "Poster showing taking breaks from screens 🔋", correct: true },
         { text: "Poster showing never taking breaks ⏰", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Privacy is Power"?',
       choices: [
-        { text: "Poster showing protecting privacy online 🔐", correct: true },
         { text: "Poster showing sharing everything 📢", correct: false },
         { text: "Poster showing privacy doesn't matter 🚫", correct: false },
+        { text: "Poster showing protecting privacy online 🔐", correct: true },
       ],
     },
   ];

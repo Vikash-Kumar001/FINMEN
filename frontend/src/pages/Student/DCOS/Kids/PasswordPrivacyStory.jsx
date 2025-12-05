@@ -64,17 +64,17 @@ const PasswordPrivacyStory = () => {
         },
         { 
           id: "b", 
-          text: "Create Own Account", 
-          emoji: "🧠", 
-          description: "Create your own account",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Share Once", 
           emoji: "🤫", 
           description: "Share it just this once",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Create Own Account", 
+          emoji: "🧠", 
+          description: "Create your own account",
+          isCorrect: true
         }
       ]
     },
@@ -84,17 +84,17 @@ const PasswordPrivacyStory = () => {
       options: [
         { 
           id: "a", 
-          text: "Tell Them", 
-          emoji: "🏫", 
-          description: "Tell them since it's school work",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "Say No", 
           emoji: "🙅‍♀️", 
           description: "Say no, it's your account",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Tell Them", 
+          emoji: "🏫", 
+          description: "Tell them since it's school work",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -118,17 +118,17 @@ const PasswordPrivacyStory = () => {
         },
         { 
           id: "b", 
-          text: "Help Make Own", 
-          emoji: "✨", 
-          description: "Help them make their own",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Tell Secretly", 
           emoji: "🤐", 
           description: "Tell them your password secretly",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Help Make Own", 
+          emoji: "✨", 
+          description: "Help them make their own",
+          isCorrect: true
         }
       ]
     },
@@ -145,17 +145,17 @@ const PasswordPrivacyStory = () => {
         },
         { 
           id: "b", 
-          text: "Ignore and Report", 
-          emoji: "🚨", 
-          description: "Ignore the message and report",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Ask Friend", 
           emoji: "🤔", 
           description: "Ask your friend if it's safe",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Ignore and Report", 
+          emoji: "🚨", 
+          description: "Ignore the message and report",
+          isCorrect: true
         }
       ]
     }

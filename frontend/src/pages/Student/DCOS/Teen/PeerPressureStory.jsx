@@ -1,202 +1,293 @@
-import React, { useState, useMemo } from "react";
-import { useLocation } from 'react-router-dom';
+import React, { useState } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
 
 const PeerPressureStory = () => {
+  const navigate = useNavigate();
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-teen-12";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentScenario, setCurrentScenario] = useState(0);
-  const [score, setScore] = useState(0);
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
   const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
 
-  const { nextGamePath, nextGameId } = useMemo(() => {
-    if (location.state?.nextGamePath) {
-      return {
-        nextGamePath: location.state.nextGamePath,
-        nextGameId: location.state.nextGameId || null
-      };
-    }
-    try {
-      const games = getDcosTeenGames({});
-      const currentGame = games.find(g => g.id === gameId);
-      if (currentGame && currentGame.index !== undefined) {
-        const nextGame = games.find(g => g.index === currentGame.index + 1 && g.isSpecial && g.path);
-        return {
-          nextGamePath: nextGame ? nextGame.path : null,
-          nextGameId: nextGame ? nextGame.id : null
-        };
-      }
-    } catch (error) {
-      console.warn("Error finding next game:", error);
-    }
-    return { nextGamePath: null, nextGameId: null };
-  }, [location.state, gameId]);
-
-  const scenarios = [
+  const questions = [
     {
       id: 1,
-      title: "Trolling Pressure",
-      emoji: "😈",
-      situation: "Your friends create a group to troll and make fun of a classmate online. They say: \"Come on, join us! Everyone's doing it. It's just for fun!\"",
+      text: "Your friends create a group to troll and make fun of a classmate online. They say: \"Come on, join us! Everyone's doing it. It's just for fun!\"",
       options: [
-        { id: 1, text: "Join them to fit in", emoji: "😞", isCorrect: false },
-        { id: 2, text: "Refuse and stand up against trolling", emoji: "🛡️", isCorrect: true },
-        { id: 3, text: "Watch but don't participate", emoji: "👀", isCorrect: false }
+        { 
+          id: "refuse", 
+          text: "Refuse and stand up against trolling", 
+          emoji: "🛡️", 
+          description: "Say no and speak out against cyberbullying",
+          isCorrect: true
+        },
+        { 
+          id: "join", 
+          text: "Join them to fit in", 
+          emoji: "😞", 
+          description: "Participate in trolling to be part of the group",
+          isCorrect: false
+        },
+        { 
+          id: "watch", 
+          text: "Watch but don't participate", 
+          emoji: "👀", 
+          description: "Observe but don't actively join in",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
-      title: "Gossip Pressure",
-      emoji: "💬",
-      situation: "Your friends want you to spread a rumor about someone. They say: \"It's just gossip, everyone does it!\"",
+      text: "Your friends want you to spread a rumor about someone. They say: \"It's just gossip, everyone does it!\"",
       options: [
-        { id: 1, text: "Spread the rumor to fit in", emoji: "😞", isCorrect: false },
-        { id: 2, text: "Refuse and stop the rumor", emoji: "🛡️", isCorrect: true },
-        { id: 3, text: "Listen but don't share", emoji: "👂", isCorrect: false }
+        { 
+          id: "spread", 
+          text: "Spread the rumor to fit in", 
+          emoji: "😞", 
+          description: "Share the rumor to stay with the group",
+          isCorrect: false
+        },
+        { 
+          id: "stop", 
+          text: "Refuse and stop the rumor", 
+          emoji: "🛡️", 
+          description: "Refuse to spread it and try to stop it",
+          isCorrect: true
+        },
+        { 
+          id: "listen", 
+          text: "Listen but don't share", 
+          emoji: "👂", 
+          description: "Hear it but don't pass it on",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
-      title: "Hate Comment Pressure",
-      emoji: "💔",
-      situation: "Your group wants you to post mean comments about someone. They say: \"Come on, it's just a joke!\"",
+      text: "Your group wants you to post mean comments about someone. They say: \"Come on, it's just a joke!\"",
       options: [
-        { id: 1, text: "Post mean comments to fit in", emoji: "😞", isCorrect: false },
-        { id: 2, text: "Refuse and defend the person", emoji: "🛡️", isCorrect: true },
-        { id: 3, text: "Stay silent", emoji: "🤐", isCorrect: false }
+        { 
+          id: "post-mean", 
+          text: "Post mean comments to fit in", 
+          emoji: "😞", 
+          description: "Post hurtful comments to be part of the group",
+          isCorrect: false
+        },
+        { 
+          id: "silent", 
+          text: "Stay silent", 
+          emoji: "🤐", 
+          description: "Don't participate but don't speak up either",
+          isCorrect: false
+        },
+        { 
+          id: "defend", 
+          text: "Refuse and defend the person", 
+          emoji: "🛡️", 
+          description: "Stand up for the person being targeted",
+          isCorrect: true
+        }
       ]
     },
     {
       id: 4,
-      title: "Exclusion Pressure",
-      emoji: "🚫",
-      situation: "Your friends want to exclude someone from a group chat. They say: \"They're annoying, just block them!\"",
+      text: "Your friends want to exclude someone from a group chat. They say: \"They're annoying, just block them!\"",
       options: [
-        { id: 1, text: "Block them to fit in", emoji: "😞", isCorrect: false },
-        { id: 2, text: "Refuse and include everyone", emoji: "🛡️", isCorrect: true },
-        { id: 3, text: "Stay out of it", emoji: "😐", isCorrect: false }
+        { 
+          id: "include", 
+          text: "Refuse and include everyone", 
+          emoji: "🛡️", 
+          description: "Stand up for inclusion and fairness",
+          isCorrect: true
+        },
+        { 
+          id: "block", 
+          text: "Block them to fit in", 
+          emoji: "😞", 
+          description: "Block the person to go along with friends",
+          isCorrect: false
+        },
+        { 
+          id: "neutral", 
+          text: "Stay out of it", 
+          emoji: "😐", 
+          description: "Don't get involved in the situation",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
-      title: "Cyberbully Pressure",
-      emoji: "👥",
-      situation: "Your friends are cyberbullying someone and want you to join. They say: \"Everyone's doing it, just join us!\"",
+      text: "Your friends are cyberbullying someone and want you to join. They say: \"Everyone's doing it, just join us!\"",
       options: [
-        { id: 1, text: "Join them to fit in", emoji: "😞", isCorrect: false },
-        { id: 2, text: "Refuse and report the bullying", emoji: "🛡️", isCorrect: true },
-        { id: 3, text: "Watch from the sidelines", emoji: "👀", isCorrect: false }
+        { 
+          id: "join-bully", 
+          text: "Join them to fit in", 
+          emoji: "😞", 
+          description: "Participate in cyberbullying to be accepted",
+          isCorrect: false
+        },
+        { 
+          id: "report", 
+          text: "Refuse and report the bullying", 
+          emoji: "🛡️", 
+          description: "Say no and report the cyberbullying",
+          isCorrect: true
+        },
+        { 
+          id: "sidelines", 
+          text: "Watch from the sidelines", 
+          emoji: "👀", 
+          description: "Observe but don't actively participate",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleChoice = (optionId) => {
-    if (answered) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setAnswered(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    const currentScenarioData = scenarios[currentScenario];
-    const selectedOption = currentScenarioData.options.find(opt => opt.id === optionId);
-    const isCorrect = selectedOption?.isCorrect || false;
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
-    } else {
-      showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentScenario < scenarios.length - 1) {
-        setCurrentScenario(prev => prev + 1);
-        setAnswered(false);
-      } else {
-        setShowResult(true);
-      }
-    }, 500);
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
+        setCurrentQuestion(prev => prev + 1);
+      }, isCorrect ? 1000 : 0); // Delay if correct to show animation
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setShowResult(true);
+    }
   };
 
-  const currentScenarioData = scenarios[currentScenario];
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const handleNext = () => {
+    navigate("/student/dcos/teen/gossip-chain-simulation");
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
       title="Peer Pressure Story"
-      score={score}
-      subtitle={!showResult ? `Scenario ${currentScenario + 1} of ${scenarios.length}` : "Game Complete!"}
+      score={coins}
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={showResult && finalScore >= 3}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
+      showGameOver={showResult && finalScore >= 3}
       gameId={gameId}
       gameType="dcos"
-      totalLevels={scenarios.length}
-      currentLevel={currentScenario + 1}
-      maxScore={scenarios.length}
-      showConfetti={showResult && score === scenarios.length}
+      totalLevels={questions.length}
+      currentLevel={currentQuestion + 1}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
-      nextGamePath={nextGamePath}
-      nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+      <div className="space-y-8">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-4 text-center">{currentScenarioData.emoji}</div>
-            <h2 className="text-xl md:text-2xl font-bold text-white mb-4 text-center text-red-400">{currentScenarioData.title}</h2>
-            <div className="bg-red-500/20 border-2 border-red-400 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg leading-relaxed">{currentScenarioData.situation}</p>
-            </div>
-
-            <h3 className="text-white font-bold mb-4 text-center">What should you do?</h3>
-
-            <div className="space-y-3">
-              {currentScenarioData.options.map(option => (
-                <button
-                  key={option.id}
-                  onClick={() => handleChoice(option.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all text-left ${
-                    answered && option.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !option.isCorrect
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{option.emoji}</div>
-                    <div className="text-white font-semibold text-base md:text-lg">{option.text}</div>
-                  </div>
-                </button>
-              ))}
+          <div className="space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+              <div className="flex justify-between items-center mb-4">
+                <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-lg mb-6">
+                {getCurrentQuestion().text}
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
+                  >
+                    <div className="text-2xl mb-2">{option.emoji}</div>
+                    <h3 className="font-bold text-xl mb-2">{option.text}</h3>
+                    <p className="text-white/90">{option.description}</p>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">💪</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === scenarios.length ? "Perfect Strong Character! 🎉" : `You got ${score} out of ${scenarios.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === scenarios.length 
-                ? "Perfect! True friends don't pressure you to hurt others. Trolling causes real harm - depression, anxiety, and even self-harm. Stand up for what's right, even if it means standing alone. Real strength is refusing to join cyberbullying!"
-                : "Great job! Keep learning to stand up against peer pressure!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Real strength is refusing to join cyberbullying, even when pressured!
-              </p>
-            </div>
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20 text-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-5xl mb-4">🎉</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Great Job!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You understand how to stand up against peer pressure!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-3 px-6 rounded-full inline-flex items-center gap-2 mb-4">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80">
+                  True friends don't pressure you to hurt others. Stand up for what's right!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-5xl mb-4">😔</div>
+                <h3 className="text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, it's important to stand up against cyberbullying!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-3 px-6 rounded-full font-bold transition-all mb-4"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-sm">
+                  Try to choose the option that refuses to participate in harmful behavior.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

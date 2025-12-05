@@ -45,22 +45,13 @@ const PicturePuzzle = () => {
     { id: 5, name: "Fake News", emoji: "❌", description: "Not real or edited" }
   ];
 
-  // Correct matches
+  // Correct matches (mapped to different positions like PuzzleOfSavingGoals)
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Edited Picture → Fake News
-    { leftId: 2, rightId: 2 }, // Official School Notice → Real News
-    { leftId: 3, rightId: 3 }, // Celebrity with Wings → Fake News
-    { leftId: 4, rightId: 4 }, // School Sports Day → Real News
-    { leftId: 5, rightId: 5 }  // Cows Can Talk → Fake News
-  ];
-
-  // Shuffled right items for display (to split matches across positions)
-  const shuffledRightItems = [
-    rightItems[1], // Real News (id: 2) - position 1
-    rightItems[0], // Fake News (id: 1) - position 2
-    rightItems[4], // Fake News (id: 5) - position 3
-    rightItems[3], // Real News (id: 4) - position 4
-    rightItems[2]  // Fake News (id: 3) - position 5
+    { leftId: 1, rightId: 3 }, // Edited Picture → Fake News (id: 3)
+    { leftId: 2, rightId: 2 }, // Official School Notice → Real News (id: 2)
+    { leftId: 3, rightId: 1 }, // Celebrity with Wings → Fake News (id: 1)
+    { leftId: 4, rightId: 4 }, // School Sports Day → Real News (id: 4)
+    { leftId: 5, rightId: 5 }  // Cows Can Talk → Fake News (id: 5)
   ];
 
   const handleLeftSelect = (item) => {
@@ -212,7 +203,7 @@ const PicturePuzzle = () => {
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-white text-center">News Type</h4>
                   <div className="space-y-3">
-                    {shuffledRightItems.map((item) => {
+                    {rightItems.map((item) => {
                       const isMatched = isRightItemMatched(item.id);
                       const isSelected = selectedRight?.id === item.id;
                       

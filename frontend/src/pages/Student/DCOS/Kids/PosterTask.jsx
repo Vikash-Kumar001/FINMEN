@@ -30,17 +30,17 @@ const PosterTask = () => {
     {
       question: 'Which poster would best show "Don\'t Trust Free Offers"?',
       choices: [
-        { text: "Poster showing avoiding suspicious free gift offers 🚫", correct: true },
         { text: "Poster showing clicking all links 🔗", correct: false },
+        { text: "Poster showing avoiding suspicious free gift offers 🚫", correct: true },
         { text: "Poster showing sharing everything 📤", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Think Before You Click"?',
       choices: [
-        { text: "Poster showing thinking carefully before clicking links 🧠", correct: true },
         { text: "Poster showing clicking fast without thinking ⚡", correct: false },
         { text: "Poster showing trusting all pop-ups 💬", correct: false },
+        { text: "Poster showing thinking carefully before clicking links 🧠", correct: true },
       ],
     },
     {
@@ -54,17 +54,17 @@ const PosterTask = () => {
     {
       question: 'Which poster would best show "Report Fake Links"?',
       choices: [
-        { text: "Poster showing reporting suspicious links to adults 📢", correct: true },
         { text: "Poster showing ignoring fake links 🙈", correct: false },
+        { text: "Poster showing reporting suspicious links to adults 📢", correct: true },
         { text: "Poster showing clicking all links 🖱️", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Stay Smart Online"?',
       choices: [
-        { text: "Poster showing being smart and safe online 💡", correct: true },
         { text: "Poster showing trusting everyone 😊", correct: false },
         { text: "Poster showing sharing personal info 📱", correct: false },
+        { text: "Poster showing being smart and safe online 💡", correct: true },
       ],
     },
   ];

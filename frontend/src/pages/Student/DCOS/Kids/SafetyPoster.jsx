@@ -30,17 +30,17 @@ const SafetyPoster = () => {
     {
       question: 'Which poster would best show "Don\'t Share Your Password"?',
       choices: [
-        { text: "Poster showing password protection and privacy 🔒", correct: true },
         { text: "Poster showing sharing passwords with everyone 📤", correct: false },
+        { text: "Poster showing password protection and privacy 🔒", correct: true },
         { text: "Poster showing passwords don't matter 🚫", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Stranger Danger Online"?',
       choices: [
-        { text: "Poster showing being careful with strangers online ⚠️", correct: true },
         { text: "Poster showing trusting all strangers online 👥", correct: false },
         { text: "Poster showing meeting strangers in person 🤝", correct: false },
+        { text: "Poster showing being careful with strangers online ⚠️", correct: true },
       ],
     },
     {
@@ -54,17 +54,17 @@ const SafetyPoster = () => {
     {
       question: 'Which poster would best show "Ask Parent Before Clicking"?',
       choices: [
-        { text: "Poster showing asking parents before clicking links 👨‍👩‍👧", correct: true },
         { text: "Poster showing clicking on all links 🔗", correct: false },
+        { text: "Poster showing asking parents before clicking links 👨‍👩‍👧", correct: true },
         { text: "Poster showing never asking parents 🙈", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Stay Safe Online"?',
       choices: [
-        { text: "Poster showing always being safe when using the internet 🛡️", correct: true },
         { text: "Poster showing safety doesn't matter ❌", correct: false },
         { text: "Poster showing ignoring safety rules 🚫", correct: false },
+        { text: "Poster showing always being safe when using the internet 🛡️", correct: true },
       ],
     },
   ];

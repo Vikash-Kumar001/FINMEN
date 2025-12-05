@@ -30,17 +30,17 @@ const PosterTask2 = () => {
     {
       question: 'Which poster would best show "Use AI Wisely"?',
       choices: [
-        { text: "Poster showing responsible and wise use of AI 🤖", correct: true },
         { text: "Poster showing using AI for everything ⚡", correct: false },
+        { text: "Poster showing responsible and wise use of AI 🤖", correct: true },
         { text: "Poster showing never using AI 🚫", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Think Before You Click"?',
       choices: [
-        { text: "Poster showing thinking carefully before clicking 🧠", correct: true },
         { text: "Poster showing clicking everything 🖱️", correct: false },
         { text: "Poster showing never clicking ❌", correct: false },
+        { text: "Poster showing thinking carefully before clicking 🧠", correct: true },
       ],
     },
     {
@@ -54,17 +54,17 @@ const PosterTask2 = () => {
     {
       question: 'Which poster would best show "AI is a Tool, Not a Rule"?',
       choices: [
-        { text: "Poster showing AI as a helpful tool 🛠️", correct: true },
         { text: "Poster showing AI making all decisions 🎯", correct: false },
+        { text: "Poster showing AI as a helpful tool 🛠️", correct: true },
         { text: "Poster showing never using tools 🚫", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Be Smart, Not Just Smart Bot"?',
       choices: [
-        { text: "Poster showing human intelligence and smart thinking ⚡", correct: true },
         { text: "Poster showing only using bots 🤖", correct: false },
         { text: "Poster showing never being smart 😴", correct: false },
+        { text: "Poster showing human intelligence and smart thinking ⚡", correct: true },
       ],
     },
   ];

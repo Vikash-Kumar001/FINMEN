@@ -64,17 +64,17 @@ const StrangerRequestStory = () => {
         },
         { 
           id: "b", 
-          text: "Talk About Games", 
-          emoji: "🎮", 
-          description: "Say you only talk about games",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Add as Friend", 
           emoji: "👥", 
           description: "Add them as a friend to chat",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Talk About Games", 
+          emoji: "🎮", 
+          description: "Say you only talk about games",
+          isCorrect: true
         }
       ]
     },
@@ -84,17 +84,17 @@ const StrangerRequestStory = () => {
       options: [
         { 
           id: "a", 
-          text: "Send Selfie", 
-          emoji: "🤳", 
-          description: "Send a cute selfie",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "Say No", 
           emoji: "🛡️", 
           description: "Say 'No, I don't share photos'",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Send Selfie", 
+          emoji: "🤳", 
+          description: "Send a cute selfie",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -118,17 +118,17 @@ const StrangerRequestStory = () => {
         },
         { 
           id: "b", 
-          text: "Say Don't Give", 
-          emoji: "🚫", 
-          description: "Say 'I don't give my number online.'",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Ask Parent", 
           emoji: "👨‍👩‍👧", 
           description: "Ask your parent first",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Say Don't Give", 
+          emoji: "🚫", 
+          description: "Say 'I don't give my number online.'",
+          isCorrect: true
         }
       ]
     },
@@ -145,17 +145,17 @@ const StrangerRequestStory = () => {
         },
         { 
           id: "b", 
-          text: "Refuse and Tell Parent", 
-          emoji: "🧠", 
-          description: "Refuse and tell a parent",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Send to School", 
           emoji: "🎒", 
           description: "Ask them to send it to your school",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Refuse and Tell Parent", 
+          emoji: "🧠", 
+          description: "Refuse and tell a parent",
+          isCorrect: true
         }
       ]
     }

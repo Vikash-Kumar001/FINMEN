@@ -30,17 +30,17 @@ const PosterTask4 = () => {
     {
       question: 'Which poster would best show "Use Tech to Learn"?',
       choices: [
-        { text: "Poster showing using technology for learning and education 📚", correct: true },
         { text: "Poster showing tech is only for games 🎮", correct: false },
+        { text: "Poster showing using technology for learning and education 📚", correct: true },
         { text: "Poster showing not using tech at all 🚫", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Be Smart, Learn Online"?',
       choices: [
-        { text: "Poster showing learning and being smart online 💡", correct: true },
         { text: "Poster showing online is only for fun 😄", correct: false },
         { text: "Poster showing never learning online 🙅", correct: false },
+        { text: "Poster showing learning and being smart online 💡", correct: true },
       ],
     },
     {
@@ -54,17 +54,17 @@ const PosterTask4 = () => {
     {
       question: 'Which poster would best show "Explore the World with Tech"?',
       choices: [
-        { text: "Poster showing exploring and learning with technology 🌍", correct: true },
         { text: "Poster showing staying home only 🏠", correct: false },
+        { text: "Poster showing exploring and learning with technology 🌍", correct: true },
         { text: "Poster showing tech is dangerous ⚠️", correct: false },
       ],
     },
     {
       question: 'Which poster would best show "Learn, Create, Inspire"?',
       choices: [
-        { text: "Poster showing learning, creating, and inspiring with tech 💻", correct: true },
         { text: "Poster showing just watching videos 📺", correct: false },
         { text: "Poster showing not creating anything 🚫", correct: false },
+        { text: "Poster showing learning, creating, and inspiring with tech 💻", correct: true },
       ],
     },
   ];

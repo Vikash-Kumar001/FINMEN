@@ -36,31 +36,26 @@ const PersonalInfoPuzzle = () => {
     { id: 5, name: "Your phone number", emoji: "📱", description: "Contact number" }
   ];
 
-  // Categories (right side)
+  // Privacy categories (right side) - varied and logical options for kids
   const rightItems = [
-    { id: 1, name: "Private Info", emoji: "🔒", description: "Never share online" },
-    { id: 2, name: "Private Info", emoji: "🔒", description: "Never share online" },
-    { id: 3, name: "Private Info", emoji: "🔒", description: "Never share online" },
-    { id: 4, name: "Okay to Share", emoji: "✅", description: "Safe to share" },
-    { id: 5, name: "Private Info", emoji: "🔒", description: "Never share online" }
+    { id: 1, name: "Never Share Online", emoji: "🔒", description: "Keep completely private" },
+    { id: 2, name: "Safe to Share", emoji: "✅", description: "Okay to share publicly" },
+    { id: 3, name: "Keep Private", emoji: "🛡️", description: "Never share with strangers" },
+    { id: 4, name: "Very Private", emoji: "🔐", description: "Keep secret always" },
+    { id: 5, name: "Never Share Online", emoji: "🔒", description: "Keep completely private" }
   ];
 
-  // Correct matches
+  // Correct matches - varied positions for correct answers (no shuffling logic)
+  // Logical matching: Most sensitive items (password) → Very Private, 
+  // Location info (address) → Never Share Online, 
+  // Identity info (name, phone) → Keep Private/Never Share,
+  // Preferences (favorite color) → Safe to Share
   const correctMatches = [
-    { leftId: 1, rightId: 1 }, // Your full name → Private Info
-    { leftId: 2, rightId: 2 }, // Your home address → Private Info
-    { leftId: 3, rightId: 3 }, // Your password → Private Info
-    { leftId: 4, rightId: 4 }, // Your favorite color → Okay to Share
-    { leftId: 5, rightId: 5 }  // Your phone number → Private Info
-  ];
-
-  // Shuffled right items for display (to split matches across positions)
-  const shuffledRightItems = [
-    rightItems[1], // Private Info (id: 2) - position 1
-    rightItems[0], // Private Info (id: 1) - position 2
-    rightItems[4], // Private Info (id: 5) - position 3
-    rightItems[3], // Okay to Share (id: 4) - position 4
-    rightItems[2]  // Private Info (id: 3) - position 5
+    { leftId: 1, rightId: 3 }, // Your full name → Keep Private (position 3) - identity info
+    { leftId: 2, rightId: 1 }, // Your home address → Never Share Online (position 1) - location, very sensitive
+    { leftId: 3, rightId: 4 }, // Your password → Very Private (position 4) - most sensitive, needs strongest protection
+    { leftId: 4, rightId: 2 }, // Your favorite color → Safe to Share (position 2) - harmless preference
+    { leftId: 5, rightId: 5 }  // Your phone number → Never Share Online (position 5) - contact info, very sensitive
   ];
 
   const handleLeftSelect = (item) => {
@@ -212,7 +207,7 @@ const PersonalInfoPuzzle = () => {
                 <div>
                   <h4 className="text-lg font-semibold mb-4 text-white text-center">Privacy Status</h4>
                   <div className="space-y-3">
-                    {shuffledRightItems.map((item) => {
+                    {rightItems.map((item) => {
                       const isMatched = isRightItemMatched(item.id);
                       const isSelected = selectedRight?.id === item.id;
                       

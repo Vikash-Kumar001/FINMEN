@@ -30,17 +30,17 @@ const DigitalFootprintStory = () => {
       options: [
         { 
           id: "a", 
-          text: "Apologize and Delete", 
-          emoji: "🤝", 
-          description: "Apologize and delete the meme",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Ignore It", 
           emoji: "😅", 
           description: "Ignore it—it was just a joke",
           isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Apologize and Delete", 
+          emoji: "🤝", 
+          description: "Apologize and delete the meme",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -57,24 +57,24 @@ const DigitalFootprintStory = () => {
       options: [
         { 
           id: "a", 
-          text: "Learn from Mistake", 
-          emoji: "🧠", 
-          description: "Learn from mistake and be careful next time",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Laugh It Off", 
           emoji: "😂", 
           description: "Laugh it off in class",
           isCorrect: false
         },
         { 
-          id: "c", 
+          id: "b", 
           text: "Blame Someone", 
           emoji: "😬", 
           description: "Blame someone else",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Learn from Mistake", 
+          emoji: "🧠", 
+          description: "Learn from mistake and be careful next time",
+          isCorrect: true
         }
       ]
     },
@@ -111,17 +111,17 @@ const DigitalFootprintStory = () => {
       options: [
         { 
           id: "a", 
-          text: "Remove Post", 
-          emoji: "🚫", 
-          description: "Remove the post and avoid sharing location",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Tag School", 
           emoji: "🏫", 
           description: "Tag your school for fun",
           isCorrect: false
+        },
+        { 
+          id: "b", 
+          text: "Remove Post", 
+          emoji: "🚫", 
+          description: "Remove the post and avoid sharing location",
+          isCorrect: true
         },
         { 
           id: "c", 
@@ -138,24 +138,24 @@ const DigitalFootprintStory = () => {
       options: [
         { 
           id: "a", 
-          text: "Think First", 
-          emoji: "🤔", 
-          description: "Ask yourself if you'd be okay seeing it later",
-          isCorrect: true
-        },
-        { 
-          id: "b", 
           text: "Post Anyway", 
           emoji: "👍", 
           description: "Post it anyway for likes",
           isCorrect: false
         },
         { 
-          id: "c", 
+          id: "b", 
           text: "Tag Random", 
           emoji: "🏷️", 
           description: "Tag random people",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Think First", 
+          emoji: "🤔", 
+          description: "Ask yourself if you'd be okay seeing it later",
+          isCorrect: true
         }
       ]
     }

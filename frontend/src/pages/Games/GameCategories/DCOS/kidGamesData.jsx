@@ -955,8 +955,8 @@ export const getDcosKidsGames = (gameCompletionStatus)=> {
       },
       {
         id: "dcos-kids-67",
-        title: "Poster Task1",
-        description: "Create/select poster: ‘Think Before You Post.’",
+        title: "Poster: Digital Footprint",
+        description: "Create/select poster: 'Think Before You Post.'",
         icon: <PenTool className="w-6 h-6" />,
         difficulty: "Medium",
         duration: "6-8 min",

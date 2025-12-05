@@ -89,6 +89,7 @@ import ScreenLogStory from './ScreenLogStory';
 import SharingRightsSimulation from './SharingRightsSimulation';
 import ShoppingSimulation from './ShoppingSimulation';
 import SleepHealthQuiz from './SleepHealthQuiz';
+import BalanceJournal from './BalanceJournal';
 import SleepHygieneReflex from './SleepHygieneReflex';
 import SocialMediaStory1 from './SocialMediaStory1';
 import StoryOfPositivity from './StoryOfPositivity';
@@ -201,6 +202,7 @@ const teenDcosGames = {
   'sharing-rights-simulation': SharingRightsSimulation,
   'shopping-simulation': ShoppingSimulation,
   'sleep-health-quiz': SleepHealthQuiz,
+  'balance-journal': BalanceJournal,
   'sleep-hygiene-reflex': SleepHygieneReflex,
   'social-media-story1': SocialMediaStory1,
   'story-of-positivity': StoryOfPositivity,

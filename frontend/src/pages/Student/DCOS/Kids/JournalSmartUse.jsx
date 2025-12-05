@@ -5,7 +5,7 @@ import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 import { getGameDataById } from "../../../../utils/getGameData";
 
-const JournalSmartUse = () => {
+const JournalOfSmartUse = () => {
   const location = useLocation();
   
   // Get game data from game category folder (source of truth)
@@ -14,7 +14,7 @@ const JournalSmartUse = () => {
   
   // Ensure gameId is always set correctly
   if (!gameData || !gameData.id) {
-    console.warn("Game data not found for JournalSmartUse, using fallback ID");
+    console.warn("Game data not found for JournalOfSmartUse, using fallback ID");
   }
   
   // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
@@ -174,4 +174,4 @@ const JournalSmartUse = () => {
   );
 };
 
-export default JournalSmartUse;
+export default JournalOfSmartUse;

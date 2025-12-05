@@ -67,17 +67,17 @@ const ProfileQuiz = () => {
         },
         { 
           id: "b", 
-          text: "Anyone on the internet", 
-          emoji: "🌐", 
-          description: "Everyone online can see",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "No one", 
           emoji: "🚫", 
           description: "Nobody can see",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Anyone on the internet", 
+          emoji: "🌐", 
+          description: "Everyone online can see",
+          isCorrect: true
         }
       ]
     },
@@ -87,17 +87,17 @@ const ProfileQuiz = () => {
       options: [
         { 
           id: "a", 
-          text: "Yes, more followers!", 
-          emoji: "📈", 
-          description: "More followers is better",
-          isCorrect: false
-        },
-        { 
-          id: "b", 
           text: "No, only real friends", 
           emoji: "👥", 
           description: "Only accept people you know",
           isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Yes, more followers!", 
+          emoji: "📈", 
+          description: "More followers is better",
+          isCorrect: false
         },
         { 
           id: "c", 
@@ -121,17 +121,17 @@ const ProfileQuiz = () => {
         },
         { 
           id: "b", 
-          text: "Keep it private and strong password", 
-          emoji: "🔒", 
-          description: "Private profile and strong password",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Ignore settings", 
           emoji: "🙈", 
           description: "Don't worry about settings",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Keep it private and strong password", 
+          emoji: "🔒", 
+          description: "Private profile and strong password",
+          isCorrect: true
         }
       ]
     },
@@ -148,17 +148,17 @@ const ProfileQuiz = () => {
         },
         { 
           id: "b", 
-          text: "Report or block them", 
-          emoji: "🚨", 
-          description: "Report suspicious requests",
-          isCorrect: true
-        },
-        { 
-          id: "c", 
           text: "Ask why they need it", 
           emoji: "🤔", 
           description: "Just ask them first",
           isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Report or block them", 
+          emoji: "🚨", 
+          description: "Report suspicious requests",
+          isCorrect: true
         }
       ]
     }

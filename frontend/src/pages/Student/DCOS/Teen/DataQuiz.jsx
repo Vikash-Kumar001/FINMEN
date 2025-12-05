@@ -1,31 +1,33 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
-import GameShell from "../../Finance/GameShell";
-import useGameFeedback from "../../../../hooks/useGameFeedback";
-import { getGameDataById } from "../../../../utils/getGameData";
-import { getDcosTeenGames } from "../../../../pages/Games/GameCategories/DCOS/teenGamesData";
+import GameShell from '../../Finance/GameShell';
+import useGameFeedback from '../../../../hooks/useGameFeedback';
+import { getGameDataById } from '../../../../utils/getGameData';
+import { getDcosTeenGames } from '../../../../pages/Games/GameCategories/DCOS/teenGamesData';
 
 const DataQuiz = () => {
   const location = useLocation();
+  
+  // Get game data from game category folder (source of truth)
   const gameId = "dcos-teen-52";
   const gameData = getGameDataById(gameId);
+  
+  // Get coinsPerLevel, totalCoins, and totalXp from game category data, fallback to location.state, then defaults
   const coinsPerLevel = gameData?.coins || location.state?.coinsPerLevel || 5;
   const totalCoins = gameData?.coins || location.state?.totalCoins || 5;
   const totalXp = gameData?.xp || location.state?.totalXp || 10;
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedChoice, setSelectedChoice] = useState(null);
-  const [score, setScore] = useState(0);
-  const [showResult, setShowResult] = useState(false);
-  const [answered, setAnswered] = useState(false);
-  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
-
+  
+  // Find next game path and ID if not provided in location.state
   const { nextGamePath, nextGameId } = useMemo(() => {
+    // First, try to get from location.state (passed from GameCategoryPage)
     if (location.state?.nextGamePath) {
       return {
         nextGamePath: location.state.nextGamePath,
         nextGameId: location.state.nextGameId || null
       };
     }
+    
+    // Fallback: find next game from game data
     try {
       const games = getDcosTeenGames({});
       const currentGame = games.find(g => g.id === gameId);
@@ -39,163 +41,302 @@ const DataQuiz = () => {
     } catch (error) {
       console.warn("Error finding next game:", error);
     }
+    
     return { nextGamePath: null, nextGameId: null };
   }, [location.state, gameId]);
+  
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } = useGameFeedback();
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [choices, setChoices] = useState([]);
+  const [showResult, setShowResult] = useState(false);
+  const [finalScore, setFinalScore] = useState(0);
 
   const questions = [
     {
       id: 1,
       text: "Which is private information?",
-      emoji: "🔒",
-      choices: [
-        { id: 1, text: "Phone number", emoji: "📱", isCorrect: true },
-        { id: 2, text: "Hobby", emoji: "🎨", isCorrect: false },
-        { id: 3, text: "Favorite color", emoji: "🌈", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Phone number", 
+          emoji: "📱", 
+          description: "Phone numbers are private information that should be kept secure",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Hobby", 
+          emoji: "🎨", 
+          description: "Hobbies are generally safe to share publicly",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Favorite color", 
+          emoji: "🌈", 
+          description: "Favorite colors are generally safe to share publicly",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 2,
       text: "Which should you keep private?",
-      emoji: "🛡️",
-      choices: [
-        { id: 1, text: "Home address", emoji: "🏠", isCorrect: true },
-        { id: 2, text: "Favorite food", emoji: "🍕", isCorrect: false },
-        { id: 3, text: "Favorite movie", emoji: "🎬", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Home address", 
+          emoji: "🏠", 
+          description: "Home addresses are private information that should never be shared publicly",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Favorite food", 
+          emoji: "🍕", 
+          description: "Favorite foods are generally safe to share publicly",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Favorite movie", 
+          emoji: "🎬", 
+          description: "Favorite movies are generally safe to share publicly",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 3,
       text: "Which is sensitive information?",
-      emoji: "⚠️",
-      choices: [
-        { id: 1, text: "Bank account number", emoji: "🏦", isCorrect: true },
-        { id: 2, text: "Favorite sport", emoji: "⚽", isCorrect: false },
-        { id: 3, text: "Favorite music", emoji: "🎵", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Bank account number", 
+          emoji: "🏦", 
+          description: "Bank account numbers are highly sensitive and must be kept private",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Favorite sport", 
+          emoji: "⚽", 
+          description: "Favorite sports are generally safe to share publicly",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Favorite music", 
+          emoji: "🎵", 
+          description: "Favorite music is generally safe to share publicly",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 4,
       text: "Which should not be shared publicly?",
-      emoji: "🚫",
-      choices: [
-        { id: 1, text: "Aadhaar number", emoji: "🆔", isCorrect: true },
-        { id: 2, text: "Favorite book", emoji: "📚", isCorrect: false },
-        { id: 3, text: "Favorite game", emoji: "🎮", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Aadhaar number", 
+          emoji: "🆔", 
+          description: "Aadhaar numbers are sensitive identification documents that must be kept private",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Favorite book", 
+          emoji: "📚", 
+          description: "Favorite books are generally safe to share publicly",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Favorite game", 
+          emoji: "🎮", 
+          description: "Favorite games are generally safe to share publicly",
+          isCorrect: false
+        }
       ]
     },
     {
       id: 5,
       text: "Which is personal information?",
-      emoji: "👤",
-      choices: [
-        { id: 1, text: "Email password", emoji: "🔐", isCorrect: true },
-        { id: 2, text: "Favorite subject", emoji: "📖", isCorrect: false },
-        { id: 3, text: "Favorite animal", emoji: "🐱", isCorrect: false }
+      options: [
+        { 
+          id: "a", 
+          text: "Email password", 
+          emoji: "🔐", 
+          description: "Email passwords are highly sensitive personal information that must be kept private",
+          isCorrect: true
+        },
+        { 
+          id: "b", 
+          text: "Favorite subject", 
+          emoji: "📖", 
+          description: "Favorite subjects are generally safe to share publicly",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Favorite animal", 
+          emoji: "🐱", 
+          description: "Favorite animals are generally safe to share publicly",
+          isCorrect: false
+        }
       ]
     }
   ];
 
-  const handleChoice = (choiceId) => {
-    if (answered) return;
+  const handleChoice = (selectedChoice) => {
+    const newChoices = [...choices, { 
+      questionId: questions[currentQuestion].id, 
+      choice: selectedChoice,
+      isCorrect: questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect
+    }];
     
-    setSelectedChoice(choiceId);
-    setAnswered(true);
-    resetFeedback();
+    setChoices(newChoices);
     
-    const currentQuestionData = questions[currentQuestion];
-    const choice = currentQuestionData.choices.find(c => c.id === choiceId);
-    const isCorrect = choice?.isCorrect || false;
-    
+    // If the choice is correct, add coins and show flash/confetti
+    const isCorrect = questions[currentQuestion].options.find(opt => opt.id === selectedChoice)?.isCorrect;
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     } else {
       showCorrectAnswerFeedback(0, false);
     }
     
-    setTimeout(() => {
-      if (currentQuestion < questions.length - 1) {
+    // Move to next question or show results
+    if (currentQuestion < questions.length - 1) {
+      setTimeout(() => {
         setCurrentQuestion(prev => prev + 1);
-        setSelectedChoice(null);
-        setAnswered(false);
-      } else {
+      }, isCorrect ? 1000 : 800);
+    } else {
+      // Calculate final score
+      const correctAnswers = newChoices.filter(choice => choice.isCorrect).length;
+      setFinalScore(correctAnswers);
+      setTimeout(() => {
         setShowResult(true);
-      }
-    }, 500);
+      }, isCorrect ? 1000 : 800);
+    }
   };
 
-  const currentQuestionData = questions[currentQuestion];
+  const handleTryAgain = () => {
+    setShowResult(false);
+    setCurrentQuestion(0);
+    setChoices([]);
+    setCoins(0);
+    setFinalScore(0);
+    resetFeedback();
+  };
+
+  const getCurrentQuestion = () => questions[currentQuestion];
+
+  // Log when game completes and update location state with nextGameId
+  useEffect(() => {
+    if (showResult) {
+      console.log(`🎮 Data Quiz game completed! Score: ${finalScore}/${questions.length}, gameId: ${gameId}, nextGamePath: ${nextGamePath}, nextGameId: ${nextGameId}`);
+      
+      // Update location state with nextGameId for GameOverModal
+      if (nextGameId && window.history && window.history.replaceState) {
+        const currentState = window.history.state || {};
+        window.history.replaceState({
+          ...currentState,
+          nextGameId: nextGameId
+        }, '');
+      }
+    }
+  }, [showResult, finalScore, gameId, nextGamePath, nextGameId, questions.length]);
 
   return (
     <GameShell
       title="Data Quiz"
-      score={score}
-      subtitle={!showResult ? `Question ${currentQuestion + 1} of ${questions.length}` : "Game Complete!"}
+      score={coins}
+      subtitle={showResult ? "Quiz Complete!" : `Question ${currentQuestion + 1} of ${questions.length}`}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}
-      showGameOver={showResult}
+      showGameOver={showResult && finalScore >= 3}
       gameId={gameId}
       gameType="dcos"
       totalLevels={questions.length}
       currentLevel={currentQuestion + 1}
-      maxScore={questions.length}
-      showConfetti={showResult && score === questions.length}
+      showConfetti={showResult && finalScore >= 3}
       flashPoints={flashPoints}
       showAnswerConfetti={showAnswerConfetti}
       nextGamePath={nextGamePath}
       nextGameId={nextGameId}
     >
-      <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-4">
+      <div className="min-h-[calc(100vh-200px)] flex flex-col justify-center max-w-4xl mx-auto px-4 py-4">
         {!showResult ? (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl">
-            <div className="text-6xl md:text-8xl mb-6 text-center">{currentQuestionData.emoji}</div>
-            <div className="bg-blue-500/20 rounded-lg p-4 md:p-5 mb-6">
-              <p className="text-white text-base md:text-lg md:text-xl leading-relaxed text-center font-semibold">
-                {currentQuestionData.text}
+          <div className="space-y-4 md:space-y-6">
+            <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-4 md:p-6 border border-white/20">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4 md:mb-6">
+                <span className="text-white/80 text-sm md:text-base">Question {currentQuestion + 1}/{questions.length}</span>
+                <span className="text-yellow-400 font-bold text-sm md:text-base">Coins: {coins}</span>
+              </div>
+              
+              <p className="text-white text-base md:text-lg lg:text-xl mb-4 md:mb-6 text-center">
+                {getCurrentQuestion().text}
               </p>
-            </div>
-
-            <div className="space-y-3">
-              {currentQuestionData.choices.map(choice => (
-                <button
-                  key={choice.id}
-                  onClick={() => handleChoice(choice.id)}
-                  disabled={answered}
-                  className={`w-full border-2 rounded-xl p-4 md:p-5 transition-all ${
-                    answered && choice.isCorrect
-                      ? 'bg-green-500/50 border-green-400 ring-2 ring-green-300'
-                      : answered && !choice.isCorrect && selectedChoice === choice.id
-                      ? 'bg-red-500/30 border-red-400 opacity-60'
-                      : selectedChoice === choice.id
-                      ? 'bg-purple-500/50 border-purple-400 ring-2 ring-white'
-                      : 'bg-white/20 border-white/40 hover:bg-white/30'
-                  }`}
-                >
-                  <div className="flex items-center gap-3 md:gap-4">
-                    <div className="text-3xl md:text-4xl">{choice.emoji}</div>
-                    <div className="text-white font-semibold text-base md:text-lg">{choice.text}</div>
-                  </div>
-                </button>
-              ))}
+              
+              <div className="grid grid-cols-1 gap-3 md:gap-4">
+                {getCurrentQuestion().options.map(option => (
+                  <button
+                    key={option.id}
+                    onClick={() => handleChoice(option.id)}
+                    className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
+                  >
+                    <div className="flex items-center">
+                      <div className="text-2xl md:text-3xl mr-3 md:mr-4">{option.emoji}</div>
+                      <div>
+                        <h3 className="font-bold text-base md:text-xl mb-1">{option.text}</h3>
+                        <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
         ) : (
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 md:p-8 border border-white/20 w-full max-w-2xl text-center">
-            <div className="text-7xl mb-4">🔒</div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-4">
-              {score === questions.length ? "Perfect Privacy Protector! 🎉" : `You got ${score} out of ${questions.length}!`}
-            </h2>
-            <p className="text-white/90 text-lg mb-6">
-              {score === questions.length 
-                ? "Excellent! Private information includes phone numbers, addresses, bank details, passwords, and ID numbers. These should never be shared publicly. Hobbies, favorite colors, and preferences are generally safe to share, but always be careful with personal details!"
-                : "Great job! Keep learning about what information to keep private!"}
-            </p>
-            <div className="bg-green-500/20 rounded-lg p-4 mb-4">
-              <p className="text-white text-center text-sm">
-                💡 Keep phone numbers, addresses, passwords, and ID numbers private!
-              </p>
-            </div>
+          <div className="bg-white/10 backdrop-blur-md rounded-xl md:rounded-2xl p-6 md:p-8 border border-white/20 text-center flex-1 flex flex-col justify-center">
+            {finalScore >= 3 ? (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">🎉</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Excellent!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct!
+                  You know about private information!
+                </p>
+                <div className="bg-gradient-to-r from-yellow-500 to-orange-500 text-white py-2 md:py-3 px-4 md:px-6 rounded-full inline-flex items-center gap-2 mb-4 text-sm md:text-base">
+                  <span>+{coins} Coins</span>
+                </div>
+                <p className="text-white/80 text-sm md:text-base">
+                  You understand that phone numbers, addresses, bank details, passwords, and ID numbers are private information that should never be shared publicly!
+                </p>
+              </div>
+            ) : (
+              <div>
+                <div className="text-4xl md:text-5xl mb-4">😔</div>
+                <h3 className="text-xl md:text-2xl font-bold text-white mb-4">Keep Learning!</h3>
+                <p className="text-white/90 text-base md:text-lg mb-4">
+                  You got {finalScore} out of {questions.length} questions correct.
+                  Remember, keep phone numbers, addresses, passwords, and ID numbers private!
+                </p>
+                <button
+                  onClick={handleTryAgain}
+                  className="bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 text-white py-2 md:py-3 px-4 md:px-6 rounded-full font-bold transition-all mb-4 text-sm md:text-base"
+                >
+                  Try Again
+                </button>
+                <p className="text-white/80 text-xs md:text-sm">
+                  Try to identify which information is private and sensitive versus what's safe to share publicly.
+                </p>
+              </div>
+            )}
           </div>
         )}
       </div>

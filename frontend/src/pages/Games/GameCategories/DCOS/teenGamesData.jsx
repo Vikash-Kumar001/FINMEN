@@ -526,7 +526,7 @@ export const getDcosTeenGames = (gameCompletionStatus)=> {
   difficulty: "Hard",
   duration: "6-8 min",
   coins: 5,
-          xp: 10,
+    xp: 10,
   completed: gameCompletionStatus["dcos-teen-36"] || false,
   isSpecial: true,
   path: "/student/dcos/teens/whatsapp-debate",

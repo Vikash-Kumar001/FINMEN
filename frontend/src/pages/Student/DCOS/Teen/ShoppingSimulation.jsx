@@ -27,23 +27,20 @@ const ShoppingSimulation = () => {
       text: "Choose the safe website to shop:",
       options: [
         { 
-          id: "freeshop", 
-          text: "FreeShop123.com", 
-          emoji: "❌", 
-          description: "Unknown suspicious site",
-          isCorrect: false
-        },
-        { 
           id: "amazon", 
           text: "Official Amazon", 
-          emoji: "✅", 
           description: "Official trusted retailer",
           isCorrect: true
         },
         { 
+          id: "freeshop", 
+          text: "FreeShop123.com", 
+          description: "Unknown suspicious site",
+          isCorrect: false
+        },
+        { 
           id: "unknown", 
           text: "Unknown-Store.net", 
-          emoji: "❌", 
           description: "Unverified store",
           isCorrect: false
         }
@@ -56,23 +53,20 @@ const ShoppingSimulation = () => {
         { 
           id: "random-shop", 
           text: "Random-Shop.com", 
-          emoji: "❌", 
           description: "Random unverified site",
+          isCorrect: false
+        },
+        { 
+          id: "suspicious", 
+          text: "Suspicious-Deals.net", 
+          description: "Suspicious deals site",
           isCorrect: false
         },
         { 
           id: "verified", 
           text: "Verified Retailer", 
-          emoji: "✅", 
           description: "Verified and trusted retailer",
           isCorrect: true
-        },
-        { 
-          id: "suspicious", 
-          text: "Suspicious-Deals.net", 
-          emoji: "❌", 
-          description: "Suspicious deals site",
-          isCorrect: false
         }
       ]
     },
@@ -83,21 +77,18 @@ const ShoppingSimulation = () => {
         { 
           id: "unverified", 
           text: "Unverified-Store.com", 
-          emoji: "❌", 
           description: "Unverified store",
           isCorrect: false
         },
         { 
           id: "official-brand", 
           text: "Official Brand Store", 
-          emoji: "✅", 
           description: "Official brand website",
           isCorrect: true
         },
         { 
           id: "unknown-market", 
           text: "Unknown-Market.net", 
-          emoji: "❌", 
           description: "Unknown marketplace",
           isCorrect: false
         }
@@ -110,23 +101,20 @@ const ShoppingSimulation = () => {
         { 
           id: "fake-store", 
           text: "Fake-Store.com", 
-          emoji: "❌", 
           description: "Fake store website",
+          isCorrect: false
+        },
+        { 
+          id: "random-shop2", 
+          text: "Random-Shop.net", 
+          description: "Random shop site",
           isCorrect: false
         },
         { 
           id: "established", 
           text: "Established E-commerce Site", 
-          emoji: "✅", 
           description: "Well-known e-commerce platform",
           isCorrect: true
-        },
-        { 
-          id: "random-shop2", 
-          text: "Random-Shop.net", 
-          emoji: "❌", 
-          description: "Random shop site",
-          isCorrect: false
         }
       ]
     },
@@ -137,23 +125,20 @@ const ShoppingSimulation = () => {
         { 
           id: "unknown-website", 
           text: "Unknown-Website.com", 
-          emoji: "❌", 
           description: "Unknown website",
+          isCorrect: false
+        },
+        { 
+          id: "suspicious-site", 
+          text: "Suspicious-Site.net", 
+          description: "Suspicious website",
           isCorrect: false
         },
         { 
           id: "official-platform", 
           text: "Official Shopping Platform", 
-          emoji: "✅", 
           description: "Official trusted platform",
           isCorrect: true
-        },
-        { 
-          id: "suspicious-site", 
-          text: "Suspicious-Site.net", 
-          emoji: "❌", 
-          description: "Suspicious website",
-          isCorrect: false
         }
       ]
     }
@@ -232,7 +217,6 @@ const ShoppingSimulation = () => {
                     className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
                     <div className="flex flex-col items-center justify-center text-center">
-                      <div className="text-3xl mb-3">{option.emoji}</div>
                       <h3 className="font-bold text-lg mb-2">{option.text}</h3>
                       <p className="text-white/90 text-sm">{option.description}</p>
                     </div>

@@ -62,22 +62,22 @@ const ProductivityPuzzle = () => {
     { id: 5, name: "Educational Video", emoji: "📹", description: "Learning-focused content" }
   ];
 
-  // Categories - varied options (no shuffling logic)
+  // Categories - varied options with different outcomes
   const rightItems = [
-    { id: 1, name: "Waste", emoji: "❌", description: "Time-consuming without benefit" },
-    { id: 2, name: "Productive", emoji: "✅", description: "Helps you learn and grow" },
-    { id: 3, name: "Productive", emoji: "✅", description: "Helps you learn and grow" },
-    { id: 4, name: "Waste", emoji: "❌", description: "Time-consuming without benefit" },
-    { id: 5, name: "Productive", emoji: "✅", description: "Helps you learn and grow" }
+    { id: 1, name: "Waste Time", emoji: "❌", description: "Unproductive use of screen time" },
+    { id: 2, name: "Learn Skills", emoji: "✅", description: "Develops new abilities" },
+    { id: 3, name: "Gain Knowledge", emoji: "🧠", description: "Increases understanding" },
+    { id: 4, name: "Entertainment", emoji: "📺", description: "Leisure without learning" },
+    { id: 5, name: "Personal Growth", emoji: "📈", description: "Improves self-development" }
   ];
 
-  // Correct matches - varied positions for correct answers (no shuffling logic)
+  // Correct matches - varied positions for different outcomes
   const correctMatches = [
-    { leftId: 1, rightId: 2 }, // Study App → Productive (position 2)
-    { leftId: 2, rightId: 4 }, // Endless Scroll → Waste (position 4)
-    { leftId: 3, rightId: 3 }, // Online Course → Productive (position 3)
-    { leftId: 4, rightId: 1 }, // Mindless Gaming → Waste (position 1)
-    { leftId: 5, rightId: 5 }  // Educational Video → Productive (position 5)
+    { leftId: 1, rightId: 2 }, // Study App → Learn Skills (position 2)
+    { leftId: 2, rightId: 4 }, // Endless Scroll → Entertainment (position 4)
+    { leftId: 3, rightId: 5 }, // Online Course → Personal Growth (position 5)
+    { leftId: 4, rightId: 1 }, // Mindless Gaming → Waste Time (position 1)
+    { leftId: 5, rightId: 3 }  // Educational Video → Gain Knowledge (position 3)
   ];
 
   // Check if a right item is already matched

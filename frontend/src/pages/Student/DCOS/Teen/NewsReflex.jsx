@@ -39,8 +39,8 @@ const NewsReflex = () => {
       question: "A headline says 'SHOCKING: Celebrity did something impossible!'. What should you do?",
       correctAnswer: "Verify with Sources",
       options: [
-        { text: "Share Immediately", isCorrect: false, emoji: "📤" },
         { text: "Verify with Sources", isCorrect: true, emoji: "🔍" },
+        { text: "Share Immediately", isCorrect: false, emoji: "📤" },
         { text: "Believe It", isCorrect: false, emoji: "✅" },
         { text: "Ignore It", isCorrect: false, emoji: "🙈" }
       ]
@@ -51,8 +51,8 @@ const NewsReflex = () => {
       correctAnswer: "Check Official Source",
       options: [
         { text: "Report as Fake", isCorrect: false, emoji: "🚫" },
-        { text: "Check Official Source", isCorrect: true, emoji: "📰" },
         { text: "Ignore It", isCorrect: false, emoji: "🙈" },
+        { text: "Check Official Source", isCorrect: true, emoji: "📰" },
         { text: "Share Without Checking", isCorrect: false, emoji: "📤" }
       ]
     },
@@ -61,8 +61,8 @@ const NewsReflex = () => {
       question: "A headline says 'URGENT: Share this or face consequences!'. What should you do?",
       correctAnswer: "Verify Before Sharing",
       options: [
-        { text: "Share Immediately", isCorrect: false, emoji: "⚡" },
         { text: "Verify Before Sharing", isCorrect: true, emoji: "🔍" },
+        { text: "Share Immediately", isCorrect: false, emoji: "⚡" },
         { text: "Believe It", isCorrect: false, emoji: "✅" },
         { text: "Ignore It", isCorrect: false, emoji: "🙈" }
       ]
@@ -74,8 +74,8 @@ const NewsReflex = () => {
       options: [
         { text: "Report as Fake", isCorrect: false, emoji: "🚫" },
         { text: "Check School Source", isCorrect: true, emoji: "📅" },
-        { text: "Ignore It", isCorrect: false, emoji: "🙈" },
-        { text: "Share Without Checking", isCorrect: false, emoji: "📤" }
+        { text: "Share Without Checking", isCorrect: false, emoji: "📤" },
+        { text: "Ignore It", isCorrect: false, emoji: "🙈" }
       ]
     },
     {
@@ -84,9 +84,9 @@ const NewsReflex = () => {
       correctAnswer: "Verify Before Believing",
       options: [
         { text: "Believe Immediately", isCorrect: false, emoji: "✨" },
-        { text: "Verify Before Believing", isCorrect: true, emoji: "🔍" },
+        { text: "Ignore It", isCorrect: false, emoji: "🙈" },
         { text: "Share It", isCorrect: false, emoji: "📤" },
-        { text: "Ignore It", isCorrect: false, emoji: "🙈" }
+        { text: "Verify Before Believing", isCorrect: true, emoji: "🔍" }
       ]
     }
   ];

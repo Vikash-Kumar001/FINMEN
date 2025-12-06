@@ -1,7 +1,7 @@
 {
-  "name": "finmen-backend",
+  "name": "wise-student-backend",
   "version": "1.0.0",
-  "description": "FINMEN Backend API",
+  "description": "Wise Student Backend API",
   "main": "server.js",
   "type": "module",
   "scripts": {
@@ -40,6 +40,6 @@
     "express",
     "mongodb"
   ],
-  "author": "FINMEN Team",
+  "author": "Wise Student Team",
   "license": "MIT"
 }

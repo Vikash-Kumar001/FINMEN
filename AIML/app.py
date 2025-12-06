@@ -13,7 +13,7 @@ CORS(app)
 
 @app.route("/", methods=["POST"])
 def home():
-    return "FINMEN Chatbot is running!"
+    return "Wise Student Chatbot is running!"
 
 @app.route("/chat", methods=["POST"])
 def handle_chat():
@@ -34,5 +34,5 @@ def handle_chat():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5001))  # Changed to 5001 to avoid conflict
     print(f"Flask server starting on port {port}...")
-    print("FINMEN AIML Chatbot Service Ready! 🤖✨")
+    print("Wise Student AIML Chatbot Service Ready! 🤖✨")
     app.run(debug=False, host='0.0.0.0', port=port)

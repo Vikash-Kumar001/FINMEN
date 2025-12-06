@@ -28,18 +28,18 @@ const FamilyRuleDebate = () => {
       text: "Are parents right to set screen limits?",
       options: [
         { 
-          id: "no-decide", 
-          text: "No - I should decide", 
-          emoji: "😤", 
-          description: "Teens should decide their own screen time",
-          isCorrect: false
-        },
-        { 
           id: "yes-healthy", 
           text: "Yes - limits are healthy", 
           emoji: "✅", 
           description: "Screen limits help maintain health and balance",
           isCorrect: true
+        },
+        { 
+          id: "no-decide", 
+          text: "No - I should decide", 
+          emoji: "😤", 
+          description: "Teens should decide their own screen time",
+          isCorrect: false
         },
         { 
           id: "maybe", 
@@ -55,10 +55,10 @@ const FamilyRuleDebate = () => {
       text: "Should there be screen-free times?",
       options: [
         { 
-          id: "no-always", 
-          text: "No - I need my phone always", 
-          emoji: "📱", 
-          description: "I need access to my phone at all times",
+          id: "sometimes", 
+          text: "Sometimes - only when parents say", 
+          emoji: "🤷", 
+          description: "Only when parents specifically ask",
           isCorrect: false
         },
         { 
@@ -69,10 +69,10 @@ const FamilyRuleDebate = () => {
           isCorrect: true
         },
         { 
-          id: "sometimes", 
-          text: "Sometimes - only when parents say", 
-          emoji: "🤷", 
-          description: "Only when parents specifically ask",
+          id: "no-always", 
+          text: "No - I need my phone always", 
+          emoji: "📱", 
+          description: "I need access to my phone at all times",
           isCorrect: false
         }
       ]
@@ -81,6 +81,13 @@ const FamilyRuleDebate = () => {
       id: 3,
       text: "Is it fair for parents to monitor screen time?",
       options: [
+        { 
+          id: "maybe", 
+          text: "Maybe - depends on the method", 
+          emoji: "🤔", 
+          description: "It depends on how they monitor",
+          isCorrect: false
+        },
         { 
           id: "no-privacy", 
           text: "No - it's my privacy", 
@@ -94,13 +101,6 @@ const FamilyRuleDebate = () => {
           emoji: "✅", 
           description: "Parents monitor because they care about your health and safety",
           isCorrect: true
-        },
-        { 
-          id: "maybe", 
-          text: "Maybe - depends on the method", 
-          emoji: "🤔", 
-          description: "It depends on how they monitor",
-          isCorrect: false
         }
       ]
     },
@@ -108,6 +108,13 @@ const FamilyRuleDebate = () => {
       id: 4,
       text: "Should devices be off during homework?",
       options: [
+        { 
+          id: "sometimes", 
+          text: "Sometimes - for hard subjects", 
+          emoji: "📚", 
+          description: "Only for difficult subjects",
+          isCorrect: false
+        },
         { 
           id: "no-multitask", 
           text: "No - I can multitask", 
@@ -121,13 +128,6 @@ const FamilyRuleDebate = () => {
           emoji: "✅", 
           description: "Turning off devices helps you focus and learn better",
           isCorrect: true
-        },
-        { 
-          id: "sometimes", 
-          text: "Sometimes - for hard subjects", 
-          emoji: "📚", 
-          description: "Only for difficult subjects",
-          isCorrect: false
         }
       ]
     },
@@ -135,6 +135,13 @@ const FamilyRuleDebate = () => {
       id: 5,
       text: "Are family rules about screens helpful?",
       options: [
+        { 
+          id: "maybe", 
+          text: "Maybe - if they're reasonable", 
+          emoji: "🤷", 
+          description: "Only if the rules are reasonable",
+          isCorrect: false
+        },
         { 
           id: "no-strict", 
           text: "No - they're too strict", 
@@ -148,13 +155,6 @@ const FamilyRuleDebate = () => {
           emoji: "✅", 
           description: "Family rules teach healthy balance and responsibility",
           isCorrect: true
-        },
-        { 
-          id: "maybe", 
-          text: "Maybe - if they're reasonable", 
-          emoji: "🤷", 
-          description: "Only if the rules are reasonable",
-          isCorrect: false
         }
       ]
     }

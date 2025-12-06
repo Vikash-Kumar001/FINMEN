@@ -58,23 +58,20 @@ const ContentOwnershipQuiz = () => {
       text: "Can you copy someone else's video and post it as yours?",
       options: [
         { 
-          id: "a", 
-          text: "Yes - it's fine", 
-          emoji: "✅", 
-          description: "Copying and claiming others' videos as your own is copyright violation",
-          isCorrect: false
-        },
-        { 
           id: "b", 
           text: "No - that's copyright violation", 
-          emoji: "❌", 
           description: "Copying someone else's video and claiming it as yours violates copyright law",
           isCorrect: true
         },
         { 
+          id: "a", 
+          text: "Yes - it's fine", 
+          description: "Copying and claiming others' videos as your own is copyright violation",
+          isCorrect: false
+        },
+        { 
           id: "c", 
           text: "Maybe - if you credit them", 
-          emoji: "🤔", 
           description: "Even with credit, you cannot claim others' work as your own",
           isCorrect: false
         }
@@ -87,23 +84,20 @@ const ContentOwnershipQuiz = () => {
         { 
           id: "a", 
           text: "Yes - photos are free to use", 
-          emoji: "✅", 
           description: "Photos are protected by copyright - you need permission to use them",
+          isCorrect: false
+        },
+        { 
+          id: "c", 
+          text: "Only if you like it", 
+          description: "Liking content doesn't give you permission to use it",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "No - you need permission", 
-          emoji: "❌", 
           description: "You need permission from the creator to use someone's photo",
           isCorrect: true
-        },
-        { 
-          id: "c", 
-          text: "Only if you like it", 
-          emoji: "👍", 
-          description: "Liking content doesn't give you permission to use it",
-          isCorrect: false
         }
       ]
     },
@@ -114,21 +108,18 @@ const ContentOwnershipQuiz = () => {
         { 
           id: "a", 
           text: "Yes - if it's good", 
-          emoji: "✅", 
           description: "Quality doesn't matter - reposting others' artwork as your own is stealing",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "No - that's stealing their work", 
-          emoji: "❌", 
           description: "Reposting someone's artwork as your own is stealing their creative work",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Maybe - if no one sees", 
-          emoji: "👀", 
           description: "Stealing content is wrong regardless of who sees it",
           isCorrect: false
         }
@@ -141,21 +132,18 @@ const ContentOwnershipQuiz = () => {
         { 
           id: "a", 
           text: "Yes - music is free", 
-          emoji: "✅", 
           description: "Music is protected by copyright - copying and claiming it is illegal",
           isCorrect: false
         },
         { 
           id: "b", 
           text: "No - that's copyright infringement", 
-          emoji: "❌", 
           description: "Copying someone's music and claiming it as yours is copyright infringement",
           isCorrect: true
         },
         { 
           id: "c", 
           text: "Only if it's old", 
-          emoji: "⏰", 
           description: "Age doesn't matter - copyright still applies to old music",
           isCorrect: false
         }
@@ -166,23 +154,20 @@ const ContentOwnershipQuiz = () => {
       text: "Can you use someone's written content without credit?",
       options: [
         { 
-          id: "a", 
-          text: "Yes - words are free", 
-          emoji: "✅", 
-          description: "Written content is protected by copyright - you must credit the creator",
-          isCorrect: false
-        },
-        { 
           id: "b", 
           text: "No - always credit the creator", 
-          emoji: "❌", 
           description: "You must always credit the creator when using their written content",
           isCorrect: true
         },
         { 
+          id: "a", 
+          text: "Yes - words are free", 
+          description: "Written content is protected by copyright - you must credit the creator",
+          isCorrect: false
+        },
+        { 
           id: "c", 
           text: "Only if you change it", 
-          emoji: "✏️", 
           description: "Even if you change it, you should credit the original creator",
           isCorrect: false
         }
@@ -289,12 +274,9 @@ const ContentOwnershipQuiz = () => {
                     onClick={() => handleChoice(option.id)}
                     className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 md:p-6 rounded-xl md:rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
                   >
-                    <div className="flex items-center">
-                      <div className="text-2xl md:text-3xl mr-3 md:mr-4">{option.emoji}</div>
-                      <div>
-                        <h3 className="font-bold text-base md:text-xl mb-1">{option.text}</h3>
-                        <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
-                      </div>
+                    <div>
+                      <h3 className="font-bold text-base md:text-xl mb-1">{option.text}</h3>
+                      <p className="text-white/90 text-xs md:text-sm">{option.description}</p>
                     </div>
                   </button>
                 ))}

@@ -29,14 +29,14 @@ const ProductivityHeroBadge = () => {
       question: "What should you use technology for?",
       options: [
         { 
-          text: "Used tech for learning and skill-building", 
-          emoji: "📚", 
-          isCorrect: true
-        },
-        { 
           text: "Only use tech for entertainment", 
           emoji: "📺", 
           isCorrect: false
+        },
+        { 
+          text: "Used tech for learning and skill-building", 
+          emoji: "📚", 
+          isCorrect: true
         },
         { 
           text: "Waste time on tech", 
@@ -56,11 +56,6 @@ const ProductivityHeroBadge = () => {
       question: "What should you do with online learning opportunities?",
       options: [
         { 
-          text: "Enrolled in productive online courses", 
-          emoji: "🎓", 
-          isCorrect: true
-        },
-        { 
           text: "Ignore learning opportunities", 
           emoji: "🙈", 
           isCorrect: false
@@ -69,6 +64,11 @@ const ProductivityHeroBadge = () => {
           text: "Only watch entertainment", 
           emoji: "📺", 
           isCorrect: false
+        },
+        { 
+          text: "Enrolled in productive online courses", 
+          emoji: "🎓", 
+          isCorrect: true
         },
         { 
           text: "Don't use online courses", 
@@ -83,14 +83,14 @@ const ProductivityHeroBadge = () => {
       question: "What kind of apps should you use?",
       options: [
         { 
-          text: "Used productive apps for growth", 
-          emoji: "📱", 
-          isCorrect: true
-        },
-        { 
           text: "Only use entertainment apps", 
           emoji: "🎮", 
           isCorrect: false
+        },
+        { 
+          text: "Used productive apps for growth", 
+          emoji: "📱", 
+          isCorrect: true
         },
         { 
           text: "Use apps without purpose", 
@@ -110,14 +110,14 @@ const ProductivityHeroBadge = () => {
       question: "How should you manage your tech time?",
       options: [
         { 
-          text: "Managed tech time productively", 
-          emoji: "⏰", 
-          isCorrect: true
-        },
-        { 
           text: "Waste time on tech", 
           emoji: "⏳", 
           isCorrect: false
+        },
+        { 
+          text: "Managed tech time productively", 
+          emoji: "⏰", 
+          isCorrect: true
         },
         { 
           text: "Use tech without limits", 
@@ -137,11 +137,6 @@ const ProductivityHeroBadge = () => {
       question: "What should be your focus with technology?",
       options: [
         { 
-          text: "Focused on growth and productivity", 
-          emoji: "📈", 
-          isCorrect: true
-        },
-        { 
           text: "Focus only on entertainment", 
           emoji: "📺", 
           isCorrect: false
@@ -155,6 +150,11 @@ const ProductivityHeroBadge = () => {
           text: "Ignore growth opportunities", 
           emoji: "🙈", 
           isCorrect: false
+        },
+        { 
+          text: "Focused on growth and productivity", 
+          emoji: "📈", 
+          isCorrect: true
         }
       ]
     }

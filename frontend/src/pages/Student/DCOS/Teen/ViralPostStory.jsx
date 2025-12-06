@@ -29,23 +29,20 @@ const ViralPostStory = () => {
       text: "A viral message says 'Celebrity died!' Everyone is sharing it. What should you do?",
       options: [
         { 
-          id: "verify", 
-          text: "Verify before sharing", 
-          emoji: "✅", 
-          description: "Check official sources before sharing the news",
-          isCorrect: true
-        },
-        { 
           id: "share", 
           text: "Share it immediately", 
-          emoji: "📤", 
           description: "Share the news right away with everyone",
           isCorrect: false
         },
         { 
+          id: "verify", 
+          text: "Verify before sharing", 
+          description: "Check official sources before sharing the news",
+          isCorrect: true
+        },
+        { 
           id: "forward", 
           text: "Forward to friends", 
-          emoji: "➡️", 
           description: "Forward the message to your friends",
           isCorrect: false
         }
@@ -58,23 +55,20 @@ const ViralPostStory = () => {
         { 
           id: "share-right", 
           text: "Share it right away", 
-          emoji: "📤", 
           description: "Share the breaking news immediately",
+          isCorrect: false
+        },
+        { 
+          id: "forward-all", 
+          text: "Forward to everyone", 
+          description: "Forward the message to all your contacts",
           isCorrect: false
         },
         { 
           id: "check-sources", 
           text: "Check official sources first", 
-          emoji: "✅", 
           description: "Verify with official news sources before sharing",
           isCorrect: true
-        },
-        { 
-          id: "forward-all", 
-          text: "Forward to everyone", 
-          emoji: "➡️", 
-          description: "Forward the message to all your contacts",
-          isCorrect: false
         }
       ]
     },
@@ -85,28 +79,18 @@ const ViralPostStory = () => {
         { 
           id: "share-warn", 
           text: "Share to warn others", 
-          emoji: "📤", 
           description: "Share immediately to help others",
-          isCorrect: false
-        },
-        { 
-          id: "forward-immediate", 
-          text: "Forward immediately", 
-          emoji: "➡️", 
-          description: "Forward the warning right away",
           isCorrect: false
         },
         { 
           id: "verify-health", 
           text: "Verify with health authorities first", 
-          emoji: "✅", 
           description: "Check with official health authorities before sharing",
           isCorrect: true
         },
         { 
           id: "forward-immediate", 
           text: "Forward immediately", 
-          emoji: "➡️", 
           description: "Forward the warning right away",
           isCorrect: false
         }
@@ -117,25 +101,22 @@ const ViralPostStory = () => {
       text: "A viral post claims a 'miracle cure' and asks you to share. What should you do?",
       options: [
         { 
-          id: "verify-medical", 
-          text: "Verify with medical experts first", 
-          emoji: "✅", 
-          description: "Check with medical professionals before sharing",
-          isCorrect: true
-        },
-        { 
           id: "share-help", 
           text: "Share to help people", 
-          emoji: "📤", 
           description: "Share to help others find the cure",
           isCorrect: false
         },
         { 
           id: "forward-family", 
           text: "Forward to family", 
-          emoji: "➡️", 
           description: "Forward to family members",
           isCorrect: false
+        },
+        { 
+          id: "verify-medical", 
+          text: "Verify with medical experts first", 
+          description: "Check with medical professionals before sharing",
+          isCorrect: true
         }
       ]
     },
@@ -146,28 +127,18 @@ const ViralPostStory = () => {
         { 
           id: "share-avoid", 
           text: "Share to avoid bad luck", 
-          emoji: "📤", 
           description: "Share to prevent something bad from happening",
-          isCorrect: false
-        },
-        { 
-          id: "forward-ten", 
-          text: "Forward to 10 people", 
-          emoji: "➡️", 
-          description: "Forward to 10 people as requested",
           isCorrect: false
         },
         { 
           id: "ignore-hoax", 
           text: "Ignore - it's a hoax", 
-          emoji: "✅", 
           description: "Ignore it because it's a chain message hoax",
           isCorrect: true
         },
         { 
           id: "forward-ten", 
           text: "Forward to 10 people", 
-          emoji: "➡️", 
           description: "Forward to 10 people as requested",
           isCorrect: false
         }
@@ -258,7 +229,6 @@ const ViralPostStory = () => {
                     onClick={() => handleChoice(option.id)}
                     className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
                     <p className="text-white/90">{option.description}</p>
                   </button>

@@ -27,23 +27,20 @@ const FactCheckSimulation = () => {
       text: "3 websites shown. Pick the trusted one:",
       options: [
         { 
-          id: "official-news", 
-          text: "official-news.gov", 
-          emoji: "✅", 
-          description: "Official government news source",
-          isCorrect: true
-        },
-        { 
           id: "random-blog", 
           text: "random-blog.com", 
-          emoji: "❌", 
           description: "Unverified blog site",
           isCorrect: false
         },
         { 
+          id: "official-news", 
+          text: "official-news.gov", 
+          description: "Official government news source",
+          isCorrect: true
+        },
+        { 
           id: "unknown-site", 
           text: "unknown-site.net", 
-          emoji: "❌", 
           description: "Unknown website",
           isCorrect: false
         }
@@ -56,23 +53,20 @@ const FactCheckSimulation = () => {
         { 
           id: "social-media", 
           text: "Social media post", 
-          emoji: "❌", 
           description: "Unverified social media",
+          isCorrect: false
+        },
+        { 
+          id: "personal-blog", 
+          text: "personal-blog.com", 
+          description: "Personal blog site",
           isCorrect: false
         },
         { 
           id: "verified-news", 
           text: "verified-news.org", 
-          emoji: "✅", 
           description: "Verified news organization",
           isCorrect: true
-        },
-        { 
-          id: "personal-blog", 
-          text: "personal-blog.com", 
-          emoji: "❌", 
-          description: "Personal blog site",
-          isCorrect: false
         }
       ]
     },
@@ -81,30 +75,20 @@ const FactCheckSimulation = () => {
       text: "Pick the official source:",
       options: [
         { 
+          id: "government", 
+          text: "government-official.gov", 
+          description: "Official government source",
+          isCorrect: true
+        },
+        { 
           id: "unofficial", 
           text: "unofficial-site.com", 
-          emoji: "❌", 
           description: "Unofficial website",
           isCorrect: false
         },
         { 
           id: "random-forum", 
           text: "random-forum.net", 
-          emoji: "❌", 
-          description: "Random forum site",
-          isCorrect: false
-        },
-        { 
-          id: "government", 
-          text: "government-official.gov", 
-          emoji: "✅", 
-          description: "Official government source",
-          isCorrect: true
-        },
-        { 
-          id: "random-forum", 
-          text: "random-forum.net", 
-          emoji: "❌", 
           description: "Random forum site",
           isCorrect: false
         }
@@ -117,23 +101,20 @@ const FactCheckSimulation = () => {
         { 
           id: "fake-news", 
           text: "fake-news-site.com", 
-          emoji: "❌", 
           description: "Fake news website",
-          isCorrect: false
-        },
-        { 
-          id: "unknown-blog", 
-          text: "unknown-blog.net", 
-          emoji: "❌", 
-          description: "Unknown blog",
           isCorrect: false
         },
         { 
           id: "established", 
           text: "established-news.org", 
-          emoji: "✅", 
           description: "Established news organization",
           isCorrect: true
+        },
+        { 
+          id: "unknown-blog", 
+          text: "unknown-blog.net", 
+          description: "Unknown blog",
+          isCorrect: false
         }
       ]
     },
@@ -142,32 +123,22 @@ const FactCheckSimulation = () => {
       text: "Choose the verified source:",
       options: [
         { 
-          id: "verified-official", 
-          text: "verified-official.gov", 
-          emoji: "✅", 
-          description: "Verified official source",
-          isCorrect: true
-        },
-        { 
           id: "unverified", 
           text: "unverified-site.com", 
-          emoji: "❌", 
           description: "Unverified website",
           isCorrect: false
         },
         { 
-          id: "official", 
-          text: "official-source.gov", 
-          emoji: "✅", 
-          description: "Official verified source",
-          isCorrect: true
-        },
-        { 
           id: "random-page", 
           text: "random-page.net", 
-          emoji: "❌", 
           description: "Random webpage",
           isCorrect: false
+        },
+        { 
+          id: "verified-official", 
+          text: "verified-official.gov", 
+          description: "Verified official source",
+          isCorrect: true
         }
       ]
     }
@@ -246,7 +217,6 @@ const FactCheckSimulation = () => {
                     className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                   >
                     <div className="flex flex-col items-center justify-center text-center">
-                      <div className="text-3xl mb-3">{option.emoji}</div>
                       <h3 className="font-bold text-lg mb-2">{option.text}</h3>
                       <p className="text-white/90 text-sm">{option.description}</p>
                     </div>

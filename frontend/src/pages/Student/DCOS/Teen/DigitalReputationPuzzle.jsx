@@ -62,22 +62,22 @@ const DigitalReputationPuzzle = () => {
     { id: 5, name: "Encouraging Messages", emoji: "💪", description: "Supportive and uplifting content" }
   ];
 
-  // Reputation impact - shuffled order to make it harder
+  // Reputation impact - logical classifications with different outcomes
   const rightItems = [
-    { id: 1, name: "Bad Reputation", emoji: "👎", description: "Damages how others see you" },
-    { id: 2, name: "Good Reputation", emoji: "🌟", description: "Builds positive image" },
-    { id: 3, name: "Good Reputation", emoji: "🌟", description: "Builds positive image" },
-    { id: 4, name: "Bad Reputation", emoji: "👎", description: "Damages how others see you" },
-    { id: 5, name: "Good Reputation", emoji: "🌟", description: "Builds positive image" }
+    { id: 1, name: "Relationship Building", emoji: "🤝", description: "Strengthens connections with others" },
+    { id: 2, name: "Trust Erosion", emoji: "💔", description: "Destroys confidence in your character" },
+    { id: 3, name: "Community Enhancement", emoji: "🏘️", description: "Improves group dynamics and morale" },
+    { id: 4, name: "Social Isolation", emoji: "😔", description: "Leads to exclusion and loneliness" },
+    { id: 5, name: "Leadership Recognition", emoji: "👑", description: "Earns respect and influence" }
   ];
 
-  // Correct matches
+  // Correct matches - logical pairings with varied positions
   const correctMatches = [
-    { leftId: 1, rightId: 2 }, // Positive Post → Good Reputation
-    { leftId: 2, rightId: 1 }, // Rumors → Bad Reputation
-    { leftId: 3, rightId: 3 }, // Respectful Comments → Good Reputation
-    { leftId: 4, rightId: 4 }, // Insults → Bad Reputation
-    { leftId: 5, rightId: 5 }  // Encouraging Messages → Good Reputation
+    { leftId: 1, rightId: 5 }, // Positive Post → Leadership Recognition (position 5)
+    { leftId: 2, rightId: 2 }, // Rumors → Trust Erosion (position 2)
+    { leftId: 3, rightId: 1 }, // Respectful Comments → Relationship Building (position 1)
+    { leftId: 4, rightId: 4 }, // Insults → Social Isolation (position 4)
+    { leftId: 5, rightId: 3 }  // Encouraging Messages → Community Enhancement (position 3)
   ];
 
   // Check if a right item is already matched

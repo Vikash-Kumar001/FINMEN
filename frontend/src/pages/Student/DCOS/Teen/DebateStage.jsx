@@ -28,23 +28,20 @@ const DebateStage = () => {
       text: "Should schools teach privacy rights?",
       options: [
         { 
-          id: "yes-important", 
-          text: "Yes - it's important to learn", 
-          emoji: "✅", 
-          description: "Teaching privacy rights is essential for students",
-          isCorrect: true
-        },
-        { 
           id: "no-necessary", 
           text: "No - not necessary", 
-          emoji: "❌", 
           description: "Privacy rights don't need to be taught in schools",
           isCorrect: false
         },
         { 
+          id: "yes-important", 
+          text: "Yes - it's important to learn", 
+          description: "Teaching privacy rights is essential for students",
+          isCorrect: true
+        },
+        { 
           id: "maybe", 
           text: "Maybe - only for older students", 
-          emoji: "🤔", 
           description: "Only teach privacy to older students",
           isCorrect: false
         }
@@ -55,25 +52,22 @@ const DebateStage = () => {
       text: "Should privacy be taught in schools?",
       options: [
         { 
-          id: "yes-need", 
-          text: "Yes - students need to know", 
-          emoji: "✅", 
-          description: "Students need to learn about privacy protection",
-          isCorrect: true
-        },
-        { 
           id: "no-important", 
           text: "No - it's not important", 
-          emoji: "❌", 
           description: "Privacy education is not important",
           isCorrect: false
         },
         { 
           id: "sometimes", 
           text: "Sometimes - as an optional topic", 
-          emoji: "📚", 
           description: "Teach privacy only as an optional subject",
           isCorrect: false
+        },
+        { 
+          id: "yes-need", 
+          text: "Yes - students need to know", 
+          description: "Students need to learn about privacy protection",
+          isCorrect: true
         }
       ]
     },
@@ -82,23 +76,20 @@ const DebateStage = () => {
       text: "Is teaching privacy rights important?",
       options: [
         { 
-          id: "yes-protects", 
-          text: "Yes - protects students", 
-          emoji: "✅", 
-          description: "Teaching privacy rights protects students online",
-          isCorrect: true
-        },
-        { 
           id: "no-needed", 
           text: "No - not needed", 
-          emoji: "❌", 
           description: "Privacy education is not needed",
           isCorrect: false
         },
         { 
+          id: "yes-protects", 
+          text: "Yes - protects students", 
+          description: "Teaching privacy rights protects students online",
+          isCorrect: true
+        },
+        { 
           id: "maybe", 
           text: "Maybe - only if students ask", 
-          emoji: "🤷", 
           description: "Only teach if students specifically ask",
           isCorrect: false
         }
@@ -111,21 +102,18 @@ const DebateStage = () => {
         { 
           id: "yes-essential", 
           text: "Yes - essential knowledge", 
-          emoji: "✅", 
           description: "Data privacy is essential knowledge for students",
           isCorrect: true
         },
         { 
           id: "no-relevant", 
           text: "No - not relevant", 
-          emoji: "❌", 
           description: "Data privacy is not relevant for students",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe - only for tech students", 
-          emoji: "💻", 
           description: "Only teach to students studying technology",
           isCorrect: false
         }
@@ -136,25 +124,22 @@ const DebateStage = () => {
       text: "Is privacy education necessary in schools?",
       options: [
         { 
-          id: "yes-helps", 
-          text: "Yes - helps protect students", 
-          emoji: "✅", 
-          description: "Privacy education helps protect students online",
-          isCorrect: true
-        },
-        { 
           id: "no-unnecessary", 
           text: "No - unnecessary", 
-          emoji: "❌", 
           description: "Privacy education is unnecessary",
           isCorrect: false
         },
         { 
           id: "maybe", 
           text: "Maybe - only in high school", 
-          emoji: "🎓", 
           description: "Only teach privacy in high school",
           isCorrect: false
+        },
+        { 
+          id: "yes-helps", 
+          text: "Yes - helps protect students", 
+          description: "Privacy education helps protect students online",
+          isCorrect: true
         }
       ]
     }
@@ -231,7 +216,6 @@ const DebateStage = () => {
                     onClick={() => handleChoice(option.id)}
                     className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white p-6 rounded-xl text-lg font-semibold transition-all transform hover:scale-105"
                   >
-                    <div className="text-2xl mb-2">{option.emoji}</div>
                     <h3 className="font-bold text-xl mb-2">{option.text}</h3>
                     <p className="text-white/90 text-sm">{option.description}</p>
                   </button>

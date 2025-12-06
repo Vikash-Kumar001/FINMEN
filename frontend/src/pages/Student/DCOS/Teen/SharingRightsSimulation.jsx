@@ -27,18 +27,18 @@ const SharingRightsSimulation = () => {
       text: "Should you share your homework online?",
       options: [
         { 
-          id: "share", 
-          text: "Share it online", 
-          emoji: "📤", 
-          description: "Post homework publicly",
-          isCorrect: false
-        },
-        { 
           id: "keep-private", 
           text: "Keep it private", 
           emoji: "🔒", 
           description: "Keep homework private",
           isCorrect: true
+        },
+        { 
+          id: "share", 
+          text: "Share it online", 
+          emoji: "📤", 
+          description: "Post homework publicly",
+          isCorrect: false
         },
         { 
           id: "friends-only", 
@@ -61,18 +61,18 @@ const SharingRightsSimulation = () => {
           isCorrect: false
         },
         { 
-          id: "keep-private-docs", 
-          text: "Keep them private", 
-          emoji: "🔒", 
-          description: "Keep documents private",
-          isCorrect: true
-        },
-        { 
           id: "share-social", 
           text: "Share on social media", 
           emoji: "📱", 
           description: "Post on social media",
           isCorrect: false
+        },
+        { 
+          id: "keep-private-docs", 
+          text: "Keep them private", 
+          emoji: "🔒", 
+          description: "Keep documents private",
+          isCorrect: true
         }
       ]
     },
@@ -88,18 +88,18 @@ const SharingRightsSimulation = () => {
           isCorrect: false
         },
         { 
-          id: "no-private", 
-          text: "No, keep them private", 
-          emoji: "🔒", 
-          description: "Keep answers private",
-          isCorrect: true
-        },
-        { 
           id: "share-classmates", 
           text: "Share with classmates", 
           emoji: "👥", 
           description: "Share with classmates",
           isCorrect: false
+        },
+        { 
+          id: "no-private", 
+          text: "No, keep them private", 
+          emoji: "🔒", 
+          description: "Keep answers private",
+          isCorrect: true
         }
       ]
     },
@@ -108,18 +108,18 @@ const SharingRightsSimulation = () => {
       text: "What about your personal photos?",
       options: [
         { 
-          id: "share-all", 
-          text: "Share everything publicly", 
-          emoji: "🌐", 
-          description: "Post all photos publicly",
-          isCorrect: false
-        },
-        { 
           id: "selective", 
           text: "Be selective and keep private ones safe", 
           emoji: "🔒", 
           description: "Be careful about what you share",
           isCorrect: true
+        },
+        { 
+          id: "share-all", 
+          text: "Share everything publicly", 
+          emoji: "🌐", 
+          description: "Post all photos publicly",
+          isCorrect: false
         },
         { 
           id: "post-all", 
@@ -142,18 +142,18 @@ const SharingRightsSimulation = () => {
           isCorrect: false
         },
         { 
-          id: "keep-thoughts", 
-          text: "Keep private thoughts private", 
-          emoji: "🔒", 
-          description: "Keep personal thoughts private",
-          isCorrect: true
-        },
-        { 
           id: "share-everyone", 
           text: "Share with everyone", 
           emoji: "🌐", 
           description: "Share publicly",
           isCorrect: false
+        },
+        { 
+          id: "keep-thoughts", 
+          text: "Keep private thoughts private", 
+          emoji: "🔒", 
+          description: "Keep personal thoughts private",
+          isCorrect: true
         }
       ]
     }

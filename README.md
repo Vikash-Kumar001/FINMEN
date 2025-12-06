@@ -1,8 +1,8 @@
-# 🌟 FINMEN — Next-Gen Digital Wellness & Financial Literacy Platform
+# 🌟 Wise Student — Next-Gen Digital Wellness & Financial Literacy Platform
 
 <div align="center">
 
-![FINMEN Logo](https://img.shields.io/badge/FINMEN-Digital%20Wellness%20Platform-6366f1?style=for-the-badge&logo=heart&logoColor=white)
+![Wise Student Logo](https://img.shields.io/badge/Wise%20Student-Digital%20Wellness%20Platform-6366f1?style=for-the-badge&logo=heart&logoColor=white)
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg?style=for-the-badge)](https://choosealicense.com/licenses/mit/)
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
@@ -21,7 +21,7 @@
 
 ## 🎯 Overview
 
-**FINMEN** is a comprehensive digital platform designed specifically for India's youth ecosystem, addressing critical gaps in mental wellness and financial literacy education. Combining cutting-edge AI technology with real-time communication and culturally-sensitive design, FINMEN serves students aged **8-25** through an immersive, gamified learning experience.
+**Wise Student** is a comprehensive digital platform designed specifically for India's youth ecosystem, addressing critical gaps in mental wellness and financial literacy education. Combining cutting-edge AI technology with real-time communication and culturally-sensitive design, Wise Student serves students aged **8-25** through an immersive, gamified learning experience.
 
 ### 🌍 Mission Statement
 *"To create a generation of emotionally resilient and financially literate individuals who can navigate life's challenges with confidence and wisdom."*
@@ -348,7 +348,7 @@ NODE_ENV=development
 PORT=5000
 
 # Database Configuration
-MONGO_URI=mongodb://localhost:27017/finmen
+MONGO_URI=mongodb://localhost:27017/wise-student
 
 # Authentication
 JWT_SECRET=your_ultra_secure_jwt_secret
@@ -413,7 +413,7 @@ PORT=5001
 <summary><strong>🗂️ Directory Architecture</strong></summary>
 
 ```
-finmen/
+wise-student/
 ├── backend/                      # Node.js Express Backend
 │   ├── config/                   # Configuration files
 │   │   ├── db.js                 # Database configuration
@@ -584,8 +584,8 @@ finmen/
 
 ### **1. Clone the Repository**
 ```bash
-git clone https://github.com/your-username/finmen.git
-cd finmen
+git clone https://github.com/your-username/wise-student.git
+cd wise-student
 ```
 
 ### **2. Install Dependencies**
@@ -712,8 +712,8 @@ npm test
 
 1. **🍴 Fork & Clone**
    ```bash
-   git clone https://github.com/your-username/finmen.git
-   cd finmen
+   git clone https://github.com/your-username/wise-student.git
+   cd wise-student
    ```
 
 2. **🌿 Create Feature Branch**
@@ -752,7 +752,7 @@ npm test
 ```
 MIT License
 
-Copyright (c) 2024 FINMEN Platform Team
+Copyright (c) 2024 Wise Student Platform Team
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -783,7 +783,7 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 - **GitHub Issues**: Bug reports and feature requests
 - **Discussions**: Community discussions and Q&A
 - **Discord**: Real-time community chat
-- **Email**: support@finmen.in
+- **Email**: support@wisestudent.in
 
 ---
 
@@ -793,8 +793,8 @@ FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
 
 *Building bridges between mental wellness and financial prosperity, one student at a time.*
 
-[![GitHub stars](https://img.shields.io/github/stars/your-username/finmen?style=social)](https://github.com/your-username/finmen)
-[![GitHub forks](https://img.shields.io/github/forks/your-username/finmen?style=social)](https://github.com/your-username/finmen)
-[![GitHub watchers](https://img.shields.io/github/watchers/your-username/finmen?style=social)](https://github.com/your-username/finmen)
+[![GitHub stars](https://img.shields.io/github/stars/your-username/wise-student?style=social)](https://github.com/your-username/wise-student)
+[![GitHub forks](https://img.shields.io/github/forks/your-username/wise-student?style=social)](https://github.com/your-username/wise-student)
+[![GitHub watchers](https://img.shields.io/github/watchers/your-username/wise-student?style=social)](https://github.com/your-username/wise-student)
 
 </div>

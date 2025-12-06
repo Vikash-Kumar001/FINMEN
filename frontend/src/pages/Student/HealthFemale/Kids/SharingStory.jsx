@@ -1,118 +1,156 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const SharingStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-55";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You feel scared. Should you hide it or tell your parents?",
+      text: "You feel really sad because your pet is sick. What helps?",
       options: [
         {
           id: "a",
-          text: "Tell parents - they can help and support you",
-          emoji: "👨‍👩‍👧",
-          description: "Exactly! Sharing your fears with trusted adults helps you feel better and keeps you safe.",
-          isCorrect: true
+          text: "Hiding in your room forever",
+          emoji: "🚪",
+          description: "Hiding makes you feel lonely.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Hide it - they might get angry",
-          emoji: "🤐",
-          description: "That's not the best choice. Hiding fears can make them worse. Trusted adults want to help you feel safe.",
+          text: "Telling your mom or dad",
+          emoji: "👪",
+          description: "Yes! They can hug and comfort you.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Pretending you are happy",
+          emoji: "🎭",
+          description: "It's okay to be sad.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "You're feeling lonely. What should you do?",
+      text: "Your friend looks lonely on the playground. What can you do?",
       options: [
         {
           id: "a",
-          text: "Talk to a friend or family member",
-          emoji: "💬",
-          description: "Great choice! Talking to someone helps you feel connected and less alone.",
-          isCorrect: true
+          text: "Ignore them",
+          emoji: "🤷‍♀️",
+          description: "That's not very kind.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Stay by yourself and avoid others",
-          emoji: "👤",
-          description: "That might make you feel more isolated. Reaching out to others usually helps with loneliness.",
+          text: "Ask them to play with you",
+          emoji: "🤝",
+          description: "Correct! Sharing fun is the best.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Laugh at them",
+          emoji: "😆",
+          description: "That would hurt their feelings.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "You're excited about something. Should you share this feeling?",
+      text: "You are worried about a test at school.",
       options: [
         {
           id: "a",
-          text: "Yes, sharing positive feelings spreads joy",
-          emoji: "😄",
-          description: "Wonderful! Sharing happy feelings can make others happy too and strengthen your relationships.",
+          text: "Tell your teacher or parent",
+          emoji: "🗣️",
+          description: "Yes! They can help you study.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "No, keep it to yourself",
-          emoji: "🤫",
-          description: "Actually, sharing positive feelings can bring people closer together and create a more joyful environment.",
+          text: "Crumple up your homework",
+          emoji: "📝",
+          description: "That won't help you learn.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Skip school",
+          emoji: "🏫",
+          description: "You need to go to learn!",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "You feel embarrassed about something you did. What's best?",
+      text: "Why is sharing feelings good?",
       options: [
         {
           id: "a",
-          text: "Talk to someone you trust about it",
-          emoji: "🤗",
-          description: "Perfect! Talking about embarrassing moments with trusted people helps you process the feelings and learn.",
+          text: "It makes your feelings smaller and manageable",
+          emoji: "🎈",
+          description: "Exactly! A problem shared is a problem halved.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Never mention it to anyone",
-          emoji: "🙈",
-          description: "Keeping embarrassing feelings bottled up can make you worry more. Trusted people can help you feel better.",
+          text: "It makes people laugh at you",
+          emoji: "🤡",
+          description: "True friends won't laugh.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "It is boring",
+          emoji: "🥱",
+          description: "It's actually very helpful.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "You're feeling overwhelmed with schoolwork. What should you do?",
+      text: "Who are 'Safe People' to share secrets with?",
       options: [
         {
           id: "a",
-          text: "Tell a teacher or parent about your feelings",
-          emoji: "📚",
-          description: "Excellent! Sharing when you're overwhelmed helps adults support you and find solutions together.",
-          isCorrect: true
+          text: "A stranger in the park",
+          emoji: "🌳",
+          description: "Never share secrets with strangers.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Pretend everything is fine",
-          emoji: "😐",
-          description: "Pretending everything is fine won't solve the problem. Sharing your struggles helps find real solutions.",
+          text: "Parents, Teachers, Doctors",
+          emoji: "🛡️",
+          description: "Correct! Determine who you trust.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "The internet",
+          emoji: "💻",
+          description: "The internet isn't always private.",
           isCorrect: false
         }
       ]
@@ -120,7 +158,10 @@ const SharingStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +169,19 @@ const SharingStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +191,15 @@ const SharingStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-55"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={60}
+      totalLevels={5}
       currentLevel={55}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +207,52 @@ const SharingStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

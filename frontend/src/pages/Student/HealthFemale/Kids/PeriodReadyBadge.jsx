@@ -1,393 +1,200 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
+import { Calendar, Shield, Droplets, Heart, BadgeCheck } from "lucide-react";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PeriodReadyBadge = () => {
-  const navigate = useNavigate();
   const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [completedTasks, setCompletedTasks] = useState([]);
-  const [currentTask, setCurrentTask] = useState(0);
-  const [userAnswer, setUserAnswer] = useState("");
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedback, setFeedback] = useState({ correct: false, message: "" });
-  const [gameFinished, setGameFinished] = useState(false);
-  const { showAnswerConfetti } = useGameFeedback();
 
-  const tasks = [
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-40";
+
+  const { showCorrectAnswerFeedback, flashPoints, showAnswerConfetti, resetFeedback } = useGameFeedback();
+  const [currentLevel, setCurrentLevel] = useState(1);
+  const [score, setScore] = useState(0);
+  const [answered, setAnswered] = useState(false);
+  const [selectedAnswer, setSelectedAnswer] = useState(null);
+  const [showResult, setShowResult] = useState(false);
+
+  // Content adapted for Period Ready Kid Badge
+  const levels = [
     {
       id: 1,
-      type: "multipleChoice",
+      title: "Cycle Length",
       question: "What is the average length of a menstrual cycle?",
-      options: ["28 days", "14 days", "42 days"],
-      correctAnswer: "28 days",
-      explanation: "Most menstrual cycles last between 21-35 days, with 28 days being the average."
+      icon: Calendar,
+      item: "Calendar",
+      options: [
+        { text: "28 days", correct: true },
+        { text: "14 days", correct: false },
+        { text: "42 days", correct: false }
+      ],
+      feedback: {
+        correct: "Correct! Most cycles are around 28 days.",
+        wrong: "The average cycle lasts about 28 days."
+      }
     },
     {
       id: 2,
-      type: "dragAndDrop",
-      items: [
-        { id: "pad", name: "Sanitary Pad", correctZone: "hygiene" },
-        { id: "soap", name: "Soap", correctZone: "hygiene" },
-        { id: "calendar", name: "Calendar", correctZone: "tracking" }
+      title: "Hygiene",
+      question: "How often should you change your pad?",
+      icon: Shield,
+      item: "Pad",
+      options: [
+        { text: "Every 24 hours", correct: false },
+        { text: "Every 4-8 hours", correct: true },
+        { text: "Only when it hurts", correct: false }
       ],
-      zones: [
-        { id: "hygiene", name: "Hygiene Items" },
-        { id: "tracking", name: "Tracking Tools" }
-      ],
-      correctAnswer: 2, // Number of correct matches needed
-      explanation: "Pads and soap are hygiene items, while calendars help with tracking."
+      feedback: {
+        correct: "Excellent! Changing regularly keeps you fresh and healthy.",
+        wrong: "You should change pads every 4-8 hours for good hygiene."
+      }
     },
     {
       id: 3,
-      type: "trueFalse",
-      question: "It's normal to experience mood changes during periods.",
-      correctAnswer: "true",
-      explanation: "Hormonal changes during periods can cause mood swings, which is completely normal."
+      title: "Symptoms",
+      question: "What might you feel during your period?",
+      icon: Droplets,
+      item: "Symptoms",
+      options: [
+        { text: "Cramps or mood changes", correct: true },
+        { text: "Your hair turns purple", correct: false },
+        { text: "You become invisible", correct: false }
+      ],
+      feedback: {
+        correct: "Right! Cramps and mood swings are normal symptoms.",
+        wrong: "Common symptoms include cramps or mood changes."
+      }
     },
     {
       id: 4,
-      type: "fillBlank",
-      question: "Pads should be changed every ___ hours.",
-      correctAnswer: "4-8",
-      explanation: "Pads should be changed every 4-8 hours depending on flow to maintain hygiene."
+      title: "Support",
+      question: "What should you do if a friend is embarrassed?",
+      icon: Heart,
+      item: "Heart",
+      options: [
+        { text: "Laugh at her", correct: false },
+        { text: "Tell everyone", correct: false },
+        { text: "Comfort her", correct: true }
+      ],
+      feedback: {
+        correct: "That is kind! Supporting friends is very important.",
+        wrong: "You should always comfort and support your friends."
+      }
     },
     {
       id: 5,
-      type: "scenario",
-      question: "A friend is embarrassed about her period. You should:",
+      title: "Readiness",
+      question: "What makes you Period Ready?",
+      icon: BadgeCheck,
+      item: "Badge",
       options: [
-        "Mock her for being different",
-        "Comfort her and normalize the conversation",
-        "Ignore her completely"
+        { text: "Ignoring it", correct: false },
+        { text: "Having supplies and knowledge", correct: true },
+        { text: "Staying home forever", correct: false }
       ],
-      correctAnswer: "Comfort her and normalize the conversation",
-      explanation: "Support and understanding help reduce shame and create a positive environment."
+      feedback: {
+        correct: "You got it! Being prepared makes you confident!",
+        wrong: "Being ready means having supplies and knowing what to expect."
+      }
     }
   ];
 
-  const handleMultipleChoice = (selectedOption) => {
-    const task = tasks[currentTask];
-    const isCorrect = selectedOption === task.correctAnswer;
-    
-    setFeedback({
-      correct: isCorrect,
-      message: isCorrect ? "Correct!" : "Not quite right.",
-      explanation: task.explanation
-    });
-    
-    setShowFeedback(true);
-    
-    if (isCorrect && !completedTasks.includes(task.id)) {
-      setTimeout(() => {
-        setCompletedTasks(prev => [...prev, task.id]);
-        moveToNextTask();
-      }, 2000);
-    } else if (!isCorrect) {
-      setTimeout(() => {
-        setShowFeedback(false);
-      }, 2000);
-    }
-  };
+  const currentLevelData = levels[currentLevel - 1];
+  const Icon = currentLevelData.icon;
 
-  const handleTrueFalse = (answer) => {
-    const task = tasks[currentTask];
-    const isCorrect = answer === task.correctAnswer;
-    
-    setFeedback({
-      correct: isCorrect,
-      message: isCorrect ? "Correct!" : "Not quite right.",
-      explanation: task.explanation
-    });
-    
-    setShowFeedback(true);
-    
-    if (isCorrect && !completedTasks.includes(task.id)) {
-      setTimeout(() => {
-        setCompletedTasks(prev => [...prev, task.id]);
-        moveToNextTask();
-      }, 2000);
-    } else if (!isCorrect) {
-      setTimeout(() => {
-        setShowFeedback(false);
-      }, 2000);
-    }
-  };
+  const handleAnswer = (option) => {
+    if (answered) return;
 
-  const handleFillBlank = () => {
-    const task = tasks[currentTask];
-    const isCorrect = userAnswer.trim().toLowerCase() === task.correctAnswer.toLowerCase();
-    
-    setFeedback({
-      correct: isCorrect,
-      message: isCorrect ? "Correct!" : "Not quite right.",
-      explanation: task.explanation
-    });
-    
-    setShowFeedback(true);
-    
-    if (isCorrect && !completedTasks.includes(task.id)) {
-      setTimeout(() => {
-        setCompletedTasks(prev => [...prev, task.id]);
-        moveToNextTask();
-      }, 2000);
-    } else if (!isCorrect) {
-      setTimeout(() => {
-        setShowFeedback(false);
-      }, 2000);
-    }
-  };
+    setSelectedAnswer(option);
+    setAnswered(true);
+    resetFeedback();
 
-  const moveToNextTask = () => {
-    setShowFeedback(false);
-    setUserAnswer("");
-    
-    if (currentTask < tasks.length - 1) {
-      setCurrentTask(prev => prev + 1);
-    } else {
-      // Check if all tasks are completed
-      if (completedTasks.length + 1 === tasks.length) {
-        setTimeout(() => {
-          setGameFinished(true);
-          showAnswerConfetti();
-        }, 1000);
+    const isCorrect = option.correct;
+    const isLastQuestion = currentLevel === 5;
+
+    if (isCorrect) {
+      setScore(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
+    setTimeout(() => {
+      if (isLastQuestion) {
+        setShowResult(true);
+      } else {
+        setCurrentLevel(prev => prev + 1);
+        setAnswered(false);
+        setSelectedAnswer(null);
       }
-    }
+    }, 2000);
   };
-
-  const handleNext = () => {
-    navigate("/games/health-female/kids");
-  };
-
-  const getCurrentTask = () => tasks[currentTask];
-
-  const renderTask = () => {
-    const task = getCurrentTask();
-    
-    switch (task.type) {
-      case "multipleChoice":
-        return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-white mb-4">{task.question}</h3>
-            <div className="grid grid-cols-1 gap-3">
-              {task.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleMultipleChoice(option)}
-                  disabled={showFeedback}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 rounded-xl shadow-lg transition-all transform hover:scale-105 text-left"
-                >
-                  <div className="flex items-center">
-                    <div className="text-lg mr-3">{String.fromCharCode(65 + index)}.</div>
-                    <div>{option}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-        
-      case "dragAndDrop":
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-white text-center">Sort these period items into the correct categories:</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white/10 rounded-xl p-4">
-                <h4 className="text-white font-semibold mb-3 text-center">Items</h4>
-                <div className="space-y-2">
-                  {task.items.map(item => (
-                    <div 
-                      key={item.id}
-                      className="bg-gradient-to-r from-purple-500 to-pink-600 text-white p-3 rounded-lg text-center"
-                    >
-                      {item.name}
-                    </div>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-4">
-                {task.zones.map(zone => (
-                  <div key={zone.id} className="bg-white/10 rounded-xl p-4">
-                    <h4 className="text-white font-semibold mb-3 text-center">{zone.name}</h4>
-                    <div className="min-h-[60px] border-2 border-dashed border-white/30 rounded-lg flex items-center justify-center">
-                      <p className="text-white/50 text-sm">Drag items here</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="text-center text-white/80 text-sm">
-              <p>This is a demonstration. In a real game, you would drag items to the correct zones.</p>
-              <button
-                onClick={() => handleMultipleChoice("Correct")}
-                className="mt-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-4 py-2 rounded-lg"
-              >
-                Simulate Correct Answer
-              </button>
-            </div>
-          </div>
-        );
-        
-      case "trueFalse":
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-white mb-4">{task.question}</h3>
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={() => handleTrueFalse("true")}
-                disabled={showFeedback}
-                className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white px-8 py-4 rounded-xl text-xl font-bold shadow-lg transition-all transform hover:scale-105"
-              >
-                True
-              </button>
-              <button
-                onClick={() => handleTrueFalse("false")}
-                disabled={showFeedback}
-                className="bg-gradient-to-r from-red-500 to-orange-600 hover:from-red-600 hover:to-orange-700 text-white px-8 py-4 rounded-xl text-xl font-bold shadow-lg transition-all transform hover:scale-105"
-              >
-                False
-              </button>
-            </div>
-          </div>
-        );
-        
-      case "fillBlank":
-        return (
-          <div className="space-y-6">
-            <h3 className="text-xl font-semibold text-white mb-4">{task.question}</h3>
-            <div className="flex justify-center">
-              <input
-                type="text"
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                disabled={showFeedback}
-                className="bg-white/10 border border-white/20 rounded-xl px-4 py-3 text-white text-lg w-32 text-center focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="Enter answer"
-              />
-            </div>
-            <div className="text-center">
-              <button
-                onClick={handleFillBlank}
-                disabled={showFeedback || userAnswer.trim() === ""}
-                className={`px-6 py-3 rounded-xl font-bold text-white transition-all ${
-                  userAnswer.trim() !== ""
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105'
-                    : 'bg-gray-500 cursor-not-allowed'
-                }`}
-              >
-                Submit Answer
-              </button>
-            </div>
-          </div>
-        );
-        
-      case "scenario":
-        return (
-          <div className="space-y-4">
-            <h3 className="text-xl font-semibold text-white mb-4">{task.question}</h3>
-            <div className="grid grid-cols-1 gap-3">
-              {task.options.map((option, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleMultipleChoice(option)}
-                  disabled={showFeedback}
-                  className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-4 rounded-xl shadow-lg transition-all transform hover:scale-105 text-left"
-                >
-                  <div className="flex items-center">
-                    <div className="text-lg mr-3">{String.fromCharCode(65 + index)}.</div>
-                    <div>{option}</div>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-        
-      default:
-        return null;
-    }
-  };
-
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Badge: Period Ready Kid"
-        subtitle="Congratulations!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        gameId="health-female-kids-40"
-        gameType="health-female"
-        totalLevels={40}
-        currentLevel={40}
-        showConfetti={true}
-        backPath="/games/health-female/kids"
-      
-      maxScore={40} // Max score is total number of questions (all correct)
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🏅</div>
-          <h2 className="text-2xl font-bold mb-4">Period Ready Kid</h2>
-          <p className="text-white/80 mb-6">
-            You've completed all period awareness challenges!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-8">
-            You've earned your Period Ready Kid Badge!
-          </div>
-          <button
-            onClick={handleNext}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full text-lg transition-colors"
-          >
-            Continue Learning
-          </button>
-        </div>
-      </GameShell>
-    );
-  }
 
   return (
     <GameShell
       title="Badge: Period Ready Kid"
-      subtitle={`Task ${currentTask + 1} of ${tasks.length} | Completed: ${completedTasks.length}/${tasks.length}`}
+      subtitle={!showResult ? `Question ${currentLevel} of 5: Test your knowledge!` : "Badge Earned!"}
+      currentLevel={currentLevel}
+      totalLevels={5}
+      coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={score}
+      gameId={gameId}
+      gameType="health-female"
+      maxScore={maxScore}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
+      showConfetti={showResult && score === 5}
       backPath="/games/health-female/kids"
     >
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="mb-6">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-white/80">Progress</span>
-              <span className="text-yellow-400 font-bold">{completedTasks.length}/{tasks.length} tasks</span>
+      <div className="text-center text-white space-y-6">
+        {!showResult && currentLevelData && (
+          <div className="bg-white/10 backdrop-blur-md rounded-xl p-8 border border-white/20">
+            <div className="flex justify-center mb-4">
+              <Icon className="w-16 h-16 text-pink-400" />
             </div>
-            <div className="bg-white/10 rounded-full h-3 w-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500 rounded-full"
-                style={{ width: `${(completedTasks.length / tasks.length) * 100}%` }}
-              ></div>
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-white/80">Question {currentLevel} of 5</span>
+              <span className="text-yellow-400 font-bold">Score: {score}/5</span>
             </div>
+
+            <p className="text-white text-lg mb-6 text-center">
+              {currentLevelData.question}
+            </p>
+
+            <div className="grid sm:grid-cols-3 gap-3">
+              {currentLevelData.options.map((option, index) => (
+                <button
+                  key={index}
+                  onClick={() => handleAnswer(option)}
+                  disabled={answered}
+                  className="w-full min-h-[60px] bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 px-8 py-4 rounded-xl text-white font-bold text-lg transition-transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center shadow-lg"
+                >
+                  {option.text}
+                </button>
+              ))}
+            </div>
+
+            {answered && selectedAnswer && (
+              <div className={`mt-4 p-4 rounded-xl ${selectedAnswer.correct
+                  ? 'bg-green-500/20 border-2 border-green-400'
+                  : 'bg-red-500/20 border-2 border-red-400'
+                }`}>
+                <p className="text-white font-semibold">
+                  {selectedAnswer.correct
+                    ? currentLevelData.feedback.correct
+                    : currentLevelData.feedback.wrong}
+                </p>
+              </div>
+            )}
           </div>
-
-          {renderTask()}
-
-          {showFeedback && (
-            <div className={`p-4 rounded-xl mt-6 ${
-              feedback.correct 
-                ? 'bg-green-500/20 border border-green-500/30' 
-                : 'bg-red-500/20 border border-red-500/30'
-            }`}>
-              <p className={`text-lg font-semibold ${feedback.correct ? 'text-green-300' : 'text-red-300'}`}>
-                {feedback.message}
-              </p>
-              <p className="text-white/90 mt-2">{feedback.explanation}</p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </GameShell>
   );

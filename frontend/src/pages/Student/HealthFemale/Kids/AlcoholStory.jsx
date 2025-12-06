@@ -1,118 +1,158 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const AlcoholStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-85";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "An older girl offers alcohol. Should you drink?",
+      text: "You see adults drinking funny-smelling drinks.",
       options: [
         {
           id: "a",
-          text: "No, alcohol is harmful to my health and illegal for my age",
-          emoji: "🙅‍♀️",
-          description: "Exactly! Alcohol can harm your developing brain and body. It's also illegal for minors in most places.",
-          isCorrect: true
+          text: "Ask for a sip",
+          emoji: "🍷",
+          description: "Alcohol is not for kids.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Yes, just a little won't hurt",
-          emoji: "🍺",
-          description: "Even small amounts of alcohol can be harmful to a developing body and can impair judgment and coordination.",
+          text: "Stick to your juice or water",
+          emoji: "🧃",
+          description: "Correct! That is safe for you.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Smell it closely",
+          emoji: "👃",
+          description: "Best to stay away.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Your friend says alcohol makes you cool. What do you think?",
+      text: "Why can't kids drink alcohol?",
       options: [
         {
           id: "a",
-          text: "Real coolness comes from making smart, healthy choices",
-          emoji: "😎",
-          description: "Great choice! True confidence comes from self-respect and making decisions that protect your health and future.",
+          text: "It stops your brain from growing",
+          emoji: "🧠",
+          description: "Yes! Your brain is still growing.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Believe them and want to try alcohol",
-          emoji: "🤔",
-          description: "Making healthy choices is actually cooler than risking your health. True friends support your positive decisions.",
+          text: "It is too expensive",
+          emoji: "💰",
+          description: "It hurts your body.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "It is only for Tuesday",
+          emoji: "📅",
+          description: "It is never for kids.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "You're at a party where adults are drinking. What's your approach?",
+      text: "A friend says 'Try this beer'.",
       options: [
         {
           id: "a",
-          text: "Stay with trusted adults and avoid alcohol",
-          emoji: "👨‍👩‍👧",
-          description: "Perfect! Staying with trusted adults keeps you safe and helps you make responsible choices.",
-          isCorrect: true
+          text: "Drink it all",
+          emoji: "🍺",
+          description: "Do not drink it.",
+          isCorrect: false
+        },
+
+        {
+          id: "c",
+          text: "Take a little bit",
+          emoji: "🤏",
+          description: "None is safe for kids.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Try alcohol when adults aren't looking",
-          emoji: "🙈",
-          description: "This could be dangerous and put you at risk. It's better to follow rules and stay safe.",
-          isCorrect: false
-        }
+          text: "Say 'No Thanks' and leave",
+          emoji: "🚶‍♀️",
+          description: "Correct! Be strong and leave.",
+          isCorrect: true
+        },
       ]
     },
     {
       id: 4,
-      text: "Alcohol makes you feel dizzy and sick. What should you do?",
+      text: "What happens if someone drinks too much?",
       options: [
         {
-          id: "a",
-          text: "Tell a trusted adult immediately",
-          emoji: "👩‍⚕️",
-          description: "Wonderful! Getting help right away is the smartest and safest response to feeling unwell from alcohol.",
+          id: "b",
+          text: "They get sick and dizzy",
+          emoji: "😵",
+          description: "Yes! It makes people unwell.",
           isCorrect: true
         },
         {
-          id: "b",
-          text: "Hide and hope it goes away",
-          emoji: "🤐",
-          description: "Hiding symptoms can be dangerous. It's important to get help when you're not feeling well.",
+          id: "a",
+          text: "They get super powers",
+          emoji: "🦸",
+          description: "Alcohol doesn't give powers.",
+          isCorrect: false
+        },
+
+        {
+          id: "c",
+          text: "They fly",
+          emoji: "🦅",
+          description: "People can't fly.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "You learn that alcohol can harm brain development. How does this make you feel?",
+      text: "What is the best drink for a growing girl?",
       options: [
         {
           id: "a",
-          text: "Glad I chose not to drink and protect my brain",
-          emoji: "🧠",
-          description: "Excellent! Understanding how alcohol affects brain development reinforces your commitment to staying alcohol-free.",
-          isCorrect: true
+          text: "Soda",
+          emoji: "🥤",
+          description: "Soda has too much sugar.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Think it won't affect you",
-          emoji: "🤷",
-          description: "Alcohol affects everyone's brain development during the teenage years. Protecting your brain is important for your future.",
+          text: "Water and Milk",
+          emoji: "🥛",
+          description: "Correct! They make you strong.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Beer",
+          emoji: "🍺",
+          description: "Beer is bad for kids.",
           isCorrect: false
         }
       ]
@@ -120,7 +160,10 @@ const AlcoholStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +171,19 @@ const AlcoholStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +193,15 @@ const AlcoholStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-85"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={90}
+      totalLevels={5}
       currentLevel={85}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +209,52 @@ const AlcoholStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

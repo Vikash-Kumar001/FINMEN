@@ -1,106 +1,84 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 
 const HygieneMatch = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [pairs, setPairs] = useState([]);
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-4";
+
+  const [coins, setCoins] = useState(0);
   const [flipped, setFlipped] = useState([]);
   const [matched, setMatched] = useState([]);
-  const [moves, setMoves] = useState(0);
   const [gameCompleted, setGameCompleted] = useState(false);
-  const [gameStarted, setGameStarted] = useState(false);
-  const { showAnswerConfetti } = useGameFeedback();
+  const [showConfetti, setShowConfetti] = useState(false);
+  const { showAnswerConfetti, showCorrectAnswerFeedback, flashPoints } = useGameFeedback();
 
-  const items = [
-    { id: 'toothbrush', emoji: '🪥', match: 'teeth', description: 'Brush your teeth twice a day' },
-    { id: 'teeth', emoji: '🦷', match: 'toothbrush', description: 'Teeth need to be brushed regularly' },
-    { id: 'soap', emoji: '🧼', match: 'bath', description: 'Use soap when taking a bath' },
-    { id: 'bath', emoji: '🚿', match: 'soap', description: 'Take a bath daily with soap' },
-    { id: 'comb', emoji: '💇‍♀️', match: 'hair', description: 'Comb your hair to keep it neat' },
-    { id: 'hair', emoji: '💇', match: 'comb', description: 'Hair needs regular combing' },
-    { id: 'towel', emoji: '🧺', match: 'dry', description: 'Use a towel to dry yourself' },
-    { id: 'dry', emoji: '🧽', match: 'towel', description: 'Dry yourself after bathing' },
-    { id: 'nailcutter', emoji: '✂️', match: 'nails', description: 'Trim your nails regularly' },
-    { id: 'nails', emoji: '💅', match: 'nailcutter', description: 'Keep your nails clean and trimmed' }
+  // Hardcoded board layout (pseudo-shuffled)
+  // 5 pairs: 
+  // 1. Toothbrush (A) - Teeth (B)
+  // 2. Soap (C) - Bath (D)
+  // 3. Comb (E) - Hair (F)
+  // 4. Towel (G) - Dry (H)
+  // 5. Nailcutter (I) - Nails (J)
+
+  const gridItems = [
+    { id: 'soap', emoji: '🧼', matchId: 'bath', name: 'Soap' },
+    { id: 'comb', emoji: '💇‍♀️', matchId: 'hair', name: 'Comb' },
+    { id: 'bath', emoji: '🚿', matchId: 'soap', name: 'Bath' },
+    { id: 'toothbrush', emoji: '🪥', matchId: 'teeth', name: 'Toothbrush' },
+    { id: 'nails', emoji: '💅', matchId: 'nailcutter', name: 'Nails' },
+    { id: 'dry', emoji: '🧽', matchId: 'towel', name: 'Dry' },
+    { id: 'hair', emoji: '💇', matchId: 'comb', name: 'Hair' },
+    { id: 'nailcutter', emoji: '✂️', matchId: 'nails', name: 'Trimmer' },
+    { id: 'towel', emoji: '🧺', matchId: 'dry', name: 'Towel' },
+    { id: 'teeth', emoji: '🦷', matchId: 'toothbrush', name: 'Teeth' },
   ];
-
-  // Shuffle function
-  const shuffle = (array) => {
-    const newArray = [...array];
-    for (let i = newArray.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
-    }
-    return newArray;
-  };
-
-  // Initialize game
-  useEffect(() => {
-    // Start the game automatically when component mounts
-    const startGame = () => {
-      const shuffledItems = shuffle([...items]);
-      setPairs(shuffledItems);
-      setFlipped([]);
-      setMatched([]);
-      setMoves(0);
-      setGameCompleted(false);
-      setGameStarted(true);
-    };
-    
-    startGame();
-    
-    // Cleanup function
-    return () => {
-      setGameStarted(false);
-    };
-  }, []);
 
   // Check for matches
   useEffect(() => {
     if (flipped.length === 2) {
-      setMoves(prev => prev + 1);
       const [firstIndex, secondIndex] = flipped;
-      const firstItem = pairs[firstIndex];
-      const secondItem = pairs[secondIndex];
+      const firstItem = gridItems[firstIndex];
+      const secondItem = gridItems[secondIndex];
 
-      if (firstItem.match === secondItem.id) {
+      if (firstItem.matchId === secondItem.id) {
+        // Match found
         setMatched(prev => [...prev, firstItem.id, secondItem.id]);
         setFlipped([]);
-        
-        // Check if game is completed
-        if (matched.length + 2 === items.length) {
-          setTimeout(() => {
-            setGameCompleted(true);
-            showAnswerConfetti();
-          }, 500);
+        setCoins(prev => prev + 1); // 1 coin per pair match
+        showCorrectAnswerFeedback(1, true);
+
+        // Check completion (5 pairs = 10 items)
+        if (matched.length + 2 === gridItems.length) {
+          setGameCompleted(true);
+          setShowConfetti(true);
+          // Removed incorrect call to showAnswerConfetti()
         }
       } else {
+        // No match
         setTimeout(() => {
           setFlipped([]);
         }, 1000);
       }
     }
-  }, [flipped, pairs, matched, items.length]);
+  }, [flipped, matched]);
 
   const handleCardClick = (index) => {
-    // Don't allow clicking already matched or flipped cards
     if (
-      flipped.length === 2 || 
-      flipped.includes(index) || 
-      matched.includes(pairs[index].id) ||
+      flipped.length === 2 ||
+      flipped.includes(index) ||
+      matched.includes(gridItems[index].id) ||
       gameCompleted
     ) {
       return;
     }
-
-    // Flip the card
     setFlipped(prev => [...prev, index]);
   };
 
@@ -108,134 +86,72 @@ const HygieneMatch = () => {
     navigate("/games/health-female/kids");
   };
 
-  const resetGame = () => {
-    setGameStarted(false);
-    setGameCompleted(false);
-  };
-
-  if (!gameStarted) {
-    return (
-      <GameShell
-        title="Hygiene Match"
-        subtitle="Loading..."
-        backPath="/games/health-female/kids"
-      
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-pulse text-center">
-            <div className="text-6xl mb-4">🧩</div>
-            <p className="text-white">Preparing your game...</p>
-          </div>
-        </div>
-      </GameShell>
-    );
-  }
-
-  if (gameCompleted) {
-    return (
-      <GameShell
-        title="Hygiene Match"
-        subtitle="Congratulations!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={Math.max(5 - Math.floor(moves / 2), 1)}
-        gameId="health-female-kids-4"
-        gameType="health-female"
-        totalLevels={10}
-        currentLevel={4}
-        showConfetti={true}
-        backPath="/games/health-female/kids"
-      >
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🎉</div>
-          <h2 className="text-2xl font-bold mb-4">You Did It!</h2>
-          <p className="text-white/80 mb-6">
-            You completed the game in {moves} moves!
-          </p>
-          <div className="text-yellow-400 font-bold text-lg mb-8">
-            You earned {Math.max(5 - Math.floor(moves / 2), 1)} coins!
-          </div>
-          <button
-            onClick={resetGame}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-full text-lg transition-colors"
-          >
-            Play Again
-          </button>
-        </div>
-      </GameShell>
-    );
-  }
-
   return (
     <GameShell
       title="Hygiene Match"
-      subtitle={`Moves: ${moves} | Matches: ${matched.length / 2} of ${pairs.length / 2}`}
+      subtitle={`Pairs Matched: ${matched.length / 2} / 5`}
+      onNext={handleNext}
+      nextEnabled={gameCompleted}
+      showGameOver={gameCompleted}
+      score={coins}
+      gameId={gameId}
+      gameType="health-female"
+      totalLevels={5}
+      currentLevel={Math.min((matched.length / 2) + 1, 5)}
+      showConfetti={showConfetti}
+      showAnswerConfetti={showAnswerConfetti}
+      flashPoints={flashPoints}
       backPath="/games/health-female/kids"
+      maxScore={maxScore}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
-      <div className="flex flex-col items-center">
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 w-full max-w-4xl mx-auto p-4">
-          {pairs.map((item, index) => {
-            const isFlipped = flipped.includes(index) || matched.includes(item.id);
-            const isMatched = matched.includes(item.id);
-            
-            return (
-              <div 
-                key={`${item.id}-${index}`}
-                onClick={() => handleCardClick(index)}
-                className={`aspect-square flex items-center justify-center text-4xl cursor-pointer rounded-2xl transition-all duration-300 transform ${
-                  isFlipped 
-                    ? isMatched 
-                      ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg scale-95' 
-                      : 'bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg scale-95' 
-                    : 'bg-gradient-to-br from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 shadow-md hover:shadow-lg scale-100'
-                } ${isFlipped ? '' : 'hover:scale-105'}`}
-              >
-                {isFlipped ? (
-                  <div className="text-center p-2 text-white">
-                    <div className="text-4xl mb-2">{item.emoji}</div>
-                    <div className="text-xs font-medium bg-white/20 px-2 py-1 rounded-full">
-                      {item.id === 'toothbrush' ? 'Toothbrush' : 
-                       item.id === 'teeth' ? 'Teeth' :
-                       item.id === 'soap' ? 'Soap' :
-                       item.id === 'bath' ? 'Bath' :
-                       item.id === 'comb' ? 'Comb' :
-                       item.id === 'hair' ? 'Hair' :
-                       item.id === 'towel' ? 'Towel' :
-                       item.id === 'dry' ? 'Dry' :
-                       item.id === 'nailcutter' ? 'Nail Cutter' : 'Nails'}
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-4xl bg-white/10 p-4 rounded-xl">
-                    <span className="opacity-70">?</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-        
-        {flipped.length === 2 && (
-          <div className="mt-6 p-4 bg-white/10 rounded-lg text-center max-w-md mx-auto">
-            <p className="text-sm text-white/80">
-              {pairs[flipped[0]].id === pairs[flipped[1]].match 
-                ? 'Match found! ' + pairs[flipped[0]].description 
-                : 'Not a match. Try again!'}
-            </p>
+      <div className="space-y-8">
+        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
+          <div className="flex justify-between items-center mb-6">
+            <div className="text-white">Find matching pairs!</div>
+            <div className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</div>
           </div>
-        )}
-        
-        <div className="mt-6 flex justify-center space-x-4">
-          <button
-            onClick={resetGame}
-            className="bg-white/10 hover:bg-white/20 text-white font-bold py-2 px-4 rounded transition-colors"
-          >
-            Restart Game
-          </button>
+
+          <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 w-full max-w-4xl mx-auto">
+            {gridItems.map((item, index) => {
+              const isFlipped = flipped.includes(index);
+              const isMatched = matched.includes(item.id);
+
+              let cardClass = "bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg"; // Default back
+              if (isFlipped || isMatched) {
+                cardClass = "bg-white text-gray-900 ring-4 ring-blue-400"; // Face up
+                if (isMatched) cardClass = "bg-green-100 text-green-900 ring-4 ring-green-500";
+              }
+
+              return (
+                <button
+                  key={`${item.id}-${index}`}
+                  onClick={() => handleCardClick(index)}
+                  disabled={isFlipped || isMatched}
+                  className={`aspect-square rounded-2xl flex flex-col items-center justify-center transition-all duration-300 transform ${isMatched ? '' : 'hover:scale-105 active:scale-95'} ${cardClass} shadow-xl`}
+                >
+                  {isFlipped || isMatched ? (
+                    <>
+                      <span className="text-4xl mb-2">{item.emoji}</span>
+                      <span className="text-xs font-bold px-2 py-1 bg-black/5 rounded-full">{item.name}</span>
+                    </>
+                  ) : (
+                    <span className="text-4xl opacity-50">?</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {flipped.length === 2 && (
+            <div className="mt-4 text-center h-6 text-white/80 font-medium">
+              {gridItems[flipped[0]].matchId === gridItems[flipped[1]].id
+                ? "Match Found! 🎉"
+                : "Try Again..."}
+            </div>
+          )}
         </div>
       </div>
     </GameShell>

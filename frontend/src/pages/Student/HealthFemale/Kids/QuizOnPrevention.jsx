@@ -1,97 +1,180 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const QuizOnPrevention = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-72";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Why wash hands before meals?",
+      text: "How do we stop germs from spreading?",
       options: [
-        { id: "a", text: "To remove germs" },
-        { id: "b", text: "Just tradition" }
-      ],
-      correctAnswer: "a",
-      explanation: "Washing hands before meals removes germs that could make you sick. It's an important hygiene practice, not just tradition."
+        {
+          id: "a",
+          text: "Share drinks",
+          emoji: "🥤",
+          description: "Sharing cups spreads germs.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Wash hands often",
+          emoji: "🧼",
+          description: "Correct! Clean hands kill germs.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Never bathe",
+          emoji: "🛀",
+          description: "Bathing cleans germs away.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      text: "How often should you brush your teeth?",
+      text: "When should you sneeze?",
       options: [
-        { id: "a", text: "Once a day" },
-        { id: "b", text: "Twice a day" },
-        { id: "c", text: "Only when they hurt" }
-      ],
-      correctAnswer: "b",
-      explanation: "Dentists recommend brushing your teeth twice a day to prevent cavities and keep your mouth healthy."
+        {
+          id: "a",
+          text: "On your friend",
+          emoji: "🤧",
+          description: "Yuck! Don't do that.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Into your elbow or tissue",
+          emoji: "💪",
+          description: "Yes! Catch the sneeze.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Into the air",
+          emoji: "💨",
+          description: "That sprays germs everywhere.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "What's the best way to prevent the flu?",
+      text: "What keeps your teeth healthy?",
       options: [
-        { id: "a", text: "Get a flu vaccine" },
-        { id: "b", text: "Stay home all winter" },
-        { id: "c", text: "Take vitamins only" }
-      ],
-      correctAnswer: "a",
-      explanation: "Getting a flu vaccine is the most effective way to prevent the flu. It helps your body build immunity to the virus."
+        {
+          id: "b",
+          text: "Brushing twice a day",
+          emoji: "🪥",
+          description: "Exactly! Keep them shiny.",
+          isCorrect: true
+        },
+        {
+          id: "a",
+          text: "Eating candy",
+          emoji: "🍭",
+          description: "Sugar causes cavities.",
+          isCorrect: false
+        },
+       
+        {
+          id: "c",
+          text: "Chewing rocks",
+          emoji: "🪨",
+          description: "Rocks break teeth!",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      text: "Why wear a helmet when riding a bike?",
+      text: "Why do we sleep?",
       options: [
-        { id: "a", text: "To look cool" },
-        { id: "b", text: "To protect your head from injury" },
-        { id: "c", text: "It's required by law only" }
-      ],
-      correctAnswer: "b",
-      explanation: "Helmets protect your head from serious injury in case of a fall or accident. Safety is more important than looking cool."
+        {
+          id: "a",
+          text: "To be bored",
+          emoji: "🥱",
+          description: "Sleep isn't boring.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "To help our body repair and grow",
+          emoji: "🛌",
+          description: "Yes! Sleep powers you up.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "To miss school",
+          emoji: "🏫",
+          description: "We sleep at night.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "How often should you visit the dentist?",
+      text: "What protects your head when biking?",
       options: [
-        { id: "a", text: "Only when you have a toothache" },
-        { id: "b", text: "Twice a year for checkups" },
-        { id: "c", text: "Once every few years" }
-      ],
-      correctAnswer: "b",
-      explanation: "Dentists recommend visiting twice a year for checkups to catch problems early and keep your teeth healthy."
+        {
+          id: "a",
+          text: "A hat",
+          emoji: "🧢",
+          description: "A hat is not hard enough.",
+          isCorrect: false
+        },
+        
+        {
+          id: "c",
+          text: "Your hair",
+          emoji: "💇‍♀️",
+          description: "Hair doesn't protect from bumps.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "A helmet",
+          emoji: "⛑️",
+          description: "Correct! Helmets save heads.",
+          isCorrect: true
+        },
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || showFeedback) return;
-    
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correctAnswer;
-    
+  const handleChoice = (optionId) => {
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    
-    setShowFeedback(true);
-    
+
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
       } else {
         setGameFinished(true);
       }
@@ -102,8 +185,6 @@ const QuizOnPrevention = () => {
     navigate("/games/health-female/kids");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   return (
     <GameShell
       title="Quiz on Prevention"
@@ -112,14 +193,15 @@ const QuizOnPrevention = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-72"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={80}
-      currentLevel={72}
+      totalLevels={5}
+      currentLevel={62}
       showConfetti={gameFinished}
+      flashPoints={flashPoints}
       backPath="/games/health-female/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -127,66 +209,53 @@ const QuizOnPrevention = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
-          <div className="space-y-3">
-            {getCurrentQuestion().options.map(option => {
-              const isSelected = selectedOption === option.id;
-              const isCorrect = option.id === getCurrentQuestion().correctAnswer;
-              const showCorrect = showFeedback && isCorrect;
-              const showIncorrect = showFeedback && isSelected && !isCorrect;
-              
+          <div className="grid grid-cols-1 gap-4">
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
               return (
                 <button
                   key={option.id}
-                  onClick={() => handleOptionSelect(option.id)}
+                  onClick={() => handleChoice(option.id)}
                   disabled={showFeedback}
-                  className={`w-full p-4 rounded-xl text-left transition-all ${
-                    showCorrect
-                      ? 'bg-green-500/20 border-2 border-green-500 text-white'
-                      : showIncorrect
-                      ? 'bg-red-500/20 border-2 border-red-500 text-white'
-                      : isSelected
-                      ? 'bg-blue-500/20 border-2 border-blue-500 text-white'
-                      : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
-                  }`}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
                 >
                   <div className="flex items-center">
-                    <div className="text-lg mr-3 font-bold">
-                      {option.id.toUpperCase()}.
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
                     </div>
-                    <div>{option.text}</div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
+                    )}
                   </div>
                 </button>
               );
             })}
           </div>
-
-          {showFeedback && (
-            <div className={`mt-6 p-4 rounded-xl ${
-              selectedOption === getCurrentQuestion().correctAnswer
-                ? 'bg-green-500/20 border border-green-500/30'
-                : 'bg-red-500/20 border border-red-500/30'
-            }`}>
-              <p className={`font-semibold ${
-                selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'text-green-300'
-                  : 'text-red-300'
-              }`}>
-                {selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'Correct! 🎉'
-                  : 'Not quite right!'}
-              </p>
-              <p className="text-white/90 mt-2">
-                {getCurrentQuestion().explanation}
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </GameShell>

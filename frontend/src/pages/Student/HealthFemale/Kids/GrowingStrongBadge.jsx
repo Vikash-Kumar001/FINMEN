@@ -1,194 +1,224 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const GrowingStrongBadge = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins] = useState(0);
-  const [selectedChanges, setSelectedChanges] = useState([]);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [showFeedback, setShowFeedback] = useState(false);
-  const [feedback, setFeedback] = useState({ correct: 0, total: 0 });
-  const { showAnswerConfetti } = useGameFeedback();
 
-  const growthChanges = [
-    { id: 1, name: "Height Increase", emoji: "📈", isGrowth: true },
-    { id: 2, name: "Body Hair", emoji: "🦵", isGrowth: true },
-    { id: 3, name: "Acne", emoji: "🔴", isGrowth: true },
-    { id: 4, name: "Mood Swings", emoji: "😢", isGrowth: true },
-    { id: 5, name: "Voice Changes", emoji: "🗣️", isGrowth: true },
-    { id: 6, name: "Weight Gain", emoji: "🍔", isGrowth: false },
-    { id: 7, name: "Illness", emoji: "🤒", isGrowth: false },
-    { id: 8, name: "Injury", emoji: "🤕", isGrowth: false },
-    { id: 9, name: "Stress", emoji: "😩", isGrowth: false },
-    { id: 10, name: "Poor Nutrition", emoji: "🍟", isGrowth: false }
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-30";
+
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  const questions = [
+    {
+      id: 1,
+      text: "How do you earn the 'Strong Body' badge?",
+      options: [
+        {
+          id: "a",
+          text: "By eating junk food",
+          emoji: "🍔",
+          description: "Junk food doesn't build strength.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "By eating nutritious food",
+          emoji: "🥗",
+          description: "Correct! Nutrition is key.",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 2,
+      text: "What gives you the 'Resting Pro' badge?",
+      options: [
+        {
+          id: "a",
+          text: "Sleeping 8-10 hours",
+          emoji: "🛌",
+          description: "Yes! Sleep makes you a pro grower.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Playing games all night",
+          emoji: "🎮",
+          description: "Lack of sleep hurts growth.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 3,
+      text: "What earns you the 'Active Mover' badge?",
+      options: [
+        {
+          id: "a",
+          text: "Watching TV all day",
+          emoji: "📺",
+          description: "Sitting isn't moving!",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Running and Playing",
+          emoji: "🏃‍♀️",
+          description: "Correct! Movement is great.",
+          isCorrect: true
+        }
+      ]
+    },
+    {
+      id: 4,
+      text: "How do you get the 'Hydration Hero' badge?",
+      options: [
+        {
+          id: "a",
+          text: "Drinking plenty of water",
+          emoji: "💧",
+          description: "Yes! Water is the hero drink.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Drinking only juice",
+          emoji: "🧃",
+          description: "Juice has sugar, water is better.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "What is the ultimate 'Growth Champion' secret?",
+      options: [
+        {
+          id: "a",
+          text: "Loving yourself",
+          emoji: "❤️",
+          description: "Exactly! A happy mind helps you grow.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Comparing to others",
+          emoji: "📏",
+          description: "Don't compare, just be you!",
+          isCorrect: false
+        }
+      ]
+    }
   ];
 
-  // Shuffle and select 10 growth changes
-  const getShuffledChanges = () => {
-    const shuffled = [...growthChanges].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 10);
-  };
+  const handleChoice = (optionId) => {
+    if (selectedOptionId) return;
 
-  const [shuffledChanges, setShuffledChanges] = useState(getShuffledChanges());
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
 
-  const handleChangeSelect = (changeId) => {
-    // Toggle selection
-    if (selectedChanges.includes(changeId)) {
-      setSelectedChanges(selectedChanges.filter(id => id !== changeId));
-    } else {
-      // Limit to 5 selections
-      if (selectedChanges.length < 5) {
-        setSelectedChanges([...selectedChanges, changeId]);
-      }
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
     }
-  };
 
-  const handleSubmit = () => {
-    const correctChoices = selectedChanges.filter(changeId => {
-      const change = shuffledChanges.find(c => c.id === changeId);
-      return change.isGrowth;
-    }).length;
-    
-    const totalSelected = selectedChanges.length;
-    setFeedback({ correct: correctChoices, total: totalSelected });
-    setShowFeedback(true);
-    
-    // If all 5 selections are correct (growth changes)
-    if (correctChoices === 5) {
-      setTimeout(() => {
+    setTimeout(() => {
+      setSelectedOptionId(null);
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+      } else {
         setGameFinished(true);
-        showAnswerConfetti();
-      }, 2000);
-    } else {
-      // Show feedback for 2 seconds, then allow retry
-      setTimeout(() => {
-        setShowFeedback(false);
-      }, 2000);
-    }
+      }
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
-  const resetGame = () => {
-    setSelectedChanges([]);
-    setShowFeedback(false);
-    setShuffledChanges(getShuffledChanges());
-  };
-
   return (
     <GameShell
-      title="Badge: Growing Strong Girl"
-      subtitle={showFeedback ? "Results" : `Select 5 growth changes (${selectedChanges.length}/5)`}
+      title="Badge: Growing Strong"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
       onNext={handleNext}
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-30"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={30}
+      totalLevels={5}
       currentLevel={30}
       showConfetti={gameFinished}
+      flashPoints={flashPoints}
       backPath="/games/health-female/kids"
-      showAnswerConfetti={false}
-    
-      maxScore={30} // Max score is total number of questions (all correct)
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              Identify 5 normal growth changes to earn your Growing Strong Girl Badge!
-            </h2>
-            <p className="text-white/80">
-              Select only the changes that are normal parts of healthy development.
-            </p>
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6">
-            {shuffledChanges.map((change) => (
-              <button
-                key={change.id}
-                onClick={() => handleChangeSelect(change.id)}
-                disabled={selectedChanges.length >= 5 && !selectedChanges.includes(change.id)}
-                className={`aspect-square flex flex-col items-center justify-center text-3xl rounded-2xl transition-all transform ${
-                  selectedChanges.includes(change.id)
-                    ? change.isGrowth
-                      ? 'bg-gradient-to-br from-green-500 to-emerald-600 shadow-lg scale-105 ring-2 ring-green-400'
-                      : 'bg-gradient-to-br from-red-500 to-orange-600 shadow-lg scale-105 ring-2 ring-red-400'
-                    : 'bg-gradient-to-br from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 shadow-md hover:shadow-lg hover:scale-105'
-                } ${selectedChanges.length >= 5 && !selectedChanges.includes(change.id) ? 'opacity-50' : ''}`}
-              >
-                <span className="text-3xl mb-1">{change.emoji}</span>
-                <span className="text-xs font-medium text-white">{change.name}</span>
-              </button>
-            ))}
-          </div>
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
+          </h2>
 
-          {!showFeedback && (
-            <div className="flex justify-center">
-              <button
-                onClick={handleSubmit}
-                disabled={selectedChanges.length !== 5}
-                className={`px-6 py-3 rounded-full font-bold text-white transition-all ${
-                  selectedChanges.length === 5
-                    ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105'
-                    : 'bg-gray-500 cursor-not-allowed'
-                }`}
-              >
-                Check My Choices
-              </button>
-            </div>
-          )}
+          <div className="grid grid-cols-1 gap-4">
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
 
-          {showFeedback && (
-            <div className={`p-6 rounded-2xl text-center mb-6 ${
-              feedback.correct === 5
-                ? 'bg-green-500/20 border border-green-500/30'
-                : 'bg-red-500/20 border border-red-500/30'
-            }`}>
-              <p className={`text-lg mb-3 ${
-                feedback.correct === 5 ? 'text-green-300' : 'text-red-300'
-              }`}>
-                {feedback.correct === 5
-                  ? '🎉 Perfect! You selected all 5 normal growth changes!'
-                  : `You selected ${feedback.correct} growth changes out of ${feedback.total}. Try again!`}
-              </p>
-              
-              {feedback.correct === 5 ? (
-                <div className="text-yellow-400 font-bold">
-                  Congratulations! You've earned your Growing Strong Girl Badge!
-                </div>
-              ) : (
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
                 <button
-                  onClick={resetGame}
-                  className="mt-3 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-full transition-colors"
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
                 >
-                  Try Again
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
+                    )}
+                  </div>
                 </button>
-              )}
-            </div>
-          )}
-
-          {gameFinished && (
-            <div className="text-center p-6 bg-gradient-to-r from-yellow-500/20 to-amber-500/20 rounded-2xl border border-yellow-400">
-              <div className="text-6xl mb-4">🏅</div>
-              <h3 className="text-2xl font-bold text-yellow-300 mb-2">Growing Strong Girl</h3>
-              <p className="text-white">
-                You understand healthy development! Keep growing strong and confident.
-              </p>
-            </div>
-          )}
+              );
+            })}
+          </div>
         </div>
       </div>
     </GameShell>

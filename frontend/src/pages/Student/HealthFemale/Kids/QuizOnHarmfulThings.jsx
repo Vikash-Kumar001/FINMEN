@@ -1,98 +1,180 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const QuizOnHarmfulThings = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-82";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [selectedOption, setSelectedOption] = useState(null);
-  const [showFeedback, setShowFeedback] = useState(false);
   const [gameFinished, setGameFinished] = useState(false);
-  const { showCorrectAnswerFeedback } = useGameFeedback();
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "Which is harmful?",
+      text: "Which of these is medicine?",
       options: [
-        { id: "a", text: "Fruits" },
-        { id: "b", text: "Cigarettes" },
-        { id: "c", text: "Milk" }
-      ],
-      correctAnswer: "b",
-      explanation: "Cigarettes contain harmful chemicals that can cause lung cancer, heart disease, and other serious health problems."
+        {
+          id: "a",
+          text: "Candy",
+          emoji: "🍬",
+          description: "Candy is a treat.",
+          isCorrect: false
+        },
+       
+        {
+          id: "c",
+          text: "Soda",
+          emoji: "🥤",
+          description: "Soda is a drink.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Pills from the doctor",
+          emoji: "💊",
+          description: "Correct! Only take if doctor says.",
+          isCorrect: true
+        },
+      ]
     },
     {
       id: 2,
-      text: "What is a healthy way to manage stress?",
+      text: "Is alcohol (beer/wine) for kids?",
       options: [
-        { id: "a", text: "Exercise" },
-        { id: "b", text: "Drinking alcohol" },
-        { id: "c", text: "Taking drugs" }
-      ],
-      correctAnswer: "a",
-      explanation: "Exercise releases endorphins which naturally reduce stress and improve mood without harmful side effects."
+        {
+          id: "a",
+          text: "Yes, at parties",
+          emoji: "🎉",
+          description: "No, never for kids.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "No, it hurts growing bodies",
+          emoji: "🚫",
+          description: "Yes! It is only for adults.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Maybe on Tuesdays",
+          emoji: "📅",
+          description: "Not on any day.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      text: "Which substance can cause addiction?",
+      text: "What if you see a needle on the ground?",
       options: [
-        { id: "a", text: "Vegetables" },
-        { id: "b", text: "Alcohol" },
-        { id: "c", text: "Water" }
-      ],
-      correctAnswer: "b",
-      explanation: "Alcohol affects the brain's reward system and can lead to physical and psychological dependence."
+        {
+          id: "b",
+          text: "Don't touch and tell an adult",
+          emoji: "🛑",
+          description: "Correct! Stay safe.",
+          isCorrect: true
+        },
+        {
+          id: "a",
+          text: "Pick it up",
+          emoji: "💉",
+          description: "That is very dangerous.",
+          isCorrect: false
+        },
+      
+        {
+          id: "c",
+          text: "Kick it",
+          emoji: "🦶",
+          description: "Don't touch it at all.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      text: "What is a safe choice for a drink?",
+      text: "Are cleaning sprays (like bleach) safe to drink?",
       options: [
-        { id: "a", text: "Juice" },
-        { id: "b", text: "Energy drinks with alcohol" },
-        { id: "c", text: "Soda with caffeine" }
-      ],
-      correctAnswer: "a",
-      explanation: "Natural fruit juices provide vitamins and nutrients without the harmful effects of alcohol or excessive caffeine."
+        {
+          id: "a",
+          text: "Yes, they clean you",
+          emoji: "🧴",
+          description: "No! They are poison.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "No! They are poison",
+          emoji: "☠️",
+          description: "Yes! Never drink cleaners.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Only if they smell like lemon",
+          emoji: "🍋",
+          description: "Smell doesn't make it safe.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 5,
-      text: "Which activity promotes good health?",
+      text: "What is 'Healthy' for your body?",
       options: [
-        { id: "a", text: "Smoking" },
-        { id: "b", text: "Regular exercise" },
-        { id: "c", text: "Staying up all night" }
-      ],
-      correctAnswer: "b",
-      explanation: "Regular exercise strengthens the heart, lungs, and muscles while improving mental health and energy levels."
+        {
+          id: "a",
+          text: "Smoke and alcohol",
+          emoji: "🚬",
+          description: "Those hurt your body.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Water and good food",
+          emoji: "🥦",
+          description: "Exactly! Fuel your body right.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Eating rocks",
+          emoji: "🪨",
+          description: "Rocks are not food.",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handleOptionSelect = (optionId) => {
-    if (selectedOption || showFeedback) return;
-    
-    setSelectedOption(optionId);
-    const isCorrect = optionId === questions[currentQuestion].correctAnswer;
-    
+  const handleChoice = (optionId) => {
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
     if (isCorrect) {
       setCoins(prev => prev + 1);
       showCorrectAnswerFeedback(1, true);
     }
-    
-    setShowFeedback(true);
-    
+
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
-        setSelectedOption(null);
-        setShowFeedback(false);
       } else {
         setGameFinished(true);
       }
@@ -103,8 +185,6 @@ const QuizOnHarmfulThings = () => {
     navigate("/games/health-female/kids");
   };
 
-  const getCurrentQuestion = () => questions[currentQuestion];
-
   return (
     <GameShell
       title="Quiz on Harmful Things"
@@ -113,14 +193,15 @@ const QuizOnHarmfulThings = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-82"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={90}
-      currentLevel={82}
+      totalLevels={5}
+      currentLevel={72}
       showConfetti={gameFinished}
+      flashPoints={flashPoints}
       backPath="/games/health-female/kids"
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -128,66 +209,53 @@ const QuizOnHarmfulThings = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
-          <div className="space-y-3">
-            {getCurrentQuestion().options.map(option => {
-              const isSelected = selectedOption === option.id;
-              const isCorrect = option.id === getCurrentQuestion().correctAnswer;
-              const showCorrect = showFeedback && isCorrect;
-              const showIncorrect = showFeedback && isSelected && !isCorrect;
-              
+          <div className="grid grid-cols-1 gap-4">
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
               return (
                 <button
                   key={option.id}
-                  onClick={() => handleOptionSelect(option.id)}
+                  onClick={() => handleChoice(option.id)}
                   disabled={showFeedback}
-                  className={`w-full p-4 rounded-xl text-left transition-all ${
-                    showCorrect
-                      ? 'bg-green-500/20 border-2 border-green-500 text-white'
-                      : showIncorrect
-                      ? 'bg-red-500/20 border-2 border-red-500 text-white'
-                      : isSelected
-                      ? 'bg-blue-500/20 border-2 border-blue-500 text-white'
-                      : 'bg-white/10 border border-white/20 text-white hover:bg-white/20'
-                  }`}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
                 >
                   <div className="flex items-center">
-                    <div className="text-lg mr-3 font-bold">
-                      {option.id.toUpperCase()}.
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
                     </div>
-                    <div>{option.text}</div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
+                    )}
                   </div>
                 </button>
               );
             })}
           </div>
-
-          {showFeedback && (
-            <div className={`mt-6 p-4 rounded-xl ${
-              selectedOption === getCurrentQuestion().correctAnswer
-                ? 'bg-green-500/20 border border-green-500/30'
-                : 'bg-red-500/20 border border-red-500/30'
-            }`}>
-              <p className={`font-semibold ${
-                selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'text-green-300'
-                  : 'text-red-300'
-              }`}>
-                {selectedOption === getCurrentQuestion().correctAnswer
-                  ? 'Correct! 🎉'
-                  : 'Not quite right!'}
-              </p>
-              <p className="text-white/90 mt-2">
-                {getCurrentQuestion().explanation}
-              </p>
-            </div>
-          )}
         </div>
       </div>
     </GameShell>

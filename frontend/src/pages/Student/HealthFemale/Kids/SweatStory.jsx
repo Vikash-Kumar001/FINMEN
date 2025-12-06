@@ -1,118 +1,156 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const SweatStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-41";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "You've started sweating more than before. What's the best response?",
+      text: "You just finished playing soccer and you're sweating. What should you do?",
       options: [
         {
           id: "a",
-          text: "Take a bath daily and maintain good hygiene",
-          emoji: "🛁",
-          description: "Exactly! Increased sweating means you need to maintain good hygiene to stay fresh and prevent odor.",
-          isCorrect: true
+          text: "Sit in dirty clothes all day",
+          emoji: "🤢",
+          description: "Sweat can irritate your skin if left too long.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Ignore it and continue as before",
-          emoji: "😴",
-          description: "Ignoring increased sweating can lead to body odor and discomfort. Good hygiene is important.",
+          text: "Take a shower or wash up",
+          emoji: "🚿",
+          description: "Correct! Washing away sweat keeps you fresh.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Put on perfume only",
+          emoji: "🌸",
+          description: "Perfume doesn't clean the sweat away.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "Why do we sweat more during certain times?",
+      text: "Why do we sweat?",
       options: [
         {
           id: "a",
-          text: "Due to hormonal changes, physical activity, or weather",
+          text: "To cool down our body",
           emoji: "🌡️",
-          description: "Correct! Sweating increases due to hormonal changes during development, physical activity, and warm weather.",
+          description: "Yes! It's like your body's air conditioning.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Only when we're sick",
-          emoji: "🤒",
-          description: "While illness can cause sweating, we also sweat normally during development, exercise, and in warm weather.",
+          text: "Because we are crying",
+          emoji: "😢",
+          description: "Sweat comes from skin pores, not eyes.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "To make our clothes wet",
+          emoji: "👕",
+          description: "That happens, but it's not the reason!",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "How often should you bathe when sweating more?",
+      text: "What helps if your underarms smell after sweating?",
       options: [
         {
           id: "a",
-          text: "Daily, or more often if needed",
-          emoji: "🚿",
-          description: "Great choice! Bathing daily or more frequently when sweating a lot helps maintain hygiene and comfort.",
-          isCorrect: true
+          text: "Ignoring it",
+          emoji: "🤷‍♀️",
+          description: "It's better to address it so you feel confident.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Only once a week",
-          emoji: "📅",
-          description: "When sweating increases, bathing only once a week may not be sufficient to maintain good hygiene.",
+          text: "Wearing heavy wool",
+          emoji: "🧥",
+          description: "That might make you sweat more!",
           isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Using mild deodorant",
+          emoji: "🧼",
+          description: "Good choice! It helps with body odor.",
+          isCorrect: true
         }
       ]
     },
     {
       id: 4,
-      text: "What type of clothes help manage increased sweating?",
+      text: "When is it important to wash your face?",
       options: [
         {
           id: "a",
-          text: "Breathable fabrics like cotton",
-          emoji: "👕",
-          description: "Perfect! Breathable fabrics help absorb sweat and allow air circulation, keeping you more comfortable.",
-          isCorrect: true
+          text: "Never",
+          emoji: "🚫",
+          description: "Your face needs cleaning too.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Tight synthetic materials",
-          emoji: "👔",
-          description: "Tight synthetic materials trap sweat and heat, making you feel more uncomfortable and increasing odor.",
+          text: "After sweating or playing",
+          emoji: "⚽",
+          description: "Exactly! Keep those pores clean.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Only on birthdays",
+          emoji: "🎂",
+          description: "You should wash more often than that!",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "What should you do if you're embarrassed about sweating?",
+      text: "Wearing clean clothes helps you avoid...",
       options: [
         {
           id: "a",
-          text: "Talk to a trusted adult about normal body changes",
-          emoji: "👩‍👧",
-          description: "Wonderful! Talking to trusted adults helps you understand normal body changes and find solutions.",
+          text: "Body odor and germs",
+          emoji: "🦠",
+          description: "Correct! Bacteria loves damp, dirty clothes.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Avoid social situations completely",
-          emoji: "🚶‍♀️",
-          description: "Avoiding social situations isn't necessary. Increased sweating during development is normal and manageable.",
+          text: "Homework",
+          emoji: "📚",
+          description: "Nice try, but clothes don't do homework!",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Growing tall",
+          emoji: "📏",
+          description: "Clothes don't stop you from growing.",
           isCorrect: false
         }
       ]
@@ -120,7 +158,10 @@ const SweatStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +169,19 @@ const SweatStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +191,15 @@ const SweatStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-41"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={50}
+      totalLevels={5}
       currentLevel={41}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +207,52 @@ const SweatStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

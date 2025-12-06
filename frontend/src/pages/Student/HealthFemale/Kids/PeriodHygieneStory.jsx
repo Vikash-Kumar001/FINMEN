@@ -1,118 +1,156 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const PeriodHygieneStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-45";
+
   const [coins, setCoins] = useState(0);
   const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [choices, setChoices] = useState([]);
   const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
   const questions = [
     {
       id: 1,
-      text: "A girl doesn't change her pad for many hours. What is the most likely risk?",
+      text: "Is a period a sickness?",
       options: [
         {
           id: "a",
-          text: "Risk of infection and discomfort",
-          emoji: "🦠",
-          description: "Exactly! Not changing pads regularly can lead to bacterial growth, infections, and discomfort.",
-          isCorrect: true
+          text: "Yes, call a doctor",
+          emoji: "🚑",
+          description: "It is not an illness.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Nothing serious will happen",
-          emoji: "😌",
-          description: "Prolonged use without changing increases health risks. Regular changes are important for hygiene.",
+          text: "No, it's a normal body change",
+          emoji: "🌸",
+          description: "Correct! It means you are growing.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Yes, stay in bed forever",
+          emoji: "🛌",
+          description: "You can still do things.",
           isCorrect: false
         }
       ]
     },
     {
       id: 2,
-      text: "How often should pads or tampons typically be changed during a period?",
+      text: "What do you use for a period?",
       options: [
         {
           id: "a",
-          text: "Every 4-8 hours depending on flow",
-          emoji: "⏰",
-          description: "Perfect! Changing every 4-8 hours prevents leaks, odor, and infection risk. More frequently during heavy flow.",
-          isCorrect: true
+          text: "Band-aids",
+          emoji: "🩹",
+          description: "Band-aids are for cuts.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "Once per day is sufficient",
-          emoji: "📅",
-          description: "Once per day is not frequent enough and can lead to health issues. Regular changes are essential.",
+          text: "Pads or Tampons",
+          emoji: "🩸",
+          description: "Yes! They keep you clean.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Paper towels not made for it",
+          emoji: "🧻",
+          description: "Use proper supplies.",
           isCorrect: false
         }
       ]
     },
     {
       id: 3,
-      text: "What's the best way to maintain hygiene during periods?",
+      text: "How often should you change a pad?",
       options: [
         {
           id: "a",
-          text: "Regular changes, washing hands, and cleaning the area",
-          emoji: "🧼",
-          description: "Great choice! These practices prevent infections and maintain comfort throughout the period.",
+          text: "Every few hours",
+          emoji: "⏰",
+          description: "Correct! To stay fresh.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Only change when it's visibly soiled",
-          emoji: "👀",
-          description: "Waiting until visible soiling increases infection risk. Proactive hygiene is much more effective.",
+          text: "Once a week",
+          emoji: "📅",
+          description: "That is too long.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Never",
+          emoji: "🙅‍♀️",
+          description: "You must change it.",
           isCorrect: false
         }
       ]
     },
     {
       id: 4,
-      text: "Why is hand washing important when changing period products?",
+      text: "If you have cramps (tummy ache)...",
       options: [
         {
           id: "a",
-          text: "Prevents transferring bacteria to and from the body",
-          emoji: "✋",
-          description: "Correct! Hand washing prevents introducing bacteria to the genital area and protects from infections.",
-          isCorrect: true
+          text: "Scream",
+          emoji: "😱",
+          description: "Try to relax.",
+          isCorrect: false
         },
         {
           id: "b",
-          text: "It's not necessary if you're careful",
-          emoji: "🙅",
-          description: "Hand washing is always important to prevent bacterial transfer, regardless of how careful you are.",
+          text: "Use a warm heating pad or rest",
+          emoji: "🌡️",
+          description: "Yes! Warmth helps.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Jump on a trampoline",
+          emoji: "🤸‍♀️",
+          description: "Rest is better.",
           isCorrect: false
         }
       ]
     },
     {
       id: 5,
-      text: "What should you do if you notice unusual odor during your period?",
+      text: "Who can you talk to about periods?",
       options: [
         {
           id: "a",
-          text: "Change more frequently and consult a healthcare provider if it persists",
-          emoji: "👩‍⚕️",
-          description: "Wonderful! Increased frequency and professional advice when needed helps maintain health and address issues.",
+          text: "Mom, Aunt, or older sister",
+          emoji: "👩‍🦳",
+          description: "Correct! Women can help.",
           isCorrect: true
         },
         {
           id: "b",
-          text: "Ignore it as normal period smell",
-          emoji: "👃",
-          description: "While periods have some odor, unusual or strong smells may indicate infection and should be addressed.",
+          text: "Only pets",
+          emoji: "🐱",
+          description: "Talk to an adult.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "No one",
+          emoji: "🤐",
+          description: "It is okay to talk about it.",
           isCorrect: false
         }
       ]
@@ -120,7 +158,10 @@ const PeriodHygieneStory = () => {
   ];
 
   const handleChoice = (optionId) => {
-    const selectedOption = getCurrentQuestion().options.find(opt => opt.id === optionId);
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
     const isCorrect = selectedOption.isCorrect;
 
     if (isCorrect) {
@@ -128,22 +169,19 @@ const PeriodHygieneStory = () => {
       showCorrectAnswerFeedback(1, true);
     }
 
-    setChoices([...choices, { question: currentQuestion, optionId, isCorrect }]);
-
     setTimeout(() => {
+      setSelectedOptionId(null);
       if (currentQuestion < questions.length - 1) {
         setCurrentQuestion(prev => prev + 1);
       } else {
         setGameFinished(true);
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
-
-  const getCurrentQuestion = () => questions[currentQuestion];
 
   return (
     <GameShell
@@ -153,16 +191,15 @@ const PeriodHygieneStory = () => {
       nextEnabled={gameFinished}
       showGameOver={gameFinished}
       score={coins}
-      gameId="health-female-kids-45"
+      gameId={gameId}
       gameType="health-female"
-      totalLevels={50}
-      currentLevel={45}
+      totalLevels={5}
+      currentLevel={98}
       showConfetti={gameFinished}
       flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-    
-      maxScore={questions.length} // Max score is total number of questions (all correct)
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
@@ -170,32 +207,52 @@ const PeriodHygieneStory = () => {
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-4">
             <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
-            <span className="text-yellow-400 font-bold">Coins: {coins}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
-          
-          <h2 className="text-xl font-semibold text-white mb-6">
-            {getCurrentQuestion().text}
+
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
           </h2>
 
           <div className="grid grid-cols-1 gap-4">
-            {getCurrentQuestion().options.map(option => (
-              <button
-                key={option.id}
-                onClick={() => handleChoice(option.id)}
-                disabled={choices.some(c => c.question === currentQuestion)}
-                className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left"
-              >
-                <div className="flex items-center">
-                  <div className="text-2xl mr-4">{option.emoji}</div>
-                  <div>
-                    <h3 className="font-bold text-xl mb-1">{option.text}</h3>
-                    {choices.some(c => c.question === currentQuestion && c.optionId === option.id) && (
-                      <p className="text-white/90">{option.description}</p>
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
                     )}
                   </div>
-                </div>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>

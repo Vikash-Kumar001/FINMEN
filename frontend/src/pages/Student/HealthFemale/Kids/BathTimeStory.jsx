@@ -1,31 +1,24 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import GameShell from '../../Finance/GameShell';
 import useGameFeedback from '../../../../hooks/useGameFeedback';
 
 const BathTimeStory = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
+
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-5";
+
   const [currentScene, setCurrentScene] = useState(0);
   const [score, setScore] = useState(0);
   const [showFeedback, setShowFeedback] = useState(false);
-  const [feedback, setFeedback] = useState({ correct: false, message: '' });
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
   const [gameCompleted, setGameCompleted] = useState(false);
-  const [gameStarted, setGameStarted] = useState(false);
   const { showAnswerConfetti, showCorrectAnswerFeedback, flashPoints } = useGameFeedback();
-  
-  // Start the game automatically when component mounts
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setGameStarted(true);
-    }, 500);
-    
-    return () => clearTimeout(timer);
-  }, []);
 
   const scenes = [
     {
@@ -34,22 +27,22 @@ const BathTimeStory = () => {
       text: "Mom says, 'It's time for your bath!', but you're having so much fun playing. What do you do?",
       options: [
         {
+          id: 'a',
           text: "Ignore mom and keep playing",
           feedback: "Bath time is important to stay clean and healthy!",
-          isCorrect: false,
-          points: 0
+          isCorrect: false
         },
         {
+          id: 'b',
           text: "Say 'Okay mom!' and go take a bath",
           feedback: "Great choice! Staying clean is important for your health.",
-          isCorrect: true,
-          points: 1
+          isCorrect: true
         },
         {
+          id: 'c',
           text: "Ask if you can take a bath later",
           feedback: "It's good to take a bath at the same time every day to build a routine.",
-          isCorrect: false,
-          points: 0
+          isCorrect: false
         }
       ]
     },
@@ -59,22 +52,22 @@ const BathTimeStory = () => {
       text: "You're in the bathroom. What's the first thing you should do?",
       options: [
         {
-          text: "Jump right into the bath",
-          feedback: "Not quite! First, you should check the water temperature.",
-          isCorrect: false,
-          points: 0
-        },
-        {
+          id: 'a',
           text: "Check the water temperature with your hand",
           feedback: "Perfect! Always make sure the water isn't too hot or cold.",
-          isCorrect: true,
-          points: 1
+          isCorrect: true
         },
         {
+          id: 'b',
+          text: "Jump right into the bath",
+          feedback: "Not quite! First, you should check the water temperature.",
+          isCorrect: false
+        },
+        {
+          id: 'c',
           text: "Call for mom to test the water",
           feedback: "It's good to learn to check the water yourself!",
-          isCorrect: false,
-          points: 0
+          isCorrect: false
         }
       ]
     },
@@ -84,22 +77,22 @@ const BathTimeStory = () => {
       text: "Which items should you use to clean your body?",
       options: [
         {
-          text: "Soap and water",
-          feedback: "Great job! Soap helps remove dirt and germs when you wash.",
-          isCorrect: true,
-          points: 1
-        },
-        {
+          id: 'a',
           text: "Just water",
           feedback: "Water alone doesn't remove all the dirt and oil from your skin.",
-          isCorrect: false,
-          points: 0
+          isCorrect: false
         },
         {
+          id: 'b',
           text: "Perfume",
           feedback: "Perfume just covers up smells, it doesn't clean you!",
-          isCorrect: false,
-          points: 0
+          isCorrect: false
+        },
+        {
+          id: 'c',
+          text: "Soap and water",
+          feedback: "Great job! Soap helps remove dirt and germs when you wash.",
+          isCorrect: true
         }
       ]
     },
@@ -109,22 +102,22 @@ const BathTimeStory = () => {
       text: "How often should you wash your hair?",
       options: [
         {
-          text: "Every day",
-          feedback: "Washing hair every day can make it dry. 2-3 times a week is usually enough!",
-          isCorrect: false,
-          points: 0
-        },
-        {
+          id: 'a',
           text: "2-3 times a week",
           feedback: "Perfect! This keeps your hair clean without drying it out.",
-          isCorrect: true,
-          points: 1
+          isCorrect: true
         },
         {
+          id: 'b',
+          text: "Every day",
+          feedback: "Washing hair every day can make it dry. 2-3 times a week is usually enough!",
+          isCorrect: false
+        },
+        {
+          id: 'c',
           text: "Once a month",
           feedback: "That's not often enough! Your hair needs regular washing.",
-          isCorrect: false,
-          points: 0
+          isCorrect: false
         }
       ]
     },
@@ -134,195 +127,136 @@ const BathTimeStory = () => {
       text: "After your bath, what should you do?",
       options: [
         {
+          id: 'a',
           text: "Put on clean clothes without drying off",
           feedback: "You should dry yourself completely before dressing to stay comfortable.",
-          isCorrect: false,
-          points: 0
+          isCorrect: false
         },
         {
-          text: "Dry off with a clean towel and put on clean clothes",
-          feedback: "Excellent! This keeps you clean and fresh after your bath.",
-          isCorrect: true,
-          points: 1
-        },
-        {
+          id: 'b',
           text: "Put on the same clothes you were wearing",
           feedback: "Always wear clean clothes after bathing to stay fresh!",
-          isCorrect: false,
-          points: 0
+          isCorrect: false
+        },
+        {
+          id: 'c',
+          text: "Dry off with a clean towel and put on clean clothes",
+          feedback: "Excellent! This keeps you clean and fresh after your bath.",
+          isCorrect: true
         }
       ]
     }
   ];
 
   const handleChoice = (option) => {
-    // Show feedback immediately
-    setFeedback({
-      correct: option.isCorrect,
-      message: option.feedback
-    });
-    
-    // If answer is correct, update score and show confetti
-    if (option.isCorrect) {
-      const newScore = score + option.points;
-      setScore(newScore);
-      showCorrectAnswerFeedback(option.points, true);
-    }
-    
-    // Show feedback
+    if (showFeedback) return;
+
+    setSelectedOptionId(option.id);
     setShowFeedback(true);
-    
-    // Move to next question or complete game after a delay
+
+    if (option.isCorrect) {
+      setScore(prev => prev + coinsPerLevel);
+      showCorrectAnswerFeedback(coinsPerLevel, true);
+    }
+
     setTimeout(() => {
       setShowFeedback(false);
+      setSelectedOptionId(null);
       if (currentScene < scenes.length - 1) {
         setCurrentScene(prev => prev + 1);
       } else {
         setGameCompleted(true);
         showAnswerConfetti();
       }
-    }, 1500);
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
-  const restartGame = () => {
-    setCurrentScene(0);
-    setScore(0);
-    setGameCompleted(false);
-    setShowFeedback(false);
-  };
-
   const currentSceneData = scenes[currentScene];
-
-  if (!gameStarted) {
-    return (
-      <GameShell
-        title="Bath Time Story"
-        subtitle="Loading..."
-        backPath="/games/health-female/kids"
-      
-      coinsPerLevel={coinsPerLevel}
-      totalCoins={totalCoins}
-      totalXp={totalXp}>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="animate-pulse text-center">
-            <div className="text-6xl mb-4">🛁</div>
-            <p className="text-white">Getting your bath time story ready...</p>
-          </div>
-        </div>
-      </GameShell>
-    );
-  }
-
-  if (gameCompleted) {
-    return (
-      <GameShell
-        title="Bath Time Story"
-        subtitle="Story Complete!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        score={score}
-        gameId="health-female-kids-5"
-        gameType="health-female"
-        totalLevels={10}
-        currentLevel={5}
-        showConfetti={true}
-        backPath="/games/health-female/kids"
-      >
-        <div className="text-center p-8">
-          <div className="text-6xl mb-6">🎉</div>
-          <h2 className="text-2xl font-bold mb-4 text-white">Great Job!</h2>
-          <p className="text-white/90 mb-6 text-lg">
-            You scored {score} out of {scenes.length} points!
-          </p>
-          <div className="text-yellow-400 font-bold text-xl">
-            You're a bath time expert now! 🛁✨
-          </div>
-          <button
-            onClick={restartGame}
-            className="mt-6 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-bold py-3 px-8 rounded-full text-lg transition-all transform hover:scale-105"
-          >
-            Play Again
-          </button>
-        </div>
-      </GameShell>
-    );
-  }
 
   return (
     <GameShell
       title="Bath Time Story"
-      subtitle={`Question ${currentScene + 1} of ${scenes.length}`}
+      subtitle={`Scene ${currentScene + 1} of ${scenes.length}`}
+      onNext={handleNext}
+      nextEnabled={gameCompleted}
+      showGameOver={gameCompleted}
+      score={score}
+      gameId={gameId}
+      gameType="health-female"
+      totalLevels={scenes.length}
+      currentLevel={currentScene + 1}
+      showConfetti={gameCompleted}
+      flashPoints={flashPoints}
       backPath="/games/health-female/kids"
       showAnswerConfetti={showAnswerConfetti}
-      flashPoints={flashPoints}
+      maxScore={maxScore}
+      coinsPerLevel={coinsPerLevel}
+      totalCoins={totalCoins}
+      totalXp={totalXp}
     >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
           <div className="flex justify-between items-center mb-6">
             <div className="bg-blue-500/20 px-4 py-2 rounded-full">
-              <span className="text-white font-medium">Score: {score}/{scenes.length}</span>
+              <span className="text-white font-medium">Question: {currentScene + 1}/{scenes.length}</span>
             </div>
             <div className="bg-yellow-500/20 px-4 py-2 rounded-full">
-              <span className="text-yellow-400 font-bold">Coins: {score}</span>
+              <span className="text-yellow-400 font-bold">Coins: {score}/{totalCoins}</span>
             </div>
           </div>
-          
+
           <div className="text-center my-8">
             <div className="text-8xl mb-6 transform hover:scale-110 transition-transform">
               {currentSceneData.background}
             </div>
-            <h3 className="text-xl text-white/90 leading-relaxed max-w-2xl mx-auto">
+            <h3 className="text-2xl text-white font-semibold leading-relaxed max-w-2xl mx-auto">
               {currentSceneData.text}
             </h3>
           </div>
-          
+
           <div className="grid grid-cols-1 gap-4 max-w-2xl mx-auto">
-            {currentSceneData.options.map((option, index) => {
-              const isSelected = showFeedback && (option.isCorrect || feedback.message === option.feedback);
+            {currentSceneData.options.map((option) => {
+              // Determine if this specific option should show feedback state
+              const isSelected = selectedOptionId === option.id;
               const isCorrect = option.isCorrect;
-              
+
+              let buttonStyle = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 border-transparent";
+
+              if (showFeedback) {
+                if (isCorrect) {
+                  buttonStyle = "bg-green-500 border-green-400";
+                } else if (isSelected && !isCorrect) {
+                  buttonStyle = "bg-red-500 border-red-400";
+                } else {
+                  buttonStyle = "bg-white/10 opacity-50";
+                }
+              }
+
               return (
                 <button
-                  key={index}
+                  key={option.id}
                   onClick={() => handleChoice(option)}
                   disabled={showFeedback}
-                  className={`w-full text-left p-6 rounded-2xl shadow-lg transition-all transform ${
-                    !showFeedback
-                      ? 'hover:scale-[1.02] bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700'
-                      : isCorrect
-                        ? 'bg-gradient-to-r from-green-500 to-emerald-600 scale-100'
-                        : feedback.message === option.feedback
-                          ? 'bg-gradient-to-r from-red-500 to-pink-600 scale-100'
-                          : 'opacity-70 bg-gradient-to-r from-blue-500/50 to-indigo-600/50'
-                  }`}
+                  className={`w-full text-left p-6 rounded-2xl shadow-lg transition-all transform border-2 ${buttonStyle}`}
                 >
-                  <div className="font-medium text-lg text-white">
-                    {option.text}
-                    {isSelected && (
-                      <span className="ml-2">
-                        {isCorrect ? '✓' : '✗'}
-                      </span>
+                  <div className="font-medium text-lg text-white flex justify-between items-center">
+                    <span>{option.text}</span>
+                    {showFeedback && (isCorrect || isSelected) && (
+                      <span className="text-2xl">{isCorrect ? '✅' : '❌'}</span>
                     )}
                   </div>
-                  {showFeedback && isSelected && (
-                    <div className="text-sm text-white/80 mt-2">
+                  {showFeedback && (isSelected || isCorrect) && (
+                    <div className="text-sm text-white/90 mt-2 bg-black/20 p-2 rounded">
                       {option.feedback}
                     </div>
                   )}
                 </button>
               );
             })}
-          </div>
-          
-          <div className="mt-8 flex justify-between items-center text-sm text-white/60">
-            <span>Tip: Read each option carefully before choosing!</span>
-            <span>{currentScene + 1} of {scenes.length}</span>
           </div>
         </div>
       </div>

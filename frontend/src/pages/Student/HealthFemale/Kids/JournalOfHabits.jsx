@@ -1,53 +1,69 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from "react-router-dom";
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
+import { PenSquare } from "lucide-react";
 
 const JournalOfHabits = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [coins, setCoins] = useState(0);
-  const [gameFinished, setGameFinished] = useState(false);
-  const [journalEntry, setJournalEntry] = useState("");
-  const { showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
 
-  const habitPrompts = [
-    "One habit I want to improve is ___.",
-    "I can develop better habits by ___.",
-    "A healthy habit I'm proud of is ___.",
-    "My daily routine could be better if ___.",
-    "I will stay consistent with my habits by ___."
-  ];
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-97";
 
-  const goodHabits = [
-    "getting enough sleep",
-    "eating nutritious food",
-    "exercising regularly",
-    "drinking enough water",
-    "limiting screen time",
-    "reading daily"
-  ];
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback, resetFeedback } =
+    useGameFeedback();
+  const [currentStage, setCurrentStage] = useState(0);
+  const [score, setScore] = useState(0);
+  const [entry, setEntry] = useState("");
+  const [showResult, setShowResult] = useState(false);
 
-  const improvementStrategies = [
-    "setting daily reminders",
-    "tracking my progress",
-    "asking family for support",
-    "starting with small steps",
-    "rewarding myself for consistency",
-    "finding an accountability partner"
+  const stages = [
+    {
+      question: 'Write: "One habit I want to improve is ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I can build healthy habits by ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "A habit I am proud of is ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "My goal for tomorrow is ___."',
+      minLength: 10,
+    },
+    {
+      question: 'Write: "I will stick to my routine by ___."',
+      minLength: 10,
+    },
   ];
 
   const handleSubmit = () => {
-    if (journalEntry.trim().length > 0) {
-      setCoins(5);
-      showCorrectAnswerFeedback(5, true);
+    if (showResult) return; // Prevent multiple submissions
+
+    resetFeedback();
+    const entryText = entry.trim();
+
+    if (entryText.length >= stages[currentStage].minLength) {
+      setScore((prev) => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+
+      const isLastQuestion = currentStage === stages.length - 1;
+
       setTimeout(() => {
-        setGameFinished(true);
-        showAnswerConfetti();
+        if (isLastQuestion) {
+          setShowResult(true);
+          showAnswerConfetti();
+        } else {
+          setEntry("");
+          setCurrentStage((prev) => prev + 1);
+        }
       }, 1500);
     }
   };
@@ -56,124 +72,66 @@ const JournalOfHabits = () => {
     navigate("/games/health-female/kids");
   };
 
-  const getRandomPrompts = () => {
-    const shuffled = [...habitPrompts].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 2);
-  };
-
-  const getRandomHabits = () => {
-    const shuffled = [...goodHabits].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 3);
-  };
-
-  const getRandomStrategies = () => {
-    const shuffled = [...improvementStrategies].sort(() => 0.5 - Math.random());
-    return shuffled.slice(0, 3);
-  };
-
-  const suggestedPrompts = getRandomPrompts();
-  const exampleHabits = getRandomHabits();
-  const exampleStrategies = getRandomStrategies();
+  const finalScore = score;
 
   return (
     <GameShell
       title="Journal of Habits"
-      subtitle="Write about your commitment to healthy habits"
-      onNext={handleNext}
-      nextEnabled={gameFinished}
-      showGameOver={gameFinished}
-      score={coins}
-      gameId="health-female-kids-97"
-      gameType="health-female"
-      totalLevels={100}
+      subtitle={!showResult ? `Entry ${currentStage + 1} of ${stages.length}: Reflect on your daily habits!` : "Journal Complete!"}
       currentLevel={97}
-      showConfetti={gameFinished}
-      backPath="/games/health-female/kids"
-      showAnswerConfetti={false}
-    
-      maxScore={100} // Max score is total number of questions (all correct)
+      totalLevels={5}
       coinsPerLevel={coinsPerLevel}
+      showGameOver={showResult}
+      flashPoints={flashPoints}
+      showAnswerConfetti={showAnswerConfetti}
+      score={finalScore}
+      gameId={gameId}
+      gameType="health-female"
+      maxScore={5}
       totalCoins={totalCoins}
-      totalXp={totalXp}>
-      <div className="space-y-8">
-        <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              Write about your commitment to developing healthy habits!
-            </h2>
-            <p className="text-white/80">
-              "One habit I want to improve is ___"
+      totalXp={totalXp}
+      onNext={handleNext}
+      showConfetti={showResult && finalScore === 5}>
+      <div className="text-center text-white space-y-8">
+        {!showResult && stages[currentStage] && (
+          <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl border border-white/20">
+            <PenSquare className="mx-auto mb-4 w-10 h-10 text-yellow-300" />
+            <h3 className="text-2xl font-bold mb-4">{stages[currentStage].question}</h3>
+            <p className="text-white/70 mb-4">Score: {score}/{stages.length}</p>
+            <p className="text-white/60 text-sm mb-4">
+              Write at least {stages[currentStage].minLength} characters
             </p>
-          </div>
-
-          <div className="mb-6">
-            <label className="block text-white mb-2">
-              My journal entry:
-            </label>
             <textarea
-              value={journalEntry}
-              onChange={(e) => setJournalEntry(e.target.value)}
-              placeholder="One habit I want to improve is... I will do this by... This will help me because..."
-              className="w-full p-4 rounded-xl bg-white/10 border border-white/20 text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-blue-500 min-h-[150px]"
+              value={entry}
+              onChange={(e) => setEntry(e.target.value)}
+              placeholder="Write your journal entry here..."
+              className="w-full max-w-xl p-4 rounded-xl text-black text-lg bg-white/90"
+              disabled={showResult}
             />
+            <div className="mt-2 text-white/50 text-sm">
+              {entry.trim().length}/{stages[currentStage].minLength} characters
+            </div>
+            <button
+              onClick={handleSubmit}
+              className={`mt-4 px-8 py-4 rounded-full text-lg font-semibold transition-transform ${entry.trim().length >= stages[currentStage].minLength && !showResult
+                  ? 'bg-green-500 hover:bg-green-600 hover:scale-105 text-white cursor-pointer'
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed opacity-50'
+                }`}
+              disabled={entry.trim().length < stages[currentStage].minLength || showResult}
+            >
+              {currentStage === stages.length - 1 ? 'Submit Final Entry' : 'Submit & Continue'}
+            </button>
           </div>
+        )}
 
-          <div className="mb-6">
-            <h3 className="text-white font-semibold mb-3">Need ideas? Try writing about:</h3>
-            <div className="flex flex-wrap gap-2 mb-4">
-              {suggestedPrompts.map((prompt, index) => (
-                <span 
-                  key={index}
-                  className="bg-purple-500/20 text-purple-200 px-3 py-1 rounded-full text-sm"
-                >
-                  {prompt}
-                </span>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-2 mb-2">
-              <span className="text-white font-semibold mr-2">Good habits:</span>
-              {exampleHabits.map((habit, index) => (
-                <span 
-                  key={index}
-                  className="bg-green-500/20 text-green-200 px-3 py-1 rounded-full text-sm"
-                >
-                  {habit}
-                </span>
-              ))}
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <span className="text-white font-semibold mr-2">Improvement strategies:</span>
-              {exampleStrategies.map((strategy, index) => (
-                <span 
-                  key={index}
-                  className="bg-blue-500/20 text-blue-200 px-3 py-1 rounded-full text-sm"
-                >
-                  {strategy}
-                </span>
-              ))}
-            </div>
+        {showResult && (
+          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-8 border border-white/20">
+            <div className="text-6xl mb-6">📖</div>
+            <h2 className="text-3xl font-bold mb-4">Journal Complete!</h2>
+            <p className="text-xl mb-6">You've thought carefully about your healthy habits!</p>
+            <div className="text-2xl font-bold text-yellow-400 mb-8">Earned {score} Coins!</div>
           </div>
-
-          <button
-            onClick={handleSubmit}
-            disabled={journalEntry.trim().length === 0}
-            className={`w-full py-3 rounded-xl font-bold text-white transition-all ${
-              journalEntry.trim().length > 0
-                ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 transform hover:scale-105'
-                : 'bg-gray-500 cursor-not-allowed'
-            }`}
-          >
-            Submit Journal Entry
-          </button>
-
-          {gameFinished && (
-            <div className="mt-6 p-4 bg-green-500/20 rounded-xl border border-green-400 text-center">
-              <p className="text-green-200">
-                Great job! Writing about your commitment to healthy habits helps reinforce your goals and builds determination.
-              </p>
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </GameShell>
   );

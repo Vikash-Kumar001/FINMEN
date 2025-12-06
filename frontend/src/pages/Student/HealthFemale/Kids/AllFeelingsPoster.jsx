@@ -1,152 +1,258 @@
 import React, { useState } from "react";
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import GameShell from "../../Finance/GameShell";
 import useGameFeedback from "../../../../hooks/useGameFeedback";
 
 const AllFeelingsPoster = () => {
   const navigate = useNavigate();
-  const location = useLocation();
-  // Get coinsPerLevel, totalCoins, and totalXp from navigation state (from game card) or use default
-  const coinsPerLevel = location.state?.coinsPerLevel || 5; // Default 5 coins per question (for backward compatibility)
-  const totalCoins = location.state?.totalCoins || 5; // Total coins from game card
-  const totalXp = location.state?.totalXp || 10; // Total XP from game card
-  const [selectedPoster, setSelectedPoster] = useState(null);
-  const [gameFinished, setGameFinished] = useState(false);
-  const { showAnswerConfetti } = useGameFeedback();
 
-  const posters = [
+  // Hardcoded Game Rewards & Configuration
+  const coinsPerLevel = 1;
+  const totalCoins = 5;
+  const totalXp = 10;
+  const maxScore = 5;
+  const gameId = "health-female-kids-56";
+
+  const [coins, setCoins] = useState(0);
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [gameFinished, setGameFinished] = useState(false);
+  const [selectedOptionId, setSelectedOptionId] = useState(null);
+  const { flashPoints, showAnswerConfetti, showCorrectAnswerFeedback } = useGameFeedback();
+
+  const questions = [
     {
       id: 1,
-      title: "It's Okay to Feel",
-      description: "All emotions are normal parts of being human",
-      design: "🌈",
-      message: "Feeling sad, happy, angry, or scared is normal. Every feeling is okay!"
+      text: "What title fits a poster about feelings?",
+      options: [
+        {
+          id: "a",
+          text: "Robots Have No Feelings",
+          emoji: "🤖",
+          description: "This poster is about you.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "All Feelings Are Okay!",
+          emoji: "🌈",
+          description: "Correct! That is a great message.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "Only Smiles Allowed",
+          emoji: "🙂",
+          description: "Other feelings exist too.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 2,
-      title: "Feelings Are Friends",
-      description: "Emotions help us understand ourselves",
-      design: "🤝",
-      message: "Your feelings help you know what you need. Listen to them kindly!"
+      text: "Which image shows 'sadness'?",
+      options: [
+        {
+          id: "a",
+          text: "A blue rain cloud",
+          emoji: "🌧️",
+          description: "Yes! That feels sad.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "A bright sun",
+          emoji: "☀️",
+          description: "Sun usually means happy.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "A pizza",
+          emoji: "🍕",
+          description: "Pizza is food.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 3,
-      title: "Emotions Change",
-      description: "Feelings come and go like weather",
-      design: "🌦️",
-      message: "Feelings change throughout the day. It's okay to feel different things!"
+      text: "Which image shows 'anger'?",
+      options: [
+        {
+          id: "a",
+          text: "A sleeping cat",
+          emoji: "🐱",
+          description: "That is calm.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "A red fire or volcano",
+          emoji: "🌋",
+          description: "Correct! Anger feels hot like fire.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "A flower",
+          emoji: "🌸",
+          description: "Flowers are peaceful.",
+          isCorrect: false
+        }
+      ]
     },
     {
       id: 4,
-      title: "Share Your Feelings",
-      description: "Talking helps with difficult emotions",
-      design: "💬",
-      message: "Sharing feelings with trusted people helps you feel better and safer!"
+      text: "What helps all feelings?",
+      options: [
+        {
+          id: "a",
+          text: "Talking, hugging, breathing",
+          emoji: "🤗",
+          description: "Yes! Those are good tools.",
+          isCorrect: true
+        },
+        {
+          id: "b",
+          text: "Yelling loudly",
+          emoji: "📢",
+          description: "Yelling might scare others.",
+          isCorrect: false
+        },
+        {
+          id: "c",
+          text: "Ignoring them",
+          emoji: "🙈",
+          description: "Feel your feelings.",
+          isCorrect: false
+        }
+      ]
+    },
+    {
+      id: 5,
+      text: "Where is it safe to have feelings?",
+      options: [
+        {
+          id: "a",
+          text: "Only in a box",
+          emoji: "📦",
+          description: "You can feel anywhere.",
+          isCorrect: false
+        },
+        {
+          id: "b",
+          text: "Anywhere, especially with safe people",
+          emoji: "🏡",
+          description: "Correct! It is safe to feel.",
+          isCorrect: true
+        },
+        {
+          id: "c",
+          text: "On the moon",
+          emoji: "🌑",
+          description: "Safe on Earth too.",
+          isCorrect: false
+        }
+      ]
     }
   ];
 
-  const handlePosterSelect = (posterId) => {
-    setSelectedPoster(posterId);
+  const handleChoice = (optionId) => {
+    if (selectedOptionId) return;
+
+    setSelectedOptionId(optionId);
+    const selectedOption = questions[currentQuestion].options.find(opt => opt.id === optionId);
+    const isCorrect = selectedOption.isCorrect;
+
+    if (isCorrect) {
+      setCoins(prev => prev + 1);
+      showCorrectAnswerFeedback(1, true);
+    }
+
     setTimeout(() => {
-      setGameFinished(true);
-      showAnswerConfetti();
-    }, 1500);
+      setSelectedOptionId(null);
+      if (currentQuestion < questions.length - 1) {
+        setCurrentQuestion(prev => prev + 1);
+      } else {
+        setGameFinished(true);
+      }
+    }, 2000);
   };
 
   const handleNext = () => {
     navigate("/games/health-female/kids");
   };
 
-  const getSelectedPoster = () => posters.find(p => p.id === selectedPoster);
-
-  if (gameFinished) {
-    return (
-      <GameShell
-        title="Poster: All Feelings Are Okay"
-        subtitle="Congratulations!"
-        onNext={handleNext}
-        nextEnabled={true}
-        nextButtonText="Back to Games"
-        showGameOver={true}
-        gameId="health-female-kids-56"
-        gameType="health-female"
-        totalLevels={60}
-        currentLevel={56}
-        showConfetti={true}
-        backPath="/games/health-female/kids"
-      
-      maxScore={60} // Max score is total number of questions (all correct)
+  return (
+    <GameShell
+      title="Poster: All Feelings"
+      subtitle={`Question ${currentQuestion + 1} of ${questions.length}`}
+      onNext={handleNext}
+      nextEnabled={gameFinished}
+      showGameOver={gameFinished}
+      score={coins}
+      gameId={gameId}
+      gameType="health-female"
+      totalLevels={5}
+      currentLevel={56}
+      showConfetti={gameFinished}
+      flashPoints={flashPoints}
+      backPath="/games/health-female/kids"
+      showAnswerConfetti={showAnswerConfetti}
+      maxScore={maxScore}
       coinsPerLevel={coinsPerLevel}
       totalCoins={totalCoins}
       totalXp={totalXp}>
-        <div className="space-y-8">
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-            <div className="text-center mb-6">
-              <h2 className="text-2xl font-bold text-white mb-4">Great Choice!</h2>
-              <p className="text-white/80">
-                You've created an amazing poster about emotions!
-              </p>
-            </div>
-
-            <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 rounded-2xl p-6 border border-purple-500/30">
-              <div className="text-center mb-4">
-                <div className="text-6xl mb-4">{getSelectedPoster().design}</div>
-                <h3 className="text-xl font-bold text-white mb-2">{getSelectedPoster().title}</h3>
-                <p className="text-white/80">{getSelectedPoster().message}</p>
-              </div>
-            </div>
-
-            <div className="mt-6 text-center">
-              <p className="text-yellow-400 font-bold text-lg">
-                You've earned your "All Feelings Are Okay" badge!
-              </p>
-            </div>
-          </div>
-        </div>
-      </GameShell>
-    );
-  }
-
-  return (
-    <GameShell
-      title="Poster: All Feelings Are Okay"
-      subtitle="Create your feelings poster"
-      backPath="/games/health-female/kids"
-    >
       <div className="space-y-8">
         <div className="bg-white/10 backdrop-blur-md rounded-2xl p-6 border border-white/20">
-          <div className="text-center mb-6">
-            <h2 className="text-xl font-semibold text-white mb-4">
-              Create or select a poster that shows "It's Okay to Feel"
-            </h2>
-            <p className="text-white/80">
-              Choose a design that helps others understand that all emotions are normal
-            </p>
+          <div className="flex justify-between items-center mb-4">
+            <span className="text-white/80">Question {currentQuestion + 1}/{questions.length}</span>
+            <span className="text-yellow-400 font-bold">Coins: {coins}/{totalCoins}</span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {posters.map(poster => (
-              <div 
-                key={poster.id}
-                onClick={() => handlePosterSelect(poster.id)}
-                className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-2xl p-6 border border-white/20 cursor-pointer transition-all transform hover:scale-105 hover:from-blue-500/30 hover:to-purple-500/30"
-              >
-                <div className="text-center">
-                  <div className="text-5xl mb-4">{poster.design}</div>
-                  <h3 className="text-lg font-bold text-white mb-2">{poster.title}</h3>
-                  <p className="text-white/80 text-sm mb-3">{poster.description}</p>
-                  <p className="text-white/70 text-xs italic">"{poster.message}"</p>
-                </div>
-              </div>
-            ))}
-          </div>
+          <h2 className="text-2xl font-bold text-white mb-8 text-center">
+            {questions[currentQuestion].text}
+          </h2>
 
-          <div className="mt-8 text-center">
-            <div className="inline-block bg-white/10 rounded-full px-4 py-2">
-              <p className="text-white/80 text-sm">
-                Click on any poster to select it and earn your badge!
-              </p>
-            </div>
+          <div className="grid grid-cols-1 gap-4">
+            {questions[currentQuestion].options.map(option => {
+              const isSelected = selectedOptionId === option.id;
+              const showFeedback = selectedOptionId !== null;
+
+              let buttonClass = "bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700";
+
+              if (showFeedback && isSelected) {
+                buttonClass = option.isCorrect
+                  ? "bg-green-500 ring-4 ring-green-300"
+                  : "bg-red-500 ring-4 ring-red-300";
+              } else if (showFeedback && !isSelected) {
+                buttonClass = "bg-white/10 opacity-50";
+              }
+
+              return (
+                <button
+                  key={option.id}
+                  onClick={() => handleChoice(option.id)}
+                  disabled={showFeedback}
+                  className={`p-6 rounded-2xl shadow-lg transition-all transform hover:scale-105 text-left ${buttonClass}`}
+                >
+                  <div className="flex items-center">
+                    <div className="text-4xl mr-6">{option.emoji}</div>
+                    <div className="flex-1">
+                      <h3 className="font-bold text-xl mb-1 text-white">{option.text}</h3>
+                      {showFeedback && isSelected && (
+                        <p className="text-white font-medium mt-2 animate-fadeIn">{option.description}</p>
+                      )}
+                    </div>
+                    {showFeedback && isSelected && (
+                      <div className="text-3xl ml-4">
+                        {option.isCorrect ? "✅" : "❌"}
+                      </div>
+                    )}
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
